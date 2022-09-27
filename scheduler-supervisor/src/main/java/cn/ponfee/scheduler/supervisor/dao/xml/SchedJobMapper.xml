@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper">
+
+    <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedJob">
+      <result column="job_id" jdbcType="BIGINT" property="jobId" />
+      <result column="job_group" jdbcType="VARCHAR" property="jobGroup" />
+      <result column="job_name" jdbcType="VARCHAR" property="jobName" />
+      <result column="job_handler" jdbcType="LONGVARCHAR" property="jobHandler" />
+      <result column="job_state" jdbcType="TINYINT" property="jobState" />
+      <result column="job_param" jdbcType="LONGVARCHAR" property="jobParam" />
+      <result column="retry_type" jdbcType="TINYINT" property="retryType" />
+      <result column="retry_count" jdbcType="TINYINT" property="retryCount" />
+      <result column="retry_interval" jdbcType="INTEGER" property="retryInterval" />
+      <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
+      <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
+      <result column="trigger_type" jdbcType="TINYINT" property="triggerType" />
+      <result column="trigger_conf" jdbcType="VARCHAR" property="triggerConf" />
+      <result column="execute_timeout" jdbcType="INTEGER" property="executeTimeout" />
+      <result column="collision_strategy" jdbcType="TINYINT" property="collisionStrategy" />
+      <result column="misfire_strategy" jdbcType="TINYINT" property="misfireStrategy" />
+      <result column="route_strategy" jdbcType="TINYINT" property="routeStrategy" />
+      <result column="weight_score" jdbcType="TINYINT" property="weightScore" />
+      <result column="remark" jdbcType="VARCHAR" property="remark" />
+      <result column="last_trigger_time" jdbcType="BIGINT" property="lastTriggerTime" />
+      <result column="next_trigger_time" jdbcType="BIGINT" property="nextTriggerTime" />
+      <result column="next_scan_time" jdbcType="TIMESTAMP" property="nextScanTime" />
+      <result column="alarm_subscribers" jdbcType="VARCHAR" property="alarmSubscribers" />
+      <result column="version" jdbcType="INTEGER" property="version" />
+      <result column="updated_by" jdbcType="VARCHAR" property="updatedBy" />
+      <result column="created_by" jdbcType="VARCHAR" property="createdBy" />
+      <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+      <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+      job_id, job_group, job_name, job_handler, job_state, job_param, retry_type,
+      retry_count, retry_interval, start_time, end_time, trigger_type, trigger_conf, execute_timeout,
+      collision_strategy, misfire_strategy, route_strategy, weight_score, remark, last_trigger_time,
+      next_trigger_time, next_scan_time, alarm_subscribers, version, updated_by, created_by, updated_at,
+      created_at
+    </sql>
+
+    <!-- ********************use int test start******************** -->
+    <select id="testFindByJobIds" resultType="cn.ponfee.scheduler.core.model.SchedJob" parameterType="list">
+      SELECT job_id jobId, remark
+      FROM sched_job
+      WHERE job_id IN (<foreach collection="list" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
+    </select>
+    <update id="updateRemark">
+      UPDATE sched_job
+      SET remark=#{remark, jdbcType=VARCHAR}, version=version+1
+      WHERE job_id=#{jobId, jdbcType=BIGINT}
+    </update>
+    <!-- ********************use int test end******************** -->
+
+    <select id="findByJobIds" resultMap="BaseResultMap">
+      SELECT <include refid="Base_Column_List"/>
+      FROM sched_job
+      WHERE job_id IN (<foreach collection="jobIds" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
+    </select>
+
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.scheduler.core.model.SchedJob" useGeneratedKeys="true">
+      INSERT INTO sched_job (
+        job_id, job_group, job_name,
+        job_handler, job_state, job_param,
+        retry_type, retry_count, retry_interval,
+        start_time, end_time, trigger_type,
+        trigger_conf, execute_timeout, collision_strategy,
+        misfire_strategy, route_strategy, weight_score,
+        remark, next_trigger_time, next_scan_time, alarm_subscribers,
+        version, updated_by, created_by, updated_at, created_at
+      ) VALUES (
+        #{jobId,jdbcType=BIGINT}, #{jobGroup,jdbcType=VARCHAR}, #{jobName,jdbcType=VARCHAR},
+        #{jobHandler,jdbcType=LONGVARCHAR}, #{jobState,jdbcType=TINYINT}, #{jobParam,jdbcType=LONGVARCHAR},
+        #{retryType,jdbcType=TINYINT}, #{retryCount,jdbcType=TINYINT}, #{retryInterval,jdbcType=INTEGER},
+        #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{triggerType,jdbcType=TINYINT},
+        #{triggerConf,jdbcType=VARCHAR}, #{executeTimeout,jdbcType=INTEGER}, #{collisionStrategy,jdbcType=TINYINT},
+        #{misfireStrategy,jdbcType=TINYINT}, #{routeStrategy,jdbcType=TINYINT}, #{weightScore,jdbcType=TINYINT},
+        #{remark,jdbcType=VARCHAR}, #{nextTriggerTime,jdbcType=BIGINT}, NOW(3), #{alarmSubscribers,jdbcType=VARCHAR},
+        1, #{updatedBy,jdbcType=VARCHAR}, #{createdBy,jdbcType=VARCHAR}, #{updatedAt,jdbcType=TIMESTAMP},
+        #{createdAt,jdbcType=TIMESTAMP}
+      )
+    </insert>
+
+    <update id="updateByJobId" parameterType="cn.ponfee.scheduler.core.model.SchedJob">
+      UPDATE sched_job
+      SET job_group = #{jobGroup,jdbcType=VARCHAR},
+          job_name = #{jobName,jdbcType=VARCHAR},
+          <if test="jobHandler != null and jobHandler != ''">
+            job_handler = #{jobHandler,jdbcType=LONGVARCHAR},
+            job_param = #{jobParam,jdbcType=LONGVARCHAR},
+          </if>
+          job_state = #{jobState,jdbcType=TINYINT},
+          retry_type = #{retryType,jdbcType=TINYINT},
+          retry_count = #{retryCount,jdbcType=TINYINT},
+          retry_interval = #{retryInterval,jdbcType=INTEGER},
+          start_time = #{startTime,jdbcType=TIMESTAMP},
+          end_time = #{endTime,jdbcType=TIMESTAMP},
+          <if test="triggerType != null">
+            trigger_type = #{triggerType,jdbcType=TINYINT},
+            trigger_conf = #{triggerConf,jdbcType=VARCHAR},
+          </if>
+          next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+          execute_timeout = #{executeTimeout,jdbcType=INTEGER},
+          collision_strategy = #{collisionStrategy,jdbcType=TINYINT},
+          misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
+          route_strategy = #{routeStrategy,jdbcType=TINYINT},
+          weight_score = #{weightScore,jdbcType=TINYINT},
+          remark = #{remark,jdbcType=VARCHAR},
+          alarm_subscribers = #{alarmSubscribers,jdbcType=VARCHAR},
+          version = version+1,
+          updated_by = #{updatedBy,jdbcType=VARCHAR},
+          updated_at = #{updatedAt,jdbcType=TIMESTAMP}
+      WHERE job_id = #{jobId,jdbcType=BIGINT}
+        AND version = #{version,jdbcType=INTEGER}
+    </update>
+
+    <select id="getByJobId" parameterType="_long" resultMap="BaseResultMap">
+      SELECT <include refid="Base_Column_List" />
+      FROM sched_job
+      WHERE job_id = #{jobId,jdbcType=BIGINT}
+    </select>
+
+    <select id="findBeTriggering" resultMap="BaseResultMap">
+      SELECT <include refid="Base_Column_List"/>
+      FROM sched_job
+      WHERE job_state = 1 
+        AND next_trigger_time &lt;= #{maxNextTriggerTime}
+        AND next_scan_time &lt;= NOW(3)
+      ORDER BY next_trigger_time ASC
+      LIMIT #{size}
+    </select>
+
+    <update id="updateNextScanTime" parameterType="cn.ponfee.scheduler.core.model.SchedJob">
+      UPDATE sched_job
+      SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
+          version = version+1
+      WHERE job_id = #{jobId,jdbcType=BIGINT}
+        AND version = #{version,jdbcType=INTEGER}
+    </update>
+
+    <update id="stop" parameterType="cn.ponfee.scheduler.core.model.SchedJob">
+      UPDATE sched_job
+      SET job_state = 0, 
+          next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+          remark = #{remark,jdbcType=VARCHAR},
+          version = version+1
+      WHERE job_id = #{jobId,jdbcType=BIGINT} 
+        AND job_state = 1 
+        AND version = #{version,jdbcType=INTEGER} 
+    </update>
+
+    <update id="updateNextTriggerTime" parameterType="cn.ponfee.scheduler.core.model.SchedJob">
+      UPDATE sched_job
+      SET job_state = #{jobState,jdbcType=TINYINT},
+          last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
+          next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+          version = version+1
+      WHERE job_id = #{jobId,jdbcType=BIGINT}
+        AND job_state = 1
+        AND version = #{version,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateState">
+      UPDATE sched_job
+      SET job_state = #{toState,jdbcType=TINYINT},
+          version = version+1
+      WHERE job_id = #{jobId,jdbcType=BIGINT}
+      AND job_state = #{fromState,jdbcType=TINYINT}
+    </update>
+
+    <delete id="deleteByJobId" parameterType="_long">
+      DELETE FROM sched_job 
+      WHERE job_id = #{jobId,jdbcType=BIGINT} AND job_state=0
+    </delete>
+
+    <select id="countJobIds" resultType="int">
+      SELECT COUNT(*) FROM sched_job
+      WHERE job_id IN (<foreach collection="list" separator="," item="jobId">#{jobId,jdbcType=TINYINT}</foreach>)
+    </select>
+
+</mapper>

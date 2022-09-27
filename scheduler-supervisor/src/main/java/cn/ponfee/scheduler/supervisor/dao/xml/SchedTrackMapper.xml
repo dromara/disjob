@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.scheduler.supervisor.dao.mapper.SchedTrackMapper">
+
+  <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedTrack">
+    <result column="track_id" jdbcType="BIGINT" property="trackId" />
+    <result column="parent_track_id" jdbcType="BIGINT" property="parentTrackId" />
+    <result column="job_id" jdbcType="BIGINT" property="jobId" />
+    <result column="trigger_time" jdbcType="BIGINT" property="triggerTime" />
+    <result column="run_type" jdbcType="TINYINT" property="runType" />
+    <result column="run_state" jdbcType="TINYINT" property="runState" />
+    <result column="run_start_time" jdbcType="TIMESTAMP" property="runStartTime" />
+    <result column="run_end_time" jdbcType="TIMESTAMP" property="runEndTime" />
+    <result column="run_duration" jdbcType="BIGINT" property="runDuration" />
+    <result column="retried_count" jdbcType="TINYINT" property="retriedCount" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    track_id, parent_track_id, job_id, trigger_time, run_type, run_state, run_start_time,
+    run_end_time, run_duration, retried_count, version, updated_at, created_at
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.scheduler.core.model.SchedTrack" useGeneratedKeys="true">
+    INSERT INTO sched_track (
+      track_id, parent_track_id, job_id, trigger_time,
+      run_type, run_state, retried_count,
+      version, updated_at, created_at
+    ) VALUES (
+      #{trackId,jdbcType=BIGINT}, #{parentTrackId,jdbcType=BIGINT}, #{jobId,jdbcType=BIGINT},
+      #{triggerTime,jdbcType=BIGINT},
+      #{runType,jdbcType=TINYINT}, #{runState,jdbcType=TINYINT}, #{retriedCount,jdbcType=TINYINT},
+      1, #{updatedAt,jdbcType=TIMESTAMP}, #{createdAt,jdbcType=TIMESTAMP}
+    )
+  </insert>
+
+  <select id="getByTrackId" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" />
+    FROM sched_track
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+  </select>
+
+  <select id="getStateByTrackId" parameterType="_long" resultType="int">
+    SELECT run_state
+    FROM sched_track
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+  </select>
+
+  <!-- use `IFNULL` function reason: possibly paused task re-execute -->
+  <update id="start">
+    UPDATE sched_track
+    SET run_state = 20,
+        run_start_time = IFNULL(run_start_time, #{runStartTime,jdbcType=TIMESTAMP}),
+        version = version+1
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+      AND run_state = 10
+  </update>
+
+  <!--
+   SELECT ROUND(TIMESTAMPDIFF(MICROSECOND, '2018-05-19 12:54:43.987', '2018-05-19 12:54:43.999') / 1000)
+   SELECT ROUND((UNIX_TIMESTAMP('2018-05-19 12:54:43.999') - UNIX_TIMESTAMP('2018-05-19 12:54:43.987')) * 1000)
+  -->
+  <update id="terminate">
+    UPDATE sched_track
+    SET run_state = #{toState,jdbcType=TINYINT},
+        run_end_time = IF(run_start_time IS NULL, NULL, #{runEndTime,jdbcType=TIMESTAMP}),
+        run_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, run_start_time, #{runEndTime,jdbcType=TIMESTAMP}) / 1000),
+        version = version+1
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+      AND run_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+  </update>
+
+  <update id="forceUpdateState">
+    UPDATE sched_track
+    SET run_state = #{targetState,jdbcType=TINYINT},
+        version = version+1
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+      AND run_state!=20 AND #{targetState,jdbcType=TINYINT}!=20 AND run_state!=#{targetState,jdbcType=TINYINT}
+  </update>
+
+  <update id="updateState">
+    UPDATE sched_track
+    SET run_state = #{toState,jdbcType=TINYINT},
+        version = version+1
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+      AND run_state = #{fromState,jdbcType=TINYINT}
+    <if test="version!=null">AND version = #{version,jdbcType=INTEGER}</if>
+  </update>
+
+  <select id="findExpireState" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM sched_track
+    WHERE run_state = #{runState,jdbcType=TINYINT} 
+      AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
+      AND updated_at   &lt; #{maxUpdateTime,jdbcType=TIMESTAMP}
+    ORDER BY trigger_time ASC
+    LIMIT #{size}
+  </select>
+
+  <select id="findUnterminatedRetry" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM sched_track
+    WHERE parent_track_id = #{parentTrackId,jdbcType=BIGINT}
+      AND run_type = 3
+      AND run_state NOT IN (40, 50)
+  </select>
+
+  <update id="renewUpdateTime">
+    UPDATE sched_track
+    SET updated_at = #{updateTime,jdbcType=TIMESTAMP},
+        version = version+1
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+      AND version = #{version,jdbcType=INTEGER}
+  </update>
+
+  <select id="lock" parameterType="_long" resultType="long">
+    SELECT track_id FROM sched_track WHERE track_id = #{trackId,jdbcType=BIGINT} FOR UPDATE
+  </select>
+
+  <select id="lockState" parameterType="_long" resultType="int">
+    SELECT run_state FROM sched_track WHERE track_id = #{trackId,jdbcType=BIGINT} FOR UPDATE
+  </select>
+
+  <delete id="deleteByTrackId" parameterType="_long">
+    DELETE FROM sched_track
+    WHERE track_id = #{trackId,jdbcType=BIGINT} AND run_state IN (40,50)
+  </delete>
+
+  <select id="getByTriggerTime" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM sched_track
+    WHERE job_id=#{jobId,jdbcType=BIGINT}
+      AND trigger_time=#{triggerTime,jdbcType=BIGINT}
+      AND run_type=#{runType,jdbcType=TINYINT}
+  </select>
+
+</mapper>

@@ -1,0 +1,54 @@
+# Eclipse
+/**/.classpath
+/**/.project
+/**/.settings/
+/**/.myeclipse/
+
+# Intellij
+/**/.idea/
+/**/*.iml
+/**/*.iws
+/**/*.ipr
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+/**/.nb-gradle/
+
+# Mac
+/**/.DS_Store
+
+# Maven
+/**/target/
+
+# Gradle
+/**/.gradle/
+
+# SBT
+
+# STS
+/**/.apt_generated
+/**/.factorypath
+/**/.springBeans
+
+# Webapp
+/**/src/main/webapp/WEB-INF/classes/
+
+# Others
+/**/.svn/
+/**/.externalToolBuilders/
+/**/.recommenders/
+/**/.metadata/
+/**/node_modules/
+out/
+build/
+bin/
+logs/
+dist/
+
+# rebel.xml
+/**/rebel.xml
+/**/.cache-main
+/**/.cache-tests
+/**/dependency-reduced-pom.xml

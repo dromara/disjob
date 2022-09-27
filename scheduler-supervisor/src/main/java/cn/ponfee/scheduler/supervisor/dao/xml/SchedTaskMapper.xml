@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.scheduler.supervisor.dao.mapper.SchedTaskMapper">
+
+    <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedTask">
+      <result column="task_id" jdbcType="BIGINT" property="taskId" />
+      <result column="track_id" jdbcType="BIGINT" property="trackId" />
+      <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
+      <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
+      <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
+      <result column="execute_state" jdbcType="TINYINT" property="executeState" />
+      <result column="worker" jdbcType="VARCHAR" property="worker" />
+      <result column="version" jdbcType="INTEGER" property="version" />
+      <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+      <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    </resultMap>
+
+    <resultMap id="LargeResultMap" type="cn.ponfee.scheduler.core.model.SchedTask" extends="BaseResultMap" >
+      <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
+      <result column="execute_snapshot" jdbcType="VARCHAR" property="executeSnapshot" />
+      <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+      task_id, track_id, execute_start_time, execute_end_time, execute_duration,
+      execute_state, worker, version, updated_at, created_at
+    </sql>
+
+    <sql id="Large_Column_List">
+      task_param, execute_snapshot, error_msg
+    </sql>
+
+    <insert id="insertBatch" parameterType="java.util.List" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+      INSERT INTO sched_task (
+        task_id, track_id,
+        task_param, execute_state, 
+        version, updated_at, created_at
+      ) VALUES 
+      <foreach collection="list" item="item" separator=",">
+      (
+        #{item.taskId,jdbcType=BIGINT}, #{item.trackId,jdbcType=BIGINT},
+        #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
+        1, #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
+      )
+      </foreach>
+    </insert>
+
+  <select id="getByTaskId" parameterType="_long" resultMap="LargeResultMap">
+    SELECT <include refid="Base_Column_List" />,
+           <include refid="Large_Column_List" />
+    FROM sched_task
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+  </select>
+
+  <select id="getByTrackId" parameterType="_long" resultMap="LargeResultMap">
+    SELECT <include refid="Base_Column_List" />,
+           <include refid="Large_Column_List" />
+    FROM sched_task
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+  </select>
+
+  <!-- use `IFNULL` function reason: possibly paused task re-execute -->
+  <update id="start">
+    UPDATE sched_task
+    SET execute_state = 20,
+        execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
+        worker = #{worker,jdbcType=VARCHAR},
+        version = version+1
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+      AND execute_state = 10
+  </update>
+
+  <update id="terminate">
+    UPDATE sched_task
+    SET execute_state    = #{toState,jdbcType=TINYINT},
+        execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
+        execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
+        <if test="errorMsg!=null and errorMsg.length()>0">
+          error_msg = #{errorMsg,jdbcType=VARCHAR},
+        </if>
+        version     = version + 1
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+      AND execute_state IN (10, 20, 30)
+      AND execute_state = #{fromState,jdbcType=TINYINT}
+  </update>
+
+  <update id="updateState">
+    UPDATE sched_task
+    SET execute_state = #{toState,jdbcType=TINYINT},
+        <if test="errorMsg!=null and errorMsg.length()>0">
+          error_msg = #{errorMsg,jdbcType=VARCHAR},
+        </if>
+        version = version+1
+    WHERE task_id = #{taskId,jdbcType=BIGINT} 
+      AND execute_state = #{fromState,jdbcType=TINYINT}
+      <if test="version!=null">AND version = #{version,jdbcType=INTEGER}</if>
+  </update>
+
+  <update id="forceUpdateState">
+    UPDATE sched_task
+    SET execute_state = #{targetState,jdbcType=TINYINT},
+        version = version+1
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+      AND execute_state!=20 AND #{targetState,jdbcType=TINYINT}!=20 AND execute_state!=#{targetState,jdbcType=TINYINT}
+  </update>
+
+  <update id="updateStateByTrackId">
+    UPDATE sched_task
+    SET execute_state = #{toState,jdbcType=TINYINT},
+        <if test="executeEndTime != null">
+          execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
+          execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
+        </if>
+        version = version+1
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+      AND execute_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+  </update>
+
+  <update id="checkpoint">
+    UPDATE sched_task
+    SET execute_snapshot = #{executeSnapshot,jdbcType=VARCHAR},
+        version = version+1
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+      AND execute_state = 20
+  </update>
+
+  <update id="updateErrorMsg">
+    UPDATE sched_task
+    SET error_msg = #{errorMsg,jdbcType=VARCHAR},
+        version = version+1
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+  </update>
+
+  <select id="findByTrackId" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" />
+    FROM sched_task
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+  </select>
+
+  <delete id="deleteByTrackId" parameterType="_long">
+    DELETE FROM sched_task
+    WHERE track_id = #{trackId,jdbcType=BIGINT} AND execute_state > 30
+  </delete>
+
+  <update id="updateWorker">
+    UPDATE sched_task
+      <trim prefix="SET worker = CASE task_id" suffix="END,">
+        <foreach collection="list" item="item">
+          WHEN #{item.taskId} THEN #{item.worker,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+      version = version+1
+    WHERE execute_state = 10 AND task_id IN (
+        <foreach collection="list" separator="," item="item">
+          #{item.taskId,jdbcType=BIGINT}
+        </foreach>
+      )
+  </update>
+
+</mapper>
