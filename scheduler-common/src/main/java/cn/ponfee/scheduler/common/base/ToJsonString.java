@@ -1,6 +1,6 @@
 package cn.ponfee.scheduler.common.base;
 
-import com.alibaba.fastjson.JSON;
+import cn.ponfee.scheduler.common.util.Jsons;
 
 /**
  * Override {@code Object#toString()} method, implemented to json string.
@@ -11,6 +11,6 @@ public abstract class ToJsonString {
 
     @Override
     public String toString() {
-        return JSON.toJSONString(this);
+        return Jsons.toJson(this);
     }
 }

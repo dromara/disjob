@@ -4,6 +4,8 @@ import cn.ponfee.scheduler.common.util.Numbers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Random;
+
 /**
  * Test the old JUnit Vintage framework
  *
@@ -22,6 +24,24 @@ public class NumbersTest {
         } catch (Exception e) {
         }
         Assert.assertEquals(100, i);
+    }
+
+    @Test
+    public void testRandom() {
+        double min = 1.0D, max = 0.0D;
+        Random random = new Random();
+        for (int i = 0; i < 100000000; i++) {
+            double r = random.nextDouble();
+            if (r < min) {
+                min = r;
+            }
+            if (r > max) {
+                max = r;
+            }
+        }
+
+        System.out.println(String.format("Random min=%s, max=%s", Numbers.format(min, "#,##0.000000000"), Numbers.format(max, "#,##0.000000000")));
+        System.out.println(Numbers.format(min + max, "#,##0.000000000"));
     }
 
 }

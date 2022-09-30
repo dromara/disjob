@@ -32,6 +32,11 @@
         <artifactId>scheduler-dispatch-redis</artifactId>
         <version>${revision}</version>
       </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-dispatch-http</artifactId>
+        <version>${revision}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

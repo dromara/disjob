@@ -142,6 +142,7 @@
     WHERE track_id = #{trackId,jdbcType=BIGINT} AND execute_state > 30
   </delete>
 
+  <!--
   <update id="updateWorker">
     UPDATE sched_task
       <trim prefix="SET worker = CASE task_id" suffix="END,">
@@ -156,5 +157,6 @@
         </foreach>
       )
   </update>
+  -->
 
 </mapper>

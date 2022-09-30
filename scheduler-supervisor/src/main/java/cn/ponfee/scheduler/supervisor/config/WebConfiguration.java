@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +37,7 @@ import java.util.List;
  * @author Ponfee
  */
 @Configuration
-public class WebConfiguration implements WebMvcConfigurer, HandlerInterceptor {
+public class WebConfiguration implements WebMvcConfigurer {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebConfiguration.class);
 
@@ -96,28 +97,45 @@ public class WebConfiguration implements WebMvcConfigurer, HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        Enumeration<String> names = request.getHeaderNames();
-        StringBuilder header = new StringBuilder();
-        while (names.hasMoreElements()) {
-            String name = names.nextElement();
-            header.append(name + ":\t" + request.getHeader(name)).append("\n");
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new CustomHandlerInterceptor()).addPathPatterns("/**");
+    }
+
+    public static class CustomHandlerInterceptor implements HandlerInterceptor {
+        @Override
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+            Enumeration<String> names = request.getHeaderNames();
+            StringBuilder header = new StringBuilder();
+            while (names.hasMoreElements()) {
+                String name = names.nextElement();
+                header.append(name + "=" + request.getHeader(name)).append(" & ");
+            }
+            if (header.length() > 0) {
+                header.setLength(header.length() - 3);
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "\nRequest URL: {}\nRequest Method: {}\nRequest Headers: {}\nRequest Parameter: {}\n",
+                    request.getRequestURL(), request.getMethod(), header, request.getParameterMap()
+                );
+            }
+            return true;
         }
-        LOG.info(
-            "Request Info: [Method:{}][URI:{}]\n[header:\n{}]\n[Params:{}]",
-            request.getMethod(), request.getRequestURI(), header, request.getParameterMap()
-        );
-        return true;
-    }
 
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-        // noop
-    }
+        @Override
+        public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
+            StringBuilder header = new StringBuilder();
+            response.getHeaderNames().forEach(name -> header.append(name + "=" + request.getHeader(name)).append(" & "));
+            if (header.length() > 0) {
+                header.setLength(header.length() - 3);
+            }
+            LOG.debug("\nResponse Headers: {}\n", header);
+        }
 
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        // noop
+        @Override
+        public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+            // noop
+        }
     }
 
 }

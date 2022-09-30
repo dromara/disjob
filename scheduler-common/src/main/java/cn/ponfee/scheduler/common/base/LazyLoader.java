@@ -3,7 +3,6 @@ package cn.ponfee.scheduler.common.base;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.InvocationHandler;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -46,37 +45,8 @@ public class LazyLoader<T> implements Supplier<T> {
         return holder.get();
     }
 
-    public static <K, V> V get(K key, Map<K, V> cache, Function<K, V> mapper) {
-        V val = cache.get(key);
-        if (val != null) {
-            return val;
-        }
-        synchronized (cache) {
-            if ((val = cache.get(key)) == null) {
-                if ((val = mapper.apply(key)) != null) {
-                    cache.put(key, val);
-                }
-            }
-        }
-        return val;
-    }
-
-    public static <K, V> V get(K key, Map<K, V> cache, Supplier<V> supplier) {
-        V val = cache.get(key);
-        if (val != null) {
-            return val;
-        }
-        synchronized (cache) {
-            if ((val = cache.get(key)) == null) {
-                if ((val = supplier.get()) != null) {
-                    cache.put(key, val);
-                }
-            }
-        }
-        return val;
-    }
-
     // ------------------------------------------------------------------------private methods
+
     private static <T, B extends T, C extends T> B of(Class<T> type, final LazyLoader<C> lazyLoader) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(type);

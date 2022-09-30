@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.supervisor.test.job.param;
 
 import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
@@ -17,20 +18,37 @@ import org.junit.jupiter.api.Test;
 public class ExecuteParamTest {
 
     @Test
-    public void testSerial() {
+    public void testFastjson() {
         ExecuteParam param = new ExecuteParam(Operations.TRIGGER, 1, 2, 3, 4);
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
             @Override
-            public Result execute(Checkpoint checkpoint) throws Exception {
+            public Result execute(Checkpoint checkpoint) {
                 return null;
             }
         });
-        String serial = param.toString();
-        System.out.println(serial);
-        Assertions.assertEquals(serial, "{\"jobId\":3,\"trackId\":2,\"operation\":\"TRIGGER\",\"taskId\":1,\"triggerTime\":4,\"worker\":{\"group\":\"g\",\"host\":\"h\",\"instanceId\":\"i\",\"port\":8081}}");
-        Assertions.assertEquals(serial, JSON.parseObject(serial, ExecuteParam.class).toString());
+        String json = param.toString();
+        System.out.println(json);
+        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"jobId\":3,\"triggerTime\":4,\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"instanceId\":\"i\"}}");
+        Assertions.assertEquals(json, JSON.parseObject(json, ExecuteParam.class).toString());
+    }
+
+    @Test
+    public void testJackson() {
+        ExecuteParam param = new ExecuteParam(Operations.TRIGGER, 1, 2, 3, 4);
+        Worker worker = new Worker("g", "i", "h", 8081);
+        param.setWorker(worker);
+        param.taskExecutor(new TaskExecutor() {
+            @Override
+            public Result execute(Checkpoint checkpoint) {
+                return null;
+            }
+        });
+        String json = param.toString();
+        System.out.println(json);
+        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"jobId\":3,\"triggerTime\":4,\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"instanceId\":\"i\"}}");
+        Assertions.assertEquals(json, Jsons.fromJson(json, ExecuteParam.class).toString());
     }
 
 }

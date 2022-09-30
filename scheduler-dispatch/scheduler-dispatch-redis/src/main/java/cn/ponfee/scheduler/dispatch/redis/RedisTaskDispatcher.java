@@ -1,9 +1,10 @@
 package cn.ponfee.scheduler.dispatch.redis;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
-import cn.ponfee.scheduler.core.redis.RedisKeyUtils;
+import cn.ponfee.scheduler.dispatch.DispatchConstants;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.Discovery;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
     protected boolean dispatch(ExecuteParam executeParam) {
         Worker worker = executeParam.getWorker();
         // push to remote worker
-        String key = RedisKeyUtils.buildDispatchTasksKey(worker);
+        String key = DispatchConstants.buildDispatchTasksKey(worker);
         // ret: return list length after call redis rpush command
         Long ret = redisTemplate.execute(
             (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), executeParam.serialize())
@@ -84,8 +85,8 @@ public class RedisTaskDispatcher extends TaskDispatcher {
         private volatile long nextRenewTimeMillis = 0;
 
         private void renew(String workerKey) {
-            redisTemplate.expire(workerKey, RedisKeyUtils.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
-            this.nextRenewTimeMillis = System.currentTimeMillis() + RedisKeyUtils.REDIS_KEY_TTL_RENEW_INTERVAL_MILLIS;
+            redisTemplate.expire(workerKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
+            this.nextRenewTimeMillis = System.currentTimeMillis() + JobConstants.REDIS_KEY_TTL_RENEW_INTERVAL_MILLIS;
         }
 
         private boolean requireRenew() {

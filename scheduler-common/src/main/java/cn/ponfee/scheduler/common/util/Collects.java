@@ -77,6 +77,9 @@ public class Collects {
     }
 
     public static <T> T get(T[] array, int index) {
+        if (array == null) {
+            return null;
+        }
         return index < array.length ? array[index] : null;
     }
 
@@ -87,6 +90,9 @@ public class Collects {
     }
 
     public static <T> List<T> concat(List<T> list, T... array) {
+        if (list == null) {
+            return array == null ? Collections.emptyList() : Arrays.asList(array);
+        }
         if (array == null || array.length == 0) {
             return list;
         }

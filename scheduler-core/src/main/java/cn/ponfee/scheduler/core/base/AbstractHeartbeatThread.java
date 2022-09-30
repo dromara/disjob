@@ -67,6 +67,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
         while (!stopped) {
             if (super.isInterrupted()) {
                 logger.warn("Thread interrupted.");
+                stopped = true;
                 return;
             }
 
@@ -84,8 +85,13 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
             }
 
             long end = System.currentTimeMillis();
-            if (end - start < MILLIS_PER_SECOND) {
-                long sleepTimeMillis = (status ? MILLIS_PER_SECOND : interval) - (end % MILLIS_PER_SECOND);
+            if (status) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Heartbeat not do sleep, cost: {}", end - start);
+                }
+            } else {
+                // gap interval milliseconds
+                long sleepTimeMillis = interval - (end % MILLIS_PER_SECOND);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Heartbeat will sleep time: {}", sleepTimeMillis);
                 }
@@ -98,13 +104,10 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                         return;
                     }
                 }
-            } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Heartbeat not do sleep, cost: {}", end - start);
-                }
             }
         }
 
+        stopped = true;
         logger.info("Heartbeat end.");
     }
 

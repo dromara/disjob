@@ -2,8 +2,8 @@ package cn.ponfee.scheduler.supervisor.test.job.model;
 
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.model.PeriodTriggerConf;
-import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ public class TriggerConfTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> DatePeriods.valueOf("ABC"));
 
         String conf = "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":2}";
-        PeriodTriggerConf triggerConf = JSON.parseObject(conf, PeriodTriggerConf.class);
+        PeriodTriggerConf triggerConf = Jsons.fromJson(conf, PeriodTriggerConf.class);
         Assertions.assertEquals(triggerConf.getPeriod(), DatePeriods.DAILY);
         Assertions.assertEquals(triggerConf.getStep(), 2);
         Assertions.assertEquals(triggerConf.getStart(), Dates.toDate("2000-01-01 00:00:00"));

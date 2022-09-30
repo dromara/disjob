@@ -2,8 +2,9 @@ package cn.ponfee.scheduler.supervisor.test.common.util;
 
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.annotation.JSONField;
+import cn.ponfee.scheduler.common.util.Jsons;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -51,10 +52,10 @@ public class DateTest {
     public void testDateFormat() throws ParseException {
         String zeroDateStr = "0000-00-00 00:00:00";
         String json = "{\"createTime\":\"" + zeroDateStr + "\"}";
-        DateEntity dateEntity = JSON.parseObject(json, DateEntity.class);
+        DateEntity dateEntity = Jsons.fromJson(json, DateEntity.class);
 
 
-        DateEntity entity = JSON.parseObject("{\"createTime\":\"2000-15-01 00:00:00\"}", DateEntity.class);
+        DateEntity entity = Jsons.fromJson("{\"createTime\":\"2000-15-01 00:00:00\"}", DateEntity.class);
         Assertions.assertEquals("2001-03-01 00:00:00", Dates.format(entity.getCreateTime()));
 
         // test format
@@ -189,7 +190,8 @@ public class DateTest {
 
     @Data
     public static class DateEntity {
-        @JSONField(name = "createTime", format = Dates.DEFAULT_DATE_FORMAT)
+        @JsonProperty(value = "createTime")
+        @JsonFormat(pattern = Dates.DEFAULT_DATE_FORMAT)
         private Date createTime;
     }
 

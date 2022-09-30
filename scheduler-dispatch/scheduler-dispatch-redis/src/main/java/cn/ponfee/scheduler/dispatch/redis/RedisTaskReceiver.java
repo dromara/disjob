@@ -3,9 +3,10 @@ package cn.ponfee.scheduler.dispatch.redis;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.lock.RedisLock;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
-import cn.ponfee.scheduler.core.redis.RedisKeyUtils;
+import cn.ponfee.scheduler.dispatch.DispatchConstants;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,13 @@ public class RedisTaskReceiver extends TaskReceiver {
      * }</pre>
      */
     private static final RedisScript<List> BATCH_POP_SCRIPT_OBJECT = new DefaultRedisScript<>(
-        "local ret=redis.call('lrange',KEYS[1],0,ARGV[1]-1); redis.call('ltrim',KEYS[1],ARGV[1],-1); return ret;", List.class
+        "local ret=redis.call('lrange',KEYS[1],0,ARGV[1]-1);redis.call('ltrim',KEYS[1],ARGV[1],-1);return ret;", List.class
     );
+
+    /**
+     * Redis lua script sha1
+     */
+    private static final String BATCH_POP_SCRIPT_SHA1 = BATCH_POP_SCRIPT_OBJECT.getSha1();
 
     /**
      * Lua script text byte array
@@ -55,7 +61,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     /**
      * List left pop batch size
      */
-    private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(100).getBytes(UTF_8);
+    private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(200).getBytes(UTF_8);
 
     private final Worker currentWorker;
     private final RedisTemplate<String, String> redisTemplate;
@@ -70,7 +76,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
         this.currentWorker = currentWorker;
         this.redisTemplate = redisTemplate;
-        this.currentWorkerRedisKey = RedisKeyUtils.buildDispatchTasksKey(currentWorker).getBytes();
+        this.currentWorkerRedisKey = DispatchConstants.buildDispatchTasksKey(currentWorker).getBytes();
         this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, ThreadPoolExecutors.DISCARD);
     }
 
@@ -81,11 +87,11 @@ public class RedisTaskReceiver extends TaskReceiver {
         }
         receiveTaskScheduledExecutor.scheduleAtFixedRate(() -> {
             try {
-                receive();
+                doReceive();
             } catch (Exception e) {
                 LOG.error("Redis task receive scheduled error.", e);
             }
-        }, 0, 2, TimeUnit.SECONDS);
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     @Override
@@ -93,8 +99,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         receiveTaskScheduledExecutor.shutdownNow();
     }
 
-    @Override
-    protected void receive() {
+    private void doReceive() {
         final byte[][] keysAndArgs = {currentWorkerRedisKey, LIST_POP_BATCH_SIZE_BYTES};
         List<byte[]> result = redisTemplate.execute((RedisCallback<List<byte[]>>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
@@ -102,7 +107,7 @@ public class RedisTaskReceiver extends TaskReceiver {
             }
 
             try {
-                return conn.evalSha(BATCH_POP_SCRIPT_OBJECT.getSha1(), ReturnType.MULTI, 1, keysAndArgs);
+                return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, keysAndArgs);
             } catch (Exception e) {
                 LOG.warn("Call redis eval sha occur error.", e);
                 if (!RedisLock.exceptionContainsNoScriptError(e)) {
@@ -115,7 +120,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         });
 
         try {
-            redisTemplate.execute((RedisCallback<?>) conn -> conn.expire(currentWorkerRedisKey, RedisKeyUtils.REDIS_KEY_TTL_SECONDS));
+            redisTemplate.execute((RedisCallback<?>) conn -> conn.expire(currentWorkerRedisKey, JobConstants.REDIS_KEY_TTL_SECONDS));
         } catch (Exception e) {
             LOG.warn("Renew dispatch worker key occur error.", e);
         }
@@ -127,7 +132,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         for (byte[] bytes : result) {
             ExecuteParam executeParam = ExecuteParam.deserialize(bytes);
             executeParam.setWorker(currentWorker);
-            postReceive(executeParam);
+            super.receive(executeParam);
         }
     }
 

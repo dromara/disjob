@@ -18,6 +18,7 @@
   <modules>
     <module>scheduler-dispatch-api</module>
     <module>scheduler-dispatch-redis</module>
+    <module>scheduler-dispatch-http</module>
   </modules>
 
 </project>

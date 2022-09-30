@@ -5,7 +5,7 @@ import cn.ponfee.scheduler.core.param.ExecuteParam;
 import org.springframework.util.Assert;
 
 /**
- * Worker receive the dispatched tasks
+ * Worker receive dispatched task from supervisor.
  *
  * @author Ponfee
  */
@@ -13,29 +13,26 @@ public abstract class TaskReceiver implements AutoCloseable {
 
     private final TimingWheel<ExecuteParam> timingWheel;
 
-    protected TaskReceiver(TimingWheel<ExecuteParam> timingWheel) {
+    public TaskReceiver(TimingWheel<ExecuteParam> timingWheel) {
         Assert.notNull(timingWheel, "Timing wheel cannot null.");
         this.timingWheel = timingWheel;
     }
 
     /**
-     * Receives the supervisor dispatched tasks,
-     * after received then do call post-receive
+     * Receives the supervisor dispatched tasks.
      *
-     * @see #postReceive(ExecuteParam)
+     * @param executeParam the executeParam
      */
-    protected abstract void receive();
-
-    protected final void postReceive(ExecuteParam executeParam) {
-        if (executeParam != null) {
-            timingWheel.offer(executeParam);
-        }
+    public boolean receive(ExecuteParam executeParam) {
+        return executeParam != null && timingWheel.offer(executeParam);
     }
 
     /**
      * Start do receive
      */
-    public abstract void start();
+    public void start() {
+        // No-op
+    }
 
     /**
      * Close resources if necessary.
@@ -45,7 +42,7 @@ public abstract class TaskReceiver implements AutoCloseable {
         // No-op
     }
 
-    public TimingWheel<ExecuteParam> getTimingWheel() {
+    public final TimingWheel<ExecuteParam> getTimingWheel() {
         return timingWheel;
     }
 

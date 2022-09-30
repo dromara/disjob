@@ -45,7 +45,7 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
     private boolean process() {
         // check has available supervisors
         if (CollectionUtils.isEmpty(discoverySupervisor.getServers(null))) {
-            logger.warn("Not available supervisors.");
+            logger.warn("Not available " + discoverySupervisor.discoveryRole() + " supervisors.");
             return false;
         }
 
@@ -60,9 +60,9 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
             waitingTasks = ringTrigger.stream()
                                       .map(e -> new SchedTask(e.getTaskId(), e.getWorker().toString()))
                                       .collect(Collectors.toList());
-            workerClient.updateTaskWorker(waitingTasks);
+            supervisorService.updateTaskWorker(waitingTasks);
         } catch (Exception e) {
-            logger.error("Update waiting sched_task.worker column failed: " + JSON.toJSONString(waitingTasks), e);
+            logger.error("Update waiting sched_task.worker column failed: " + Jsons.toJson(waitingTasks), e);
         }
         */
 

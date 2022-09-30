@@ -1,6 +1,6 @@
 package cn.ponfee.scheduler.supervisor.test.common.util;
 
-import com.alibaba.fastjson.JSON;
+import cn.ponfee.scheduler.common.util.Jsons;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -27,8 +27,8 @@ public class TreeMapTest {
 
         System.out.println("-----------------before");
         int beforeSize = executing.size();
-        String beforeFull = JSON.toJSONString(executing);
-        String beforeEmpty = JSON.toJSONString(finished);
+        String beforeFull = Jsons.toJson(executing);
+        String beforeEmpty = Jsons.toJson(finished);
         System.out.println(beforeFull);
         System.out.println(beforeEmpty);
         for (int i = 0; !executing.isEmpty(); i++) {
@@ -47,8 +47,8 @@ public class TreeMapTest {
         }
 
         System.out.println("\n\n-----------------after");
-        String afterFull = JSON.toJSONString(finished);
-        String afterEmpty = JSON.toJSONString(executing);
+        String afterFull = Jsons.toJson(finished);
+        String afterEmpty = Jsons.toJson(executing);
         System.out.println(afterFull);
         System.out.println(afterEmpty);
 

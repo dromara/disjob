@@ -5,8 +5,8 @@ import cn.ponfee.scheduler.common.date.CronExpression;
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.Enums;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.model.PeriodTriggerConf;
-import com.alibaba.fastjson.JSON;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
@@ -114,7 +114,7 @@ public enum TriggerType {
         @Override
         public boolean isValid(String triggerConf) {
             try {
-                PeriodTriggerConf conf = JSON.parseObject(triggerConf, PeriodTriggerConf.class);
+                PeriodTriggerConf conf = Jsons.fromJson(triggerConf, PeriodTriggerConf.class);
                 return conf != null && conf.isValid();
             } catch (Exception ignored) {
                 return false;
@@ -130,7 +130,7 @@ public enum TriggerType {
         public List<Date> computeNextFireTimes(String triggerConf, Date startTime, int count) {
             PeriodTriggerConf conf;
             try {
-                conf = JSON.parseObject(triggerConf, PeriodTriggerConf.class);
+                conf = Jsons.fromJson(triggerConf, PeriodTriggerConf.class);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid period config: " + triggerConf, e);
             }

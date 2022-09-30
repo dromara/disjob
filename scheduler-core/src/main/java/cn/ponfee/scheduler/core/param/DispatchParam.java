@@ -4,7 +4,6 @@ import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
@@ -16,21 +15,17 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 @Getter
-@Setter
-public class DispatchParam extends ToJsonString implements Serializable {
+public final class DispatchParam extends ToJsonString implements Serializable {
 
     private static final long serialVersionUID = -8974323003185034483L;
 
-    private String group;
-    private long jobId;
-    private RouteStrategy routeStrategy;
-    private long triggerTime;
-    private long trackId;
-    private Operations ops;
-    private List<Long> taskIds;
-
-    public DispatchParam() {
-    }
+    private final String group;
+    private final long jobId;
+    private final RouteStrategy routeStrategy;
+    private final long triggerTime;
+    private final long trackId;
+    private final Operations ops;
+    private final List<Long> taskIds;
 
     public DispatchParam(String group,
                          long jobId,
@@ -53,4 +48,5 @@ public class DispatchParam extends ToJsonString implements Serializable {
                       .map(taskId -> new ExecuteParam(ops, taskId, trackId, jobId, triggerTime))
                       .collect(Collectors.toList());
     }
+
 }

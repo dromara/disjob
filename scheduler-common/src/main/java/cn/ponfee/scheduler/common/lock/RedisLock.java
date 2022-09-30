@@ -137,6 +137,11 @@ public class RedisLock implements Lock, java.io.Serializable {
     private static final RedisScript<Long> UNLOCK_SCRIPT_OBJECT = new DefaultRedisScript<>(UNLOCK_SCRIPT_LUA, Long.class);
 
     /**
+     * Redis lua script sha1
+     */
+    private static final String UNLOCK_SCRIPT_SHA1 = UNLOCK_SCRIPT_OBJECT.getSha1();
+
+    /**
      * Lua script text byte array
      */
     private static final byte[] UNLOCK_SCRIPT_BYTES = UNLOCK_SCRIPT_OBJECT.getScriptAsString().getBytes(UTF_8);
@@ -370,7 +375,7 @@ public class RedisLock implements Lock, java.io.Serializable {
 
             Long ret;
             try {
-                ret = conn.evalSha(UNLOCK_SCRIPT_OBJECT.getSha1(), ReturnType.INTEGER, 1, keysAndArgs);
+                ret = conn.evalSha(UNLOCK_SCRIPT_SHA1, ReturnType.INTEGER, 1, keysAndArgs);
             } catch (Exception e) {
                 if (!exceptionContainsNoScriptError(e)) {
                     throw (e instanceof RuntimeException)

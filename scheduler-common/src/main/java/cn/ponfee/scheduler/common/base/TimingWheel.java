@@ -9,7 +9,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  *
  * @author Ponfee
  */
-public class TimingWheel<T extends TimingWheel.Timing<T>> implements java.io.Serializable {
+public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements java.io.Serializable {
     private static final long serialVersionUID = 4500377208898808026L;
 
     /**

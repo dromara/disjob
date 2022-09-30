@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.core.route.count;
 
 import cn.ponfee.scheduler.common.util.Numbers;
-import cn.ponfee.scheduler.core.redis.RedisKeyUtils;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.concurrent.TimeUnit;
@@ -68,8 +68,8 @@ public class RedisAtomicCounter extends AtomicCounter {
             if (currentTimeMillis < nextRenewTimeMillis) {
                 return;
             }
-            redisTemplate.expire(counterRedisKey, RedisKeyUtils.REDIS_KEY_TTL_SECONDS, TimeUnit.MILLISECONDS);
-            nextRenewTimeMillis = currentTimeMillis + RedisKeyUtils.REDIS_KEY_TTL_RENEW_INTERVAL_MILLIS;
+            redisTemplate.expire(counterRedisKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.MILLISECONDS);
+            nextRenewTimeMillis = currentTimeMillis + JobConstants.REDIS_KEY_TTL_RENEW_INTERVAL_MILLIS;
         } finally {
             lock.unlock();
         }

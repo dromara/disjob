@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestService<?, I>, I> extends SpringBootTestBase<S> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractTxManagerTest.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractTxManagerTest.class);
 
     private final I id1, id2;
     private AbstractTxManagerTestService<?, I> service;

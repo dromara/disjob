@@ -59,5 +59,5 @@ public interface SchedTaskMapper {
      */
     int deleteByTrackId(long trackId);
 
-    int updateWorker(List<SchedTask> tasks);
+    //int updateWorker(List<SchedTask> tasks);
 }

@@ -24,4 +24,10 @@ public interface Registry<R extends Server> {
      */
     void deregister(R server);
 
+    /**
+     * Returns registry role name.
+     * 
+     * @return registry role name
+     */
+    String registryRole();
 }

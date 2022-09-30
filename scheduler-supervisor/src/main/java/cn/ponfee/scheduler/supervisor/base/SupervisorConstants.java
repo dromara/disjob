@@ -29,6 +29,8 @@ public class SupervisorConstants {
      */
     public static final int SCAN_TIME_INTERVAL_SECONDS = 60;
 
-    public static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = "currentSupervisor";
+    public static final String SPRING_BEAN_NAME_SCAN_JOB_LOCKED = "scanJobLocked";
+
+    public static final String SPRING_BEAN_NAME_SCAN_TRACK_LOCKED = "scanTrackLocked";
 
 }

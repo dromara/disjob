@@ -21,6 +21,10 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-dispatch-http</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-redis</artifactId>
     </dependency>
     <dependency>
@@ -48,7 +52,7 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
-          <mainClass>cn.ponfee.scheduler.samples.SupervisorApplication</mainClass>
+          <mainClass>cn.ponfee.scheduler.supervisor.samples.SupervisorApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>

@@ -12,6 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Method;
+import java.util.List;
+
 /**
  * Provides to external invoke, for manage the sched job & track & task
  *
@@ -131,4 +134,18 @@ public class ApiController {
         });
     }
 
+    public Result<List<String[]>> getTrack2(@RequestParam("trackId") long trackId) {
+        return null;
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        Method m1 = ApiController.class.getDeclaredMethod("getTrack2", long.class);
+        Method m2 = ApiController.class.getDeclaredMethod("getTrack2", long.class);
+        System.out.println(m1==m2);
+
+        System.out.println(m1.getReturnType());
+        System.out.println(m1.getGenericReturnType());
+        System.out.println(m1.getAnnotatedReturnType().getType());
+    }
 }

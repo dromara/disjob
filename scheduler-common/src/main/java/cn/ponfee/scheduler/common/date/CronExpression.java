@@ -192,6 +192,7 @@ import java.util.TreeSet;
  * </ul>
  * </p>
  *
+ * <a href="https://github.com/quartz-scheduler/quartz/blob/master/quartz-core/src/main/java/org/quartz/CronExpression.java">Copy from quartz</a>
  *
  * @author Sharada Jambula, James House
  * @author Contributions from Mads Henderson

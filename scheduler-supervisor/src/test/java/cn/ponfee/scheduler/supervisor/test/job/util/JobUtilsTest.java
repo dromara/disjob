@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.supervisor.test.job.util;
 
 import cn.ponfee.scheduler.common.date.Dates;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.enums.MisfireStrategy;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.TriggerType;
@@ -9,7 +10,6 @@ import cn.ponfee.scheduler.core.model.PeriodTriggerConf;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.supervisor.util.JobUtils;
-import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -173,7 +173,7 @@ public class JobUtilsTest {
         job.setTriggerConf("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}");
         job.setLastTriggerTime(null);
 
-        PeriodTriggerConf triggerConf = JSON.parseObject("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}", PeriodTriggerConf.class);
+        PeriodTriggerConf triggerConf = Jsons.fromJson("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}", PeriodTriggerConf.class);
 
         Date tomorrow = Dates.startOfDay(Dates.plusDays(now, 1));
 
@@ -185,7 +185,7 @@ public class JobUtilsTest {
         Assertions.assertEquals(JobUtils.computeNextTriggerTime(job), tomorrow.getTime());
 
         triggerConf.setStart(tomorrow);
-        job.setTriggerConf(JSON.toJSONString(triggerConf));
+        job.setTriggerConf(Jsons.toJson(triggerConf));
         Assertions.assertEquals(JobUtils.computeNextTriggerTime(job), tomorrow.getTime());
 
         System.out.println("---------------");

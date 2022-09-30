@@ -5,7 +5,6 @@
 -- ----------------------------
 -- CREATE DATABASE
 -- ----------------------------
-
 -- SET global validate_password_policy=LOW;
 -- SET sql_mode="NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION";
 -- DROP DATABASE IF EXISTS distributed_scheduler;
@@ -14,7 +13,7 @@ USE distributed_scheduler;
 
 
 -- ----------------------------
--- USER AND PRIVILEGES
+-- USER PRIVILEGES
 -- ----------------------------
 GRANT ALL PRIVILEGES ON distributed_scheduler.* TO 'distributed_scheduler'@'%' IDENTIFIED BY 'distributed_scheduler';
 FLUSH PRIVILEGES;
@@ -59,7 +58,7 @@ CREATE TABLE `sched_job` (
     KEY `ix_job_state_next_trigger_time` (`job_state`, `next_trigger_time`) COMMENT '用于扫表',
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='调度Job表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='任务配置表';
 
 CREATE TABLE `sched_track` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -83,7 +82,7 @@ CREATE TABLE `sched_track` (
     KEY `ix_run_state_trigger_time` (`run_state`, `trigger_time`) COMMENT '用于扫表',
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='调度Track表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='记录任务触发执行及生命周期的追踪';
 
 CREATE TABLE `sched_task` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -105,7 +104,7 @@ CREATE TABLE `sched_task` (
     KEY `ix_track_id` (`track_id`),
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='调度Task表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='具体执行的任务数据';
 
 CREATE TABLE `sched_lock` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -116,7 +115,7 @@ CREATE TABLE `sched_lock` (
     UNIQUE KEY `uk_name` (`name`),
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='调度Lock表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='用于扫表时多个机器独占锁';
 
 CREATE TABLE `sched_depend` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -129,15 +128,12 @@ CREATE TABLE `sched_depend` (
     KEY `ix_child_job_id` (`child_job_id`),
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='调度Depend表';
-
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='任务依赖表';
 
 
 -- ----------------------------
--- INIT DATA
+-- INITIALIZE DATA
 -- ----------------------------
 INSERT INTO sched_lock(`name`) VALUES ('scan_job');
 INSERT INTO sched_lock(`name`) VALUES ('scan_track');
-
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `start_time`, `end_time`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `weight_score`, `remark`, `last_trigger_time`, `next_trigger_time`) VALUES (1536312529104445449, 'default', 'NoopJobHandler1', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param1', 0, 0, 0, NULL, NULL, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1, 'remark1', 1655199233000, 1655199234000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `start_time`, `end_time`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `weight_score`, `remark`, `last_trigger_time`, `next_trigger_time`) VALUES (1536312529104445450, 'default', 'NoopJobHandler2', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param2', 0, 0, 0, NULL, NULL, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1, 'remark2', 1655199233000, 1655199234000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (1536312529104445449, 'default', 'NoopJobHandler', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param', 0, 0, 0, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1655199233000, 1655199234000);

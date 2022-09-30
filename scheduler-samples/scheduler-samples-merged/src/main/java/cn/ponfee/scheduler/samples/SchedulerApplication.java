@@ -5,17 +5,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
- * Bootstrap application based spring boot
+ * Scheduler application based spring boot
  *
  * @author Ponfee
  */
 @SpringBootApplication(
-    exclude = {
-        DataSourceAutoConfiguration.class
-    },
-    scanBasePackages = {
-        "cn.ponfee.scheduler"
-    }
+    exclude = {DataSourceAutoConfiguration.class},
+    scanBasePackages = {"cn.ponfee.scheduler"}
 )
 public class SchedulerApplication {
 

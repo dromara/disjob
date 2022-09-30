@@ -4,7 +4,6 @@ import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Server;
-import cn.ponfee.scheduler.core.redis.RedisKeyUtils;
 import cn.ponfee.scheduler.registry.Actions;
 import cn.ponfee.scheduler.registry.Roles;
 import cn.ponfee.scheduler.registry.ServerRegistry;
@@ -85,7 +84,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             } catch (Throwable t) {
                 logger.error("Do scheduled register occur error: " + registered, t);
             }
-        }, 1, 1, TimeUnit.SECONDS);
+        }, 15, 1, TimeUnit.SECONDS);
 
         this.refreshIntervalMilliseconds = refreshIntervalMilliseconds;
 
@@ -220,8 +219,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return Collections.emptyList();
         }
 
-        return discoveredServers.stream()
-            .parallel()
+        return discoveredServers
+            .parallelStream()
             .filter(supervisor -> {
                 String url = String.format("http://%s:%d/%s", supervisor.getHost(), supervisor.getPort(), "actuator/health");
                 try {
@@ -236,6 +235,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void doRegister(Set<R> servers) {
+        if (CollectionUtils.isEmpty(servers)) {
+            return;
+        }
+
         Double score = (double) (System.currentTimeMillis() + keepAliveInMillis);
         Set<ZSetOperations.TypedTuple<String>> tuples = servers
             .stream()
@@ -247,7 +250,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             public Void execute(RedisOperations operations) {
                 String registryKey = registryRole.registryKey();
                 operations.opsForZSet().add(registryKey, tuples);
-                operations.expire(registryKey, RedisKeyUtils.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
+                operations.expire(registryKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
 
                 // in pipelined, must return null
                 return null;
@@ -263,7 +266,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             public Void execute(RedisOperations operations) {
                 operations.opsForZSet().removeRangeByScore(discoveryKey, 0, now);
                 operations.opsForZSet().rangeByScore(discoveryKey, now, Long.MAX_VALUE);
-                operations.expire(discoveryKey, RedisKeyUtils.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
+                operations.expire(discoveryKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
 
                 // in pipelined, must return null
                 return null;
@@ -278,7 +281,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         processor.accept(discovered);
 
         updateRefresh();
-        logger.info("Refreshed Discoveries.");
+        logger.info("Refreshed discovery " + discoveryRole.name());
     }
 
     private String buildPublishValue(Actions action, R server) {

@@ -9,6 +9,11 @@ import org.springframework.core.io.support.EncodedResource;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * Spring yaml properties source factory.
+ * 
+ * @author Ponfee
+ */
 public class YamlPropertySourceFactory extends DefaultPropertySourceFactory {
 
     @Override

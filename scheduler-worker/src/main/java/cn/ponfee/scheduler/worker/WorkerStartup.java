@@ -1,11 +1,11 @@
 package cn.ponfee.scheduler.worker;
 
 import cn.ponfee.scheduler.core.base.Supervisor;
+import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.ServerRegistry;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
-import cn.ponfee.scheduler.worker.client.WorkerClient;
 import org.springframework.util.Assert;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,18 +27,18 @@ public class WorkerStartup implements AutoCloseable {
 
     private WorkerStartup(int maximumPoolSize,
                           int keepAliveTimeSeconds,
-                          WorkerClient workerClient,
+                          SupervisorService supervisorService,
                           Worker currentWorker,
                           ServerRegistry<Worker, Supervisor> workerRegistry,
                           TaskReceiver taskReceiver) {
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be greater zero.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be greater zero.");
-        Assert.notNull(workerClient, "Worker client cannot null.");
+        Assert.notNull(supervisorService, "Supervisor service cannot null.");
         Assert.notNull(currentWorker, "Current worker cannot null.");
         Assert.notNull(workerRegistry, "Server registry cannot null.");
         Assert.notNull(taskReceiver, "Task receiver cannot null.");
 
-        this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, workerClient);
+        this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, supervisorService);
         this.currentWorker = currentWorker;
         this.workerRegistry = workerRegistry;
         this.taskReceiver = taskReceiver;
@@ -63,7 +63,7 @@ public class WorkerStartup implements AutoCloseable {
         workerThreadPool.close();
     }
 
-    // -----------------------------------------------------------------Builder
+    // ----------------------------------------------------------------------------------------builder
 
     public static WorkerStartup.WorkerStartupBuilder builder() {
         return new WorkerStartup.WorkerStartupBuilder();
@@ -72,7 +72,7 @@ public class WorkerStartup implements AutoCloseable {
     public static class WorkerStartupBuilder {
         private int maximumPoolSize;
         private int keepAliveTimeSeconds;
-        private WorkerClient workerClient;
+        private SupervisorService supervisorService;
         private Worker currentWorker;
         private ServerRegistry<Worker, Supervisor> workerRegistry;
         private TaskReceiver taskReceiver;
@@ -87,8 +87,8 @@ public class WorkerStartup implements AutoCloseable {
             return this;
         }
 
-        public WorkerStartup.WorkerStartupBuilder workerClient(WorkerClient workerClient) {
-            this.workerClient = workerClient;
+        public WorkerStartup.WorkerStartupBuilder supervisorService(SupervisorService supervisorService) {
+            this.supervisorService = supervisorService;
             return this;
         }
 
@@ -108,7 +108,7 @@ public class WorkerStartup implements AutoCloseable {
         }
 
         public WorkerStartup build() {
-            return new WorkerStartup(maximumPoolSize, keepAliveTimeSeconds, workerClient, currentWorker, workerRegistry, taskReceiver);
+            return new WorkerStartup(maximumPoolSize, keepAliveTimeSeconds, supervisorService, currentWorker, workerRegistry, taskReceiver);
         }
     }
 

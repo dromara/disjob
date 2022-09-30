@@ -25,7 +25,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Test
     public void testInsert1() {
         SchedJob job = new SchedJob();
-        job.setJobId(idGenerator.nextId());
+        job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
         job.setJobName("test");
         job.setJobHandler("cn.ponfee.scheduler.core.handle.impl.NoopJobHandler");
@@ -59,7 +59,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Test
     public void testInsert2() {
         SchedJob job = new SchedJob();
-        job.setJobId(idGenerator.nextId());
+        job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
         job.setJobHandler("cn.ponfee.scheduler.core.handle.impl.NoopJobHandler");
@@ -99,7 +99,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Test
     public void testInsert3() {
         SchedJob job = new SchedJob();
-        job.setJobId(idGenerator.nextId());
+        job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
         job.setJobHandler("cn.ponfee.scheduler.core.handle.impl.NoopJobHandler");

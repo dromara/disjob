@@ -47,4 +47,14 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     @Override
     public abstract void close();
 
+    @Override
+    public String registryRole() {
+        return registryRole.name();
+    }
+
+    @Override
+    public String discoveryRole() {
+        return discoveryRole.name();
+    }
+
 }

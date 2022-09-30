@@ -2,7 +2,6 @@ package cn.ponfee.scheduler.core.base;
 
 import cn.ponfee.scheduler.common.base.Constants;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
@@ -13,7 +12,6 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
-@Setter
 @Getter
 public abstract class Server implements Serializable {
 

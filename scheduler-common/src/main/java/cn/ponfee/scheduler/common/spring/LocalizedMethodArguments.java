@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * localization method arguments annotation definition.
+ * Localization method arguments annotation definition.
  *
  * @author Ponfee
  */

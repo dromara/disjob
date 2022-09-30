@@ -13,7 +13,7 @@ import java.util.List;
 import static cn.ponfee.scheduler.core.base.JobCodeMsg.*;
 
 /**
- * Supervisor job task dispatcher.
+ * Supervisor dispatching task to worker.
  *
  * @author Ponfee
  */
@@ -78,7 +78,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
                 throw new JobException(WORKER_NOT_FOUND, "Not found group worker: " + dispatchParam.getGroup() );
             }
             if (!worker.matches(dispatchParam.getGroup())) {
-                throw new JobException(GROUP_NOT_MATCH, "Unmatched group: " + dispatchParam.getGroup() + "!=" + worker.getGroup());
+                throw new JobException(GROUP_NOT_MATCH, "Unmatched worker group: " + dispatchParam.getGroup() + "!=" + worker.getGroup());
             }
 
             param.setWorker(worker);

@@ -3,7 +3,9 @@ package cn.ponfee.scheduler.supervisor.manager;
 import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
+import cn.ponfee.scheduler.common.spring.LocalizedMethodArguments;
 import cn.ponfee.scheduler.common.util.Collects;
+import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.exception.JobException;
@@ -32,21 +34,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.common.base.Constants.TX_MANAGER_SUFFIX;
-import static cn.ponfee.scheduler.supervisor.dao.JobDataSourceConfig.DB_NAME;
+import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NAME;
 
 /**
- * Manager Schedule job.
+ * Manage Schedule job.
  *
  * @author Ponfee
  */
 @Component
-public class JobManager {
+@ResponseBody // @RestController
+@LocalizedMethodArguments
+public class JobManager implements SupervisorService {
 
     private final static Logger LOG = LoggerFactory.getLogger(JobManager.class);
 
@@ -89,6 +94,7 @@ public class JobManager {
         return jobMapper.findBeTriggering(maxNextTriggerTime, size);
     }
 
+    @Override
     public SchedJob getJob(long jobId) {
         return jobMapper.getByJobId(jobId);
     }
@@ -97,6 +103,7 @@ public class JobManager {
         return trackMapper.getByTrackId(trackId);
     }
 
+    @Override
     public SchedTask getTask(long taskId) {
         return taskMapper.getByTaskId(taskId);
     }
@@ -166,7 +173,8 @@ public class JobManager {
     }
 
     // ------------------------------------------------------------------operation without transaction
-    public boolean checkpointTask(long taskId, String executeSnapshot) {
+    @Override
+    public boolean checkpoint(long taskId, String executeSnapshot) {
         return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
     }
 
@@ -196,6 +204,7 @@ public class JobManager {
         return jobMapper.updateNextScanTime(jobId, nextScanTime, version) == AFFECTED_ONE_ROW;
     }
 
+    @Override
     public boolean updateTaskErrorMsg(long taskId, String errorMsg) {
         try {
             return taskMapper.updateErrorMsg(taskId, errorMsg) == AFFECTED_ONE_ROW;
@@ -215,7 +224,7 @@ public class JobManager {
         verifyJobHandler(job);
         job.defaultSettingAndVerify();
 
-        job.setJobId(idGenerator.nextId());
+        job.setJobId(idGenerator.generateId());
         Date now = new Date();
         parseTriggerConfig(job, now);
 
@@ -303,7 +312,7 @@ public class JobManager {
         Date now = new Date();
 
         // 1、build sched track and sched task list
-        Pair<SchedTrack, List<SchedTask>> pair = JobUtils.buildTrackAndTasks(job, now, idGenerator::nextId);
+        Pair<SchedTrack, List<SchedTask>> pair = JobUtils.buildTrackAndTasks(job, now, idGenerator::generateId);
         SchedTrack track = pair.getLeft();
         List<SchedTask> tasks = pair.getRight();
         Assert.notEmpty(tasks, "Invalid split, Not has executable task: " + job);
@@ -358,6 +367,7 @@ public class JobManager {
      * @return {@code true} if start successfully
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Override
     public boolean startTask(ExecuteParam param) {
         Integer state = trackMapper.getStateByTrackId(param.getTrackId());
         Assert.state(state != null, "Sched track not found: " + param);
@@ -390,6 +400,7 @@ public class JobManager {
      * @return {@code true} if termination was successful
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Override
     public boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
         if (trackMapper.lock(param.getTrackId()) == null) {
             return false;
@@ -435,6 +446,7 @@ public class JobManager {
      * @return {@code true} if paused successfully
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Override
     public boolean pauseTrack(long trackId) throws JobException {
         Integer state = trackMapper.lockState(trackId);
         Assert.isTrue(state != null, "Pause failed, track_id not not found: " + trackId);
@@ -500,6 +512,7 @@ public class JobManager {
      * @return {@code true} if paused successfully
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Override
     public boolean pauseExecutingTask(ExecuteParam param, String errorMsg) {
         Integer state = trackMapper.lockState(param.getTrackId());
         if (!RunState.RUNNING.equals(state)) {
@@ -545,7 +558,8 @@ public class JobManager {
      * @return {@code true} if canceled successfully
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean cancelTrack(Long trackId, Operations operation) throws JobException {
+    @Override
+    public boolean cancelTrack(long trackId, Operations operation) throws JobException {
         Assert.isTrue(operation.targetState().isFailure(), "Expect cancel ops, but actual: " + operation);
         Integer state = trackMapper.lockState(trackId);
         Assert.isTrue(state != null, "Cancel failed, track_id not not found: " + trackId);
@@ -598,6 +612,7 @@ public class JobManager {
      * @return {@code true} if canceled successfully
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Override
     public boolean cancelExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
         Assert.isTrue(toState.isFailure(), "Target state expect failure state, but actual: " + toState);
         Integer state = trackMapper.lockState(param.getTrackId());
@@ -784,7 +799,7 @@ public class JobManager {
 
         // 1、build sched track
         SchedTrack retryTrack = new SchedTrack();
-        retryTrack.setTrackId(idGenerator.nextId());
+        retryTrack.setTrackId(idGenerator.generateId());
         retryTrack.setJobId(schedJob.getJobId());
         retryTrack.setRunType(RunType.RETRY.value());
         retryTrack.setRetriedCount(retriedCount + 1);
@@ -820,13 +835,13 @@ public class JobManager {
                     return;
                 }
                 tasks = splitTasks.stream()
-                                  .map(e -> JobUtils.buildTask(e.getTaskParam(), idGenerator.nextId(), retryTrack.getTrackId(), now))
+                                  .map(e -> JobUtils.buildTask(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
                                   .collect(Collectors.toList());
                 break;
             case FAILED:
                 tasks = prevTasks.stream()
                                  .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
-                                 .map(e -> JobUtils.buildTask(e.getTaskParam(), idGenerator.nextId(), retryTrack.getTrackId(), now))
+                                 .map(e -> JobUtils.buildTask(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
                                  .collect(Collectors.toList());
                 break;
             default:
@@ -863,7 +878,7 @@ public class JobManager {
             }
 
             try {
-                Pair<SchedTrack, List<SchedTask>> pair = JobUtils.buildTrackAndTasks(child, now, idGenerator::nextId);
+                Pair<SchedTrack, List<SchedTask>> pair = JobUtils.buildTrackAndTasks(child, now, idGenerator::generateId);
                 SchedTrack track = pair.getLeft();
                 List<SchedTask> tasks = pair.getRight();
                 Assert.notEmpty(tasks, "Invalid split, Not has executable task: " + track);

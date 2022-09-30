@@ -172,7 +172,7 @@ public class TimingWheelTest {
 
     @Test
     public void testTimingWheel() {
-        TimingWheel<ExecuteParam> timingWheel = new TimingWheel<>();
+        TimingWheel<ExecuteParam> timingWheel = new TimingWheel<ExecuteParam>() {};
         long hour = TimeUnit.HOURS.toMillis(10);
         System.out.println("hour=" + hour);
 

@@ -95,7 +95,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             }
 
             // 1、build sched track and sched task list
-            Pair<SchedTrack, List<SchedTask>> pair = JobUtils.buildTrackAndTasks(job, now, idGenerator::nextId);
+            Pair<SchedTrack, List<SchedTask>> pair = JobUtils.buildTrackAndTasks(job, now, idGenerator::generateId);
             SchedTrack track = pair.getLeft();
             List<SchedTask> tasks = pair.getRight();
             Assert.notEmpty(tasks, "Invalid split, Not has executable task: " + job);

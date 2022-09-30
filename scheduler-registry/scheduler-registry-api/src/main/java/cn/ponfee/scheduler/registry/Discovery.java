@@ -28,4 +28,11 @@ public interface Discovery<D extends Server> {
      */
     boolean isAlive(D server);
 
+    /**
+     * Returns discovery role name.
+     *
+     * @return discovery role name
+     */
+    String discoveryRole();
+
 }

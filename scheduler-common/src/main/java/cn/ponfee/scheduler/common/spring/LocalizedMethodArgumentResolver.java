@@ -28,6 +28,7 @@ import java.util.Map;
 public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     //private final WeakHashMap<NativeWebRequest, Map<String, Object>> resolvedCache = new WeakHashMap<>();
+    private static final String STORE_KEY_PREFIX = "LOCALIZED_METHOD_ARGUMENTS:";
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -48,14 +49,15 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         Method method = parameter.getMethod();
         HttpServletRequest httpServletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
         int parameterIndex = parameter.getParameterIndex();
-        // method.toGenericString()
-        String storeKey = "LOCALIZED_METHOD_ARGUMENTS:" + method.toString();
         Object[] arguments;
         if (parameterIndex == 0) {
             arguments = resolveMethodParameters(method, httpServletRequest);
-            httpServletRequest.setAttribute(storeKey, arguments);
+            if (method.getParameterCount() > 1) {
+                // method.toGenericString()
+                httpServletRequest.setAttribute(STORE_KEY_PREFIX + method, arguments);
+            }
         } else {
-            arguments = (Object[]) httpServletRequest.getAttribute(storeKey);
+            arguments = (Object[]) httpServletRequest.getAttribute(STORE_KEY_PREFIX + method);
         }
 
         return Collects.get(arguments, parameterIndex);
@@ -98,6 +100,19 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
 
     private Object[] resolveRequestBody(Method method, String body) {
         return JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
+
+        /*
+        JsonNode jsonNode = Jsons.NORMAL.objectMapper().readTree(body);
+        Assert.isTrue(jsonNode.isArray(), "Request parameter must be json array.");
+        ArrayNode arrayNode = (ArrayNode) jsonNode;
+        Type[] genericParameterTypes = method.getGenericParameterTypes();
+        int length = genericParameterTypes.length;
+        Object[] arguments = new Object[length];
+        for (int i = 0; i < length; i++) {
+            arguments[i] = Jsons.NORMAL.parse(arrayNode.get(i).toString(), genericParameterTypes[i]);
+        }
+        return arguments;
+        */
     }
 
 }

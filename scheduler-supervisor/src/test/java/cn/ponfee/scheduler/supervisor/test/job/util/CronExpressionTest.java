@@ -3,9 +3,9 @@ package cn.ponfee.scheduler.supervisor.test.job.util;
 import cn.ponfee.scheduler.common.date.CronExpression;
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.enums.TriggerType;
 import cn.ponfee.scheduler.core.model.PeriodTriggerConf;
-import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +44,7 @@ public class CronExpressionTest {
         conf.setPeriod(DatePeriods.DAILY);
         conf.setStart(new Date());
         conf.setStep(2);
-        Assertions.assertTrue(TriggerType.PERIOD.isValid(JSON.toJSONString(conf)));
+        Assertions.assertTrue(TriggerType.PERIOD.isValid(Jsons.toJson(conf)));
 
         Assertions.assertFalse(TriggerType.PERIOD.isValid("{\"period\":\"DAILYx\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}"));
         Assertions.assertFalse(TriggerType.PERIOD.isValid("{\"period\":\"DAILY\", \"start\":\"2000-x-01 00:00:00\", \"step\":1}"));

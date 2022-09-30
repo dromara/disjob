@@ -1,7 +1,6 @@
 package cn.ponfee.scheduler.common.util;
 
 import cn.ponfee.scheduler.common.base.ArrayHashKey;
-import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.base.Null;
 import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.base.tuple.Tuple3;
@@ -44,7 +43,7 @@ public final class ClassUtils {
      */
     public static <T> Class<T> getClass(String text) {
         String key = DigestUtils.md5Hex(text);
-        Class<?> clazz = LazyLoader.get(key, CLASS_CACHE, () -> {
+        Class<?> clazz = SynchronizedCaches.get(key, CLASS_CACHE, () -> {
             if (QUALIFIED_CLASS_NAME_PATTERN.matcher(text).matches()) {
                 try {
                     return Class.forName(text);
@@ -234,7 +233,7 @@ public final class ClassUtils {
     public static <T> Constructor<T> getConstructor(Class<T> type, Class<?>... parameterTypes) {
         boolean noArgs = ArrayUtils.isEmpty(parameterTypes);
         Object key = noArgs ? type : Tuple2.of(type, ArrayHashKey.of((Object[]) parameterTypes));
-        Constructor<T> constructor = (Constructor<T>) LazyLoader.get(key, CONSTRUCTOR_CACHE, () -> {
+        Constructor<T> constructor = (Constructor<T>) SynchronizedCaches.get(key, CONSTRUCTOR_CACHE, () -> {
             try {
                 return noArgs ? type.getConstructor() : type.getConstructor(parameterTypes);
             } catch (Exception ignored) {
@@ -253,11 +252,7 @@ public final class ClassUtils {
         checkObjectArray(args);
 
         if (!constructor.isAccessible()) {
-            synchronized (constructor) {
-                if (!constructor.isAccessible()) {
-                    constructor.setAccessible(true);
-                }
-            }
+            constructor.setAccessible(true);
         }
         try {
             return ArrayUtils.isEmpty(args) ? constructor.newInstance() : constructor.newInstance(args);
@@ -316,7 +311,7 @@ public final class ClassUtils {
         Class<?> type = tuple.a;
         boolean noArgs = ArrayUtils.isEmpty(parameterTypes);
         Object key = noArgs ? Tuple2.of(type, methodName) : Tuple3.of(type, methodName, ArrayHashKey.of((Object[]) parameterTypes));
-        Method method = LazyLoader.get(key, METHOD_CACHE, () -> {
+        Method method = SynchronizedCaches.get(key, METHOD_CACHE, () -> {
             try {
                 Method m = noArgs ? type.getMethod(methodName) : type.getMethod(methodName, parameterTypes);
                 return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
@@ -335,11 +330,7 @@ public final class ClassUtils {
     public static <T> T invoke(Object caller, Method method, Object[] args) {
         checkObjectArray(args);
         if (!method.isAccessible()) {
-            synchronized (method) {
-                if (!method.isAccessible()) {
-                    method.setAccessible(true);
-                }
-            }
+            method.setAccessible(true);
         }
         try {
             return (T) (ArrayUtils.isEmpty(args) ? method.invoke(caller) : method.invoke(caller, args));

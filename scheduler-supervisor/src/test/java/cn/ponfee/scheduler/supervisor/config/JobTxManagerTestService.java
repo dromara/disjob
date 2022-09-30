@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 import static cn.ponfee.scheduler.common.base.Constants.TX_MANAGER_SUFFIX;
 import static cn.ponfee.scheduler.common.base.Constants.TX_TEMPLATE_SUFFIX;
-import static cn.ponfee.scheduler.supervisor.dao.JobDataSourceConfig.DB_NAME;
+import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NAME;
 
 /**
  * test db_order_base
