@@ -1,9 +1,9 @@
 package cn.ponfee.scheduler.core.param;
 
-import cn.ponfee.scheduler.common.base.JacksonTypeReferences;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.common.util.GenericUtils;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.Operations;
@@ -50,7 +50,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     /**
      * 任务执行处理器
      */
-    private volatile transient TaskExecutor taskExecutor;
+    private volatile transient TaskExecutor<?> taskExecutor;
 
     /**
      * With worker argument for help to deserialization.
@@ -132,12 +132,12 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         return this.operation.get();
     }
 
-    public void taskExecutor(TaskExecutor taskExecutor) {
+    public void taskExecutor(TaskExecutor<?> taskExecutor) {
         this.taskExecutor = taskExecutor;
     }
 
     public void interrupt() {
-        TaskExecutor executor = this.taskExecutor;
+        TaskExecutor<?> executor = this.taskExecutor;
         if (executor != null) {
             executor.interrupt();
         }
@@ -253,7 +253,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     public static class JacksonDeserializer extends JsonDeserializer<ExecuteParam> {
         @Override
         public ExecuteParam deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return castToExecuteParam(p.readValueAs(JacksonTypeReferences.MAP_NORMAL));
+            return castToExecuteParam(p.readValueAs(Jsons.MAP_NORMAL));
         }
     }
 

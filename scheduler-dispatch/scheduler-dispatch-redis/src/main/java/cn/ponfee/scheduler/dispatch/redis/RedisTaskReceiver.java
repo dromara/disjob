@@ -70,7 +70,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     private final AtomicBoolean start = new AtomicBoolean(false);
 
     public RedisTaskReceiver(Worker currentWorker,
-                             TimingWheel timingWheel,
+                             TimingWheel<ExecuteParam> timingWheel,
                              RedisTemplate<String, String> redisTemplate) {
         super(timingWheel);
 
@@ -91,7 +91,7 @@ public class RedisTaskReceiver extends TaskReceiver {
             } catch (Exception e) {
                 LOG.error("Redis task receive scheduled error.", e);
             }
-        }, 1, 1, TimeUnit.SECONDS);
+        }, 5, 1, TimeUnit.SECONDS);
     }
 
     @Override

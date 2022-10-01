@@ -3,6 +3,7 @@ package cn.ponfee.scheduler.common.util;
 import com.google.common.collect.ImmutableList;
 import org.springframework.util.Assert;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
 
@@ -85,10 +86,11 @@ public class Collects {
 
     public static <S, T> List<T> convert(List<S> source, Function<S, T> mapper) {
         ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(source.size());
-        source.stream().map(mapper::apply).forEach(builder::add);
+        source.stream().map(mapper).forEach(builder::add);
         return builder.build();
     }
 
+    @SafeVarargs
     public static <T> List<T> concat(List<T> list, T... array) {
         if (list == null) {
             return array == null ? Collections.emptyList() : Arrays.asList(array);
@@ -98,9 +100,14 @@ public class Collects {
         }
         List<T> result = new ArrayList<>(list.size() + array.length);
         result.addAll(list);
-        for (T t : array) {
-            result.add(t);
-        }
+        Collections.addAll(result, array);
         return result;
     }
+
+    public static <T> T[] newArray(Class<? extends T[]> newType, int length) {
+        return ((Object) newType == (Object) Object[].class)
+            ? (T[]) new Object[length]
+            : (T[]) Array.newInstance(newType.getComponentType(), length);
+    }
+
 }

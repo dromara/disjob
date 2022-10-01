@@ -4,11 +4,11 @@ import cn.ponfee.scheduler.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
-import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisNode;
-import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
@@ -16,27 +16,23 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Creates Spring redis template
+ * Abstract spring redis template creator
  *
  * @author Ponfee
  */
-@Builder
-public class RedisTemplateCreator {
+@SuperBuilder
+public abstract class AbstractRedisTemplateCreator {
 
-    private int database;
-    private String password;
+    protected int database;
+    protected String username;
+    protected String password;
+
     private int connectTimeout;
     private int timeout;
-    private String sentinelMaster;
-    private String sentinelNodes;
 
     private int maxActive;
     private int maxIdle;
@@ -44,30 +40,27 @@ public class RedisTemplateCreator {
     private int maxWait;
     private int shutdownTimeout;
 
-    public RedisTemplate createRedisTemplate() {
+    public final RedisTemplateWrapper create() {
+        RedisConnectionFactory redisConnectionFactory = createRedisConnectionFactory();
+
+        RedisTemplate<Object, Object> normalRedisTemplate = new RedisTemplate<>();
         Jackson2JsonRedisSerializer<Object> valueSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
         valueSerializer.setObjectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL));
+        normalRedisTemplate.setConnectionFactory(redisConnectionFactory);
+        normalRedisTemplate.setKeySerializer(RedisSerializer.string());
+        normalRedisTemplate.setValueSerializer(valueSerializer);
+        normalRedisTemplate.afterPropertiesSet();
 
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(createRedisConnectionFactory());
-        redisTemplate.setKeySerializer(RedisSerializer.string());
-        redisTemplate.setValueSerializer(valueSerializer);
-        redisTemplate.afterPropertiesSet();
-        return redisTemplate;
+        StringRedisTemplate stringRedisTemplate = new StringRedisTemplate(redisConnectionFactory);
+
+        return new RedisTemplateWrapper(redisConnectionFactory, normalRedisTemplate, stringRedisTemplate);
     }
 
-    public StringRedisTemplate createStringRedisTemplate() {
-        return new StringRedisTemplate(createRedisConnectionFactory());
-    }
+    protected abstract RedisConfiguration createRedisConfiguration();
 
     private RedisConnectionFactory createRedisConnectionFactory() {
         // ----------------------------------------basic config
-        //RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-        RedisSentinelConfiguration configuration = new RedisSentinelConfiguration();
-        configuration.setDatabase(database);
-        configuration.setPassword(password);
-        configuration.setMaster(sentinelMaster);
-        configuration.setSentinels(createSentinels(sentinelNodes.split(",")));
+        RedisConfiguration configuration = createRedisConfiguration();
 
         // ----------------------------------------pool config
         GenericObjectPoolConfig genericObjectPoolConfig = new GenericObjectPoolConfig();
@@ -87,23 +80,18 @@ public class RedisTemplateCreator {
             .shutdownTimeout(Duration.ofMillis(shutdownTimeout))
             .clientOptions(clientOptions)
             .build();
+
+        // ----------------------------------------crate lettuce connection factory
         LettuceConnectionFactory redisConnectionFactory = new LettuceConnectionFactory(configuration, lettuceClientConfiguration);
         redisConnectionFactory.afterPropertiesSet();
         return redisConnectionFactory;
     }
 
-    private static List<RedisNode> createSentinels(String[] array) {
-        List<RedisNode> nodes = new ArrayList<>(array.length);
-        for (String node : array) {
-            try {
-                String[] parts = StringUtils.split(node, ":");
-                Assert.state(parts.length == 2, "Must be defined as 'host:port'");
-                nodes.add(new RedisNode(parts[0], Integer.parseInt(parts[1])));
-            } catch (RuntimeException ex) {
-                throw new IllegalStateException("Invalid redis sentinel property '" + node + "'", ex);
-            }
-        }
-        return nodes;
+    @Data
+    public static class RedisTemplateWrapper {
+        private final RedisConnectionFactory redisConnectionFactory;
+        private final RedisTemplate<Object, Object> normalRedisTemplate;
+        private final StringRedisTemplate stringRedisTemplate;
     }
 
 }

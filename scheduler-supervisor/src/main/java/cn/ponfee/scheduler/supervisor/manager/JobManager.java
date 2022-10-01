@@ -3,7 +3,7 @@ package cn.ponfee.scheduler.supervisor.manager;
 import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
-import cn.ponfee.scheduler.common.spring.LocalizedMethodArguments;
+import cn.ponfee.scheduler.common.spring.MarkRpcController;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -49,9 +48,7 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
  * @author Ponfee
  */
 @Component
-@ResponseBody // @RestController
-@LocalizedMethodArguments
-public class JobManager implements SupervisorService {
+public class JobManager implements SupervisorService, MarkRpcController {
 
     private final static Logger LOG = LoggerFactory.getLogger(JobManager.class);
 
@@ -147,6 +144,10 @@ public class JobManager implements SupervisorService {
 
     public boolean hasWorkers(String group) {
         return CollectionUtils.isNotEmpty(discoveryWorker.getServers(group));
+    }
+
+    public boolean hasWorkers() {
+        return CollectionUtils.isNotEmpty(discoveryWorker.getServers());
     }
 
     /**

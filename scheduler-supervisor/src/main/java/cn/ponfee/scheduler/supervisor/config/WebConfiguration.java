@@ -108,7 +108,7 @@ public class WebConfiguration implements WebMvcConfigurer {
             StringBuilder header = new StringBuilder();
             while (names.hasMoreElements()) {
                 String name = names.nextElement();
-                header.append(name + "=" + request.getHeader(name)).append(" & ");
+                header.append(name).append("=").append(request.getHeader(name)).append(" & ");
             }
             if (header.length() > 0) {
                 header.setLength(header.length() - 3);
@@ -125,7 +125,7 @@ public class WebConfiguration implements WebMvcConfigurer {
         @Override
         public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
             StringBuilder header = new StringBuilder();
-            response.getHeaderNames().forEach(name -> header.append(name + "=" + request.getHeader(name)).append(" & "));
+            response.getHeaderNames().forEach(name -> header.append(name).append("=").append(request.getHeader(name)).append(" & "));
             if (header.length() > 0) {
                 header.setLength(header.length() - 3);
             }

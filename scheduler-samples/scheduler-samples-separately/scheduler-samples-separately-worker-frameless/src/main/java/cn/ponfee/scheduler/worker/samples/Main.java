@@ -15,7 +15,8 @@ import cn.ponfee.scheduler.registry.ServerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
-import cn.ponfee.scheduler.worker.samples.redis.RedisTemplateCreator;
+import cn.ponfee.scheduler.worker.samples.redis.SentinelRedisTemplateCreator;
+import cn.ponfee.scheduler.worker.samples.redis.StandaloneRedisTemplateCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,20 +59,31 @@ public class Main {
         // inject current worker
         ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
 
-        StringRedisTemplate stringRedisTemplate = RedisTemplateCreator.builder()
-            .database(yamlProperties.getInt("redis.database", 0))
-            .password(yamlProperties.getRequiredString("redis.password"))
-            .connectTimeout(yamlProperties.getInt("redis.connect-timeout", 1000))
-            .timeout(yamlProperties.getInt("redis.timeout", 2000))
+        StringRedisTemplate stringRedisTemplate =
+
+            // Standalone
+            /*StandaloneRedisTemplateCreator.builder()
+                .host(yamlProperties.getRequiredString("redis.host"))
+                .port(yamlProperties.getRequiredInt("redis.port"))*/
+
+            // Sentinel
+            SentinelRedisTemplateCreator.builder()
             .sentinelMaster(yamlProperties.getRequiredString("redis.sentinel.master"))
             .sentinelNodes(yamlProperties.getRequiredString("redis.sentinel.nodes"))
+
+            .database(yamlProperties.getInt("redis.database", 0))
+            .username(yamlProperties.getString("redis.username"))
+            .password(yamlProperties.getString("redis.password"))
+            .connectTimeout(yamlProperties.getInt("redis.connect-timeout", 1000))
+            .timeout(yamlProperties.getInt("redis.timeout", 2000))
             .maxActive(yamlProperties.getInt("redis.lettuce.pool.max-active", 50))
             .maxIdle(yamlProperties.getInt("redis.lettuce.pool.max-idle", 8))
             .minIdle(yamlProperties.getInt("redis.lettuce.pool.min-idle", 0))
             .maxWait(yamlProperties.getInt("redis.lettuce.pool.max-wait", 2000))
             .shutdownTimeout(yamlProperties.getInt("redis.lettuce.shutdown-timeout", 2000))
             .build()
-            .createStringRedisTemplate();
+            .create()
+            .getStringRedisTemplate();
 
 
         TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel();
@@ -85,6 +97,8 @@ public class Main {
             .maxRetryTimes(3)
             .build();
         SupervisorService supervisorService = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
+
+        // 不支持HttpTaskReceiver，请使用scheduler-samples-separately-worker-springboot模块来支持
         TaskReceiver taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
 
         WorkerStartup workerStartup = WorkerStartup.builder()

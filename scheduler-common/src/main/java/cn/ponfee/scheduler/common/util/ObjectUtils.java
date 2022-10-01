@@ -136,8 +136,8 @@ public final class ObjectUtils {
 
         if (type.isEnum()) {
             return (value instanceof Number)
-                    ? type.getEnumConstants()[((Number) value).intValue()]
-                    : (T) EnumUtils.getEnumIgnoreCase((Class<Enum>) type, value.toString());
+                 ? type.getEnumConstants()[((Number) value).intValue()]
+                 : (T) EnumUtils.getEnumIgnoreCase((Class<Enum>) type, value.toString());
         }
 
         if (Date.class == type) {

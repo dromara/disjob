@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
  * <p>mapped by sched_job.trigger_type
  *
  * <pre>{@code
- *  org.springframework.scheduling.support.CronSequenceGenerator.isValidExpression(cronExpression)
+ *  org.springframework.scheduling.support.CronExpression.isValidExpression(cronExpression)
  * }</pre>
  *
  * <pre>{@code
- *  new org.springframework.scheduling.support.CronSequenceGenerator(cronExpression).next(date)
+ *  new org.springframework.scheduling.support.CronExpression(cronExpression).next(date)
  * }</pre>
  *
  * <pre>{@code
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  * @see org.springframework.scheduling.support.CronTrigger
- * @see org.springframework.scheduling.support.CronSequenceGenerator
+ * @see org.springframework.scheduling.support.CronExpression
  */
 public enum TriggerType {
 

@@ -23,10 +23,11 @@ import java.util.stream.Collectors;
 public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
 
     private static final int QUERY_BATCH_SIZE = 200;
+    private static final long EXPIRE_WAITING_MILLISECONDS = 60 * 1000;
+    private static final long EXPIRE_RUNNING_MILLISECONDS = 300 * 1000;
 
     private final DoInLocked doInLocked;
     private final JobManager jobManager;
-    private final long beforeSeconds;
 
     private long nextScanExpireRunningTimeMillis = 0;
 
@@ -36,11 +37,13 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
         super(heartbeatIntervalSeconds);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
-        this.beforeSeconds = interval() << 3;
     }
 
     @Override
     protected boolean heartbeat() {
+        if (!jobManager.hasWorkers()) {
+            return false;
+        }
         Boolean result = doInLocked.apply(() -> {
             Date now = new Date();
             return processExpireWaiting(now)
@@ -52,7 +55,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
 
     // -------------------------------------------------------------process expire waiting sched track
     private boolean processExpireWaiting(Date now) {
-        long expireTime = now.getTime() - beforeSeconds;
+        long expireTime = now.getTime() - EXPIRE_WAITING_MILLISECONDS;
         List<SchedTrack> tracks = jobManager.findExpireWaiting(expireTime, new Date(expireTime), QUERY_BATCH_SIZE);
         if (tracks == null || tracks.isEmpty()) {
             return false;
@@ -126,9 +129,8 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
             return false;
         }
 
-        long scanExpireRunningIntervalMillis = 300L * 1000;
-        nextScanExpireRunningTimeMillis = now.getTime() + scanExpireRunningIntervalMillis;
-        long expireTime = now.getTime() - scanExpireRunningIntervalMillis;
+        nextScanExpireRunningTimeMillis = now.getTime() + EXPIRE_RUNNING_MILLISECONDS;
+        long expireTime = now.getTime() - EXPIRE_RUNNING_MILLISECONDS;
 
         List<SchedTrack> tracks = jobManager.findExpireRunning(expireTime, new Date(expireTime), QUERY_BATCH_SIZE);
         if (tracks == null || tracks.isEmpty()) {

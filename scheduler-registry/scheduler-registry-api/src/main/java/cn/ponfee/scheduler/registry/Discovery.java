@@ -15,8 +15,17 @@ public interface Discovery<D extends Server> {
     /**
      * Gets all alive servers.
      *
+     * @return all alive servers
+     */
+    default List<D> getServers() {
+        return getServers(null);
+    }
+
+    /**
+     * Gets grouped alive servers.
+     *
      * @param group the discovered interested group
-     * @return list of all alive servers
+     * @return list of grouped alive servers
      */
     List<D> getServers(String group);
 

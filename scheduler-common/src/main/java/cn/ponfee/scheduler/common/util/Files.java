@@ -53,13 +53,15 @@ public final class Files {
     public static final String SYSTEM_LINE_SEPARATOR; // system file line separator
 
     static {
-        /*String separator = java.security.AccessController.doPrivileged(
+        /*
+        String separator = java.security.AccessController.doPrivileged(
             new sun.security.action.GetPropertyAction("line.separator")
         );
         if (separator == null || separator.length() == 0) {
             separator = System.getProperty("line.separator", "\n");
         }
-        SYSTEM_LINE_SEPARATOR = separator;*/
+        SYSTEM_LINE_SEPARATOR = separator;
+        */
         StringBuilderWriter buffer = new StringBuilderWriter(4);
         PrintWriter out = new PrintWriter(buffer);
         out.println();

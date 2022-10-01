@@ -52,6 +52,9 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
+        if (!jobManager.hasWorkers()) {
+            return false;
+        }
         Boolean result = doInLocked.apply(() -> {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterSeconds;

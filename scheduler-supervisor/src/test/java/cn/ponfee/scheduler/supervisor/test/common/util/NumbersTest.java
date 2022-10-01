@@ -40,7 +40,7 @@ public class NumbersTest {
             }
         }
 
-        System.out.println(String.format("Random min=%s, max=%s", Numbers.format(min, "#,##0.000000000"), Numbers.format(max, "#,##0.000000000")));
+        System.out.printf("Random min=%s, max=%s%n", Numbers.format(min, "#,##0.000000000"), Numbers.format(max, "#,##0.000000000"));
         System.out.println(Numbers.format(min + max, "#,##0.000000000"));
     }
 

@@ -24,7 +24,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 
@@ -35,7 +34,7 @@ import static cn.ponfee.scheduler.worker.base.WorkerConstants.DISTRIBUTED_SCHEDU
  *
  * @author Ponfee
  */
-@Configuration
+//@Configuration
 public class RedisTaskReceiveWorkerConfiguration implements ApplicationRunner, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisTaskReceiveWorkerConfiguration.class);

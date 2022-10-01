@@ -3,6 +3,7 @@ package cn.ponfee.scheduler.registry.redis;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.Assert;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +35,7 @@ public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor>
 
     @Override
     protected List<Supervisor> getServers(String group, boolean forceRefresh) {
+        Assert.isNull(group, "Supervisor non grouped, group must be null.");
         doRefreshDiscoveryInSynchronized(servers -> {
             List<Supervisor> discoveredSupervisors = servers.stream()
                                                             .map(Supervisor::deserialize)

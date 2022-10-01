@@ -8,7 +8,9 @@ import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
+import cn.ponfee.scheduler.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.ServerRegistry;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 
@@ -31,7 +34,7 @@ import static cn.ponfee.scheduler.worker.base.WorkerConstants.DISTRIBUTED_SCHEDU
  *
  * @author Ponfee
  */
-//@Configuration
+@Configuration
 public class HttpTaskReceiveWorkerConfiguration implements DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpTaskReceiveWorkerConfiguration.class);
@@ -39,8 +42,13 @@ public class HttpTaskReceiveWorkerConfiguration implements DisposableBean {
     private WorkerStartup workerStartup;
 
     @Bean
-    public TimingWheel timingWheel() {
+    public TimingWheel<ExecuteParam> timingWheel() {
         return new TaskTimingWheel();
+    }
+
+    @Bean
+    public TaskReceiver taskReceiver(TimingWheel<ExecuteParam> timingWheel) {
+        return new HttpTaskReceiver(timingWheel);
     }
 
     @Bean

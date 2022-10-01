@@ -13,6 +13,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -20,10 +21,10 @@ import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.util.Assert;
+import org.springframework.web.client.*;
 
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -38,9 +39,9 @@ public class DiscoveryRestTemplate<S extends Server> {
 
     private final static Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
 
-    public static final ParameterizedTypeReference<Result<String>>   RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {};
-    public static final ParameterizedTypeReference<Result<Boolean>> RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {};
-    public static final ParameterizedTypeReference<Result<Void>>       RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {};
+    public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
+    public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
+    public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
 
     private final RestTemplate restTemplate;
     private final Discovery<S> discoveryServer;
@@ -73,23 +74,28 @@ public class DiscoveryRestTemplate<S extends Server> {
         this.maxRetryTimes = maxRetryTimes;
     }
 
-    public <T> T execute(String path, Class<T> returnType, Object... arguments) throws Exception {
+    public <T> T execute(String path, Type returnType, Object... arguments) throws Exception {
         return doExecute(null, path, returnType, arguments);
     }
 
-    public <T> T execute(String group, String path, Class<T> returnType, Object... arguments) throws Exception {
+    public <T> T execute(String group, String path, Type returnType, Object... arguments) throws Exception {
         return doExecute(group, path, returnType, arguments);
     }
 
-    public <T> T execute(String path, ParameterizedTypeReference<Result<T>> returnType, Object... arguments) throws Exception {
-        return doExecute(null, path, returnType, arguments);
-    }
-
-    public <T> T execute(String group, String path, ParameterizedTypeReference<Result<T>> returnType, Object... arguments) throws Exception {
-        return doExecute(group, path, returnType, arguments);
-    }
-
-    private <T> T doExecute(String group, String path, Object returnType, Object... arguments) throws Exception {
+    /**
+     * 如果returnType=Void.class时：
+     * 1）如果响应的为非异常的http状态码，则返回结果都是null
+     * 2）如果响应的为异常的http状态码，则会抛出HttpStatusCodeException
+     *
+     * @param group      the group name
+     * @param path       the uri path
+     * @param returnType the method return type
+     * @param arguments  the method arguments
+     * @param <T>        then return type
+     * @return result
+     * @throws Exception if occur exception
+     */
+    private <T> T doExecute(String group, String path, Type returnType, Object... arguments) throws Exception {
         List<S> servers = discoveryServer.getServers(group);
         if (CollectionUtils.isEmpty(servers)) {
             throw new IllegalStateException("Not found available " + discoveryServer.discoveryRole() + " servers");
@@ -101,25 +107,25 @@ public class DiscoveryRestTemplate<S extends Server> {
             Server server = servers.get((start + i) % serverNumber);
             String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
             try {
-                if (returnType instanceof ParameterizedTypeReference) {
-                    Result<T> result = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(arguments), (ParameterizedTypeReference<Result<T>>) returnType).getBody();
+                RequestCallback requestCallback = restTemplate.httpEntityCallback(new HttpEntity<>(arguments), returnType);
+                ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
+                ResponseEntity<T> resp = restTemplate.execute(url, HttpMethod.POST, requestCallback, responseExtractor);
+                Assert.notNull(resp, "No response");
+                Object body = resp.getBody();
+                if (body instanceof Result) {
+                    Result<T> result = (Result<T>) body;
                     if (result.isSuccess()) {
                         return result.getData();
                     } else {
                         throw new IllegalStateException("Invoked http failed, url: " + url + ", req: " + Jsons.toJson(arguments) + ", res: " + result);
                     }
-                } else if (returnType instanceof Class<?>) {
-                    // 如果returnType=Void.class时：
-                    //   1）如果响应的为非异常的http状态码，则返回结果都是null
-                    //   2）如果响应的为异常的http状态码，则会抛出HttpStatusCodeException
-                    return restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(arguments), (Class<T>) returnType).getBody();
                 } else {
-                    throw new IllegalArgumentException("Invalid return type: " + returnType);
+                    return (T) body;
                 }
             } catch (ResourceAccessException | RestClientResponseException e) {
                 // round-robin retry
                 LOG.error("Invoked http error, url: " + url + ", req: " + Jsons.toJson(arguments), e);
-                Thread.sleep(300 * IntMath.pow(i + 1, 2));
+                Thread.sleep(300L * IntMath.pow(i + 1, 2));
             }
         }
 

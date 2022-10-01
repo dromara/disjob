@@ -74,14 +74,13 @@ public class SupervisorStartup implements AutoCloseable {
 
     @Override
     public void close() {
-        supervisorRegistry.deregister(currentSupervisor);
-        scanJobHeartbeatThread.toStop();
-        scanTrackHeartbeatThread.toStop();
-        taskDispatcher.close();
         supervisorRegistry.close();
+        scanTrackHeartbeatThread.toStop();
+        scanJobHeartbeatThread.toStop();
+        taskDispatcher.close();
 
-        scanJobHeartbeatThread.doStop(1000);
         scanTrackHeartbeatThread.doStop(1000);
+        scanJobHeartbeatThread.doStop(1000);
     }
 
     // ----------------------------------------------------------------------------------------builder

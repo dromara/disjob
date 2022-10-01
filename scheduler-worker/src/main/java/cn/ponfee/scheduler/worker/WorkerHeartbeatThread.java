@@ -18,13 +18,13 @@ import java.util.List;
 public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
 
     private final Discovery<Supervisor> discoverySupervisor;
-    private final TimingWheel timingWheel;
+    private final TimingWheel<ExecuteParam> timingWheel;
     private final WorkerThreadPool workerThreadPool;
 
     private int round = 0;
 
     public WorkerHeartbeatThread(Discovery<Supervisor> discoverySupervisor,
-                                 TimingWheel timingWheel,
+                                 TimingWheel<ExecuteParam> timingWheel,
                                  WorkerThreadPool threadPool) {
         super(1);
         this.discoverySupervisor = discoverySupervisor;
@@ -44,7 +44,7 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
 
     private boolean process() {
         // check has available supervisors
-        if (CollectionUtils.isEmpty(discoverySupervisor.getServers(null))) {
+        if (CollectionUtils.isEmpty(discoverySupervisor.getServers())) {
             logger.warn("Not available " + discoverySupervisor.discoveryRole() + " supervisors.");
             return false;
         }

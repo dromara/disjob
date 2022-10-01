@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.core.base;
 
-import cn.ponfee.scheduler.common.base.JacksonTypeReferences;
 import cn.ponfee.scheduler.common.util.GenericUtils;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import com.alibaba.fastjson.annotation.JSONType;
@@ -104,7 +104,7 @@ public final class Supervisor extends Server {
     public static class JacksonDeserializer extends JsonDeserializer<Supervisor> {
         @Override
         public Supervisor deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return castToSupervisor(p.readValueAs(JacksonTypeReferences.MAP_NORMAL));
+            return castToSupervisor(p.readValueAs(Jsons.MAP_NORMAL));
         }
     }
 
@@ -117,9 +117,11 @@ public final class Supervisor extends Server {
         return new Supervisor(host, port);
     }
 
+    /**
+     * Supervisor.class.getDeclaredClasses()[0]
+     */
     private static class Current {
         private static Supervisor current;
-
 
         private static synchronized void set(Supervisor supervisor) {
             if (supervisor == null) {

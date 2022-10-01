@@ -31,7 +31,7 @@ import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.*;
  *
  * @author Ponfee
  */
-//@Configuration
+@Configuration
 public class HttpTaskDispatchSupervisorConfiguration {
 
     /**

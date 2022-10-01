@@ -1,8 +1,8 @@
 package cn.ponfee.scheduler.core.base;
 
 import cn.ponfee.scheduler.common.base.Constants;
-import cn.ponfee.scheduler.common.base.JacksonTypeReferences;
 import cn.ponfee.scheduler.common.util.GenericUtils;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import com.alibaba.fastjson.annotation.JSONType;
@@ -147,7 +147,7 @@ public final class Worker extends Server {
     public static class JacksonDeserializer extends JsonDeserializer<Worker> {
         @Override
         public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return castToWorker(p.readValueAs(JacksonTypeReferences.MAP_NORMAL));
+            return castToWorker(p.readValueAs(Jsons.MAP_NORMAL));
         }
     }
 

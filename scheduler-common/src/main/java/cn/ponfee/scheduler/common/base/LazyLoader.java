@@ -4,6 +4,7 @@ import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.InvocationHandler;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -39,19 +40,34 @@ public class LazyLoader<T> implements Supplier<T> {
 
     @Override
     public T get() {
-        if (holder == null) {
-            holder = Optional.ofNullable(loader.get());
-        }
+        lazyLoad();
         return holder.get();
     }
 
+    public void orElse(T defaultValue) {
+        lazyLoad();
+        holder.orElse(defaultValue);
+    }
+
+    public void ifPresent(Consumer<? super T> consumer) {
+        lazyLoad();
+        holder.ifPresent(consumer);
+    }
+
     // ------------------------------------------------------------------------private methods
+    private void lazyLoad() {
+        if (holder == null) {
+            holder = Optional.ofNullable(loader.get());
+        }
+    }
 
     private static <T, B extends T, C extends T> B of(Class<T> type, final LazyLoader<C> lazyLoader) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(type);
         enhancer.setUseCache(true);
         enhancer.setInterceptDuringConstruction(false);
+        //enhancer.setCallback(Proxy.getInvocationHandler(lazyLoader.get())); // Error
+        //enhancer.setCallback((MethodInterceptor) (beanProxy, method, args, methodProxy) -> method.invoke(lazyLoader.get(), args));
         enhancer.setCallback((InvocationHandler) (beanProxy, method, args) -> method.invoke(lazyLoader.get(), args));
         return (B) enhancer.create();
     }

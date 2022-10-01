@@ -14,12 +14,16 @@ server.tomcat.mbeanregistry.enabled: true
 # redis configuration
 spring.redis:
   database: 0
-  password: 
+  #host: localhost
+  #port: 6379
+  #username: test123
+  password: 123456
   connect-timeout: 1000
   timeout: 2000
   sentinel:
     master: REDIS_SENTINEL
     nodes: 112.74.170.75:16379,112.74.170.75:16380
+    #password: 654321
   client-type: LETTUCE
   lettuce:
     pool:

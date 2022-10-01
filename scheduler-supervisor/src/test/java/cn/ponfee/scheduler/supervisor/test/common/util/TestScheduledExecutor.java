@@ -12,9 +12,7 @@ public class TestScheduledExecutor {
     @Test
     public void testSubmit() throws InterruptedException {
         ScheduledThreadPoolExecutor registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, ThreadPoolExecutors.DISCARD);
-        registryScheduledExecutor.scheduleAtFixedRate(() -> {
-            System.out.println("scheduled");
-        }, 2, 1, TimeUnit.SECONDS);
+        registryScheduledExecutor.scheduleAtFixedRate(() -> System.out.println("scheduled"), 2, 1, TimeUnit.SECONDS);
 
 
         System.out.println(new Date());

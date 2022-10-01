@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.function.Function;
 
@@ -41,6 +42,8 @@ import java.util.function.Function;
  */
 @ThreadSafe
 public final class Jsons {
+
+    public static final TypeReference<Map<String, Object>> MAP_NORMAL = new TypeReference<Map<String, Object>>() {};
 
     /**
      * 标准：忽略对象中值为null的属性

@@ -117,12 +117,11 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         }
 
         Operations toOps = param.operation();
-        switch (toOps) {
-            case TRIGGER:
-                return taskQueue.offerLast(param);
-            default:
-                SUSPEND_TASK_POOL.execute(() -> suspend(param.getTaskId(), toOps));
-                return false;
+        if (toOps == Operations.TRIGGER) {
+            return taskQueue.offerLast(param);
+        } else {
+            SUSPEND_TASK_POOL.execute(() -> suspend(param.getTaskId(), toOps));
+            return true;
         }
     }
 

@@ -1,12 +1,15 @@
 package cn.ponfee.scheduler.common.spring;
 
 import cn.ponfee.scheduler.common.util.Collects;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -36,9 +39,8 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             return false;
         }
 
-        Method method = parameter.getMethod();
-        return method.getDeclaringClass().isAnnotationPresent(LocalizedMethodArguments.class)
-            || method.isAnnotationPresent(LocalizedMethodArguments.class);
+        return parameter.getMethodAnnotation(RequestMapping.class) != null
+            || AnnotationUtils.findAnnotation(parameter.getDeclaringClass(), LocalizedMethodArguments.class) != null;
     }
 
     @Override
@@ -85,14 +87,14 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             String[] array = parameterMap.get(argName);
             Assert.isTrue(
                 array == null || array.length <= 1,
-                "Argument cannot be multiple value, name: " + argName + ", value: " + JSON.toJSONString(array)
+                "Argument cannot be multiple value, name: " + argName + ", value: " + Jsons.toJson(array)
             );
             String argValue = Collects.get(array, 0);
             Type argType = method.getGenericParameterTypes()[i];
             if (argValue == null) {
                 arguments[i] = (argType instanceof Class<?>) ? ObjectUtils.cast(null, (Class<?>) argType) : null;
             } else {
-                arguments[i] = JSON.parseObject(argValue, argType);
+                arguments[i] = Jsons.fromJson(argValue, argType);
             }
         }
         return arguments;

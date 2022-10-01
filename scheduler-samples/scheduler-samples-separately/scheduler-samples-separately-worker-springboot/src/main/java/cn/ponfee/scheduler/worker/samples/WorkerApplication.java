@@ -11,10 +11,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  */
 @SpringBootApplication(
     exclude = {DataSourceAutoConfiguration.class},
-    scanBasePackages = {
-        "cn.ponfee.scheduler.worker",
-        "cn.ponfee.scheduler.dispatch.http"
-    }
+    scanBasePackages = {"cn.ponfee.scheduler.worker"}
 )
 public class WorkerApplication {
 
