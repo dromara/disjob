@@ -36,7 +36,7 @@ public class HamcrestTest {
         boolean matched = anything.matches(person);
         System.out.println("anything:" + matched);
 
-        Matcher isEmptyString = IsEmptyString.emptyString();
+        Matcher<String> isEmptyString = IsEmptyString.emptyString();
         matched = isEmptyString.matches("555");
         System.out.println("isEmptyString:" + matched);
 

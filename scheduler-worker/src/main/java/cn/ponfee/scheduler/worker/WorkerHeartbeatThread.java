@@ -11,7 +11,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.List;
 
 /**
- * Worker accept task.
+ * Worker process task heartbeat.
  *
  * @author Ponfee
  */

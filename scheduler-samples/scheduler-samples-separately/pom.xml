@@ -17,8 +17,8 @@
 
   <modules>
     <module>scheduler-samples-separately-supervisor</module>
-    <module>scheduler-samples-separately-worker-frameless</module>
     <module>scheduler-samples-separately-worker-springboot</module>
+    <module>scheduler-samples-separately-worker-frameless</module>
   </modules>
 
 </project>

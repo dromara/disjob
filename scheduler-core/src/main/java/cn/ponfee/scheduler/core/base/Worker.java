@@ -35,12 +35,12 @@ public final class Worker extends Server {
     /**
      * Group name, @see SchedJob#getJobGroup()
      */
-    protected final String group;
+    private final String group;
 
     /**
      * Instance id(Auto generate when class {@code Constants} loaded)
      */
-    protected final String instanceId;
+    private final String instanceId;
 
     private transient final String serialize;
 

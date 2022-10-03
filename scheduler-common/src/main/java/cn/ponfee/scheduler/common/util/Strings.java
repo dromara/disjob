@@ -7,6 +7,8 @@ package cn.ponfee.scheduler.common.util;
  */
 public final class Strings {
 
+    public static final char BLANK_CHAR = ' ';
+
     /**
      * <pre>
      * '?' Matches any single character.

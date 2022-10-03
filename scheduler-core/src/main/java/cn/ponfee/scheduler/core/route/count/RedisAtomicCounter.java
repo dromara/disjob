@@ -29,7 +29,7 @@ public class RedisAtomicCounter extends AtomicCounter {
         this.counterRedisKey = "route:counter:" + redisCounterKey;
         this.redisTemplate = redisTemplate;
 
-        if (!this.redisTemplate.hasKey(this.counterRedisKey)) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(counterRedisKey))) {
             // initialize
             set(1);
         }

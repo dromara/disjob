@@ -19,12 +19,12 @@ public enum Roles {
     /**
      * Worker
      */
-    WORKER(Worker.class, JobConstants.KEY_PREFIX + ".workers"),
+    WORKER(Worker.class, JobConstants.SCHEDULER_KEY_PREFIX + ".workers"),
 
     /**
      * Supervisor
      */
-    SUPERVISOR(Supervisor.class, JobConstants.KEY_PREFIX + ".supervisors"),
+    SUPERVISOR(Supervisor.class, JobConstants.SCHEDULER_KEY_PREFIX + ".supervisors"),
 
     ;
 

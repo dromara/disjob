@@ -163,7 +163,7 @@ public final class Files {
         return toString(file, DEFAULT_CHARSET_NAME);
     }
 
-    public static String toString(File file, String charsetName) throws IOException {
+    public static String toString(File file, String charsetName) {
         return toString(file, Charset.forName(charsetName));
     }
 

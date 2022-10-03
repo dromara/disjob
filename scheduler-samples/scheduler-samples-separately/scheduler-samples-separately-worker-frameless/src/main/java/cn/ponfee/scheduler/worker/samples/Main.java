@@ -3,6 +3,7 @@ package cn.ponfee.scheduler.worker.samples;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.spring.YamlProperties;
 import cn.ponfee.scheduler.common.util.*;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
@@ -11,11 +12,10 @@ import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
-import cn.ponfee.scheduler.registry.ServerRegistry;
+import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
-import cn.ponfee.scheduler.worker.samples.redis.SentinelRedisTemplateCreator;
 import cn.ponfee.scheduler.worker.samples.redis.StandaloneRedisTemplateCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.StringUtils;
@@ -31,10 +31,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
-import static cn.ponfee.scheduler.worker.base.WorkerConstants.DISTRIBUTED_SCHEDULER_WORKER;
+import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
 
 /**
  * Job worker configuration.
+ * <p>Note: non web application not supported HttpTaskReceiver
  *
  * @author Ponfee
  */
@@ -49,11 +50,7 @@ public class Main {
             yamlProperties = new YamlProperties(inputStream);
         }
 
-        if (yamlProperties == null) {
-            throw new IllegalArgumentException("Cannot load worker config file.");
-        }
-
-        String group = yamlProperties.getString(DISTRIBUTED_SCHEDULER_WORKER + ".group");
+        String group = yamlProperties.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");
         Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), Networks.getHostIp(), 0);
         // inject current worker
@@ -62,50 +59,50 @@ public class Main {
         StringRedisTemplate stringRedisTemplate =
 
             // Standalone
-            /*StandaloneRedisTemplateCreator.builder()
+            StandaloneRedisTemplateCreator.builder()
                 .host(yamlProperties.getRequiredString("redis.host"))
-                .port(yamlProperties.getRequiredInt("redis.port"))*/
+                .port(yamlProperties.getRequiredInt("redis.port"))
 
-            // Sentinel
-            SentinelRedisTemplateCreator.builder()
-            .sentinelMaster(yamlProperties.getRequiredString("redis.sentinel.master"))
-            .sentinelNodes(yamlProperties.getRequiredString("redis.sentinel.nodes"))
+                // Sentinel
+                /*SentinelRedisTemplateCreator.builder()
+                .sentinelMaster(yamlProperties.getRequiredString("redis.sentinel.master"))
+                .sentinelNodes(yamlProperties.getRequiredString("redis.sentinel.nodes"))*/
 
-            .database(yamlProperties.getInt("redis.database", 0))
-            .username(yamlProperties.getString("redis.username"))
-            .password(yamlProperties.getString("redis.password"))
-            .connectTimeout(yamlProperties.getInt("redis.connect-timeout", 1000))
-            .timeout(yamlProperties.getInt("redis.timeout", 2000))
-            .maxActive(yamlProperties.getInt("redis.lettuce.pool.max-active", 50))
-            .maxIdle(yamlProperties.getInt("redis.lettuce.pool.max-idle", 8))
-            .minIdle(yamlProperties.getInt("redis.lettuce.pool.min-idle", 0))
-            .maxWait(yamlProperties.getInt("redis.lettuce.pool.max-wait", 2000))
-            .shutdownTimeout(yamlProperties.getInt("redis.lettuce.shutdown-timeout", 2000))
-            .build()
-            .create()
-            .getStringRedisTemplate();
+                .database(yamlProperties.getInt("redis.database", 0))
+                .username(yamlProperties.getString("redis.username"))
+                .password(yamlProperties.getString("redis.password"))
+                .connectTimeout(yamlProperties.getInt("redis.connect-timeout", 1000))
+                .timeout(yamlProperties.getInt("redis.timeout", 2000))
+                .maxActive(yamlProperties.getInt("redis.lettuce.pool.max-active", 50))
+                .maxIdle(yamlProperties.getInt("redis.lettuce.pool.max-idle", 8))
+                .minIdle(yamlProperties.getInt("redis.lettuce.pool.min-idle", 0))
+                .maxWait(yamlProperties.getInt("redis.lettuce.pool.max-wait", 2000))
+                .shutdownTimeout(yamlProperties.getInt("redis.lettuce.shutdown-timeout", 2000))
+                .build()
+                .create()
+                .getStringRedisTemplate();
 
 
         TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel();
-        ServerRegistry<Worker, Supervisor> workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
+        WorkerRegistry workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-            .connectTimeout(2000)
-            .readTimeout(5000)
+            .connectTimeout(yamlProperties.getInt(JobConstants.HTTP_CONNECT_TIMEOUT_KEY, 2000))
+            .readTimeout(yamlProperties.getInt(JobConstants.HTTP_READ_TIMEOUT_KEY, 5000))
+            .maxRetryTimes(yamlProperties.getInt(JobConstants.HTTP_MAX_RETRY_TIMES_KEY, 3))
             .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(workerRegistry)
-            .maxRetryTimes(3)
             .build();
-        SupervisorService supervisorService = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
+        SupervisorService supervisorServiceClient = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
 
         // 不支持HttpTaskReceiver，请使用scheduler-samples-separately-worker-springboot模块来支持
         TaskReceiver taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
 
         WorkerStartup workerStartup = WorkerStartup.builder()
-            .maximumPoolSize(yamlProperties.getInt(DISTRIBUTED_SCHEDULER_WORKER + ".maximum-pool-size"))
-            .keepAliveTimeSeconds(yamlProperties.getInt(DISTRIBUTED_SCHEDULER_WORKER + ".keep-alive-time-seconds"))
-            .supervisorService(supervisorService)
             .currentWorker(currentWorker)
+            .maximumPoolSize(yamlProperties.getInt(WORKER_KEY_PREFIX + ".maximum-pool-size"))
+            .keepAliveTimeSeconds(yamlProperties.getInt(WORKER_KEY_PREFIX + ".keep-alive-time-seconds"))
+            .supervisorService(supervisorServiceClient)
             .taskReceiver(taskReceiver)
             .workerRegistry(workerRegistry)
             .build();

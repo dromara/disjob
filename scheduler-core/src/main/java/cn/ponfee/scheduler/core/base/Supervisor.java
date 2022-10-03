@@ -108,7 +108,7 @@ public final class Supervisor extends Server {
         }
     }
 
-    public static Supervisor castToSupervisor(Map<String, Object> map) {
+    private static Supervisor castToSupervisor(Map<String, Object> map) {
         if (map == null) {
             return null;
         }

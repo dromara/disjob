@@ -17,10 +17,6 @@
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-api</artifactId>
     </dependency>
     <dependency>

@@ -6,16 +6,16 @@ import org.springframework.util.Assert;
 import java.util.*;
 
 /**
- * Double list viewer
+ * Double(tow-dimensional) list viewer
  *
- * @param <T> the element type
+ * @param <E> the element type
  * @author Ponfee
  */
-public class DoubleListViewer<T> implements List<T>, RandomAccess {
-    private final Collection<List<T>> list;
+public class DoubleListViewer<E> implements List<E>, RandomAccess {
+    private final Collection<List<E>> list;
     private final int size;
 
-    public DoubleListViewer(Collection<List<T>> list) {
+    public DoubleListViewer(Collection<List<E>> list) {
         Assert.isTrue(list != null, "Origin list cannot be null.");
         this.list = list;
         this.size = list.stream().filter(Objects::nonNull).mapToInt(List::size).sum();
@@ -60,13 +60,13 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
     }
 
     @Override
-    public T get(int index) {
+    public E get(int index) {
         Assert.isTrue(index >= 0, "Index must greater than zero.");
         if (index >= size()) {
             throw new IndexOutOfBoundsException("Index out of bounds: " + index);
         }
         int count = 0;
-        for (List<T> sub : list) {
+        for (List<E> sub : list) {
             if (sub == null || sub.isEmpty()) {
                 continue;
             }
@@ -85,24 +85,24 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
     public int indexOf(Object o) {
         int index = 0;
         if (o == null) {
-            for (List<T> sub : list) {
+            for (List<E> sub : list) {
                 if (sub == null || sub.isEmpty()) {
                     continue;
                 }
-                for (int i = 0; i < sub.size(); i++) {
-                    if (sub.get(i) == null) {
+                for (E e : sub) {
+                    if (e == null) {
                         return index;
                     }
                     index++;
                 }
             }
         } else {
-            for (List<T> sub : list) {
+            for (List<E> sub : list) {
                 if (sub == null || sub.isEmpty()) {
                     continue;
                 }
-                for (int i = 0; i < sub.size(); i++) {
-                    if (o.equals(sub.get(i))) {
+                for (E e : sub) {
+                    if (o.equals(e)) {
                         return index;
                     }
                     index++;
@@ -116,7 +116,7 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
     public int lastIndexOf(Object o) {
         int index = size() - 1;
         if (o == null) {
-            for (List<T> sub : list) {
+            for (List<E> sub : list) {
                 if (sub == null || sub.isEmpty()) {
                     continue;
                 }
@@ -128,7 +128,7 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
                 }
             }
         } else {
-            for (List<T> sub : list) {
+            for (List<E> sub : list) {
                 if (sub == null || sub.isEmpty()) {
                     continue;
                 }
@@ -144,49 +144,96 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
     }
 
     @Override
-    public Iterator<T> iterator() {
-        return new UnmodifiableIterator(0, 0 + size());
+    public Iterator<E> iterator() {
+        return new UnmodifiableIterator(0, size());
     }
 
     @Override
-    public ListIterator<T> listIterator() {
+    public ListIterator<E> listIterator() {
         return new UnmodifiableListIterator(0, size());
     }
 
     @Override
-    public ListIterator<T> listIterator(int index) {
+    public ListIterator<E> listIterator(int index) {
         return new UnmodifiableListIterator(index, size());
     }
 
     @Override
-    public List<T> subList(int fromIndex, int toIndex) {
+    public List<E> subList(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String toString() {
+        Iterator<E> it = iterator();
+        if (!it.hasNext()) {
+            return "[]";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (; ; ) {
+            E e = it.next();
+            sb.append(e == this ? "(this Collection)" : e);
+            if (!it.hasNext()) {
+                return sb.append(']').toString();
+            }
+            sb.append(',').append(' ');
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = 1;
+        for (E e : this) {
+            hashCode = 31 * hashCode + (e == null ? 0 : e.hashCode());
+        }
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof List)) {
+            return false;
+        }
+
+        ListIterator<E> a = listIterator();
+        ListIterator<?> b = ((List<?>) o).listIterator();
+        while (a.hasNext() && b.hasNext()) {
+            if (!(Objects.equals(a.next(), b.next()))) {
+                return false;
+            }
+        }
+        return !(a.hasNext() || b.hasNext());
     }
 
     // ----------------------------------------------------Unsupported operations
 
     @Override
-    public T set(int index, T element) {
+    public E set(int index, E element) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void add(int index, T element) {
+    public void add(int index, E element) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public T remove(int index) {
+    public E remove(int index) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c) {
+    public boolean addAll(Collection<? extends E> c) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean addAll(int index, Collection<? extends T> c) {
+    public boolean addAll(int index, Collection<? extends E> c) {
         throw new UnsupportedOperationException();
     }
 
@@ -206,7 +253,7 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
     }
 
     @Override
-    public boolean add(T t) {
+    public boolean add(E e) {
         throw new UnsupportedOperationException();
     }
 
@@ -217,7 +264,7 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
 
     // ----------------------------------------------------Static class
 
-    private class UnmodifiableListIterator extends UnmodifiableIterator implements ListIterator<T> {
+    private class UnmodifiableListIterator extends UnmodifiableIterator implements ListIterator<E> {
         UnmodifiableListIterator(int position, int end) {
             super(position, end);
         }
@@ -228,7 +275,7 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
         }
 
         @Override
-        public T previous() {
+        public E previous() {
             if (!hasPrevious()) {
                 throw new NoSuchElementException();
             }
@@ -246,17 +293,17 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
         }
 
         @Override
-        public void set(T t) {
+        public void set(E e) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void add(T t) {
+        public void add(E e) {
             throw new UnsupportedOperationException();
         }
     }
 
-    private class UnmodifiableIterator implements Iterator<T> {
+    private class UnmodifiableIterator implements Iterator<E> {
         protected int position;
         protected final int end;
 
@@ -271,7 +318,7 @@ public class DoubleListViewer<T> implements List<T>, RandomAccess {
         }
 
         @Override
-        public T next() {
+        public E next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }

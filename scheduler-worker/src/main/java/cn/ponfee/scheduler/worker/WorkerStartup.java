@@ -1,10 +1,10 @@
 package cn.ponfee.scheduler.worker;
 
-import cn.ponfee.scheduler.core.base.Supervisor;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
-import cn.ponfee.scheduler.registry.ServerRegistry;
+import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
 import org.springframework.util.Assert;
 
@@ -19,27 +19,27 @@ public class WorkerStartup implements AutoCloseable {
 
     private final WorkerThreadPool workerThreadPool;
     private final Worker currentWorker;
-    private final ServerRegistry<Worker, Supervisor> workerRegistry;
+    private final WorkerRegistry workerRegistry;
     private final TaskReceiver taskReceiver;
     private final WorkerHeartbeatThread workerHeartbeatThread;
 
     private final AtomicBoolean start = new AtomicBoolean(false);
 
-    private WorkerStartup(int maximumPoolSize,
+    private WorkerStartup(Worker currentWorker,
+                          int maximumPoolSize,
                           int keepAliveTimeSeconds,
                           SupervisorService supervisorService,
-                          Worker currentWorker,
-                          ServerRegistry<Worker, Supervisor> workerRegistry,
+                          WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver) {
+        Assert.notNull(currentWorker, "Current worker cannot null.");
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be greater zero.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be greater zero.");
         Assert.notNull(supervisorService, "Supervisor service cannot null.");
-        Assert.notNull(currentWorker, "Current worker cannot null.");
         Assert.notNull(workerRegistry, "Server registry cannot null.");
         Assert.notNull(taskReceiver, "Task receiver cannot null.");
 
-        this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, supervisorService);
         this.currentWorker = currentWorker;
+        this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, supervisorService);
         this.workerRegistry = workerRegistry;
         this.taskReceiver = taskReceiver;
         this.workerHeartbeatThread = new WorkerHeartbeatThread(workerRegistry, taskReceiver.getTimingWheel(), workerThreadPool);
@@ -57,10 +57,10 @@ public class WorkerStartup implements AutoCloseable {
 
     @Override
     public void close() {
-        workerRegistry.close();
-        taskReceiver.close();
-        workerHeartbeatThread.doStop(1000);
-        workerThreadPool.close();
+        Throwables.cached(workerRegistry::close);
+        Throwables.cached(taskReceiver::close);
+        Throwables.cached(() -> workerHeartbeatThread.doStop(1000));
+        Throwables.cached(workerThreadPool::close);
     }
 
     // ----------------------------------------------------------------------------------------builder
@@ -70,12 +70,17 @@ public class WorkerStartup implements AutoCloseable {
     }
 
     public static class WorkerStartupBuilder {
+        private Worker currentWorker;
         private int maximumPoolSize;
         private int keepAliveTimeSeconds;
         private SupervisorService supervisorService;
-        private Worker currentWorker;
-        private ServerRegistry<Worker, Supervisor> workerRegistry;
+        private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
+
+        public WorkerStartup.WorkerStartupBuilder currentWorker(Worker currentWorker) {
+            this.currentWorker = currentWorker;
+            return this;
+        }
 
         public WorkerStartup.WorkerStartupBuilder maximumPoolSize(int maximumPoolSize) {
             this.maximumPoolSize = maximumPoolSize;
@@ -92,12 +97,7 @@ public class WorkerStartup implements AutoCloseable {
             return this;
         }
 
-        public WorkerStartup.WorkerStartupBuilder currentWorker(Worker currentWorker) {
-            this.currentWorker = currentWorker;
-            return this;
-        }
-
-        public WorkerStartup.WorkerStartupBuilder workerRegistry(ServerRegistry<Worker, Supervisor> workerRegistry) {
+        public WorkerStartup.WorkerStartupBuilder workerRegistry(WorkerRegistry workerRegistry) {
             this.workerRegistry = workerRegistry;
             return this;
         }
@@ -108,7 +108,7 @@ public class WorkerStartup implements AutoCloseable {
         }
 
         public WorkerStartup build() {
-            return new WorkerStartup(maximumPoolSize, keepAliveTimeSeconds, supervisorService, currentWorker, workerRegistry, taskReceiver);
+            return new WorkerStartup(currentWorker, maximumPoolSize, keepAliveTimeSeconds, supervisorService, workerRegistry, taskReceiver);
         }
     }
 

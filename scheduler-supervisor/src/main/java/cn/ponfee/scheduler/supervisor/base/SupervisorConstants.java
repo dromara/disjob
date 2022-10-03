@@ -1,18 +1,11 @@
 package cn.ponfee.scheduler.supervisor.base;
 
-import cn.ponfee.scheduler.core.base.JobConstants;
-
 /**
  * Supervisor constants definitions.
  *
  * @author Ponfee
  */
 public class SupervisorConstants {
-
-    /**
-     * Sched job supervisor configuration key prefix.
-     */
-    public static final String DISTRIBUTED_SCHEDULER_SUPERVISOR = JobConstants.KEY_PREFIX + ".supervisor";
 
     /**
      * Scan job lock sql
@@ -29,8 +22,14 @@ public class SupervisorConstants {
      */
     public static final int SCAN_TIME_INTERVAL_SECONDS = 60;
 
+    /**
+     * Spring bean name of scan sched_job table
+     */
     public static final String SPRING_BEAN_NAME_SCAN_JOB_LOCKED = "scanJobLocked";
 
+    /**
+     * Spring bean name of scan sched_track table
+     */
     public static final String SPRING_BEAN_NAME_SCAN_TRACK_LOCKED = "scanTrackLocked";
 
 }

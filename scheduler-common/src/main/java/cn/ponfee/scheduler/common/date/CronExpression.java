@@ -201,7 +201,6 @@ import java.util.TreeSet;
 public final class CronExpression implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 12423409423L;
-    private static final String BLANK_CHAR = " ";
 
     protected static final int SECOND = 0;
     protected static final int MINUTE = 1;
@@ -1656,25 +1655,6 @@ public final class CronExpression implements Serializable, Cloneable {
     @Deprecated
     public Object clone() {
         return new CronExpression(this);
-    }
-
-    /**
-     * Converts date time to cron expression
-     *
-     * @param date the date
-     * @return cron expression of the spec date
-     */
-    public static String toCronExpression(Date date) {
-        LocalDateTime dateTime = Dates.toLocalDateTime(date);
-        return new StringBuilder(22)
-            .append(dateTime.getSecond()    ).append(BLANK_CHAR) // second
-            .append(dateTime.getMinute()    ).append(BLANK_CHAR) // minute
-            .append(dateTime.getHour()      ).append(BLANK_CHAR) // hour
-            .append(dateTime.getDayOfMonth()).append(BLANK_CHAR) // day
-            .append(dateTime.getMonthValue()).append(BLANK_CHAR) // month
-            .append('?'                     ).append(BLANK_CHAR) // week
-            .append(dateTime.getYear()      )                    // year
-            .toString();
     }
 }
 

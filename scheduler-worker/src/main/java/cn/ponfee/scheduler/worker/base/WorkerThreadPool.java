@@ -171,32 +171,32 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return;
         }
 
-        LOG.info("Close worker thread pool start.");
+        LOG.info("Close worker thread pool start...");
 
         // 1、prepare close
         // 1.1、change executing pool thread state
-        activePool.stopPool();
+        Throwables.cached(activePool::stopPool);
 
         // 1.2、change idle pool thread state
-        idlePool.forEach(WorkerThread::toStop);
+        Throwables.cached(() -> idlePool.forEach(WorkerThread::toStop));
 
         // 1.3、clear task execution param queue
-        taskQueue.clear();
+        Throwables.cached(taskQueue::clear);
 
         // 2、do close
         // 2.1、stop this boss thread
-        MultithreadExecutors.stopThread(this, 10, 100, 1000);
+        Throwables.cached(() -> MultithreadExecutors.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
-        idlePool.forEach(e -> stopWorkerThread(e, true));
-        idlePool.clear();
+        Throwables.cached(() -> idlePool.forEach(e -> stopWorkerThread(e, true)));
+        Throwables.cached(idlePool::clear);
 
         // 2.3、stop executing pool thread
-        activePool.closePool();
+        Throwables.cached(activePool::closePool);
         threadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        ThreadPoolExecutors.shutdown(SUSPEND_TASK_POOL, 3);
+        Throwables.cached(() -> ThreadPoolExecutors.shutdown(SUSPEND_TASK_POOL, 1));
 
         LOG.info("Close worker thread pool end.");
     }
@@ -344,7 +344,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         threadCounter.decrementAndGet();
         if (doStop) {
             LOG.info("Worker thread death: {}", thread.getName());
-            thread.doStop(10, 100, 1000);
+            thread.doStop(0, 0, 200);
         }
     }
 

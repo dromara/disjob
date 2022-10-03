@@ -17,6 +17,14 @@
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-supervisor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-worker</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-redis</artifactId>
     </dependency>
     <dependency>
@@ -25,11 +33,11 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-supervisor</artifactId>
+      <artifactId>scheduler-dispatch-http</artifactId>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-worker</artifactId>
+      <artifactId>scheduler-configure</artifactId>
     </dependency>
   </dependencies>
 

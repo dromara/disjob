@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -31,6 +32,8 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
+import static cn.ponfee.scheduler.core.base.JobConstants.*;
+
 /**
  * Web configuration
  *
@@ -46,7 +49,7 @@ public class WebConfiguration implements WebMvcConfigurer {
      *
      * @return ObjectMapper
      */
-    @Bean
+    @Bean({"objectMapper", HTTP_OBJECT_MAPPER_SPRING_BEAN_NAME})
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Primary
     public ObjectMapper objectMapper() {
@@ -70,10 +73,11 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplate(@Value("${" + HTTP_CONNECT_TIMEOUT_KEY + ":2000}") int connectTimeout,
+                                     @Value("${" + HTTP_READ_TIMEOUT_KEY + ":5000}") int readTimeout) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(2000);
-        requestFactory.setReadTimeout(5000);
+        requestFactory.setConnectTimeout(connectTimeout);
+        requestFactory.setReadTimeout(readTimeout);
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         restTemplate.setMessageConverters(Arrays.asList(
             new ByteArrayHttpMessageConverter(),

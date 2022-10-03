@@ -2,6 +2,7 @@ package cn.ponfee.scheduler.supervisor.test;
 
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.GenericUtils;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
@@ -60,7 +61,7 @@ public abstract class SpringBootTestBase<T> {
 
     @BeforeAll
     public static void beforeAll() {
-        System.setProperty("server.port", "8080");
+        System.setProperty(JobConstants.SPRING_WEB_SERVER_PORT, "8080");
     }
 
     @BeforeEach

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +37,9 @@ public class RedisTaskDispatcher extends TaskDispatcher {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    public RedisTaskDispatcher(RedisTemplate<String, String> redisTemplate,
-                               Discovery<Worker> discoveryWorker,
-                               TimingWheel<ExecuteParam> timingWheel) {
+    public RedisTaskDispatcher(Discovery<Worker> discoveryWorker,
+                               @Nullable TimingWheel<ExecuteParam> timingWheel,
+                               RedisTemplate<String, String> redisTemplate) {
         super(discoveryWorker, timingWheel);
         this.redisTemplate = redisTemplate;
     }

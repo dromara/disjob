@@ -153,7 +153,7 @@ public final class JobUtils {
         Assert.isTrue(job.getRetryCount() > 0, "Sched job '" + job.getJobId() + "' retry count must greater than 0, but actual " + job.getRetryCount());
         Assert.isTrue(failCount < job.getRetryCount(), "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
         // exponential backoff
-        return current.getTime() + job.getRetryInterval() * IntMath.pow(failCount, 2);
+        return current.getTime() + (long) job.getRetryInterval() * IntMath.pow(failCount, 2);
     }
 
     // ----------------------------------------------------------------private methods

@@ -132,8 +132,8 @@ public final class SnowflakeIdGenerator implements IdGenerator {
         this.lastTimestamp = timestamp;
 
         return (((timestamp - TWEPOCH) << this.timestampShift) & this.timestampMask)
-             | (this.datacenterId << this.datacenterIdShift)
-             | (this.workerId << this.workerIdShift)
+             | ((long) this.datacenterId << this.datacenterIdShift)
+             | ((long) this.workerId << this.workerIdShift)
              | this.sequence;
     }
 

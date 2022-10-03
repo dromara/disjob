@@ -29,7 +29,7 @@ public class YamlPropertySourceFactory extends DefaultPropertySourceFactory {
         }
     }
 
-    private Properties loadYml(EncodedResource resource) throws IOException {
+    private Properties loadYml(EncodedResource resource) {
         YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
         factory.setResources(resource.getResource());
         factory.afterPropertiesSet();

@@ -19,7 +19,7 @@ import cn.ponfee.scheduler.core.model.SchedTrack;
 import cn.ponfee.scheduler.core.param.DispatchParam;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
-import cn.ponfee.scheduler.registry.Discovery;
+import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedTaskMapper;
@@ -74,7 +74,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     private IdGenerator idGenerator;
 
     @Resource
-    private Discovery<Worker> discoveryWorker;
+    private SupervisorRegistry discoveryWorker;
 
     @Resource
     private TaskDispatcher taskDispatcher;

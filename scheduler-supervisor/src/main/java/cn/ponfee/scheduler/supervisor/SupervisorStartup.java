@@ -1,13 +1,11 @@
 package cn.ponfee.scheduler.supervisor;
 
 import cn.ponfee.scheduler.common.base.IdGenerator;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
-import cn.ponfee.scheduler.common.util.ClassUtils;
-import cn.ponfee.scheduler.common.util.Networks;
 import cn.ponfee.scheduler.core.base.Supervisor;
-import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
-import cn.ponfee.scheduler.registry.ServerRegistry;
+import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.manager.JobManager;
 import org.springframework.util.Assert;
 
@@ -24,20 +22,20 @@ public class SupervisorStartup implements AutoCloseable {
     private final ScanJobHeartbeatThread scanJobHeartbeatThread;
     private final ScanTrackHeartbeatThread scanTrackHeartbeatThread;
     private final TaskDispatcher taskDispatcher;
-    private final ServerRegistry<Supervisor, Worker> supervisorRegistry;
+    private final SupervisorRegistry supervisorRegistry;
 
     private final AtomicBoolean start = new AtomicBoolean(false);
 
-    private SupervisorStartup(int port,
+    private SupervisorStartup(Supervisor currentSupervisor,
                               int jobHeartbeatIntervalSeconds,
                               int trackHeartbeatIntervalSeconds,
-                              ServerRegistry<Supervisor, Worker> supervisorRegistry,
+                              SupervisorRegistry supervisorRegistry,
                               JobManager jobManager,
                               DoInLocked scanJobLocked,
                               DoInLocked scanTrackLocked,
                               IdGenerator idGenerator,
                               TaskDispatcher taskDispatcher) {
-        Assert.isTrue(port > 0, "Port must be greater zero.");
+        Assert.notNull(currentSupervisor, "Current supervisor cannot null.");
         Assert.isTrue(jobHeartbeatIntervalSeconds > 0, "Job heart beat interval seconds must be greater zero.");
         Assert.isTrue(trackHeartbeatIntervalSeconds > 0, "Track heart beat interval seconds must be greater zero.");
         Assert.notNull(supervisorRegistry, "Supervisor registry cannot null.");
@@ -46,15 +44,6 @@ public class SupervisorStartup implements AutoCloseable {
         Assert.notNull(scanTrackLocked, "Scan track locked cannot null.");
         Assert.notNull(idGenerator, "Id generator cannot null.");
         Assert.notNull(taskDispatcher, "Task dispatcher cannot null.");
-
-        Supervisor currentSupervisor = new Supervisor(Networks.getHostIp(), port);
-        // inject current supervisor
-        try {
-            ClassUtils.invoke(Class.forName(Supervisor.class.getName() + "$Current"), "set", new Object[]{currentSupervisor});
-        } catch (ClassNotFoundException e) {
-            // cannot happen
-            throw new AssertionError("Setting as current supervisor occur error.", e);
-        }
 
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
@@ -74,13 +63,12 @@ public class SupervisorStartup implements AutoCloseable {
 
     @Override
     public void close() {
-        supervisorRegistry.close();
-        scanTrackHeartbeatThread.toStop();
-        scanJobHeartbeatThread.toStop();
-        taskDispatcher.close();
-
-        scanTrackHeartbeatThread.doStop(1000);
-        scanJobHeartbeatThread.doStop(1000);
+        Throwables.cached(supervisorRegistry::close);
+        Throwables.cached(scanTrackHeartbeatThread::toStop);
+        Throwables.cached(scanJobHeartbeatThread::toStop);
+        Throwables.cached(taskDispatcher::close);
+        Throwables.cached(() -> scanTrackHeartbeatThread.doStop(1000));
+        Throwables.cached(() -> scanJobHeartbeatThread.doStop(1000));
     }
 
     // ----------------------------------------------------------------------------------------builder
@@ -90,18 +78,18 @@ public class SupervisorStartup implements AutoCloseable {
     }
 
     public static class SupervisorStartupBuilder {
-        private int port;
+        private Supervisor currentSupervisor;
         private int jobHeartbeatIntervalSeconds;
         private int trackHeartbeatIntervalSeconds;
-        private ServerRegistry<Supervisor, Worker> supervisorRegistry;
+        private SupervisorRegistry supervisorRegistry;
         private JobManager jobManager;
         private DoInLocked scanJobLocked;
         private DoInLocked scanTrackLocked;
         private IdGenerator idGenerator;
         private TaskDispatcher taskDispatcher;
 
-        public SupervisorStartupBuilder port(int port) {
-            this.port = port;
+        public SupervisorStartupBuilder currentSupervisor(Supervisor currentSupervisor) {
+            this.currentSupervisor = currentSupervisor;
             return this;
         }
 
@@ -115,7 +103,7 @@ public class SupervisorStartup implements AutoCloseable {
             return this;
         }
 
-        public SupervisorStartupBuilder supervisorRegistry(ServerRegistry<Supervisor, Worker> supervisorRegistry) {
+        public SupervisorStartupBuilder supervisorRegistry(SupervisorRegistry supervisorRegistry) {
             this.supervisorRegistry = supervisorRegistry;
             return this;
         }
@@ -147,7 +135,7 @@ public class SupervisorStartup implements AutoCloseable {
 
         public SupervisorStartup build() {
             return new SupervisorStartup(
-                port, jobHeartbeatIntervalSeconds, trackHeartbeatIntervalSeconds,
+                currentSupervisor,jobHeartbeatIntervalSeconds, trackHeartbeatIntervalSeconds,
                 supervisorRegistry, jobManager, scanJobLocked, scanTrackLocked, idGenerator, taskDispatcher
             );
         }

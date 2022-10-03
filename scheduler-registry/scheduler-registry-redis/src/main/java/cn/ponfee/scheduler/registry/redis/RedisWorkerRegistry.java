@@ -2,6 +2,7 @@ package cn.ponfee.scheduler.registry.redis;
 
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.registry.WorkerRegistry;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor> {
+public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
     private volatile List<Supervisor> supervisors = Collections.emptyList();
 

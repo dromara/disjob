@@ -3,6 +3,7 @@ package cn.ponfee.scheduler.registry.redis;
 import cn.ponfee.scheduler.common.base.DoubleListViewer;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Collections;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Worker> {
+public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
     private volatile Map<String, List<Worker>> groupedWorkers = Collections.emptyMap();
     private volatile DoubleListViewer<Worker> allWorkers = new DoubleListViewer<>(Collections.emptyList());

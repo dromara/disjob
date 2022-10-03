@@ -13,6 +13,8 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static cn.ponfee.scheduler.common.util.Strings.BLANK_CHAR;
+
 /**
  * Date utility based joda
  *
@@ -605,6 +607,25 @@ public class Dates {
     public static LocalDateTime toLocalDateTime(LocalDate localDate,
                                                 LocalTime localTime) {
         return localDate.atTime(localTime);
+    }
+
+    /**
+     * Converts date time to cron expression
+     *
+     * @param date the date
+     * @return cron expression of the spec date
+     */
+    public static String toCronExpression(Date date) {
+        LocalDateTime dateTime = Dates.toLocalDateTime(date);
+        return new StringBuilder(22)
+            .append(dateTime.getSecond()    ).append(BLANK_CHAR) // second
+            .append(dateTime.getMinute()    ).append(BLANK_CHAR) // minute
+            .append(dateTime.getHour()      ).append(BLANK_CHAR) // hour
+            .append(dateTime.getDayOfMonth()).append(BLANK_CHAR) // day
+            .append(dateTime.getMonthValue()).append(BLANK_CHAR) // month
+            .append('?'                     ).append(BLANK_CHAR) // week
+            .append(dateTime.getYear()      )                    // year
+            .toString();
     }
 
     // ----------------------------------------------------------------private methods

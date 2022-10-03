@@ -49,7 +49,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      */
     protected static final int DEFAULT_DISCOVERY_REFRESH_INTERVAL_MILLISECONDS = 3000;
 
-    protected static final String PUBLISH_SUBSCRIBE_CHANNEL = JobConstants.KEY_PREFIX + ".channel";
+    protected static final String PUBLISH_SUBSCRIBE_CHANNEL = JobConstants.SCHEDULER_KEY_PREFIX + ".channel";
 
     private final StringRedisTemplate stringRedisTemplate;
 
