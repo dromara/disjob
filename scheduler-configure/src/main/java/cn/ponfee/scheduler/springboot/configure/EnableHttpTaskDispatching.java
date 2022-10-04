@@ -13,6 +13,6 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 @Import(HttpTaskDispatchingConfiguration.class)
-public @interface EnableHttpTaskDispatcher {
+public @interface EnableHttpTaskDispatching {
 
 }

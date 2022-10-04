@@ -17,13 +17,13 @@ spring.redis:
   #host: localhost
   #port: 6379
   #username: test123
-  password: 123456
+  password: 123456   # redis master node auth password
   connect-timeout: 1000
   timeout: 2000
   sentinel:
     master: REDIS_SENTINEL
     nodes: 112.74.170.75:16379,112.74.170.75:16380
-    #password: 654321
+    #password: 654321 # redis sentinel auth password
   client-type: LETTUCE
   lettuce:
     pool:
@@ -34,7 +34,12 @@ spring.redis:
     shutdown-timeout: 1000
 
 # scheduler worker configuration
-distributed.scheduler.worker:
-  group: default
-  maximum-pool-size: 100
-  keep-alive-time-seconds: 300
+distributed.scheduler:
+  worker:
+    group: default
+    maximum-pool-size: 100
+    keep-alive-time-seconds: 300
+  http:
+    connect-timeout: 2000
+    read-timeout: 5000
+    max-retry-times: 3

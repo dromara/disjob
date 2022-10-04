@@ -88,7 +88,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             // check has available workers
             if (!jobManager.hasWorkers(job.getJobGroup())) {
                 updateNextScanTime(job, now, 15);
-                logger.warn("Not found available group '{}' workers.", job.getJobGroup());
+                logger.warn("Scan job not found available group '{}' workers.", job.getJobGroup());
                 return;
             }
 

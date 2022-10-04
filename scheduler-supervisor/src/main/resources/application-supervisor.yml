@@ -44,6 +44,11 @@ spring.redis:
     shutdown-timeout: 1000
 
 # scheduler supervisor configuration
-distributed.scheduler.supervisor:
-  job.heartbeat-interval-seconds: 2
-  track.heartbeat-interval-seconds: 2
+distributed.scheduler:
+  supervisor:
+    job-heartbeat-interval-seconds: 2
+    track-heartbeat-interval-seconds: 2
+  http:
+    connect-timeout: 2000
+    read-timeout: 5000
+    max-retry-times: 3

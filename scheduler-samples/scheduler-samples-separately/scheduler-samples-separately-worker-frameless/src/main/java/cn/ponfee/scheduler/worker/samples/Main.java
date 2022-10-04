@@ -87,9 +87,9 @@ public class Main {
         WorkerRegistry workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-            .connectTimeout(yamlProperties.getInt(JobConstants.HTTP_CONNECT_TIMEOUT_KEY, 2000))
-            .readTimeout(yamlProperties.getInt(JobConstants.HTTP_READ_TIMEOUT_KEY, 5000))
-            .maxRetryTimes(yamlProperties.getInt(JobConstants.HTTP_MAX_RETRY_TIMES_KEY, 3))
+            .connectTimeout(yamlProperties.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.connect-timeout", 2000))
+            .readTimeout(yamlProperties.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.read-timeout", 5000))
+            .maxRetryTimes(yamlProperties.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.max-retry-times", 3))
             .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(workerRegistry)
             .build();

@@ -2,6 +2,7 @@ package cn.ponfee.scheduler.springboot.configure;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.util.Jsons;
+import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
@@ -14,7 +15,6 @@ import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -51,16 +51,14 @@ public class HttpTaskDispatchingConfiguration {
     public static class HttpTaskDispatcherConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        public TaskDispatcher taskDispatcher(@Value("${" + HTTP_CONNECT_TIMEOUT_KEY + ":2000}") int connectTimeout,
-                                             @Value("${" + HTTP_READ_TIMEOUT_KEY + ":5000}") int readTimeout,
-                                             @Value("${" + HTTP_MAX_RETRY_TIMES_KEY + ":3}") int maxRetryTimes,
+        public TaskDispatcher taskDispatcher(HttpProperties properties,
                                              SupervisorRegistry supervisorRegistry,
                                              @Nullable TimingWheel<ExecuteParam> timingWheel,
-                                             @Nullable @Qualifier(HTTP_OBJECT_MAPPER_SPRING_BEAN_NAME) ObjectMapper objectMapper) {
+                                             @Nullable @Qualifier(SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
             DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-                .connectTimeout(connectTimeout)
-                .readTimeout(readTimeout)
-                .maxRetryTimes(maxRetryTimes)
+                .connectTimeout(properties.getConnectTimeout())
+                .readTimeout(properties.getReadTimeout())
+                .maxRetryTimes(properties.getMaxRetryTimes())
                 .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
                 .discoveryServer(supervisorRegistry)
                 .build();

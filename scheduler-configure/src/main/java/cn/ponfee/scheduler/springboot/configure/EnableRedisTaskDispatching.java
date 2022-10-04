@@ -13,6 +13,6 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 @Import(RedisTaskDispatchingConfiguration.class)
-public @interface EnableRedisTaskDispatcher {
+public @interface EnableRedisTaskDispatching {
 
 }

@@ -2,6 +2,7 @@ package cn.ponfee.scheduler.worker.samples.config;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.util.Jsons;
+import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
@@ -12,7 +13,6 @@ import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.Nullable;
@@ -33,15 +33,13 @@ public class WorkerConfiguration {
     }
 
     @Bean
-    public SupervisorService supervisorServiceClient(@Value("${" + HTTP_CONNECT_TIMEOUT_KEY + ":2000}") int connectTimeout,
-                                                     @Value("${" + HTTP_READ_TIMEOUT_KEY + ":5000}") int readTimeout,
-                                                     @Value("${" + HTTP_MAX_RETRY_TIMES_KEY + ":3}") int maxRetryTimes,
+    public SupervisorService supervisorServiceClient(HttpProperties properties,
                                                      WorkerRegistry workerRegistry,
-                                                     @Nullable @Qualifier(HTTP_OBJECT_MAPPER_SPRING_BEAN_NAME) ObjectMapper objectMapper) {
+                                                     @Nullable @Qualifier(SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-            .connectTimeout(connectTimeout)
-            .readTimeout(readTimeout)
-            .maxRetryTimes(maxRetryTimes)
+            .connectTimeout(properties.getConnectTimeout())
+            .readTimeout(properties.getReadTimeout())
+            .maxRetryTimes(properties.getMaxRetryTimes())
             .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(workerRegistry)
             .build();

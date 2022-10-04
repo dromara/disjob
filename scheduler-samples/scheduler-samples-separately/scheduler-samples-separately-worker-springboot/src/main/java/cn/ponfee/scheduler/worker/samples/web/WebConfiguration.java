@@ -2,11 +2,11 @@ package cn.ponfee.scheduler.worker.samples.web;
 
 import cn.ponfee.scheduler.common.spring.LocalizedMethodArgumentResolver;
 import cn.ponfee.scheduler.common.util.Jsons;
+import cn.ponfee.scheduler.core.base.HttpProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -49,7 +49,7 @@ public class WebConfiguration implements WebMvcConfigurer {
      *
      * @return ObjectMapper
      */
-    @Bean({"objectMapper", HTTP_OBJECT_MAPPER_SPRING_BEAN_NAME})
+    @Bean({"objectMapper", SPRING_BEAN_NAME_OBJECT_MAPPER})
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Primary
     public ObjectMapper objectMapper() {
@@ -73,11 +73,10 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public RestTemplate restTemplate(@Value("${" + HTTP_CONNECT_TIMEOUT_KEY + ":2000}") int connectTimeout,
-                                     @Value("${" + HTTP_READ_TIMEOUT_KEY + ":5000}") int readTimeout) {
+    public RestTemplate restTemplate(HttpProperties properties) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(connectTimeout);
-        requestFactory.setReadTimeout(readTimeout);
+        requestFactory.setConnectTimeout(properties.getConnectTimeout());
+        requestFactory.setReadTimeout(properties.getReadTimeout());
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         restTemplate.setMessageConverters(Arrays.asList(
             new ByteArrayHttpMessageConverter(),

@@ -5,15 +5,13 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
+import cn.ponfee.scheduler.worker.base.WorkerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-
-import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
 
 /**
  * Worker startup runner.
@@ -28,15 +26,14 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
     private final WorkerStartup workerStartup;
 
     public WorkerStartupRunner(Worker currentWorker,
-                               @Value("${" + WORKER_KEY_PREFIX + ".maximum-pool-size:100}") int maximumPoolSize,
-                               @Value("${" + WORKER_KEY_PREFIX + ".keep-alive-time-seconds:300}") int keepAliveTimeSeconds,
+                               WorkerProperties properties,
                                SupervisorService supervisorService,
                                WorkerRegistry workerRegistry,
                                TaskReceiver taskReceiver) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
-            .maximumPoolSize(maximumPoolSize)
-            .keepAliveTimeSeconds(keepAliveTimeSeconds)
+            .maximumPoolSize(properties.getMaximumPoolSize())
+            .keepAliveTimeSeconds(properties.getKeepAliveTimeSeconds())
             .supervisorService(supervisorService)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)

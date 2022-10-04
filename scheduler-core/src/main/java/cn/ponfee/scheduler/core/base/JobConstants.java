@@ -28,24 +28,14 @@ public class JobConstants {
     public static final String SUPERVISOR_KEY_PREFIX = SCHEDULER_KEY_PREFIX + ".supervisor";
 
     /**
-     * Http rest connect timeout config key.
+     * Http rest configuration key prefix.
      */
-    public static final String HTTP_CONNECT_TIMEOUT_KEY = SCHEDULER_KEY_PREFIX + ".http.connect-timeout";
-
-    /**
-     * Http rest read timeout config key.
-     */
-    public static final String HTTP_READ_TIMEOUT_KEY = SCHEDULER_KEY_PREFIX + ".http.read-timeout";
-
-    /**
-     * Http max retry times config key.
-     */
-    public static final String HTTP_MAX_RETRY_TIMES_KEY = SCHEDULER_KEY_PREFIX + ".http.max-retry-times";
+    public static final String HTTP_KEY_PREFIX = SCHEDULER_KEY_PREFIX + ".http";
 
     /**
      * Http serialize and deserialize object mapper spring bean name.
      */
-    public static final String HTTP_OBJECT_MAPPER_SPRING_BEAN_NAME = SCHEDULER_KEY_PREFIX + ".http.object-mapper";
+    public static final String SPRING_BEAN_NAME_OBJECT_MAPPER = SCHEDULER_KEY_PREFIX + ".object-mapper";
 
     /**
      * Current supervisor spring bean name
