@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.dispatch.redis;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
+import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.lock.RedisLock;
 import cn.ponfee.scheduler.core.base.JobConstants;
@@ -77,7 +78,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         this.currentWorker = currentWorker;
         this.redisTemplate = redisTemplate;
         this.currentWorkerRedisKey = DispatchConstants.buildDispatchTasksKey(currentWorker).getBytes();
-        this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, ThreadPoolExecutors.DISCARD);
+        this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Redis-Task-Receive-Executor", true), ThreadPoolExecutors.DISCARD);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class RedisTaskReceiver extends TaskReceiver {
             } catch (Exception e) {
                 LOG.error("Redis task receive scheduled error.", e);
             }
-        }, 5, 1, TimeUnit.SECONDS);
+        }, 3, 1, TimeUnit.SECONDS);
     }
 
     @Override

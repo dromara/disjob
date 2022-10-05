@@ -1,0 +1,21 @@
+# redis configuration
+spring.redis:
+  database: 0
+  #host: localhost    # redis standalone host name
+  #port: 6379         # redis standalone port
+  #username: test123  # redis mast node username
+  password: 123456   # redis master node auth password
+  connect-timeout: 1000
+  timeout: 2000
+  sentinel:
+    master: REDIS_SENTINEL
+    nodes: 112.74.170.75:16379,112.74.170.75:16380
+    #password: 654321 # redis sentinel auth password
+  client-type: LETTUCE
+  lettuce:
+    pool:
+      max-active: 20
+      max-idle: 8
+      min-idle: 0
+      max-wait: 1000
+    shutdown-timeout: 1000

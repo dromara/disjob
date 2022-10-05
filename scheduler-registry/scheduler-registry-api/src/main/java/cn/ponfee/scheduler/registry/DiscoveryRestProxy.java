@@ -2,7 +2,6 @@ package cn.ponfee.scheduler.registry;
 
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Files;
-import cn.ponfee.scheduler.common.util.ObjectUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +28,7 @@ public class DiscoveryRestProxy {
 
     private static class RestInvocationHandler implements InvocationHandler {
         private static final Map<Method, String> PATH_CACHE = new HashMap<>();
-        private static final String PLACE_HOLDER = ObjectUtils.uuid32();
+        private static final String PLACE_HOLDER = new String();
 
         private final DiscoveryRestTemplate<?> discoveryRestTemplate;
         private final String prefixPath;

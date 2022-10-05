@@ -4,6 +4,7 @@ import cn.ponfee.scheduler.common.base.DoubleListViewer;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Collections;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
     private volatile Map<String, List<Worker>> groupedWorkers = Collections.emptyMap();
-    private volatile DoubleListViewer<Worker> allWorkers = new DoubleListViewer<>(Collections.emptyList());
+    private volatile List<Worker> allWorkers = new DoubleListViewer<>(Collections.emptyList());
 
     public RedisSupervisorRegistry(StringRedisTemplate stringRedisTemplate) {
         this(
@@ -38,22 +39,21 @@ public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Wor
 
     @Override
     protected List<Worker> getServers(String group, boolean forceRefresh) {
-        doRefreshDiscoveryInSynchronized(servers -> {
-            List<Worker> discoveredWorkers = servers.stream()
-                                                    .map(Worker::deserialize)
-                                                    .collect(Collectors.toList());
-
-            Map<String, List<Worker>> groupedWorkers0 = discoveredWorkers.stream()
-                .collect(Collectors.groupingBy(Worker::getGroup))
-                .entrySet()
-                .stream()
-                .peek(e -> e.getValue().sort(Comparator.comparing(Worker::getInstanceId))) // For help use route worker
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.unmodifiableList(e.getValue())));
-
-            DoubleListViewer<Worker> allWorkers0 = new DoubleListViewer<>(groupedWorkers0.values());
-
-            this.groupedWorkers = groupedWorkers0;
-            this.allWorkers = allWorkers0;
+        refreshDiscovery(discoveredWorkers -> {
+            if (CollectionUtils.isEmpty(discoveredWorkers)) {
+                this.groupedWorkers = Collections.emptyMap();
+                this.allWorkers = Collections.emptyList();
+            } else {
+                Map<String, List<Worker>> map = discoveredWorkers.stream()
+                    .collect(Collectors.groupingBy(Worker::getGroup))
+                    .entrySet()
+                    .stream()
+                    .peek(e -> e.getValue().sort(Comparator.comparing(Worker::getInstanceId))) // For help use route worker
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.unmodifiableList(e.getValue())));
+                DoubleListViewer<Worker> list = new DoubleListViewer<>(map.values());
+                this.groupedWorkers = map;
+                this.allWorkers = list;
+            }
         }, forceRefresh);
 
         return group == null ? allWorkers : groupedWorkers.get(group);

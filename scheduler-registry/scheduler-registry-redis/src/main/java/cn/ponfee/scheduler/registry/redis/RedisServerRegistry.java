@@ -1,13 +1,13 @@
 package cn.ponfee.scheduler.registry.redis;
 
-import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Server;
-import cn.ponfee.scheduler.registry.Actions;
-import cn.ponfee.scheduler.registry.Roles;
+import cn.ponfee.scheduler.registry.RegistryEvent;
 import cn.ponfee.scheduler.registry.ServerRegistry;
-import lombok.Data;
+import cn.ponfee.scheduler.registry.ServerRole;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
@@ -16,10 +16,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
-import java.beans.Transient;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.scheduler.common.base.Constants.SEMICOLON;
+import static cn.ponfee.scheduler.common.base.Constants.COLON;
 
 /**
  * Registry server based redis.
@@ -49,7 +46,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      */
     protected static final int DEFAULT_DISCOVERY_REFRESH_INTERVAL_MILLISECONDS = 3000;
 
-    protected static final String PUBLISH_SUBSCRIBE_CHANNEL = JobConstants.SCHEDULER_KEY_PREFIX + ".channel";
+    private static final String PUBLISH_SUBSCRIBE_CHANNEL = JobConstants.SCHEDULER_KEY_PREFIX + ".channel";
 
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -61,10 +58,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     // -------------------------------------------------Discovery
 
     private final long refreshIntervalMilliseconds;
-    private final RestTemplate restTemplate;
     private volatile long nextRefreshTimeMillis = 0;
 
-    // ------------------------------------------------------------------Subscribe
+    // -------------------------------------------------Subscribe
 
     private final RedisMessageListenerContainer redisMessageListenerContainer;
 
@@ -74,7 +70,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.stringRedisTemplate = stringRedisTemplate;
 
         this.keepAliveInMillis = keepAliveInMillis;
-        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, ThreadPoolExecutors.DISCARD);
+        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Redis-Register-Heartbeat-Executor", true));
         this.registryScheduledExecutor.scheduleAtFixedRate(() -> {
             if (closed) {
                 return;
@@ -84,7 +80,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             } catch (Throwable t) {
                 logger.error("Do scheduled register occur error: " + registered, t);
             }
-        }, 15, 1, TimeUnit.SECONDS);
+        }, 3, 1, TimeUnit.SECONDS);
 
         this.refreshIntervalMilliseconds = refreshIntervalMilliseconds;
 
@@ -98,12 +94,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         container.afterPropertiesSet();
         container.start();
         this.redisMessageListenerContainer = container;
-
-        // http spring reset template
-        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(200);
-        requestFactory.setReadTimeout(300);
-        this.restTemplate = new RestTemplate(requestFactory);
     }
 
     // ------------------------------------------------------------------Registry
@@ -115,16 +105,16 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         }
 
         registered.add(server);
-        doRegister(Collections.singleton(server));
-        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, buildPublishValue(Actions.REGISTER, server));
+        Throwables.cached(() -> doRegister(Collections.singleton(server)));
+        Throwables.cached(() -> publish(server, RegistryEvent.REGISTER));
         logger.info("Server registered: {} - {}", registryRole.name(), server.serialize());
     }
 
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        stringRedisTemplate.opsForZSet().remove(registryRole.registryKey(), server.serialize());
-        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, buildPublishValue(Actions.DEREGISTER, server));
+        Throwables.cached(() -> stringRedisTemplate.opsForZSet().remove(registryRole.registryKey(), server.serialize()));
+        Throwables.cached(() -> publish(server, RegistryEvent.DEREGISTER));
         logger.info("Server deregister: {} - {}", registryRole.name(), server.serialize());
     }
 
@@ -135,6 +125,13 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         return getServers(group, false);
     }
 
+    /**
+     * Gets servers
+     *
+     * @param group        the group
+     * @param forceRefresh the force refresh
+     * @return list of servers
+     */
     protected abstract List<D> getServers(String group, boolean forceRefresh);
 
     @Override
@@ -157,18 +154,30 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         try {
             registryScheduledExecutor.shutdownNow();
             registryScheduledExecutor.awaitTermination(1, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             logger.error("Await registry scheduled executor termination occur error.", e);
-            Thread.currentThread().interrupt();
         }
 
         registered.forEach(this::deregister);
         registered.clear();
 
-        redisMessageListenerContainer.stop();
+        Throwables.cached(redisMessageListenerContainer::stop);
     }
 
     // ------------------------------------------------------------------Subscribe
+    @Override
+    public void publish(R server, RegistryEvent event) {
+        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, buildPublishValue(event, server));
+    }
+
+    @Override
+    public void subscribe(D server, ServerRole role, RegistryEvent event) {
+        if (role == discoveryRole) {
+            // refresh the discovery
+            getServers(null, true);
+        }
+    }
+
     /**
      * For redis message subscribe invoke.
      *
@@ -178,25 +187,25 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public void handleMessage(String message, String pattern) {
         try {
             int pos = -1;
-            String s0 = message.substring(pos += 1, pos = message.indexOf(SEMICOLON, pos));
-            //String s1 = message.substring(pos += 1, pos = message.indexOf(SEMICOLON, pos));
+            String s0 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));
+            //String s1 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));
             //String s2 = message.substring(pos += 1);
 
-            Roles role = Roles.valueOf(s0);
-            //Actions action = Actions.valueOf(s1);
+            ServerRole role = ServerRole.valueOf(s0);
+            //RegistryEvent event = RegistryEvent.valueOf(s1);
             //D server = role.deserialize(s2);
+            subscribe(null, role, null);
             if (role == discoveryRole) {
-                getServers(null, true);
                 logger.info("Subscribed message: {} - {}", pattern, message);
             }
-        } catch (Exception e) {
-            logger.error("Parse subscribed message error: " + message + ", " + pattern, e);
+        } catch (Throwable t) {
+            logger.error("Parse subscribed message error: " + message + ", " + pattern, t);
         }
     }
 
     // ------------------------------------------------------------------protected methods
 
-    protected void doRefreshDiscoveryInSynchronized(Consumer<Set<String>> processor, boolean forceRefresh) {
+    protected void refreshDiscovery(Consumer<List<D>> processor, boolean forceRefresh) {
         if (forceRefresh) {
             doRefreshDiscovery(processor);
             return;
@@ -212,26 +221,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             }
             doRefreshDiscovery(processor);
         }
-    }
-
-    protected List<D> filterAvailableServers(List<D> discoveredServers) {
-        if (discoveredServers.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return discoveredServers
-            .parallelStream()
-            .filter(supervisor -> {
-                String url = String.format("http://%s:%d/%s", supervisor.getHost(), supervisor.getPort(), "actuator/health");
-                try {
-                    ActuatorHealth result = restTemplate.getForObject(url, ActuatorHealth.class);
-                    return result != null && result.isSuccess();
-                } catch (Exception e) {
-                    logger.warn("Not available supervisor: {}, {}", supervisor, e.getMessage());
-                    return false;
-                }
-            })
-            .collect(Collectors.toList());
     }
 
     private void doRegister(Set<R> servers) {
@@ -258,7 +247,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         });
     }
 
-    private synchronized void doRefreshDiscovery(Consumer<Set<String>> processor) {
+    private synchronized void doRefreshDiscovery(Consumer<List<D>> processor) {
         String discoveryKey = discoveryRole.registryKey();
         long now = System.currentTimeMillis();
         List<Object> result = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
@@ -278,14 +267,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             logger.error("Discovered from redis failed, Not found available server.");
             discovered = Collections.emptySet();
         }
-        processor.accept(discovered);
+        processor.accept(discovered.stream().map(s -> (D) discoveryRole.deserialize(s)).collect(Collectors.toList()));
 
         updateRefresh();
         logger.info("Refreshed discovery " + discoveryRole.name());
     }
 
-    private String buildPublishValue(Actions action, R server) {
-        return registryRole.name() + SEMICOLON + action.name() + SEMICOLON + server.serialize();
+    private String buildPublishValue(RegistryEvent event, R server) {
+        return registryRole.name() + COLON + event.name() + COLON + server.serialize();
     }
 
     private boolean requireRefresh() {
@@ -294,16 +283,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private void updateRefresh() {
         this.nextRefreshTimeMillis = System.currentTimeMillis() + refreshIntervalMilliseconds;
-    }
-
-    @Data
-    private static class ActuatorHealth {
-        private String status;
-
-        @Transient
-        public boolean isSuccess() {
-            return "UP".equals(status);
-        }
     }
 
 }

@@ -39,10 +39,11 @@ public class SentinelRedisTemplateCreator extends AbstractRedisTemplateCreator {
                 String[] parts = StringUtils.split(node, ":");
                 Assert.state(parts.length == 2, "Must be defined as 'host:port'");
                 nodes.add(new RedisNode(parts[0], Integer.parseInt(parts[1])));
-            } catch (RuntimeException ex) {
-                throw new IllegalStateException("Invalid redis sentinel property '" + node + "'", ex);
+            } catch (Exception e) {
+                throw new IllegalStateException("Invalid redis sentinel property '" + node + "'", e);
             }
         }
+        Assert.notEmpty(nodes, "Not config any node sentinel.");
         return nodes;
     }
 }

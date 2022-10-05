@@ -1,2 +1,2 @@
 server.port: 8080
-spring.profiles.include: supervisor,worker
+spring.profiles.include: web,mysql,supervisor,worker,redis,consul

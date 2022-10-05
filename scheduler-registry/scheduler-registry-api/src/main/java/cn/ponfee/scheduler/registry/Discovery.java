@@ -38,10 +38,20 @@ public interface Discovery<D extends Server> {
     boolean isAlive(D server);
 
     /**
-     * Returns discovery role name.
+     * Returns discovery server role.
      *
-     * @return discovery role name
+     * @return discovery server role
      */
-    String discoveryRole();
+    ServerRole discoveryRole();
 
+    /**
+     * Subscribes discovery server register and deregister event.
+     *
+     * @param server the server
+     * @param role   the server role
+     * @param event  the event
+     */
+    default void subscribe(D server, ServerRole role, RegistryEvent event) {
+        // No-op
+    }
 }

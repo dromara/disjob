@@ -98,7 +98,7 @@ public class DiscoveryRestTemplate<S extends Server> {
     private <T> T doExecute(String group, String path, Type returnType, Object... arguments) throws Exception {
         List<S> servers = discoveryServer.getServers(group);
         if (CollectionUtils.isEmpty(servers)) {
-            throw new IllegalStateException("Not found available " + discoveryServer.discoveryRole() + " servers");
+            throw new IllegalStateException("Not found available " + discoveryServer.discoveryRole().name() + " servers");
         }
 
         int serverNumber = servers.size();

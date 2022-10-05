@@ -19,7 +19,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 
-import static cn.ponfee.scheduler.common.base.Constants.SEMICOLON;
+import static cn.ponfee.scheduler.common.base.Constants.COLON;
 import static cn.ponfee.scheduler.common.util.Collects.get;
 
 /**
@@ -47,12 +47,12 @@ public final class Worker extends Server {
     public Worker(String group, String instanceId, String host, int port) {
         super(host, port);
 
-        Assert.isTrue(!instanceId.contains(Constants.SEMICOLON), "Instance-id cannot contains symbol ':'");
-        Assert.isTrue(!group.contains(Constants.SEMICOLON), "Group name cannot contains symbol ':'");
+        Assert.isTrue(!instanceId.contains(Constants.COLON), "Instance-id cannot contains symbol ':'");
+        Assert.isTrue(!group.contains(Constants.COLON), "Group name cannot contains symbol ':'");
         this.group = group;
         this.instanceId = instanceId;
 
-        this.serialize = group + SEMICOLON + instanceId + SEMICOLON + host + SEMICOLON + port;
+        this.serialize = group + COLON + instanceId + COLON + host + COLON + port;
     }
 
     @Override
@@ -80,7 +80,7 @@ public final class Worker extends Server {
      */
     public static Worker deserialize(String text) {
         Assert.hasText(text, "Serialized text cannot empty.");
-        String[] array = text.split(SEMICOLON);
+        String[] array = text.split(COLON);
 
         String group = get(array, 0);
         Assert.hasText(group, "Worker group cannot bank.");

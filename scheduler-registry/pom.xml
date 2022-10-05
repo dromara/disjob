@@ -18,6 +18,7 @@
   <modules>
     <module>scheduler-registry-api</module>
     <module>scheduler-registry-redis</module>
+    <module>scheduler-registry-consul</module>
   </modules>
 
 </project>

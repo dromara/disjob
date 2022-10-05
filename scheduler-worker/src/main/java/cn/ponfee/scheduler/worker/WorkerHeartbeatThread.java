@@ -45,7 +45,7 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
     private boolean process() {
         // check has available supervisors
         if (CollectionUtils.isEmpty(discoverySupervisor.getServers())) {
-            logger.warn("Not available " + discoverySupervisor.discoveryRole() + " supervisors.");
+            logger.warn("Not available " + discoverySupervisor.discoveryRole().name() + " supervisors.");
             return false;
         }
 

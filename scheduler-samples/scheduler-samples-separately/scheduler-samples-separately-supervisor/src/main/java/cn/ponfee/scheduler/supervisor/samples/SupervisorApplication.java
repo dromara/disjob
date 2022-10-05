@@ -1,8 +1,12 @@
 package cn.ponfee.scheduler.supervisor.samples;
 
 import cn.ponfee.scheduler.core.base.HttpProperties;
-import cn.ponfee.scheduler.springboot.configure.*;
-import cn.ponfee.scheduler.supervisor.base.SupervisorProperties;
+import cn.ponfee.scheduler.dispatch.redis.configuration.EnableRedisTaskDispatching;
+import cn.ponfee.scheduler.registry.consul.configuration.ConsulProperties;
+import cn.ponfee.scheduler.registry.consul.configuration.EnableConsulServerRegistry;
+import cn.ponfee.scheduler.registry.redis.configuration.EnableRedisServerRegistry;
+import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
+import cn.ponfee.scheduler.supervisor.configuration.SupervisorProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -13,11 +17,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  *
  * @author Ponfee
  */
-@EnableConfigurationProperties({SupervisorProperties.class, HttpProperties.class})
+@EnableConfigurationProperties({
+    SupervisorProperties.class,
+    HttpProperties.class,
+    ConsulProperties.class
+})
 @EnableSupervisor
-@EnableRedisServerRegistry
-@EnableRedisTaskDispatching
-//@EnableHttpTaskDispatching
+@EnableConsulServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry
+@EnableRedisTaskDispatching // EnableRedisTaskDispatching、EnableHttpTaskDispatching
 @SpringBootApplication(
     exclude = {
         DataSourceAutoConfiguration.class

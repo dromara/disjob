@@ -29,22 +29,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-registry-redis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-dispatch-redis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-dispatch-http</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-configure</artifactId>
-    </dependency>
   </dependencies>
 
   <build>

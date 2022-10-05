@@ -13,9 +13,11 @@ import cn.ponfee.scheduler.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
+import cn.ponfee.scheduler.registry.consul.ConsulWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
+import cn.ponfee.scheduler.worker.samples.redis.SentinelRedisTemplateCreator;
 import cn.ponfee.scheduler.worker.samples.redis.StandaloneRedisTemplateCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.StringUtils;
@@ -59,14 +61,14 @@ public class Main {
         StringRedisTemplate stringRedisTemplate =
 
             // Standalone
-            StandaloneRedisTemplateCreator.builder()
+            /*StandaloneRedisTemplateCreator.builder()
                 .host(yamlProperties.getRequiredString("redis.host"))
-                .port(yamlProperties.getRequiredInt("redis.port"))
+                .port(yamlProperties.getRequiredInt("redis.port"))*/
 
                 // Sentinel
-                /*SentinelRedisTemplateCreator.builder()
+                SentinelRedisTemplateCreator.builder()
                 .sentinelMaster(yamlProperties.getRequiredString("redis.sentinel.master"))
-                .sentinelNodes(yamlProperties.getRequiredString("redis.sentinel.nodes"))*/
+                .sentinelNodes(yamlProperties.getRequiredString("redis.sentinel.nodes"))
 
                 .database(yamlProperties.getInt("redis.database", 0))
                 .username(yamlProperties.getString("redis.username"))
@@ -83,8 +85,9 @@ public class Main {
                 .getStringRedisTemplate();
 
 
-        TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel();
-        WorkerRegistry workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
+
+        //WorkerRegistry workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
+        WorkerRegistry workerRegistry = new ConsulWorkerRegistry("127.0.0.1", 8500, null);
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
             .connectTimeout(yamlProperties.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.connect-timeout", 2000))
@@ -95,6 +98,7 @@ public class Main {
             .build();
         SupervisorService supervisorServiceClient = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
 
+        TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel();
         // 不支持HttpTaskReceiver，请使用scheduler-samples-separately-worker-springboot模块来支持
         TaskReceiver taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
 

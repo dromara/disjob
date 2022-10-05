@@ -24,7 +24,6 @@
     <module>scheduler-worker</module>
     <module>scheduler-registry</module>
     <module>scheduler-dispatch</module>
-    <module>scheduler-configure</module>
     <module>scheduler-samples</module>
   </modules>
 

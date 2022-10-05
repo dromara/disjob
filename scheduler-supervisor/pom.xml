@@ -43,6 +43,12 @@
     <!-- test dependency -->
     <dependency>
       <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-samples-common</artifactId>
+      <version>${revision}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-dispatch-redis</artifactId>
       <version>${revision}</version>
       <scope>test</scope>

@@ -19,13 +19,22 @@ public class Constants {
     // -------------------------------------------------------------String constants
 
     /**
-     * Semicolon symbol
+     * Colon symbol
      */
-    public static final String SEMICOLON = ":";
+    public static final String COLON = ":";
 
     /**
      * Comma symbol
      */
     public static final String COMMA = ",";
 
+    /**
+     * Dot symbol
+     */
+    public static final String DOT = ".";
+
+    /**
+     * Slash symbol
+     */
+    public static final String SLASH = "/";
 }

@@ -20,8 +20,8 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected final Roles registryRole;
-    protected final Roles discoveryRole;
+    protected final ServerRole registryRole;
+    protected final ServerRole discoveryRole;
 
     protected final Set<R> registered = new ConcurrentHashSet<>();
 
@@ -37,24 +37,26 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected volatile boolean closed = false;
 
     protected ServerRegistry() {
-        this.registryRole  = Roles.of(GenericUtils.getActualTypeArgument(getClass(), 0));
-        this.discoveryRole = Roles.of(GenericUtils.getActualTypeArgument(getClass(), 1));
+        this.registryRole  = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 0));
+        this.discoveryRole = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 1));
     }
 
     /**
      * Close registry.
      */
     @Override
-    public abstract void close();
-
-    @Override
-    public String registryRole() {
-        return registryRole.name();
+    public void close() {
+        // No-op
     }
 
     @Override
-    public String discoveryRole() {
-        return discoveryRole.name();
+    public ServerRole registryRole() {
+        return registryRole;
+    }
+
+    @Override
+    public ServerRole discoveryRole() {
+        return discoveryRole;
     }
 
 }

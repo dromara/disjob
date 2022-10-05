@@ -16,30 +16,39 @@
   <name>${project.artifactId}</name>
 
   <modules>
+    <module>scheduler-samples-common</module>
     <module>scheduler-samples-merged</module>
     <module>scheduler-samples-separately</module>
   </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-registry-redis</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-registry-consul</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-dispatch-redis</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-dispatch-http</artifactId>
+      <version>${revision}</version>
+    </dependency>
+  </dependencies>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-registry-redis</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-dispatch-redis</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-dispatch-http</artifactId>
-        <version>${revision}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-configure</artifactId>
+        <artifactId>scheduler-samples-common</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>

@@ -1,6 +1,0 @@
-# scheduler worker configuration
-distributed.scheduler:
-  worker:
-    group: default
-    maximum-pool-size: 100
-    keep-alive-time-seconds: 300

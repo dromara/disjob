@@ -5,7 +5,7 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
-import cn.ponfee.scheduler.worker.base.WorkerProperties;
+import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;

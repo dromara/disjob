@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
-import static cn.ponfee.scheduler.core.base.JobConstants.*;
+import static cn.ponfee.scheduler.core.base.JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER;
 
 /**
  * Web configuration

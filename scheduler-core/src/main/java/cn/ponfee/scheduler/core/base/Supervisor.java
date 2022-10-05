@@ -18,7 +18,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 
-import static cn.ponfee.scheduler.common.base.Constants.SEMICOLON;
+import static cn.ponfee.scheduler.common.base.Constants.COLON;
 import static cn.ponfee.scheduler.common.util.Collects.get;
 
 
@@ -36,7 +36,7 @@ public final class Supervisor extends Server {
 
     public Supervisor(String host, int port) {
         super(host, port);
-        this.serialize = host + SEMICOLON + port;
+        this.serialize = host + COLON + port;
     }
 
     @Override
@@ -57,7 +57,7 @@ public final class Supervisor extends Server {
      */
     public static Supervisor deserialize(String text) {
         Assert.hasText(text, "Serialized text cannot empty.");
-        String[] array = text.split(SEMICOLON);
+        String[] array = text.split(COLON);
 
         String host = get(array, 0);
         Assert.hasText(host, "Supervisor host cannot bank.");
