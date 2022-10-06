@@ -36,7 +36,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
     },
     scanBasePackages = {
         "cn.ponfee.scheduler.supervisor",
-        "cn.ponfee.scheduler.samples.config"
+        "cn.ponfee.scheduler.samples.configuration"
     }
 )
 public class SchedulerApplication {

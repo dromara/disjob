@@ -136,4 +136,4 @@ CREATE TABLE `sched_depend` (
 -- ----------------------------
 INSERT INTO sched_lock(`name`) VALUES ('scan_job');
 INSERT INTO sched_lock(`name`) VALUES ('scan_track');
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (1536312529104445449, 'default', 'NoopJobHandler', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param', 0, 0, 0, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1655199233000, 1655199234000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (3988904755200, 'default', 'NoopJobHandler', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param', 0, 0, 0, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1655199233000, 1655199234000);

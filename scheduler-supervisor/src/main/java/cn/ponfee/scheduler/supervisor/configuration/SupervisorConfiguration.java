@@ -39,10 +39,4 @@ public class SupervisorConfiguration {
         return new DoInDatabaseLocked(jdbcTemplate, LOCK_SQL_SCAN_TRACK);
     }
 
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public IdGenerator idGenerator() {
-        return new SnowflakeIdGenerator(1);
-    }
-
 }

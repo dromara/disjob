@@ -270,7 +270,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         processor.accept(discovered.stream().map(s -> (D) discoveryRole.deserialize(s)).collect(Collectors.toList()));
 
         updateRefresh();
-        logger.info("Refreshed discovery " + discoveryRole.name());
+        logger.debug("Refreshed discovery {}", discoveryRole.name());
     }
 
     private String buildPublishValue(RegistryEvent event, R server) {

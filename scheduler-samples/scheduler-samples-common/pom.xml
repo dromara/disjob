@@ -14,4 +14,10 @@
   <artifactId>scheduler-samples-common</artifactId>
   <name>${project.artifactId}</name>
 
+  <dependencies>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-core</artifactId>
+    </dependency>
+  </dependencies>
 </project>

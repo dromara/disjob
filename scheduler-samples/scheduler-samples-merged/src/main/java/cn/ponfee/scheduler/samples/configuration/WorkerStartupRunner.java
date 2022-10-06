@@ -1,4 +1,4 @@
-package cn.ponfee.scheduler.samples.config;
+package cn.ponfee.scheduler.samples.configuration;
 
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;

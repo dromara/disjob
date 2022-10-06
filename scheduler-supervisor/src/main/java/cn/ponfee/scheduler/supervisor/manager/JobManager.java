@@ -387,7 +387,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             // conflict: the task executed by other executor
             return false;
         } else {
-            Assert.state(trackRow == AFFECTED_ONE_ROW, "Start task failed: " + param);
+            Assert.state(taskRow == AFFECTED_ONE_ROW, "Start task failed: " + param);
             return true;
         }
     }

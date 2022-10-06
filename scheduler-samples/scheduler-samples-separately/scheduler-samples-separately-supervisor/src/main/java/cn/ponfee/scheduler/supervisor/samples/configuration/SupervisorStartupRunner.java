@@ -1,4 +1,4 @@
-package cn.ponfee.scheduler.supervisor.samples.config;
+package cn.ponfee.scheduler.supervisor.samples.configuration;
 
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.lock.DoInLocked;

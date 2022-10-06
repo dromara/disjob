@@ -31,7 +31,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         DataSourceAutoConfiguration.class
     },
     scanBasePackages = {
-        "cn.ponfee.scheduler.supervisor"
+        "cn.ponfee.scheduler.supervisor",
+        "cn.ponfee.scheduler.samples.configuration"
     }
 )
 public class SupervisorApplication {
