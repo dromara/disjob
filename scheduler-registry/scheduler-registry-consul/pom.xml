@@ -24,11 +24,7 @@
       <artifactId>consul-api</artifactId>
       <version>1.4.5</version>
     </dependency>
-    <dependency>
-      <groupId>com.orbitz.consul</groupId>
-      <artifactId>consul-client</artifactId>
-      <version>1.5.3</version>
-    </dependency>
+
     <dependency>
       <groupId>com.pszymczyk.consul</groupId>
       <artifactId>embedded-consul</artifactId>

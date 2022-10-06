@@ -15,8 +15,6 @@ import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
-    private static final String WORKER_RECEIVE_PATH = "worker/rpc/task/receive";
-
     private final DiscoveryRestTemplate<Worker> discoveryRestTemplate;
 
     public HttpTaskDispatcher(DiscoveryRestTemplate<Worker> discoveryRestTemplate,
@@ -28,7 +26,12 @@ public class HttpTaskDispatcher extends TaskDispatcher {
     @Override
     protected boolean dispatch(ExecuteParam executeParam) throws JobException {
         try {
-            Boolean res = discoveryRestTemplate.execute(executeParam.getWorker().getGroup(), WORKER_RECEIVE_PATH, Boolean.class, executeParam);
+            Boolean res = discoveryRestTemplate.execute(
+                executeParam.getWorker().getGroup(),
+                HttpTaskDispatchingConstants.WORKER_RECEIVE_PATH,
+                Boolean.class,
+                executeParam
+            );
             return res != null && res;
         } catch (Exception e) {
             throw new JobException(JobCodeMsg.DISPATCH_TASK_FAILED, "Http dispatch task failed: " + executeParam, e);

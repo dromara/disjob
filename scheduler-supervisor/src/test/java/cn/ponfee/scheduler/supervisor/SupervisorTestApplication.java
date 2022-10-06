@@ -1,4 +1,4 @@
-package cn.ponfee.scheduler.supervisor.test;
+package cn.ponfee.scheduler.supervisor;
 
 import cn.ponfee.scheduler.core.base.HttpProperties;
 import org.springframework.boot.SpringApplication;

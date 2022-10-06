@@ -22,7 +22,7 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
  * @author Ponfee
  */
 @Configuration
-public class CoreConfiguration {
+public class SupervisorConfiguration {
 
     @Bean
     public SpringContextHolder springContextHolder() {

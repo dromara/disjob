@@ -4,7 +4,7 @@ import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.core.route.count.AtomicCounter;
 import cn.ponfee.scheduler.core.route.count.JdkAtomicCounter;
 import cn.ponfee.scheduler.core.route.count.RedisAtomicCounter;
-import cn.ponfee.scheduler.supervisor.test.SpringBootTestBase;
+import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;

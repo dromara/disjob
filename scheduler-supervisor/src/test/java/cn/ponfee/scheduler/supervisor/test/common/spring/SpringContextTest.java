@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.supervisor.test.common.spring;
 
 import cn.ponfee.scheduler.common.util.ClassUtils;
-import cn.ponfee.scheduler.supervisor.test.SpringBootTestBase;
+import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;

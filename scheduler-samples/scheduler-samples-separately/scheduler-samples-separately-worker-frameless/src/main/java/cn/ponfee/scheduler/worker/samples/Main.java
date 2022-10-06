@@ -17,6 +17,7 @@ import cn.ponfee.scheduler.registry.consul.ConsulWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
+import cn.ponfee.scheduler.worker.samples.redis.AbstractRedisTemplateCreator;
 import cn.ponfee.scheduler.worker.samples.redis.SentinelRedisTemplateCreator;
 import cn.ponfee.scheduler.worker.samples.redis.StandaloneRedisTemplateCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -58,36 +59,25 @@ public class Main {
         // inject current worker
         ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
 
-        StringRedisTemplate stringRedisTemplate =
+        //AbstractRedisTemplateCreator.AbstractRedisTemplateCreatorBuilder<?, ?> redisTemplateCreatorBuilder = createStandaloneRedisTemplate(yamlProperties);
+        AbstractRedisTemplateCreator.AbstractRedisTemplateCreatorBuilder<?, ?> redisTemplateCreatorBuilder = createSentinelRedisTemplate(yamlProperties);
+        StringRedisTemplate stringRedisTemplate = redisTemplateCreatorBuilder
+            .database(yamlProperties.getInt("redis.database", 0))
+            .username(yamlProperties.getString("redis.username"))
+            .password(yamlProperties.getString("redis.password"))
+            .connectTimeout(yamlProperties.getInt("redis.connect-timeout", 1000))
+            .timeout(yamlProperties.getInt("redis.timeout", 2000))
+            .maxActive(yamlProperties.getInt("redis.lettuce.pool.max-active", 50))
+            .maxIdle(yamlProperties.getInt("redis.lettuce.pool.max-idle", 8))
+            .minIdle(yamlProperties.getInt("redis.lettuce.pool.min-idle", 0))
+            .maxWait(yamlProperties.getInt("redis.lettuce.pool.max-wait", 2000))
+            .shutdownTimeout(yamlProperties.getInt("redis.lettuce.shutdown-timeout", 2000))
+            .build()
+            .create()
+            .getStringRedisTemplate();
 
-            // Standalone
-            /*StandaloneRedisTemplateCreator.builder()
-                .host(yamlProperties.getRequiredString("redis.host"))
-                .port(yamlProperties.getRequiredInt("redis.port"))*/
-
-                // Sentinel
-                SentinelRedisTemplateCreator.builder()
-                .sentinelMaster(yamlProperties.getRequiredString("redis.sentinel.master"))
-                .sentinelNodes(yamlProperties.getRequiredString("redis.sentinel.nodes"))
-
-                .database(yamlProperties.getInt("redis.database", 0))
-                .username(yamlProperties.getString("redis.username"))
-                .password(yamlProperties.getString("redis.password"))
-                .connectTimeout(yamlProperties.getInt("redis.connect-timeout", 1000))
-                .timeout(yamlProperties.getInt("redis.timeout", 2000))
-                .maxActive(yamlProperties.getInt("redis.lettuce.pool.max-active", 50))
-                .maxIdle(yamlProperties.getInt("redis.lettuce.pool.max-idle", 8))
-                .minIdle(yamlProperties.getInt("redis.lettuce.pool.min-idle", 0))
-                .maxWait(yamlProperties.getInt("redis.lettuce.pool.max-wait", 2000))
-                .shutdownTimeout(yamlProperties.getInt("redis.lettuce.shutdown-timeout", 2000))
-                .build()
-                .create()
-                .getStringRedisTemplate();
-
-
-
-        //WorkerRegistry workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
-        WorkerRegistry workerRegistry = new ConsulWorkerRegistry("127.0.0.1", 8500, null);
+        WorkerRegistry workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
+        //WorkerRegistry workerRegistry = new ConsulWorkerRegistry("127.0.0.1", 8500, null);
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
             .connectTimeout(yamlProperties.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.connect-timeout", 2000))
@@ -133,4 +123,17 @@ public class Main {
             return new FileInputStream(filePath);
         }
     }
+
+    private static AbstractRedisTemplateCreator.AbstractRedisTemplateCreatorBuilder<?, ?> createStandaloneRedisTemplate(YamlProperties yamlProperties) {
+        return StandaloneRedisTemplateCreator.builder()
+            .host(yamlProperties.getRequiredString("redis.host"))
+            .port(yamlProperties.getRequiredInt("redis.port"));
+    }
+
+    private static AbstractRedisTemplateCreator.AbstractRedisTemplateCreatorBuilder<?, ?> createSentinelRedisTemplate(YamlProperties yamlProperties) {
+        return SentinelRedisTemplateCreator.builder()
+            .sentinelMaster(yamlProperties.getRequiredString("redis.sentinel.master"))
+            .sentinelNodes(yamlProperties.getRequiredString("redis.sentinel.nodes"));
+    }
+
 }

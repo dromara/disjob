@@ -126,8 +126,8 @@
       SELECT <include refid="Base_Column_List"/>
       FROM sched_job
       WHERE job_state = 1 
-        AND next_trigger_time &lt;= #{maxNextTriggerTime}
-        AND next_scan_time &lt;= NOW(3)
+        AND next_trigger_time &lt; #{maxNextTriggerTime}
+        AND next_scan_time &lt; NOW(3)
       ORDER BY next_trigger_time ASC
       LIMIT #{size}
     </select>

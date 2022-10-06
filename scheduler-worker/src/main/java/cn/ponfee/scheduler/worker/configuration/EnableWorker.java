@@ -25,13 +25,13 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(EnableWorker.WorkerConfiguration.class)
+@Import(EnableWorker.CurrentWorkerConfiguration.class)
 public @interface EnableWorker {
 
     @ConditionalOnClass({Worker.class})
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
     @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-    class WorkerConfiguration {
+    class CurrentWorkerConfiguration {
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean

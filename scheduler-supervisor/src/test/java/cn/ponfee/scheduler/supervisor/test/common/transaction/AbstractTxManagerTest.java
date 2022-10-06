@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.supervisor.test.common.transaction;
 
 import cn.ponfee.scheduler.supervisor.config.AbstractTxManagerTestService;
-import cn.ponfee.scheduler.supervisor.test.SpringBootTestBase;
+import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

@@ -28,13 +28,13 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(EnableSupervisor.SupervisorConfiguration.class)
+@Import(EnableSupervisor.CurrentSupervisorConfiguration.class)
 public @interface EnableSupervisor {
 
     @ConditionalOnClass({Supervisor.class})
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
     @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-    class SupervisorConfiguration {
+    class CurrentSupervisorConfiguration {
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean

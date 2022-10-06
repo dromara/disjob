@@ -5,7 +5,7 @@ import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
-import cn.ponfee.scheduler.supervisor.test.SpringBootTestBase;
+import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import cn.ponfee.scheduler.supervisor.util.JobUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;

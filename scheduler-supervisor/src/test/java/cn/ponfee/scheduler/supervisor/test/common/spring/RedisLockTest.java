@@ -3,7 +3,7 @@ package cn.ponfee.scheduler.supervisor.test.common.spring;
 import cn.ponfee.scheduler.common.lock.RedisLock;
 import cn.ponfee.scheduler.common.util.MavenProjects;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
-import cn.ponfee.scheduler.supervisor.test.SpringBootTestBase;
+import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;

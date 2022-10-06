@@ -2,7 +2,7 @@ package cn.ponfee.scheduler.core.route.count;
 
 import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.core.base.JobConstants;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -17,7 +17,7 @@ public class RedisAtomicCounter extends AtomicCounter {
 
     private final Lock lock = new ReentrantLock();
     private final String counterRedisKey;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     /**
      * Next refresh interval time milliseconds.
@@ -25,11 +25,11 @@ public class RedisAtomicCounter extends AtomicCounter {
     private volatile long nextRenewTimeMillis = 0L;
 
     public RedisAtomicCounter(String redisCounterKey,
-                              RedisTemplate<String, String> redisTemplate) {
+                              StringRedisTemplate stringRedisTemplate) {
         this.counterRedisKey = "route:counter:" + redisCounterKey;
-        this.redisTemplate = redisTemplate;
+        this.stringRedisTemplate = stringRedisTemplate;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(counterRedisKey))) {
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(counterRedisKey))) {
             // initialize
             set(1);
         }
@@ -37,20 +37,20 @@ public class RedisAtomicCounter extends AtomicCounter {
 
     @Override
     public long get() {
-        String ret = redisTemplate.opsForValue().get(counterRedisKey);
+        String ret = stringRedisTemplate.opsForValue().get(counterRedisKey);
         renewIfNecessary();
         return Numbers.toLong(ret);
     }
 
     @Override
     public void set(long newValue) {
-        redisTemplate.opsForValue().set(counterRedisKey, Long.toString(newValue));
+        stringRedisTemplate.opsForValue().set(counterRedisKey, Long.toString(newValue));
         renewIfNecessary();
     }
 
     @Override
     public long getAndAdd(long delta) {
-        Long value = redisTemplate.opsForValue().increment(counterRedisKey, delta);
+        Long value = stringRedisTemplate.opsForValue().increment(counterRedisKey, delta);
         renewIfNecessary();
         return value == null ? 0 : value;
     }
@@ -68,7 +68,7 @@ public class RedisAtomicCounter extends AtomicCounter {
             if (currentTimeMillis < nextRenewTimeMillis) {
                 return;
             }
-            redisTemplate.expire(counterRedisKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.MILLISECONDS);
+            stringRedisTemplate.expire(counterRedisKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.MILLISECONDS);
             nextRenewTimeMillis = currentTimeMillis + JobConstants.REDIS_KEY_TTL_RENEW_INTERVAL_MILLIS;
         } finally {
             lock.unlock();

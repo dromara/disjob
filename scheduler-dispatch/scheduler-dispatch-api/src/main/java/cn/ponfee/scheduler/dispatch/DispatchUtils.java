@@ -4,11 +4,11 @@ import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 
 /**
- * Dispatch constants.
+ * Dispatch utility.
  *
  * @author Ponfee
  */
-public class DispatchConstants {
+public class DispatchUtils {
 
     public static String buildDispatchTasksKey(Worker worker) {
         return String.format(JobConstants.SCHEDULER_KEY_PREFIX + ".dispatch.tasks.%s.%s", worker.getGroup(), worker.getInstanceId());

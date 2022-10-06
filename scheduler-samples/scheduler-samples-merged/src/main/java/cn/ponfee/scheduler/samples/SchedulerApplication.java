@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.samples;
 
 import cn.ponfee.scheduler.core.base.HttpProperties;
+import cn.ponfee.scheduler.dispatch.http.configuration.EnableHttpTaskDispatching;
 import cn.ponfee.scheduler.dispatch.redis.configuration.EnableRedisTaskDispatching;
 import cn.ponfee.scheduler.registry.consul.configuration.ConsulProperties;
 import cn.ponfee.scheduler.registry.consul.configuration.EnableConsulServerRegistry;
@@ -27,7 +28,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 })
 @EnableSupervisor
 @EnableWorker
-@EnableConsulServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry
+@EnableRedisServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry
 @EnableRedisTaskDispatching // EnableRedisTaskDispatching、EnableHttpTaskDispatching
 @SpringBootApplication(
     exclude = {

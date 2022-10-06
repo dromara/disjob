@@ -1,2 +1,2 @@
 server.port: 8082
-spring.profiles.include: web,worker,redis,consul
+spring.profiles.include: web,worker,redis
