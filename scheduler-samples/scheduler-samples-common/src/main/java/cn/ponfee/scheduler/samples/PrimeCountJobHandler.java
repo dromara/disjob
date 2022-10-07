@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 统计任意0<m<=n的[m, n]的素数个数
@@ -36,13 +37,13 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
         JobParam jobParam = Jsons.fromJson(job.getJobParam(), JobParam.class);
         long m = jobParam.getM();
         long n = jobParam.getN();
-        long blockSize = jobParam.getBlockSize() == null ? DEFAULT_BLOCK_SIZE : jobParam.getBlockSize();
+        long blockSize = Optional.ofNullable(jobParam.getBlockSize()).orElse(DEFAULT_BLOCK_SIZE);
         Assert.isTrue(m > 0, "Number M must be greater than zero.");
         Assert.isTrue(n >= m, "Number N cannot less than M.");
         Assert.isTrue(blockSize > 0, "Block size must be greater than zero.");
         Assert.isTrue(jobParam.getParallel() > 0, "Parallel must be greater than zero.");
 
-        int parallel = n == m ? 0 : (int) Math.min(((n - m) + blockSize - 1) / blockSize, jobParam.getParallel());
+        int parallel = n == m ? 1 : (int) Math.min(((n - m) + blockSize - 1) / blockSize, jobParam.getParallel());
         List<SplitTask> result = new ArrayList<>(parallel);
         for (int i = 0; i < parallel; i++) {
             TaskParam taskParam = new TaskParam();

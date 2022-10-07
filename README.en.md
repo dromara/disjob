@@ -3,18 +3,24 @@
 [![Build status](https://img.shields.io/badge/build-passing-success.svg)]()
 [![Tests status](https://img.shields.io/badge/tests-passing-success.svg)]()
 
-English | [简体中文](https://github.com/ponfee/distributed-scheduler/blob/master/README.md)
+**`English`** | [**`简体中文`**](README.md)
 
 # Distributed Scheduler
+
+## Introduction
 
 A distributed task scheduling framework
 
 ## Architecture
 
-![Architecture](https://raw.githubusercontent.com/ponfee/distributed-scheduler/master/doc/images/architecture.jpg)
+![Architecture](doc/images/architecture.jpg)
+
+## Features
+
+## Build
 
 ## Quick Start
 
-## Features
+## Contributing
 
 ## Todo List
