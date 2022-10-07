@@ -37,17 +37,17 @@ public class ConsulSupervisorRegistry extends ConsulServerRegistry<Supervisor, W
             this.groupedWorkers = Collections.emptyMap();
             this.allWorkers = Collections.emptyList();
         } else {
-            Map<String, List<Worker>> groupedWorkers0 = discoveredWorkers.stream()
+            Map<String, List<Worker>> map = discoveredWorkers.stream()
                 .collect(Collectors.groupingBy(Worker::getGroup))
                 .entrySet()
                 .stream()
                 .peek(e -> e.getValue().sort(Comparator.comparing(Worker::getInstanceId)))
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.unmodifiableList(e.getValue())));
 
-            DoubleListViewer<Worker> allWorkers0 = new DoubleListViewer<>(groupedWorkers0.values());
+            DoubleListViewer<Worker> list = new DoubleListViewer<>(map.values());
 
-            this.groupedWorkers = groupedWorkers0;
-            this.allWorkers = allWorkers0;
+            this.groupedWorkers = map;
+            this.allWorkers = list;
         }
     }
 
