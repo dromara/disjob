@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
 
     private static final int QUERY_BATCH_SIZE = 200;
+    private static final int SCAN_COLLISION_INTERVAL_SECONDS = 60;
 
     private final DoInLocked doInLocked;
     private final JobManager jobManager;
@@ -214,7 +215,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
                 return true;
             case SERIAL:
                 // 串行执行：更新下一次的扫描时间
-                updateNextScanTime(job, now, SupervisorConstants.SCAN_TIME_INTERVAL_SECONDS);
+                updateNextScanTime(job, now, SCAN_COLLISION_INTERVAL_SECONDS);
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行

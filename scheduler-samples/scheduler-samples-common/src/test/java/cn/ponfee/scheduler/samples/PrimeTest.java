@@ -7,6 +7,8 @@ import java.util.Random;
 
 public class PrimeTest {
 
+    private static final long NUMBER = 5000000L;
+
     @Test
     public void test() {
         int n = new Random().nextInt(1000000) + 1;
@@ -22,33 +24,31 @@ public class PrimeTest {
         Assertions.assertEquals(count1, count5);
     }
 
-    private static long number = 5000000L;
-
     @Test
     public void testPower() {
-        System.out.println(Prime.Power.countPrimes(2, number));
+        System.out.println(Prime.Power.countPrimes(2, NUMBER));
         //System.out.println(Power.countPrimes(number * 1000, number * 1001));
     }
 
     @Test
     public void testSqrt() {
-        System.out.println(Prime.Sqrt.countPrimes(2, number));
+        System.out.println(Prime.Sqrt.countPrimes(2, NUMBER));
         //System.out.println(Sqrt.countPrimes(number * 1000, number * 1001));
     }
 
     @Test
     public void testEratosthenesSieve() {
-        System.out.println(Prime.EratosthenesSieve.countPrimes((int) number));
+        System.out.println(Prime.EratosthenesSieve.countPrimes((int) NUMBER));
     }
 
     @Test
     public void testEulerSieve() {
-        System.out.println(Prime.EulerSieve.countPrimes((int) number));
+        System.out.println(Prime.EulerSieve.countPrimes((int) NUMBER));
     }
 
     @Test
     public void testMillerRabin() {
-        System.out.println(Prime.MillerRabin.countPrimes(2, number));
+        System.out.println(Prime.MillerRabin.countPrimes(2, NUMBER));
     }
 
 }

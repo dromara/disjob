@@ -4,7 +4,6 @@ import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
-import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.model.SchedTrack;
@@ -113,13 +112,9 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
             return;
         }
 
-        try {
-            if (jobManager.renewUpdateTime(track, now)) {
-                logger.info("Redispatch sched track: {} - {}", track, Dates.format(now));
-                jobManager.dispatch(job, track, tasks);
-            }
-        } catch (JobException e) {
-            logger.error("Process sched track occur error: " + track, e);
+        if (jobManager.renewUpdateTime(track, now)) {
+            logger.info("Redispatch sched track: {} - {}", track, Dates.format(now));
+            jobManager.dispatch(job, track, tasks);
         }
     }
 

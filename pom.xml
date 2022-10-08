@@ -39,7 +39,7 @@
 
     <springboot.version>2.7.4</springboot.version>
     <springframework.version>5.3.23</springframework.version>
-    <mapstruct.version>1.5.2.Final</mapstruct.version>
+    <mapstruct.version>1.5.3.Final</mapstruct.version>
     <lombok.version>1.18.24</lombok.version>
     <revision>1.0-SNAPSHOT</revision>
   </properties>
@@ -108,18 +108,40 @@
       <version>2.2.2</version>
     </dependency>
 
+    <!-- 需要注意以下几个processor的定义顺序，否则需要使用annotationProcessorPaths指定 -->
+    <!-- lombok provided -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
     <!-- https://mapstruct.org/documentation/1.5/reference/html/ -->
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
       <version>${mapstruct.version}</version>
     </dependency>
-
-    <!-- lombok provided -->
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${mapstruct.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <version>${springboot.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-indexer</artifactId>
+      <version>${springframework.version}</version>
+      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
 
@@ -192,7 +214,7 @@
     </repository>
   </repositories>
 
-  <!-- 根据version中是否带有“-SNAPSHOT”来判断是快照版本还是正式版本 -->
+  <!-- 根据version中是否带有“-SNAPSHOT”来判断分发到snapshots库还是releases库 -->
   <distributionManagement>
     <!-- 添加到maven的安装目录的settings.xml中
     <servers>
@@ -246,17 +268,12 @@
           <target>${maven.compiler.target}</target>
           <encoding>${file.encoding}</encoding>
           <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
-          <annotationProcessorPaths>
+          <!--<annotationProcessorPaths>
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
               <version>${lombok.version}</version>
             </path>
-            <!--<path>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-mapstruct-binding</artifactId>
-                <version>0.2.0</version>
-            </path>-->
             <path>
               <groupId>org.mapstruct</groupId>
               <artifactId>mapstruct-processor</artifactId>
@@ -272,7 +289,7 @@
               <artifactId>spring-context-indexer</artifactId>
               <version>${springframework.version}</version>
             </path>
-          </annotationProcessorPaths>
+          </annotationProcessorPaths>-->
         </configuration>
       </plugin>
       <plugin>

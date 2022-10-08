@@ -4,7 +4,6 @@ import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
-import cn.ponfee.scheduler.dispatch.DispatchUtils;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.Discovery;
 import org.slf4j.Logger;
@@ -48,7 +47,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
     protected boolean dispatch(ExecuteParam executeParam) {
         Worker worker = executeParam.getWorker();
         // push to remote worker
-        String key = DispatchUtils.buildDispatchTasksKey(worker);
+        String key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker);
         // ret: return list length after call redis rpush command
         Long ret = redisTemplate.execute(
             (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), executeParam.serialize())

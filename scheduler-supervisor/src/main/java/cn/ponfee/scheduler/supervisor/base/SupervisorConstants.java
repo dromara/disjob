@@ -18,11 +18,6 @@ public class SupervisorConstants {
     public static final String LOCK_SQL_SCAN_TRACK = "SELECT `name` FROM sched_lock WHERE name='scan_track' FOR UPDATE";
 
     /**
-     * Job scan time interval seconds
-     */
-    public static final int SCAN_TIME_INTERVAL_SECONDS = 60;
-
-    /**
      * Spring bean name of scan sched_job table
      */
     public static final String SPRING_BEAN_NAME_SCAN_JOB_LOCKED = "scanJobLocked";

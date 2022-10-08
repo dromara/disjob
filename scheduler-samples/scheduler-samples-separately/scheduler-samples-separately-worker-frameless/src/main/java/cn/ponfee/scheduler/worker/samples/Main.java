@@ -13,7 +13,6 @@ import cn.ponfee.scheduler.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
-import cn.ponfee.scheduler.registry.consul.ConsulWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;

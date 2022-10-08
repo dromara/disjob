@@ -96,7 +96,7 @@ public final class JobUtils {
      * @param job          the job
      * @param current      the current date time
      * @param uidGenerator the uid generator
-     * @throws JobException if occur job exception
+     * @throws JobException if split job error
      */
     public static Pair<SchedTrack, List<SchedTask>> buildTrackAndTasks(SchedJob job,
                                                                        Date current,
@@ -151,7 +151,7 @@ public final class JobUtils {
     public static Long computeRetryTriggerTime(SchedJob job, int failCount, Date current) {
         Assert.isTrue(!RetryType.NONE.equals(job.getRetryType()), "Sched job '" + job.getJobId() + "' retry type is NONE.");
         Assert.isTrue(job.getRetryCount() > 0, "Sched job '" + job.getJobId() + "' retry count must greater than 0, but actual " + job.getRetryCount());
-        Assert.isTrue(failCount < job.getRetryCount(), "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
+        Assert.isTrue(failCount <= job.getRetryCount(), "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
         // exponential backoff
         return current.getTime() + (long) job.getRetryInterval() * IntMath.pow(failCount, 2);
     }

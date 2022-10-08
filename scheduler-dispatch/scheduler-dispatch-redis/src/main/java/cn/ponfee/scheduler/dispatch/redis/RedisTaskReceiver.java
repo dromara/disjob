@@ -7,7 +7,6 @@ import cn.ponfee.scheduler.common.lock.RedisLock;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
-import cn.ponfee.scheduler.dispatch.DispatchUtils;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
         this.currentWorker = currentWorker;
         this.redisTemplate = redisTemplate;
-        this.currentWorkerRedisKey = DispatchUtils.buildDispatchTasksKey(currentWorker).getBytes();
+        this.currentWorkerRedisKey = RedisTaskDispatchingUtils.buildDispatchTasksKey(currentWorker).getBytes();
         this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Redis-Task-Receive-Executor", true), ThreadPoolExecutors.DISCARD);
     }
 

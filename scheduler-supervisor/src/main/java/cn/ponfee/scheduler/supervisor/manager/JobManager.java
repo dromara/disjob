@@ -156,9 +156,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param job   the sched job
      * @param track the sched track
      * @param tasks the list of sched task
-     * @throws JobException if dispatch occurred exception.
      */
-    public void dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) throws JobException {
+    public void dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
         List<Long> taskIds = tasks.stream().map(SchedTask::getTaskId).collect(Collectors.toList());
         DispatchParam dispatchParam = new DispatchParam(
             job.getJobGroup(),
@@ -169,8 +168,15 @@ public class JobManager implements SupervisorService, MarkRpcController {
             Operations.TRIGGER,
             taskIds
         );
-        List<ExecuteParam> dispatched = taskDispatcher.dispatch(dispatchParam);
-        Assert.notEmpty(dispatched, "Not has dispatched task " + track.getTrackId());
+
+        try {
+            List<ExecuteParam> dispatched = taskDispatcher.dispatch(dispatchParam);
+            if (dispatched.size() < tasks.size()) {
+                LOG.error("Dispatched task has failed: " + track.getTrackId());
+            }
+        } catch (Exception e) {
+            LOG.error("Dispatched task occur error: " + track.getTrackId(), e);
+        }
     }
 
     // ------------------------------------------------------------------operation without transaction
@@ -291,7 +297,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     }
 
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void forceUpdateState(long trackId, int trackTargetState, int taskTargetState) throws JobException {
+    public void forceUpdateState(long trackId, int trackTargetState, int taskTargetState) {
         ExecuteState taskTargetState0 = ExecuteState.of(taskTargetState);
         Assert.isTrue(taskTargetState0.runState() == RunState.of(trackTargetState), "Inconsistent state: " + trackTargetState + ", " + taskTargetState);
         int row = trackMapper.forceUpdateState(trackId, trackTargetState);
@@ -309,7 +315,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * Manual trigger the sched job
      *
      * @param jobId the job id
-     * @throws JobException if dispatch occurred exception.
+     * @throws JobException if split job error
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void manualTrigger(long jobId) throws JobException {
@@ -662,10 +668,9 @@ public class JobManager implements SupervisorService, MarkRpcController {
      *
      * @param trackId the trackId
      * @return {@code true} if resumed successfully
-     * @throws JobException if dispatched error
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean resume(long trackId) throws JobException {
+    public boolean resume(long trackId) {
         Integer state = trackMapper.lockState(trackId);
         Assert.isTrue(state != null, "Cancel failed, track_id not not found: " + trackId);
         if (!RunState.PAUSED.equals(state)) {
@@ -863,6 +868,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
         // 3、save to db
         trackMapper.insert(retryTrack);
         taskMapper.insertBatch(tasks);
+
+        dispatch(schedJob, retryTrack, tasks);
     }
 
 
@@ -902,6 +909,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 // save to db
                 trackMapper.insert(track);
                 taskMapper.insertBatch(tasks);
+
+                dispatch(child, track, tasks);
             } catch (Exception e) {
                 LOG.error("Depend job split failed: " + child, e);
             }
@@ -930,7 +939,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return executingTasks;
     }
 
-    private void dispatch(long trackId, int expectTaskSize) throws JobException {
+    private void dispatch(long trackId, int expectTaskSize) {
         SchedTrack track = trackMapper.getByTrackId(trackId);
         SchedJob job = jobMapper.getByJobId(track.getJobId());
         List<SchedTask> waitingTasks = taskMapper.getByTrackId(trackId)

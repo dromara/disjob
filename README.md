@@ -286,7 +286,7 @@ curl --location --request POST 'http://localhost:8080/api/job/manual_trigger?job
 
 ## Contributing
 
-由于个人能力有限，本项目肯定存在未发现的缺陷，也一定有更优的实现方案。期待及乐于接受好的意见及建议，如有发现BUG或有你认为的新特性，可提交PR或新建[**`Issues`**](../../issues)一起探讨。
+由于个人能力及精力有限，期待及乐于接受好的意见及建议，如有发现问题缺陷或有更优的实现方案，可提交PR或新建[**`Issues`**](../../issues)一起探讨。
 
 ## Todo List
 

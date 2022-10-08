@@ -33,6 +33,7 @@
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
+            <!-- 与spring boot有冲突，需要显示指定ID -->
             <id>shade-${project.artifactId}</id>
             <phase>package</phase>
             <goals>
