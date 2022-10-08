@@ -49,7 +49,6 @@ public class JobHandlerUtils {
 
     private static <T> T create(Class<T> type) {
         T object = ClassUtils.newInstance(type);
-        // Also, can use SpringContextHolder.inject(object)
         SpringContextHolder.autowire(object);
         return object;
     }

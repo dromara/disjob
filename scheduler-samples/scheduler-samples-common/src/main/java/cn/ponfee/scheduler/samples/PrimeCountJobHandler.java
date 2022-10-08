@@ -111,6 +111,8 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
 
     @Data
     public static class JobParam implements Serializable {
+        private static final long serialVersionUID = 2525343069219040629L;
+
         private long m;
         private long n;
         private Long blockSize; // 分块统计，每块的大小
@@ -119,6 +121,8 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
 
     @Data
     public static class TaskParam implements Serializable {
+        private static final long serialVersionUID = -8122704600602000816L;
+
         private long start;
         private long blockSize;
         private long step;
@@ -128,6 +132,8 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
     @Data
     @NoArgsConstructor
     public static class ExecuteSnapshot implements Serializable {
+        private static final long serialVersionUID = -5866894559175629912L;
+
         private Long next;
         private long count;
         private boolean finished;

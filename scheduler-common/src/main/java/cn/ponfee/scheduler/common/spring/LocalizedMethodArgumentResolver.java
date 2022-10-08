@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -23,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Localized method parameter for spring mvc {@code org.springframework.stereotype.Controller} methods.
+ * Localized method parameter for spring web {@code org.springframework.stereotype.Controller} methods.
  * <p>Can defined multiple object arguments for {@code org.springframework.web.bind.annotation.RequestMapping} method.
  *
  * @author Ponfee
@@ -39,7 +38,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             return false;
         }
 
-        return parameter.getMethodAnnotation(RequestMapping.class) != null
+        return AnnotationUtils.findAnnotation(parameter.getMethod(), LocalizedMethodArguments.class) != null
             || AnnotationUtils.findAnnotation(parameter.getDeclaringClass(), LocalizedMethodArguments.class) != null;
     }
 

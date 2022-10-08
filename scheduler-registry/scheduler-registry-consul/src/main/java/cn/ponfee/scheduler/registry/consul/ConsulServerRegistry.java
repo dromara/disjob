@@ -197,6 +197,9 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             .setPassing(true)
             .setToken(token)
             .build();
+        // Health api: /v1/health/service/{serviceName}
+        // doc page: https://www.consul.io/api-docs/health
+        // Blocking Queries doc page: https://www.consul.io/api-docs/features/blocking
         return client.getHealthServices(discoveryRole.registryKey(), request);
     }
 

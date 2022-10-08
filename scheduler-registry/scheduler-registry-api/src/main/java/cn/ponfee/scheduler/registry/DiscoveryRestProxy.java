@@ -2,6 +2,7 @@ package cn.ponfee.scheduler.registry;
 
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Files;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,25 +10,43 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Retry rest proxy
+ * Discovery rest proxy
+ *
+ * <p>Alias for value: {@link AnnotationUtils#findAnnotation(Class, Class)}
+ * <pre>{@code
+ *   public @interface RequestMapping {
+ *       @AliasFor("path")
+ *       String[] value() default {};
+ *
+ *       @AliasFor("value")
+ *       String[] path() default {};
+ *   }
+ * }</pre>
+ *
+ * <p>{Alias for annotation: @link AnnotatedElementUtils#findMergedAnnotation(AnnotatedElement, Class)}
+ * <pre>{@code
+ *   public @interface PostMapping {
+ *     @AliasFor(annotation = RequestMapping.class)
+ *     String name() default "";
+ *   }
+ * }</pre>
  *
  * @author Ponfee
  */
 public class DiscoveryRestProxy {
 
     public static <T> T create(Class<T> interfaceType, DiscoveryRestTemplate<?> discoveryRestTemplate) {
-        // public @interface RequestMapping { @AliasFor("path") String[] value() default {}; @AliasFor("value") String[] path() default {}; }
         String prefixPath = parsePath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
         InvocationHandler invocationHandler = new RestInvocationHandler(discoveryRestTemplate, prefixPath);
         return (T) Proxy.newProxyInstance(interfaceType.getClassLoader(), new Class<?>[]{interfaceType}, invocationHandler);
     }
 
     private static class RestInvocationHandler implements InvocationHandler {
-        private static final Map<Method, String> PATH_CACHE = new HashMap<>();
+        private static final Map<Method, String> PATH_CACHE = new ConcurrentHashMap<>();
         private static final String PLACE_HOLDER = new String();
 
         private final DiscoveryRestTemplate<?> discoveryRestTemplate;
@@ -45,45 +64,32 @@ public class DiscoveryRestProxy {
         }
 
         private static String getPath(String prefixPath, Method method) {
-            String path;
-            if ((path = PATH_CACHE.get(method)) == null) {
-                synchronized (PATH_CACHE) {
-                    if ((path = PATH_CACHE.get(method)) == null) {
-                        String suffixPath = parsePath(AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class));
-                        if (prefixPath.isEmpty()) {
-                            path = suffixPath.isEmpty() ? PLACE_HOLDER : suffixPath;
-                        } else {
-                            path = suffixPath.isEmpty() ? prefixPath : prefixPath + Files.UNIX_FOLDER_SEPARATOR + suffixPath;
-                        }
-                        PATH_CACHE.put(method, path);
-                    }
+            String path = PATH_CACHE.computeIfAbsent(method, key -> {
+                String suffixPath = parsePath(AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class));
+                if (prefixPath.isEmpty()) {
+                    return suffixPath.isEmpty() ? PLACE_HOLDER : suffixPath;
+                } else {
+                    return suffixPath.isEmpty() ? prefixPath : prefixPath + Files.UNIX_FOLDER_SEPARATOR + suffixPath;
                 }
-            }
-            if (path != PLACE_HOLDER) {
+            });
+
+            if (path == PLACE_HOLDER) {
+                throw new UnsupportedOperationException("Method is illegal http api: " + method);
+            } else {
                 return path;
             }
-            throw new UnsupportedOperationException("Method is illegal http api: " + method);
         }
     }
 
     /**
-     * <pre>{@code
-     *   @RequestMapping(method = {RequestMethod.POST})
-     *   public @interface PostMapping {
-     *       @AliasFor(annotation = RequestMapping.class)
-     *       String[] value() default {};
-     *
-     *       @AliasFor(annotation = RequestMapping.class)
-     *       String[] path() default {};
-     *   }
-     * }</pre>
+     * Parse annotated spring web {@link RequestMapping} method path
      *
      * @param mapping the request mapping
      * @return path
      */
     private static String parsePath(RequestMapping mapping) {
         String path;
-        if (mapping == null || (path = Collects.get(mapping.path(), 0)) == null || path.length() == 0) {
+        if (mapping == null || StringUtils.isEmpty(path = Collects.get(mapping.path(), 0))) {
             return "";
         }
         if (path.startsWith(Files.UNIX_FOLDER_SEPARATOR)) {

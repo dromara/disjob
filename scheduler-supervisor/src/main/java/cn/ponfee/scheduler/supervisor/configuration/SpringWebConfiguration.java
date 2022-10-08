@@ -1,4 +1,4 @@
-package cn.ponfee.scheduler.worker.samples.web;
+package cn.ponfee.scheduler.supervisor.configuration;
 
 import cn.ponfee.scheduler.common.spring.LocalizedMethodArgumentResolver;
 import cn.ponfee.scheduler.common.util.Jsons;
@@ -35,14 +35,14 @@ import java.util.List;
 import static cn.ponfee.scheduler.core.base.JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER;
 
 /**
- * Web configuration
+ * Spring web mvc configuration
  *
  * @author Ponfee
  */
 @Configuration
-public class WebConfiguration implements WebMvcConfigurer {
+public class SpringWebConfiguration implements WebMvcConfigurer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SpringWebConfiguration.class);
 
     /**
      * Object mapper

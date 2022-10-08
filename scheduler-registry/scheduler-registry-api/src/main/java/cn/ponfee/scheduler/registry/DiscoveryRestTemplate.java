@@ -32,10 +32,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Retry rest template(Method pattern)
- * 
+ *
+ * @param <D> the discovery type
  * @author Ponfee
  */
-public class DiscoveryRestTemplate<S extends Server> {
+public class DiscoveryRestTemplate<D extends Server> {
 
     private final static Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
 
@@ -44,13 +45,13 @@ public class DiscoveryRestTemplate<S extends Server> {
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
 
     private final RestTemplate restTemplate;
-    private final Discovery<S> discoveryServer;
+    private final Discovery<D> discoveryServer;
     private final int maxRetryTimes;
 
     private DiscoveryRestTemplate(int connectTimeout,
                                   int readTimeout,
                                   ObjectMapper objectMapper,
-                                  Discovery<S> discoveryServer,
+                                  Discovery<D> discoveryServer,
                                   int maxRetryTimes) {
         MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
         httpMessageConverter.setObjectMapper(objectMapper);
@@ -96,7 +97,7 @@ public class DiscoveryRestTemplate<S extends Server> {
      * @throws Exception if occur exception
      */
     private <T> T doExecute(String group, String path, Type returnType, Object... arguments) throws Exception {
-        List<S> servers = discoveryServer.getServers(group);
+        List<D> servers = discoveryServer.getServers(group);
         if (CollectionUtils.isEmpty(servers)) {
             throw new IllegalStateException("Not found available " + discoveryServer.discoveryRole().name() + " servers");
         }
@@ -132,7 +133,7 @@ public class DiscoveryRestTemplate<S extends Server> {
         throw new IllegalStateException("Invoke http retried failed: " + path + ", " + Jsons.toJson(arguments));
     }
 
-    public Discovery<S> getDiscoveryServer() {
+    public Discovery<D> getDiscoveryServer() {
         return discoveryServer;
     }
 

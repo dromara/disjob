@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
@@ -166,14 +165,14 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
         for (Field field : ClassUtils.listFields(object.getClass())) {
             Object fieldValue = null;
             Class<?> fieldType = GenericUtils.getFieldActualType(object.getClass(), field);
-            Resource resource = AnnotationUtils.getAnnotation(field, Resource.class);
+            Resource resource = field.getAnnotation(Resource.class);
             if (resource != null) {
                 fieldValue = getBean(StringUtils.isNotBlank(resource.name()) ? resource.name() : field.getName(), fieldType);
                 if (fieldValue == null) {
                     fieldValue = getBean(fieldType);
                 }
             } else if (field.isAnnotationPresent(Autowired.class)) {
-                Qualifier qualifier = AnnotationUtils.getAnnotation(field, Qualifier.class);
+                Qualifier qualifier = field.getAnnotation(Qualifier.class);
                 if (qualifier != null && StringUtils.isNotBlank(qualifier.value())) {
                     fieldValue = getBean(qualifier.value(), fieldType);
                 } else {
@@ -188,7 +187,7 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
     }
 
     /**
-     * Autowire annotated field from spring container for object
+     * Autowire annotated from spring container for object
      *
      * @param object the object
      *

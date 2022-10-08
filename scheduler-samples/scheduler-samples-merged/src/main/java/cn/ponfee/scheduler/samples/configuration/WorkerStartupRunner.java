@@ -37,7 +37,7 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
             .currentWorker(currentWorker)
             .maximumPoolSize(properties.getMaximumPoolSize())
             .keepAliveTimeSeconds(properties.getKeepAliveTimeSeconds())
-            .supervisorService(supervisorServiceClient)
+            .supervisorServiceClient(supervisorServiceClient)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)
             .build();

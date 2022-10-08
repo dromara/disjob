@@ -60,7 +60,7 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
             waitingTasks = ringTrigger.stream()
                                       .map(e -> new SchedTask(e.getTaskId(), e.getWorker().toString()))
                                       .collect(Collectors.toList());
-            supervisorService.updateTaskWorker(waitingTasks);
+            supervisorServiceClient.updateTaskWorker(waitingTasks);
         } catch (Exception e) {
             logger.error("Update waiting sched_task.worker column failed: " + Jsons.toJson(waitingTasks), e);
         }

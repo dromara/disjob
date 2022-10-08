@@ -1,4 +1,4 @@
-package cn.ponfee.scheduler.worker.samples.web;
+package cn.ponfee.scheduler.supervisor.configuration;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.base.model.Result;
@@ -14,13 +14,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 
 /**
- * Global Spring MVC Exception handler
+ * Global Spring web mvc Exception handler
  *
  * @author Ponfee
  */
 @ControllerAdvice
-public class MvcExceptionHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(MvcExceptionHandler.class);
+public class SpringWebExceptionHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(SpringWebExceptionHandler.class);
     private static final String APPLICATION_JSON_UTF8_VALUE = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8";
 
     @ExceptionHandler(Exception.class)

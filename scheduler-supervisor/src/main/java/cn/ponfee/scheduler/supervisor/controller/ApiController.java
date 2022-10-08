@@ -90,7 +90,7 @@ public class ApiController {
     }
 
     @PostMapping("track/resume")
-    public Result<Boolean> resumeTrack(@RequestParam("trackId") long trackId) {
+    public Result<Boolean> resumeTrack(@RequestParam("trackId") long trackId) throws JobException {
         LOG.info("Do resuming sched track {}", trackId);
         return Result.success(jobManager.resume(trackId));
     }
@@ -98,7 +98,7 @@ public class ApiController {
     @PutMapping("track/fupdate_state")
     public Result<Void> forceUpdateTrackState(@RequestParam("trackId") long trackId,
                                               @RequestParam("trackTargetState") int trackTargetState,
-                                              @RequestParam("taskTargetState") int taskTargetState) {
+                                              @RequestParam("taskTargetState") int taskTargetState) throws JobException {
         // verify the state
         RunState.of(trackTargetState);
         ExecuteState.of(taskTargetState);
@@ -109,7 +109,7 @@ public class ApiController {
     }
 
     @PostMapping("track/fresume")
-    public Result<Void> forceResumeTrack(@RequestParam("trackId") long trackId) {
+    public Result<Void> forceResumeTrack(@RequestParam("trackId") long trackId) throws JobException {
         LOG.info("Do force resuming sched track {}", trackId);
         jobManager.forceUpdateState(trackId, RunState.WAITING.value(), ExecuteState.WAITING.value());
         return Result.success();

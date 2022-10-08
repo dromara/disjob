@@ -9,7 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author ponfee.fu
+ * Counts prime
+ * 
+ * @author Ponfee
  */
 public class Prime {
 

@@ -1,9 +1,6 @@
 package cn.ponfee.scheduler.common.spring;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Localization method arguments annotation definition.
@@ -12,5 +9,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
 public @interface LocalizedMethodArguments {
 }

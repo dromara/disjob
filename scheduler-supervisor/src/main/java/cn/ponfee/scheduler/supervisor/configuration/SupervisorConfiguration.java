@@ -1,16 +1,12 @@
 package cn.ponfee.scheduler.supervisor.configuration;
 
 import cn.ponfee.scheduler.common.base.Constants;
-import cn.ponfee.scheduler.common.base.IdGenerator;
-import cn.ponfee.scheduler.common.base.SnowflakeIdGenerator;
 import cn.ponfee.scheduler.common.lock.DoInDatabaseLocked;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.*;

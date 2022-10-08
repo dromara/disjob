@@ -96,7 +96,7 @@ public class Main {
             .currentWorker(currentWorker)
             .maximumPoolSize(yamlProperties.getInt(WORKER_KEY_PREFIX + ".maximum-pool-size"))
             .keepAliveTimeSeconds(yamlProperties.getInt(WORKER_KEY_PREFIX + ".keep-alive-time-seconds"))
-            .supervisorService(supervisorServiceClient)
+            .supervisorServiceClient(supervisorServiceClient)
             .taskReceiver(taskReceiver)
             .workerRegistry(workerRegistry)
             .build();

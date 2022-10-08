@@ -37,7 +37,8 @@
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m</argLine>
 
-    <spring-boot.version>2.7.4</spring-boot.version>
+    <springboot.version>2.7.4</springboot.version>
+    <springframework.version>5.3.23</springframework.version>
     <mapstruct.version>1.5.2.Final</mapstruct.version>
     <lombok.version>1.18.24</lombok.version>
     <revision>1.0-SNAPSHOT</revision>
@@ -100,12 +101,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-log4j2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
-      <scope>provided</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.mybatis.spring.boot</groupId>
@@ -270,7 +265,12 @@
             <path>
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-configuration-processor</artifactId>
-              <version>${spring-boot.version}</version>
+              <version>${springboot.version}</version>
+            </path>
+            <path>
+              <groupId>org.springframework</groupId>
+              <artifactId>spring-context-indexer</artifactId>
+              <version>${springframework.version}</version>
             </path>
           </annotationProcessorPaths>
         </configuration>

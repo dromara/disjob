@@ -291,12 +291,18 @@ public class JobManager implements SupervisorService, MarkRpcController {
     }
 
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void forceUpdateState(long trackId, int trackTargetState, int taskTargetState) {
+    public void forceUpdateState(long trackId, int trackTargetState, int taskTargetState) throws JobException {
+        ExecuteState taskTargetState0 = ExecuteState.of(taskTargetState);
+        Assert.isTrue(taskTargetState0.runState() == RunState.of(trackTargetState), "Inconsistent state: " + trackTargetState + ", " + taskTargetState);
         int row = trackMapper.forceUpdateState(trackId, trackTargetState);
         Assert.isTrue(row == AFFECTED_ONE_ROW, "Sched track state update failed " + trackId);
 
         row = taskMapper.forceUpdateState(trackId, taskTargetState);
         Assert.isTrue(row >= AFFECTED_ONE_ROW, "Sched task state update failed, track_id=" + trackId);
+
+        if (taskTargetState0 == ExecuteState.WAITING) {
+            dispatch(trackId, row);
+        }
     }
 
     /**
@@ -656,9 +662,10 @@ public class JobManager implements SupervisorService, MarkRpcController {
      *
      * @param trackId the trackId
      * @return {@code true} if resumed successfully
+     * @throws JobException if dispatched error
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean resume(long trackId) {
+    public boolean resume(long trackId) throws JobException {
         Integer state = trackMapper.lockState(trackId);
         Assert.isTrue(state != null, "Cancel failed, track_id not not found: " + trackId);
         if (!RunState.PAUSED.equals(state)) {
@@ -675,6 +682,9 @@ public class JobManager implements SupervisorService, MarkRpcController {
             null
         );
         Assert.state(row >= AFFECTED_ONE_ROW, "Resume sched task failed.");
+
+        // dispatch task
+        dispatch(trackId, row);
 
         return true;
     }
@@ -918,6 +928,17 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 }
             });
         return executingTasks;
+    }
+
+    private void dispatch(long trackId, int expectTaskSize) throws JobException {
+        SchedTrack track = trackMapper.getByTrackId(trackId);
+        SchedJob job = jobMapper.getByJobId(track.getJobId());
+        List<SchedTask> waitingTasks = taskMapper.getByTrackId(trackId)
+            .stream()
+            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
+            .collect(Collectors.toList());
+        Assert.isTrue(waitingTasks.size() == expectTaskSize, "Dispatching tasks size inconsistent, expect=" + expectTaskSize + ", actual=" + waitingTasks.size());
+        dispatch(job, track, waitingTasks);
     }
 
     private void parseTriggerConfig(SchedJob job, Date date) {
