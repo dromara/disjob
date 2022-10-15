@@ -981,7 +981,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Assert.isTrue(StringUtils.isNotEmpty(job.getJobHandler()), "Job handler cannot be empty.");
         Result<Boolean> result = workerClient.verify(job.getJobHandler(), job.getJobParam());
         if (result.isFailure() || !result.getData()) {
-            throw new IllegalArgumentException("Invalid job handler config: " + job.getJobHandler());
+            throw new IllegalArgumentException("Invalid job handler config: " + job.getJobHandler() + ", " + result);
         }
     }
 

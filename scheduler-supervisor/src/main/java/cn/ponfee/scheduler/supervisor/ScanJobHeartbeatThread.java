@@ -146,6 +146,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
      * @param job the sched job
      * @param now the now date time
      * @return {@code true} will block the next trigger
+     * @throws JobException if occur error
      */
     private boolean checkBlockCollisionTrigger(SchedJob job, Date now) throws JobException {
         CollisionStrategy collisionStrategy = CollisionStrategy.of(job.getCollisionStrategy());

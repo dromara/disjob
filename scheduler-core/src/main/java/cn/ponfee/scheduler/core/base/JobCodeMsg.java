@@ -19,6 +19,8 @@ public enum JobCodeMsg implements CodeMsg {
 
     JOB_EXECUTE_FAILED(2001, "Job execute failed."),
 
+    PAUSE_TASK_INTERRUPTED(3001, "Task interrupted."),
+
     ;
 
     private final int code;

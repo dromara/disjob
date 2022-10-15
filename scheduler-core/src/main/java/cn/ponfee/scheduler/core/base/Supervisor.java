@@ -32,11 +32,11 @@ import static cn.ponfee.scheduler.common.util.Collects.get;
 public final class Supervisor extends Server {
     private static final long serialVersionUID = -1254559108807415145L;
 
-    private transient final String serialize;
+    private transient final String serializedValue;
 
     public Supervisor(String host, int port) {
         super(host, port);
-        this.serialize = host + COLON + port;
+        this.serializedValue = host + COLON + port;
     }
 
     @Override
@@ -46,7 +46,7 @@ public final class Supervisor extends Server {
 
     @Override
     public String serialize() {
-        return serialize;
+        return serializedValue;
     }
 
     /**

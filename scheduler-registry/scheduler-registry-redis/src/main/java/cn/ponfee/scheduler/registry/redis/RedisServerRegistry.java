@@ -205,7 +205,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     // ------------------------------------------------------------------protected methods
 
-    protected void refreshDiscovery(Consumer<List<D>> processor, boolean forceRefresh) {
+    protected final void refreshDiscovery(Consumer<List<D>> processor, boolean forceRefresh) {
         if (forceRefresh) {
             doRefreshDiscovery(processor);
             return;

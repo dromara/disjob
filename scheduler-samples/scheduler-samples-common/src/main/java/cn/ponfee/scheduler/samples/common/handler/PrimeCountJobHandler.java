@@ -2,6 +2,8 @@ package cn.ponfee.scheduler.samples.common.handler;
 
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.util.Jsons;
+import cn.ponfee.scheduler.core.base.JobCodeMsg;
+import cn.ponfee.scheduler.core.exception.PauseTaskException;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
 import cn.ponfee.scheduler.core.handle.SplitTask;
@@ -87,6 +89,11 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
         long blockStep = blockSize - 1, next = execution.getNext();
         long lastTime = System.currentTimeMillis(), currTime;
         while (next <= n) {
+            if (super.isInterrupted() || Thread.currentThread().isInterrupted()) {
+                checkpoint.checkpoint(task().getTaskId(), Jsons.toJson(execution));
+                throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_INTERRUPTED);
+            }
+
             long count = Prime.MillerRabin.countPrimes(next, Math.min(next + blockStep, n));
             execution.increment(count);
 

@@ -42,7 +42,7 @@ public final class Worker extends Server {
      */
     private final String instanceId;
 
-    private transient final String serialize;
+    private transient final String serializedValue;
 
     public Worker(String group, String instanceId, String host, int port) {
         super(host, port);
@@ -52,7 +52,7 @@ public final class Worker extends Server {
         this.group = group;
         this.instanceId = instanceId;
 
-        this.serialize = group + COLON + instanceId + COLON + host + COLON + port;
+        this.serializedValue = group + COLON + instanceId + COLON + host + COLON + port;
     }
 
     @Override
@@ -69,7 +69,7 @@ public final class Worker extends Server {
 
     @Override
     public String serialize() {
-        return serialize;
+        return serializedValue;
     }
 
     /**

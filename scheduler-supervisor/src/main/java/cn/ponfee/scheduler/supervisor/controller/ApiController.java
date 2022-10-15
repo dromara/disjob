@@ -78,13 +78,13 @@ public class ApiController {
     // ------------------------------------------------------------------ sched track
 
     @PostMapping("track/pause")
-    public Result<Boolean> pauseTrack(@RequestParam("trackId") long trackId) throws JobException {
+    public Result<Boolean> pauseTrack(@RequestParam("trackId") long trackId) {
         LOG.info("Do pausing sched track {}", trackId);
         return Result.success(jobManager.pauseTrack(trackId));
     }
 
     @PostMapping("track/cancel")
-    public Result<Boolean> cancelTrack(@RequestParam("trackId") long trackId) throws JobException {
+    public Result<Boolean> cancelTrack(@RequestParam("trackId") long trackId) {
         LOG.info("Do canceling sched track {}", trackId);
         return Result.success(jobManager.cancelTrack(trackId, Operations.MANUAL_CANCEL));
     }

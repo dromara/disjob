@@ -21,9 +21,7 @@ public interface JobSplitter {
      * @throws JobException if split failed
      */
     default List<SplitTask> split(String jobParam) throws JobException {
-        return Collections.singletonList(
-            new SplitTask(jobParam)
-        );
+        return Collections.singletonList(new SplitTask(jobParam));
     }
 
 }

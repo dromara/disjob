@@ -191,17 +191,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         doRefreshDiscoveryServers(servers);
     }
 
-    private Response<List<HealthService>> getDiscoveryServers(long index, long waitTime) {
-        HealthServicesRequest request = HealthServicesRequest.newBuilder()
-            .setQueryParams(new QueryParams(waitTime, index))
-            .setPassing(true)
-            .setToken(token)
-            .build();
-        // Health api: /v1/health/service/{serviceName}
-        // doc page: https://www.consul.io/api-docs/health
-        // Blocking Queries doc page: https://www.consul.io/api-docs/features/blocking
-        return client.getHealthServices(discoveryRole.registryKey(), request);
-    }
+    // ------------------------------------------------------------------private class
 
     private class ConsulSubscriberThread extends Thread {
         private long lastConsulIndex;
@@ -221,6 +211,18 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                     refreshDiscoveryServers(response.getValue());
                 }
             }
+        }
+
+        private Response<List<HealthService>> getDiscoveryServers(long index, long waitTime) {
+            HealthServicesRequest request = HealthServicesRequest.newBuilder()
+                .setQueryParams(new QueryParams(waitTime, index))
+                .setPassing(true)
+                .setToken(token)
+                .build();
+            // Health api: /v1/health/service/{serviceName}
+            // doc page: https://www.consul.io/api-docs/health
+            // Blocking Queries doc page: https://www.consul.io/api-docs/features/blocking
+            return client.getHealthServices(discoveryRole.registryKey(), request);
         }
     }
 

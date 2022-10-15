@@ -60,6 +60,7 @@ public class JobHandlerUtils {
      *
      * @param text qualified class name or source code
      * @return JobHandler instance object
+     * @throws JobException if new instance failed
      */
     public static JobHandler<?> newInstance(String text) throws JobException {
         Class<JobHandler<?>> type = ClassUtils.getClass(text);

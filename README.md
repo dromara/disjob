@@ -1,7 +1,6 @@
 [![Blog](https://img.shields.io/badge/blog-@ponfee-informational.svg)](http://www.ponfee.cn)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![Build status](https://img.shields.io/badge/build-passing-success.svg)]()
-[![Tests status](https://img.shields.io/badge/tests-passing-success.svg)]()
+[![Build status](https://img.shields.io/badge/build-passing-success.svg)](https://github.com/ponfee/distributed-scheduler/actions)
 
 **`简体中文`** | [**`English`**](README.en.md)
 
@@ -77,7 +76,9 @@ distributed-scheduler
 - 如果不使用Consul做为注册中心，则无需配置
 - 不依赖Web容器的Worker应用的配置文件是在[**`worker-conf.yml`**](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
-3. 启动[**`scheduler-samples/`**](scheduler-samples/)目录下的各应用，包括：
+3. 编写自己的任务处理器[**`PrimeCountJobHandler`**](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[**`JobHandler`**](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
+
+4. 启动[**`scheduler-samples/`**](scheduler-samples/)目录下的各应用，包括：
 ```Plain Text
  1）scheduler-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
  2）scheduler-samples-separately-supervisor         # Supervisor单独部署的Spring boot应用
@@ -117,8 +118,6 @@ public class SupervisorApplication {
     }
 }
 ```
-
-4. 编写自己的任务处理器[**`PrimeCountJobHandler`**](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[**`JobHandler`**](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
 5. 执行以下curl命令添加任务(选择任一运行中的Supervisor应用替换“localhost:8080”)
 - triggerConf修改为大于当前时间的日期值以便即将触发(如当前时间的下一分钟)

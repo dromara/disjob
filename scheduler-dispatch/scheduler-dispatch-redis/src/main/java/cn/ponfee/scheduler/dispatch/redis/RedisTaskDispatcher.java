@@ -40,7 +40,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
     }
 
     @Override
-    protected boolean dispatch(ExecuteParam executeParam) {
+    protected final boolean dispatch(ExecuteParam executeParam) {
         Worker worker = executeParam.getWorker();
         // push to remote worker
         String key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker);

@@ -51,7 +51,7 @@ public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Wor
                     .peek(e -> e.getValue().sort(Comparator.comparing(Worker::getInstanceId))) // For help use route worker
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.unmodifiableList(e.getValue())));
                 DoubleListViewer<Worker> list = new DoubleListViewer<>(map.values());
-                this.groupedWorkers = map;
+                this.groupedWorkers = Collections.unmodifiableMap(map);
                 this.allWorkers = list;
             }
         }, forceRefresh);

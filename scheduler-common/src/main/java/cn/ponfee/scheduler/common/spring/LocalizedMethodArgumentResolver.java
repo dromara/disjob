@@ -114,6 +114,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         Assert.isTrue(jsonNode.isArray(), "Request parameter must be json array.");
         ArrayNode arrayNode = (ArrayNode) jsonNode;
         Type[] genericParameterTypes = method.getGenericParameterTypes();
+        Assert.isTrue(arrayNode.size() == genericParameterTypes.length, "Request parameter size inconsistent.");
         int length = genericParameterTypes.length;
         Object[] arguments = new Object[length];
         for (int i = 0; i < length; i++) {

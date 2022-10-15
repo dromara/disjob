@@ -4,11 +4,11 @@ import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
 /**
- * Wrapped execution param
+ * Dispatch param
  *
  * @author Ponfee
  */
-public class DispatchParam {
+class DispatchParam {
 
     private final ExecuteParam executeParam;
     private final String group;
