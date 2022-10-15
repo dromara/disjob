@@ -13,17 +13,17 @@ import java.util.Map;
 public enum MisfireStrategy {
 
     /**
-     * 触发最近一次
+     * 触发最近一次misfire
      */
     LAST(1),
 
     /**
-     * 丢弃
+     * 丢弃所有misfire
      */
     DISCARD(2),
 
     /**
-     * 触发所有
+     * 触发所有misfire
      */
     EVERY(3),
 

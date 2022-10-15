@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractHeartbeatThread extends Thread implements AutoCloseable {
 
     /**
-     * Basic long type for help compile.
+     * Number of milliseconds per second.
      */
     private static final long MILLIS_PER_SECOND = 1000;
 

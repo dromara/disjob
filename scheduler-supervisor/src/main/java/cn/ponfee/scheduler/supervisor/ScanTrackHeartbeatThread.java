@@ -9,6 +9,7 @@ import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.model.SchedTrack;
 import cn.ponfee.scheduler.supervisor.manager.JobManager;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -23,7 +24,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
 
     private static final int QUERY_BATCH_SIZE = 200;
     private static final long EXPIRE_WAITING_MILLISECONDS = 60 * 1000;
-    private static final long EXPIRE_RUNNING_MILLISECONDS = 300 * 1000;
+    private static final long EXPIRE_RUNNING_MILLISECONDS = 120 * 1000;
 
     private final DoInLocked doInLocked;
     private final JobManager jobManager;
@@ -40,7 +41,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (!jobManager.hasWorkers()) {
+        if (jobManager.hasNotFoundWorkers()) {
             return false;
         }
         Boolean result = doInLocked.apply(() -> {
@@ -73,30 +74,20 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
             // if all the tasks are terminal, then terminate sched track record
             if (jobManager.renewUpdateTime(track, now)) {
                 logger.info("All task terminal, terminate the sched track: {}", track.getTrackId());
-                jobManager.terminate(track.getTrackId(), true);
+                jobManager.terminate(track.getTrackId());
             }
             return;
         }
 
         // sieve the waiting tasks
         List<SchedTask> waitingTasks = tasks.stream()
-                                            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
-                                            .collect(Collectors.toList());
+            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
+            .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(waitingTasks)) {
-            logger.warn("Not has waiting tasks: {}", track);
+            // read conflict
+            logger.info("Not has waiting tasks: {}", track);
             return;
         }
-
-        /*
-        // filter un-dispatched task or the task worker death
-        waitingTasks = waitingTasks.stream()
-                                   .filter(e -> StringUtils.isEmpty(e.getWorker()) || !jobManager.isAliveWorker(e.getWorker()))
-                                   .collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(waitingTasks)) {
-            jobManager.renewUpdateTime(track, now);
-            return;
-        }
-        */
 
         SchedJob job = jobManager.getJob(track.getJobId());
         if (job == null) {
@@ -106,7 +97,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
         }
 
         // check not found worker
-        if (!jobManager.hasWorkers(job.getJobGroup())) {
+        if (jobManager.hasNotFoundWorkers(job.getJobGroup())) {
             jobManager.renewUpdateTime(track, now);
             logger.warn("Scan track not found available group '{}' workers.", job.getJobGroup());
             return;
@@ -114,7 +105,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
 
         if (jobManager.renewUpdateTime(track, now)) {
             logger.info("Redispatch sched track: {} - {}", track, Dates.format(now));
-            jobManager.dispatch(job, track, tasks);
+            jobManager.dispatch(job, track, waitingTasks);
         }
     }
 
@@ -139,14 +130,34 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
     }
 
     private void processExpireRunning(SchedTrack track, Date now) {
-        if (jobManager.hasAliveExecuting(track.getTrackId())) {
+        List<SchedTask> tasks = jobManager.findByTrackId(track.getTrackId());
+
+        // sieve the waiting tasks
+        List<SchedTask> waitingTasks = tasks.stream()
+            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
+            .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(waitingTasks)) {
+            if (jobManager.renewUpdateTime(track, now)) {
+                logger.info("Redispatch sched track: {} - {}", track, Dates.format(now));
+                jobManager.dispatch(jobManager.getJob(track.getJobId()), track, waitingTasks);
+            }
+            return;
+        }
+
+        // check has executing task
+        boolean hasAliveExecuting = tasks.stream()
+            .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
+            .map(SchedTask::getWorker)
+            .filter(StringUtils::isNotBlank)
+            .anyMatch(jobManager::isAliveWorker);
+        if (hasAliveExecuting) {
             jobManager.renewUpdateTime(track, now);
             return;
         }
 
         // all workers are dead
         logger.info("Scan track, all worker dead, terminate the sched track: {}", track.getTrackId());
-        jobManager.terminate(track.getTrackId(), true);
+        jobManager.terminate(track.getTrackId());
     }
 
 }

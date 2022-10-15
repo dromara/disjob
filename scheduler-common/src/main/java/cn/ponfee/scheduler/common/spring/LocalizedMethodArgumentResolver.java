@@ -4,6 +4,7 @@ import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +32,11 @@ import java.util.Map;
 public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     //private final WeakHashMap<NativeWebRequest, Map<String, Object>> resolvedCache = new WeakHashMap<>();
+
+    private static final List<String> QUERY_PARAMS = ImmutableList.of(
+        "GET", "DELETE", "HEAD", "OPTIONS"
+    );
+
     private static final String STORE_KEY_PREFIX = "LOCALIZED_METHOD_ARGUMENTS:";
 
     @Override
@@ -65,23 +72,22 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
     }
 
     private Object[] resolveMethodParameters(Method method, HttpServletRequest request) throws IOException {
-        switch (request.getMethod()) {
-            case "GET":
-            case "DELETE":
+        if (QUERY_PARAMS.contains(request.getMethod())) {
+            return resolveQueryString(method, request.getParameterMap());
+        } else {
+            String body = IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8);
+            if (StringUtils.isEmpty(body)) {
                 return resolveQueryString(method, request.getParameterMap());
-            default:
-                String body = IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8);
-                if (StringUtils.isEmpty(body)) {
-                    return resolveQueryString(method, request.getParameterMap());
-                } else {
-                    return resolveRequestBody(method, body);
-                }
+            } else {
+                return resolveRequestBody(method, body);
+            }
         }
     }
 
     private Object[] resolveQueryString(Method method, Map<String, String[]> parameterMap) {
-        Object[] arguments = new Object[method.getParameterCount()];
-        for (int i = 0; i < method.getParameterCount(); i++) {
+        int parameterCount = method.getParameterCount();
+        Object[] arguments = new Object[parameterCount];
+        for (int i = 0; i < parameterCount; i++) {
             String argName = "arg[" + i + "]";
             String[] array = parameterMap.get(argName);
             Assert.isTrue(
@@ -91,6 +97,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             String argValue = Collects.get(array, 0);
             Type argType = method.getGenericParameterTypes()[i];
             if (argValue == null) {
+                // if basic type then set default value
                 arguments[i] = (argType instanceof Class<?>) ? ObjectUtils.cast(null, (Class<?>) argType) : null;
             } else {
                 arguments[i] = Jsons.fromJson(argValue, argType);

@@ -2,7 +2,7 @@ package cn.ponfee.scheduler.common.base;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.PriorityQueue;
 
 /**
  * Timing wheel structure.
@@ -139,19 +139,59 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         }
     }
 
-    /**
-     * Timing queue
-     *
-     * @param <T> element type
-     */
-    public static class TimingQueue<T extends Timing<T>> extends PriorityBlockingQueue<T> {
-
+    /*
+    public static final class TimingQueue<T extends Timing<T>> extends PriorityBlockingQueue<T> {
         public TimingQueue() {
             super();
         }
 
         public TimingQueue(int initialCapacity) {
             super(initialCapacity);
+        }
+    }
+    */
+
+    /**
+     * Timing queue
+     *
+     * @param <T> element type
+     */
+    public static final class TimingQueue<T extends Timing<T>> {
+        private final PriorityQueue<T> queue;
+
+        public TimingQueue() {
+            this.queue = new PriorityQueue<>();
+        }
+
+        public TimingQueue(int initialCapacity) {
+            this.queue = new PriorityQueue<>(initialCapacity);
+        }
+
+        public synchronized T poll() {
+            return queue.poll();
+        }
+
+        public synchronized boolean offer(T timing) {
+            return queue.offer(timing);
+        }
+
+        // -------------------------------------------Unnecessary use synchronized
+
+        /**
+         * Returns the top element of heap data structure.
+         *
+         * @return Timing data
+         */
+        public T peek() {
+            return queue.peek();
+        }
+
+        public int size() {
+            return queue.size();
+        }
+
+        public boolean isEmpty() {
+            return queue.isEmpty();
         }
     }
 

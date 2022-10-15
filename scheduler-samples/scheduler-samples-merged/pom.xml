@@ -48,7 +48,7 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
-          <mainClass>cn.ponfee.scheduler.samples.SchedulerApplication</mainClass>
+          <mainClass>cn.ponfee.scheduler.samples.merged.SchedulerApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>

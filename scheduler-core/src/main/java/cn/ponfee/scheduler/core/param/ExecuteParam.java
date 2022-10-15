@@ -53,7 +53,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     private volatile transient TaskExecutor<?> taskExecutor;
 
     /**
-     * With worker argument for help to deserialization.
+     * Constructor
      *
      * @param operation   the operation
      * @param taskId      the task id
@@ -71,7 +71,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     }
 
     /**
-     * For deserialization.
+     * The constructor for deserialization.
      *
      * @param operation   the operation(if terminate task, this is null value)
      * @param taskId      the task id

@@ -4,15 +4,55 @@ import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.exception.JobException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Modifier;
+import java.util.List;
+
+import static cn.ponfee.scheduler.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
 
 /**
- * New job handler instance utility
+ * Job handler utility
  *
  * @author Ponfee
  */
 public class JobHandlerUtils {
+
+    public static boolean verify(String jobHandler, String jobParams) {
+        if (StringUtils.isBlank(jobHandler)) {
+            return false;
+        }
+        try {
+            List<SplitTask> tasks = split(jobHandler, jobParams);
+            return CollectionUtils.isNotEmpty(tasks);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Splits job to many sched task.
+     *
+     * @param jobHandler the job handler
+     * @param jobParams  the job param
+     * @return list of SplitTask
+     * @throws JobException if split failed
+     */
+    public static List<SplitTask> split(String jobHandler, String jobParams) throws JobException {
+        try {
+            JobSplitter jobSplitter = JobHandlerUtils.newInstance(jobHandler);
+            List<SplitTask> splitTasks = jobSplitter.split(jobParams);
+            if (CollectionUtils.isEmpty(splitTasks)) {
+                throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
+            }
+            return splitTasks;
+        } catch (JobException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new JobException(SPLIT_JOB_FAILED, "Split job occur error", e);
+        }
+    }
 
     /**
      * New jobHandler instance, <br/>
@@ -34,7 +74,7 @@ public class JobHandlerUtils {
         return newInstance(type);
     }
 
-    public static <T> T newInstance(Class<T> type) {
+    private static <T> T newInstance(Class<T> type) {
         if (!SpringContextHolder.isInitialized()) {
             return ClassUtils.newInstance(type);
         }
@@ -52,4 +92,5 @@ public class JobHandlerUtils {
         SpringContextHolder.autowire(object);
         return object;
     }
+
 }

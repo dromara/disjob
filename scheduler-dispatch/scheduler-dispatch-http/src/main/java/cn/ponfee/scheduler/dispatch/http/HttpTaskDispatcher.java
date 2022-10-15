@@ -1,12 +1,11 @@
 package cn.ponfee.scheduler.dispatch.http;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Dispatch task based http
@@ -15,27 +14,20 @@ import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
-    private final DiscoveryRestTemplate<Worker> discoveryRestTemplate;
+    private final RestTemplate restTemplate;
 
     public HttpTaskDispatcher(DiscoveryRestTemplate<Worker> discoveryRestTemplate,
                               TimingWheel<ExecuteParam> timingWheel) {
         super(discoveryRestTemplate.getDiscoveryServer(), timingWheel);
-        this.discoveryRestTemplate = discoveryRestTemplate;
+        this.restTemplate = discoveryRestTemplate.getRestTemplate();
     }
 
     @Override
-    protected boolean dispatch(ExecuteParam executeParam) throws JobException {
-        try {
-            Boolean res = discoveryRestTemplate.execute(
-                executeParam.getWorker().getGroup(),
-                HttpTaskDispatchingConstants.WORKER_RECEIVE_PATH,
-                Boolean.class,
-                executeParam
-            );
-            return res != null && res;
-        } catch (Exception e) {
-            throw new JobException(JobCodeMsg.DISPATCH_TASK_FAILED, "Http dispatch task failed: " + executeParam, e);
-        }
+    protected boolean dispatch(ExecuteParam executeParam) throws Exception {
+        Worker worker = executeParam.getWorker();
+        String url = String.format("http://%s:%d/%s", worker.getHost(), worker.getPort(), Constants.WORKER_RECEIVE_PATH);
+        Boolean result = restTemplate.postForEntity(url, new Object[]{executeParam}, Boolean.class).getBody();
+        return result != null && result;
     }
 
 }

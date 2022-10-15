@@ -1,9 +1,10 @@
 package cn.ponfee.scheduler.samples;
 
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.handle.JobSplitter;
+import cn.ponfee.scheduler.core.handle.SplitTask;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
+import cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -25,10 +26,10 @@ public class PrimeCountJobHandlerTest {
         System.out.println(json);
 
         PrimeCountJobHandler jobHandler = new PrimeCountJobHandler();
-        List<JobSplitter.SplitTask> split = jobHandler.split(schedJob);
+        List<SplitTask> split = jobHandler.split(schedJob.getJobParam());
         System.out.println(Jsons.toJson(split));
 
-        for (JobSplitter.SplitTask splitTask : split) {
+        for (SplitTask splitTask : split) {
             SchedTask schedTask = new SchedTask();
             schedTask.setTaskParam(splitTask.getTaskParam());
             jobHandler.task(schedTask);

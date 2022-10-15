@@ -40,7 +40,7 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
-          <mainClass>cn.ponfee.scheduler.supervisor.samples.SupervisorApplication</mainClass>
+          <mainClass>cn.ponfee.scheduler.samples.supervisor.SupervisorApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>

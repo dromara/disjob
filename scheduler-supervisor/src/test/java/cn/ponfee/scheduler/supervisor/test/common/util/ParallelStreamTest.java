@@ -22,11 +22,7 @@ public class ParallelStreamTest {
         int[] array = {1};
         int length = array.length;
         IntStream intArrStream = Arrays.stream(array);
-        intArrStream.forEach(s ->
-            {
-                System.out.println(s + " " + Thread.currentThread().getName());
-            }
-        );
+        intArrStream.forEach(s -> System.out.println(s + " " + Thread.currentThread().getName()));
 
         System.out.println("\n");
 

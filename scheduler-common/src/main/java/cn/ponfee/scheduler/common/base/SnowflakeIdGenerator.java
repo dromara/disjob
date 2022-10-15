@@ -94,6 +94,10 @@ public final class SnowflakeIdGenerator implements IdGenerator {
         this(workerId, datacenterId, 12, 5, 5);
     }
 
+    public SnowflakeIdGenerator() {
+        this(1, 0, 14, 5, 0);
+    }
+
     /**
      * no datacenterId
      * max sequence count: 16384

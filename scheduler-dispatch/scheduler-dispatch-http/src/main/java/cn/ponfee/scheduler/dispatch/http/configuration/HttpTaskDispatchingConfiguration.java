@@ -50,7 +50,7 @@ public class HttpTaskDispatchingConfiguration {
         @Bean
         @ConditionalOnMissingBean
         public TaskDispatcher taskDispatcher(HttpProperties properties,
-                                             SupervisorRegistry supervisorRegistry,
+                                             SupervisorRegistry discoveryWorker,
                                              @Nullable TimingWheel<ExecuteParam> timingWheel,
                                              @Nullable @Qualifier(SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
             DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
@@ -58,7 +58,7 @@ public class HttpTaskDispatchingConfiguration {
                 .readTimeout(properties.getReadTimeout())
                 .maxRetryTimes(properties.getMaxRetryTimes())
                 .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
-                .discoveryServer(supervisorRegistry)
+                .discoveryServer(discoveryWorker)
                 .build();
 
             return new HttpTaskDispatcher(discoveryRestTemplate, timingWheel);

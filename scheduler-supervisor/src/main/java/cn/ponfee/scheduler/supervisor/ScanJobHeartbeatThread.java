@@ -1,6 +1,5 @@
 package cn.ponfee.scheduler.supervisor;
 
-import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
@@ -10,9 +9,8 @@ import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.model.SchedTrack;
-import cn.ponfee.scheduler.supervisor.base.SupervisorConstants;
 import cn.ponfee.scheduler.supervisor.manager.JobManager;
-import cn.ponfee.scheduler.supervisor.util.JobUtils;
+import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.dao.DuplicateKeyException;
@@ -37,23 +35,20 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
 
     private final DoInLocked doInLocked;
     private final JobManager jobManager;
-    private final IdGenerator idGenerator;
     private final long afterSeconds;
 
     public ScanJobHeartbeatThread(int heartbeatIntervalSeconds,
                                   DoInLocked doInLocked,
-                                  JobManager jobManager,
-                                  IdGenerator idGenerator) {
+                                  JobManager jobManager) {
         super(heartbeatIntervalSeconds);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
-        this.idGenerator = idGenerator;
         this.afterSeconds = interval() << 1;
     }
 
     @Override
     protected boolean heartbeat() {
-        if (!jobManager.hasWorkers()) {
+        if (jobManager.hasNotFoundWorkers()) {
             return false;
         }
         Boolean result = doInLocked.apply(() -> {
@@ -87,7 +82,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             }
 
             // check has available workers
-            if (!jobManager.hasWorkers(job.getJobGroup())) {
+            if (jobManager.hasNotFoundWorkers(job.getJobGroup())) {
                 updateNextScanTime(job, now, 15);
                 logger.warn("Scan job not found available group '{}' workers.", job.getJobGroup());
                 return;
@@ -99,7 +94,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             }
 
             // 1、build sched track and sched task list
-            Pair<SchedTrack, List<SchedTask>> pair = JobUtils.buildTrackAndTasks(job, now, idGenerator::generateId);
+            Pair<SchedTrack, List<SchedTask>> pair = jobManager.buildTrackAndTasks(job, now);
             SchedTrack track = pair.getLeft();
             List<SchedTask> tasks = pair.getRight();
             Assert.notEmpty(tasks, "Invalid split, Not has executable task: " + job);
@@ -141,7 +136,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             return job.getNextTriggerTime();
         } else {
             // 2、其它情况：基于原来的lastTriggerTime重新再计算一次nextTriggerTime
-            return JobUtils.computeNextTriggerTime(job, now);
+            return TriggerTimeUtils.computeNextTriggerTime(job, now);
         }
     }
 
@@ -201,7 +196,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
                 Integer misfireStrategy = job.getMisfireStrategy();
                 try {
                     job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
-                    job.setNextTriggerTime(JobUtils.computeNextTriggerTime(job, now));
+                    job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, now));
                 } finally {
                     // restore
                     job.setMisfireStrategy(misfireStrategy);
@@ -240,7 +235,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
      */
     private static void refreshNextTriggerTime(SchedJob job, Long lastTriggerTime, Date now) {
         job.setLastTriggerTime(lastTriggerTime);
-        job.setNextTriggerTime(JobUtils.computeNextTriggerTime(job, now));
+        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, now));
         if (job.getNextTriggerTime() == null) {
             // It has not next triggered time, then stop the job
             job.setRemark("Stop refresh reason: has not next trigger time");

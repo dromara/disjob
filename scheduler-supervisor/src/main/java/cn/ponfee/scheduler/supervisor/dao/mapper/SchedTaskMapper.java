@@ -19,6 +19,8 @@ public interface SchedTaskMapper {
 
     List<SchedTask> getByTrackId(long trackId);
 
+    List<SchedTask> findByTrackId(long trackId);
+
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
               @Param("executeStartTime") Date executeStartTime);
@@ -49,8 +51,6 @@ public interface SchedTaskMapper {
     int updateErrorMsg(@Param("taskId") long taskId,
                        @Param("errorMsg") String errorMsg);
 
-    List<SchedTask> findByTrackId(long trackId);
-
     /**
      * Delete the sched task.
      *
@@ -59,5 +59,4 @@ public interface SchedTaskMapper {
      */
     int deleteByTrackId(long trackId);
 
-    //int updateWorker(List<SchedTask> tasks);
 }

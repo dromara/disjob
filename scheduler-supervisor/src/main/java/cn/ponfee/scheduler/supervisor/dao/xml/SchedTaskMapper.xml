@@ -59,6 +59,12 @@
     WHERE track_id = #{trackId,jdbcType=BIGINT}
   </select>
 
+  <select id="findByTrackId" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" />
+    FROM sched_task
+    WHERE track_id = #{trackId,jdbcType=BIGINT}
+  </select>
+
   <!-- use `IFNULL` function reason: possibly paused task re-execute -->
   <update id="start">
     UPDATE sched_task
@@ -130,12 +136,6 @@
         version = version+1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </update>
-
-  <select id="findByTrackId" parameterType="_long" resultMap="BaseResultMap">
-    SELECT <include refid="Base_Column_List" />
-    FROM sched_task
-    WHERE track_id = #{trackId,jdbcType=BIGINT}
-  </select>
 
   <delete id="deleteByTrackId" parameterType="_long">
     DELETE FROM sched_task

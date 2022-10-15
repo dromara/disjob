@@ -6,8 +6,6 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.Discovery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -22,8 +20,6 @@ import java.util.concurrent.TimeUnit;
  * @author Ponfee
  */
 public class RedisTaskDispatcher extends TaskDispatcher {
-
-    private final static Logger LOG = LoggerFactory.getLogger(RedisTaskDispatcher.class);
 
     /**
      * <pre>
@@ -74,7 +70,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
             }
 
             renewal.renew(workerKey);
-            LOG.info("Worker redis key renewed {}", worker.toString());
+            logger.info("Worker redis key renewed {}", worker.toString());
         }
     }
 

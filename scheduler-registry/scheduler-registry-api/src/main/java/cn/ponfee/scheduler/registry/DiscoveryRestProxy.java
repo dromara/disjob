@@ -2,15 +2,19 @@ package cn.ponfee.scheduler.registry;
 
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Files;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -46,8 +50,8 @@ public class DiscoveryRestProxy {
     }
 
     private static class RestInvocationHandler implements InvocationHandler {
-        private static final Map<Method, String> PATH_CACHE = new ConcurrentHashMap<>();
-        private static final String PLACE_HOLDER = new String();
+        private static final Map<Method, Request> REQUEST_CACHE = new ConcurrentHashMap<>();
+        private static final Request INVALID_REQUEST = new Request(null, null);
 
         private final DiscoveryRestTemplate<?> discoveryRestTemplate;
         private final String prefixPath;
@@ -59,25 +63,49 @@ public class DiscoveryRestProxy {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            String path = getPath(prefixPath, method);
-            return discoveryRestTemplate.execute(path, method.getReturnType(), args);
+            Request request = getRequest(prefixPath, method);
+            return discoveryRestTemplate.execute(request.path, request.httpMethod, method.getGenericReturnType(), args);
         }
 
-        private static String getPath(String prefixPath, Method method) {
-            String path = PATH_CACHE.computeIfAbsent(method, key -> {
-                String suffixPath = parsePath(AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class));
-                if (prefixPath.isEmpty()) {
-                    return suffixPath.isEmpty() ? PLACE_HOLDER : suffixPath;
-                } else {
-                    return suffixPath.isEmpty() ? prefixPath : prefixPath + Files.UNIX_FOLDER_SEPARATOR + suffixPath;
+        private static Request getRequest(String prefixPath, Method method) {
+            Request request = REQUEST_CACHE.computeIfAbsent(method, key -> {
+                RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class);
+                if (ArrayUtils.isEmpty(mapping.method())) {
+                    return INVALID_REQUEST;
                 }
+                String suffixPath = parsePath(mapping), fullPath;
+                if (prefixPath.isEmpty()) {
+                    fullPath = suffixPath.isEmpty() ? null : suffixPath;
+                } else {
+                    fullPath = suffixPath.isEmpty() ? prefixPath : prefixPath + Files.UNIX_FOLDER_SEPARATOR + suffixPath;
+                }
+                if (fullPath == null) {
+                    return INVALID_REQUEST;
+                }
+                return Arrays.stream(mapping.method())
+                    .filter(Objects::nonNull)
+                    .map(Enum::name)
+                    .map(HttpMethod::valueOf)
+                    .map(httpMethod -> new Request(fullPath, httpMethod))
+                    .findAny()
+                    .orElse(INVALID_REQUEST);
             });
 
-            if (path == PLACE_HOLDER) {
-                throw new UnsupportedOperationException("Method is illegal http api: " + method);
+            if (request == INVALID_REQUEST) {
+                throw new UnsupportedOperationException("Illegal defined method: " + method);
             } else {
-                return path;
+                return request;
             }
+        }
+    }
+
+    private static class Request {
+        private final String path;
+        private final HttpMethod httpMethod;
+
+        private Request(String path, HttpMethod httpMethod) {
+            this.path = path;
+            this.httpMethod = httpMethod;
         }
     }
 

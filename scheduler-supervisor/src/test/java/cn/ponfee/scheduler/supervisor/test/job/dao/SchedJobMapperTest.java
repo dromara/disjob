@@ -6,7 +6,7 @@ import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
-import cn.ponfee.scheduler.supervisor.util.JobUtils;
+import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setWeightScore(1);
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(JobUtils.computeNextTriggerTime(job));
+        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job));
         job.setAlarmSubscribers("");
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
@@ -85,7 +85,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setWeightScore(1);
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(JobUtils.computeNextTriggerTime(job));
+        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job));
         job.setAlarmSubscribers("");
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
@@ -124,7 +124,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setWeightScore(1);
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(JobUtils.computeNextTriggerTime(job));
+        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job));
         job.setAlarmSubscribers("");
         job.setUpdatedBy("0");
         job.setCreatedBy("0");

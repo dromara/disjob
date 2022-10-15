@@ -1,6 +1,5 @@
 package cn.ponfee.scheduler.supervisor;
 
-import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
@@ -33,7 +32,6 @@ public class SupervisorStartup implements AutoCloseable {
                               JobManager jobManager,
                               DoInLocked scanJobLocked,
                               DoInLocked scanTrackLocked,
-                              IdGenerator idGenerator,
                               TaskDispatcher taskDispatcher) {
         Assert.notNull(currentSupervisor, "Current supervisor cannot null.");
         Assert.isTrue(jobHeartbeatIntervalSeconds > 0, "Job heart beat interval seconds must be greater zero.");
@@ -42,12 +40,11 @@ public class SupervisorStartup implements AutoCloseable {
         Assert.notNull(jobManager, "Job manager cannot null.");
         Assert.notNull(scanJobLocked, "Scan job locked cannot null.");
         Assert.notNull(scanTrackLocked, "Scan track locked cannot null.");
-        Assert.notNull(idGenerator, "Id generator cannot null.");
         Assert.notNull(taskDispatcher, "Task dispatcher cannot null.");
 
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
-        this.scanJobHeartbeatThread = new ScanJobHeartbeatThread(jobHeartbeatIntervalSeconds, scanJobLocked, jobManager, idGenerator);
+        this.scanJobHeartbeatThread = new ScanJobHeartbeatThread(jobHeartbeatIntervalSeconds, scanJobLocked, jobManager);
         this.scanTrackHeartbeatThread = new ScanTrackHeartbeatThread(trackHeartbeatIntervalSeconds, scanTrackLocked, jobManager);
         this.taskDispatcher = taskDispatcher;
     }
@@ -85,7 +82,6 @@ public class SupervisorStartup implements AutoCloseable {
         private JobManager jobManager;
         private DoInLocked scanJobLocked;
         private DoInLocked scanTrackLocked;
-        private IdGenerator idGenerator;
         private TaskDispatcher taskDispatcher;
 
         public SupervisorStartupBuilder currentSupervisor(Supervisor currentSupervisor) {
@@ -123,11 +119,6 @@ public class SupervisorStartup implements AutoCloseable {
             return this;
         }
 
-        public SupervisorStartupBuilder idGenerator(IdGenerator idGenerator) {
-            this.idGenerator = idGenerator;
-            return this;
-        }
-
         public SupervisorStartupBuilder taskDispatcher(TaskDispatcher taskDispatcher) {
             this.taskDispatcher = taskDispatcher;
             return this;
@@ -136,7 +127,7 @@ public class SupervisorStartup implements AutoCloseable {
         public SupervisorStartup build() {
             return new SupervisorStartup(
                 currentSupervisor,jobHeartbeatIntervalSeconds, trackHeartbeatIntervalSeconds,
-                supervisorRegistry, jobManager, scanJobLocked, scanTrackLocked, idGenerator, taskDispatcher
+                supervisorRegistry, jobManager, scanJobLocked, scanTrackLocked, taskDispatcher
             );
         }
     }

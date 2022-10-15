@@ -17,7 +17,7 @@ public class HttpTaskReceiver extends TaskReceiver implements MarkRpcController 
         super(timingWheel);
     }
 
-    @PostMapping(HttpTaskDispatchingConstants.WORKER_RECEIVE_PATH)
+    @PostMapping(Constants.WORKER_RECEIVE_PATH)
     @Override
     public boolean receive(ExecuteParam executeParam) {
         return super.receive(executeParam);

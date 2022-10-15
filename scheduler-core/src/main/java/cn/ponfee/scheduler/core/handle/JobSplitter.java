@@ -1,7 +1,6 @@
 package cn.ponfee.scheduler.core.handle;
 
 import cn.ponfee.scheduler.core.exception.JobException;
-import cn.ponfee.scheduler.core.model.SchedJob;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,29 +16,14 @@ public interface JobSplitter {
      * Provides default tasks split.
      * <p>Subclass can override this method to provide.
      *
-     * @param job the schedule job
+     * @param jobParam the job param
      * @return list of SplitTask
      * @throws JobException if split failed
      */
-    default List<SplitTask> split(SchedJob job) throws JobException {
+    default List<SplitTask> split(String jobParam) throws JobException {
         return Collections.singletonList(
-            new SplitTask(job.getJobParam())
+            new SplitTask(jobParam)
         );
-    }
-
-    /**
-     * Split task structure.
-     */
-    class SplitTask {
-        private final String taskParam;
-
-        public SplitTask(String taskParam) {
-            this.taskParam = taskParam;
-        }
-
-        public String getTaskParam() {
-            return taskParam;
-        }
     }
 
 }

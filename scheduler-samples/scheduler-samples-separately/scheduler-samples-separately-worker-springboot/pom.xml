@@ -50,7 +50,7 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
-          <mainClass>cn.ponfee.scheduler.worker.samples.WorkerApplication</mainClass>
+          <mainClass>cn.ponfee.scheduler.samples.worker.WorkerApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>

@@ -105,7 +105,7 @@ public class Collects {
     }
 
     public static <T> T[] newArray(Class<? extends T[]> newType, int length) {
-        return ((Object) newType == (Object) Object[].class)
+        return newType.equals(Object[].class)
             ? (T[]) new Object[length]
             : (T[]) Array.newInstance(newType.getComponentType(), length);
     }

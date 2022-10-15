@@ -23,12 +23,12 @@ public enum CollisionStrategy {
     SERIAL(2),
 
     /**
-     * 覆盖
+     * 覆盖上一次（取消上一次任务，并执行当前任务）
      */
     OVERRIDE(3),
 
     /**
-     * 丢弃
+     * 丢弃当前任务
      */
     DISCARD(4),
 
