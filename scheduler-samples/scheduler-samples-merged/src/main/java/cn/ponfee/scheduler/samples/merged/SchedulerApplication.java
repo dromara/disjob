@@ -6,6 +6,8 @@ import cn.ponfee.scheduler.dispatch.redis.configuration.EnableRedisTaskDispatchi
 import cn.ponfee.scheduler.registry.consul.configuration.ConsulProperties;
 import cn.ponfee.scheduler.registry.consul.configuration.EnableConsulServerRegistry;
 import cn.ponfee.scheduler.registry.redis.configuration.EnableRedisServerRegistry;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.EnableZookeeperServerRegistry;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.scheduler.worker.configuration.EnableWorker;
@@ -24,11 +26,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
     SupervisorProperties.class,
     WorkerProperties.class,
     HttpProperties.class,
-    ConsulProperties.class
+    ConsulProperties.class,
+    ZookeeperProperties.class
 })
 @EnableSupervisor
 @EnableWorker
-@EnableRedisServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry
+@EnableZookeeperServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableZookeeperServerRegistry
 @EnableRedisTaskDispatching // EnableRedisTaskDispatching、EnableHttpTaskDispatching
 @SpringBootApplication(
     exclude = {

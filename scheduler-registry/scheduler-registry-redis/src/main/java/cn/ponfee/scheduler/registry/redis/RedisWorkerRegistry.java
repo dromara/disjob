@@ -50,4 +50,10 @@ public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor>
         return supervisors;
     }
 
+    @Override
+    public void close() {
+        super.close();
+        this.supervisors = null;
+    }
+
 }

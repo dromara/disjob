@@ -1,23 +1,24 @@
-package cn.ponfee.scheduler.registry.consul;
+package cn.ponfee.scheduler.registry.zookeeper;
 
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Registry worker based consul.
+ * Registry worker based zookeeper.
  *
  * @author Ponfee
  */
-public class ConsulWorkerRegistry extends ConsulServerRegistry<Worker, Supervisor> implements WorkerRegistry {
+public class ZookeeperWorkerRegistry extends ZookeeperServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
     private volatile List<Supervisor> supervisors = Collections.emptyList();
 
-    public ConsulWorkerRegistry(String host, int port, String token) {
-        super(host, port, token);
+    public ZookeeperWorkerRegistry(ZookeeperProperties props) {
+        super(props);
     }
 
     @Override
@@ -35,4 +36,5 @@ public class ConsulWorkerRegistry extends ConsulServerRegistry<Worker, Superviso
         super.close();
         this.supervisors = null;
     }
+
 }

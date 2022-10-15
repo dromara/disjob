@@ -3,6 +3,8 @@ package cn.ponfee.scheduler.registry;
 import cn.ponfee.scheduler.common.concurrent.ConcurrentHashSet;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.core.base.Server;
+import cn.ponfee.scheduler.core.base.Supervisor;
+import cn.ponfee.scheduler.core.base.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +59,10 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     @Override
     public ServerRole discoveryRole() {
         return discoveryRole;
+    }
+
+    protected final Server currentServer() {
+        return registryRole == ServerRole.SUPERVISOR ? Supervisor.current() : Worker.current();
     }
 
 }

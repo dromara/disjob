@@ -149,6 +149,11 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String remark;
 
     /**
+     * 是否已删除
+     */
+    private Boolean deleted;
+
+    /**
      * 更新人
      */
     private String updatedBy;

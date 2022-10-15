@@ -59,4 +59,11 @@ public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Wor
         return group == null ? allWorkers : groupedWorkers.get(group);
     }
 
+    @Override
+    public void close() {
+        super.close();
+        this.groupedWorkers = null;
+        this.allWorkers = null;
+    }
+
 }

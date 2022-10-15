@@ -31,7 +31,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
 
@@ -103,9 +103,7 @@ public class Main {
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(workerStartup::close));
             workerStartup.start();
-            while (true) {
-                TimeUnit.DAYS.sleep(1);
-            }
+            new CountDownLatch(1).await();
         } catch (InterruptedException e) {
             LOG.error("Sleep interrupted.", e);
             Thread.currentThread().interrupt();

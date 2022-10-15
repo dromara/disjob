@@ -1,5 +1,7 @@
 package cn.ponfee.scheduler.dispatch.http;
 
+import cn.ponfee.scheduler.core.base.WorkerService;
+
 /**
  * Http task dispatching constants.
  *
@@ -7,6 +9,6 @@ package cn.ponfee.scheduler.dispatch.http;
  */
 final class Constants {
 
-    public static final String WORKER_RECEIVE_PATH = "worker/rpc/task/receive";
+    public static final String WORKER_RECEIVE_PATH = WorkerService.PREFIX_PATH + "task/receive";
 
 }

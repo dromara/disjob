@@ -1,9 +1,10 @@
-package cn.ponfee.scheduler.registry.consul;
+package cn.ponfee.scheduler.registry.zookeeper;
 
 import cn.ponfee.scheduler.common.base.DoubleListViewer;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
@@ -13,17 +14,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Registry supervisor based consul.
+ * Registry supervisor based zookeeper.
  *
  * @author Ponfee
  */
-public class ConsulSupervisorRegistry extends ConsulServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
+public class ZookeeperSupervisorRegistry extends ZookeeperServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
     private volatile Map<String, List<Worker>> groupedWorkers = Collections.emptyMap();
     private volatile List<Worker> allWorkers = new DoubleListViewer<>(Collections.emptyList());
 
-    public ConsulSupervisorRegistry(String host, int port, String token) {
-        super(host, port, token);
+    public ZookeeperSupervisorRegistry(ZookeeperProperties props) {
+        super(props);
     }
 
     @Override

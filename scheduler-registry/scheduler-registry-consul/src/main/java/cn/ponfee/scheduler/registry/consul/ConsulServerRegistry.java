@@ -1,9 +1,9 @@
 package cn.ponfee.scheduler.registry.consul;
 
-import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.MultithreadExecutors;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
+import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Server;
@@ -54,6 +54,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     protected ConsulServerRegistry(String host, int port, String token) {
         this.client = new ConsulClient(host, port);
+        // Assert.notNull(client.getAgentSelf(), "Consul server is not available.");
         this.token = token;
 
         this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Consul-Ttl-Check-Executor", true));
@@ -73,13 +74,13 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             return;
         }
 
-        registered.add(server);
         if (token == null) {
             client.agentServiceRegister(buildRegistryServer(server));
         } else {
             client.agentServiceRegister(buildRegistryServer(server), token);
         }
-        logger.info("Server registered: {} - {}", registryRole.name(), server.serialize());
+        registered.add(server);
+        logger.info("Server registered: {} - {}", registryRole.name(), server);
     }
 
     @Override
@@ -91,11 +92,13 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             } else {
                 client.agentServiceDeregister(buildId(server), token);
             }
-            logger.info("Server deregister: {} - {}", registryRole.name(), server.serialize());
+            logger.info("Server deregister: {} - {}", registryRole.name(), server);
         } catch (Exception e) {
             logger.error("Agent service deregister error.", e);
         }
     }
+
+    // ------------------------------------------------------------------Subscribe
 
     /**
      * Refresh discovery servers.
@@ -145,7 +148,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     }
 
     private String buildId(R server) {
-        return JobConstants.SCHEDULER_KEY_PREFIX + Constants.SLASH + server.serialize();
+        return JobConstants.SCHEDULER_KEY_PREFIX + Files.UNIX_FOLDER_SEPARATOR + server.serialize();
     }
 
     private NewService.Check buildCheck() {
@@ -203,7 +206,6 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         @Override
         public void run() {
             while (!closed) {
-                //Assert.notNull(client.getAgentSelf(), "Current server is not alive.");
                 Response<List<HealthService>> response = getDiscoveryServers(lastConsulIndex, WAIT_TIME_SECONDS);
                 Long currentIndex = response.getConsulIndex();
                 if (currentIndex != null && currentIndex > lastConsulIndex) {

@@ -26,6 +26,7 @@
       <result column="next_trigger_time" jdbcType="BIGINT" property="nextTriggerTime" />
       <result column="next_scan_time" jdbcType="TIMESTAMP" property="nextScanTime" />
       <result column="alarm_subscribers" jdbcType="VARCHAR" property="alarmSubscribers" />
+      <result column="is_deleted" jdbcType="BOOLEAN" property="deleted" />
       <result column="version" jdbcType="INTEGER" property="version" />
       <result column="updated_by" jdbcType="VARCHAR" property="updatedBy" />
       <result column="created_by" jdbcType="VARCHAR" property="createdBy" />
@@ -37,8 +38,8 @@
       job_id, job_group, job_name, job_handler, job_state, job_param, retry_type,
       retry_count, retry_interval, start_time, end_time, trigger_type, trigger_conf, execute_timeout,
       collision_strategy, misfire_strategy, route_strategy, weight_score, remark, last_trigger_time,
-      next_trigger_time, next_scan_time, alarm_subscribers, version, updated_by, created_by, updated_at,
-      created_at
+      next_trigger_time, next_scan_time, alarm_subscribers, version, IFNULL(is_deleted, 1) is_deleted,
+      updated_by, created_by, updated_at, created_at
     </sql>
 
     <!-- ********************use int test start******************** -->
@@ -58,6 +59,7 @@
       SELECT <include refid="Base_Column_List"/>
       FROM sched_job
       WHERE job_id IN (<foreach collection="jobIds" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
+        AND is_deleted = 0
     </select>
 
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.scheduler.core.model.SchedJob" useGeneratedKeys="true">
@@ -114,12 +116,14 @@
           updated_at = #{updatedAt,jdbcType=TIMESTAMP}
       WHERE job_id = #{jobId,jdbcType=BIGINT}
         AND version = #{version,jdbcType=INTEGER}
+        AND is_deleted = 0
     </update>
 
     <select id="getByJobId" parameterType="_long" resultMap="BaseResultMap">
       SELECT <include refid="Base_Column_List" />
       FROM sched_job
       WHERE job_id = #{jobId,jdbcType=BIGINT}
+        AND is_deleted = 0
     </select>
 
     <select id="findBeTriggering" resultMap="BaseResultMap">
@@ -128,6 +132,7 @@
       WHERE job_state = 1 
         AND next_trigger_time &lt; #{maxNextTriggerTime}
         AND next_scan_time &lt; NOW(3)
+        AND is_deleted = 0
       ORDER BY next_trigger_time ASC
       LIMIT #{size}
     </select>
@@ -138,6 +143,7 @@
           version = version+1
       WHERE job_id = #{jobId,jdbcType=BIGINT}
         AND version = #{version,jdbcType=INTEGER}
+        AND is_deleted = 0
     </update>
 
     <update id="stop" parameterType="cn.ponfee.scheduler.core.model.SchedJob">
@@ -148,7 +154,8 @@
           version = version+1
       WHERE job_id = #{jobId,jdbcType=BIGINT} 
         AND job_state = 1 
-        AND version = #{version,jdbcType=INTEGER} 
+        AND version = #{version,jdbcType=INTEGER}
+        AND is_deleted = 0
     </update>
 
     <update id="updateNextTriggerTime" parameterType="cn.ponfee.scheduler.core.model.SchedJob">
@@ -160,6 +167,7 @@
       WHERE job_id = #{jobId,jdbcType=BIGINT}
         AND job_state = 1
         AND version = #{version,jdbcType=INTEGER}
+        AND is_deleted = 0
     </update>
 
     <update id="updateState">
@@ -167,17 +175,24 @@
       SET job_state = #{toState,jdbcType=TINYINT},
           version = version+1
       WHERE job_id = #{jobId,jdbcType=BIGINT}
-      AND job_state = #{fromState,jdbcType=TINYINT}
+        AND job_state = #{fromState,jdbcType=TINYINT}
+        AND is_deleted = 0
     </update>
 
-    <delete id="deleteByJobId" parameterType="_long">
-      DELETE FROM sched_job 
-      WHERE job_id = #{jobId,jdbcType=BIGINT} AND job_state=0
-    </delete>
+    <update id="deleteByJobId" parameterType="_long">
+      UPDATE sched_job
+      SET is_deleted = NULL,
+          version = version+1
+      WHERE job_id = #{jobId,jdbcType=BIGINT}
+        AND job_state = 0
+        AND is_deleted = 0
+    </update>
 
     <select id="countJobIds" resultType="int">
-      SELECT COUNT(*) FROM sched_job
+      SELECT COUNT(*) cnt
+      FROM sched_job
       WHERE job_id IN (<foreach collection="list" separator="," item="jobId">#{jobId,jdbcType=TINYINT}</foreach>)
+        AND is_deleted = 0
     </select>
 
 </mapper>

@@ -33,8 +33,4 @@ public class Constants {
      */
     public static final String DOT = ".";
 
-    /**
-     * Slash symbol
-     */
-    public static final String SLASH = "/";
 }

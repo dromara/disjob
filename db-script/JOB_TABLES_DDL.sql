@@ -48,13 +48,14 @@ CREATE TABLE `sched_job` (
     `alarm_subscribers`    varchar(512)            DEFAULT NULL                                                   COMMENT '告警订阅人员列表',
     `remark`               varchar(255)            DEFAULT NULL                                                   COMMENT '备注',
     `version`              int(11)       unsigned  NOT NULL DEFAULT '1'                                           COMMENT '行记录版本号',
+    `is_deleted`           tinyint(1)    unsigned  DEFAULT '0'                                                    COMMENT '是否已删除：0-否；NULL-是(用NULL解决软删的唯一索引问题)；',
     `updated_by`           varchar(60)             DEFAULT NULL                                                   COMMENT '更新人',
     `created_by`           varchar(60)             DEFAULT NULL                                                   COMMENT '创建人',
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_job_id` (`job_id`),
-    KEY `ix_job_group_job_name` (`job_group`, `job_name`),
+    KEY `ix_job_group_job_name_is_deleted` (`job_group`, `job_name`, `is_deleted`),
     KEY `ix_job_state_next_trigger_time` (`job_state`, `next_trigger_time`) COMMENT '用于扫表',
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
@@ -137,3 +138,4 @@ CREATE TABLE `sched_depend` (
 INSERT INTO sched_lock(`name`) VALUES ('scan_job');
 INSERT INTO sched_lock(`name`) VALUES ('scan_track');
 INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (3988904755200, 'default', 'NoopJobHandler', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param', 0, 0, 0, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1655199233000, 1655199234000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (4236701614080, 'default', 'PrimeCountJobHandler', 'cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler', 0, '{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}', 2, 2, 1000, 2, '2022-10-06 22:53:00', 0, 1, 3, 1, 1665067980000, NULL);

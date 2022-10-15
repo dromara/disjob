@@ -104,10 +104,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        registered.add(server);
         Throwables.cached(() -> doRegister(Collections.singleton(server)));
         Throwables.cached(() -> publish(server, RegistryEvent.REGISTER));
-        logger.info("Server registered: {} - {}", registryRole.name(), server.serialize());
+        registered.add(server);
+        logger.info("Server registered: {} - {}", registryRole.name(), server);
     }
 
     @Override
@@ -115,7 +115,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         registered.remove(server);
         Throwables.cached(() -> stringRedisTemplate.opsForZSet().remove(registryRole.registryKey(), server.serialize()));
         Throwables.cached(() -> publish(server, RegistryEvent.DEREGISTER));
-        logger.info("Server deregister: {} - {}", registryRole.name(), server.serialize());
+        logger.info("Server deregister: {} - {}", registryRole.name(), server);
     }
 
     // ------------------------------------------------------------------Discovery
