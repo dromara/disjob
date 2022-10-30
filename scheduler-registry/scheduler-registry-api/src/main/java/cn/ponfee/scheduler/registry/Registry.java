@@ -31,13 +31,4 @@ public interface Registry<R extends Server> {
      */
     ServerRole registryRole();
 
-    /**
-     * Publish the server register and deregister event.
-     *
-     * @param server the server
-     * @param event  the event
-     */
-    default void publish(R server, RegistryEvent event) {
-        // No-op
-    }
 }

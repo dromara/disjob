@@ -26,8 +26,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     private final CuratorFrameworkClient client;
 
     protected ZookeeperServerRegistry(ZookeeperProperties props) {
-        this.registryRootPath = Files.UNIX_FOLDER_SEPARATOR + registryRole.registryKey();
-        this.discoveryRootPath = Files.UNIX_FOLDER_SEPARATOR + discoveryRole.registryKey();
+        this.registryRootPath = Files.UNIX_FOLDER_SEPARATOR + registryRole.key();
+        this.discoveryRootPath = Files.UNIX_FOLDER_SEPARATOR + discoveryRole.key();
 
         try {
             this.client = new CuratorFrameworkClient(props, client0 -> {
@@ -44,7 +44,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             });
             client.createPersistent(registryRootPath);
             client.createPersistent(discoveryRootPath);
-            client.addChildChangedWatcher(discoveryRootPath, this::refreshDiscoveryServers);
+            //client.listenChildChanged(discoveryRootPath);
+            client.watchChildChanged(discoveryRootPath, this::refreshDiscoveryServers);
         } catch (Exception e) {
             throw new IllegalStateException("Connect zookeeper failed: " + props, e);
         }

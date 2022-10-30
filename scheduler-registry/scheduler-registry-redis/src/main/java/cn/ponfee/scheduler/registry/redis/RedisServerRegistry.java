@@ -113,7 +113,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        Throwables.cached(() -> stringRedisTemplate.opsForZSet().remove(registryRole.registryKey(), server.serialize()));
+        Throwables.cached(() -> stringRedisTemplate.opsForZSet().remove(registryRole.key(), server.serialize()));
         Throwables.cached(() -> publish(server, RegistryEvent.DEREGISTER));
         logger.info("Server deregister: {} - {}", registryRole.name(), server);
     }
@@ -137,7 +137,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public final boolean isAlive(D server) {
         ZSetOperations<String, String> zsetOps = stringRedisTemplate.opsForZSet();
-        Double aliveTimeMillis = zsetOps.score(discoveryRole.registryKey(), server.serialize());
+        Double aliveTimeMillis = zsetOps.score(discoveryRole.key(), server.serialize());
         return aliveTimeMillis != null && aliveTimeMillis > System.currentTimeMillis();
     }
 
@@ -165,18 +165,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     // ------------------------------------------------------------------Subscribe
-    @Override
-    public void publish(R server, RegistryEvent event) {
-        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, buildPublishValue(event, server));
-    }
-
-    @Override
-    public void subscribe(D server, ServerRole role, RegistryEvent event) {
-        if (role == discoveryRole) {
-            // refresh the discovery
-            getServers(null, true);
-        }
-    }
 
     /**
      * For redis message subscribe invoke.
@@ -223,6 +211,19 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         }
     }
 
+    // ------------------------------------------------------------------private methods
+
+    private void publish(R server, RegistryEvent event) {
+        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, buildPublishValue(event, server));
+    }
+
+    private void subscribe(D server, ServerRole role, RegistryEvent event) {
+        if (role == discoveryRole) {
+            // refresh the discovery
+            getServers(null, true);
+        }
+    }
+
     private void doRegister(Set<R> servers) {
         if (CollectionUtils.isEmpty(servers)) {
             return;
@@ -237,7 +238,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
             @Override
             public Void execute(RedisOperations operations) {
-                String registryKey = registryRole.registryKey();
+                String registryKey = registryRole.key();
                 operations.opsForZSet().add(registryKey, tuples);
                 operations.expire(registryKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
 
@@ -248,7 +249,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private synchronized void doRefreshDiscovery(Consumer<List<D>> processor) {
-        String discoveryKey = discoveryRole.registryKey();
+        String discoveryKey = discoveryRole.key();
         long now = System.currentTimeMillis();
         List<Object> result = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
             @Override

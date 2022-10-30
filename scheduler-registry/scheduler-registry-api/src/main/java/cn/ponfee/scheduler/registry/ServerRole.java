@@ -29,20 +29,20 @@ public enum ServerRole {
     ;
 
     private final Class<? extends Server> type;
-    private final String registryKey;
+    private final String key;
 
-    ServerRole(Class<? extends Server> type, String registryKey) {
+    ServerRole(Class<? extends Server> type, String key) {
         Assert.isTrue(!Modifier.isAbstract(type.getModifiers()), "Server type cannot be abstract class: " + type);
         this.type = type;
-        this.registryKey = registryKey;
+        this.key = key;
     }
 
     public <T extends Server> Class<T> type() {
         return (Class<T>) type;
     }
 
-    public String registryKey() {
-        return registryKey;
+    public String key() {
+        return key;
     }
 
     public <T extends Server> T deserialize(String text) {

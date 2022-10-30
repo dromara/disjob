@@ -137,7 +137,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     private NewService buildRegistryServer(R server) {
         NewService service = new NewService();
-        service.setName(registryRole.registryKey());
+        service.setName(registryRole.key());
         service.setId(buildId(server));
         service.setAddress(server.getHost());
         service.setPort(server.getPort());
@@ -159,9 +159,13 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     }
 
     private void checkPass() {
+        if (closed) {
+            return;
+        }
         for (R server : registered) {
             String checkId = buildId(server);
             try {
+                // Prepend "service:" for service level checks.
                 if (token == null) {
                     client.agentCheckPass("service:" + checkId);
                 } else {
@@ -224,7 +228,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             // Health api: /v1/health/service/{serviceName}
             // doc page: https://www.consul.io/api-docs/health
             // Blocking Queries doc page: https://www.consul.io/api-docs/features/blocking
-            return client.getHealthServices(discoveryRole.registryKey(), request);
+            return client.getHealthServices(discoveryRole.key(), request);
         }
     }
 

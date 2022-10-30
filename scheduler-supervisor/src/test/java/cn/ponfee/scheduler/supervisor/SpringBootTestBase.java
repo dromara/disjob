@@ -2,11 +2,16 @@ package cn.ponfee.scheduler.supervisor;
 
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.GenericUtils;
+import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -27,12 +32,23 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(
     //webEnvironment = SpringBootTest.WebEnvironment.NONE,
     // spring-boot-maven-plugin插件编译打包，故无法引用到类SchedulerApplication.class
-    classes = SupervisorTestApplication.class
+    classes = SpringBootTestBase.Application.class
 )
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"STG"})
 public abstract class SpringBootTestBase<T> {
+
+    @EnableConfigurationProperties(HttpProperties.class)
+    @SpringBootApplication(
+        exclude = DataSourceAutoConfiguration.class,
+        scanBasePackages = "cn.ponfee.scheduler.supervisor"
+    )
+    public static class Application {
+        public static void main(String[] args) {
+            SpringApplication.run(Application.class, args);
+        }
+    }
 
     private static final Class<?>[] EXCLUDE_CLASSES = {Void.class, Object.class};
 

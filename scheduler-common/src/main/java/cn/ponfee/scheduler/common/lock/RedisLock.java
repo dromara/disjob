@@ -65,6 +65,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * </pre>
  *
  * @author Ponfee
+ * @see <a href="https://redisson.org">better implementation: redisson</a>
  */
 public class RedisLock implements Lock, java.io.Serializable {
 
@@ -74,57 +75,52 @@ public class RedisLock implements Lock, java.io.Serializable {
     /**
      * Redis SET command return success message
      */
-    static final String SET_SUCCESS = "OK";
+    private static final String SET_SUCCESS = "OK";
 
     /**
      * Unlock lua script return success message
      */
-    static final long UNLOCK_SUCCESS = 1L;
+    private static final long UNLOCK_SUCCESS = 1L;
 
     /**
      * Max timeout 1 day
      */
-    static final int MAX_TIMEOUT_MILLIS = 24 * 60 * 60 * 1000;
+    private static final int MAX_TIMEOUT_MILLIS = 24 * 60 * 60 * 1000;
 
     /**
      * Default timeout 5 minutes
      */
-    static final int DEFAULT_TIMEOUT_MILLIS = 5 * 60 * 1000;
+    private static final int DEFAULT_TIMEOUT_MILLIS = 5 * 60 * 1000;
 
     /**
      * Min timeout 9 milliseconds
      */
-    static final int MIN_TIMEOUT_MILLIS = 9;
+    private static final int MIN_TIMEOUT_MILLIS = 9;
 
     /**
      * Min sleep 9 milliseconds
      */
-    static final int MIN_SLEEP_MILLIS = 9;
+    private static final int MIN_SLEEP_MILLIS = 9;
 
     /**
      * Redis SETNX(SET if Not eXists)
      */
-    static final String NX = "NX";
+    private static final String NX = "NX";
 
     /**
      * Redis PSETEX(SET and PeXpire)
      */
-    static final String PX = "PX";
+    private static final String PX = "PX";
 
     /**
      * Unlock lua script
      */
-    static final String UNLOCK_SCRIPT_LUA = "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end";
+    private static final String UNLOCK_SCRIPT_LUA = "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end";
 
     /**
      * Redis SETNX(SET if Not eXists)
      */
     private static final byte[] NX_BYTES = NX.getBytes(UTF_8);
-
-    /**
-     * Redis SETEX(SET and EXpire)
-     */
-    //private static final byte[] EX_BYTES = "EX".getBytes(UTF_8);
 
     /**
      * Redis PSETEX(SET and PeXpire)

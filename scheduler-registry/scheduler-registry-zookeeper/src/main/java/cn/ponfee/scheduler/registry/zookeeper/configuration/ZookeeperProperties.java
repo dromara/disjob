@@ -21,7 +21,7 @@ public class ZookeeperProperties extends ToJsonString implements java.io.Seriali
 
     public static final String ZOOKEEPER_KEY_PREFIX = JobConstants.SCHEDULER_KEY_PREFIX + ".zookeeper";
 
-    private String clusterAddress = "localhost:2181";
+    private String connectString = "localhost:2181";
     private String username;
     private String password;
 

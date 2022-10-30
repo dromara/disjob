@@ -4,7 +4,7 @@ import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
  * Localized method parameter for spring web {@code org.springframework.stereotype.Controller} methods.
@@ -33,8 +35,8 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
 
     //private final WeakHashMap<NativeWebRequest, Map<String, Object>> resolvedCache = new WeakHashMap<>();
 
-    private static final List<String> QUERY_PARAMS = ImmutableList.of(
-        "GET", "DELETE", "HEAD", "OPTIONS"
+    private static final Set<String> QUERY_PARAMS = ImmutableSet.of(
+        GET.name(), DELETE.name(), HEAD.name(), OPTIONS.name()
     );
 
     private static final String STORE_KEY_PREFIX = "LOCALIZED_METHOD_ARGUMENTS:";

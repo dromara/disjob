@@ -5,7 +5,7 @@ import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,6 +33,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -49,7 +50,7 @@ public class DiscoveryRestTemplate<D extends Server> {
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
     public static final Object[] EMPTY = new Object[0];
-    private static final List<HttpMethod> QUERY_PARAMS = ImmutableList.of(
+    private static final Set<HttpMethod> QUERY_PARAMS = ImmutableSet.of(
         HttpMethod.GET, HttpMethod.DELETE, HttpMethod.HEAD, HttpMethod.OPTIONS
     );
 

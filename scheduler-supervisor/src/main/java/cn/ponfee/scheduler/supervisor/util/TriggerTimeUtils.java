@@ -13,7 +13,7 @@ import java.util.Date;
 import static cn.ponfee.scheduler.common.date.Dates.max;
 
 /**
- * Job utility class
+ * Trigger time utility class
  *
  * @author Ponfee
  */

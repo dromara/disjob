@@ -17,10 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -38,7 +35,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
 
     public CuratorFrameworkClient(ZookeeperProperties props, ReconnectCallback reconnectCallback) throws Exception {
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-            .connectString(props.getClusterAddress())
+            .connectString(props.getConnectString())
             .connectionTimeoutMs(props.getConnectionTimeoutMs())
             .sessionTimeoutMs(props.getSessionTimeoutMs())
             .retryPolicy(buildRetryPolicy(props));
@@ -124,18 +121,18 @@ public class CuratorFrameworkClient implements AutoCloseable {
         }
     }
 
-    public synchronized void addChildChangedWatcher(String path, Consumer<List<String>> listener) throws Exception {
+    public synchronized void watchChildChanged(String path, Consumer<List<String>> processor) throws Exception {
         if (childWatchers.containsKey(path)) {
             throw new IllegalStateException("Path already watched: " + path);
         }
 
-        ChildChangedWatcher watcher = new ChildChangedWatcher(path, listener);
-        List<String> servers = curatorFramework.getChildren().usingWatcher(watcher).forPath(watcher.path);
+        ChildChangedWatcher watcher = new ChildChangedWatcher(path, processor);
+        List<String> servers = curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
         childWatchers.put(path, watcher);
-        listener.accept(servers);
+        processor.accept(servers);
     }
 
-    public synchronized boolean removeChildChangedWatcher(String path) {
+    public synchronized boolean unwatchChildChanged(String path) {
         ChildChangedWatcher watcher = childWatchers.remove(path);
         if (watcher != null) {
             watcher.unwatch();
@@ -146,16 +143,36 @@ public class CuratorFrameworkClient implements AutoCloseable {
     }
 
     /*
-    public void listenChild(String path) {
+    public void listenChildChanged(String path) {
         CuratorCache curatorCache = CuratorCache.build(curatorFramework, path);
-        curatorCache.listenable().addListener((type, oldData, newData) -> {
-            LOG.info("Listen new data path: {}", (newData == null ? null : newData.getPath()));
-            int parentLength = path.length();
-            String newDataPath;
-            if (newData != null && (newDataPath = newData.getPath()).length() > parentLength) {
-                LOG.info("Listen server: {}", newDataPath.substring(parentLength + 1));
-            }
-        });
+        CuratorCacheListener pathChildrenCacheListener = CuratorCacheListener
+            .builder()
+            .forPathChildrenCache(path, curatorFramework, (client, event) -> {
+                switch (event.getType()) {
+                    case INITIALIZED:
+                        List<String> initServers = Optional.ofNullable(event.getInitialData())
+                            .map(e -> e.stream().map(ChildData::getPath).collect(Collectors.toList()))
+                            .orElse(Collections.emptyList());
+                        LOG.info("curator patch children cache init servers: {}", initServers);
+                        // init servers
+                        break;
+                    case CHILD_ADDED:
+                        String additionServer = event.getData().getPath();
+                        // add server
+                        LOG.info("curator patch children cache add servers: {}", additionServer);
+                        break;
+                    case CHILD_REMOVED:
+                        String removingServer = event.getData().getPath();
+                        // remove server
+                        LOG.info("curator patch children cache remove servers: {}", removingServer);
+                        break;
+                    default:
+                        // discard event
+                        break;
+                }
+            })
+            .build();
+        curatorCache.listenable().addListener(pathChildrenCacheListener);
         curatorCache.start();
     }
     */
@@ -166,7 +183,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
 
     @Override
     public synchronized void close() {
-        childWatchers.values().forEach(ChildChangedWatcher::unwatch);
+        new ArrayList<>(childWatchers.keySet()).forEach(this::unwatchChildChanged);
         curatorFramework.close();
     }
 
@@ -181,24 +198,25 @@ public class CuratorFrameworkClient implements AutoCloseable {
      */
     private class ChildChangedWatcher implements CuratorWatcher {
         private final String path;
-        private volatile Consumer<List<String>> listener;
+        private volatile Consumer<List<String>> processor;
 
-        public ChildChangedWatcher(String path, Consumer<List<String>> listener) {
+        public ChildChangedWatcher(String path, Consumer<List<String>> processor) {
             this.path = path;
-            this.listener = listener;
+            this.processor = processor;
         }
 
         public void unwatch() {
-            this.listener = null;
+            this.processor = null;
         }
 
         @Override
         public void process(WatchedEvent event) throws Exception {
             LOG.info("Watched event type: " + event.getType());
-            if (listener == null || event.getType() == Watcher.Event.EventType.None) {
+            if (processor == null || event.getType() == Watcher.Event.EventType.None) {
                 return;
             }
-            listener.accept(curatorFramework.getChildren().usingWatcher(this).forPath(path));
+            List<String> children = curatorFramework.getChildren().usingWatcher(this).forPath(path);
+            processor.accept(children);
         }
     }
 

@@ -44,14 +44,4 @@ public interface Discovery<D extends Server> {
      */
     ServerRole discoveryRole();
 
-    /**
-     * Subscribes discovery server register and deregister event.
-     *
-     * @param server the server
-     * @param role   the server role
-     * @param event  the event
-     */
-    default void subscribe(D server, ServerRole role, RegistryEvent event) {
-        // No-op
-    }
 }

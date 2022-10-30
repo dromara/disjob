@@ -48,7 +48,7 @@ CREATE TABLE `sched_job` (
     `alarm_subscribers`    varchar(512)            DEFAULT NULL                                                   COMMENT '告警订阅人员列表',
     `remark`               varchar(255)            DEFAULT NULL                                                   COMMENT '备注',
     `version`              int(11)       unsigned  NOT NULL DEFAULT '1'                                           COMMENT '行记录版本号',
-    `is_deleted`           tinyint(1)    unsigned  DEFAULT '0'                                                    COMMENT '是否已删除：0-否；NULL-是(用NULL解决软删的唯一索引问题)；',
+    `is_deleted`           tinyint(1)    unsigned  DEFAULT '0'                                                    COMMENT '是否已删除：0-否；NULL-是(用NULL来解决因软删引起的唯一索引冲突问题)；',
     `updated_by`           varchar(60)             DEFAULT NULL                                                   COMMENT '更新人',
     `created_by`           varchar(60)             DEFAULT NULL                                                   COMMENT '创建人',
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

@@ -1,6 +1,5 @@
 package cn.ponfee.scheduler.core.base;
 
-import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.Numbers;
@@ -47,8 +46,8 @@ public final class Worker extends Server {
     public Worker(String group, String instanceId, String host, int port) {
         super(host, port);
 
-        Assert.isTrue(!instanceId.contains(Constants.COLON), "Instance-id cannot contains symbol ':'");
-        Assert.isTrue(!group.contains(Constants.COLON), "Group name cannot contains symbol ':'");
+        Assert.isTrue(!instanceId.contains(COLON), "Instance-id cannot contains symbol ':'");
+        Assert.isTrue(!group.contains(COLON), "Group name cannot contains symbol ':'");
         this.group = group;
         this.instanceId = instanceId;
 

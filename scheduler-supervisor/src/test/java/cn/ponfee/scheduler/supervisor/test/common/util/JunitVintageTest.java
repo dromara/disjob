@@ -10,9 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +35,14 @@ public class JunitVintageTest {
 
     @Test
     public void testConsistentHash() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("a", 1);
+        map.put("b", 2);
+        Set<String> strings = map.keySet();
+        Assert.assertEquals(strings.size(), 2);
+        map.remove("a");
+        Assert.assertEquals(strings.size(), 1);
+
         Assert.assertEquals(IntMath.pow(1, 2), 1);
         Assert.assertEquals(IntMath.pow(2, 2), 4);
         Assert.assertEquals(IntMath.pow(3, 2), 9);
