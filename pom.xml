@@ -329,7 +329,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>report-aggregate</id>
+            <id>jacoco-report-aggregate</id>
             <phase>verify</phase>
             <goals>
               <goal>report-aggregate</goal>

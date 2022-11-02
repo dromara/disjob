@@ -18,7 +18,7 @@ public class Throwables {
         return String.join("\n", ExceptionUtils.getRootCauseStackTrace(throwable));
     }
 
-    public static void cached(Runnable runnable) {
+    public static void catched(Runnable runnable) {
         try {
             runnable.run();
         } catch (Throwable t) {

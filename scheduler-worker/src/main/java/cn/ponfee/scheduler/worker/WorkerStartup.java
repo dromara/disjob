@@ -57,10 +57,10 @@ public class WorkerStartup implements AutoCloseable {
 
     @Override
     public void close() {
-        Throwables.cached(workerRegistry::close);
-        Throwables.cached(taskReceiver::close);
-        Throwables.cached(() -> workerHeartbeatThread.doStop(1000));
-        Throwables.cached(workerThreadPool::close);
+        Throwables.catched(workerRegistry::close);
+        Throwables.catched(taskReceiver::close);
+        Throwables.catched(() -> workerHeartbeatThread.doStop(1000));
+        Throwables.catched(workerThreadPool::close);
     }
 
     // ----------------------------------------------------------------------------------------builder

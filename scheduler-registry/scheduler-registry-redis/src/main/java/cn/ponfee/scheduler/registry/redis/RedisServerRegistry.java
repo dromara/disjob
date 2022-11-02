@@ -104,8 +104,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        Throwables.cached(() -> doRegister(Collections.singleton(server)));
-        Throwables.cached(() -> publish(server, RegistryEvent.REGISTER));
+        Throwables.catched(() -> doRegister(Collections.singleton(server)));
+        Throwables.catched(() -> publish(server, RegistryEvent.REGISTER));
         registered.add(server);
         logger.info("Server registered: {} - {}", registryRole.name(), server);
     }
@@ -113,8 +113,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        Throwables.cached(() -> stringRedisTemplate.opsForZSet().remove(registryRole.key(), server.serialize()));
-        Throwables.cached(() -> publish(server, RegistryEvent.DEREGISTER));
+        Throwables.catched(() -> stringRedisTemplate.opsForZSet().remove(registryRole.key(), server.serialize()));
+        Throwables.catched(() -> publish(server, RegistryEvent.DEREGISTER));
         logger.info("Server deregister: {} - {}", registryRole.name(), server);
     }
 
@@ -151,17 +151,17 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
+        registered.forEach(this::deregister);
+        registered.clear();
+
+        Throwables.catched(redisMessageListenerContainer::stop);
+
         try {
             registryScheduledExecutor.shutdownNow();
             registryScheduledExecutor.awaitTermination(1, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.error("Await registry scheduled executor termination occur error.", e);
         }
-
-        registered.forEach(this::deregister);
-        registered.clear();
-
-        Throwables.cached(redisMessageListenerContainer::stop);
     }
 
     // ------------------------------------------------------------------Subscribe
@@ -195,7 +195,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     protected final void refreshDiscovery(Consumer<List<D>> processor, boolean forceRefresh) {
         if (forceRefresh) {
-            doRefreshDiscovery(processor);
+            synchronized (this) {
+                doRefreshDiscovery(processor);
+            }
             return;
         }
 
@@ -248,7 +250,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         });
     }
 
-    private synchronized void doRefreshDiscovery(Consumer<List<D>> processor) {
+    private void doRefreshDiscovery(Consumer<List<D>> processor) {
         String discoveryKey = discoveryRole.key();
         long now = System.currentTimeMillis();
         List<Object> result = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
@@ -265,7 +267,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         Set<String> discovered = (Set<String>) result.get(1);
         if (CollectionUtils.isEmpty(discovered)) {
-            logger.error("Discovered from redis failed, Not found available server.");
+            logger.error("Not discovered available {} from redis.", discoveryRole.name());
             discovered = Collections.emptySet();
         }
         processor.accept(discovered.stream().map(s -> (D) discoveryRole.deserialize(s)).collect(Collectors.toList()));

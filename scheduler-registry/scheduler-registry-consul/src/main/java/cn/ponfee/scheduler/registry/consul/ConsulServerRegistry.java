@@ -130,7 +130,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         registered.forEach(this::deregister);
         registered.clear();
 
-        Throwables.cached(() -> MultithreadExecutors.stopThread(consulSubscriberThread, 0, 0, 200));
+        Throwables.catched(() -> MultithreadExecutors.stopThread(consulSubscriberThread, 0, 0, 200));
     }
 
     // ------------------------------------------------------------------private registry methods
@@ -185,7 +185,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     private void refreshDiscoveryServers(List<HealthService> healthServices) {
         List<D> servers;
         if (CollectionUtils.isEmpty(healthServices)) {
-            logger.error("Not discovered available server on consul.");
+            logger.error("Not discovered available {} from consul.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = healthServices.stream()

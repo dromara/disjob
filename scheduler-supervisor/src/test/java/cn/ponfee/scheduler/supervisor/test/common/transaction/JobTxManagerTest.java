@@ -10,7 +10,7 @@ import cn.ponfee.scheduler.supervisor.config.JobTxManagerTestService;
 public class JobTxManagerTest extends AbstractTxManagerTest<JobTxManagerTestService, Long> {
 
     public JobTxManagerTest() {
-        super(1536312529104445449L, 1536312529104445450L);
+        super(2212719247360L, 2212765908992L);
     }
 
 }

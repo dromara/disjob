@@ -180,28 +180,28 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
         // 1、prepare close
         // 1.1、change executing pool thread state
-        Throwables.cached(activePool::stopPool);
+        Throwables.catched(activePool::stopPool);
 
         // 1.2、change idle pool thread state
-        Throwables.cached(() -> idlePool.forEach(WorkerThread::toStop));
+        Throwables.catched(() -> idlePool.forEach(WorkerThread::toStop));
 
         // 1.3、clear task execution param queue
-        Throwables.cached(taskQueue::clear);
+        Throwables.catched(taskQueue::clear);
 
         // 2、do close
         // 2.1、stop this boss thread
-        Throwables.cached(() -> MultithreadExecutors.stopThread(this, 0, 0, 200));
+        Throwables.catched(() -> MultithreadExecutors.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
-        Throwables.cached(() -> idlePool.forEach(e -> stopWorkerThread(e, true)));
-        Throwables.cached(idlePool::clear);
+        Throwables.catched(() -> idlePool.forEach(e -> stopWorkerThread(e, true)));
+        Throwables.catched(idlePool::clear);
 
         // 2.3、stop executing pool thread
-        Throwables.cached(activePool::closePool);
+        Throwables.catched(activePool::closePool);
         threadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        Throwables.cached(() -> ThreadPoolExecutors.shutdown(SUSPEND_TASK_POOL, 1));
+        Throwables.catched(() -> ThreadPoolExecutors.shutdown(SUSPEND_TASK_POOL, 1));
 
         LOG.info("Close worker thread pool end.");
     }

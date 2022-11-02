@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Server(JVM instance)
+ * The abstract server class definaion
  *
  * @author Ponfee
  */

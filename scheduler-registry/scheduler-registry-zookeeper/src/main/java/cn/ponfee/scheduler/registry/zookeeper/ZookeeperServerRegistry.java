@@ -103,7 +103,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         }
 
         registered.forEach(this::deregister);
-        Throwables.cached(client::close);
+        Throwables.catched(client::close);
         registered.clear();
     }
 
@@ -117,7 +117,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         List<D> servers;
         logger.info("Watched servers: " + list);
         if (CollectionUtils.isEmpty(list)) {
-            logger.error("Not discovered available server on zookeeper.");
+            logger.error("Not discovered available {} from zookeeper.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = list.stream()

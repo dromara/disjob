@@ -9,7 +9,9 @@ import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -22,7 +24,15 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Resource
     private IdGenerator idGenerator;
 
+    @Resource
+    private JdbcTemplate jdbcTemplate;
+
     @Test
+    public void testInsert12() {
+        System.out.println(jdbcTemplate.queryForList("Select distinct job_id from sched_job limit 2"));
+    }
+
+    @Test @Disabled
     public void testInsert1() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
@@ -56,7 +66,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         Assertions.assertEquals(1, insert);
     }
 
-    @Test
+    @Test @Disabled
     public void testInsert2() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
@@ -96,7 +106,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         Assertions.assertEquals(1, insert);
     }
 
-    @Test
+    @Test @Disabled
     public void testInsert3() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());

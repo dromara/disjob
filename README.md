@@ -66,7 +66,7 @@ distributed-scheduler
 ## Build
 
 ```bash
-./mvnw clean package -DskipTests -Dcheckstyle.skip -U
+./mvnw clean package -DskipTests -Dcheckstyle.skip
 ```
 
 ## Quick Start

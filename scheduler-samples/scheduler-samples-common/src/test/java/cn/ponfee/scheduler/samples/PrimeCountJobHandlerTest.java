@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.samples;
 
 import cn.ponfee.scheduler.common.util.Jsons;
+import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.SplitTask;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
@@ -31,9 +32,10 @@ public class PrimeCountJobHandlerTest {
 
         for (SplitTask splitTask : split) {
             SchedTask schedTask = new SchedTask();
+            schedTask.setTaskId(System.nanoTime());
             schedTask.setTaskParam(splitTask.getTaskParam());
             jobHandler.task(schedTask);
-            jobHandler.execute(null);
+            jobHandler.execute(Checkpoint.DISCARD);
             System.out.println("-------------------");
         }
     }

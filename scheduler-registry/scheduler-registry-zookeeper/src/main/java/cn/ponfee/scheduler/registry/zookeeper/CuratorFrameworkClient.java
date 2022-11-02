@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * Curator framework Utilities
+ * Curator framework operations client
  *
  * @author Ponfee
  */

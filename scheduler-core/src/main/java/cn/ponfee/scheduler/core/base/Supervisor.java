@@ -23,7 +23,7 @@ import static cn.ponfee.scheduler.common.util.Collects.get;
 
 
 /**
- * Supervisor(JVM instance)
+ * Supervisor definition
  *
  * @author Ponfee
  */

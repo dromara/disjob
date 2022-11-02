@@ -60,12 +60,12 @@ public class SupervisorStartup implements AutoCloseable {
 
     @Override
     public void close() {
-        Throwables.cached(supervisorRegistry::close);
-        Throwables.cached(scanTrackHeartbeatThread::toStop);
-        Throwables.cached(scanJobHeartbeatThread::toStop);
-        Throwables.cached(taskDispatcher::close);
-        Throwables.cached(() -> scanTrackHeartbeatThread.doStop(1000));
-        Throwables.cached(() -> scanJobHeartbeatThread.doStop(1000));
+        Throwables.catched(supervisorRegistry::close);
+        Throwables.catched(scanTrackHeartbeatThread::toStop);
+        Throwables.catched(scanJobHeartbeatThread::toStop);
+        Throwables.catched(taskDispatcher::close);
+        Throwables.catched(() -> scanTrackHeartbeatThread.doStop(1000));
+        Throwables.catched(() -> scanJobHeartbeatThread.doStop(1000));
     }
 
     // ----------------------------------------------------------------------------------------builder
