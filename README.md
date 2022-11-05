@@ -48,20 +48,13 @@ distributed-scheduler
 ## Features
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
-- Supervisor、Worker通过注册中心进行解耦，目前支持的注册中心有：redis、consul
+- Supervisor、Worker通过注册中心进行解耦，目前支持的注册中心有：redis、consul、zookeeper
 - Supervisor以任务分发方式把任务给到Worker，目前支持的任务分发方式有：redis、http
-- 支持多种任务的分发算法，包括：round-robin、random、consistent-hash、local-priority
 - 支持任务分组(job-group)，任务会分发给指定组的Worker执行
 - 自定义拆分任务，实现[JobHandler#split](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobSplitter.java)即可把一个大任务拆分为多个小任务，任务分治
 - 提供任务执行快照的自动保存(checkpoint)，让执行信息不丢失，保证因异常中断的任务能得到继续执行
 - 提供执行中的任务控制能力，可随时暂停/取消正在执行中的任务，亦可恢复执行被暂停的任务
 - 提供任务依赖执行的能力，多个任务构建好DAG依赖关系后，任务便按既定的依赖顺序依次执行
-- 支持常规的分布式任务调度功能，包括但不限于以下：
-  - 自定义的线程池执行任务，复用系统资源及实现任务控制[WorkerThreadPool](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/base/WorkerThreadPool.java)
-  - 支持多种任务的触发方式[TriggerType](scheduler-core/src/main/java/cn/ponfee/scheduler/core/enums/TriggerType.java)
-  - 多种任务的重试类型[RetryType](scheduler-core/src/main/java/cn/ponfee/scheduler/core/enums/RetryType.java)
-  - 多种misfire的处理策略[MisfireStrategy](scheduler-core/src/main/java/cn/ponfee/scheduler/core/enums/MisfireStrategy.java)
-  - 同一任务上一次还未执行完成，下一次已到触发时间的执行冲突处理策略[CollisionStrategy](scheduler-core/src/main/java/cn/ponfee/scheduler/core/enums/CollisionStrategy.java)
 
 ## Build
 
@@ -73,10 +66,9 @@ distributed-scheduler
 
 1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)
 
-2. 修改Mysql、Redis、Consul等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
-- 如果不使用Redis做为注册中心及任务分发，则无需配置并可排除Maven依赖：`spring-boot-starter-data-redis`
-- 如果不使用Consul做为注册中心，则无需配置
-- 不依赖Web容器的Worker应用的配置文件是在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+2. 修改Mysql、Redis、Consul、zookeeper等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
+  - 如果不使用Redis做注册中心、任务分发及分布式锁，可排除[scheduler-common](scheduler-common/pom.xml)模块下的Maven依赖`spring-boot-starter-data-redis`
+  - 不依赖Web容器的Worker应用的配置文件是在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. 编写自己的任务处理器[PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
@@ -87,7 +79,6 @@ distributed-scheduler
  3）scheduler-samples-separately-worker-springboot  # Worker单独部署的Spring boot应用
  4）scheduler-samples-separately-worker-frameless   # Worker单独部署，不依赖Web容器，直接运行Main方法启动
 ```
-***Notes***
 - 已配置不同端口，可同时启动
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
 - 注册中心或任务分发的类型选择是在Spring boot启动类中切换注解
@@ -124,8 +115,8 @@ public class SupervisorApplication {
 ```
 
 5. 执行以下curl命令添加任务(选择任一运行中的Supervisor应用替换“localhost:8081”)
-- triggerConf修改为大于当前时间的日期值以便即将触发(如当前时间的下一分钟)
-- jobHandler为刚编写的任务处理器类的全限定名（也支持直接贴源代码）
+  - triggerConf修改为大于当前时间的日期值以便即将触发(如当前时间的下一分钟)
+  - jobHandler为刚编写的任务处理器类的全限定名（也支持直接贴源代码）
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/add' \
 --header 'Content-Type: application/json' \

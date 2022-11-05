@@ -3,7 +3,6 @@ package cn.ponfee.scheduler.supervisor.manager;
 import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
-import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.spring.MarkRpcController;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.base.JobConstants;
@@ -347,7 +346,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         int row = trackMapper.insert(track);
         Assert.state(row == AFFECTED_ONE_ROW, "Insert sched track fail: " + track);
 
-        Assert.notEmpty(tasks, "Insert list of task cannot not be empty.");
+        Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         row = taskMapper.insertBatch(tasks);
         Assert.state(row == tasks.size(), "Insert sched task fail: " + tasks);
 
@@ -374,7 +373,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         row = trackMapper.insert(track);
         Assert.state(row == AFFECTED_ONE_ROW, "Insert sched track fail: " + track);
 
-        Assert.notEmpty(tasks, "Insert list of task cannot not be empty.");
+        Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         row = taskMapper.insertBatch(tasks);
         Assert.state(row == tasks.size(), "Insert sched task fail: " + tasks);
         return true;
@@ -468,7 +467,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Override
     public boolean pauseTrack(long trackId) {
         Integer state = trackMapper.lockState(trackId);
-        Assert.isTrue(state != null, "Pause failed, track_id not not found: " + trackId);
+        Assert.isTrue(state != null, "Pause failed, track_id not found: " + trackId);
 
         RunState runState = RunState.of(state);
         if (!RunState.PAUSABLE_LIST.contains(runState)) {
@@ -581,7 +580,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     public boolean cancelTrack(long trackId, Operations operation) {
         Assert.isTrue(operation.targetState().isFailure(), "Expect cancel ops, but actual: " + operation);
         Integer state = trackMapper.lockState(trackId);
-        Assert.isTrue(state != null, "Cancel failed, track_id not not found: " + trackId);
+        Assert.isTrue(state != null, "Cancel failed, track_id not found: " + trackId);
 
         RunState runState = RunState.of(state);
         if (runState.isTerminal()) {
@@ -678,7 +677,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean resume(long trackId) {
         Integer state = trackMapper.lockState(trackId);
-        Assert.isTrue(state != null, "Cancel failed, track_id not not found: " + trackId);
+        Assert.isTrue(state != null, "Cancel failed, track_id not found: " + trackId);
         if (!RunState.PAUSED.equals(state)) {
             return false;
         }
@@ -862,7 +861,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         }
 
         // 3、save to db
-        Assert.notEmpty(tasks, "Insert list of task cannot not be empty.");
+        Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         trackMapper.insert(retryTrack);
         taskMapper.insertBatch(tasks);
 
@@ -904,7 +903,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 track.setTriggerTime(now.getTime());
 
                 // save to db
-                Assert.notEmpty(tasks, "Insert list of task cannot not be empty.");
+                Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
                 trackMapper.insert(track);
                 taskMapper.insertBatch(tasks);
 
@@ -930,7 +929,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 } else {
                     // update dead task
                     LOG.info("Cancel the dead task {}", task);
-                    // // ExecuteState.EXECUTE_TIMEOUT.value()
+                    // ExecuteState.EXECUTE_TIMEOUT.value()
                     taskMapper.updateState(task.getTaskId(), ops.targetState().value(), ExecuteState.EXECUTING.value(), null, null);
                 }
             });
@@ -979,19 +978,16 @@ public class JobManager implements SupervisorService, MarkRpcController {
 
     private void verifyJobHandler(SchedJob job) {
         Assert.isTrue(StringUtils.isNotEmpty(job.getJobHandler()), "Job handler cannot be empty.");
-        Result<Boolean> result = workerClient.verify(job.getJobHandler(), job.getJobParam());
-        if (result.isFailure() || !result.getData()) {
+        boolean result = workerClient.verify(job.getJobHandler(), job.getJobParam());
+        if (!result) {
             throw new IllegalArgumentException("Invalid job handler config: " + job.getJobHandler() + ", " + result);
         }
     }
 
     private List<SplitTask> splitTasks(String jobHandler, String jobParam) throws JobException {
-        Result<List<SplitTask>> res = workerClient.split(jobHandler, jobParam);
-        if (res.isSuccess()) {
-            return res.getData();
-        } else {
-            throw new JobException(res.getCode(), res.getMsg());
-        }
+        List<SplitTask> tasks = workerClient.split(jobHandler, jobParam);
+        Assert.notEmpty(tasks, "Split task cannot empty.");
+        return tasks;
     }
 
     /**

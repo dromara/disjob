@@ -340,12 +340,11 @@ public class RedisLock implements Lock, java.io.Serializable {
         final byte[] lockValue = ObjectUtils.uuid();
         Boolean res = redisTemplate.execute((RedisCallback<Boolean>) conn -> {
             String ret = (String) conn.execute("SET", lockKey, lockValue, NX_BYTES, PX_BYTES, timeoutMillis);
-            if (SET_SUCCESS.equals(ret)) {
+            boolean status = SET_SUCCESS.equals(ret);
+            if (status) {
                 LOCK_VALUE.set(lockValue);
-                return true;
-            } else {
-                return false;
             }
+            return status;
         });
         return res != null && res;
     }

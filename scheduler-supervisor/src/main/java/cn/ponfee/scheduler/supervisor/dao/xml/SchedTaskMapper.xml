@@ -27,7 +27,7 @@
     </sql>
 
     <sql id="Large_Column_List">
-      task_param, execute_snapshot, error_msg
+      <include refid="Base_Column_List" />, task_param, execute_snapshot, error_msg
     </sql>
 
     <insert id="insertBatch" parameterType="java.util.List" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
@@ -46,15 +46,13 @@
     </insert>
 
   <select id="getByTaskId" parameterType="_long" resultMap="LargeResultMap">
-    SELECT <include refid="Base_Column_List" />,
-           <include refid="Large_Column_List" />
+    SELECT <include refid="Large_Column_List" />
     FROM sched_task
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
   <select id="getByTrackId" parameterType="_long" resultMap="LargeResultMap">
-    SELECT <include refid="Base_Column_List" />,
-           <include refid="Large_Column_List" />
+    SELECT <include refid="Large_Column_List" />
     FROM sched_task
     WHERE track_id = #{trackId,jdbcType=BIGINT}
   </select>

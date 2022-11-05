@@ -136,10 +136,15 @@ public class DiscoveryRestTemplate<D extends Server> {
                 RequestCallback requestCallback = restTemplate.httpEntityCallback(httpEntity, returnType);
                 ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
                 return restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor).getBody();
-            } catch (ResourceAccessException | RestClientResponseException e) {
-                // round-robin retry
-                LOG.error("Invoked http error, url: " + url + ", req: " + Jsons.toJson(arguments), e);
-                Thread.sleep(300L * IntMath.pow(i + 1, 2));
+            } catch (Exception e) {
+                if (e instanceof ResourceAccessException || is5xxServerError(e)) {
+                    // round-robin retry
+                    LOG.error("Invoked http fail, url: " + url + ", req: " + Jsons.toJson(arguments), e);
+                    Thread.sleep(300L * IntMath.pow(i + 1, 2));
+                } else {
+                    LOG.error("Invoked http error, url: " + url + ", req: " + Jsons.toJson(arguments), e);
+                    throw e;
+                }
             }
         }
 
@@ -165,6 +170,13 @@ public class DiscoveryRestTemplate<D extends Server> {
             }
         }
         return params;
+    }
+
+    private static boolean is5xxServerError(Exception e) {
+        if (!(e instanceof HttpStatusCodeException)) {
+            return false;
+        }
+        return ((HttpStatusCodeException) e).getStatusCode().is5xxServerError();
     }
 
     // ----------------------------------------------------------------------------------------builder

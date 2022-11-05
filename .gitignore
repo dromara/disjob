@@ -25,9 +25,9 @@ nbdist/
 # Gradle
 /**/.gradle/
 
-# SBT
+# SBT(Scala build tool)
 
-# STS
+# STS(Spring tool suite)
 /**/.apt_generated
 /**/.factorypath
 /**/.springBeans

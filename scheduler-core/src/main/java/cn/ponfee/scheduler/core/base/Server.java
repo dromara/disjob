@@ -18,7 +18,7 @@ public abstract class Server implements Serializable {
     private static final long serialVersionUID = -783308216490505598L;
 
     /**
-     * Server Host
+     * Server host
      */
     protected final String host;
 
