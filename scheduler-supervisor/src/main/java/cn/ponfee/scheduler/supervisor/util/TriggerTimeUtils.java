@@ -2,11 +2,8 @@ package cn.ponfee.scheduler.supervisor.util;
 
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.core.enums.MisfireStrategy;
-import cn.ponfee.scheduler.core.enums.RetryType;
 import cn.ponfee.scheduler.core.enums.TriggerType;
 import cn.ponfee.scheduler.core.model.SchedJob;
-import com.google.common.math.IntMath;
-import org.springframework.util.Assert;
 
 import java.util.Date;
 
@@ -79,22 +76,6 @@ public final class TriggerTimeUtils {
         next = (next != null && end != null && next.after(end)) ? null : next;
 
         return next == null ? null : next.getTime();
-    }
-
-    /**
-     * Returns the retry trigger time
-     *
-     * @param job       the SchedJob
-     * @param failCount the failure times
-     * @param current   the current date time
-     * @return retry trigger time milliseconds
-     */
-    public static Long computeRetryTriggerTime(SchedJob job, int failCount, Date current) {
-        Assert.isTrue(!RetryType.NONE.equals(job.getRetryType()), "Sched job '" + job.getJobId() + "' retry type is NONE.");
-        Assert.isTrue(job.getRetryCount() > 0, "Sched job '" + job.getJobId() + "' retry count must greater than 0, but actual " + job.getRetryCount());
-        Assert.isTrue(failCount <= job.getRetryCount(), "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
-        // exponential backoff
-        return current.getTime() + (long) job.getRetryInterval() * IntMath.pow(failCount, 2);
     }
 
 }

@@ -8,6 +8,8 @@ import cn.ponfee.scheduler.core.base.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,9 +41,18 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected volatile boolean closed = false;
 
     protected ServerRegistry() {
+        // initialize discovery servers
+        this.refreshDiscoveryServers(Collections.emptyList());
         this.registryRole  = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 0));
         this.discoveryRole = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 1));
     }
+
+    /**
+     * Refresh discovery servers.
+     *
+     * @param servers discovered servers
+     */
+    protected abstract void refreshDiscoveryServers(List<D> servers);
 
     /**
      * Close registry.

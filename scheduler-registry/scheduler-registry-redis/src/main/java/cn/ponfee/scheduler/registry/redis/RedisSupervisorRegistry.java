@@ -8,10 +8,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Registry supervisor based redis.
@@ -20,8 +18,8 @@ import java.util.stream.Collectors;
  */
 public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    private volatile Map<String, List<Worker>> groupedWorkers = Collections.emptyMap();
-    private volatile List<Worker> allWorkers = new DoubleListViewer<>(Collections.emptyList());
+    private volatile Map<String, List<Worker>> groupedWorkers;
+    private volatile List<Worker> allWorkers;
 
     public RedisSupervisorRegistry(StringRedisTemplate stringRedisTemplate) {
         this(
@@ -38,25 +36,21 @@ public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Wor
     }
 
     @Override
-    protected List<Worker> getServers(String group, boolean forceRefresh) {
-        refreshDiscovery(discoveredWorkers -> {
-            if (CollectionUtils.isEmpty(discoveredWorkers)) {
-                this.groupedWorkers = Collections.emptyMap();
-                this.allWorkers = Collections.emptyList();
-            } else {
-                Map<String, List<Worker>> map = discoveredWorkers.stream()
-                    .collect(Collectors.groupingBy(Worker::getGroup))
-                    .entrySet()
-                    .stream()
-                    .peek(e -> e.getValue().sort(Comparator.comparing(Worker::getInstanceId))) // For help use route worker
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.unmodifiableList(e.getValue())));
-                DoubleListViewer<Worker> list = new DoubleListViewer<>(map.values());
-                this.groupedWorkers = Collections.unmodifiableMap(map);
-                this.allWorkers = list;
-            }
-        }, forceRefresh);
-
+    protected List<Worker> getServers0(String group) {
         return group == null ? allWorkers : groupedWorkers.get(group);
+    }
+
+    @Override
+    protected void refreshDiscoveryServers(List<Worker> discoveredWorkers) {
+        if (CollectionUtils.isEmpty(discoveredWorkers)) {
+            this.groupedWorkers = Collections.emptyMap();
+            this.allWorkers = Collections.emptyList();
+        } else {
+            Map<String, List<Worker>> map = SupervisorRegistry.groupByWorkers(discoveredWorkers);
+            DoubleListViewer<Worker> list = new DoubleListViewer<>(map.values());
+            this.groupedWorkers = map;
+            this.allWorkers = list;
+        }
     }
 
     @Override

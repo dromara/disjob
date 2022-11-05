@@ -108,6 +108,12 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
                 // 4、dispatch job task
                 jobManager.dispatch(job, track, tasks);
             }
+        } catch (DuplicateKeyException e){
+            if (jobManager.updateNextTriggerTime(job)) {
+                logger.info("Conflict trigger time: {} - {}", job, e.getMessage());
+            } else {
+                logger.error("Conflict trigger time: {} - {}", job, e.getMessage());
+            }
         } catch (JobException | IllegalArgumentException e) {
             logger.error(e.getMessage() + ": " + job, e);
             job.setRemark("Stop reason: " + e.getMessage());
@@ -115,11 +121,6 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             jobManager.stopJob(job);
         } catch (Exception e) {
             logger.error("Process handle job occur error: " + job, e);
-            if (e instanceof DuplicateKeyException) {
-                if (jobManager.updateNextTriggerTime(job)) {
-                    logger.info("Conflict trigger time, update the job next trigger time {}", job);
-                }
-            }
         }
     }
 

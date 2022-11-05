@@ -24,8 +24,8 @@ import cn.ponfee.scheduler.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedTaskMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedTrackMapper;
-import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import com.google.common.base.Joiner;
+import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -174,7 +174,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         // 2、build sched tasks
         List<SplitTask> splitTasks = splitTasks(job.getJobHandler(), job.getJobParam());
         List<SchedTask> tasks = splitTasks.stream()
-            .map(e -> buildTask(e.getTaskParam(), idGenerator.generateId(), track.getTrackId(), now))
+            .map(e -> SchedTask.from(e.getTaskParam(), idGenerator.generateId(), track.getTrackId(), now))
             .collect(Collectors.toList());
 
         return Pair.of(track, tasks);
@@ -823,7 +823,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         retryTrack.setJobId(schedJob.getJobId());
         retryTrack.setRunType(RunType.RETRY.value());
         retryTrack.setRetriedCount(retriedCount + 1);
-        retryTrack.setTriggerTime(TriggerTimeUtils.computeRetryTriggerTime(schedJob, retryTrack.getRetriedCount(), now));
+        retryTrack.setTriggerTime(computeRetryTriggerTime(schedJob, retryTrack.getRetriedCount(), now));
         retryTrack.setRunState(RunState.WAITING.value());
         retryTrack.setParentTrackId(RunType.RETRY.equals(prevTrack.getRunType()) ? prevTrack.getParentTrackId() : prevTrack.getTrackId());
         retryTrack.setUpdatedAt(now);
@@ -847,13 +847,13 @@ public class JobManager implements SupervisorService, MarkRpcController {
                     return;
                 }
                 tasks = splitTasks.stream()
-                                  .map(e -> buildTask(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
+                                  .map(e -> SchedTask.from(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
                                   .collect(Collectors.toList());
                 break;
             case FAILED:
                 tasks = prevTasks.stream()
                                  .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
-                                 .map(e -> buildTask(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
+                                 .map(e -> SchedTask.from(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
                                  .collect(Collectors.toList());
                 break;
             default:
@@ -995,22 +995,19 @@ public class JobManager implements SupervisorService, MarkRpcController {
     }
 
     /**
-     * Builds sched tasks
+     * Returns the retry trigger time
      *
-     * @param taskParam  the task param
-     * @param taskId     the task id
-     * @param trackId    the track id
-     * @param createTime the created time
-     * @return SchedTask
+     * @param job       the SchedJob
+     * @param failCount the failure times
+     * @param current   the current date time
+     * @return retry trigger time milliseconds
      */
-    private static SchedTask buildTask(String taskParam, long taskId, long trackId, Date createTime) {
-        SchedTask task = new SchedTask(taskParam == null ? "" : taskParam);
-        task.setTaskId(taskId);
-        task.setTrackId(trackId);
-        task.setExecuteState(ExecuteState.WAITING.value());
-        task.setUpdatedAt(createTime);
-        task.setCreatedAt(createTime);
-        return task;
+    private static long computeRetryTriggerTime(SchedJob job, int failCount, Date current) {
+        Assert.isTrue(!RetryType.NONE.equals(job.getRetryType()), "Sched job '" + job.getJobId() + "' retry type is NONE.");
+        Assert.isTrue(job.getRetryCount() > 0, "Sched job '" + job.getJobId() + "' retry count must greater than 0, but actual " + job.getRetryCount());
+        Assert.isTrue(failCount <= job.getRetryCount(), "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
+        // exponential backoff
+        return current.getTime() + (long) job.getRetryInterval() * IntMath.pow(failCount, 2);
     }
 
 }

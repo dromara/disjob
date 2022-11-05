@@ -100,13 +100,6 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     // ------------------------------------------------------------------Subscribe
 
-    /**
-     * Refresh discovery servers.
-     *
-     * @param servers discovered servers
-     */
-    protected abstract void doRefreshDiscoveryServers(List<D> servers);
-
     @Override
     public boolean isAlive(D server) {
         return getServers().contains(server);
@@ -182,7 +175,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     // ------------------------------------------------------------------private discovery methods
 
-    private void refreshDiscoveryServers(List<HealthService> healthServices) {
+    private synchronized void doRefreshDiscoveryServers(List<HealthService> healthServices) {
         List<D> servers;
         if (CollectionUtils.isEmpty(healthServices)) {
             logger.error("Not discovered available {} from consul.", discoveryRole.name());
@@ -195,7 +188,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 .map(s -> (D) discoveryRole.deserialize(s))
                 .collect(Collectors.toList());
         }
-        doRefreshDiscoveryServers(servers);
+        refreshDiscoveryServers(servers);
     }
 
     // ------------------------------------------------------------------private class
@@ -214,7 +207,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 Long currentIndex = response.getConsulIndex();
                 if (currentIndex != null && currentIndex > lastConsulIndex) {
                     lastConsulIndex = currentIndex;
-                    refreshDiscoveryServers(response.getValue());
+                    doRefreshDiscoveryServers(response.getValue());
                 }
             }
         }

@@ -16,12 +16,12 @@ public class ConsulProperties {
     /**
      * Consul client host
      */
-    private String host;
+    private String host = "localhost";
 
     /**
      * Consul client port
      */
-    private int port;
+    private int port = 8500;
 
     /**
      * Consul token

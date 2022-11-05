@@ -5,7 +5,7 @@ import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Server;
-import cn.ponfee.scheduler.registry.RegistryEvent;
+import cn.ponfee.scheduler.registry.EventType;
 import cn.ponfee.scheduler.registry.ServerRegistry;
 import cn.ponfee.scheduler.registry.ServerRole;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.common.base.Constants.COLON;
@@ -70,7 +69,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.stringRedisTemplate = stringRedisTemplate;
 
         this.keepAliveInMillis = keepAliveInMillis;
-        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Redis-Register-Heartbeat-Executor", true));
+        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("REDIS-SERVER-REGISTRY", true));
         this.registryScheduledExecutor.scheduleAtFixedRate(() -> {
             if (closed) {
                 return;
@@ -96,6 +95,26 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.redisMessageListenerContainer = container;
     }
 
+    @Override
+    public final List<D> getServers(String group) {
+        if (requireRefresh()) {
+            synchronized (this) {
+                if (requireRefresh()) {
+                    doRefreshDiscoveryServers();
+                }
+            }
+        }
+        return getServers0(group);
+    }
+
+    /**
+     * Gets grouped alive servers.
+     *
+     * @param group the discovered interested group
+     * @return list of grouped alive servers
+     */
+    protected abstract List<D> getServers0(String group);
+
     // ------------------------------------------------------------------Registry
 
     @Override
@@ -105,7 +124,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         }
 
         Throwables.catched(() -> doRegister(Collections.singleton(server)));
-        Throwables.catched(() -> publish(server, RegistryEvent.REGISTER));
+        Throwables.catched(() -> publish(server, EventType.REGISTER));
         registered.add(server);
         logger.info("Server registered: {} - {}", registryRole.name(), server);
     }
@@ -114,25 +133,11 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public final void deregister(R server) {
         registered.remove(server);
         Throwables.catched(() -> stringRedisTemplate.opsForZSet().remove(registryRole.key(), server.serialize()));
-        Throwables.catched(() -> publish(server, RegistryEvent.DEREGISTER));
+        Throwables.catched(() -> publish(server, EventType.DEREGISTER));
         logger.info("Server deregister: {} - {}", registryRole.name(), server);
     }
 
     // ------------------------------------------------------------------Discovery
-
-    @Override
-    public final List<D> getServers(String group) {
-        return getServers(group, false);
-    }
-
-    /**
-     * Gets servers
-     *
-     * @param group        the group
-     * @param forceRefresh the force refresh
-     * @return list of servers
-     */
-    protected abstract List<D> getServers(String group, boolean forceRefresh);
 
     @Override
     public final boolean isAlive(D server) {
@@ -191,38 +196,19 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         }
     }
 
-    // ------------------------------------------------------------------protected methods
-
-    protected final void refreshDiscovery(Consumer<List<D>> processor, boolean forceRefresh) {
-        if (forceRefresh) {
-            synchronized (this) {
-                doRefreshDiscovery(processor);
-            }
-            return;
-        }
-
-        if (!requireRefresh()) {
-            return;
-        }
-
-        synchronized (this) {
-            if (!requireRefresh()) {
-                return;
-            }
-            doRefreshDiscovery(processor);
-        }
-    }
-
     // ------------------------------------------------------------------private methods
 
-    private void publish(R server, RegistryEvent event) {
-        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, buildPublishValue(event, server));
+    private void publish(R server, EventType eventType) {
+        String publish = registryRole.name() + COLON + eventType.name() + COLON + server.serialize();
+        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, publish);
     }
 
-    private void subscribe(D server, ServerRole role, RegistryEvent event) {
+    private void subscribe(D server, ServerRole role, EventType eventType) {
         if (role == discoveryRole) {
             // refresh the discovery
-            getServers(null, true);
+            synchronized (this) {
+                doRefreshDiscoveryServers();
+            }
         }
     }
 
@@ -250,7 +236,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         });
     }
 
-    private void doRefreshDiscovery(Consumer<List<D>> processor) {
+    private void doRefreshDiscoveryServers() {
         String discoveryKey = discoveryRole.key();
         long now = System.currentTimeMillis();
         List<Object> result = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
@@ -270,14 +256,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             logger.error("Not discovered available {} from redis.", discoveryRole.name());
             discovered = Collections.emptySet();
         }
-        processor.accept(discovered.stream().map(s -> (D) discoveryRole.deserialize(s)).collect(Collectors.toList()));
+
+        List<D> servers = discovered.stream()
+                                    .map(s -> (D) discoveryRole.deserialize(s))
+                                    .collect(Collectors.toList());
+        refreshDiscoveryServers(servers);
 
         updateRefresh();
         logger.debug("Refreshed discovery {}", discoveryRole.name());
-    }
-
-    private String buildPublishValue(RegistryEvent event, R server) {
-        return registryRole.name() + COLON + event.name() + COLON + server.serialize();
     }
 
     private boolean requireRefresh() {

@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    private volatile List<Supervisor> supervisors = Collections.emptyList();
+    private volatile List<Supervisor> supervisors;
 
     public RedisWorkerRegistry(StringRedisTemplate stringRedisTemplate) {
         this(
@@ -35,19 +35,20 @@ public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor>
     }
 
     @Override
-    protected List<Supervisor> getServers(String group, boolean forceRefresh) {
+    protected List<Supervisor> getServers0(String group) {
         Assert.isNull(group, "Supervisor non grouped, group must be null.");
-        refreshDiscovery(discoveredSupervisors -> {
-            if (CollectionUtils.isEmpty(discoveredSupervisors)) {
-                this.supervisors = Collections.emptyList();
-            } else {
-                // Sort for help use route supervisor
-                discoveredSupervisors.sort(Comparator.comparing(Supervisor::getHost));
-                this.supervisors = Collections.unmodifiableList(discoveredSupervisors);
-            }
-        }, forceRefresh);
-
         return supervisors;
+    }
+
+    @Override
+    protected void refreshDiscoveryServers(List<Supervisor> discoveredSupervisors) {
+        if (CollectionUtils.isEmpty(discoveredSupervisors)) {
+            this.supervisors = Collections.emptyList();
+        } else {
+            // Sort for help use route supervisor
+            discoveredSupervisors.sort(Comparator.comparing(Supervisor::getHost));
+            this.supervisors = Collections.unmodifiableList(discoveredSupervisors);
+        }
     }
 
     @Override

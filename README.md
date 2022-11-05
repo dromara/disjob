@@ -159,12 +159,12 @@ curl --location --request POST 'http://localhost:8081/api/job/manual_trigger?job
 
 ## Contributing
 
-个人能力及精力有限，期待及乐于接受好的意见及建议，如有发现bug、更优的实现方案、新特性等，可提交PR或新建[Issues](../../issues)一起探讨。
+如有发现bug、更优的实现方案、新特性等，可提交PR或新建[Issues](../../issues)一起探讨。
 
 ## Todo List
 
-- [ ] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [x] Handler解耦：Handler代码只在Worker服务中，Worker提供处理器校验及拆分任务的接口[WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerRemote.java)
+- [ ] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB
 - [ ] 本机多网卡时，指定网卡的host ip获取

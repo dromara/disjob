@@ -1,11 +1,11 @@
 package cn.ponfee.scheduler.registry;
 
 /**
- * Registry event definition.
+ * Registry event type definition.
  *
  * @author Ponfee
  */
-public enum RegistryEvent {
+public enum EventType {
     /**
      * Register
      */

@@ -26,7 +26,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     private final CuratorFrameworkClient client;
 
     protected ZookeeperServerRegistry(ZookeeperProperties props) {
-        this.registryRootPath = Files.UNIX_FOLDER_SEPARATOR + registryRole.key();
+        this.registryRootPath  = Files.UNIX_FOLDER_SEPARATOR + registryRole.key();
         this.discoveryRootPath = Files.UNIX_FOLDER_SEPARATOR + discoveryRole.key();
 
         try {
@@ -45,7 +45,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             client.createPersistent(registryRootPath);
             client.createPersistent(discoveryRootPath);
             //client.listenChildChanged(discoveryRootPath);
-            client.watchChildChanged(discoveryRootPath, this::refreshDiscoveryServers);
+            client.watchChildChanged(discoveryRootPath, this::doRefreshDiscoveryServers);
         } catch (Exception e) {
             throw new IllegalStateException("Connect zookeeper failed: " + props, e);
         }
@@ -82,13 +82,6 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     // ------------------------------------------------------------------Subscribe
 
-    /**
-     * Refresh discovery servers.
-     *
-     * @param servers discovered servers
-     */
-    protected abstract void doRefreshDiscoveryServers(List<D> servers);
-
     @Override
     public boolean isAlive(D server) {
         return getServers().contains(server);
@@ -113,7 +106,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         return registryRootPath + Files.UNIX_FOLDER_SEPARATOR + server.serialize();
     }
 
-    private void refreshDiscoveryServers(List<String> list) {
+    private synchronized void doRefreshDiscoveryServers(List<String> list) {
         List<D> servers;
         logger.info("Watched servers: " + list);
         if (CollectionUtils.isEmpty(list)) {
@@ -125,7 +118,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                 .map(s -> (D) discoveryRole.deserialize(s))
                 .collect(Collectors.toList());
         }
-        doRefreshDiscoveryServers(servers);
+        refreshDiscoveryServers(servers);
     }
 
 }

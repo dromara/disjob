@@ -8,10 +8,8 @@ import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Registry supervisor based zookeeper.
@@ -20,8 +18,8 @@ import java.util.stream.Collectors;
  */
 public class ZookeeperSupervisorRegistry extends ZookeeperServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    private volatile Map<String, List<Worker>> groupedWorkers = Collections.emptyMap();
-    private volatile List<Worker> allWorkers = new DoubleListViewer<>(Collections.emptyList());
+    private volatile Map<String, List<Worker>> groupedWorkers;
+    private volatile List<Worker> allWorkers;
 
     public ZookeeperSupervisorRegistry(ZookeeperProperties props) {
         super(props);
@@ -33,20 +31,13 @@ public class ZookeeperSupervisorRegistry extends ZookeeperServerRegistry<Supervi
     }
 
     @Override
-    protected void doRefreshDiscoveryServers(List<Worker> discoveredWorkers) {
+    protected void refreshDiscoveryServers(List<Worker> discoveredWorkers) {
         if (CollectionUtils.isEmpty(discoveredWorkers)) {
             this.groupedWorkers = Collections.emptyMap();
             this.allWorkers = Collections.emptyList();
         } else {
-            Map<String, List<Worker>> map = discoveredWorkers.stream()
-                .collect(Collectors.groupingBy(Worker::getGroup))
-                .entrySet()
-                .stream()
-                .peek(e -> e.getValue().sort(Comparator.comparing(Worker::getInstanceId)))
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> Collections.unmodifiableList(e.getValue())));
-
+            Map<String, List<Worker>> map = SupervisorRegistry.groupByWorkers(discoveredWorkers);
             DoubleListViewer<Worker> list = new DoubleListViewer<>(map.values());
-
             this.groupedWorkers = map;
             this.allWorkers = list;
         }

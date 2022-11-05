@@ -83,4 +83,22 @@ public class SchedTask extends BaseEntity implements Serializable {
      */
     private String errorMsg;
 
+    /**
+     * Builds sched tasks
+     *
+     * @param taskParam  the task param
+     * @param taskId     the task id
+     * @param trackId    the track id
+     * @param createTime the created time
+     * @return SchedTask
+     */
+    public static SchedTask from(String taskParam, long taskId, long trackId, Date createTime) {
+        SchedTask task = new SchedTask(taskParam == null ? "" : taskParam);
+        task.setTaskId(taskId);
+        task.setTrackId(trackId);
+        task.setExecuteState(ExecuteState.WAITING.value());
+        task.setUpdatedAt(createTime);
+        task.setCreatedAt(createTime);
+        return task;
+    }
 }
