@@ -74,14 +74,6 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         return failure(cm.getCode(), cm.getMsg(), null);
     }
 
-    public static <T> Result<T> failure(CodeMsg cm, T data) {
-        return new Result<>(cm.getCode(), cm.getMsg(), data);
-    }
-
-    public static <T> Result<T> failure(int code) {
-        return failure(code, null, null);
-    }
-
     public static <T> Result<T> failure(int code, String msg) {
         return failure(code, msg, null);
     }

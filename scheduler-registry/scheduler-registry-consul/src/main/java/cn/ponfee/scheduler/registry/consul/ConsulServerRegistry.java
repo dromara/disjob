@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Registry server based consul.
+ * Registry server based <a href="https://developer.hashicorp.com/consul/api-docs">consul</a>.
  *
  * @author Ponfee
  */
@@ -41,6 +41,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
      * Consul client
      */
     private final ConsulClient client;
+
     /**
      * Consul ACL token
      */
@@ -50,19 +51,17 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     private final ConsulSubscriberThread   consulSubscriberThread;
 
-    // --------------------------------------------------------------discovery
-
     protected ConsulServerRegistry(String host, int port, String token) {
         this.client = new ConsulClient(host, port);
         // Assert.notNull(client.getAgentSelf(), "Consul server is not available.");
         this.token = token;
 
-        this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Consul-Ttl-Check-Executor", true));
+        this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("consul_server_registry", true));
         consulTtlCheckExecutor.scheduleAtFixedRate(this::checkPass, CHECK_PASS_INTERVAL_SECONDS, CHECK_PASS_INTERVAL_SECONDS, TimeUnit.SECONDS);
 
         this.consulSubscriberThread = new ConsulSubscriberThread(-1);
         consulSubscriberThread.setDaemon(true);
-        consulSubscriberThread.setName("Consul-Subscriber-Thread");
+        consulSubscriberThread.setName("consul_subscriber_thread");
         consulSubscriberThread.start();
     }
 
@@ -80,7 +79,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             client.agentServiceRegister(buildRegistryServer(server), token);
         }
         registered.add(server);
-        logger.info("Server registered: {} - {}", registryRole.name(), server);
+        log.info("Server registered: {} - {}", registryRole.name(), server);
     }
 
     @Override
@@ -92,24 +91,19 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             } else {
                 client.agentServiceDeregister(buildId(server), token);
             }
-            logger.info("Server deregister: {} - {}", registryRole.name(), server);
+            log.info("Server deregister: {} - {}", registryRole.name(), server);
         } catch (Exception e) {
-            logger.error("Agent service deregister error.", e);
+            log.error("Agent service deregister error.", e);
         }
     }
 
-    // ------------------------------------------------------------------Subscribe
-
-    @Override
-    public boolean isAlive(D server) {
-        return getServers().contains(server);
-    }
+    // ------------------------------------------------------------------Close
 
     @Override
     public void close() {
         closed = true;
         if (!close.compareAndSet(false, true)) {
-            logger.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
+            log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
 
@@ -117,16 +111,18 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             consulTtlCheckExecutor.shutdownNow();
             consulTtlCheckExecutor.awaitTermination(1, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logger.error("Await ttl check pass scheduled executor termination occur error.", e);
+            log.error("Await ttl check pass scheduled executor termination occur error.", e);
         }
 
         registered.forEach(this::deregister);
         registered.clear();
 
-        Throwables.catched(() -> MultithreadExecutors.stopThread(consulSubscriberThread, 0, 0, 200));
+        Throwables.caught(() -> MultithreadExecutors.stopThread(consulSubscriberThread, 0, 0, 200));
+
+        super.close();
     }
 
-    // ------------------------------------------------------------------private registry methods
+    // ------------------------------------------------------------------private method & class
 
     private NewService buildRegistryServer(R server) {
         NewService service = new NewService();
@@ -144,7 +140,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         return JobConstants.SCHEDULER_KEY_PREFIX + Files.UNIX_FOLDER_SEPARATOR + server.serialize();
     }
 
-    private NewService.Check buildCheck() {
+    private static NewService.Check buildCheck() {
         NewService.Check check = new NewService.Check();
         check.setTtl(CHECK_TTL_SECONDS);
         check.setDeregisterCriticalServiceAfter(DEREGISTER_TIME_SECONDS);
@@ -164,21 +160,19 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 } else {
                     client.agentCheckPass("service:" + checkId, null, token);
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("check pass for server: " + server + " with check id: " + checkId);
+                if (log.isDebugEnabled()) {
+                    log.debug("check pass for server: " + server + " with check id: " + checkId);
                 }
             } catch (Throwable t) {
-                logger.warn("fail to check pass for server: " + server + ", check id is: " + checkId, t);
+                log.warn("fail to check pass for server: " + server + ", check id is: " + checkId, t);
             }
         }
     }
 
-    // ------------------------------------------------------------------private discovery methods
-
     private synchronized void doRefreshDiscoveryServers(List<HealthService> healthServices) {
         List<D> servers;
         if (CollectionUtils.isEmpty(healthServices)) {
-            logger.error("Not discovered available {} from consul.", discoveryRole.name());
+            log.error("Not discovered available {} from consul.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = healthServices.stream()
@@ -188,10 +182,8 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 .map(s -> (D) discoveryRole.deserialize(s))
                 .collect(Collectors.toList());
         }
-        refreshDiscoveryServers(servers);
+        refreshDiscoveredServers(servers);
     }
-
-    // ------------------------------------------------------------------private class
 
     private class ConsulSubscriberThread extends Thread {
         private long lastConsulIndex;

@@ -30,13 +30,13 @@
       <include refid="Base_Column_List" />, task_param, execute_snapshot, error_msg
     </sql>
 
-    <insert id="insertBatch" parameterType="java.util.List" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
       INSERT INTO sched_task (
         task_id, track_id,
         task_param, execute_state, 
         version, updated_at, created_at
       ) VALUES 
-      <foreach collection="list" item="item" separator=",">
+      <foreach collection="collection" item="item" separator=",">
       (
         #{item.taskId,jdbcType=BIGINT}, #{item.trackId,jdbcType=BIGINT},
         #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
@@ -63,7 +63,7 @@
     WHERE track_id = #{trackId,jdbcType=BIGINT}
   </select>
 
-  <!-- use `IFNULL` function reason: possibly paused task re-execute -->
+  <!-- use `IFNULL` function reason: possibly re-execute the paused task -->
   <update id="start">
     UPDATE sched_task
     SET execute_state = 20,
@@ -141,16 +141,16 @@
   </delete>
 
   <!--
-  <update id="updateWorker">
+  <update id="updateWorker" parameterType="collection">
     UPDATE sched_task
       <trim prefix="SET worker = CASE task_id" suffix="END,">
-        <foreach collection="list" item="item">
+        <foreach collection="collection" item="item">
           WHEN #{item.taskId} THEN #{item.worker,jdbcType=VARCHAR}
         </foreach>
       </trim>
       version = version+1
     WHERE execute_state = 10 AND task_id IN (
-        <foreach collection="list" separator="," item="item">
+        <foreach collection="collection" separator="," item="item">
           #{item.taskId,jdbcType=BIGINT}
         </foreach>
       )

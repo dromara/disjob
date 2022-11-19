@@ -15,8 +15,8 @@ public interface SchedDependMapper {
 
     List<SchedDepend> findByParentJobId(long parentJobId);
 
-    void deleteByParentJobId(long parentJobId);
+    int deleteByParentJobId(long parentJobId);
 
-    void deleteByChildJobId(long parentJobId);
+    int deleteByChildJobId(long parentJobId);
 
 }

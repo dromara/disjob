@@ -8,7 +8,7 @@ import cn.ponfee.scheduler.core.base.Server;
  * @param <R> the registry server type
  * @author Ponfee
  */
-public interface Registry<R extends Server> {
+public interface Registry<R extends Server> extends AutoCloseable {
 
     /**
      * Register the server to cluster.
@@ -31,4 +31,9 @@ public interface Registry<R extends Server> {
      */
     ServerRole registryRole();
 
+    /**
+     * Close registry.
+     */
+    @Override
+    void close();
 }

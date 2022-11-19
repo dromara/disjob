@@ -144,7 +144,6 @@ public class CuratorFrameworkClient implements AutoCloseable {
 
     /*
     public void listenChildChanged(String path) {
-        CuratorCache curatorCache = CuratorCache.build(curatorFramework, path);
         CuratorCacheListener pathChildrenCacheListener = CuratorCacheListener
             .builder()
             .forPathChildrenCache(path, curatorFramework, (client, event) -> {
@@ -167,11 +166,12 @@ public class CuratorFrameworkClient implements AutoCloseable {
                         LOG.info("curator patch children cache remove servers: {}", removingServer);
                         break;
                     default:
-                        // discard event
+                        LOG.debug("Discard zookeeper event: {} - {}", event.getType(), event.getData().getPath());
                         break;
                 }
             })
             .build();
+        CuratorCache curatorCache = CuratorCache.build(curatorFramework, path);
         curatorCache.listenable().addListener(pathChildrenCacheListener);
         curatorCache.start();
     }

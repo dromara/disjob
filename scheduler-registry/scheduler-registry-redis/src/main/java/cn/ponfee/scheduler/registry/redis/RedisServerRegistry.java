@@ -69,7 +69,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.stringRedisTemplate = stringRedisTemplate;
 
         this.keepAliveInMillis = keepAliveInMillis;
-        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("REDIS-SERVER-REGISTRY", true));
+        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_server_registry", true));
         this.registryScheduledExecutor.scheduleAtFixedRate(() -> {
             if (closed) {
                 return;
@@ -77,7 +77,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             try {
                 doRegister(registered);
             } catch (Throwable t) {
-                logger.error("Do scheduled register occur error: " + registered, t);
+                log.error("Do scheduled register occur error: " + registered, t);
             }
         }, 3, 1, TimeUnit.SECONDS);
 
@@ -96,7 +96,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     @Override
-    public final List<D> getServers(String group) {
+    public final List<D> getDiscoveredServers(String group) {
         if (requireRefresh()) {
             synchronized (this) {
                 if (requireRefresh()) {
@@ -104,16 +104,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
                 }
             }
         }
-        return getServers0(group);
+        return super.getDiscoveredServers(group);
     }
-
-    /**
-     * Gets grouped alive servers.
-     *
-     * @param group the discovered interested group
-     * @return list of grouped alive servers
-     */
-    protected abstract List<D> getServers0(String group);
 
     // ------------------------------------------------------------------Registry
 
@@ -123,24 +115,24 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        Throwables.catched(() -> doRegister(Collections.singleton(server)));
-        Throwables.catched(() -> publish(server, EventType.REGISTER));
+        Throwables.caught(() -> doRegister(Collections.singleton(server)));
+        Throwables.caught(() -> publish(server, EventType.REGISTER));
         registered.add(server);
-        logger.info("Server registered: {} - {}", registryRole.name(), server);
+        log.info("Server registered: {} - {}", registryRole.name(), server);
     }
 
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        Throwables.catched(() -> stringRedisTemplate.opsForZSet().remove(registryRole.key(), server.serialize()));
-        Throwables.catched(() -> publish(server, EventType.DEREGISTER));
-        logger.info("Server deregister: {} - {}", registryRole.name(), server);
+        Throwables.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRole.key(), server.serialize()));
+        Throwables.caught(() -> publish(server, EventType.DEREGISTER));
+        log.info("Server deregister: {} - {}", registryRole.name(), server);
     }
 
     // ------------------------------------------------------------------Discovery
 
     @Override
-    public final boolean isAlive(D server) {
+    public boolean isDiscoveredServerAlive(D server) {
         ZSetOperations<String, String> zsetOps = stringRedisTemplate.opsForZSet();
         Double aliveTimeMillis = zsetOps.score(discoveryRole.key(), server.serialize());
         return aliveTimeMillis != null && aliveTimeMillis > System.currentTimeMillis();
@@ -152,21 +144,23 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public void close() {
         closed = true;
         if (!close.compareAndSet(false, true)) {
-            logger.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
+            log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
 
         registered.forEach(this::deregister);
         registered.clear();
 
-        Throwables.catched(redisMessageListenerContainer::stop);
+        Throwables.caught(redisMessageListenerContainer::stop);
 
         try {
             registryScheduledExecutor.shutdownNow();
             registryScheduledExecutor.awaitTermination(1, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logger.error("Await registry scheduled executor termination occur error.", e);
+            log.error("Await registry scheduled executor termination occur error.", e);
         }
+
+        super.close();
     }
 
     // ------------------------------------------------------------------Subscribe
@@ -189,10 +183,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             //D server = role.deserialize(s2);
             subscribe(null, role, null);
             if (role == discoveryRole) {
-                logger.info("Subscribed message: {} - {}", pattern, message);
+                log.info("Subscribed message: {} - {}", pattern, message);
             }
         } catch (Throwable t) {
-            logger.error("Parse subscribed message error: " + message + ", " + pattern, t);
+            log.error("Parse subscribed message error: " + message + ", " + pattern, t);
         }
     }
 
@@ -253,17 +247,17 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         Set<String> discovered = (Set<String>) result.get(1);
         if (CollectionUtils.isEmpty(discovered)) {
-            logger.error("Not discovered available {} from redis.", discoveryRole.name());
+            log.error("Not discovered available {} from redis.", discoveryRole.name());
             discovered = Collections.emptySet();
         }
 
         List<D> servers = discovered.stream()
                                     .map(s -> (D) discoveryRole.deserialize(s))
                                     .collect(Collectors.toList());
-        refreshDiscoveryServers(servers);
+        refreshDiscoveredServers(servers);
 
         updateRefresh();
-        logger.debug("Refreshed discovery {}", discoveryRole.name());
+        log.debug("Refreshed discovery {}", discoveryRole.name());
     }
 
     private boolean requireRefresh() {

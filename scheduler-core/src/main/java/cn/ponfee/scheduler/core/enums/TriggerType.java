@@ -157,7 +157,7 @@ public enum TriggerType {
     /**
      * 任务依赖：依赖父任务执行完再触发执行子任务(trigger_conf为父任务job_id，多个逗号分隔)
      */
-    DEPEND(4, "1534764645317890107,1534764645317890108") {
+    DEPEND(4, "3988904755200,3988904755201") {
         @Override
         public boolean isValid(String triggerConf) {
             if (StringUtils.isBlank(triggerConf)) {
@@ -176,12 +176,12 @@ public enum TriggerType {
 
         @Override
         public Date computeNextFireTime(String triggerConf, Date startTime) {
-            return null;
+            throw new UnsupportedOperationException("Trigger type 'DEPEND' unsupported.");
         }
 
         @Override
         public List<Date> computeNextFireTimes(String triggerConf, Date startTime, int count) {
-            return null;
+            throw new UnsupportedOperationException("Trigger type 'DEPEND' unsupported.");
         }
     },
 
@@ -227,7 +227,7 @@ public enum TriggerType {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        Assert.isTrue(list.size() == 1, "The list except one size, but actual " + list.size());
+        Assert.isTrue(list.size() == 1, "The list expect one size, but actual is " + list.size());
         return list.get(0);
     }
 }

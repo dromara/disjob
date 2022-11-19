@@ -19,7 +19,7 @@ public interface SchedJobMapper {
     int updateRemark(@Param("jobId") Long jobId, @Param("remark") String remark);
     // ----------------------------use in test end
 
-    List<SchedJob> findByJobIds(@Param("jobIds") List<Long> jobIds);
+    List<SchedJob> findByJobIds(List<Long> jobIds);
 
     int insert(SchedJob record);
 

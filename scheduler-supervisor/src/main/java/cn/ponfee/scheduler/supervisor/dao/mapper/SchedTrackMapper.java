@@ -46,7 +46,7 @@ public interface SchedTrackMapper {
                                      @Param("maxUpdateTime") Date maxUpdateTime,
                                      @Param("size") int size);
 
-    List<SchedTrack> findUnterminatedRetry(@Param("parentTrackId") long parentTrackId);
+    List<SchedTrack> findUnterminatedRetry(long parentTrackId);
 
     int renewUpdateTime(@Param("trackId") long trackId,
                         @Param("updateTime") Date updateTime,

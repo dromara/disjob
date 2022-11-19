@@ -1,8 +1,12 @@
 package cn.ponfee.scheduler.common.base.exception;
 
+import cn.ponfee.scheduler.common.util.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Throwable utilities.
@@ -14,11 +18,33 @@ public class Throwables {
     private static final Logger LOG = LoggerFactory.getLogger(Throwables.class);
 
     public static String getRootCauseStackTrace(Throwable throwable) {
-        //return ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(throwable));
-        return String.join("\n", ExceptionUtils.getRootCauseStackTrace(throwable));
+        if (throwable == null) {
+            return null;
+        }
+
+        while (throwable.getCause() != null) {
+            throwable = throwable.getCause();
+        }
+        return ExceptionUtils.getStackTrace(throwable);
     }
 
-    public static void catched(Runnable runnable) {
+    public static String getRootCauseMessage(Throwable throwable) {
+        if (throwable == null) {
+            return null;
+        }
+
+        List<Throwable> list = ExceptionUtils.getThrowableList(throwable);
+        for (int i = list.size() - 1; i >= 0; i--) {
+            String message = list.get(i).getMessage();
+            if (StringUtils.isNotBlank(message)) {
+                return "error: " + message;
+            }
+        }
+
+        return "error: <" + ClassUtils.getName(throwable.getClass()) + ">";
+    }
+
+    public static void caught(Runnable runnable) {
         try {
             runnable.run();
         } catch (Throwable t) {

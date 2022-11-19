@@ -3,23 +3,20 @@ package cn.ponfee.scheduler.core.base;
 import cn.ponfee.scheduler.common.base.model.CodeMsg;
 
 /**
- * Defined code message for scheduler.
+ * Scheduler code message definitions.
  *
  * @author Ponfee
  */
 public enum JobCodeMsg implements CodeMsg {
 
+    INVALID_PARAM(400, "Invalid param."),
     SERVER_ERROR(500, "Server error."),
 
-    LOAD_HANDLER_ERROR(1000, "Load job handler error."),
-    SPLIT_JOB_FAILED(1001, "Split job failed."),
-    WORKER_NOT_FOUND(1002, "Cannot found worker group."),
-    GROUP_NOT_MATCH(1003, "Group not match."),
-    DISPATCH_TASK_FAILED(1004, "Dispatch task failed."),
+    LOAD_HANDLER_ERROR(1001, "Load job handler error."),
+    SPLIT_JOB_FAILED(1002, "Split job failed."),
 
     JOB_EXECUTE_FAILED(2001, "Job execute failed."),
-
-    PAUSE_TASK_INTERRUPTED(3001, "Task interrupted."),
+    PAUSE_TASK_INTERRUPTED(2002, "Task interrupted."),
 
     ;
 

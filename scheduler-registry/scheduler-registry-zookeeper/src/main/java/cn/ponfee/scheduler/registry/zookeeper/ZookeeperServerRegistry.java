@@ -38,7 +38,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                     try {
                         client0.createEphemeral(buildRegistryPath(server));
                     } catch (Exception e) {
-                        logger.error("Re-registry server to zookeeper occur error: " + server, e);
+                        log.error("Re-registry server to zookeeper occur error: " + server, e);
                     }
                 }
             });
@@ -62,7 +62,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         try {
             client.createEphemeral(buildRegistryPath(server));
             registered.add(server);
-            logger.info("Server registered: {} - {}", registryRole.name(), server);
+            log.info("Server registered: {} - {}", registryRole.name(), server);
         } catch (Throwable e) {
             throw new RuntimeException("Register to zookeeper failed: " + server, e);
         }
@@ -74,33 +74,30 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         try {
             registered.remove(server);
             client.deletePath(registryPath);
-            logger.info("Server deregister: {} - {}", registryRole.name(), server);
+            log.info("Server deregister: {} - {}", registryRole.name(), server);
         } catch (Throwable e) {
-            logger.error("Deregister to zookeeper failed: " + registryPath, e);
+            log.error("Deregister to zookeeper failed: " + registryPath, e);
         }
     }
 
-    // ------------------------------------------------------------------Subscribe
-
-    @Override
-    public boolean isAlive(D server) {
-        return getServers().contains(server);
-    }
+    // ------------------------------------------------------------------Close
 
     @Override
     public void close() {
         closed = true;
         if (!close.compareAndSet(false, true)) {
-            logger.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
+            log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
 
         registered.forEach(this::deregister);
-        Throwables.catched(client::close);
+        Throwables.caught(client::close);
         registered.clear();
+
+        super.close();
     }
 
-    // ------------------------------------------------------------------private registry methods
+    // ------------------------------------------------------------------private methods
 
     private String buildRegistryPath(R server) {
         return registryRootPath + Files.UNIX_FOLDER_SEPARATOR + server.serialize();
@@ -108,9 +105,9 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     private synchronized void doRefreshDiscoveryServers(List<String> list) {
         List<D> servers;
-        logger.info("Watched servers: " + list);
+        log.info("Watched servers: " + list);
         if (CollectionUtils.isEmpty(list)) {
-            logger.error("Not discovered available {} from zookeeper.", discoveryRole.name());
+            log.error("Not discovered available {} from zookeeper.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = list.stream()
@@ -118,7 +115,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                 .map(s -> (D) discoveryRole.deserialize(s))
                 .collect(Collectors.toList());
         }
-        refreshDiscoveryServers(servers);
+        refreshDiscoveredServers(servers);
     }
 
 }

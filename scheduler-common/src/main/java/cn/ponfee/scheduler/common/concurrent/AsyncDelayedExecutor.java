@@ -41,13 +41,13 @@ public final class AsyncDelayedExecutor<E> extends Thread {
         if (maximumPoolSize > 1) {
             executor = ThreadPoolExecutors.create(
                 1, maximumPoolSize, 300, 0,
-                "async-delayed-processor-worker",
+                "async_delayed_worker",
                 ThreadPoolExecutors.ALWAYS_CALLER_RUNS
             );
         }
         this.asyncExecutor = executor;
 
-        super.setName("async-delayed-worker-" + Integer.toHexString(hashCode()));
+        super.setName("async_delayed_executor-" + Integer.toHexString(hashCode()));
         super.setDaemon(false);
         super.start();
     }

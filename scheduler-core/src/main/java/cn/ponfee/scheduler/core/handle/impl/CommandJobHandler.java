@@ -36,7 +36,7 @@ public class CommandJobHandler extends JobHandler<String> {
 
             LOG.info("Command execute fail, code: {}, verbose: {}, task: {}.", code, verbose, task);
             return Result.failure(
-                JobCodeMsg.JOB_EXECUTE_FAILED,
+                JobCodeMsg.JOB_EXECUTE_FAILED.getCode(),
                 "Command fail, code: " + code + ", verbose: " + verbose + ", task-id: " + task.getTaskId()
             );
         }

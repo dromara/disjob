@@ -104,11 +104,11 @@ public class DiscoveryRestTemplate<D extends Server> {
      * @param returnType the return type
      * @param arguments  the arguments
      * @param <T>        return type
-     * @return result
+     * @return invoked remote http response
      * @throws Exception if occur exception
      */
     private <T> T doExecute(String group, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
-        List<D> servers = discoveryServer.getServers(group);
+        List<D> servers = discoveryServer.getDiscoveredServers(group);
         if (CollectionUtils.isEmpty(servers)) {
             throw new IllegalStateException("Not found available " + discoveryServer.discoveryRole().name());
         }

@@ -25,7 +25,7 @@ public class CommonTest {
         Assertions.assertEquals("abc,123", URLCodes.decodeURIComponent("abc%2C123"));
         Assertions.assertEquals("127.0.0.1%3A8080", URLCodes.encodeURIComponent("127.0.0.1:8080"));
         Assertions.assertEquals("127.0.0.1:8080", URLCodes.decodeURIComponent("127.0.0.1%3A8080"));
-        Assertions.assertEquals("1534764646160936990", URLCodes.encodeURIComponent("1534764646160936990"));
+        Assertions.assertEquals("3988904755200", URLCodes.encodeURIComponent("3988904755200"));
     }
 
     @Test

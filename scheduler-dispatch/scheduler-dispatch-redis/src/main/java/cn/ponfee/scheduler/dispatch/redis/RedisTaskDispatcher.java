@@ -70,7 +70,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
             }
 
             renewal.renew(workerKey);
-            logger.info("Worker redis key renewed {}", worker.toString());
+            log.info("Worker redis key renewed {}", worker.toString());
         }
     }
 

@@ -61,11 +61,12 @@ public class RedisTaskReceiver extends TaskReceiver {
     /**
      * List left pop batch size
      */
-    private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(200).getBytes(UTF_8);
+    private static final byte[] LIST_POP_BATCH_SIZE_BYTES = "200".getBytes(UTF_8);
 
     private final Worker currentWorker;
     private final RedisTemplate<String, String> redisTemplate;
     private final byte[] currentWorkerRedisKey;
+    private final byte[][] keysAndArgs;
     private final ScheduledThreadPoolExecutor receiveTaskScheduledExecutor;
     private final AtomicBoolean start = new AtomicBoolean(false);
 
@@ -77,7 +78,8 @@ public class RedisTaskReceiver extends TaskReceiver {
         this.currentWorker = currentWorker;
         this.redisTemplate = redisTemplate;
         this.currentWorkerRedisKey = RedisTaskDispatchingUtils.buildDispatchTasksKey(currentWorker).getBytes();
-        this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Redis-Task-Receive-Executor", true), ThreadPoolExecutors.DISCARD);
+        this.keysAndArgs = new byte[][]{currentWorkerRedisKey, LIST_POP_BATCH_SIZE_BYTES};
+        this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_task_receiver", true), ThreadPoolExecutors.DISCARD);
     }
 
     @Override
@@ -100,7 +102,6 @@ public class RedisTaskReceiver extends TaskReceiver {
     }
 
     private void doReceive() {
-        final byte[][] keysAndArgs = {currentWorkerRedisKey, LIST_POP_BATCH_SIZE_BYTES};
         List<byte[]> result = redisTemplate.execute((RedisCallback<List<byte[]>>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
                 throw new UnsupportedOperationException("Unsupported pipelined or queueing redis operations.");

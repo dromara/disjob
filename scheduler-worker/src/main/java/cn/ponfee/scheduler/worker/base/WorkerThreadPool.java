@@ -180,35 +180,30 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
         // 1、prepare close
         // 1.1、change executing pool thread state
-        Throwables.catched(activePool::stopPool);
+        Throwables.caught(activePool::stopPool);
 
         // 1.2、change idle pool thread state
-        Throwables.catched(() -> idlePool.forEach(WorkerThread::toStop));
+        Throwables.caught(() -> idlePool.forEach(WorkerThread::toStop));
 
         // 1.3、clear task execution param queue
-        Throwables.catched(taskQueue::clear);
+        Throwables.caught(taskQueue::clear);
 
         // 2、do close
         // 2.1、stop this boss thread
-        Throwables.catched(() -> MultithreadExecutors.stopThread(this, 0, 0, 200));
+        Throwables.caught(() -> MultithreadExecutors.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
-        Throwables.catched(() -> idlePool.forEach(e -> stopWorkerThread(e, true)));
-        Throwables.catched(idlePool::clear);
+        Throwables.caught(() -> idlePool.forEach(e -> stopWorkerThread(e, true)));
+        Throwables.caught(idlePool::clear);
 
         // 2.3、stop executing pool thread
-        Throwables.catched(activePool::closePool);
+        Throwables.caught(activePool::closePool);
         threadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        Throwables.catched(() -> ThreadPoolExecutors.shutdown(SUSPEND_TASK_POOL, 1));
+        Throwables.caught(() -> ThreadPoolExecutors.shutdown(SUSPEND_TASK_POOL, 1));
 
         LOG.info("Close worker thread pool end.");
-    }
-
-    @Override
-    protected void finalize() {
-        close();
     }
 
     @Override

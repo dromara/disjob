@@ -147,15 +147,15 @@ public class JobManager implements SupervisorService, MarkRpcController {
     }
 
     public boolean isAliveWorker(String text) {
-        return discoveryWorker.isAlive(Worker.deserialize(text));
+        return discoveryWorker.isDiscoveredServerAlive(Worker.deserialize(text));
     }
 
     public boolean hasNotFoundWorkers(String group) {
-        return CollectionUtils.isEmpty(discoveryWorker.getServers(group));
+        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers(group));
     }
 
     public boolean hasNotFoundWorkers() {
-        return CollectionUtils.isEmpty(discoveryWorker.getServers());
+        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers());
     }
 
     public Pair<SchedTrack, List<SchedTask>> buildTrackAndTasks(SchedJob job, Date now) throws JobException {
@@ -922,7 +922,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
             .forEach(task -> {
                 Worker worker = Worker.deserialize(task.getWorker());
-                if (discoveryWorker.isAlive(worker)) {
+                if (discoveryWorker.isDiscoveredServerAlive(worker)) {
                     ExecuteParam param = new ExecuteParam(ops, task.getTaskId(), trackId, schedTrackProxy.getJobId(), 0L);
                     param.setWorker(worker);
                     executingTasks.add(param);

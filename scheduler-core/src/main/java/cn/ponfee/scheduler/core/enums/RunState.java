@@ -69,7 +69,7 @@ public enum RunState {
      */
     private final boolean terminal;
     /**
-     * is whether failure state
+     * is failure state
      */
     private final boolean failure;
 

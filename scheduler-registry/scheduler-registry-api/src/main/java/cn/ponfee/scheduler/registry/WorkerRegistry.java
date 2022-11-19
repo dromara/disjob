@@ -8,11 +8,6 @@ import cn.ponfee.scheduler.core.base.Worker;
  *
  * @author Ponfee
  */
-public interface WorkerRegistry extends Registry<Worker>, Discovery<Supervisor>, AutoCloseable {
+public interface WorkerRegistry extends Registry<Worker>, Discovery<Supervisor> {
 
-    /**
-     * Close registry.
-     */
-    @Override
-    void close();
 }

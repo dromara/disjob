@@ -36,7 +36,7 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
     protected boolean heartbeat() {
         if (++round == 120) {
             round = 0;
-            logger.info("worker-thread-pool: {}, jvm-active-count: {}", workerThreadPool, Thread.activeCount());
+            log.info("worker-thread-pool: {}, jvm-active-count: {}", workerThreadPool, Thread.activeCount());
         }
 
         return process();
@@ -44,8 +44,8 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
 
     private boolean process() {
         // check has available supervisors
-        if (CollectionUtils.isEmpty(discoverySupervisor.getServers())) {
-            logger.warn("Not available supervisors.");
+        if (CollectionUtils.isEmpty(discoverySupervisor.getDiscoveredServers())) {
+            log.warn("Not available supervisors.");
             return false;
         }
 

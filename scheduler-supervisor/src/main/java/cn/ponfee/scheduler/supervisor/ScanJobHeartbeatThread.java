@@ -73,7 +73,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             job.setNextTriggerTime(recomputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
                 job.setRemark("Stop recompute reason: has not next trigger time");
-                logger.info(job.getRemark() + ": " + job);
+                log.info(job.getRemark() + ": " + job);
                 jobManager.stopJob(job);
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
@@ -84,7 +84,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             // check has available workers
             if (jobManager.hasNotFoundWorkers(job.getJobGroup())) {
                 updateNextScanTime(job, now, 15);
-                logger.warn("Scan job not found available group '{}' workers.", job.getJobGroup());
+                log.warn("Scan job not found available group '{}' workers.", job.getJobGroup());
                 return;
             }
 
@@ -110,17 +110,17 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             }
         } catch (DuplicateKeyException e){
             if (jobManager.updateNextTriggerTime(job)) {
-                logger.info("Conflict trigger time: {} - {}", job, e.getMessage());
+                log.info("Conflict trigger time: {} - {}", job, e.getMessage());
             } else {
-                logger.error("Conflict trigger time: {} - {}", job, e.getMessage());
+                log.error("Conflict trigger time: {} - {}", job, e.getMessage());
             }
         } catch (JobException | IllegalArgumentException e) {
-            logger.error(e.getMessage() + ": " + job, e);
+            log.error(e.getMessage() + ": " + job, e);
             job.setRemark("Stop reason: " + e.getMessage());
             job.setNextTriggerTime(null);
             jobManager.stopJob(job);
         } catch (Exception e) {
-            logger.error("Process handle job occur error: " + job, e);
+            log.error("Process handle job occur error: " + job, e);
         }
     }
 
@@ -174,7 +174,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
                     return checkBlockCollisionTrigger(job, Collections.singletonList(trackId), collisionStrategy, now);
                 } else {
                     // all workers are dead
-                    logger.info("Collision, all worker dead, terminate the sched track: {}", trackId);
+                    log.info("Collision, all worker dead, terminate the sched track: {}", trackId);
                     jobManager.cancelTrack(trackId, Operations.COLLISION_CANCEL);
                     return false;
                 }

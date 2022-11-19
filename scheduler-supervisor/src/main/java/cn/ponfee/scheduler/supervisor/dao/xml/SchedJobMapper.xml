@@ -43,10 +43,10 @@
     </sql>
 
     <!-- ********************use int test start******************** -->
-    <select id="testFindByJobIds" resultType="cn.ponfee.scheduler.core.model.SchedJob" parameterType="list">
+    <select id="testFindByJobIds" parameterType="collection" resultType="cn.ponfee.scheduler.core.model.SchedJob">
       SELECT job_id jobId, remark
       FROM sched_job
-      WHERE job_id IN (<foreach collection="list" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
+      WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
     </select>
     <update id="updateRemark">
       UPDATE sched_job
@@ -55,10 +55,10 @@
     </update>
     <!-- ********************use int test end******************** -->
 
-    <select id="findByJobIds" resultMap="BaseResultMap">
+    <select id="findByJobIds" parameterType="collection" resultMap="BaseResultMap">
       SELECT <include refid="Base_Column_List"/>
       FROM sched_job
-      WHERE job_id IN (<foreach collection="jobIds" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
+      WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
         AND is_deleted = 0
     </select>
 
@@ -188,10 +188,10 @@
         AND is_deleted = 0
     </update>
 
-    <select id="countJobIds" resultType="int">
+    <select id="countJobIds" parameterType="collection" resultType="int">
       SELECT COUNT(*) cnt
       FROM sched_job
-      WHERE job_id IN (<foreach collection="list" separator="," item="jobId">#{jobId,jdbcType=TINYINT}</foreach>)
+      WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=TINYINT}</foreach>)
         AND is_deleted = 0
     </select>
 

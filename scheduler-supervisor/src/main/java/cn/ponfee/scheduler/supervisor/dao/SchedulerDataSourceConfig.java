@@ -64,7 +64,7 @@ public class SchedulerDataSourceConfig extends AbstractDataSourceConfig {
 
     @Bean(name = DB_NAME + SQL_SESSION_FACTORY_SUFFIX)
     public SqlSessionFactory sqlSessionFactory() throws Exception {
-        return createSqlSessionFactory();
+        return super.createSqlSessionFactory();
     }
 
     @Bean(name = DB_NAME + SQL_SESSION_TEMPLATE_SUFFIX)

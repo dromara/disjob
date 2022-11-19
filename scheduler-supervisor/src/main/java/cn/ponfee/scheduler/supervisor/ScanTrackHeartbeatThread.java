@@ -73,7 +73,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
         if (tasks.stream().allMatch(t -> ExecuteState.of(t.getExecuteState()).isTerminal())) {
             // if all the tasks are terminal, then terminate sched track record
             if (jobManager.renewUpdateTime(track, now)) {
-                logger.info("All task terminal, terminate the sched track: {}", track.getTrackId());
+                log.info("All task terminal, terminate the sched track: {}", track.getTrackId());
                 jobManager.terminate(track.getTrackId());
             }
             return;
@@ -85,13 +85,13 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
             .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(waitingTasks)) {
             // read conflict
-            logger.info("Not has waiting tasks: {}", track);
+            log.info("Not has waiting tasks: {}", track);
             return;
         }
 
         SchedJob job = jobManager.getJob(track.getJobId());
         if (job == null) {
-            logger.error("Job not exists: {}, {}", track, tasks);
+            log.error("Job not exists: {}, {}", track, tasks);
             jobManager.updateState(ExecuteState.DATA_INCONSISTENT, tasks, track);
             return;
         }
@@ -99,12 +99,12 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
         // check not found worker
         if (jobManager.hasNotFoundWorkers(job.getJobGroup())) {
             jobManager.renewUpdateTime(track, now);
-            logger.warn("Scan track not found available group '{}' workers.", job.getJobGroup());
+            log.warn("Scan track not found available group '{}' workers.", job.getJobGroup());
             return;
         }
 
         if (jobManager.renewUpdateTime(track, now)) {
-            logger.info("Redispatch sched track: {} - {}", track, Dates.format(now));
+            log.info("Redispatch sched track: {} - {}", track, Dates.format(now));
             jobManager.dispatch(job, track, waitingTasks);
         }
     }
@@ -138,7 +138,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
             .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
             if (jobManager.renewUpdateTime(track, now)) {
-                logger.info("Redispatch sched track: {} - {}", track, Dates.format(now));
+                log.info("Redispatch sched track: {} - {}", track, Dates.format(now));
                 jobManager.dispatch(jobManager.getJob(track.getJobId()), track, waitingTasks);
             }
             return;
@@ -156,7 +156,7 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
         }
 
         // all workers are dead
-        logger.info("Scan track, all worker dead, terminate the sched track: {}", track.getTrackId());
+        log.info("Scan track, all worker dead, terminate the sched track: {}", track.getTrackId());
         jobManager.terminate(track.getTrackId());
     }
 

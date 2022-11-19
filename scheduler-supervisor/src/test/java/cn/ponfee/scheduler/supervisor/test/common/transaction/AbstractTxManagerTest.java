@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestService<?, I>, I> extends SpringBootTestBase<S> {
 
-    private final Logger logger = LoggerFactory.getLogger(AbstractTxManagerTest.class);
+    private final Logger log = LoggerFactory.getLogger(AbstractTxManagerTest.class);
 
     private final I id1, id2;
     private AbstractTxManagerTestService<?, I> service;
@@ -43,7 +43,7 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
         Map<I, String> after = service.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        logger.info("-------------testWithoutTxHasError done " + before + ", " + after);
+        log.info("-------------testWithoutTxHasError done " + before + ", " + after);
     }
 
     @Test
@@ -56,7 +56,7 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
         Map<I, String> after = service.queryData(id1, id2);
         Assertions.assertEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        logger.info("-------------testWithAnnotationTxHasError done" + before + ", " + after);
+        log.info("-------------testWithAnnotationTxHasError done" + before + ", " + after);
     }
 
     @Test
@@ -69,7 +69,7 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
         Map<I, String> after = service.queryData(id1, id2);
         Assertions.assertEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        logger.info("-------------testWithTemplateTxHasError done" + before + ", " + after);
+        log.info("-------------testWithTemplateTxHasError done" + before + ", " + after);
     }
 
     @Test
@@ -79,7 +79,7 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
         Map<I, String> after = service.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        logger.info("-------------testWithoutTxNoneError done" + before + ", " + after);
+        log.info("-------------testWithoutTxNoneError done" + before + ", " + after);
     }
 
     @Test
@@ -89,7 +89,7 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
         Map<I, String> after = service.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        logger.info("-------------testWithAnnotationTxNoneError done" + before + ", " + after);
+        log.info("-------------testWithAnnotationTxNoneError done" + before + ", " + after);
     }
 
     @Test
@@ -99,7 +99,7 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
         Map<I, String> after = service.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        logger.info("-------------testWithTemplateTxNoneError done" + before + ", " + after);
+        log.info("-------------testWithTemplateTxNoneError done" + before + ", " + after);
     }
 
 }

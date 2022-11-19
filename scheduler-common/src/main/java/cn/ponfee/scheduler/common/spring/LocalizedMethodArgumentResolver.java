@@ -17,6 +17,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +40,8 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         GET.name(), DELETE.name(), HEAD.name(), OPTIONS.name()
     );
 
-    private static final String STORE_KEY_PREFIX = "LOCALIZED_METHOD_ARGUMENTS:";
+    private static final String CACHE_KEY_PREFIX = "LOCALIZED_METHOD_ARGUMENTS";
+    private static final Class<? extends Annotation> MARKED_ANNOTATION_TYPE = LocalizedMethodArguments.class;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -47,8 +49,8 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             return false;
         }
 
-        return AnnotationUtils.findAnnotation(parameter.getMethod(), LocalizedMethodArguments.class) != null
-            || AnnotationUtils.findAnnotation(parameter.getDeclaringClass(), LocalizedMethodArguments.class) != null;
+        return isAnnotationPresent(parameter.getMethod(), MARKED_ANNOTATION_TYPE)
+            || isAnnotationPresent(parameter.getDeclaringClass(), MARKED_ANNOTATION_TYPE);
     }
 
     @Override
@@ -63,17 +65,17 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         if (parameterIndex == 0) {
             arguments = resolveMethodParameters(method, httpServletRequest);
             if (method.getParameterCount() > 1) {
-                // method.toGenericString()
-                httpServletRequest.setAttribute(STORE_KEY_PREFIX + method, arguments);
+                // CACHE_KEY_PREFIX + method.toString()
+                httpServletRequest.setAttribute(CACHE_KEY_PREFIX, arguments);
             }
         } else {
-            arguments = (Object[]) httpServletRequest.getAttribute(STORE_KEY_PREFIX + method);
+            arguments = (Object[]) httpServletRequest.getAttribute(CACHE_KEY_PREFIX);
         }
 
         return Collects.get(arguments, parameterIndex);
     }
 
-    private Object[] resolveMethodParameters(Method method, HttpServletRequest request) throws IOException {
+    private static Object[] resolveMethodParameters(Method method, HttpServletRequest request) throws IOException {
         if (QUERY_PARAMS.contains(request.getMethod())) {
             return resolveQueryString(method, request.getParameterMap());
         } else {
@@ -86,7 +88,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         }
     }
 
-    private Object[] resolveQueryString(Method method, Map<String, String[]> parameterMap) {
+    private static Object[] resolveQueryString(Method method, Map<String, String[]> parameterMap) {
         int parameterCount = method.getParameterCount();
         Object[] arguments = new Object[parameterCount];
         for (int i = 0; i < parameterCount; i++) {
@@ -108,7 +110,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         return arguments;
     }
 
-    private Object[] resolveRequestBody(Method method, String body) {
+    private static Object[] resolveRequestBody(Method method, String body) {
         return JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
 
         /*
@@ -124,6 +126,14 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         }
         return arguments;
         */
+    }
+
+    private static final boolean isAnnotationPresent(Method method, Class<? extends Annotation> annotationType) {
+        return AnnotationUtils.findAnnotation(method, annotationType) != null;
+    }
+
+    private static final boolean isAnnotationPresent(Class<?> clazz, Class<? extends Annotation> annotationType) {
+        return AnnotationUtils.findAnnotation(clazz, annotationType) != null;
     }
 
 }

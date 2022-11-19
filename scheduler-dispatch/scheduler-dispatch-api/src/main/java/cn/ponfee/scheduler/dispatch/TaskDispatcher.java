@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public abstract class TaskDispatcher implements AutoCloseable {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Discovery<Worker> discoveryWorker;
     private final TimingWheel<ExecuteParam> timingWheel;
@@ -138,13 +138,13 @@ public abstract class TaskDispatcher implements AutoCloseable {
                 if (!status) {
                     // dispatch failed, delay retry
                     retry(dispatchParam);
-                    logger.error("Dispatch task failed: " + dispatchParam);
+                    log.error("Dispatch task failed: " + dispatchParam);
                     result = false;
                 }
             } catch (Exception e) {
                 // dispatch error, delay retry
                 retry(dispatchParam);
-                logger.error("Dispatch task error: " + dispatchParam, e);
+                log.error("Dispatch task error: " + dispatchParam, e);
                 result = false;
             }
         }
@@ -159,7 +159,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
             return;
         }
 
-        List<Worker> workers = discoveryWorker.getServers(dispatchParam.group());
+        List<Worker> workers = discoveryWorker.getDiscoveredServers(dispatchParam.group());
         Worker worker = dispatchParam.routeStrategy().route(executeParam, workers);
         executeParam.setWorker(worker);
     }
@@ -167,7 +167,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
     private void retry(DispatchParam dispatchParam) {
         if (dispatchParam.retried() >= maxRetryTimes) {
             // discard
-            logger.warn("Dispatched task retried max times still failed: " + dispatchParam.executeParam());
+            log.warn("Dispatched task retried max times still failed: " + dispatchParam.executeParam());
             return;
         }
 

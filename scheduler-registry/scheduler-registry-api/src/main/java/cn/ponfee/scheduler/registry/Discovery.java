@@ -10,24 +10,24 @@ import java.util.List;
  * @param <D> the discovery server type
  * @author Ponfee
  */
-public interface Discovery<D extends Server> {
+public interface Discovery<D extends Server> extends AutoCloseable {
 
     /**
-     * Gets all alive servers.
+     * Gets all alive discovered servers.
      *
-     * @return all alive servers
+     * @return all alive discovered servers
      */
-    default List<D> getServers() {
-        return getServers(null);
+    default List<D> getDiscoveredServers() {
+        return getDiscoveredServers(null);
     }
 
     /**
-     * Gets grouped alive servers.
+     * Gets grouped alive discovered servers.
      *
      * @param group the discovered interested group
-     * @return list of grouped alive servers
+     * @return list of grouped alive discovered servers
      */
-    List<D> getServers(String group);
+    List<D> getDiscoveredServers(String group);
 
     /**
      * Returns a boolean for the server is whether alive.
@@ -35,7 +35,9 @@ public interface Discovery<D extends Server> {
      * @param server the server
      * @return {@code true} if is alive
      */
-    boolean isAlive(D server);
+    default boolean isDiscoveredServerAlive(D server) {
+        return getDiscoveredServers().contains(server);
+    }
 
     /**
      * Returns discovery server role.
@@ -44,4 +46,9 @@ public interface Discovery<D extends Server> {
      */
     ServerRole discoveryRole();
 
+    /**
+     * Close discovery.
+     */
+    @Override
+    void close();
 }

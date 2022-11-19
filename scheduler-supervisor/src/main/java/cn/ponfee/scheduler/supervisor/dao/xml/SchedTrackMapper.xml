@@ -99,7 +99,7 @@
     LIMIT #{size}
   </select>
 
-  <select id="findUnterminatedRetry" resultMap="BaseResultMap">
+  <select id="findUnterminatedRetry" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM sched_track
     WHERE parent_track_id = #{parentTrackId,jdbcType=BIGINT}
