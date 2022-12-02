@@ -3,8 +3,8 @@ package cn.ponfee.scheduler.dispatch.redis;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.scheduler.common.spring.RedisKeyRenewal;
 import cn.ponfee.scheduler.common.lock.RedisLock;
-import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
@@ -66,6 +66,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     private final Worker currentWorker;
     private final RedisTemplate<String, String> redisTemplate;
     private final byte[] currentWorkerRedisKey;
+    private final RedisKeyRenewal redisKeyRenewal;
     private final byte[][] keysAndArgs;
     private final ScheduledThreadPoolExecutor receiveTaskScheduledExecutor;
     private final AtomicBoolean start = new AtomicBoolean(false);
@@ -79,6 +80,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         this.redisTemplate = redisTemplate;
         this.currentWorkerRedisKey = RedisTaskDispatchingUtils.buildDispatchTasksKey(currentWorker).getBytes();
         this.keysAndArgs = new byte[][]{currentWorkerRedisKey, LIST_POP_BATCH_SIZE_BYTES};
+        this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, currentWorkerRedisKey);
         this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_task_receiver", true), ThreadPoolExecutors.DISCARD);
     }
 
@@ -120,11 +122,7 @@ public class RedisTaskReceiver extends TaskReceiver {
             }
         });
 
-        try {
-            redisTemplate.execute((RedisCallback<?>) conn -> conn.expire(currentWorkerRedisKey, JobConstants.REDIS_KEY_TTL_SECONDS));
-        } catch (Exception e) {
-            LOG.warn("Renew dispatch worker key occur error.", e);
-        }
+        redisKeyRenewal.renewIfNecessary();
 
         if (result == null || result.isEmpty()) {
             return;

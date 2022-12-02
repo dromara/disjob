@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.dispatch.redis;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.core.base.JobConstants;
+import cn.ponfee.scheduler.common.spring.RedisKeyRenewal;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
@@ -12,7 +12,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Dispatch task based redis
@@ -28,7 +27,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
      *  value: Renewer type of renew
      * </pre>
      */
-    private final Map<String, Renewal> workerRenewMap = new ConcurrentHashMap<>();
+    private final Map<String, RedisKeyRenewal> workerRenewMap = new ConcurrentHashMap<>();
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -48,45 +47,11 @@ public class RedisTaskDispatcher extends TaskDispatcher {
         Long ret = redisTemplate.execute(
             (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), executeParam.serialize())
         );
-        renewIfNecessary(worker, key);
+
+        RedisKeyRenewal renewal = workerRenewMap.computeIfAbsent(key, k -> new RedisKeyRenewal(redisTemplate, key));
+        renewal.renewIfNecessary();
+
         return (ret != null && ret > 0);
     }
 
-    /**
-     * Renew the worker redis key expire
-     *
-     * @param worker    the worker
-     * @param workerKey the worker key
-     */
-    private void renewIfNecessary(Worker worker, String workerKey) {
-        Renewal renewal = workerRenewMap.computeIfAbsent(workerKey, k -> new Renewal());
-        if (renewal.requireRenew()) {
-            return;
-        }
-
-        synchronized (renewal) {
-            if (renewal.requireRenew()) {
-                return;
-            }
-
-            renewal.renew(workerKey);
-            log.info("Worker redis key renewed {}", worker.toString());
-        }
-    }
-
-    /**
-     * Renew redis key ttl
-     */
-    private class Renewal {
-        private volatile long nextRenewTimeMillis = 0;
-
-        private void renew(String workerKey) {
-            redisTemplate.expire(workerKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
-            this.nextRenewTimeMillis = System.currentTimeMillis() + JobConstants.REDIS_KEY_TTL_RENEW_INTERVAL_MILLIS;
-        }
-
-        private boolean requireRenew() {
-            return System.currentTimeMillis() < nextRenewTimeMillis;
-        }
-    }
 }

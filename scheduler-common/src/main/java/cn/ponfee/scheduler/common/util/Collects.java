@@ -22,7 +22,10 @@ public class Collects {
      * @return first element of list
      */
     public static <T> T getFirst(List<T> list) {
-        return list == null || list.isEmpty() ? null : list.get(0);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        return (list instanceof Deque) ? ((Deque<T>) list).getFirst() : list.get(0);
     }
 
     /**
@@ -37,7 +40,21 @@ public class Collects {
             return null;
         }
         //return list.stream().reduce((a, b) -> b).orElse(null);
-        return list instanceof Deque ? ((Deque<T>) list).getLast() : list.get(list.size() - 1);
+        return (list instanceof Deque) ? ((Deque<T>) list).getLast() : list.get(list.size() - 1);
+    }
+
+    public static <T> T get(T[] array, int index) {
+        if (array == null) {
+            return null;
+        }
+        return index < array.length ? array[index] : null;
+    }
+
+    public static <T> T get(List<T> list, int index) {
+        if (list == null) {
+            return null;
+        }
+        return index < list.size() ? list.get(index) : null;
     }
 
     /**
@@ -75,13 +92,6 @@ public class Collects {
             result.add(Arrays.copyOfRange(array, pos, pos = pos + number));
         }
         return result;
-    }
-
-    public static <T> T get(T[] array, int index) {
-        if (array == null) {
-            return null;
-        }
-        return index < array.length ? array[index] : null;
     }
 
     public static <S, T> List<T> convert(List<S> source, Function<S, T> mapper) {

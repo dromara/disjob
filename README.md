@@ -48,8 +48,8 @@ distributed-scheduler
 ## Features
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
-- Supervisor、Worker通过注册中心进行解耦，目前支持的注册中心有：redis、consul、zookeeper
-- Supervisor以任务分发方式把任务给到Worker，目前支持的任务分发方式有：redis、http
+- Supervisor、Worker通过注册中心进行解耦，目前支持的注册中心有：Redis、Consul、Zookeeper
+- Supervisor以任务分发方式把任务给到Worker，目前支持的任务分发方式有：Redis、Http
 - 支持任务分组(job-group)，任务会分发给指定组的Worker执行
 - 自定义拆分任务，实现[JobHandler#split](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobSplitter.java)即可把一个大任务拆分为多个小任务，任务分治
 - 提供任务执行快照的自动保存(checkpoint)，让执行信息不丢失，保证因异常中断的任务能得到继续执行
@@ -66,7 +66,7 @@ distributed-scheduler
 
 1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)
 
-2. 修改Mysql、Redis、Consul、zookeeper等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
+2. 修改Mysql、Redis、Consul、Zookeeper等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
   - 如果不使用Redis做注册中心、任务分发及分布式锁，可排除[scheduler-common](scheduler-common/pom.xml)模块下的Maven依赖`spring-boot-starter-data-redis`
   - 不依赖Web容器的Worker应用的配置文件是在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 

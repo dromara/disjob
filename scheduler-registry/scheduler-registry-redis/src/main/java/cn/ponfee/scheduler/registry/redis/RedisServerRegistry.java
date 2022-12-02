@@ -34,6 +34,8 @@ import static cn.ponfee.scheduler.common.base.Constants.COLON;
  */
 public abstract class RedisServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
+    private static final long REDIS_KEY_TTL_MILLIS = 30L * 86400 * 1000;
+
     /**
      * Default registry server keep alive in 5000 milliseconds
      * <p>server register heartbeat usual is 1000 milliseconds
@@ -222,7 +224,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             public Void execute(RedisOperations operations) {
                 String registryKey = registryRole.key();
                 operations.opsForZSet().add(registryKey, tuples);
-                operations.expire(registryKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
+                operations.expire(registryKey, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
 
                 // in pipelined, must return null
                 return null;
@@ -238,7 +240,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             public Void execute(RedisOperations operations) {
                 operations.opsForZSet().removeRangeByScore(discoveryKey, 0, now);
                 operations.opsForZSet().rangeByScore(discoveryKey, now, Long.MAX_VALUE);
-                operations.expire(discoveryKey, JobConstants.REDIS_KEY_TTL_SECONDS, TimeUnit.SECONDS);
+                operations.expire(discoveryKey, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
 
                 // in pipelined, must return null
                 return null;

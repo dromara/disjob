@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.5</version>
+    <version>2.7.6</version>
     <relativePath/>
   </parent>
 
@@ -37,8 +37,8 @@
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m</argLine>
 
-    <springboot.version>2.7.5</springboot.version>
-    <springframework.version>5.3.23</springframework.version>
+    <springboot.version>2.7.6</springboot.version>
+    <springframework.version>5.3.24</springframework.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
     <lombok.version>1.18.24</lombok.version>
     <revision>1.0-SNAPSHOT</revision>

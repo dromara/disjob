@@ -115,11 +115,13 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
             return false;
         }
 
-        nextScanExpireRunningTimeMillis = now.getTime() + EXPIRE_RUNNING_MILLISECONDS;
         long expireTime = now.getTime() - EXPIRE_RUNNING_MILLISECONDS;
-
         List<SchedTrack> tracks = jobManager.findExpireRunning(expireTime, new Date(expireTime), QUERY_BATCH_SIZE);
-        if (tracks == null || tracks.isEmpty()) {
+        boolean noResult = CollectionUtils.isEmpty(tracks);
+        if (noResult || tracks.size() < QUERY_BATCH_SIZE) {
+            this.nextScanExpireRunningTimeMillis = now.getTime() + EXPIRE_RUNNING_MILLISECONDS;
+        }
+        if (noResult) {
             return false;
         }
 

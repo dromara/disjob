@@ -62,7 +62,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      * @param triggerTime the trigger time
      */
     public ExecuteParam(Operations operation, long taskId, long trackId, long jobId, long triggerTime) {
-        Assert.isTrue(operation != null, "Operation cannot null.");
+        Assert.notNull(operation, "Operation cannot null.");
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
         this.trackId = trackId;

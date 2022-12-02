@@ -387,7 +387,7 @@ public final class ObjectUtils {
         };
 
         private static final Map<Class<?>, PrimitiveOrWrapperConvertors> MAPPING =
-                Enums.toMap(PrimitiveOrWrapperConvertors.class, PrimitiveOrWrapperConvertors::type);
+            Enums.toMap(PrimitiveOrWrapperConvertors.class, PrimitiveOrWrapperConvertors::type);
 
         private final Class<?> type;
 

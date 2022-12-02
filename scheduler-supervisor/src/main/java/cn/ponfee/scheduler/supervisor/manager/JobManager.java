@@ -421,7 +421,10 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
-        if (trackMapper.lock(param.getTrackId()) == null) {
+        Integer state = trackMapper.lockAndGetState(param.getTrackId());
+        Assert.notNull(state, "Terminate failed, track_id not found: " + param.getTrackId());
+        if (RunState.of(state).isTerminal()) {
+            // already terminated
             return false;
         }
         int row = taskMapper.terminate(
@@ -431,14 +434,14 @@ public class JobManager implements SupervisorService, MarkRpcController {
             new Date(),
             errorMsg
         );
-        boolean status = (row == AFFECTED_ONE_ROW);
-        if (!status) {
+        boolean result = (row == AFFECTED_ONE_ROW);
+        if (!result) {
             LOG.warn("Conflict terminate task {}, {}", param.getTaskId(), toState);
         }
 
         // terminate track
         terminate(param.getTrackId(), false);
-        return status;
+        return result;
     }
 
     /**
@@ -449,7 +452,10 @@ public class JobManager implements SupervisorService, MarkRpcController {
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean terminate(long trackId) {
-        if (trackMapper.lock(trackId) == null) {
+        Integer state = trackMapper.lockAndGetState(trackId);
+        Assert.notNull(state, "Terminate failed, track_id not found: " + trackId);
+        if (RunState.of(state).isTerminal()) {
+            // already terminated
             return false;
         }
         return terminate(trackId, true);
@@ -466,8 +472,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean pauseTrack(long trackId) {
-        Integer state = trackMapper.lockState(trackId);
-        Assert.isTrue(state != null, "Pause failed, track_id not found: " + trackId);
+        Integer state = trackMapper.lockAndGetState(trackId);
+        Assert.notNull(state, "Pause failed, track_id not found: " + trackId);
 
         RunState runState = RunState.of(state);
         if (!RunState.PAUSABLE_LIST.contains(runState)) {
@@ -532,7 +538,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean pauseExecutingTask(ExecuteParam param, String errorMsg) {
-        Integer state = trackMapper.lockState(param.getTrackId());
+        Integer state = trackMapper.lockAndGetState(param.getTrackId());
         if (!RunState.RUNNING.equals(state)) {
             LOG.warn("Pause executing task failed: {} - {}", param, state);
             return false;
@@ -579,8 +585,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Override
     public boolean cancelTrack(long trackId, Operations operation) {
         Assert.isTrue(operation.targetState().isFailure(), "Expect cancel ops, but actual: " + operation);
-        Integer state = trackMapper.lockState(trackId);
-        Assert.isTrue(state != null, "Cancel failed, track_id not found: " + trackId);
+        Integer state = trackMapper.lockAndGetState(trackId);
+        Assert.notNull(state, "Cancel failed, track_id not found: " + trackId);
 
         RunState runState = RunState.of(state);
         if (runState.isTerminal()) {
@@ -633,7 +639,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Override
     public boolean cancelExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
         Assert.isTrue(toState.isFailure(), "Target state expect failure state, but actual: " + toState);
-        Integer state = trackMapper.lockState(param.getTrackId());
+        Integer state = trackMapper.lockAndGetState(param.getTrackId());
         if (!RunState.RUNNING.equals(state)) {
             return false;
         }
@@ -676,8 +682,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean resume(long trackId) {
-        Integer state = trackMapper.lockState(trackId);
-        Assert.isTrue(state != null, "Cancel failed, track_id not found: " + trackId);
+        Integer state = trackMapper.lockAndGetState(trackId);
+        Assert.notNull(state, "Cancel failed, track_id not found: " + trackId);
         if (!RunState.PAUSED.equals(state)) {
             return false;
         }
@@ -701,7 +707,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
 
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean updateState(ExecuteState toState, List<SchedTask> tasks, SchedTrack track) {
-        if (trackMapper.lock(track.getTrackId()) == null) {
+        if (trackMapper.lockAndGetId(track.getTrackId()) == null) {
             return false;
         }
         int row = trackMapper.updateState(track.getTrackId(), toState.runState().value(), track.getRunState(), track.getVersion());
@@ -971,7 +977,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             job.setNextTriggerTime(null);
         } else {
             Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerConf(), date);
-            Assert.isTrue(nextTriggerTime != null, "Has not next trigger time " + job.getTriggerConf());
+            Assert.notNull(nextTriggerTime, "Has not next trigger time " + job.getTriggerConf());
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }
     }

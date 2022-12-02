@@ -16,7 +16,7 @@ public class DoubleListViewer<E> implements List<E>, RandomAccess {
     private final int size;
 
     public DoubleListViewer(Collection<List<E>> list) {
-        Assert.isTrue(list != null, "Origin list cannot be null.");
+        Assert.notNull(list, "Origin list cannot be null.");
         this.list = list;
         this.size = list.stream().mapToInt(e -> e == null ? 0 : e.size()).sum();
     }

@@ -72,10 +72,11 @@ public final class TriggerTimeUtils {
             }
         }
 
+        if (next == null) {
+            return null;
+        }
         Date end = job.getEndTime();
-        next = (next != null && end != null && next.after(end)) ? null : next;
-
-        return next == null ? null : next.getTime();
+        return (end != null && next.after(end)) ? null : next.getTime();
     }
 
 }

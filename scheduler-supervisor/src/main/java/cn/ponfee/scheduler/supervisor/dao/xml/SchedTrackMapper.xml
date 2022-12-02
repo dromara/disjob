@@ -115,11 +115,11 @@
       AND version = #{version,jdbcType=INTEGER}
   </update>
 
-  <select id="lock" parameterType="_long" resultType="long">
-    SELECT track_id FROM sched_track WHERE track_id = #{trackId,jdbcType=BIGINT} FOR UPDATE
+  <select id="lockAndGetId" parameterType="_long" resultType="long">
+    SELECT id FROM sched_track WHERE track_id = #{trackId,jdbcType=BIGINT} FOR UPDATE
   </select>
 
-  <select id="lockState" parameterType="_long" resultType="int">
+  <select id="lockAndGetState" parameterType="_long" resultType="int">
     SELECT run_state FROM sched_track WHERE track_id = #{trackId,jdbcType=BIGINT} FOR UPDATE
   </select>
 

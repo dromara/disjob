@@ -52,9 +52,9 @@ public interface SchedTrackMapper {
                         @Param("updateTime") Date updateTime,
                         @Param("version") int version);
 
-    Long lock(long trackId);
+    Long lockAndGetId(long trackId);
 
-    Integer lockState(long trackId);
+    Integer lockAndGetState(long trackId);
 
     /**
      * Delete the sched track.

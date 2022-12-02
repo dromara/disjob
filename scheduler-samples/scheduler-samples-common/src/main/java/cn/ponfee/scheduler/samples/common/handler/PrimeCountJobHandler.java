@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 统计任意0<m<=n的[m, n]的素数个数
+ * 统计任意0<m<=n，[m, n]的素数个数
  *
  * @author Ponfee
  */
@@ -27,7 +27,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
     private static final long DEFAULT_BLOCK_SIZE = 100_000_000L; // 默认以每块1亿分批统计
 
     /**
-     * 拆分任务，自由控制任务的拆分数量
+     * 拆分任务，自定义控制任务的拆分数量
      *
      * @param jobParamString the job param
      * @return task list
@@ -120,7 +120,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
 
         private long m;
         private long n;
-        private Long blockSize; // 分块统计，每块的大小
+        private Long blockSize; // 分块统计：每块的大小
         private int parallel;   // 并行度：子任务数量
     }
 

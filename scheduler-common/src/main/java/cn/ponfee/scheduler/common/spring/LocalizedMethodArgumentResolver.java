@@ -128,11 +128,11 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         */
     }
 
-    private static final boolean isAnnotationPresent(Method method, Class<? extends Annotation> annotationType) {
+    private static boolean isAnnotationPresent(Method method, Class<? extends Annotation> annotationType) {
         return AnnotationUtils.findAnnotation(method, annotationType) != null;
     }
 
-    private static final boolean isAnnotationPresent(Class<?> clazz, Class<? extends Annotation> annotationType) {
+    private static boolean isAnnotationPresent(Class<?> clazz, Class<? extends Annotation> annotationType) {
         return AnnotationUtils.findAnnotation(clazz, annotationType) != null;
     }
 

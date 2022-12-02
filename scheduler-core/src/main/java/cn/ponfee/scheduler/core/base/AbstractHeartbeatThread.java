@@ -71,21 +71,21 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                 return;
             }
 
-            boolean status;
+            boolean result;
             long start = System.currentTimeMillis();
             if (log.isDebugEnabled()) {
                 log.debug("Heartbeat round date time: {}", WrappedFastDateFormat.PATTERN_51.format(new Date(start)));
             }
             try {
                 // true is busy loop
-                status = heartbeat();
+                result = heartbeat();
             } catch (Exception e) {
-                status = false;
+                result = false;
                 log.error("Heartbeat occur error, stopped=" + stopped, e);
             }
 
             long end = System.currentTimeMillis();
-            if (status) {
+            if (result) {
                 if (log.isDebugEnabled()) {
                     log.debug("Heartbeat not do sleep, cost: {}", end - start);
                 }
