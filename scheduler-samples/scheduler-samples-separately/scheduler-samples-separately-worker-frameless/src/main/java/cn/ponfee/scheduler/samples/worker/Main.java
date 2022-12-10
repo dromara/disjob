@@ -75,7 +75,7 @@ public class Main {
             .create()
             .getStringRedisTemplate();
 
-        WorkerRegistry workerRegistry = new RedisWorkerRegistry(stringRedisTemplate);
+        WorkerRegistry workerRegistry = new RedisWorkerRegistry(yamlProperties.getString(JobConstants.SCHEDULER_NAMESPACE), stringRedisTemplate);
         //WorkerRegistry workerRegistry = new ConsulWorkerRegistry("127.0.0.1", 8500, null);
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()

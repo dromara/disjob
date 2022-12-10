@@ -12,8 +12,8 @@ import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
  */
 public class ZookeeperSupervisorRegistry extends ZookeeperServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public ZookeeperSupervisorRegistry(ZookeeperProperties props) {
-        super(props);
+    public ZookeeperSupervisorRegistry(String namespace, ZookeeperProperties props) {
+        super(namespace, props);
     }
 
 }

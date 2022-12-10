@@ -157,11 +157,11 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
             return false;
         }
         ExecuteParam other = (ExecuteParam) o;
-        return operation.get() == other.operation.get()
-            && taskId == other.taskId
-            && trackId == other.trackId
-            && jobId == other.jobId
-            && triggerTime == other.triggerTime;
+        return this.operation.get() == other.operation.get()
+            && this.taskId          == other.taskId
+            && this.trackId         == other.trackId
+            && this.jobId           == other.jobId
+            && this.triggerTime     == other.triggerTime;
     }
 
     /**
@@ -177,10 +177,10 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         if (other == null) {
             return false;
         }
-        return taskId == other.taskId
-            && trackId == other.trackId
-            && jobId == other.jobId
-            && triggerTime == other.triggerTime;
+        return this.taskId      == other.taskId
+            && this.trackId     == other.trackId
+            && this.jobId       == other.jobId
+            && this.triggerTime == other.triggerTime;
     }
 
     @Override
@@ -267,6 +267,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         long jobId = ObjectUtils.cast(map.get("jobId"), long.class);
         long triggerTime = ObjectUtils.cast(map.get("triggerTime"), long.class);
         Worker worker = Worker.castToWorker((Map<String, Object>) map.get("worker"));
+        // operation is null if terminate task
         return new ExecuteParam(operation, taskId, trackId, jobId, triggerTime, worker);
     }
 

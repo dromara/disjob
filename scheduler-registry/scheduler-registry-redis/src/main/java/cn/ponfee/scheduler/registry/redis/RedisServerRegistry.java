@@ -3,16 +3,11 @@ package cn.ponfee.scheduler.registry.redis;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
-import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.EventType;
 import cn.ponfee.scheduler.registry.ServerRegistry;
-import cn.ponfee.scheduler.registry.ServerRole;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
@@ -28,7 +23,7 @@ import static cn.ponfee.scheduler.common.base.Constants.COLON;
 
 /**
  * Registry server based redis.
- * <p>https://english.stackexchange.com/questions/25931/unregister-vs-deregister
+ * <p><a href="https://english.stackexchange.com/questions/25931/unregister-vs-deregister">unregister-vs-deregister</a>
  *
  * @author Ponfee
  */
@@ -36,9 +31,12 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private static final long REDIS_KEY_TTL_MILLIS = 30L * 86400 * 1000;
 
+    private static final int PERIOD_SECONDS = 3;
+
+    private static final String CHANNEL = "channel";
+
     /**
      * Default registry server keep alive in 5000 milliseconds
-     * <p>server register heartbeat usual is 1000 milliseconds
      */
     protected static final int DEFAULT_REGISTRY_KEEP_ALIVE_MILLISECONDS = 5000;
 
@@ -47,8 +45,19 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      */
     protected static final int DEFAULT_DISCOVERY_REFRESH_INTERVAL_MILLISECONDS = 3000;
 
-    private static final String PUBLISH_SUBSCRIBE_CHANNEL = JobConstants.SCHEDULER_KEY_PREFIX + ".channel";
+    /**
+     * Registry publish redis message channel
+     */
+    private final String registryChannel;
 
+    /**
+     * Registry subscribe redis message channel
+     */
+    private final String discoveryChannel;
+
+    /**
+     * Spring string redis template
+     */
     private final StringRedisTemplate stringRedisTemplate;
 
     // -------------------------------------------------Registry
@@ -65,14 +74,17 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private final RedisMessageListenerContainer redisMessageListenerContainer;
 
-    public RedisServerRegistry(StringRedisTemplate stringRedisTemplate,
+    public RedisServerRegistry(String namespace,
+                               StringRedisTemplate stringRedisTemplate,
                                long keepAliveInMillis,
                                long refreshIntervalMilliseconds) {
+        super(namespace, ':');
+        this.registryChannel = registryRootPath + separator + CHANNEL;
+        this.discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
-
         this.keepAliveInMillis = keepAliveInMillis;
         this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_server_registry", true));
-        this.registryScheduledExecutor.scheduleAtFixedRate(() -> {
+        this.registryScheduledExecutor.scheduleWithFixedDelay(() -> {
             if (closed) {
                 return;
             }
@@ -81,7 +93,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             } catch (Throwable t) {
                 log.error("Do scheduled register occur error: " + registered, t);
             }
-        }, 3, 1, TimeUnit.SECONDS);
+        }, PERIOD_SECONDS, PERIOD_SECONDS, TimeUnit.SECONDS);
 
         this.refreshIntervalMilliseconds = refreshIntervalMilliseconds;
 
@@ -89,12 +101,20 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(stringRedisTemplate.getConnectionFactory());
         container.setTaskExecutor(registryScheduledExecutor);
-        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, "handleMessage");
+        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, "subscribe");
         listenerAdapter.afterPropertiesSet();
-        container.addMessageListener(listenerAdapter, new ChannelTopic(PUBLISH_SUBSCRIBE_CHANNEL));
+        container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryChannel));
         container.afterPropertiesSet();
         container.start();
         this.redisMessageListenerContainer = container;
+
+        doRefreshDiscoveryServers();
+    }
+
+    @Override
+    public boolean isConnected() {
+        Boolean result = stringRedisTemplate.execute((RedisCallback<Boolean>) conn -> !conn.isClosed());
+        return result != null && result;
     }
 
     @Override
@@ -126,7 +146,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        Throwables.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRole.key(), server.serialize()));
+        Throwables.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
         Throwables.caught(() -> publish(server, EventType.DEREGISTER));
         log.info("Server deregister: {} - {}", registryRole.name(), server);
     }
@@ -136,7 +156,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public boolean isDiscoveredServerAlive(D server) {
         ZSetOperations<String, String> zsetOps = stringRedisTemplate.opsForZSet();
-        Double aliveTimeMillis = zsetOps.score(discoveryRole.key(), server.serialize());
+        Double aliveTimeMillis = zsetOps.score(discoveryRootPath, server.serialize());
         return aliveTimeMillis != null && aliveTimeMillis > System.currentTimeMillis();
     }
 
@@ -150,18 +170,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
+        Throwables.caught(redisMessageListenerContainer::stop);
+        Throwables.caught(registryScheduledExecutor::shutdownNow);
         registered.forEach(this::deregister);
         registered.clear();
-
-        Throwables.caught(redisMessageListenerContainer::stop);
-
-        try {
-            registryScheduledExecutor.shutdownNow();
-            registryScheduledExecutor.awaitTermination(1, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            log.error("Await registry scheduled executor termination occur error.", e);
-        }
-
         super.close();
     }
 
@@ -173,20 +185,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      * @param message the message
      * @param pattern the pattern
      */
-    public void handleMessage(String message, String pattern) {
+    public void subscribe(String message, String pattern) {
         try {
             int pos = -1;
             String s0 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));
-            //String s1 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));
-            //String s2 = message.substring(pos += 1);
+            String s1 = message.substring(pos += 1);
 
-            ServerRole role = ServerRole.valueOf(s0);
-            //RegistryEvent event = RegistryEvent.valueOf(s1);
-            //D server = role.deserialize(s2);
-            subscribe(null, role, null);
-            if (role == discoveryRole) {
-                log.info("Subscribed message: {} - {}", pattern, message);
-            }
+            subscribe(EventType.valueOf(s0), discoveryRole.deserialize(s1));
+            log.info("Subscribed message: {} - {}", pattern, message);
         } catch (Throwable t) {
             log.error("Parse subscribed message error: " + message + ", " + pattern, t);
         }
@@ -195,17 +201,13 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     // ------------------------------------------------------------------private methods
 
     private void publish(R server, EventType eventType) {
-        String publish = registryRole.name() + COLON + eventType.name() + COLON + server.serialize();
-        stringRedisTemplate.convertAndSend(PUBLISH_SUBSCRIBE_CHANNEL, publish);
+        String publish = eventType.name() + COLON + server.serialize();
+        stringRedisTemplate.convertAndSend(registryChannel, publish);
     }
 
-    private void subscribe(D server, ServerRole role, EventType eventType) {
-        if (role == discoveryRole) {
-            // refresh the discovery
-            synchronized (this) {
-                doRefreshDiscoveryServers();
-            }
-        }
+    private synchronized void subscribe(EventType eventType, D server) {
+        // refresh the discovery
+        doRefreshDiscoveryServers();
     }
 
     private void doRegister(Set<R> servers) {
@@ -222,9 +224,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
             @Override
             public Void execute(RedisOperations operations) {
-                String registryKey = registryRole.key();
-                operations.opsForZSet().add(registryKey, tuples);
-                operations.expire(registryKey, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
+                operations.opsForZSet().add(registryRootPath, tuples);
+                operations.expire(registryRootPath, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
 
                 // in pipelined, must return null
                 return null;
@@ -233,14 +234,13 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void doRefreshDiscoveryServers() {
-        String discoveryKey = discoveryRole.key();
         long now = System.currentTimeMillis();
         List<Object> result = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
             @Override
             public Void execute(RedisOperations operations) {
-                operations.opsForZSet().removeRangeByScore(discoveryKey, 0, now);
-                operations.opsForZSet().rangeByScore(discoveryKey, now, Long.MAX_VALUE);
-                operations.expire(discoveryKey, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
+                operations.opsForZSet().removeRangeByScore(discoveryRootPath, 0, now);
+                operations.opsForZSet().rangeByScore(discoveryRootPath, now, Long.MAX_VALUE);
+                operations.expire(discoveryRootPath, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
 
                 // in pipelined, must return null
                 return null;
@@ -253,13 +253,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             discovered = Collections.emptySet();
         }
 
-        List<D> servers = discovered.stream()
-                                    .map(s -> (D) discoveryRole.deserialize(s))
-                                    .collect(Collectors.toList());
+        List<D> servers = discovered.stream().map(s -> (D) discoveryRole.deserialize(s)).collect(Collectors.toList());
         refreshDiscoveredServers(servers);
 
         updateRefresh();
-        log.debug("Refreshed discovery {}", discoveryRole.name());
     }
 
     private boolean requireRefresh() {

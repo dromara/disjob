@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.registry.consul.configuration;
 
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -7,6 +8,7 @@ import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.consul.ConsulServerRegistry;
 import cn.ponfee.scheduler.registry.consul.ConsulSupervisorRegistry;
 import cn.ponfee.scheduler.registry.consul.ConsulWorkerRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -39,8 +41,9 @@ public class ConsulServerRegistryConfigure {
 
         @Bean
         @ConditionalOnMissingBean
-        public SupervisorRegistry supervisorRegistry(ConsulProperties props) {
-            return new ConsulSupervisorRegistry(props.getHost(), props.getPort(), props.getToken());
+        public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
+                                                     ConsulProperties props) {
+            return new ConsulSupervisorRegistry(namespace, props.getHost(), props.getPort(), props.getToken());
         }
     }
 
@@ -54,8 +57,9 @@ public class ConsulServerRegistryConfigure {
     public static class ConsulWorkerRegistryConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        public WorkerRegistry workerRegistry(ConsulProperties props) {
-            return new ConsulWorkerRegistry(props.getHost(), props.getPort(), props.getToken());
+        public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
+                                             ConsulProperties props) {
+            return new ConsulWorkerRegistry(namespace, props.getHost(), props.getPort(), props.getToken());
         }
     }
 

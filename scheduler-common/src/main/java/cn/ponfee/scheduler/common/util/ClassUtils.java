@@ -235,7 +235,7 @@ public final class ClassUtils {
         Object key = noArgs ? type : Tuple2.of(type, ArrayHashKey.of((Object[]) parameterTypes));
         Constructor<T> constructor = (Constructor<T>) SynchronizedCaches.get(key, CONSTRUCTOR_CACHE, () -> {
             try {
-                return noArgs ? type.getConstructor() : type.getConstructor(parameterTypes);
+                return getConstructor0(type, parameterTypes);
             } catch (Exception ignored) {
                 // No such constructor, use placeholder
                 return Null.BROKEN_CONSTRUCTOR;
@@ -313,7 +313,7 @@ public final class ClassUtils {
         Object key = noArgs ? Tuple2.of(type, methodName) : Tuple3.of(type, methodName, ArrayHashKey.of((Object[]) parameterTypes));
         Method method = SynchronizedCaches.get(key, METHOD_CACHE, () -> {
             try {
-                Method m = noArgs ? type.getMethod(methodName) : type.getMethod(methodName, parameterTypes);
+                Method m = getMethod0(type, methodName, parameterTypes);
                 return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
             } catch (Exception ignored) {
                 // No such method, use placeholder
@@ -425,6 +425,7 @@ public final class ClassUtils {
     }
 
     // -------------------------------------------------------------------------------------------private methods
+
     private static void checkSameLength(Object[] a, Object[] b) {
         if (ArrayUtils.isEmpty(a) && ArrayUtils.isEmpty(b)) {
             return;
@@ -447,6 +448,32 @@ public final class ClassUtils {
             parameterTypes[i] = (args[i] == null) ? null : args[i].getClass();
         }
         return parameterTypes;
+    }
+
+    private static Method getMethod0(Class<?> type, String methodName, Class<?>[] parameterTypes) throws Exception {
+        try {
+            return type.getMethod(methodName, parameterTypes);
+        } catch (Exception e) {
+            try {
+                return type.getDeclaredMethod(methodName, parameterTypes);
+            } catch (Exception ignored) {
+                // ignored
+            }
+            throw e;
+        }
+    }
+
+    private static <T> Constructor<T> getConstructor0(Class<T> type, Class<?>[] parameterTypes) throws Exception {
+        try {
+            return type.getConstructor(parameterTypes);
+        } catch (Exception e) {
+            try {
+                return type.getDeclaredConstructor(parameterTypes);
+            } catch (Exception ignored) {
+                // ignored
+            }
+            throw e;
+        }
     }
 
     private static <T> Constructor<T> obtainConstructor(Class<T> type, Class<?>[] actualTypes) {

@@ -14,7 +14,7 @@ public interface JobSplitter {
 
     /**
      * Provides default tasks split.
-     * <p>Subclass can override this method to provide.
+     * <p>Subclass can override this method to customize implementation.
      *
      * @param jobParam the job param
      * @return list of SplitTask

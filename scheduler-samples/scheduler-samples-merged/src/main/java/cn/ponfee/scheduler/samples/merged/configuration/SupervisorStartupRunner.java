@@ -1,12 +1,11 @@
 package cn.ponfee.scheduler.samples.merged.configuration;
 
-import cn.ponfee.scheduler.common.base.SnowflakeIdGenerator;
+import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.SupervisorStartup;
-import cn.ponfee.scheduler.supervisor.configuration.EnableWorkerLocal;
 import cn.ponfee.scheduler.supervisor.configuration.EnableWorkerRemote;
 import cn.ponfee.scheduler.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.scheduler.supervisor.manager.JobManager;
@@ -27,7 +26,7 @@ import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEA
  *
  * @author Ponfee
  */
-@Import(SnowflakeIdGenerator.class)
+@Import(Snowflake.class)
 @EnableWorkerRemote // EnableWorkerRemote、EnableWorkerLocal
 @Component
 public class SupervisorStartupRunner implements ApplicationRunner, DisposableBean {

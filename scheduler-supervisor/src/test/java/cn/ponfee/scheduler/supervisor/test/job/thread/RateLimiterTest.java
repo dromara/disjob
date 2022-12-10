@@ -1,6 +1,6 @@
 package cn.ponfee.scheduler.supervisor.test.job.thread;
 
-import cn.ponfee.scheduler.common.concurrent.MultithreadExecutors;
+import cn.ponfee.scheduler.common.concurrent.Threads;
 import com.google.common.util.concurrent.RateLimiter;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +23,7 @@ public class RateLimiterTest {
         thread = new Thread();
         thread.start();
         Thread.sleep(100);
-        Assertions.assertTrue(MultithreadExecutors.isStopped(thread));
+        Assertions.assertTrue(Threads.isStopped(thread));
         thread.join();
     }
 
@@ -32,10 +32,10 @@ public class RateLimiterTest {
         MyThread1 thread = new MyThread1();
         thread.start();
         Thread.sleep(2000);
-        Assertions.assertFalse(MultithreadExecutors.isStopped(thread));
-        MultithreadExecutors.stopThread(thread, 1, 100, 0);
+        Assertions.assertFalse(Threads.isStopped(thread));
+        Threads.stopThread(thread, 1, 100, 0);
         Thread.sleep(100);
-        Assertions.assertTrue(MultithreadExecutors.isStopped(thread));
+        Assertions.assertTrue(Threads.isStopped(thread));
         thread.join();
     }
 
@@ -44,10 +44,10 @@ public class RateLimiterTest {
         MyThread2 thread = new MyThread2();
         thread.start();
         Thread.sleep(2000);
-        Assertions.assertFalse(MultithreadExecutors.isStopped(thread));
+        Assertions.assertFalse(Threads.isStopped(thread));
         thread.interrupt();
         Thread.sleep(1000);
-        Assertions.assertFalse(MultithreadExecutors.isStopped(thread));
+        Assertions.assertFalse(Threads.isStopped(thread));
         // RateLimiter不会interrupt
     }
 

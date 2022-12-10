@@ -1,6 +1,6 @@
 package cn.ponfee.scheduler.core.base;
 
-import cn.ponfee.scheduler.common.concurrent.MultithreadExecutors;
+import cn.ponfee.scheduler.common.concurrent.Threads;
 import cn.ponfee.scheduler.common.date.WrappedFastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +126,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
      * @return {@code true} if stopped.
      */
     public final boolean isStopped() {
-        return MultithreadExecutors.isStopped(this);
+        return Threads.isStopped(this);
     }
 
     @Override
@@ -151,9 +151,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
         }
 
         int count = 10;
-        return MultithreadExecutors.stopThread(
-            this, count, interval / count, joinMillis
-        );
+        return Threads.stopThread(this, count, interval / count, joinMillis);
     }
 
     /**

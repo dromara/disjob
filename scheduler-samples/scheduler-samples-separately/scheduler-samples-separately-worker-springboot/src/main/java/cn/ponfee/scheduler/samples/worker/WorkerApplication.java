@@ -5,6 +5,10 @@ import cn.ponfee.scheduler.dispatch.http.configuration.EnableHttpTaskDispatching
 import cn.ponfee.scheduler.dispatch.redis.configuration.EnableRedisTaskDispatching;
 import cn.ponfee.scheduler.registry.consul.configuration.ConsulProperties;
 import cn.ponfee.scheduler.registry.consul.configuration.EnableConsulServerRegistry;
+import cn.ponfee.scheduler.registry.etcd.configuration.EnableEtcdServerRegistry;
+import cn.ponfee.scheduler.registry.etcd.configuration.EtcdProperties;
+import cn.ponfee.scheduler.registry.nacos.configuration.EnableNacosServerRegistry;
+import cn.ponfee.scheduler.registry.nacos.configuration.NacosProperties;
 import cn.ponfee.scheduler.registry.redis.configuration.EnableRedisServerRegistry;
 import cn.ponfee.scheduler.registry.zookeeper.configuration.EnableZookeeperServerRegistry;
 import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
@@ -24,10 +28,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
     WorkerProperties.class,
     HttpProperties.class,
     ConsulProperties.class,
-    ZookeeperProperties.class
+    NacosProperties.class,
+    ZookeeperProperties.class,
+    EtcdProperties.class,
 })
 @EnableWorker
-@EnableZookeeperServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableZookeeperServerRegistry
+@EnableNacosServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry
 @EnableRedisTaskDispatching // EnableRedisTaskDispatching、EnableHttpTaskDispatching
 @SpringBootApplication(
     exclude = {

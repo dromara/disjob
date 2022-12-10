@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static cn.ponfee.scheduler.common.base.exception.CheckedThrowing.ThrowingRunnable;
+
 /**
  * Throwable utilities.
  *
@@ -44,7 +46,7 @@ public class Throwables {
         return "error: <" + ClassUtils.getName(throwable.getClass()) + ">";
     }
 
-    public static void caught(Runnable runnable) {
+    public static <T extends Throwable> void caught(ThrowingRunnable<T> runnable) {
         try {
             runnable.run();
         } catch (Throwable t) {

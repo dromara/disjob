@@ -3,8 +3,8 @@ package cn.ponfee.scheduler.dispatch.redis;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.scheduler.common.spring.RedisKeyRenewal;
 import cn.ponfee.scheduler.common.lock.RedisLock;
+import cn.ponfee.scheduler.common.spring.RedisKeyRenewal;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
@@ -89,7 +89,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         if (!start.compareAndSet(false, true)) {
             return;
         }
-        receiveTaskScheduledExecutor.scheduleAtFixedRate(() -> {
+        receiveTaskScheduledExecutor.scheduleWithFixedDelay(() -> {
             try {
                 doReceive();
             } catch (Exception e) {

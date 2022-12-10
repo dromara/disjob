@@ -2,8 +2,8 @@ package cn.ponfee.scheduler.worker.base;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.base.model.Result;
-import cn.ponfee.scheduler.common.concurrent.MultithreadExecutors;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.scheduler.common.concurrent.Threads;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
@@ -41,9 +41,9 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     private final static int ERROR_MSG_MAX_LENGTH = 2048;
 
     /**
-     * This jdk thread pool for asnyc suspend(pause or cancel) task
+     * This jdk thread pool for asynchronous to stop(pause or cancel) task
      */
-    private static final ThreadPoolExecutor SUSPEND_TASK_POOL = ThreadPoolExecutors.create(
+    private static final ThreadPoolExecutor STOP_TASK_POOL = ThreadPoolExecutors.create(
         1, 10, 300, 50, ThreadPoolExecutors.ALWAYS_CALLER_RUNS
     );
 
@@ -119,39 +119,39 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         if (param.operation() == Operations.TRIGGER) {
             return taskQueue.offerLast(param);
         } else {
-            SUSPEND_TASK_POOL.execute(() -> suspend(param));
+            STOP_TASK_POOL.execute(() -> stop(param));
             return true;
         }
     }
 
     /**
-     * Suspend(Pause or Cancel) specified task
+     * Stop(Pause or Cancel) specified task
      *
-     * @param suspendParam the suspends task param
+     * @param stopParam the stops task param
      */
-    private void suspend(ExecuteParam suspendParam) {
-        Operations toOps = suspendParam.operation();
-        Assert.isTrue(toOps != null && toOps != Operations.TRIGGER, "Invalid suspend operation: " + toOps);
+    private void stop(ExecuteParam stopParam) {
+        Operations toOps = stopParam.operation();
+        Assert.isTrue(toOps != null && toOps != Operations.TRIGGER, "Invalid stop operation: " + toOps);
 
         if (closed) {
             return;
         }
 
-        long taskId = suspendParam.getTaskId();
-        Pair<WorkerThread, ExecuteParam> pair = activePool.suspendTask(taskId, toOps);
+        long taskId = stopParam.getTaskId();
+        Pair<WorkerThread, ExecuteParam> pair = activePool.stopTask(taskId, toOps);
         if (pair == null) {
-            LOG.warn("Not found suspendable task {} - {}", taskId, toOps);
+            LOG.warn("Not found stoppable task {} - {}", taskId, toOps);
             try {
-                terminateTask(supervisorClient, suspendParam, toOps);
+                terminateTask(supervisorClient, stopParam, toOps);
             } catch (Exception e) {
-                LOG.error("Abort suspend task occur error: {} - {}", taskId, toOps);
+                LOG.error("Abort stopped task occur error: {} - {}", taskId, toOps);
             }
             return;
         }
 
         WorkerThread thread = pair.getLeft();
         ExecuteParam param = pair.getRight();
-        LOG.info("Suspend task: {} - {} - {}", taskId, toOps, thread.getName());
+        LOG.info("Stop task: {} - {} - {}", taskId, toOps, thread.getName());
         try {
             param.interrupt();
             // stop the work thread
@@ -160,7 +160,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             try {
                 terminateTask(supervisorClient, param, toOps);
             } catch (Exception e) {
-                LOG.error("Normal suspend task occur error: {} - {} - {}", taskId, toOps, thread.getName());
+                LOG.error("Normal stop task occur error: {} - {} - {}", taskId, toOps, thread.getName());
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
@@ -190,7 +190,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
         // 2、do close
         // 2.1、stop this boss thread
-        Throwables.caught(() -> MultithreadExecutors.stopThread(this, 0, 0, 200));
+        Throwables.caught(() -> Threads.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
         Throwables.caught(() -> idlePool.forEach(e -> stopWorkerThread(e, true)));
@@ -201,7 +201,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         threadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        Throwables.caught(() -> ThreadPoolExecutors.shutdown(SUSPEND_TASK_POOL, 1));
+        Throwables.caught(() -> ThreadPoolExecutors.shutdown(STOP_TASK_POOL, 1));
 
         LOG.info("Close worker thread pool end.");
     }
@@ -474,7 +474,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             pool.put(param.getTaskId(), thread);
         }
 
-        synchronized Pair<WorkerThread, ExecuteParam> suspendTask(long taskId, Operations toOps) {
+        synchronized Pair<WorkerThread, ExecuteParam> stopTask(long taskId, Operations toOps) {
             WorkerThread thread = pool.get(taskId);
             ExecuteParam param;
             if (thread == null || (param = thread.executingParam()) == null) {
@@ -647,9 +647,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 return false;
             }
 
-            return MultithreadExecutors.stopThread(
-                this, sleepCount, sleepMillis, joinMillis
-            );
+            return Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
         }
 
         public final boolean updateExecuteParam(ExecuteParam expect, ExecuteParam update) {
@@ -665,7 +663,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         }
 
         public final boolean isStopped() {
-            return MultithreadExecutors.isStopped(this);
+            return Threads.isStopped(this);
         }
 
         @Override
@@ -795,7 +793,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     try {
                         result = futureTask.get(schedJob.getExecuteTimeout(), TimeUnit.MILLISECONDS);
                     } finally {
-                        MultithreadExecutors.stopThread(futureTaskThread, 0, 0, 0);
+                        Threads.stopThread(futureTaskThread, 0, 0, 0);
                     }
                 } else {
                     result = taskExecutor.execute(supervisorClient);

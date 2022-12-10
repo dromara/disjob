@@ -1,7 +1,6 @@
 package cn.ponfee.scheduler.registry.zookeeper;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
-import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;
@@ -11,6 +10,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 /**
@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
  */
 public abstract class ZookeeperServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
-    private final String registryRootPath;
-    private final String discoveryRootPath;
-
     private final CuratorFrameworkClient client;
 
-    protected ZookeeperServerRegistry(ZookeeperProperties props) {
-        this.registryRootPath  = Files.UNIX_FOLDER_SEPARATOR + registryRole.key();
-        this.discoveryRootPath = Files.UNIX_FOLDER_SEPARATOR + discoveryRole.key();
+    protected ZookeeperServerRegistry(String namespace, ZookeeperProperties props) {
+        super(namespace, '/');
+        // zookeeper parent path must start with "/"
+        String registryRootPath0 = separator + registryRootPath;
+        String discoveryRootPath0 = separator + discoveryRootPath;
 
+        CountDownLatch latch = new CountDownLatch(1);
         try {
             this.client = new CuratorFrameworkClient(props, client0 -> {
                 if (closed) {
@@ -42,13 +42,20 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                     }
                 }
             });
-            client.createPersistent(registryRootPath);
-            client.createPersistent(discoveryRootPath);
-            //client.listenChildChanged(discoveryRootPath);
-            client.watchChildChanged(discoveryRootPath, this::doRefreshDiscoveryServers);
+            client.createPersistent(registryRootPath0);
+            client.createPersistent(discoveryRootPath0);
+            //client.listenChildChanged(discoveryRootPath0);
+            client.watchChildChanged(discoveryRootPath0, latch, this::doRefreshDiscoveryServers);
         } catch (Exception e) {
             throw new IllegalStateException("Connect zookeeper failed: " + props, e);
+        } finally {
+            latch.countDown();
         }
+    }
+
+    @Override
+    public final boolean isConnected() {
+        return client.isConnected();
     }
 
     // ------------------------------------------------------------------Registry
@@ -93,14 +100,13 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         registered.forEach(this::deregister);
         Throwables.caught(client::close);
         registered.clear();
-
         super.close();
     }
 
     // ------------------------------------------------------------------private methods
 
     private String buildRegistryPath(R server) {
-        return registryRootPath + Files.UNIX_FOLDER_SEPARATOR + server.serialize();
+        return separator + registryRootPath + separator + server.serialize();
     }
 
     private synchronized void doRefreshDiscoveryServers(List<String> list) {

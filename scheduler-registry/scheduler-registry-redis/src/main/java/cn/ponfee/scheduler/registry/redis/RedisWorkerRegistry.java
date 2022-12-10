@@ -12,18 +12,20 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  */
 public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public RedisWorkerRegistry(StringRedisTemplate stringRedisTemplate) {
+    public RedisWorkerRegistry(String namespace, StringRedisTemplate stringRedisTemplate) {
         this(
+            namespace,
             stringRedisTemplate,
             DEFAULT_REGISTRY_KEEP_ALIVE_MILLISECONDS,
             DEFAULT_DISCOVERY_REFRESH_INTERVAL_MILLISECONDS
         );
     }
 
-    public RedisWorkerRegistry(StringRedisTemplate stringRedisTemplate,
+    public RedisWorkerRegistry(String namespace,
+                               StringRedisTemplate stringRedisTemplate,
                                long keepAliveInMillis,
                                long refreshIntervalMilliseconds) {
-        super(stringRedisTemplate, keepAliveInMillis, refreshIntervalMilliseconds);
+        super(namespace, stringRedisTemplate, keepAliveInMillis, refreshIntervalMilliseconds);
     }
 
 }

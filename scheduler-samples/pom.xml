@@ -34,7 +34,17 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-registry-nacos</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-zookeeper</artifactId>
+      <version>${revision}</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-registry-etcd</artifactId>
       <version>${revision}</version>
     </dependency>
     <dependency>

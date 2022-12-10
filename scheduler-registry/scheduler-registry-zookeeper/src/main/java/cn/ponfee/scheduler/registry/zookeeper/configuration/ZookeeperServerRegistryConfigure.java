@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.registry.zookeeper.configuration;
 
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -7,6 +8,7 @@ import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.zookeeper.ZookeeperServerRegistry;
 import cn.ponfee.scheduler.registry.zookeeper.ZookeeperSupervisorRegistry;
 import cn.ponfee.scheduler.registry.zookeeper.ZookeeperWorkerRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -38,8 +40,9 @@ public class ZookeeperServerRegistryConfigure {
     public static class ZookeeperSupervisorRegistryConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        public SupervisorRegistry supervisorRegistry(ZookeeperProperties props) {
-            return new ZookeeperSupervisorRegistry(props);
+        public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
+                                                     ZookeeperProperties props) {
+            return new ZookeeperSupervisorRegistry(namespace, props);
         }
     }
 
@@ -53,8 +56,9 @@ public class ZookeeperServerRegistryConfigure {
     public static class ZookeeperWorkerRegistryConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        public WorkerRegistry workerRegistry(ZookeeperProperties props) {
-            return new ZookeeperWorkerRegistry(props);
+        public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
+                                             ZookeeperProperties props) {
+            return new ZookeeperWorkerRegistry(namespace, props);
         }
     }
 

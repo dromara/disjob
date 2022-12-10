@@ -11,8 +11,8 @@ import cn.ponfee.scheduler.registry.WorkerRegistry;
  */
 public class ConsulWorkerRegistry extends ConsulServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public ConsulWorkerRegistry(String host, int port, String token) {
-        super(host, port, token);
+    public ConsulWorkerRegistry(String namespace, String host, int port, String token) {
+        super(namespace, host, port, token);
     }
 
 }

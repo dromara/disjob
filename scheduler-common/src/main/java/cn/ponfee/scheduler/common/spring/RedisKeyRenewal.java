@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Renew redis key ttl based spring redis template.
  *
- * @author ponfee.fu
+ * @author Ponfee
  */
 public class RedisKeyRenewal {
 

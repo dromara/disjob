@@ -7,7 +7,9 @@ import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
@@ -58,5 +60,17 @@ public class TreeMapTest {
         Assert.assertEquals(beforeFull, afterFull);
     }
 
+    @Test
+    public void testConcurrentHashSet() {
+        Set<String> set = ConcurrentHashMap.newKeySet();
+        Assert.assertTrue(set.isEmpty());
 
+        set.add("a");
+        set.add("b");
+        Assert.assertEquals(set.size(), 2);
+
+        set.add("b");
+        set.add("c");
+        Assert.assertEquals(set.size(), 3);
+    }
 }

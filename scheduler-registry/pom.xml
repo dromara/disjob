@@ -19,7 +19,9 @@
     <module>scheduler-registry-api</module>
     <module>scheduler-registry-redis</module>
     <module>scheduler-registry-consul</module>
+    <module>scheduler-registry-nacos</module>
     <module>scheduler-registry-zookeeper</module>
+    <module>scheduler-registry-etcd</module>
   </modules>
 
 </project>

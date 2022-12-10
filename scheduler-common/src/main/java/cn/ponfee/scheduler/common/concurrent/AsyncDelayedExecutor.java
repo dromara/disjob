@@ -66,7 +66,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
     public void doStop() {
         if (stopped.compareAndSet(false, true)) {
-            MultithreadExecutors.stopThread(this, 0, 0, 1000);
+            Threads.stopThread(this, 0, 0, 1000);
         }
     }
 

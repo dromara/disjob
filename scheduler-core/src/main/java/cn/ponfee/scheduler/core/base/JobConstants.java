@@ -18,6 +18,11 @@ public class JobConstants {
     public static final String SCHEDULER_KEY_PREFIX = "distributed.scheduler";
 
     /**
+     * Scheduler configuration namespace
+     */
+    public static final String SCHEDULER_NAMESPACE = SCHEDULER_KEY_PREFIX + ".namespace";
+
+    /**
      * Scheduler worker configuration key prefix.
      */
     public static final String WORKER_KEY_PREFIX = SCHEDULER_KEY_PREFIX + ".worker";

@@ -57,14 +57,14 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
     private boolean processExpireWaiting(Date now) {
         long expireTime = now.getTime() - EXPIRE_WAITING_MILLISECONDS;
         List<SchedTrack> tracks = jobManager.findExpireWaiting(expireTime, new Date(expireTime), QUERY_BATCH_SIZE);
-        if (tracks == null || tracks.isEmpty()) {
+        if (CollectionUtils.isEmpty(tracks)) {
             return false;
         }
 
         for (SchedTrack track : tracks) {
             processExpireWaiting(track, now);
         }
-        return true;
+        return tracks.size() == QUERY_BATCH_SIZE;
     }
 
     private void processExpireWaiting(SchedTrack track, Date now) {
@@ -117,18 +117,19 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
 
         long expireTime = now.getTime() - EXPIRE_RUNNING_MILLISECONDS;
         List<SchedTrack> tracks = jobManager.findExpireRunning(expireTime, new Date(expireTime), QUERY_BATCH_SIZE);
-        boolean noResult = CollectionUtils.isEmpty(tracks);
-        if (noResult || tracks.size() < QUERY_BATCH_SIZE) {
+        if (CollectionUtils.isEmpty(tracks) || tracks.size() < QUERY_BATCH_SIZE) {
+            // refresh next scan time
             this.nextScanExpireRunningTimeMillis = now.getTime() + EXPIRE_RUNNING_MILLISECONDS;
         }
-        if (noResult) {
+        if (CollectionUtils.isEmpty(tracks)) {
             return false;
         }
 
         for (SchedTrack track : tracks) {
             processExpireRunning(track, now);
         }
-        return true;
+
+        return tracks.size() == QUERY_BATCH_SIZE;
     }
 
     private void processExpireRunning(SchedTrack track, Date now) {

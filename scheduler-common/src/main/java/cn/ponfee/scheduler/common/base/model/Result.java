@@ -31,7 +31,8 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
      */
     private T data;
 
-    // -------------------------------------------constructor methods
+    // -----------------------------------------------constructor methods
+
     public Result() {
         // code is null
         // retain no-arg constructor for help deserialization
@@ -43,7 +44,8 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         this.data = data;
     }
 
-    // -------------------------------------------other methods
+    // -----------------------------------------------other methods
+
     public <E> Result<E> cast() {
         return (Result<E>) this;
     }
@@ -56,33 +58,53 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         return new Result<>(code, msg, mapper.apply(data));
     }
 
-    // ---------------------------------static success methods
+    // -----------------------------------------------static success methods
+
     public static Result<Void> success() {
         return SUCCESS;
     }
 
     public static <T> Result<T> success(T data) {
-        return success(Success.MSG, data);
+        return new Result<>(Success.CODE, Success.MSG, data);
     }
 
-    public static <T> Result<T> success(String msg, T data) {
-        return new Result<>(Success.CODE, msg, data);
-    }
+    // -----------------------------------------------static failure methods
 
-    // ---------------------------------static failure methods
     public static <T> Result<T> failure(CodeMsg cm) {
-        return failure(cm.getCode(), cm.getMsg(), null);
+        return failure(cm.getCode(), cm.getMsg());
+    }
+
+    public static <T> Result<T> failure(int code) {
+        return failure(code, null);
     }
 
     public static <T> Result<T> failure(int code, String msg) {
-        return failure(code, msg, null);
+        if (code == Success.CODE) {
+            throw new IllegalStateException("Failure code '" + code + "' cannot be '" + Success.CODE + "'.");
+        }
+        return new Result<>(code, msg, null);
     }
 
-    public static <T> Result<T> failure(int code, String msg, T data) {
+    // -----------------------------------------------of operations
+
+    public static <T> Result<T> of(CodeMsg cm) {
+        return new Result<>(cm.getCode(), cm.getMsg(), null);
+    }
+
+    public static <T> Result<T> of(CodeMsg cm, T data) {
+        return new Result<>(cm.getCode(), cm.getMsg(), data);
+    }
+
+    public static <T> Result<T> of(int code, String msg) {
+        return new Result<>(code, msg, null);
+    }
+
+    public static <T> Result<T> of(int code,String msg, T data) {
         return new Result<>(code, msg, data);
     }
 
-    // -------------------------------------------------getter/setter
+    // -----------------------------------------------getter/setter
+
     @Override
     public int getCode() {
         return code;
@@ -118,6 +140,8 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
     public boolean isFailure() {
         return !isSuccess();
     }
+
+    // -----------------------------------------------static class
 
     /**
      * Success Result

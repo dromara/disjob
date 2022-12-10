@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.registry.redis.configuration;
 
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -7,6 +8,7 @@ import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisServerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisSupervisorRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -49,8 +51,9 @@ public class RedisServerRegistryConfigure {
          */
         @Bean
         @ConditionalOnMissingBean
-        public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate) {
-            return new RedisSupervisorRegistry(stringRedisTemplate);
+        public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
+                                                     StringRedisTemplate stringRedisTemplate) {
+            return new RedisSupervisorRegistry(namespace, stringRedisTemplate);
         }
     }
 
@@ -64,8 +67,9 @@ public class RedisServerRegistryConfigure {
     public static class RedisWorkerRegistryConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        public WorkerRegistry workerRegistry(StringRedisTemplate stringRedisTemplate) {
-            return new RedisWorkerRegistry(stringRedisTemplate);
+        public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
+                                             StringRedisTemplate stringRedisTemplate) {
+            return new RedisWorkerRegistry(namespace, stringRedisTemplate);
         }
     }
 

@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.supervisor.config;
 
 import cn.ponfee.scheduler.common.base.IdGenerator;
-import cn.ponfee.scheduler.common.base.SnowflakeIdGenerator;
+import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.WorkerLocal;
@@ -36,7 +36,7 @@ public class TestConfiguration {
      */
     @Bean
     public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate) {
-        return new RedisSupervisorRegistry(stringRedisTemplate);
+        return new RedisSupervisorRegistry("", stringRedisTemplate);
     }
 
     @Bean
@@ -48,7 +48,7 @@ public class TestConfiguration {
 
     @Bean
     public IdGenerator idGenerator() {
-        return new SnowflakeIdGenerator(1);
+        return new Snowflake(1);
     }
 
     @Bean(JobConstants.SPRING_BEAN_NAME_WORKER_CLIENT)

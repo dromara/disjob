@@ -11,8 +11,8 @@ import cn.ponfee.scheduler.registry.SupervisorRegistry;
  */
 public class ConsulSupervisorRegistry extends ConsulServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public ConsulSupervisorRegistry(String host, int port, String token) {
-        super(host, port, token);
+    public ConsulSupervisorRegistry(String namespace, String host, int port, String token) {
+        super(namespace, host, port, token);
     }
 
 }

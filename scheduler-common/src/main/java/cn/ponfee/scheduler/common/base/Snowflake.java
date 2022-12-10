@@ -29,10 +29,11 @@ import cn.ponfee.scheduler.common.util.Maths;
  *
  * @author Ponfee
  */
-public final class SnowflakeIdGenerator implements IdGenerator {
+public final class Snowflake implements IdGenerator {
 
     // Long.toBinaryString(Long.MAX_VALUE).length()
-    private static final int SIZE = Long.SIZE - 1; // 63位（除去最开头的一个符号位）
+
+    private static final int SIZE = Long.SIZE - 1;      // 63位（除去最开头的一个符号位）
     private static final long TWEPOCH = 1514736000000L; // 起始基准时间点(2018-01-01)
 
     private final int datacenterId; // 数据中心ID
@@ -48,9 +49,9 @@ public final class SnowflakeIdGenerator implements IdGenerator {
     private long lastTimestamp = -1L;
     private long sequence      = 0L;
 
-    public SnowflakeIdGenerator(int workerId, int datacenterId,
-                                int sequenceBits, int workerIdBits,
-                                int datacenterIdBits) {
+    public Snowflake(int workerId, int datacenterId,
+                     int sequenceBits, int workerIdBits,
+                     int datacenterIdBits) {
         long maxWorkerId = Maths.bitsMask(workerIdBits);
         if (workerId > maxWorkerId || workerId < 0) {
             throw new IllegalArgumentException(
@@ -90,11 +91,11 @@ public final class SnowflakeIdGenerator implements IdGenerator {
      * @param workerId
      * @param datacenterId
      */
-    public SnowflakeIdGenerator(int workerId, int datacenterId) {
+    public Snowflake(int workerId, int datacenterId) {
         this(workerId, datacenterId, 12, 5, 5);
     }
 
-    public SnowflakeIdGenerator() {
+    public Snowflake() {
         this(1, 0, 14, 5, 0);
     }
 
@@ -106,7 +107,7 @@ public final class SnowflakeIdGenerator implements IdGenerator {
      * 
      * @param workerId
      */
-    public SnowflakeIdGenerator(int workerId) {
+    public Snowflake(int workerId) {
         this(workerId, 0, 14, 5, 0);
     }
 
@@ -127,13 +128,15 @@ public final class SnowflakeIdGenerator implements IdGenerator {
             // sequence递增
             this.sequence = (this.sequence + 1) & this.sequenceMask;
             if (this.sequence == 0) {
-                // 已经到最大，则获取下一个时间点的毫秒数
-                timestamp = tilNextMillis(this.lastTimestamp);
+                // 当前毫秒的sequence已用完，需要循环等待获取下一毫秒
+                timestamp = untilNextMillis(this.lastTimestamp);
+                this.lastTimestamp = timestamp;
             }
         } else {
+            // 上一毫秒的sequence没有超用情况，当前毫秒第一次使用
             this.sequence = 0L;
+            this.lastTimestamp = timestamp;
         }
-        this.lastTimestamp = timestamp;
 
         return (((timestamp - TWEPOCH) << this.timestampShift) & this.timestampMask)
              | ((long) this.datacenterId << this.datacenterIdShift)
@@ -147,7 +150,7 @@ public final class SnowflakeIdGenerator implements IdGenerator {
      * @param lastTimestamp the lastTimestamp
      * @return
      */
-    private long tilNextMillis(long lastTimestamp) {
+    private long untilNextMillis(long lastTimestamp) {
         long timestamp;
         do {
             timestamp = timeGen();

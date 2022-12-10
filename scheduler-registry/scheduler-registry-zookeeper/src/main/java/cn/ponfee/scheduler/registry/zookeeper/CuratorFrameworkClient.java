@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.registry.zookeeper;
 
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -63,12 +65,18 @@ public class CuratorFrameworkClient implements AutoCloseable {
     }
 
     public void createEphemeral(String path) throws Exception {
+        createEphemeral(path, true);
+    }
+
+    private void createEphemeral(String path, boolean retryable) throws Exception {
         try {
             curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (KeeperException.NodeExistsException e) {
             LOG.debug("Node path already exists: {} - {}", path, e.getMessage());
-            deletePath(path);
-            createEphemeral(path);
+            if (retryable) {
+                deletePath(path);
+                createEphemeral(path, false);
+            }
         }
     }
 
@@ -81,11 +89,17 @@ public class CuratorFrameworkClient implements AutoCloseable {
     }
 
     public void createEphemeral(String path, byte[] data) throws Exception {
+        createEphemeral(path, data, true);
+    }
+
+    private void createEphemeral(String path, byte[] data, boolean retryable) throws Exception {
         try {
             curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(path, data);
         } catch (KeeperException.NodeExistsException ignored) {
-            deletePath(path);
-            createEphemeral(path, data);
+            if (retryable) {
+                deletePath(path);
+                createEphemeral(path, data, false);
+            }
         }
     }
 
@@ -121,12 +135,12 @@ public class CuratorFrameworkClient implements AutoCloseable {
         }
     }
 
-    public synchronized void watchChildChanged(String path, Consumer<List<String>> processor) throws Exception {
+    public synchronized void watchChildChanged(String path, CountDownLatch latch, Consumer<List<String>> processor) throws Exception {
         if (childWatchers.containsKey(path)) {
             throw new IllegalStateException("Path already watched: " + path);
         }
 
-        ChildChangedWatcher watcher = new ChildChangedWatcher(path, processor);
+        ChildChangedWatcher watcher = new ChildChangedWatcher(path, latch, processor);
         List<String> servers = curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
         childWatchers.put(path, watcher);
         processor.accept(servers);
@@ -188,6 +202,11 @@ public class CuratorFrameworkClient implements AutoCloseable {
     }
 
     public interface ReconnectCallback {
+        /**
+         * callback
+         *
+         * @param client the client
+         */
         void call(CuratorFrameworkClient client);
     }
 
@@ -198,10 +217,12 @@ public class CuratorFrameworkClient implements AutoCloseable {
      */
     private class ChildChangedWatcher implements CuratorWatcher {
         private final String path;
+        private final CountDownLatch latch;
         private volatile Consumer<List<String>> processor;
 
-        public ChildChangedWatcher(String path, Consumer<List<String>> processor) {
+        public ChildChangedWatcher(String path, CountDownLatch latch, Consumer<List<String>> processor) {
             this.path = path;
+            this.latch = latch;
             this.processor = processor;
         }
 
@@ -211,6 +232,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
 
         @Override
         public void process(WatchedEvent event) throws Exception {
+            Throwables.caught(latch::await);
             LOG.info("Watched event type: " + event.getType());
             if (processor == null || event.getType() == Watcher.Event.EventType.None) {
                 return;
@@ -250,10 +272,6 @@ public class CuratorFrameworkClient implements AutoCloseable {
                 reconnectCallback.call(CuratorFrameworkClient.this);
             }
         }
-
-        private String hex(long number) {
-            return Long.toHexString(number);
-        }
     }
 
     private static RetryPolicy buildRetryPolicy(ZookeeperProperties props) {
@@ -263,4 +281,9 @@ public class CuratorFrameworkClient implements AutoCloseable {
             props.getMaxSleepMs()
         );
     }
+
+    private static String hex(long number) {
+        return Long.toHexString(number);
+    }
+
 }
