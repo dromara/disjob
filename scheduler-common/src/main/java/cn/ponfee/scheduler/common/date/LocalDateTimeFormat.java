@@ -7,18 +7,19 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-import static cn.ponfee.scheduler.common.date.WrappedFastDateFormat.*;
+import static cn.ponfee.scheduler.common.date.JavaUtilDateFormat.*;
 
 /**
- * Convert to {@code java.time.LocalDateTime}
- *
+ * Convert to {@code java.time.LocalDateTime}, none zone offset.
  * <p>unix timestamp只支持对10位(秒)和13位(毫秒)做解析
+ * <p>时区：LocalDateTime[无]、Date[0时区]、Instant[0时区]、ZonedDateTime[自带]
  *
  * @author Ponfee
  * @ThreadSafe
+ * @see JavaUtilDateFormat#parseToLocalDateTime(String)
  */
 @ThreadSafe
-public class WrappedDateTimeFormatter {
+public class LocalDateTimeFormat {
 
     public static final DateTimeFormatter PATTERN_01 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
@@ -32,55 +33,26 @@ public class WrappedDateTimeFormatter {
     public static final DateTimeFormatter PATTERN_23 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     public static final DateTimeFormatter PATTERN_24 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS");
 
-
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss
      */
-    public static final WrappedDateTimeFormatter DEFAULT = new WrappedDateTimeFormatter(Dates.DEFAULT_DATE_FORMAT);
+    public static final LocalDateTimeFormat DEFAULT = new LocalDateTimeFormat(Dates.DEFAULT_DATE_FORMAT);
 
     /**
      * 兜底解析器
      */
-    private final DateTimeFormatter backstopFormatter;
+    private final DateTimeFormatter backstopFormat;
 
-    /**
-     * 时区偏移量：UTC为0
-     *
-     * @see ZoneOffset#ofHours(int)
-     */
-    private final ZoneOffset zoneOffset;
-
-    public WrappedDateTimeFormatter() {
-        this(Dates.DEFAULT_DATE_FORMAT);
-    }
-
-    public WrappedDateTimeFormatter(String pattern) {
+    public LocalDateTimeFormat(String pattern) {
         this(DateTimeFormatter.ofPattern(pattern));
     }
 
-    public WrappedDateTimeFormatter(DateTimeFormatter dateTimeFormatter) {
-        // ZoneOffset.ofHours(8)
-        this(dateTimeFormatter, ZoneOffset.UTC);
-    }
-
-    public WrappedDateTimeFormatter(String pattern, ZoneOffset zoneOffset) {
-        this(DateTimeFormatter.ofPattern(pattern), zoneOffset);
-    }
-
-    public WrappedDateTimeFormatter(DateTimeFormatter dateTimeFormatter, ZoneOffset zoneOffset) {
-        this.backstopFormatter = dateTimeFormatter;
-        this.zoneOffset = zoneOffset;
-    }
-
-    public DateTimeFormatter getBackstopFormatter() {
-        return backstopFormatter;
-    }
-
-    public ZoneOffset getZoneOffset() {
-        return zoneOffset;
+    public LocalDateTimeFormat(DateTimeFormatter dateTimeFormatter) {
+        this.backstopFormat = dateTimeFormatter;
     }
 
     // --------------------------------------------------------------------------public methods
+
     public LocalDateTime parse(String source) {
         if (source == null || source.length() == 0) {
             return null;
@@ -91,7 +63,7 @@ public class WrappedDateTimeFormatter {
             if (isCrossbar(source)) {
                 // example: 2022-07-18T15:11:11Z, 2022-07-18T15:11:11.Z, 2022-07-18T15:11:11.1Z, 2022-07-18T15:11:11.13Z, 2022-07-18T15:11:11.133Z
                 // 解析会报错：DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-                return LocalDateTime.ofInstant(Instant.parse(source), zoneOffset);
+                return LocalDateTime.ofInstant(Instant.parse(source), ZoneOffset.UTC);
             } else {
                 // example: 2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z, 2022/07/18T15:11:11.133Z
                 source = length < 24 ? padding(source) : source.substring(0, source.length() - 1);
@@ -111,15 +83,15 @@ public class WrappedDateTimeFormatter {
                 } else if (c == '/') {
                     // yyyy/MM/dd
                     return LocalDateTime.parse(source + " 00:00:00", PATTERN_12);
-                } else if (WrappedFastDateFormat.DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
+                } else if (JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
                     // long string(length 10) of second unix timestamp(e.g. 1640966400)
-                    return new Date(Long.parseLong(source) * 1000).toInstant().atZone(zoneOffset).toLocalDateTime();
+                    return Dates.toLocalDateTime(new Date(Long.parseLong(source) * 1000));
                 }
                 break;
             case 13:
-                if (WrappedFastDateFormat.DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
+                if (JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
                     // long string(length 13) of millisecond unix timestamp(e.g. 1640966400000)
-                    return new Date(Long.parseLong(source)).toInstant().atZone(zoneOffset).toLocalDateTime();
+                    return Dates.toLocalDateTime(new Date(Long.parseLong(source)));
                 }
                 break;
             case 14:
@@ -140,14 +112,14 @@ public class WrappedDateTimeFormatter {
                 break;
         }
 
-        return LocalDateTime.parse(source, backstopFormatter);
+        return LocalDateTime.parse(source, backstopFormat);
     }
 
     public String format(LocalDateTime dateTime) {
         if (dateTime == null) {
             return null;
         }
-        return backstopFormatter.format(dateTime);
+        return backstopFormat.format(dateTime);
     }
 
 }

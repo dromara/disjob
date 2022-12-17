@@ -133,7 +133,7 @@ public final class Snowflake implements IdGenerator {
                 this.lastTimestamp = timestamp;
             }
         } else {
-            // 上一毫秒的sequence没有超用情况，当前毫秒第一次使用
+            // 上一毫秒的sequence未超用，当前毫秒第一次使用
             this.sequence = 0L;
             this.lastTimestamp = timestamp;
         }

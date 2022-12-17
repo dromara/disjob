@@ -13,8 +13,8 @@ import java.util.concurrent.CountDownLatch;
  * Embedded consul server based testcontainers.
  * <a href="https://www.testcontainers.org/modules/consul/">testcontainers consul</a>
  * 1、startup local docker environment
- * 2、pull docker consul image: docker pull consul
- * 3、"consul:latest" is docker {image-name:version}
+ * 2、pull docker consul image: docker pull consul:1.14.2
+ * 3、"consul:1.14.2" is docker {image-name:version}
  *
  * 查看latest的具体版本号：docker image inspect {image-name}:latest | grep -i version
  * </pre>

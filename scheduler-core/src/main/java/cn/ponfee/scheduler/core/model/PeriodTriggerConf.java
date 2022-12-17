@@ -4,6 +4,7 @@ import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.core.enums.TriggerType;
 import lombok.Data;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -34,6 +35,7 @@ public class PeriodTriggerConf implements Serializable {
      */
     private int step = 1;
 
+    @Transient
     public boolean isValid() {
         return period != null && start != null && step > 0;
     }

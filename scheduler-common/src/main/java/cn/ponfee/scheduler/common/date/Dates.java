@@ -6,10 +6,10 @@ import org.joda.time.Days;
 import org.joda.time.format.DateTimeFormat;
 
 import javax.annotation.Nonnull;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -17,13 +17,42 @@ import static cn.ponfee.scheduler.common.util.Strings.BLANK_CHAR;
 
 /**
  * Date utility based joda
+ * <p><a href="https://segmentfault.com/a/1190000039047353">Java处理GMT/UTC日期时间</a>
+ *
+ * <pre>
+ * 时区：
+ *   LocalDateTime：无时区
+ *   Date(UTC0)：表示自格林威治时间(GMT)1970年1月1日0点经过指定的毫秒数后的时间点
+ *   Instant(UTC0)：同Date
+ *   ZonedDateTime：自带时区
+ *
+ * ZoneId子类：ZoneRegion、ZoneOffset
+ *   ZoneId.of("Etc/GMT-8")                   -->    Etc/GMT-8
+ *   ZoneId.of("GMT+8")                       -->    GMT+08:00
+ *   ZoneId.of("UTC+8")                       -->    UTC+08:00
+ *   ZoneId.of("Asia/Shanghai")               -->    Asia/Shanghai
+ *   ZoneId.systemDefault()                   -->    Asia/Shanghai
+ *
+ * TimeZone子类（不能使用UTC）：ZoneInfo
+ *   TimeZone.getTimeZone("Etc/GMT-8")        -->    Etc/GMT-8
+ *   TimeZone.getTimeZone("GMT+8")            -->    GMT+08:00
+ *   TimeZone.getTimeZone("Asia/Shanghai")    -->    Asia/Shanghai
+ *   TimeZone.getTimeZone(ZoneId.of("GMT+8")) -->    GMT+08:00
+ *   TimeZone.getDefault()                    -->    Asia/Shanghai
+ * </pre>
  *
  * @author Ponfee
  */
 public class Dates {
 
+    /**
+     * Default date time format
+     */
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    /**
+     * Zero time millis: -62170185600000L
+     */
     public static final String ZERO_DATE_TIME = "0000-00-00 00:00:00";
 
     /**
@@ -109,29 +138,29 @@ public class Dates {
     /**
      * java（毫秒）时间戳
      *
-     * @param millis 毫秒
+     * @param timeMillis 毫秒
      * @return 日期
      */
-    public static Date ofMillis(long millis) {
-        return new Date(millis);
+    public static Date ofMillis(long timeMillis) {
+        return new Date(timeMillis);
     }
 
-    public static Date ofMillis(Long millis) {
-        return millis == null ? null : new Date(millis);
+    public static Date ofMillis(Long timeMillis) {
+        return timeMillis == null ? null : new Date(timeMillis);
     }
 
     /**
      * unix时间戳
      *
-     * @param seconds 秒
+     * @param unixTimeSeconds 秒
      * @return
      */
-    public static Date ofSeconds(long seconds) {
-        return new Date(seconds * 1000);
+    public static Date ofSeconds(long unixTimeSeconds) {
+        return new Date(unixTimeSeconds * 1000);
     }
 
-    public static Date ofSeconds(Long seconds) {
-        return seconds == null ? null : new Date(seconds * 1000);
+    public static Date ofSeconds(Long unixTimeSeconds) {
+        return unixTimeSeconds == null ? null : new Date(unixTimeSeconds * 1000);
     }
 
     /**
@@ -511,28 +540,6 @@ public class Dates {
     }
 
     /**
-     * 日期a是否大于日期b
-     *
-     * @param source 待比较日期
-     * @param target 目标日期
-     * @return 大于返回true，反之false
-     */
-    public static boolean isAfter(@Nonnull Date source, @Nonnull Date target) {
-        return source.after(target);
-    }
-
-    /**
-     * 日期a是否小于日期b
-     *
-     * @param source 待比较日期
-     * @param target 目标日期
-     * @return 小于返回true，反之false
-     */
-    public static boolean isBefore(@Nonnull Date source, @Nonnull Date target) {
-        return source.before(target);
-    }
-
-    /**
      * 日期随机
      *
      * @param begin 开发日期
@@ -578,45 +585,82 @@ public class Dates {
     }
 
     // ----------------------------------------------------------------java 8 date
+
     public static LocalDateTime toLocalDateTime(Date date) {
-        return date.toInstant()
-                .atZone(ZoneId.systemDefault()) // .atOffset(ZoneOffset.of("+8"))
-                .toLocalDateTime();
+        //return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     public static Date toDate(LocalDateTime localDateTime) {
-        return toDate(localDateTime, ZoneId.systemDefault());
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public static Date toDate(LocalDateTime localDateTime, ZoneId zoneId) {
-        return Date.from(localDateTime.atZone(zoneId).toInstant());
+    /**
+     * 时区转换
+     *
+     * @param date       the date
+     * @param sourceZone the source zone id
+     * @param targetZone the target zone id
+     * @return date of target zone id
+     */
+    public static Date zoneConvert(Date date, ZoneId sourceZone, ZoneId targetZone) {
+        if (date == null || sourceZone.equals(targetZone)) {
+            return date;
+        }
+        return Date.from(
+            date.toInstant().atZone(targetZone).withZoneSameLocal(sourceZone).toInstant()
+        );
     }
 
-    public static LocalDate toLocalDate(LocalDateTime localDateTime) {
-        return localDateTime.toLocalDate();
+    /**
+     * 时区转换
+     *
+     * @param localDateTime the localDateTime
+     * @param sourceZone    the source zone id
+     * @param targetZone    the target zone id
+     * @return localDateTime of target zone id
+     */
+    public static LocalDateTime zoneConvert(LocalDateTime localDateTime, ZoneId sourceZone, ZoneId targetZone) {
+        if (localDateTime == null || sourceZone.equals(targetZone)) {
+            return localDateTime;
+        }
+        return ZonedDateTime.of(localDateTime, sourceZone).withZoneSameInstant(targetZone).toLocalDateTime();
     }
 
-    public static LocalTime toLocalTime(LocalDateTime localDateTime) {
-        return localDateTime.toLocalTime();
+    public static String zoneConvert(String date, ZoneId sourceZone, ZoneId targetZone) {
+        return zoneConvert(date, DEFAULT_DATE_FORMAT, sourceZone, targetZone);
     }
 
-    public static LocalDateTime toLocalDateTime(LocalDate localDate) {
-        return localDate.atStartOfDay();
+    /**
+     * 时区转换
+     *
+     * @param date       the source date string
+     * @param pattern    the source date format
+     * @param sourceZone the source zone id
+     * @param targetZone the target zone id
+     * @return date string of target zone id
+     */
+    public static String zoneConvert(String date, String pattern, ZoneId sourceZone, ZoneId targetZone) {
+        if (date == null || sourceZone.equals(targetZone)) {
+            return date;
+        }
+        DateTimeFormatter format = DateTimeFormatter.ofPattern(pattern);
+        LocalDateTime source = LocalDateTime.parse(date, format);
+        LocalDateTime target = zoneConvert(source, sourceZone, targetZone);
+        return target.format(format);
     }
 
-    public static LocalDateTime toLocalDateTime(LocalDate localDate,
-                                                LocalTime localTime) {
-        return localDate.atTime(localTime);
+    public static String toCronExpression(Date date) {
+        return toCronExpression(toLocalDateTime(date));
     }
 
     /**
      * Converts date time to cron expression
      *
-     * @param date the date
+     * @param dateTime the local date time
      * @return cron expression of the spec date
      */
-    public static String toCronExpression(Date date) {
-        LocalDateTime dateTime = Dates.toLocalDateTime(date);
+    public static String toCronExpression(LocalDateTime dateTime) {
         return new StringBuilder(22)
             .append(dateTime.getSecond()    ).append(BLANK_CHAR) // second
             .append(dateTime.getMinute()    ).append(BLANK_CHAR) // minute
@@ -630,7 +674,7 @@ public class Dates {
 
     // ----------------------------------------------------------------private methods
     private static Date endOfDay(DateTime date) {
-        // 当毫秒数大于499时，存入到Mysql的（datatime）字段数据会自动加1秒，所以此处毫秒为000
+        // 当毫秒数大于499时，如果Mysql的datatime字段没有毫秒位数，数据会自动加1秒，所以此处毫秒为000
         //date.secondOfDay().withMaximumValue().millisOfSecond().withMinimumValue().toDate();
         return date.withTime(23, 59, 59, 0).toDate();
     }

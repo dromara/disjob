@@ -50,7 +50,10 @@ public enum CollisionStrategy {
         return value != null && this.value == value;
     }
 
-    public static CollisionStrategy of(int value) {
+    public static CollisionStrategy of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Collision strategy cannot be null.");
+        }
         CollisionStrategy collisionStrategy = MAPPING.get(value);
         if (collisionStrategy == null) {
             throw new IllegalArgumentException("Invalid collision strategy: " + value);

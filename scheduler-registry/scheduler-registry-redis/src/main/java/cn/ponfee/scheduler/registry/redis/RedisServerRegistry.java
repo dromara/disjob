@@ -137,9 +137,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        Throwables.caught(() -> doRegister(Collections.singleton(server)));
-        Throwables.caught(() -> publish(server, EventType.REGISTER));
+        doRegister(Collections.singleton(server));
         registered.add(server);
+        publish(server, EventType.REGISTER);
         log.info("Server registered: {} - {}", registryRole.name(), server);
     }
 

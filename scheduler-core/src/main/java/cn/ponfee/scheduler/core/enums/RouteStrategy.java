@@ -64,7 +64,10 @@ public enum RouteStrategy {
         return value != null && this.value == value;
     }
 
-    public static RouteStrategy of(int value) {
+    public static RouteStrategy of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Route strategy cannot be null.");
+        }
         RouteStrategy routeStrategy = MAPPING.get(value);
         if (routeStrategy == null) {
             throw new IllegalArgumentException("Invalid route strategy: " + value);

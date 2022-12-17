@@ -34,8 +34,7 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
     // -----------------------------------------------constructor methods
 
     public Result() {
-        // code is null
-        // retain no-arg constructor for help deserialization
+        // No operation: retain no-arg constructor for help deserialization
     }
 
     public Result(int code, String msg, T data) {
@@ -151,7 +150,7 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         private static final int CODE = 0;
         private static final String MSG = "OK";
 
-        Success() {
+        private Success() {
             super(CODE, MSG, null);
         }
 

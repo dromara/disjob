@@ -14,21 +14,27 @@ import org.apache.commons.lang3.time.FastDateFormat;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.text.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Wrapper the org.apache.commons.lang3.time.FastDateFormat
+ * Convert to {@code java.util.Date}, none zone offset.
  * <p>unix timestamp只支持对10位(秒)和13位(毫秒)做解析
- * 
- * @ThreadSafe
- * 
+ *
  * @author Ponfee
+ * @ThreadSafe
  */
 @ThreadSafe
-public class WrappedFastDateFormat extends DateFormat {
+public class JavaUtilDateFormat extends DateFormat {
 
     private static final long serialVersionUID = 6837172676882367405L;
+
+    /**
+     * For {@code java.util.Date#toString}
+     */
+    private static final DateTimeFormatter DATE_TO_STRING_FORMAT = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ROOT);
 
     /**
      * For {@link Date#toString()} "EEE MMM dd HH:mm:ss zzz yyyy" format
@@ -66,48 +72,42 @@ public class WrappedFastDateFormat extends DateFormat {
     public static final FastDateFormat PATTERN_63 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     public static final FastDateFormat PATTERN_64 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'");
 
-    public static final FastDateFormat PATTERN_71 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-    public static final FastDateFormat PATTERN_72 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSSX");
-
-    public static final FastDateFormat PATTERN_81 = FastDateFormat.getInstance("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+    public static final FastDateFormat PATTERN_71 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSSX");
+    public static final FastDateFormat PATTERN_72 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSSX");
+    public static final FastDateFormat PATTERN_73 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    public static final FastDateFormat PATTERN_74 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSSX");
 
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss
      */
-    public static final WrappedFastDateFormat DEFAULT = new WrappedFastDateFormat(Dates.DEFAULT_DATE_FORMAT);
+    public static final JavaUtilDateFormat DEFAULT = new JavaUtilDateFormat(Dates.DEFAULT_DATE_FORMAT);
 
     /**
      * 兜底解析器
      */
-    private final FastDateFormat backstopFormatter;
+    private final FastDateFormat backstopFormat;
 
-    private final int patternLength;
-    private final Calendar calendar;
-    private final NumberFormat numberFormat;
-
-    public WrappedFastDateFormat(String pattern) {
-        this(pattern, null, null);
+    public JavaUtilDateFormat(String pattern) {
+        this(pattern, Locale.getDefault());
     }
 
-    public WrappedFastDateFormat(String pattern, TimeZone timeZone, Locale locale) {
-        this(FastDateFormat.getInstance(pattern, timeZone, locale));
+    public JavaUtilDateFormat(String pattern, Locale locale) {
+        this(FastDateFormat.getInstance(pattern, locale));
     }
 
-    public WrappedFastDateFormat(FastDateFormat format) {
-        this.backstopFormatter = format;
+    public JavaUtilDateFormat(FastDateFormat format) {
+        this.backstopFormat = format;
 
-        this.patternLength = format.getPattern().length();
-        this.calendar = Calendar.getInstance(format.getTimeZone(), format.getLocale());
-        this.numberFormat = NumberFormat.getIntegerInstance(format.getLocale());
-        this.numberFormat.setGroupingUsed(false);
-        if (super.getCalendar() == null) {
-            super.setCalendar(Calendar.getInstance());
-        }
+        super.setCalendar(Calendar.getInstance(format.getTimeZone(), format.getLocale()));
+
+        NumberFormat numberFormat = NumberFormat.getIntegerInstance(format.getLocale());
+        numberFormat.setGroupingUsed(false);
+        super.setNumberFormat(numberFormat);
     }
 
     @Override
     public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
-        return backstopFormatter.format(date, toAppendTo, fieldPosition);
+        return backstopFormat.format(date, toAppendTo, fieldPosition);
     }
 
     @Override
@@ -128,6 +128,11 @@ public class WrappedFastDateFormat extends DateFormat {
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid date format: " + source + ", " + pos.getIndex() + ", " + date, e);
         }
+    }
+
+    public LocalDateTime parseToLocalDateTime(String source, ParsePosition pos) {
+        Date date = parse(source, pos);
+        return date == null ? null : Dates.toLocalDateTime(date);
     }
 
     @Override
@@ -185,21 +190,31 @@ public class WrappedFastDateFormat extends DateFormat {
                 }
             case 26: 
             case 29:
-                // 2021-12-31T17:01:01.000+08
-                // 2021-12-31T17:01:01.000+08:00
-                return (isCrossbar(source) ? PATTERN_71 : PATTERN_72).parse(source);
+                if (hasTSeparator(source)) {
+                    // 2021-12-31T17:01:01.000+08、2021-12-31T17:01:01.000+08:00
+                    return (isCrossbar(source) ? PATTERN_73 : PATTERN_74).parse(source);
+                } else {
+                    // 2021-12-31 17:01:01.000+08、2021-12-31 17:01:01.000+08:00
+                    return (isCrossbar(source) ? PATTERN_71 : PATTERN_72).parse(source);
+                }
             case 28:
                 if (isCST(source)) {
-                    return PATTERN_81.parse(source);
+                    // 以下使用方式会相差14小时：
+                    //   1）FastDateFormat.getInstance("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH).parse(source);
+                    //   2）new Date(source);
+                    //   3）Date.from(ZonedDateTime.parse(source, DATE_TO_STRING_FORMAT).toInstant());
+                    return Dates.toDate(LocalDateTime.parse(source, DATE_TO_STRING_FORMAT));
                 }
                 break;
             default: break;
         }
-        if (patternLength == length) {
-            return backstopFormatter.parse(source);
-        } else {
-            throw new IllegalArgumentException("Invalid date format: " + source);
-        }
+
+        return backstopFormat.parse(source);
+    }
+
+    public LocalDateTime parseToLocalDateTime(String source) throws ParseException {
+        Date date = parse(source);
+        return date == null ? null : Dates.toLocalDateTime(date);
     }
 
     @Override
@@ -214,7 +229,7 @@ public class WrappedFastDateFormat extends DateFormat {
 
     @Override
     public int hashCode() {
-        return backstopFormatter.hashCode();
+        return backstopFormat.hashCode();
     }
 
     @Override
@@ -223,63 +238,22 @@ public class WrappedFastDateFormat extends DateFormat {
             return true;
         }
 
-        if (!(obj instanceof WrappedFastDateFormat)) {
+        if (!(obj instanceof JavaUtilDateFormat)) {
             return false;
         }
 
-        WrappedFastDateFormat other = (WrappedFastDateFormat) obj;
-        return this.backstopFormatter.equals(other.backstopFormatter);
+        JavaUtilDateFormat other = (JavaUtilDateFormat) obj;
+        return this.backstopFormat.equals(other.backstopFormat);
     }
 
     @Override
     public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
-        return backstopFormatter.formatToCharacterIterator(obj);
-    }
-
-    @Override
-    public TimeZone getTimeZone() {
-        return backstopFormatter.getTimeZone();
-    }
-
-    @Override
-    public Calendar getCalendar() {
-        return calendar;
-    }
-
-    @Override
-    public NumberFormat getNumberFormat() {
-        return numberFormat;
-    }
-
-    @Override
-    public boolean isLenient() {
-        return calendar.isLenient();
+        return backstopFormat.formatToCharacterIterator(obj);
     }
 
     @Override
     public Object clone() {
-        return new WrappedFastDateFormat((FastDateFormat) backstopFormatter.clone());
-    }
-
-    // ------------------------------------------------------------------------overrides
-    @Override
-    public void setTimeZone(TimeZone zone) {
-        super.setTimeZone(zone);
-    }
-
-    @Override
-    public void setCalendar(Calendar newCalendar) {
-        super.setCalendar(newCalendar);
-    }
-
-    @Override
-    public void setNumberFormat(NumberFormat newNumberFormat) {
-        super.setNumberFormat(numberFormat);
-    }
-
-    @Override
-    public void setLenient(boolean lenient) {
-        super.setLenient(lenient);
+        return new JavaUtilDateFormat((FastDateFormat) backstopFormat.clone());
     }
 
     // ------------------------------------------------------------------------package methods

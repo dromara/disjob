@@ -164,59 +164,59 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String createdBy;
 
     public void defaultSettingAndVerify() {
-        if (getJobState() == null) {
-            setJobState(JobState.STOPPED.value());
+        if (jobState == null) {
+            this.jobState = JobState.STOPPED.value();
         }
-        if (getWeightScore() == null) {
-            setWeightScore(1);
+        if (weightScore == null) {
+            this.weightScore = 1;
         }
 
-        if (getRetryType() == null) {
-            setRetryType(RetryType.NONE.value());
+        if (retryType == null) {
+            this.retryType = RetryType.NONE.value();
         }
-        RetryType retryType = RetryType.of(getRetryType());
-        if (retryType == RetryType.NONE) {
-            if (getRetryCount() == null) {
-                setRetryCount(0);
+        RetryType retryType0 = RetryType.of(getRetryType());
+        if (retryType0 == RetryType.NONE) {
+            if (retryCount == null) {
+                this.retryCount = 0;
             }
-            if (getRetryInterval() == null) {
-                setRetryInterval(0);
+            if (retryInterval == null) {
+                this.retryInterval = 0;
             }
-            Assert.isTrue(getRetryCount() == 0, "Retry count cannot set if none retry.");
-            Assert.isTrue(getRetryInterval() == 0, "Retry interval cannot set if none retry.");
+            Assert.isTrue(retryCount == 0, "Retry count cannot set if none retry.");
+            Assert.isTrue(retryInterval == 0, "Retry interval cannot set if none retry.");
         } else {
-            Assert.isTrue(getRetryCount() != null || getRetryCount() > 0, "Retry count must set if retry.");
-            Assert.isTrue(getRetryInterval() != null || getRetryInterval() > 0, "Retry interval must set if retry.");
+            Assert.isTrue(retryCount != null || retryCount > 0, "Retry count must set if retry.");
+            Assert.isTrue(retryInterval != null || retryInterval > 0, "Retry interval must set if retry.");
         }
 
-        if (getExecuteTimeout() == null) {
-            setExecuteTimeout(0);
+        if (executeTimeout == null) {
+            this.executeTimeout = 0;
         }
-        if (getCollisionStrategy() == null) {
-            setCollisionStrategy(CollisionStrategy.CONCURRENT.value());
+        if (collisionStrategy == null) {
+            this.collisionStrategy = CollisionStrategy.CONCURRENT.value();
         }
-        if (getMisfireStrategy() == null) {
-            setMisfireStrategy(MisfireStrategy.LAST.value());
+        if (misfireStrategy == null) {
+            this.misfireStrategy = MisfireStrategy.LAST.value();
         }
-        if (getRouteStrategy() == null) {
-            setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
+        if (routeStrategy == null) {
+            this.routeStrategy = RouteStrategy.ROUND_ROBIN.value();
         }
 
         // verify
-        JobState.of(getJobState());
-        Assert.isTrue(getWeightScore() > 0, "Invalid weight score: " + getWeightScore());
-        Assert.isTrue(getExecuteTimeout() >= 0, "Invalid execute timeout: " + getExecuteTimeout());
-        CollisionStrategy.of(getCollisionStrategy());
-        MisfireStrategy.of(getMisfireStrategy());
-        RouteStrategy.of(getRouteStrategy());
-        if (getStartTime() != null && getEndTime() != null) {
+        JobState.of(jobState);
+        Assert.isTrue(weightScore > 0, "Invalid weight score: " + weightScore);
+        Assert.isTrue(executeTimeout >= 0, "Invalid execute timeout: " + executeTimeout);
+        CollisionStrategy.of(collisionStrategy);
+        MisfireStrategy.of(misfireStrategy);
+        RouteStrategy.of(routeStrategy);
+        if (startTime != null && endTime != null) {
             Assert.isTrue(
-                getStartTime().before(getEndTime()),
-                "Invalid job time param: " + Dates.format(getStartTime()) + ">=" + Dates.format(getEndTime())
+                startTime.before(endTime),
+                () -> "Invalid job time param: " + Dates.format(startTime) + ">=" + Dates.format(endTime)
             );
         }
-        if (getJobParam() == null) {
-            setJobParam("");
+        if (jobParam == null) {
+            this.jobParam = "";
         }
     }
 

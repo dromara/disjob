@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.supervisor.test.common.transaction;
 
+import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import cn.ponfee.scheduler.supervisor.config.AbstractTxManagerTestService;
 import org.junit.jupiter.api.Assertions;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * test database transaction
@@ -26,6 +28,12 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
     public AbstractTxManagerTest(I id1, I id2) {
         this.id1 = id1;
         this.id2 = id2;
+    }
+
+    public AbstractTxManagerTest(Supplier<Tuple2<I, I>> supplier) {
+        Tuple2<I, I> tuple2 = supplier.get();
+        this.id1 = tuple2.a;
+        this.id2 = tuple2.b;
     }
 
     @Override

@@ -2,6 +2,7 @@ package cn.ponfee.scheduler.supervisor.test.common.util;
 
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
+import cn.ponfee.scheduler.common.date.JavaUtilDateFormat;
 import cn.ponfee.scheduler.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,8 +56,9 @@ public class DateTest {
         DateEntity dateEntity = Jsons.fromJson(json, DateEntity.class);
 
 
-        DateEntity entity = Jsons.fromJson("{\"createTime\":\"2000-15-01 00:00:00\"}", DateEntity.class);
-        Assertions.assertEquals("2001-03-01 00:00:00", Dates.format(entity.getCreateTime()));
+        Assertions.assertEquals("Wed Mar 01 00:00:00 CST 2000", JavaUtilDateFormat.DEFAULT.parse("2000-03-01 00:00:00").toString());
+        DateEntity entity = Jsons.fromJson("{\"createTime\":\"2000-03-01 00:00:00\"}", DateEntity.class);
+        Assertions.assertEquals("2000-03-01 00:00:00", Dates.format(entity.getCreateTime()));
 
         // test format
         Assertions.assertEquals("0002-11-30 00:00:00", DateFormatUtils.format(dateEntity.getCreateTime(), Dates.DEFAULT_DATE_FORMAT));

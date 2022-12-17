@@ -45,7 +45,10 @@ public enum RetryType {
         return value != null && this.value == value;
     }
 
-    public static RetryType of(int value) {
+    public static RetryType of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Retry type cannot be null.");
+        }
         RetryType runType = MAPPING.get(value);
         if (runType == null) {
             throw new IllegalArgumentException("Invalid retry type: " + value);

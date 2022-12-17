@@ -77,10 +77,11 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             return;
         }
 
+        NewService newService = createService(server);
         if (token == null) {
-            client.agentServiceRegister(buildRegistryServer(server));
+            client.agentServiceRegister(newService);
         } else {
-            client.agentServiceRegister(buildRegistryServer(server), token);
+            client.agentServiceRegister(newService, token);
         }
         registered.add(server);
         log.info("Consul server registered: {} - {}", registryRole.name(), server);
@@ -90,10 +91,11 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     public final void deregister(R server) {
         try {
             registered.remove(server);
+            String serverId = buildServiceId(server);
             if (token == null) {
-                client.agentServiceDeregister(buildRegistryServerId(server));
+                client.agentServiceDeregister(serverId);
             } else {
-                client.agentServiceDeregister(buildRegistryServerId(server), token);
+                client.agentServiceDeregister(serverId, token);
             }
             log.info("Consul Server deregister: {} - {}", registryRole.name(), server);
         } catch (Exception e) {
@@ -120,23 +122,29 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     // ------------------------------------------------------------------private method & class
 
-    private NewService buildRegistryServer(R server) {
+    /**
+     * Builds a unique service id of consul cluster.
+     *
+     * @param server the registry server
+     * @return a string value representing unique consul service id
+     */
+    private String buildServiceId(R server) {
+        return registryRootPath + separator + server.serialize();
+    }
+
+    private NewService createService(R server) {
         NewService service = new NewService();
         service.setName(registryRootPath);
-        service.setId(buildRegistryServerId(server));
+        service.setId(buildServiceId(server));
         service.setAddress(server.getHost());
         service.setPort(server.getPort());
-        service.setCheck(buildCheck());
+        service.setCheck(createCheck());
         service.setTags(null);
         service.setMeta(null);
         return service;
     }
 
-    private String buildRegistryServerId(R server) {
-        return registryRootPath + separator + server.serialize();
-    }
-
-    private static NewService.Check buildCheck() {
+    private static NewService.Check createCheck() {
         NewService.Check check = new NewService.Check();
         check.setTtl(CHECK_TTL_SECONDS);
         check.setDeregisterCriticalServiceAfter(DEREGISTER_TIME_SECONDS);
@@ -148,7 +156,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             return;
         }
         for (R server : registered) {
-            String checkId = buildRegistryServerId(server);
+            String checkId = buildServiceId(server);
             try {
                 // Prepend "service:" for service level checks.
                 if (token == null) {

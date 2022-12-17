@@ -15,7 +15,7 @@
   <name>${project.artifactId}</name>
 
   <properties>
-    <etcd.version>0.7.3</etcd.version>
+    <etcd.version>0.7.5</etcd.version>
   </properties>
 
   <dependencies>

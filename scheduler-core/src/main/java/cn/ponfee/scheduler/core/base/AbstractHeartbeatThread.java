@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.core.base;
 
 import cn.ponfee.scheduler.common.concurrent.Threads;
-import cn.ponfee.scheduler.common.date.WrappedFastDateFormat;
+import cn.ponfee.scheduler.common.date.JavaUtilDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
             boolean result;
             long start = System.currentTimeMillis();
             if (log.isDebugEnabled()) {
-                log.debug("Heartbeat round date time: {}", WrappedFastDateFormat.PATTERN_51.format(new Date(start)));
+                log.debug("Heartbeat round date time: {}", JavaUtilDateFormat.PATTERN_51.format(new Date(start)));
             }
             try {
                 // true is busy loop

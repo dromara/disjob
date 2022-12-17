@@ -34,7 +34,10 @@ public enum JobState {
         return value != null && this.value == value;
     }
 
-    public static JobState of(int value) {
+    public static JobState of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Job state cannot be null.");
+        }
         for (JobState state : JobState.values()) {
             if (state.value == value) {
                 return state;

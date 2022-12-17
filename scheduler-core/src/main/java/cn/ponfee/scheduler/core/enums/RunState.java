@@ -95,7 +95,10 @@ public enum RunState {
         return value != null && this.value == value;
     }
 
-    public static RunState of(int value) {
+    public static RunState of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Run state cannot be null.");
+        }
         RunState runState = MAPPING.get(value);
         if (runState == null) {
             throw new IllegalArgumentException("Invalid run state: " + value);

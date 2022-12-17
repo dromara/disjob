@@ -43,15 +43,19 @@ public class EtcdClient implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(EtcdClient.class);
 
+    private static final List<ConnectivityState> CONNECTED_STATUS_LIST = ImmutableList.of(
+        ConnectivityState.READY, ConnectivityState.IDLE
+    );
+
+    private static final List<WatchEvent.EventType> CHANGED_EVENT_TYPES = ImmutableList.of(
+        WatchEvent.EventType.PUT, WatchEvent.EventType.DELETE
+    );
+
     private static final GetOption GET_PREFIX_OPTION = GetOption.newBuilder().isPrefix(true).build();
 
     private static final GetOption GET_COUNT_OPTION = GetOption.newBuilder().withCountOnly(true).build();
 
     private static final WatchOption WATCH_PREFIX_OPTION = WatchOption.newBuilder().isPrefix(true).build();
-
-    private static final List<WatchEvent.EventType> CHANGED_EVENT_TYPES = ImmutableList.of(
-        WatchEvent.EventType.PUT, WatchEvent.EventType.DELETE
-    );
 
     /**
      * Etcd properties
@@ -225,7 +229,7 @@ public class EtcdClient implements AutoCloseable {
         Object connectionManager = Fields.get(client, "connectionManager");
         ManagedChannel managedChannel = ClassUtils.invoke(connectionManager, "getChannel");
         ConnectivityState state = managedChannel.getState(false);
-        return ConnectivityState.READY == state || ConnectivityState.IDLE == state;
+        return CONNECTED_STATUS_LIST.contains(state);
     }
 
     @Override

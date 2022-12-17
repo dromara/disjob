@@ -131,7 +131,10 @@ public enum ExecuteState {
         return value != null && this.value == value;
     }
 
-    public static ExecuteState of(int value) {
+    public static ExecuteState of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Execute state cannot be null.");
+        }
         ExecuteState executeState = MAPPING.get(value);
         if (executeState == null) {
             throw new IllegalArgumentException("Invalid execute state: " + value);

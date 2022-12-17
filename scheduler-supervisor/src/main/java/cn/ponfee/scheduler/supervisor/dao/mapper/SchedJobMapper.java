@@ -15,8 +15,8 @@ public interface SchedJobMapper {
 
     // ----------------------------use in test start
     List<SchedJob> testFindByJobIds(List<Long> jobIds);
-
-    int updateRemark(@Param("jobId") Long jobId, @Param("remark") String remark);
+    int testUpdateRemark(@Param("jobId") Long jobId, @Param("remark") String remark);
+    List<Long> testListLimit(int limit);
     // ----------------------------use in test end
 
     List<SchedJob> findByJobIds(List<Long> jobIds);

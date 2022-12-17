@@ -1,6 +1,6 @@
 package cn.ponfee.scheduler.common.util;
 
-import cn.ponfee.scheduler.common.date.WrappedFastDateFormat;
+import cn.ponfee.scheduler.common.date.JavaUtilDateFormat;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -149,7 +149,7 @@ public final class ObjectUtils {
                 return (T) new Date(Numbers.toLong(text));
             }
             try {
-                return (T) WrappedFastDateFormat.DEFAULT.parse(text);
+                return (T) JavaUtilDateFormat.DEFAULT.parse(text);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }

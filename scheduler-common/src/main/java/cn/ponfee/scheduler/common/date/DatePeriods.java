@@ -1,9 +1,9 @@
 package cn.ponfee.scheduler.common.date;
 
-import com.google.common.base.Preconditions;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
+import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.function.ToIntFunction;
@@ -41,32 +41,32 @@ public enum DatePeriods {
     HOURLY(PeriodType.hours(), Period::getHours, LocalDateTime::plusHours, 1),
 
     /**
-     * 每天的
+     * 每天
      */
     DAILY(PeriodType.days(), Period::getDays, LocalDateTime::plusDays, 1),
 
     /**
-     * 每周的
+     * 每周
      */
     WEEKLY(PeriodType.weeks(), Period::getWeeks, LocalDateTime::plusWeeks, 1),
 
     /**
-     * 每月的
+     * 每月
      */
     MONTHLY(PeriodType.months(), Period::getMonths, LocalDateTime::plusMonths, 1),
 
     /**
-     * 每季度的
+     * 每季度
      */
     QUARTERLY(PeriodType.months(), Period::getMonths, LocalDateTime::plusMonths, 3),
 
     /**
-     * 每半年的
+     * 每半年
      */
     SEMIANNUAL(PeriodType.months(), Period::getMonths, LocalDateTime::plusMonths, 6),
 
     /**
-     * 每年度的
+     * 每年度
      */
     ANNUAL(PeriodType.years(), Period::getYears, LocalDateTime::plusYears, 1);
 
@@ -98,8 +98,8 @@ public enum DatePeriods {
      * @return {@code Segment(begin, end)}
      */
     public final Segment next(LocalDateTime original, LocalDateTime target, int step, int next) {
-        Preconditions.checkArgument(step > 0, "Step must be positive number.");
-        Preconditions.checkArgument(!original.isAfter(target), "Original cannot after target date.");
+        Assert.isTrue(step > 0, "Step must be positive number.");
+        Assert.isTrue(!original.isAfter(target), "Original date cannot be after target date.");
         // original.withTime(original.getHourOfDay(), 0, 0, 0)
         // original.withMillisOfDay(0)
         // target.withMillisOfDay(0)
@@ -151,7 +151,7 @@ public enum DatePeriods {
 
         @Override
         public String toString() {
-            return WrappedFastDateFormat.PATTERN_51.format(begin) + " ~ " + WrappedFastDateFormat.PATTERN_51.format(end);
+            return JavaUtilDateFormat.PATTERN_51.format(begin) + " ~ " + JavaUtilDateFormat.PATTERN_51.format(end);
         }
     }
 

@@ -40,7 +40,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
     protected final Set<R> registered = ConcurrentHashMap.newKeySet();
 
-    // -------------------------------------------------Close
     /**
      * Close registry operation
      */

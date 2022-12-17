@@ -40,7 +40,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         GET.name(), DELETE.name(), HEAD.name(), OPTIONS.name()
     );
 
-    private static final String CACHE_KEY_PREFIX = "LOCALIZED_METHOD_ARGUMENTS";
+    private static final String CACHE_ATTRIBUTE_KEY = "LOCALIZED_METHOD_ARGUMENTS";
     private static final Class<? extends Annotation> MARKED_ANNOTATION_TYPE = LocalizedMethodArguments.class;
 
     @Override
@@ -66,10 +66,10 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             arguments = resolveMethodParameters(method, httpServletRequest);
             if (method.getParameterCount() > 1) {
                 // CACHE_KEY_PREFIX + method.toString()
-                httpServletRequest.setAttribute(CACHE_KEY_PREFIX, arguments);
+                httpServletRequest.setAttribute(CACHE_ATTRIBUTE_KEY, arguments);
             }
         } else {
-            arguments = (Object[]) httpServletRequest.getAttribute(CACHE_KEY_PREFIX);
+            arguments = (Object[]) httpServletRequest.getAttribute(CACHE_ATTRIBUTE_KEY);
         }
 
         return Collects.get(arguments, parameterIndex);

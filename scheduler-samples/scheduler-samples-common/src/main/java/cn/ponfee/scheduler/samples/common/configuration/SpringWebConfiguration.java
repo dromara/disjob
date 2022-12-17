@@ -107,16 +107,17 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
     public static class CustomHandlerInterceptor implements HandlerInterceptor {
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-            Enumeration<String> names = request.getHeaderNames();
-            StringBuilder header = new StringBuilder();
-            while (names.hasMoreElements()) {
-                String name = names.nextElement();
-                header.append(name).append("=").append(request.getHeader(name)).append(" & ");
-            }
-            if (header.length() > 0) {
-                header.setLength(header.length() - 3);
-            }
             if (LOG.isDebugEnabled()) {
+                Enumeration<String> names = request.getHeaderNames();
+                StringBuilder header = new StringBuilder();
+                while (names.hasMoreElements()) {
+                    String name = names.nextElement();
+                    header.append(name).append("=").append(request.getHeader(name)).append(" & ");
+                }
+                if (header.length() > 0) {
+                    header.setLength(header.length() - 3);
+                }
+
                 LOG.debug(
                     "\nRequest URL: {}\nRequest Method: {}\nRequest Headers: {}\nRequest Parameter: {}\n",
                     request.getRequestURL(), request.getMethod(), header, request.getParameterMap()
@@ -127,17 +128,19 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
 
         @Override
         public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-            StringBuilder header = new StringBuilder();
-            response.getHeaderNames().forEach(name -> header.append(name).append("=").append(request.getHeader(name)).append(" & "));
-            if (header.length() > 0) {
-                header.setLength(header.length() - 3);
+            if (LOG.isDebugEnabled()) {
+                StringBuilder header = new StringBuilder();
+                response.getHeaderNames().forEach(name -> header.append(name).append("=").append(request.getHeader(name)).append(" & "));
+                if (header.length() > 0) {
+                    header.setLength(header.length() - 3);
+                }
+                LOG.debug("\nResponse Headers: {}\n", header);
             }
-            LOG.debug("\nResponse Headers: {}\n", header);
         }
 
         @Override
         public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-            // noop
+            // No-op
         }
     }
 

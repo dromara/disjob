@@ -50,7 +50,10 @@ public enum RunType {
         return value != null && this.value == value;
     }
 
-    public static RunType of(int value) {
+    public static RunType of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Run type cannot be null.");
+        }
         RunType runType = MAPPING.get(value);
         if (runType == null) {
             throw new IllegalArgumentException("Invalid run type: " + value);

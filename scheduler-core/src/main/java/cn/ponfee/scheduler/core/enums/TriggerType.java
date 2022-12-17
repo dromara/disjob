@@ -215,7 +215,10 @@ public enum TriggerType {
         return value != null && this.value == value;
     }
 
-    public static TriggerType of(int value) {
+    public static TriggerType of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Trigger type cannot be null.");
+        }
         TriggerType triggerType = MAPPING.get(value);
         if (triggerType == null) {
             throw new IllegalArgumentException("Invalid trigger type: " + value);

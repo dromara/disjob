@@ -45,7 +45,10 @@ public enum MisfireStrategy {
         return value != null && this.value == value;
     }
 
-    public static MisfireStrategy of(int value) {
+    public static MisfireStrategy of(Integer value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Misfire strategy cannot be null.");
+        }
         MisfireStrategy misfireStrategy = MAPPING.get(value);
         if (misfireStrategy == null) {
             throw new IllegalArgumentException("Invalid misfire strategy: " + value);

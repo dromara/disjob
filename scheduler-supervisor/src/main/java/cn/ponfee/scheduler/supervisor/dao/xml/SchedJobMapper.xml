@@ -48,7 +48,10 @@
       FROM sched_job
       WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
     </select>
-    <update id="updateRemark">
+    <select id="testListLimit" parameterType="int" resultType="long">
+      SELECT job_id FROM sched_job LIMIT #{limit, jdbcType=INTEGER}
+    </select>
+    <update id="testUpdateRemark">
       UPDATE sched_job
       SET remark=#{remark, jdbcType=VARCHAR}, version=version+1
       WHERE job_id=#{jobId, jdbcType=BIGINT}

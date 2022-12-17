@@ -1,9 +1,9 @@
 package cn.ponfee.scheduler.common.util;
 
 import cn.ponfee.scheduler.common.base.exception.JsonException;
-import cn.ponfee.scheduler.common.date.CustomLocalDateTimeDeserializer;
-import cn.ponfee.scheduler.common.date.WrappedDateTimeFormatter;
-import cn.ponfee.scheduler.common.date.WrappedFastDateFormat;
+import cn.ponfee.scheduler.common.date.LocalDateTimeDeserializer;
+import cn.ponfee.scheduler.common.date.LocalDateTimeFormat;
+import cn.ponfee.scheduler.common.date.JavaUtilDateFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -242,10 +242,10 @@ public final class Jsons {
         mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, false);            // 禁止单引号字段
         mapper.configure(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature(), true); // 字段加双引号
         //objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);  // 禁止反序列化时，如果目标对象为空对象的报错问题
-        mapper.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));                  // "GMT+8"
 
         // java.util.Date(SimpleModule与setDateFormat的作用相同)
-        mapper.setDateFormat(WrappedFastDateFormat.DEFAULT);
+        mapper.setTimeZone(TimeZone.getDefault()); // Asia/Shanghai
+        mapper.setDateFormat(JavaUtilDateFormat.DEFAULT);
         //mapper.setConfig(mapper.getDeserializationConfig().with(mapper.getDateFormat()));
         //mapper.setConfig(mapper.getSerializationConfig().with(mapper.getDateFormat()));
 
@@ -261,10 +261,10 @@ public final class Jsons {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         JavaTimeModule javaTimeModule = new JavaTimeModule();
-        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(WrappedDateTimeFormatter.PATTERN_11));
+        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(LocalDateTimeFormat.PATTERN_11));
         javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter));
         javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
-        javaTimeModule.addDeserializer(LocalDateTime.class, CustomLocalDateTimeDeserializer.INSTANCE);
+        javaTimeModule.addDeserializer(LocalDateTime.class, LocalDateTimeDeserializer.INSTANCE);
         javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
         javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
         mapper.registerModule(javaTimeModule);
