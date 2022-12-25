@@ -56,7 +56,6 @@ public class DateTest {
         DateEntity dateEntity = Jsons.fromJson(json, DateEntity.class);
 
 
-        Assertions.assertEquals("Wed Mar 01 00:00:00 CST 2000", JavaUtilDateFormat.DEFAULT.parse("2000-03-01 00:00:00").toString());
         DateEntity entity = Jsons.fromJson("{\"createTime\":\"2000-03-01 00:00:00\"}", DateEntity.class);
         Assertions.assertEquals("2000-03-01 00:00:00", Dates.format(entity.getCreateTime()));
 

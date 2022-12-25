@@ -84,11 +84,11 @@ distributed-scheduler
 - Different ports have been configured and can be started at the same time
 - You can run the startup class in the development tool, or directly run the built jar package
 - The type selection of the registry or task distribution is to switch annotations in the Spring boot startup class
-    - EnableRedisServerRegistry use redis as a registry
-    - EnableConsulServerRegistry use consul as a registry
-    - EnableNacosServerRegistry use nacos as a registry
-    - EnableEtcdServerRegistry use etcd as a registry
-    - EnableZookeeperServerRegistry use zookeeper as a registry
+    - EnableRedisServerRegistry use redis as a registry([embed redis server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServer.java))
+    - EnableConsulServerRegistry use consul as a registry([embed consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
+    - EnableNacosServerRegistry use nacos as a registry([embed nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServer.java))
+    - EnableEtcdServerRegistry use etcd as a registry([embed etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))
+    - EnableZookeeperServerRegistry use zookeeper as a registry([embed zookeeper server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java))
     - EnableRedisTaskDispatching use redis to dispatch task
     - EnableHttpTaskDispatching use http to dispatch task
 ```java

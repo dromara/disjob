@@ -253,7 +253,37 @@ public class JavaUtilDateFormat extends DateFormat {
 
     @Override
     public Object clone() {
-        return new JavaUtilDateFormat((FastDateFormat) backstopFormat.clone());
+        return this;
+    }
+
+    // ------------------------------------------------------------------------deprecated methods
+
+    @Override @Deprecated
+    public void setCalendar(Calendar newCalendar) {
+        if (!Objects.equals(newCalendar, super.getCalendar())) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @Override @Deprecated
+    public void setNumberFormat(NumberFormat newNumberFormat) {
+        if (!Objects.equals(newNumberFormat, super.getNumberFormat())) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @Override @Deprecated
+    public void setTimeZone(TimeZone zone) {
+        if (!Objects.equals(zone, super.getTimeZone())) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @Override @Deprecated
+    public void setLenient(boolean lenient) {
+        if (lenient != super.isLenient()) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     // ------------------------------------------------------------------------package methods

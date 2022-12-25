@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.dispatch;
 
+import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
@@ -8,7 +9,7 @@ import cn.ponfee.scheduler.core.param.ExecuteParam;
  *
  * @author Ponfee
  */
-class DispatchParam {
+class DispatchParam extends ToJsonString {
 
     private final ExecuteParam executeParam;
     private final String group;
@@ -41,13 +42,4 @@ class DispatchParam {
         return retried;
     }
 
-    @Override
-    public String toString() {
-        return "{" +
-            "executeParam=" + executeParam +
-            ", group='" + group + '\'' +
-            ", routeStrategy=" + routeStrategy +
-            ", retried=" + retried +
-            '}';
-    }
 }

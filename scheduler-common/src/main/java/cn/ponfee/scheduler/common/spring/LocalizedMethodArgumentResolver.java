@@ -92,7 +92,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         int parameterCount = method.getParameterCount();
         Object[] arguments = new Object[parameterCount];
         for (int i = 0; i < parameterCount; i++) {
-            String argName = "arg[" + i + "]";
+            String argName = "args[" + i + "]";
             String[] array = parameterMap.get(argName);
             Assert.isTrue(
                 array == null || array.length <= 1,

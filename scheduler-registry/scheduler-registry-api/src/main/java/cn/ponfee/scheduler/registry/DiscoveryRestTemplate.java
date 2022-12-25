@@ -166,7 +166,7 @@ public class DiscoveryRestTemplate<D extends Server> {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>(arguments.length << 1);
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i] != null) {
-                params.add("arg[" + i + "]", Jsons.toJson(arguments[i]));
+                params.add("args[" + i + "]", Jsons.toJson(arguments[i]));
             }
         }
         return params;

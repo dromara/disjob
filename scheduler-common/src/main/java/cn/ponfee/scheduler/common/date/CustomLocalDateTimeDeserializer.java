@@ -20,22 +20,22 @@ import java.time.format.DateTimeFormatter;
  * @see com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
  * @since 2.2.0
  */
-public class LocalDateTimeDeserializer extends JSR310DateTimeDeserializerBase<LocalDateTime> {
+public class CustomLocalDateTimeDeserializer extends JSR310DateTimeDeserializerBase<LocalDateTime> {
     private static final long serialVersionUID = 1L;
 
-    public static final LocalDateTimeDeserializer INSTANCE = new LocalDateTimeDeserializer();
+    public static final CustomLocalDateTimeDeserializer INSTANCE = new CustomLocalDateTimeDeserializer();
 
     private final LocalDateTimeFormat wrappedFormatter;
 
-    protected LocalDateTimeDeserializer() {
+    protected CustomLocalDateTimeDeserializer() {
         this(Dates.DEFAULT_DATE_FORMAT);
     }
 
-    public LocalDateTimeDeserializer(String pattern) {
+    public CustomLocalDateTimeDeserializer(String pattern) {
         this(DateTimeFormatter.ofPattern(pattern));
     }
 
-    public LocalDateTimeDeserializer(DateTimeFormatter formatter) {
+    public CustomLocalDateTimeDeserializer(DateTimeFormatter formatter) {
         super(LocalDateTime.class, formatter);
         this.wrappedFormatter = new LocalDateTimeFormat(formatter);
     }
@@ -46,12 +46,12 @@ public class LocalDateTimeDeserializer extends JSR310DateTimeDeserializerBase<Lo
     }
 
     @Override
-    protected LocalDateTimeDeserializer withDateFormat(DateTimeFormatter formatter) {
+    protected CustomLocalDateTimeDeserializer withDateFormat(DateTimeFormatter formatter) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected LocalDateTimeDeserializer withLeniency(Boolean leniency) {
+    protected CustomLocalDateTimeDeserializer withLeniency(Boolean leniency) {
         throw new UnsupportedOperationException();
     }
 

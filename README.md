@@ -84,11 +84,11 @@ distributed-scheduler
 - 已配置不同端口，可同时启动
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
 - 注册中心或任务分发的类型选择是在Spring boot启动类中切换注解
-  - EnableRedisServerRegistry启用Redis做为注册中心
-  - EnableConsulServerRegistry启用Consul做为注册中心
-  - EnableNacosServerRegistry启用Nacos做为注册中心
-  - EnableEtcdServerRegistry启用Etcd做为注册中心
-  - EnableZookeeperServerRegistry启用Zookeeper做为注册中心
+  - EnableRedisServerRegistry启用Redis做为注册中心（[内置redis-server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServer.java)）
+  - EnableConsulServerRegistry启用Consul做为注册中心（[内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)）
+  - EnableNacosServerRegistry启用Nacos做为注册中心（[内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServer.java)）
+  - EnableEtcdServerRegistry启用Etcd做为注册中心（[内置etcd-server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)）
+  - EnableZookeeperServerRegistry启用Zookeeper做为注册中心（[内置zookeeper-server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)）
   - EnableRedisTaskDispatching启用Redis做任务分发
   - EnableHttpTaskDispatching启用Http做任务分发
 ```java
