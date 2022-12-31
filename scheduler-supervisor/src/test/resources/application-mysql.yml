@@ -1,0 +1,11 @@
+# database configuration
+spring.datasource.distributed-scheduler:
+  driver-class-name: com.mysql.cj.jdbc.Driver
+  jdbc-url: jdbc:mysql://112.74.170.75:3306/distributed_scheduler?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&&autoReconnect=true&failOverReadOnly=false&connectTimeout=2000&socketTimeout=5000
+  username: root
+  password:
+  minimum-idle: 10
+  maximum-pool-size: 100
+  connection-timeout: 2000
+  pool-name: distributed_scheduler
+  #connection-test-query: SELECT 1    # jdbc4不建议配置connectionTestQuery

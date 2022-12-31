@@ -58,7 +58,17 @@ distributed-scheduler
 - Provides the ability to control tasks during execution, and can suspend/cancel the tasks in progress at any time, and can also resume the execution of suspended tasks
 - Provides the ability to execute tasks dependently. After multiple tasks build a DAG dependency relationship, the tasks will be executed sequentially according to the established dependency order
 
-## Build
+## Download from central
+
+```xml
+<dependency>
+  <groupId>cn.ponfee</groupId>
+  <artifactId>scheduler-{xxx}</artifactId>
+  <version>1.5</version>
+</dependency>
+```
+
+## Build from source
 
 ```bash
 ./mvnw clean package -DskipTests -Dcheckstyle.skip -U
@@ -86,7 +96,7 @@ distributed-scheduler
 - The type selection of the registry or task distribution is to switch annotations in the Spring boot startup class
     - EnableRedisServerRegistry use redis as a registry([embed redis server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServer.java))
     - EnableConsulServerRegistry use consul as a registry([embed consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
-    - EnableNacosServerRegistry use nacos as a registry([embed nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServer.java))
+    - EnableNacosServerRegistry use nacos as a registry([embed nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java))
     - EnableEtcdServerRegistry use etcd as a registry([embed etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))
     - EnableZookeeperServerRegistry use zookeeper as a registry([embed zookeeper server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java))
     - EnableRedisTaskDispatching use redis to dispatch task

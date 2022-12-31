@@ -191,8 +191,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             String s0 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));
             String s1 = message.substring(pos += 1);
 
-            subscribe(EventType.valueOf(s0), discoveryRole.deserialize(s1));
             log.info("Subscribed message: {} - {}", pattern, message);
+            subscribe(EventType.valueOf(s0), discoveryRole.deserialize(s1));
         } catch (Throwable t) {
             log.error("Parse subscribed message error: " + message + ", " + pattern, t);
         }

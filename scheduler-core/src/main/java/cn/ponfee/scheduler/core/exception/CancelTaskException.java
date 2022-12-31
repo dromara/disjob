@@ -12,10 +12,10 @@ public class CancelTaskException extends BaseCheckedException {
     private static final long serialVersionUID = -3461401416673580272L;
 
     public CancelTaskException(CodeMsg cm) {
-        super(cm);
+        super(cm.getCode(), cm.getMsg());
     }
 
     public CancelTaskException(CodeMsg cm, String message) {
-        super(cm, message);
+        super(cm.getCode(), message);
     }
 }

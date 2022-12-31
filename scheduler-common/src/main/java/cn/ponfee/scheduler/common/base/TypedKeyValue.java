@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.common.base;
 
 import cn.ponfee.scheduler.common.util.Numbers;
+import cn.ponfee.scheduler.common.util.ObjectUtils;
 
 import java.util.Objects;
 
@@ -17,7 +18,12 @@ public interface TypedKeyValue<K, V> {
 
     V removeKey(K key);
 
+    default boolean hasKey(K key) {
+        return !ObjectUtils.isEmpty(getValue(key));
+    }
+
     // --------------------------------------------------------object
+
     default V getRequired(K key) {
         V value = getValue(key);
         assertPresented(key, value);
@@ -177,7 +183,7 @@ public interface TypedKeyValue<K, V> {
 
     // ---------------------------------------------------- static methods
     static void assertPresented(Object key, Object value) {
-        if (value == null) {
+        if (ObjectUtils.isEmpty(value)) {
             throw new IllegalArgumentException("Not presented value of '" + key + "'");
         }
     }

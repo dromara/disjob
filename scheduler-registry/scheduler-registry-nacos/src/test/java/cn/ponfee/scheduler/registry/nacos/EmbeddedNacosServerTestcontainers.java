@@ -1,7 +1,6 @@
 package cn.ponfee.scheduler.registry.nacos;
 
 import org.junit.jupiter.api.Assertions;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -47,9 +46,7 @@ import java.util.concurrent.CountDownLatch;
  *
  * @author Ponfee
  */
-public final class EmbeddedNacosServer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EmbeddedNacosServer.class);
+public final class EmbeddedNacosServerTestcontainers {
 
     private static final String NACOS_DOCKER_IMAGE_NAME = "zhusaidong/nacos-server-m1:2.0.3";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848", "8849:8849", "9848:9848", "9849:9849");
@@ -66,7 +63,7 @@ public final class EmbeddedNacosServer {
         // -v: withFileSystemBind
         // -e: withEnv
         GenericContainer nacosDockerContainer = new GenericContainer(consulImage)
-            .withLogConsumer(new Slf4jLogConsumer(LOG))
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedNacosServerTestcontainers.class)))
             // 挂载映射文件非必需
             //.withFileSystemBind("/opt/docker/nacos/init.d/custom.properties", "/home/nacos/init.d/custom.properties", BindMode.READ_ONLY)
             //.withFileSystemBind("/opt/docker/nacos/logs", "/home/nacos/logs", BindMode.READ_WRITE)

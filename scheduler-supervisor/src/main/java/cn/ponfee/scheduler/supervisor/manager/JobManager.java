@@ -240,7 +240,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Assert.isNull(job.getLastTriggerTime(), "Last trigger time must be null.");
         Assert.isNull(job.getNextTriggerTime(), "Next trigger time must be null.");
         verifyJobHandler(job);
-        job.defaultSettingAndVerify();
+        job.checkAndDefaultSetting();
 
         job.setJobId(idGenerator.generateId());
         Date now = new Date();
@@ -265,7 +265,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             verifyJobHandler(job);
         }
 
-        job.defaultSettingAndVerify();
+        job.checkAndDefaultSetting();
 
         SchedJob dbSchedJob = jobMapper.getByJobId(job.getJobId());
         Assert.notNull(dbSchedJob, "Sched job id not found " + job.getJobId());

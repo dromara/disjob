@@ -7,7 +7,7 @@
   <parent>
     <groupId>cn.ponfee</groupId>
     <artifactId>scheduler-samples</artifactId>
-    <version>${revision}</version>
+    <version>${spvision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -15,6 +15,16 @@
   <name>${project.artifactId}</name>
 
   <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-core</artifactId>

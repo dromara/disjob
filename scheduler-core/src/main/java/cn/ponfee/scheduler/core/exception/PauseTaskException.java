@@ -12,10 +12,10 @@ public class PauseTaskException extends BaseCheckedException {
     private static final long serialVersionUID = 409247238969878885L;
 
     public PauseTaskException(CodeMsg cm) {
-        super(cm);
+        super(cm.getCode(), cm.getMsg());
     }
 
     public PauseTaskException(CodeMsg cm, String message) {
-        super(cm, message);
+        super(cm.getCode(), message);
     }
 }

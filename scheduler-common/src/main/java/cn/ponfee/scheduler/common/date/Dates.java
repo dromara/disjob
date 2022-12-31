@@ -33,7 +33,7 @@ import static cn.ponfee.scheduler.common.util.Strings.BLANK_CHAR;
  *   ZoneId.of("Asia/Shanghai")               -->    Asia/Shanghai
  *   ZoneId.systemDefault()                   -->    Asia/Shanghai
  *
- * TimeZone子类（不能使用UTC）：ZoneInfo
+ * TimeZone子类（不支持UTC）：ZoneInfo
  *   TimeZone.getTimeZone("Etc/GMT-8")        -->    Etc/GMT-8
  *   TimeZone.getTimeZone("GMT+8")            -->    GMT+08:00
  *   TimeZone.getTimeZone("Asia/Shanghai")    -->    Asia/Shanghai

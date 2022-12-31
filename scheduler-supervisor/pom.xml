@@ -16,18 +16,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-registry-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-dispatch-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.31</version>
-      <scope>runtime</scope>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -39,6 +35,26 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.mybatis.spring.boot</groupId>
+      <artifactId>mybatis-spring-boot-starter</artifactId>
+      <version>2.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.31</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-registry-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-dispatch-api</artifactId>
+    </dependency>
 
     <!-- test dependency -->
     <dependency>
@@ -48,20 +64,14 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-samples-common</artifactId>
-      <version>${revision}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-dispatch-redis</artifactId>
-      <version>${revision}</version>
+      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-redis</artifactId>
-      <version>${revision}</version>
+      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

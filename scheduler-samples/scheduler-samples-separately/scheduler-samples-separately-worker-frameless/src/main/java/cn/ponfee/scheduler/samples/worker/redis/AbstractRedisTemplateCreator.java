@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.samples.worker.redis;
 
+import cn.ponfee.scheduler.common.spring.YamlProperties;
 import cn.ponfee.scheduler.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.lettuce.core.ClientOptions;
@@ -92,6 +93,43 @@ public abstract class AbstractRedisTemplateCreator {
         private final RedisConnectionFactory redisConnectionFactory;
         private final RedisTemplate<Object, Object> normalRedisTemplate;
         private final StringRedisTemplate stringRedisTemplate;
+    }
+
+    public static RedisTemplateWrapper create(String prefix, YamlProperties props) {
+        AbstractRedisTemplateCreatorBuilder<?, ?> builder;
+        if (props.hasKey(prefix + "host")) {
+            // Creates standalone redis template
+            builder = StandaloneRedisTemplateCreator.builder()
+                .host(props.getRequiredString(prefix + "host"))
+                .port(props.getRequiredInt(prefix + "port"));
+        } else if (props.hasKey(prefix + "sentinel.master")) {
+            // Creates sentinel redis template
+            builder = SentinelRedisTemplateCreator.builder()
+                .sentinelMaster(props.getRequiredString(prefix + "sentinel.master"))
+                .sentinelNodes(props.getRequiredString(prefix + "sentinel.nodes"))
+                .sentinelUsername(props.getString(prefix + "sentinel.username"))
+                .sentinelPassword(props.getString(prefix + "sentinel.password"));
+        } else if (props.hasKey(prefix + "cluster.nodes")) {
+            // Creates cluster redis template
+            builder = ClusterRedisTemplateCreator.builder()
+                .clusterNodes(props.getRequiredString(prefix + "cluster.nodes"))
+                .clusterMaxRedirects(props.getInt(prefix + "cluster.max-redirects"));
+        } else {
+            throw new IllegalArgumentException("Invalid redis configuration: " + Jsons.toJson(props));
+        }
+
+        return builder.database(props.getInt(prefix + "database", 0))
+            .username(props.getString(prefix + "username"))
+            .password(props.getString(prefix + "password"))
+            .connectTimeout(props.getInt(prefix + "connect-timeout", 1000))
+            .timeout(props.getInt(prefix + "timeout", 2000))
+            .maxActive(props.getInt(prefix + "lettuce.pool.max-active", 50))
+            .maxIdle(props.getInt(prefix + "lettuce.pool.max-idle", 8))
+            .minIdle(props.getInt(prefix + "lettuce.pool.min-idle", 0))
+            .maxWait(props.getInt(prefix + "lettuce.pool.max-wait", 2000))
+            .shutdownTimeout(props.getInt("lettuce.shutdown-timeout", 2000))
+            .build()
+            .create();
     }
 
 }

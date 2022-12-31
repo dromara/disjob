@@ -15,7 +15,7 @@
   <name>${project.artifactId}</name>
 
   <properties>
-    <etcd.version>0.7.5</etcd.version>
+    <jetcd.version>0.7.5</jetcd.version>
   </properties>
 
   <dependencies>
@@ -26,13 +26,19 @@
     <dependency>
       <groupId>io.etcd</groupId>
       <artifactId>jetcd-core</artifactId>
-      <version>${etcd.version}</version>
+      <version>${jetcd.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.annotation</groupId>
+          <artifactId>javax.annotation-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>io.etcd</groupId>
       <artifactId>jetcd-launcher</artifactId>
-      <version>${etcd.version}</version>
+      <version>${jetcd.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

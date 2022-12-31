@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.util.Enums;
+import cn.ponfee.scheduler.common.base.IntValue;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.core.route.*;
@@ -14,7 +15,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum RouteStrategy {
+public enum RouteStrategy implements IntValue<RouteStrategy> {
 
     /**
      * 轮询
@@ -52,16 +53,13 @@ public enum RouteStrategy {
         this.router = router;
     }
 
+    @Override
     public int value() {
         return value;
     }
 
     public Worker route(ExecuteParam param, List<Worker> workers) {
         return router.route(param, workers);
-    }
-
-    public boolean equals(Integer value) {
-        return value != null && this.value == value;
     }
 
     public static RouteStrategy of(Integer value) {

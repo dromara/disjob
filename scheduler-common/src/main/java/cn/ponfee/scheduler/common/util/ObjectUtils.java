@@ -77,19 +77,23 @@ public final class ObjectUtils {
     public static boolean isEmpty(Object o) {
         if (o == null) {
             return true;
-        } else if (o instanceof CharSequence) {
-            return ((CharSequence) o).length() == 0;
-        } else if (o instanceof Collection) {
-            return ((Collection<?>) o).isEmpty();
-        } else if (o.getClass().isArray()) {
-            return Array.getLength(o) == 0;
-        } else if (o instanceof Map) {
-            return ((Map<?, ?>) o).isEmpty();
-        } else if (o instanceof Dictionary) {
-            return ((Dictionary<?, ?>) o).isEmpty();
-        } else {
-            return false;
         }
+        if (o instanceof CharSequence) {
+            return ((CharSequence) o).length() == 0;
+        }
+        if (o instanceof Collection) {
+            return ((Collection<?>) o).isEmpty();
+        }
+        if (o.getClass().isArray()) {
+            return Array.getLength(o) == 0;
+        }
+        if (o instanceof Map) {
+            return ((Map<?, ?>) o).isEmpty();
+        }
+        if (o instanceof Dictionary) {
+            return ((Dictionary<?, ?>) o).isEmpty();
+        }
+        return false;
     }
 
     /**

@@ -15,7 +15,85 @@
   <artifactId>scheduler-parent</artifactId>
   <version>${revision}</version>
   <packaging>pom</packaging>
-  <name>${project.artifactId}</name>
+
+  <!-- 发布到中央仓库的参考文章：
+    https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid
+    https://liuyanzhao.com/1500353647236747264.html
+    https://blog.csdn.net/qq_42651904/article/details/121191238
+
+    发布命令：
+      1.1）deploy方式：mvn -Drevision=_ versions:set -DgenerateBackupPoms=false -DnewVersion=1.5-SNAPSHOT && mvn clean deploy -DskipTests -Dcheckstyle.skip -U
+      2.1）release交互模式：
+          | ```bash
+          | mvn release:update-versions \
+          |   -B \
+          |   -\-batch-mode \
+          |   -DdevelopmentVersion=1.5-SNAPSHOT \
+          | && \
+          | mvn release:prepare release:perform \
+          |   -Darguments="-Dcheckstyle.skip"
+          | ```
+      2.2）release非交互式：
+          | ```bash
+          | mvn release:update-versions \
+          |   -B \
+          |   -\-batch-mode \
+          |   -DdevelopmentVersion=1.5-SNAPSHOT \
+          | && \
+          | mvn release:prepare release:perform \
+          |   -Darguments="-Dcheckstyle.skip" \
+          |   -DreleaseVersion=1.5 \
+          |   -Dtag=v1.5 \
+          |   -DdevelopmentVersion=1.6-SNAPSHOT
+          | ```
+
+    注意事项：
+      1）使用“mvnw”命令需要确认“~/.m2”目录下是否有settings.xml文件且正确配置<server>元素
+      2）release版本deploy完后还需要在“s01.oss.sonatype.org”页面上手动操作：“Staging Repositories” -> “Close” -> “Release”
+  -->
+
+  <name>Distributed Scheduler</name>
+  <description>A distributed task scheduling framework</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Ponfee</name>
+      <email>ponfee.cn@gmail.com</email>
+      <organization>ponfee.cn</organization>
+      <organizationUrl>http://www.ponfee.cn/</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/ponfee/distributed-scheduler.git</connection>
+    <developerConnection>scm:git:https://github.com/ponfee/distributed-scheduler.git</developerConnection>
+    <url>https://github.com/ponfee/distributed-scheduler</url>
+    <tag>HEAD</tag>
+  </scm>
+  <!-- 根据version中是否带有“-SNAPSHOT”来判断是分发到snapshots库还是releases库 -->
+  <distributionManagement>
+    <!-- 添加到maven的安装目录的settings.xml中
+    <servers>
+      <server>
+        <id>ossrh</id>
+        <username>username</username>
+        <password>password</password>
+      </server>
+    </servers> -->
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
   <modules>
     <module>scheduler-common</module>
@@ -24,10 +102,10 @@
     <module>scheduler-worker</module>
     <module>scheduler-registry</module>
     <module>scheduler-dispatch</module>
-    <module>scheduler-samples</module>
   </modules>
 
   <properties>
+    <revision>1.6-SNAPSHOT</revision>
     <file.encoding>UTF-8</file.encoding>
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
@@ -35,13 +113,12 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
-    <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m</argLine>
 
+    <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
     <springboot.version>2.7.7</springboot.version>
     <springframework.version>5.3.24</springframework.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
     <lombok.version>1.18.24</lombok.version>
-    <revision>1.4-SNAPSHOT</revision>
   </properties>
 
   <dependencyManagement>
@@ -64,55 +141,56 @@
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>scheduler-common</artifactId>
-        <version>${revision}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>scheduler-core</artifactId>
-        <version>${revision}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>scheduler-registry-api</artifactId>
-        <version>${revision}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>scheduler-dispatch-api</artifactId>
-        <version>${revision}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>scheduler-supervisor</artifactId>
-        <version>${revision}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>scheduler-worker</artifactId>
-        <version>${revision}</version>
+        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>1.3.5</version>
     </dependency>
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <!--<dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>6.2.5.Final</version>
+    </dependency>-->
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-log4j2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.mybatis.spring.boot</groupId>
-      <artifactId>mybatis-spring-boot-starter</artifactId>
-      <version>2.3.0</version>
     </dependency>
 
     <!-- 需要注意以下几个processor的定义顺序，否则需要使用annotationProcessorPaths指定 -->
@@ -157,6 +235,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
@@ -227,26 +311,6 @@
     </repository>
   </repositories>
 
-  <!-- 根据version中是否带有“-SNAPSHOT”来判断分发到snapshots库还是releases库 -->
-  <distributionManagement>
-    <!-- 添加到maven的安装目录的settings.xml中
-    <servers>
-      <server>
-        <id>repos-snapshots</id>
-        <username>username</username>
-        <password>password</password>
-      </server>
-    </servers> -->
-    <snapshotRepository>
-      <id>repos-snapshots</id>
-      <url>https://{{domain}}/repository/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>repos-releases</id>
-      <url>https://{{domain}}/repository/releases</url>
-    </repository>
-  </distributionManagement>
-
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
 
@@ -271,7 +335,44 @@
       </testResource>
     </testResources>
 
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>2.22.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.13</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <encoding>${file.encoding}</encoding>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -303,28 +404,6 @@
               <version>${springframework.version}</version>
             </path>
           </annotationProcessorPaths>-->
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.2.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.3.0</version>
-        <configuration>
-          <encoding>${file.encoding}</encoding>
         </configuration>
       </plugin>
       <plugin>
@@ -361,34 +440,81 @@
           <argLine>${argLine} ${jacocoArgLine}</argLine>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.4.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <doclint>none</doclint>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.0.1</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <useReleaseProfile>false</useReleaseProfile>
+          <releaseProfiles>release</releaseProfiles>
+          <generateReleasePoms>false</generateReleasePoms>
+          <tagNameFormat>v@{project.version}</tagNameFormat>
+          <arguments>-DskipTests</arguments>
+          <preparationGoals>clean verify</preparationGoals>
+          <goals>deploy</goals>
+          <checkModificationExcludes>
+            <checkModificationExclude>**/pom.xml</checkModificationExclude>
+          </checkModificationExcludes>
+        </configuration>
+      </plugin>
+      <!--<plugin>
+        Note: 加上会导致把可执行的jar包deploy到sonatype上
+        Nexus-bug: https://issues.sonatype.org/browse/NEXUS-9138
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>false</autoReleaseAfterClose>
+        </configuration>
+      </plugin>-->
     </plugins>
-
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.22.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>3.2.0</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>3.4.0</version>
-          <configuration>
-            <createDependencyReducedPom>false</createDependencyReducedPom>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
 
   </build>
 

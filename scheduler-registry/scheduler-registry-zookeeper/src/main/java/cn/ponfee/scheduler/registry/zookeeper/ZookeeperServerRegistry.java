@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
  */
 public abstract class ZookeeperServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
+    private static final int CREATE_EPHEMERAL_FAIL_RETRIES = 3;
+
     private final CuratorFrameworkClient client;
 
     protected ZookeeperServerRegistry(String namespace, ZookeeperProperties props) {
@@ -36,7 +38,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                 }
                 for (R server : registered) {
                     try {
-                        client0.createEphemeral(buildRegistryPath(server));
+                        client0.createEphemeral(buildRegistryPath(server), CREATE_EPHEMERAL_FAIL_RETRIES);
                     } catch (Exception e) {
                         log.error("Re-registry server to zookeeper occur error: " + server, e);
                     }
@@ -67,7 +69,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         }
 
         try {
-            client.createEphemeral(buildRegistryPath(server));
+            client.createEphemeral(buildRegistryPath(server), CREATE_EPHEMERAL_FAIL_RETRIES);
             registered.add(server);
             log.info("Server registered: {} - {}", registryRole.name(), server);
         } catch (Throwable e) {

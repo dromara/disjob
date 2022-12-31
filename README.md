@@ -50,7 +50,7 @@ distributed-scheduler
 ## Features
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
-- Supervisor、Worker通过注册中心进行解耦，目前支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
+- Supervisor与Worker通过注册中心解耦，目前支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor以任务分发方式把任务给到Worker，目前支持的任务分发方式有：Redis、Http
 - 支持任务分组(job-group)，任务会分发给指定组的Worker执行
 - 自定义拆分任务，重写[JobHandler#split](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobSplitter.java)即可把一个大任务拆分为多个小任务，任务分治
@@ -58,7 +58,17 @@ distributed-scheduler
 - 提供执行中的任务控制能力，可随时暂停/取消正在执行中的任务，亦可恢复执行被暂停的任务
 - 提供任务依赖执行的能力，多个任务构建好DAG依赖关系后，任务便按既定的依赖顺序依次执行
 
-## Build
+## Download from central
+
+```xml
+<dependency>
+  <groupId>cn.ponfee</groupId>
+  <artifactId>scheduler-{xxx}</artifactId>
+  <version>1.5</version>
+</dependency>
+```
+
+## Build from source
 
 ```bash
 ./mvnw clean package -DskipTests -Dcheckstyle.skip -U
@@ -86,7 +96,7 @@ distributed-scheduler
 - 注册中心或任务分发的类型选择是在Spring boot启动类中切换注解
   - EnableRedisServerRegistry启用Redis做为注册中心（[内置redis-server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServer.java)）
   - EnableConsulServerRegistry启用Consul做为注册中心（[内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)）
-  - EnableNacosServerRegistry启用Nacos做为注册中心（[内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServer.java)）
+  - EnableNacosServerRegistry启用Nacos做为注册中心（[内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)）
   - EnableEtcdServerRegistry启用Etcd做为注册中心（[内置etcd-server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)）
   - EnableZookeeperServerRegistry启用Zookeeper做为注册中心（[内置zookeeper-server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)）
   - EnableRedisTaskDispatching启用Redis做任务分发

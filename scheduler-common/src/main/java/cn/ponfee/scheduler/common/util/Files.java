@@ -21,13 +21,13 @@ import java.util.function.Consumer;
  */
 public final class Files {
 
-    public static final int EOF = -1; // end of file read
+    public static final int EOF             = -1; // end of file read
 
-    public static final int BUFF_SIZE = 8192; // file buffer size
+    public static final int BUFF_SIZE       = 8192; // file buffer size
 
-    public static final String TOP_PATH                 = "..";
+    public static final String TOP_PATH     = "..";
 
-    public static final String CURRENT_PATH             = ".";
+    public static final String CURRENT_PATH = ".";
 
     // ------------------------------------------------------------charset encoding
     public static final Charset DEFAULT_CHARSET = Charset.defaultCharset(); // default charset

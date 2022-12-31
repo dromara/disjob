@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.util.Enums;
+import cn.ponfee.scheduler.common.base.IntValue;
 
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum RetryType {
+public enum RetryType implements IntValue<RetryType> {
 
     /**
      * 不重试
@@ -37,12 +38,9 @@ public enum RetryType {
         this.value = value;
     }
 
+    @Override
     public int value() {
         return value;
-    }
-
-    public boolean equals(Integer value) {
-        return value != null && this.value == value;
     }
 
     public static RetryType of(Integer value) {

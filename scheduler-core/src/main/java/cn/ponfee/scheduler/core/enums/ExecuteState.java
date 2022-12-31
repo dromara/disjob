@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.util.Enums;
+import cn.ponfee.scheduler.common.base.IntValue;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum ExecuteState {
+public enum ExecuteState implements IntValue<ExecuteState> {
 
     /**
      * 等待执行
@@ -111,6 +112,7 @@ public enum ExecuteState {
         this.runState = runState;
     }
 
+    @Override
     public int value() {
         return value;
     }
@@ -125,10 +127,6 @@ public enum ExecuteState {
 
     public RunState runState() {
         return runState;
-    }
-
-    public boolean equals(Integer value) {
-        return value != null && this.value == value;
     }
 
     public static ExecuteState of(Integer value) {

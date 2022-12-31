@@ -5,15 +5,36 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>cn.ponfee</groupId>
-    <artifactId>scheduler-parent</artifactId>
-    <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.7.7</version>
+    <relativePath/>
   </parent>
 
+  <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-samples</artifactId>
+  <version>${spvision}</version>
   <packaging>pom</packaging>
   <name>${project.artifactId}</name>
+
+  <properties>
+    <spvision>1.0-SNAPSHOT</spvision>
+    <file.encoding>UTF-8</file.encoding>
+    <java.version>1.8</java.version>
+    <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
+    <maven.install.skip>true</maven.install.skip>
+    <maven.deploy.skip>true</maven.deploy.skip>
+
+    <distributed.scheduler.version>1.5</distributed.scheduler.version>
+    <springboot.version>2.7.7</springboot.version>
+    <springframework.version>5.3.24</springframework.version>
+    <mapstruct.version>1.5.3.Final</mapstruct.version>
+    <lombok.version>1.18.24</lombok.version>
+  </properties>
 
   <modules>
     <module>scheduler-samples-common</module>
@@ -21,52 +42,299 @@
     <module>scheduler-samples-separately</module>
   </modules>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>1.17.6</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-common</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-core</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-supervisor</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-worker</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-registry-redis</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-registry-consul</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-registry-nacos</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-registry-zookeeper</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-registry-etcd</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-dispatch-redis</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-dispatch-http</artifactId>
+        <version>${distributed.scheduler.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-samples-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-redis</artifactId>
-      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-consul</artifactId>
-      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-nacos</artifactId>
-      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-zookeeper</artifactId>
-      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-etcd</artifactId>
-      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-dispatch-redis</artifactId>
-      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-dispatch-http</artifactId>
-      <version>${revision}</version>
+    </dependency>
+
+    <!-- for help compile -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${mapstruct.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <version>${springboot.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-indexer</artifactId>
+      <version>${springframework.version}</version>
+      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-samples-common</artifactId>
-        <version>${revision}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
+      <id>nexus.nuiton.org-central</id>
+      <url>https://nexus.nuiton.org/nexus/content/repositories/central</url>
+    </repository>
+    <repository>
+      <id>nexus.nuiton.org-thirdparty</id>
+      <url>https://nexus.nuiton.org/nexus/content/repositories/thirdparty</url>
+    </repository>
+  </repositories>
+
+  <build>
+    <finalName>${project.artifactId}</finalName>
+
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.xml</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+    </testResources>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.4.1</version>
+          <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <encoding>${file.encoding}</encoding>
+          <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <encoding>${file.encoding}</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.4.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <doclint>none</doclint>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>3.0.0</version>
+        <inherited>true</inherited>
+        <executions>
+          <execution>
+            <id>deploy-none</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.13</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>staging-none</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+        </configuration>
+      </plugin>
+    </plugins>
+
+  </build>
 
 </project>

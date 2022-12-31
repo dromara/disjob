@@ -1,6 +1,7 @@
 package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.util.Enums;
+import cn.ponfee.scheduler.common.base.IntValue;
 
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum CollisionStrategy {
+public enum CollisionStrategy implements IntValue<CollisionStrategy> {
 
     /**
      * 并行
@@ -42,12 +43,9 @@ public enum CollisionStrategy {
         this.value = value;
     }
 
+    @Override
     public int value() {
         return value;
-    }
-
-    public boolean equals(Integer value) {
-        return value != null && this.value == value;
     }
 
     public static CollisionStrategy of(Integer value) {

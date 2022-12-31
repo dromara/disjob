@@ -78,7 +78,9 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      */
     protected final void refreshDiscoveredServers(List<D> servers) {
         discoveryServer.refreshServers(servers);
-        log.debug("Refreshed discovery {}", discoveryRole.name());
+        if (log.isDebugEnabled()) {
+            log.debug("Refreshed discovery servers: {} - {}", discoveryRole.name(), servers);
+        }
     }
 
     @Override

@@ -1,22 +1,25 @@
 # scheduler worker configuration
-distributed.scheduler.worker:
-  group: default
-  maximum-pool-size: 100
-  keep-alive-time-seconds: 300
+distributed.scheduler:
+  namespace: test_namespace
+  worker:
+    group: default
+    maximum-pool-size: 100
+    keep-alive-time-seconds: 300
 
 # redis configuration
 redis:
   database: 0
-  #host: localhost    # redis standalone host name
-  #port: 6379         # redis standalone port
-  #username: test123  # redis mast node username
-  password: 123456   # redis master node auth password
+  #host: localhost       # redis standalone host name
+  #port: 6379            # redis standalone port
+  #username: test_redis  # redis node auth username
+  password: 123456       # redis node auth password
   connect-timeout: 1000
   timeout: 2000
   sentinel:
     master: REDIS_SENTINEL
     nodes: 112.74.170.75:16379,112.74.170.75:16380
-    #password: 654321 # redis sentinel auth password
+    #username: test_sentinel # redis sentinel auth username
+    #password: 654321        # redis sentinel auth password
   lettuce:
     pool:
       max-active: 20

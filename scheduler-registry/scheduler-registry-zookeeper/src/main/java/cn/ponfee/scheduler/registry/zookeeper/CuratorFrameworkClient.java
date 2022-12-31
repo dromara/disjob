@@ -64,18 +64,14 @@ public class CuratorFrameworkClient implements AutoCloseable {
         }
     }
 
-    public void createEphemeral(String path) throws Exception {
-        createEphemeral(path, true);
-    }
-
-    private void createEphemeral(String path, boolean retryable) throws Exception {
+    public void createEphemeral(String path, int retries) throws Exception {
         try {
             curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (KeeperException.NodeExistsException e) {
             LOG.debug("Node path already exists: {} - {}", path, e.getMessage());
-            if (retryable) {
+            if (retries > 0) {
                 deletePath(path);
-                createEphemeral(path, false);
+                createEphemeral(path, --retries);
             }
         }
     }
@@ -88,17 +84,13 @@ public class CuratorFrameworkClient implements AutoCloseable {
         }
     }
 
-    public void createEphemeral(String path, byte[] data) throws Exception {
-        createEphemeral(path, data, true);
-    }
-
-    private void createEphemeral(String path, byte[] data, boolean retryable) throws Exception {
+    public void createEphemeral(String path, byte[] data, int retries) throws Exception {
         try {
             curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(path, data);
         } catch (KeeperException.NodeExistsException ignored) {
-            if (retryable) {
+            if (retries > 0) {
                 deletePath(path);
-                createEphemeral(path, data, false);
+                createEphemeral(path, data, --retries);
             }
         }
     }

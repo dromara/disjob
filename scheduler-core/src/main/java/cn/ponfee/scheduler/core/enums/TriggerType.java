@@ -6,6 +6,7 @@ import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.Enums;
 import cn.ponfee.scheduler.common.util.Jsons;
+import cn.ponfee.scheduler.common.base.IntValue;
 import cn.ponfee.scheduler.core.model.PeriodTriggerConf;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  * @see org.springframework.scheduling.support.CronTrigger
  * @see org.springframework.scheduling.support.CronExpression
  */
-public enum TriggerType {
+public enum TriggerType implements IntValue<TriggerType> {
 
     /**
      * Cron expression<br/>
@@ -197,6 +198,7 @@ public enum TriggerType {
         this.example = example;
     }
 
+    @Override
     public int value() {
         return value;
     }
@@ -210,10 +212,6 @@ public enum TriggerType {
     public abstract Date computeNextFireTime(String triggerConf, Date startTime);
 
     public abstract List<Date> computeNextFireTimes(String triggerConf, Date startTime, int count);
-
-    public boolean equals(Integer value) {
-        return value != null && this.value == value;
-    }
 
     public static TriggerType of(Integer value) {
         if (value == null) {

@@ -94,7 +94,7 @@ public class DiscoveryRestTemplate<D extends Server> {
     }
 
     /**
-     * 如果returnType=Void.class时：
+     * 当returnType=Void.class时：
      * 1）如果响应的为非异常的http状态码，则返回结果都是null
      * 2）如果响应的为异常的http状态码，则会抛出HttpStatusCodeException
      *

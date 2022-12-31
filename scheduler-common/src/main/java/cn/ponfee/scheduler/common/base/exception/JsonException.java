@@ -1,7 +1,7 @@
 package cn.ponfee.scheduler.common.base.exception;
 
 /**
- * The json exception
+ * Json exception description
  * 
  * @author Ponfee
  */
@@ -24,7 +24,8 @@ public class JsonException extends RuntimeException {
         super(message, cause);
     }
 
-    protected JsonException(String message, Throwable cause,
+    protected JsonException(String message,
+                            Throwable cause,
                             boolean enableSuppression,
                             boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);

@@ -1,7 +1,6 @@
 package cn.ponfee.scheduler.core.model;
 
 import cn.ponfee.scheduler.common.base.model.BaseEntity;
-import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.core.enums.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +8,8 @@ import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import static cn.ponfee.scheduler.common.date.Dates.format;
 
 /**
  * The schedule job entity, mapped database table sched_job
@@ -163,7 +164,7 @@ public class SchedJob extends BaseEntity implements Serializable {
      */
     private String createdBy;
 
-    public void defaultSettingAndVerify() {
+    public void checkAndDefaultSetting() {
         if (jobState == null) {
             this.jobState = JobState.STOPPED.value();
         }
@@ -210,10 +211,7 @@ public class SchedJob extends BaseEntity implements Serializable {
         MisfireStrategy.of(misfireStrategy);
         RouteStrategy.of(routeStrategy);
         if (startTime != null && endTime != null) {
-            Assert.isTrue(
-                startTime.before(endTime),
-                () -> "Invalid job time param: " + Dates.format(startTime) + ">=" + Dates.format(endTime)
-            );
+            Assert.isTrue(!startTime.after(endTime), () -> "Invalid time: " + format(startTime) + ">=" + format(endTime));
         }
         if (jobParam == null) {
             this.jobParam = "";

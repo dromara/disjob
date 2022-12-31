@@ -2,7 +2,6 @@ package cn.ponfee.scheduler.supervisor.test.common.util;
 
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
-import cn.ponfee.scheduler.common.date.JavaUtilDateFormat;
 import cn.ponfee.scheduler.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
