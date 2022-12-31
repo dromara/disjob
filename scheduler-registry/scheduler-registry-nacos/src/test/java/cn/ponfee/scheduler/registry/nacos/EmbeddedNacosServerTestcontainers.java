@@ -52,17 +52,14 @@ public final class EmbeddedNacosServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848", "8849:8849", "9848:9848", "9849:9849");
 
     public static void main(String[] args) {
-        System.out.println("Embedded nacos server starting...");
-
-        DockerImageName consulImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME)
-            .asCompatibleSubstituteFor("nacos-test");
+        DockerImageName consulImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("nacos-test");
 
         // --name: DockerImageName
         // --privileged: withPrivilegedMode
         // -p: setPortBindings
         // -v: withFileSystemBind
         // -e: withEnv
-        GenericContainer nacosDockerContainer = new GenericContainer(consulImage)
+        GenericContainer dockerNacosContainer = new GenericContainer(consulImage)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedNacosServerTestcontainers.class)))
             // 挂载映射文件非必需
             //.withFileSystemBind("/opt/docker/nacos/init.d/custom.properties", "/home/nacos/init.d/custom.properties", BindMode.READ_ONLY)
@@ -73,21 +70,22 @@ public final class EmbeddedNacosServerTestcontainers {
             .withEnv("JVM_XMS", "256m")
             .withEnv("JVM_XMX", "256m");
 
-        nacosDockerContainer.setPortBindings(PORT_BINDINGS);
+        dockerNacosContainer.setPortBindings(PORT_BINDINGS);
+        Runtime.getRuntime().addShutdownHook(new Thread(dockerNacosContainer::close));
 
         try {
-            Runtime.getRuntime().addShutdownHook(new Thread(nacosDockerContainer::close));
-            nacosDockerContainer.start();
 
-            Assertions.assertEquals(PORT_BINDINGS, nacosDockerContainer.getPortBindings());
-            //Assertions.assertEquals(Arrays.asList(8848, 8849, 9848, 9849), nacosDockerContainer.getExposedPorts());
+            System.out.println("Embedded docker nacos server starting...");
+            dockerNacosContainer.start();
+            System.out.println("Embedded docker nacos server started!");
 
-            System.out.println("Embedded nacos server started!");
+            Assertions.assertEquals(PORT_BINDINGS, dockerNacosContainer.getPortBindings());
+
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            nacosDockerContainer.close();
+            dockerNacosContainer.close();
         }
     }
 

@@ -15,7 +15,9 @@ USE distributed_scheduler;
 -- ----------------------------
 -- USER PRIVILEGES
 -- ----------------------------
-GRANT ALL PRIVILEGES ON distributed_scheduler.* TO 'distributed_scheduler'@'%' IDENTIFIED BY 'distributed_scheduler';
+-- GRANT ALL PRIVILEGES ON distributed_scheduler.* TO 'distributed_scheduler'@'%' IDENTIFIED BY 'distributed_scheduler';
+CREATE USER 'distributed_scheduler'@'%' IDENTIFIED BY 'distributed_scheduler';
+GRANT ALL PRIVILEGES ON distributed_scheduler.* TO 'distributed_scheduler'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 
 

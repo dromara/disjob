@@ -18,8 +18,6 @@ public final class EmbeddedEtcdServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Arrays.asList("2379:2379", "2380:2380", "8080:8080");
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Embedded etcd server starting...");
-
         EtcdCluster etcd = Etcd.builder()
             .withImage(ETCD_DOCKER_IMAGE_NAME)
             .withClusterName(EmbeddedEtcdServerTestcontainers.class.getSimpleName())
@@ -30,9 +28,11 @@ public final class EmbeddedEtcdServerTestcontainers {
             container.setPortBindings(PORT_BINDINGS);
             // other docker container settings
         });
+        Runtime.getRuntime().addShutdownHook(new Thread(etcd::close));
         try {
+            System.out.println("Embedded docker etcd server starting...");
             etcd.start();
-            System.out.println("Embedded etcd server started!");
+            System.out.println("Embedded docker etcd server started!");
             new CountDownLatch(1).await();
         } finally {
             etcd.close();

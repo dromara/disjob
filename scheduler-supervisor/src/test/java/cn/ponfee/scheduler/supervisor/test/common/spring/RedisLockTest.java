@@ -10,12 +10,14 @@ import com.google.common.io.Files;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -135,10 +137,10 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         AtomicInteger num = new AtomicInteger(RATIO);
         System.out.println("\n=========================START========================");
         List<Map<Integer, String>> lines = Files.readLines(file(), StandardCharsets.UTF_8)
-                .stream()
-                .filter(e -> ThreadLocalRandom.current().nextInt(3) == 0)
-                .map(line -> ImmutableMap.of(num.getAndIncrement(), line))
-                .collect(Collectors.toList());
+            .stream()
+            .filter(e -> ThreadLocalRandom.current().nextInt(3) == 0)
+            .map(line -> ImmutableMap.of(num.getAndIncrement(), line))
+            .collect(Collectors.toList());
 
         execute(lines, map -> {
             Entry<Integer, String> line = map.entrySet().iterator().next();
@@ -147,27 +149,46 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         System.out.println("=========================END========================\n");
     }
 
+    /**
+     * 当 key 不存在时，返回 -2
+     * 当 key 存在但没有设置剩余生存时间时，返回 -1
+     * 否则，以秒为单位，返回 key 的剩余生存时间
+     * <p>
+     * 当key过期后，EmbeddedRedisServer有TTL=0的BUG
+     *
+     * @throws InterruptedException
+     */
     @Test
     public void testTryLockWithTimeout() throws InterruptedException {
-        Assertions.assertFalse(Arrays.equals("value".getBytes(), (byte[]) bean().execute((RedisCallback<Object>) conn -> conn.get(ObjectUtils.uuid()), true)));
+        int expire = 2000;
+        String lockKey = "test:lock:" + ObjectUtils.uuid32();
+        String actualKey = "lock:" + lockKey;
 
-        String key = "test:lock:" + ObjectUtils.uuid32();
-        RedisLock redisLock = new RedisLock(bean(), key, 2000);
-        redisLock.tryLock();
+        RedisLock redisLock = new RedisLock(bean(), lockKey, expire);
+        Assertions.assertTrue(redisLock.tryLock());
 
-        String actualKey = "lock:" + key;
         Assertions.assertTrue(bean().hasKey(actualKey));
-        Assertions.assertEquals(2000L, bean().execute((RedisCallback<Object>) conn -> conn.ttl(actualKey.getBytes(StandardCharsets.UTF_8), TimeUnit.MILLISECONDS)));
 
-        boolean acquired = false;
-        long start = System.currentTimeMillis();
-        if (redisLock.tryLock(3000, TimeUnit.MILLISECONDS)) {
-            acquired = true;
-        }
-        long cost = System.currentTimeMillis() - start;
-        System.out.println("cost: " + cost);
-        Assertions.assertTrue(acquired);
-        Assertions.assertTrue(cost <= 2500);
+        long ttl1 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        System.out.println("TTL1: " + ttl1);
+        Assertions.assertTrue(ttl1 > 0 && ttl1 <= expire);
+
+        Thread.sleep(expire);
+
+        long ttl2 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        System.out.println("TTL2: " + ttl2);
+        Assertions.assertTrue(ttl2 <= 0);
+
+        Thread.sleep(expire);
+
+        long ttl3 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        System.out.println("TTL3: " + ttl3);
+        Assertions.assertTrue(ttl3 <= 0);
+
+        redisLock.unlock();
+        long ttl4 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        System.out.println("TTL4: " + ttl4);
+        Assertions.assertEquals(-2, ttl4);
     }
 
     private static class Printer {
@@ -199,8 +220,8 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     public static <T> void execute(Collection<T> coll, Consumer<T> action, Executor executor) {
         Stopwatch watch = Stopwatch.createStarted();
         coll.stream()
-                .map(e -> CompletableFuture.runAsync(() -> action.accept(e), executor))
-                .forEach(CompletableFuture::join);
+            .map(e -> CompletableFuture.runAsync(() -> action.accept(e), executor))
+            .forEach(CompletableFuture::join);
         System.out.println("multi thread run async duration: " + watch.stop());
     }
 

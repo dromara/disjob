@@ -1,5 +1,6 @@
 package cn.ponfee.scheduler.registry.redis;
 
+import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import redis.embedded.RedisServer;
 
 /**
@@ -10,10 +11,9 @@ import redis.embedded.RedisServer;
  *
  * @author Ponfee
  */
-public final class EmbeddedRedisServer {
+public final class EmbeddedRedisServerKstyrc {
 
     public static void main(String[] args) {
-        System.out.println("Embedded redis server starting...");
         RedisServer redisServer = RedisServer.builder()
             //.redisExecProvider(customRedisProvider)
             .port(6379)
@@ -30,17 +30,12 @@ public final class EmbeddedRedisServer {
             .setting("slave-read-only no")
             .setting("maxmemory 128M")
             .build();
-        redisServer.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                Thread.sleep(1000L);
-                redisServer.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }));
-        System.out.println("Embedded redis server started!");
+        System.out.println("Embedded kstyrc redis server starting...");
+        redisServer.start();
+        System.out.println("Embedded kstyrc redis server started!");
+
+        Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(redisServer::stop)));
     }
 
 }

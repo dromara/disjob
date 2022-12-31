@@ -64,7 +64,7 @@ distributed-scheduler
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-{xxx}</artifactId>
-  <version>1.5</version>
+  <version>1.6</version>
 </dependency>
 ```
 
@@ -76,7 +76,7 @@ distributed-scheduler
 
 ## Quick Start
 
-1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)
+1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql), Note: you can direct run [embed mysql-server](scheduler-supervisor/src/test/java/cn/ponfee/scheduler/db/EmbeddedMysqlServerMariaDB.java)
 
 2. Modify configuration files such as Mysql, Redis, Consul, Nacos, Zookeeper, Etcd: [scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
 - If you do not use Redis as a registration center, task distribution and distributed lock, should be exclusive [scheduler-common](scheduler-common/pom.xml) maven dependency `spring-boot-starter-data-redis`
@@ -94,7 +94,7 @@ distributed-scheduler
 - Different ports have been configured and can be started at the same time
 - You can run the startup class in the development tool, or directly run the built jar package
 - The type selection of the registry or task distribution is to switch annotations in the Spring boot startup class
-    - EnableRedisServerRegistry use redis as a registry([embed redis server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServer.java))
+    - EnableRedisServerRegistry use redis as a registry([embed redis server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServerKstyrc.java))
     - EnableConsulServerRegistry use consul as a registry([embed consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
     - EnableNacosServerRegistry use nacos as a registry([embed nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java))
     - EnableEtcdServerRegistry use etcd as a registry([embed etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))
@@ -111,7 +111,7 @@ distributed-scheduler
     EtcdProperties.class,
 })
 @EnableSupervisor
-@EnableNacosServerRegistry  // EnableRedisServerRegistry, EnableConsulServerRegistry, EnableNacosServerRegistry, EnableZookeeperServerRegistry, EnableEtcdServerRegistry
+@EnableRedisServerRegistry // EnableRedisServerRegistry, EnableConsulServerRegistry, EnableNacosServerRegistry, EnableZookeeperServerRegistry, EnableEtcdServerRegistry
 @EnableRedisTaskDispatching // EnableRedisTaskDispatching, EnableHttpTaskDispatching
 @SpringBootApplication(
     exclude = {

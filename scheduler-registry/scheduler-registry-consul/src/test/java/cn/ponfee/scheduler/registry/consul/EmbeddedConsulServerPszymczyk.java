@@ -19,22 +19,15 @@ public final class EmbeddedConsulServerPszymczyk {
     public static void main(String[] args) {
         System.setProperty(HttpBinaryRepository.CONSUL_BINARY_CDN, "https://releases.hashicorp.com/consul/");
 
-        System.out.println("Embedded consul server starting...");
+        System.out.println("Embedded pszymczyk consul server starting...");
         ConsulProcess consul = ConsulStarterBuilder.consulStarter()
             .withConsulVersion("1.14.2")
             .withConsulBinaryDownloadDirectory(createConsulBinaryDownloadDirectory())
             .withHttpPort(8500)
             .buildAndStart();
+        System.out.println("Embedded pszymczyk consul server started!");
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                Thread.sleep(1000L);
-                consul.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }));
-        System.out.println("Embedded consul server started!");
+        Runtime.getRuntime().addShutdownHook(new Thread(consul::close));
     }
 
     private static Path createConsulBinaryDownloadDirectory() {

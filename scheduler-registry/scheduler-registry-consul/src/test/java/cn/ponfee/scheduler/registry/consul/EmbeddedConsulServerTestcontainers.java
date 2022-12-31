@@ -27,26 +27,25 @@ public final class EmbeddedConsulServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Arrays.asList("8500:8500", "8502:8502");
 
     public static void main(String[] args) {
-        System.out.println("Embedded consul server starting...");
         String key = "config/testing1", val = "value123";
 
-        DockerImageName consulImage = DockerImageName.parse(CONSUL_DOCKER_IMAGE_NAME)
-            .asCompatibleSubstituteFor("consul-test");
+        DockerImageName consulImage = DockerImageName.parse(CONSUL_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("consul-test");
 
         ConsulContainer consulContainer = new ConsulContainer(consulImage)
             .withConsulCommand("kv put " + key + " " + val);
 
         consulContainer.setPortBindings(PORT_BINDINGS);
-
+        Runtime.getRuntime().addShutdownHook(new Thread(consulContainer::close));
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(consulContainer::close));
+            System.out.println("Embedded docker consul server starting...");
             consulContainer.start();
+            System.out.println("Embedded docker consul server started!");
 
             Assertions.assertEquals(PORT_BINDINGS, consulContainer.getPortBindings());
             Assertions.assertEquals(Arrays.asList(8500, 8502), consulContainer.getExposedPorts());
             Assertions.assertEquals(val, consulContainer.execInContainer("consul", "kv", "get", key).getStdout().trim());
 
-            System.out.println("Embedded consul server started!");
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();

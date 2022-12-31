@@ -1,15 +1,15 @@
 # redis configuration
 spring.redis:
   database: 0
-  #host: localhost       # redis standalone host name
-  #port: 6379            # redis standalone port
+  host: localhost       # redis standalone host name
+  port: 6379            # redis standalone port
   #username: test_redis  # redis node auth username
   password: 123456       # redis node auth password
   connect-timeout: 1000
   timeout: 2000
-  sentinel:
-    master: REDIS_SENTINEL
-    nodes: 112.74.170.75:16379,112.74.170.75:16380
+  #sentinel:
+  #  master: REDIS_SENTINEL
+  #  nodes: 112.74.170.75:16379,112.74.170.75:16380
     #username: test_sentinel # redis sentinel auth username
     #password: 654321        # redis sentinel auth password
   client-type: LETTUCE

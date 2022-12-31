@@ -33,7 +33,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
     EtcdProperties.class,
 })
 @EnableSupervisor
-@EnableNacosServerRegistry   // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry
+@EnableRedisServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry
 @EnableRedisTaskDispatching // EnableRedisTaskDispatching、EnableHttpTaskDispatching
 @SpringBootApplication(
     exclude = {

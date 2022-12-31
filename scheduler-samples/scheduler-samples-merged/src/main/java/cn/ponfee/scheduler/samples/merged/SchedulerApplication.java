@@ -37,7 +37,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 })
 @EnableSupervisor
 @EnableWorker
-@EnableNacosServerRegistry   // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry
+@EnableRedisServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry
 @EnableRedisTaskDispatching // EnableRedisTaskDispatching、EnableHttpTaskDispatching
 @SpringBootApplication(
     exclude = {
