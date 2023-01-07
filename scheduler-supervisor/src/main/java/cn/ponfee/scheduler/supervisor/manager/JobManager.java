@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor.manager;
 
 import cn.ponfee.scheduler.common.base.Constants;
@@ -326,10 +334,10 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * Manual trigger the sched job
      *
      * @param jobId the job id
-     * @throws JobException if split job error
+     * @throws JobException if occur error
      */
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void manualTrigger(long jobId) throws JobException {
+    public void trigger(long jobId) throws JobException {
         SchedJob job = jobMapper.getByJobId(jobId);
         Assert.notNull(job, "Sched job not found: " + jobId);
 
@@ -893,7 +901,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 LOG.error("Child sched job not found {}, {}", depend.getParentJobId(), depend.getChildJobId());
                 return;
             }
-            if (JobState.STOPPED.equals(child.getJobState())) {
+            if (JobState.DISABLE.equals(child.getJobState())) {
                 return;
             }
 

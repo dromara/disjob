@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.db;
 
 import org.slf4j.LoggerFactory;
@@ -12,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import static cn.ponfee.scheduler.db.DBTools.DB_NAME;
+
 /**
  * <pre>
  * Docker mysql for testcontainers
@@ -25,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
  */
 public class EmbeddedMysqlServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Arrays.asList("3306:3306");
-    private static final String DB_NAME = "distributed_scheduler";
 
     public static void main(String[] args) {
         DockerImageName dockerImage = DockerImageName.parse("mysql/mysql-server:8.0.31").asCompatibleSubstituteFor("mysql");
@@ -36,8 +45,8 @@ public class EmbeddedMysqlServerTestcontainers {
             .withPassword("")
             .withDatabaseName("test")
             .withEnv("MYSQL_ROOT_HOST", "%")
+            //.withInitScript(scriptPath)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
-             //.withInitScript(scriptPath)
         ) {
             mySQLContainer.setPortBindings(PORT_BINDINGS);
             Runtime.getRuntime().addShutdownHook(new Thread(mySQLContainer::close));

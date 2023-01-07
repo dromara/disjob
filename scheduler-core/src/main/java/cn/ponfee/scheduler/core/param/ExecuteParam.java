@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.core.param;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
@@ -30,8 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Ponfee
  */
-@JSONType(mappingTo = ExecuteParam.FastjsonDeserializeMarker.class) // fastjson
-@JsonDeserialize(using = ExecuteParam.JacksonDeserializer.class)    // jackson
+@JSONType(deserializer = ExecuteParam.FastjsonDeserializer.class) // fastjson
+@JsonDeserialize(using = ExecuteParam.JacksonDeserializer.class)  // jackson
 public final class ExecuteParam extends ToJsonString implements TimingWheel.Timing<ExecuteParam>, Serializable {
 
     private static final long serialVersionUID = -6493747747321536680L;
@@ -224,9 +232,6 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
 
     // -----------------------------------------------------custom fastjson deserialize
 
-    @JSONType(deserializer = FastjsonDeserializer.class)
-    public static class FastjsonDeserializeMarker { }
-
     /**
      * Custom deserialize ExecuteParam based fastjson.
      */
@@ -248,7 +253,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     // -----------------------------------------------------custom jackson deserialize
 
     /**
-     * Custom deserialize ExecuteParam based fastjson.
+     * Custom deserialize ExecuteParam based jackson.
      */
     public static class JacksonDeserializer extends JsonDeserializer<ExecuteParam> {
         @Override

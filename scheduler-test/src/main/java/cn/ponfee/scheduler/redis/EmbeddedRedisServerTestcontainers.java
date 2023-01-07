@@ -1,6 +1,14 @@
-package cn.ponfee.scheduler.registry.redis;
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
 
-import org.junit.jupiter.api.Assertions;
+package cn.ponfee.scheduler.redis;
+
+import org.junit.Assert;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -53,7 +61,7 @@ public final class EmbeddedRedisServerTestcontainers {
 
             dockerRedisContainer.execInContainer("redis-cli", "config set requirepass 123456");
 
-            Assertions.assertEquals(PORT_BINDINGS, dockerRedisContainer.getPortBindings());
+            Assert.assertEquals(PORT_BINDINGS, dockerRedisContainer.getPortBindings());
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();

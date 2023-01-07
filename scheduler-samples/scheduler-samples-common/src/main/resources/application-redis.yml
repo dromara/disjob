@@ -5,8 +5,8 @@ spring.redis:
   port: 6379            # redis standalone port
   #username: test_redis  # redis node auth username
   password: 123456       # redis node auth password
-  connect-timeout: 1000
-  timeout: 2000
+  connect-timeout: 3000
+  timeout: 5000
   #sentinel:
   #  master: REDIS_SENTINEL
   #  nodes: 112.74.170.75:16379,112.74.170.75:16380
@@ -15,8 +15,8 @@ spring.redis:
   client-type: LETTUCE
   lettuce:
     pool:
-      max-active: 20
+      max-active: 32
       max-idle: 8
-      min-idle: 0
-      max-wait: 1000
-    shutdown-timeout: 1000
+      min-idle: 4
+      max-wait: 5000
+    shutdown-timeout: 5000

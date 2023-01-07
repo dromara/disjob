@@ -2,6 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8s)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
+[![Maven Central](https://img.shields.io/badge/maven--central-1.7-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
 
 **`English`** | [简体中文](README.md)
 
@@ -9,7 +10,7 @@
 
 ## Introduction
 
-A distributed task scheduling framework, in addition to the conventional distributed task scheduling function, it also provides splitting of custom subtasks, customized control of long tasks in execution, DAG task dependency, supervisor and worker separate deployment, and so on.
+A distributed job scheduler framework, in addition to the conventional distributed task scheduling function, it also provides splitting of custom subtasks, customized control of long tasks in execution, DAG task dependency, supervisor and worker separate deployment, and so on.
 
 Lightweight, easy to use, especially suitable for the execution of long tasks. Scalability, extensibility, and stability, and has been runed in production.
 
@@ -39,7 +40,7 @@ distributed-scheduler
 ├── scheduler-samples                                        # Samples module
 │   ├── scheduler-samples-common                             # Common configuration and codes of samples
 │   ├── scheduler-samples-merged                             # Sample of merged deployment supervisor and worker(spring boot application)
-│   └── scheduler-samples-separately                         # Sample of separated deployment supervisor and worker(spring boot application)
+│   └── scheduler-samples-separately                         # Sample of separated deployment supervisor and worker
 │       ├── scheduler-samples-separately-supervisor          # Sample of only deployment supervisor(spring boot application)
 │       ├── scheduler-samples-separately-worker-frameless    # Sample of only deployment worker(start by java main class)
 │       └── scheduler-samples-separately-worker-springboot   # Sample of only deployment worker(spring boot application)
@@ -58,17 +59,17 @@ distributed-scheduler
 - Provides the ability to control tasks during execution, and can suspend/cancel the tasks in progress at any time, and can also resume the execution of suspended tasks
 - Provides the ability to execute tasks dependently. After multiple tasks build a DAG dependency relationship, the tasks will be executed sequentially according to the established dependency order
 
-## Download from central
+## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
 
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-{xxx}</artifactId>
-  <version>1.6</version>
+  <version>1.7</version>
 </dependency>
 ```
 
-## Build from source
+## Build From Source
 
 ```bash
 ./mvnw clean package -DskipTests -Dcheckstyle.skip -U
@@ -76,7 +77,7 @@ distributed-scheduler
 
 ## Quick Start
 
-1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql), Note: you can direct run [embed mysql-server](scheduler-supervisor/src/test/java/cn/ponfee/scheduler/db/EmbeddedMysqlServerMariaDB.java)
+1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/db/EmbeddedMysqlServerMariaDB.java))
 
 2. Modify configuration files such as Mysql, Redis, Consul, Nacos, Zookeeper, Etcd: [scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
 - If you do not use Redis as a registration center, task distribution and distributed lock, should be exclusive [scheduler-common](scheduler-common/pom.xml) maven dependency `spring-boot-starter-data-redis`
@@ -94,7 +95,7 @@ distributed-scheduler
 - Different ports have been configured and can be started at the same time
 - You can run the startup class in the development tool, or directly run the built jar package
 - The type selection of the registry or task distribution is to switch annotations in the Spring boot startup class
-    - EnableRedisServerRegistry use redis as a registry([embed redis server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServerKstyrc.java))
+    - EnableRedisServerRegistry use redis as a registry([embed redis server](scheduler-test/src/main/java/cn/ponfee/scheduler/redis/EmbeddedRedisServerKstyrc.java))
     - EnableConsulServerRegistry use consul as a registry([embed consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
     - EnableNacosServerRegistry use nacos as a registry([embed nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java))
     - EnableEtcdServerRegistry use etcd as a registry([embed etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))
@@ -161,7 +162,7 @@ UPDATE sched_job SET job_state=1, misfire_strategy=3, last_trigger_time=NULL, ne
 ```
 - You can also execute the following CURL command to manually trigger execution (select a supervisor to replace `localhost:8081`)
 ```bash
-curl --location --request POST 'http://localhost:8081/api/job/manual_trigger?jobId=4236701614080' \
+curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236701614080' \
 --header 'Content-Type: application/json'
 ```
 
@@ -171,7 +172,7 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 ## Todo List
 
-- [x] Handler decoupling: The Handler code is only in the Worker application, provides http api to verification and split tasks [WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerRemote.java)
+- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks [WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerRemote.java)
 - [x] Extended registry: Zookeeper, Etcd, Nacos
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB

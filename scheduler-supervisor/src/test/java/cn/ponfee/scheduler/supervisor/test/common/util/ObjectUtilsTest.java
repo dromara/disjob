@@ -1,14 +1,22 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor.test.common.util;
 
-import cn.ponfee.scheduler.common.util.ClassUtils;
-import cn.ponfee.scheduler.common.util.Fields;
-import cn.ponfee.scheduler.common.util.Networks;
-import cn.ponfee.scheduler.common.util.ObjectUtils;
+import cn.ponfee.scheduler.common.util.*;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * @author Ponfee
@@ -51,6 +59,29 @@ public class ObjectUtilsTest {
         Class<?> aClass = Class.forName(Supervisor.class.getName() + "$Current");
         Fields.put(aClass, ClassUtils.getStaticField(aClass, "current"), supervisor);
         Assertions.assertEquals(supervisor, Supervisor.current());
+    }
+
+
+    @Test
+    public void testStaticFinalMethod() {
+        for (Class<?> clazz : new ResourceScanner("cn/ponfee").scan4class()) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
+                    String cname = method.getDeclaringClass().getName();
+                    if (!cname.contains("$") && cname.startsWith("cn.ponfee")) {
+                        System.out.println(clazz+"  "+method);
+                    }
+                }
+            }
+            for (Method method : clazz.getMethods()) {
+                if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
+                    String cname = method.getDeclaringClass().getName();
+                    if (!cname.contains("$") && cname.startsWith("code.ponfee.commons")) {
+                        System.out.println(clazz+"  "+method);
+                    }
+                }
+            }
+        }
     }
 
     private final static String TEST_NAME = ObjectUtils.uuid32();

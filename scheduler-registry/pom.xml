@@ -14,6 +14,8 @@
   <artifactId>scheduler-registry</artifactId>
   <packaging>pom</packaging>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler registry parent module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <modules>
     <module>scheduler-registry-api</module>

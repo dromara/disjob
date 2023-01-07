@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor.test.common.spring;
 
 import cn.ponfee.scheduler.common.lock.RedisLock;
@@ -153,8 +161,6 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
      * 当 key 不存在时，返回 -2
      * 当 key 存在但没有设置剩余生存时间时，返回 -1
      * 否则，以秒为单位，返回 key 的剩余生存时间
-     * <p>
-     * 当key过期后，EmbeddedRedisServer有TTL=0的BUG
      *
      * @throws InterruptedException
      */

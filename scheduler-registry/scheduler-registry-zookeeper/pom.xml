@@ -13,7 +13,8 @@
 
   <artifactId>scheduler-registry-zookeeper</artifactId>
   <name>${project.artifactId}</name>
-  <packaging>jar</packaging>
+  <description>Distributed scheduler registry zookeeper module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <properties>
     <curator5.version>5.4.0</curator5.version>

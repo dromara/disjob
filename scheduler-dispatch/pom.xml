@@ -14,6 +14,8 @@
   <artifactId>scheduler-dispatch</artifactId>
   <packaging>pom</packaging>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler dispatch parent module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <modules>
     <module>scheduler-dispatch-api</module>

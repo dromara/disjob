@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-registry-etcd</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler registry etcd module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <properties>
     <jetcd.version>0.7.5</jetcd.version>

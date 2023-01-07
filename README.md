@@ -2,6 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8s)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
+[![Maven Central](https://img.shields.io/badge/maven--central-1.7-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
 
 **`简体中文`** | [English](README.en.md)
 
@@ -58,17 +59,17 @@ distributed-scheduler
 - 提供执行中的任务控制能力，可随时暂停/取消正在执行中的任务，亦可恢复执行被暂停的任务
 - 提供任务依赖执行的能力，多个任务构建好DAG依赖关系后，任务便按既定的依赖顺序依次执行
 
-## Download from central
+## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
 
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-{xxx}</artifactId>
-  <version>1.6</version>
+  <version>1.7</version>
 </dependency>
 ```
 
-## Build from source
+## Build From Source
 
 ```bash
 ./mvnw clean package -DskipTests -Dcheckstyle.skip -U
@@ -76,7 +77,7 @@ distributed-scheduler
 
 ## Quick Start
 
-1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)，注：可直接运行内存数据库[内置mysql-server](scheduler-supervisor/src/test/java/cn/ponfee/scheduler/db/EmbeddedMysqlServerMariaDB.java)
+1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/db/EmbeddedMysqlServerMariaDB.java))
 
 2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
   - 如果不使用Redis做注册中心、任务分发及分布式锁，可排除[scheduler-common](scheduler-common/pom.xml)模块下的Maven依赖`spring-boot-starter-data-redis`
@@ -94,7 +95,7 @@ distributed-scheduler
 - 已配置不同端口，可同时启动
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
 - 注册中心或任务分发的类型选择是在Spring boot启动类中切换注解
-  - EnableRedisServerRegistry启用Redis做为注册中心([内置redis-server](scheduler-registry/scheduler-registry-redis/src/test/java/cn/ponfee/scheduler/registry/redis/EmbeddedRedisServerKstyrc.java))
+  - EnableRedisServerRegistry启用Redis做为注册中心([内置redis-server](scheduler-test/src/main/java/cn/ponfee/scheduler/redis/EmbeddedRedisServerKstyrc.java))
   - EnableConsulServerRegistry启用Consul做为注册中心([内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
   - EnableNacosServerRegistry启用Nacos做为注册中心([内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java))
   - EnableEtcdServerRegistry启用Etcd做为注册中心([内置etcd-server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))
@@ -159,9 +160,9 @@ SELECT * from sched_task;
 -- 可执行以下SQL让该JOB再次触发执行
 UPDATE sched_job SET job_state=1, misfire_strategy=3, last_trigger_time=NULL, next_trigger_time=1664944641000 WHERE job_name='PrimeCountJobHandler';
 ```
-- 也可执行以下CURL命令手动触发执行(选择一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
+- 也可执行以下CURL命令手动触发执行一次(选择一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
 ```bash
-curl --location --request POST 'http://localhost:8081/api/job/manual_trigger?jobId=4236701614080' \
+curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236701614080' \
 --header 'Content-Type: application/json'
 ```
 
@@ -171,8 +172,8 @@ curl --location --request POST 'http://localhost:8081/api/job/manual_trigger?job
 
 ## Todo List
 
-- [x] Handler解耦：Handler代码只在Worker服务中，Worker提供处理器校验及拆分任务的接口[WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerRemote.java)
+- [x] 处理器解耦：JobHandler代码部署在Worker中，Worker提供处理器校验及拆分任务的接口[WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerRemote.java)
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB
-- [ ] 本机多网卡时，指定网卡的host ip获取
+- [ ] 本机多网卡时，绑定网卡的host ip获取

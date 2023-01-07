@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.db;
 
 import cn.ponfee.scheduler.common.util.Files;
@@ -29,7 +37,7 @@ public class EmbeddedH2DatabaseServer {
 
     public static void main(String[] args) throws Exception {
         String jdbcUrl = buildJdbcUrl("test");
-
+        String username = "sa", password = "";
         System.out.println("Embedded h2 database starting...");
         //new JakartaDbStarter(); // error
         new DbStarter();
@@ -38,16 +46,18 @@ public class EmbeddedH2DatabaseServer {
         //new PgServer().start();
         System.out.println("Embedded h2 database started!");
 
-        JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(jdbcUrl, "sa", "");
+        JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(jdbcUrl, username, password);
 
         System.out.println("\n\n--------------------------------------------------------testDatabase");
-        DBTools.testNativeConnection("org.h2.Driver", jdbcUrl, "sa", "");
+        DBTools.testNativeConnection("org.h2.Driver", jdbcUrl, username, password);
 
         System.out.println("\n\n--------------------------------------------------------testJdbcTemplate");
         DBTools.testJdbcTemplate(jdbcTemplate);
 
         System.out.println("\n\n--------------------------------------------------------testScript");
         testScript(jdbcTemplate);
+
+        new CountDownLatch(1).await();
     }
 
     private static String buildJdbcUrl(String dbName) throws IOException {
@@ -70,7 +80,7 @@ public class EmbeddedH2DatabaseServer {
         // 加载脚本方式二：
         //jdbcTemplate.execute(IOUtils.toString(new FileInputStream(scriptPath), StandardCharsets.UTF_8));
 
-        // 加载脚本方式二：
+        // 加载脚本方式三：
         jdbcTemplate.execute((ConnectionCallback<Void>) conn -> {
             try {
                 String script = IOUtils.toString(new FileInputStream(scriptPath), StandardCharsets.UTF_8);
@@ -84,8 +94,6 @@ public class EmbeddedH2DatabaseServer {
         List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM test1");
         Assert.assertEquals("fdsaf23r23", result.get(0).get("NAME"));
         System.out.println("Query result: " + Jsons.toJson(result));
-
-        new CountDownLatch(1).await();
     }
 
 }

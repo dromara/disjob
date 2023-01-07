@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.samples.worker;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
@@ -23,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.io.FileInputStream;
@@ -40,7 +47,6 @@ import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
  *
  * @author Ponfee
  */
-@Component
 public class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);

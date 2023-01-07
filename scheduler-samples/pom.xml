@@ -13,12 +13,12 @@
 
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-samples</artifactId>
-  <version>${spvision}</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
   <name>${project.artifactId}</name>
 
   <properties>
-    <spvision>1.0-SNAPSHOT</spvision>
+    <revision>1.0-SNAPSHOT</revision>
     <file.encoding>UTF-8</file.encoding>
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
@@ -29,11 +29,9 @@
     <maven.install.skip>true</maven.install.skip>
     <maven.deploy.skip>true</maven.deploy.skip>
 
-    <distributed.scheduler.version>1.6</distributed.scheduler.version>
+    <distributed.scheduler.version>1.7</distributed.scheduler.version>
     <springboot.version>2.7.7</springboot.version>
-    <springframework.version>5.3.24</springframework.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
-    <lombok.version>1.18.24</lombok.version>
   </properties>
 
   <modules>
@@ -177,7 +175,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
-      <version>${springframework.version}</version>
+      <version>${spring-framework.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -277,6 +275,7 @@
         <configuration>
           <source>${maven.compiler.source}</source>
           <target>${maven.compiler.target}</target>
+          <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
           <encoding>${file.encoding}</encoding>
           <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
         </configuration>

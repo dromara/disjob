@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor;
 
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
@@ -205,8 +213,8 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
                 }
                 if (job.getNextTriggerTime() == null) {
                     // It has not next triggered time, then stop the job
-                    job.setRemark("Stop collision reason: has not next trigger time.");
-                    job.setJobState(JobState.STOPPED.value());
+                    job.setRemark("Disable collision reason: has not next trigger time.");
+                    job.setJobState(JobState.DISABLE.value());
                 }
                 jobManager.updateNextTriggerTime(job);
                 return true;
@@ -240,8 +248,8 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
         job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, now));
         if (job.getNextTriggerTime() == null) {
             // It has not next triggered time, then stop the job
-            job.setRemark("Stop refresh reason: has not next trigger time");
-            job.setJobState(JobState.STOPPED.value());
+            job.setRemark("Disable refresh reason: has not next trigger time");
+            job.setJobState(JobState.DISABLE.value());
         }
     }
 

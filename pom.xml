@@ -22,13 +22,13 @@
     https://blog.csdn.net/qq_42651904/article/details/121191238
 
     发布命令：
-      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.6-SNAPSHOT && mvn clean deploy -DskipTests -Dcheckstyle.skip -U
+      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.7-SNAPSHOT && mvn clean deploy -DskipTests -Dcheckstyle.skip -U
       2.1）release交互模式：
           | ```bash
           | mvn release:update-versions \
           |   -B \
           |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.6-SNAPSHOT \
+          |   -DdevelopmentVersion=1.7-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
           |   -Darguments="-Dcheckstyle.skip"
@@ -38,13 +38,13 @@
           | mvn release:update-versions \
           |   -B \
           |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.6-SNAPSHOT \
+          |   -DdevelopmentVersion=1.7-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
           |   -Darguments="-Dcheckstyle.skip" \
-          |   -DreleaseVersion=1.6 \
-          |   -Dtag=v1.6 \
-          |   -DdevelopmentVersion=1.6-SNAPSHOT
+          |   -DreleaseVersion=1.7 \
+          |   -Dtag=v1.7 \
+          |   -DdevelopmentVersion=1.7-SNAPSHOT
           | ```
 
     注意事项：
@@ -58,7 +58,7 @@
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
   <developers>
@@ -98,6 +98,7 @@
   <modules>
     <module>scheduler-common</module>
     <module>scheduler-core</module>
+    <module>scheduler-test</module>
     <module>scheduler-supervisor</module>
     <module>scheduler-worker</module>
     <module>scheduler-registry</module>
@@ -105,7 +106,7 @@
   </modules>
 
   <properties>
-    <revision>1.7-SNAPSHOT</revision>
+    <revision>1.8-SNAPSHOT</revision>
     <file.encoding>UTF-8</file.encoding>
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
@@ -116,9 +117,7 @@
 
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
     <springboot.version>2.7.7</springboot.version>
-    <springframework.version>5.3.24</springframework.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
-    <lombok.version>1.18.24</lombok.version>
   </properties>
 
   <dependencyManagement>
@@ -157,6 +156,11 @@
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>scheduler-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>scheduler-test</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -203,6 +207,39 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-log4j2</artifactId>
     </dependency>
+    <!-- adapter to slf4j-api -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <!-- <dependency> 当前使用的就是log4j2，需去掉该dependency
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-to-slf4j</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency> -->
+    <!-- commons-logging桥接到Log4j2 -->
+     <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jcl</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <!-- java.util.logging桥接到Log4j2 -->
+     <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jul</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
 
     <!-- 需要注意以下几个processor的定义顺序，否则需要使用annotationProcessorPaths指定 -->
     <!-- lombok provided -->
@@ -236,7 +273,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
-      <version>${springframework.version}</version>
+      <version>${spring-framework.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -399,6 +436,7 @@
         <configuration>
           <source>${maven.compiler.source}</source>
           <target>${maven.compiler.target}</target>
+          <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
           <encoding>${file.encoding}</encoding>
           <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
           <!--<annotationProcessorPaths>
@@ -420,7 +458,7 @@
             <path>
               <groupId>org.springframework</groupId>
               <artifactId>spring-context-indexer</artifactId>
-              <version>${springframework.version}</version>
+              <version>${spring-framework.version}</version>
             </path>
           </annotationProcessorPaths>-->
         </configuration>

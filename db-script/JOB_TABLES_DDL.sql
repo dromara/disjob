@@ -30,7 +30,7 @@ CREATE TABLE `sched_job` (
     `job_group`            varchar(30)             NOT NULL                                                       COMMENT 'Job分组(用于分配给同组下的Worker执行)',
     `job_name`             varchar(60)             NOT NULL                                                       COMMENT 'Job名称',
     `job_handler`          text                    NOT NULL                                                       COMMENT 'Job处理器(实现处理器接口的全限定类名或源代码)',
-    `job_state`            tinyint(1)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT 'Job状态：0-已停止；1-已启动；',
+    `job_state`            tinyint(1)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT 'Job状态：0-已禁用；1-已启用；',
     `job_param`            text                    DEFAULT NULL                                                   COMMENT 'Job参数',
     `retry_type`           tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试类型：0-不重试；1-重试所有的Task；2-只重试失败的Task；',
     `retry_count`          tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败可重试的最大次数',

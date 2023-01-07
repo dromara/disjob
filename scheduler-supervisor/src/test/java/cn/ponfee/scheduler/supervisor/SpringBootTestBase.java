@@ -1,9 +1,22 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor;
 
+import ch.vorburger.mariadb4j.DB;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.JobConstants;
+import cn.ponfee.scheduler.db.EmbeddedMysqlServerMariaDB;
+import cn.ponfee.scheduler.redis.EmbeddedRedisServerKstyrc;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
@@ -14,6 +27,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import redis.embedded.RedisServer;
+
+import java.util.Date;
 
 /**
  * Spring boot test base class
@@ -38,6 +54,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"STG"})
 public abstract class SpringBootTestBase<T> {
+
+    private static DB mariaDBServer;
+    private static RedisServer redisServer;
 
     @EnableConfigurationProperties(HttpProperties.class)
     @SpringBootApplication(
@@ -77,7 +96,15 @@ public abstract class SpringBootTestBase<T> {
 
     @BeforeAll
     public static void beforeAll() {
+        System.out.println("------------------------SpringBootTestBase#beforeAll#" + Dates.format(new Date()));
         System.setProperty(JobConstants.SPRING_WEB_SERVER_PORT, "8080");
+        Throwables.caught(() -> mariaDBServer = EmbeddedMysqlServerMariaDB.start());
+        Throwables.caught(() -> redisServer = EmbeddedRedisServerKstyrc.start());
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @BeforeEach
@@ -98,6 +125,19 @@ public abstract class SpringBootTestBase<T> {
 
     @AfterAll
     public static void afterAll() {
+        if (mariaDBServer != null) {
+            Throwables.caught(mariaDBServer::stop);
+            mariaDBServer = null;
+        }
+        if (redisServer != null) {
+            Throwables.caught(redisServer::stop);
+            redisServer = null;
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

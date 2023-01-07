@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-registry-redis</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler registry redis module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>
@@ -25,14 +27,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.kstyrc</groupId>
-      <artifactId>embedded-redis</artifactId>
-      <version>0.6</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor.test.job.param;
 
 import cn.ponfee.scheduler.common.base.model.Result;
@@ -8,6 +16,7 @@ import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.TaskExecutor;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import com.alibaba.fastjson.JSON;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +29,9 @@ public class ExecuteParamTest {
     @Test
     public void testFastjson() {
         ExecuteParam param = new ExecuteParam(Operations.TRIGGER, 1, 2, 3, 4);
+        Assert.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"jobId\":3,\"triggerTime\":4}", Jsons.toJson(param));
+        Assert.assertEquals("{\"jobId\":3,\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"triggerTime\":4}", JSON.toJSONString(param));
+
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {

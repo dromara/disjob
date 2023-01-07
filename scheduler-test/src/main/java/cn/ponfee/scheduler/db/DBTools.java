@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.db;
 
 import cn.ponfee.scheduler.common.util.Jsons;
@@ -19,12 +27,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 内存DB工具类
+ * 内存DB测试工具类
  *
  * @author Ponfee
  */
 public class DBTools {
 
+    public static final String DB_NAME = "distributed_scheduler";
     public static final String DB_SCRIPT_PATH = MavenProjects.getProjectBaseDir() + "/../db-script/JOB_TABLES_DDL.sql";
 
     public static JdbcTemplate createJdbcTemplate(String url, String user, String password) {

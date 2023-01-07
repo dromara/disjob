@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-registry-consul</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler registry consul module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>

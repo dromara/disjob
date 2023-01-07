@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.base.IntValue;
@@ -11,14 +19,14 @@ import cn.ponfee.scheduler.common.base.IntValue;
 public enum JobState implements IntValue<JobState> {
 
     /**
-     * 已停止
+     * 已禁用
      */
-    STOPPED(0),
+    DISABLE(0),
 
     /**
-     * 已启动
+     * 已启用
      */
-    STARTED(1),
+    ENABLE(1),
 
     ;
 

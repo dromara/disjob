@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor.controller;
 
 import cn.ponfee.scheduler.common.base.model.Result;
@@ -56,22 +64,22 @@ public class ApiController {
         return Result.success(jobManager.getJob(jobId));
     }
 
-    @PostMapping("job/stop")
-    public Result<Boolean> stopJob(@RequestParam("jobId") long jobId) {
-        LOG.info("Do stopping sched job {}", jobId);
-        return Result.success(jobManager.changeJobState(jobId, JobState.STOPPED));
+    @PostMapping("job/disable")
+    public Result<Boolean> disableJob(@RequestParam("jobId") long jobId) {
+        LOG.info("Do disable sched job {}", jobId);
+        return Result.success(jobManager.changeJobState(jobId, JobState.DISABLE));
     }
 
-    @PostMapping("job/start")
-    public Result<Boolean> startJob(@RequestParam("jobId") long jobId) {
-        LOG.info("Do starting sched job {}", jobId);
-        return Result.success(jobManager.changeJobState(jobId, JobState.STARTED));
+    @PostMapping("job/enable")
+    public Result<Boolean> enableJob(@RequestParam("jobId") long jobId) {
+        LOG.info("Do enable sched job {}", jobId);
+        return Result.success(jobManager.changeJobState(jobId, JobState.ENABLE));
     }
 
-    @PostMapping("job/manual_trigger")
-    public Result<Void> manualTriggerJob(@RequestParam("jobId") long jobId) throws JobException {
-        LOG.info("Do triggering sched job {}", jobId);
-        jobManager.manualTrigger(jobId);
+    @PostMapping("job/trigger")
+    public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
+        LOG.info("Do manual trigger the sched job {}", jobId);
+        jobManager.trigger(jobId);
         return Result.success();
     }
 
@@ -95,6 +103,13 @@ public class ApiController {
         return Result.success(jobManager.resume(trackId));
     }
 
+    @PostMapping("track/fresume")
+    public Result<Void> forceResumeTrack(@RequestParam("trackId") long trackId) {
+        LOG.info("Do force resuming sched track {}", trackId);
+        jobManager.forceUpdateState(trackId, RunState.WAITING.value(), ExecuteState.WAITING.value());
+        return Result.success();
+    }
+
     @PutMapping("track/fupdate_state")
     public Result<Void> forceUpdateTrackState(@RequestParam("trackId") long trackId,
                                               @RequestParam("trackTargetState") int trackTargetState,
@@ -105,13 +120,6 @@ public class ApiController {
 
         LOG.info("Do force update sched track state {} - {} - {}", trackId, trackTargetState, taskTargetState);
         jobManager.forceUpdateState(trackId, trackTargetState, taskTargetState);
-        return Result.success();
-    }
-
-    @PostMapping("track/fresume")
-    public Result<Void> forceResumeTrack(@RequestParam("trackId") long trackId) {
-        LOG.info("Do force resuming sched track {}", trackId);
-        jobManager.forceUpdateState(trackId, RunState.WAITING.value(), ExecuteState.WAITING.value());
         return Result.success();
     }
 

@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-registry-nacos</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler registry nacos module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>

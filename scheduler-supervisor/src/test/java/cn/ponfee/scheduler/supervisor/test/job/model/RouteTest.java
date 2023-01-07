@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor.test.job.model;
 
 import cn.ponfee.scheduler.common.util.Numbers;
@@ -32,7 +40,7 @@ public class RouteTest extends SpringBootTestBase {
 
     @Test
     public void testRedisAtomicCounter() {
-        String key = "test_incr2131";
+        String key = "key_counter";
         stringRedisTemplate.opsForValue().set(key, "10");
         Assertions.assertEquals(10, Numbers.toLong(stringRedisTemplate.opsForValue().get(key)));
         Assertions.assertEquals(11, stringRedisTemplate.opsForValue().increment(key));

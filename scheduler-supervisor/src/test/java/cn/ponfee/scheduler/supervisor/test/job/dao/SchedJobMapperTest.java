@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.supervisor.test.job.dao;
 
 import cn.ponfee.scheduler.common.base.IdGenerator;
@@ -39,7 +47,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobGroup("default");
         job.setJobName("test");
         job.setJobHandler("cn.ponfee.scheduler.core.handle.impl.NoopJobHandler");
-        job.setJobState(JobState.STOPPED.value());
+        job.setJobState(JobState.DISABLE.value());
         job.setJobParam("test param");
         job.setRetryType(RetryType.NONE.value());
         job.setRetryCount(0);
@@ -73,7 +81,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
         job.setJobHandler("cn.ponfee.scheduler.core.handle.impl.NoopJobHandler");
-        job.setJobState(JobState.STOPPED.value());
+        job.setJobState(JobState.DISABLE.value());
 
 
         job.setJobParam("");
@@ -113,7 +121,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
         job.setJobHandler("cn.ponfee.scheduler.core.handle.impl.NoopJobHandler");
-        job.setJobState(JobState.STOPPED.value());
+        job.setJobState(JobState.DISABLE.value());
 
         job.setJobParam("est");
 

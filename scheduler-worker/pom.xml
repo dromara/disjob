@@ -13,11 +13,19 @@
 
   <artifactId>scheduler-worker</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler worker module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-api</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-jdbc</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>

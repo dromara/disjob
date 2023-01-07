@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-common</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler common module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <!-- third part utility -->

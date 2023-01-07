@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-dispatch-redis</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler dispatch redis module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>

@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-dispatch-http</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler dispatch http module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>

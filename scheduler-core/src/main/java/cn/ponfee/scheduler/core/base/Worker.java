@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.core.base;
 
 import cn.ponfee.scheduler.common.util.GenericUtils;
@@ -26,8 +34,8 @@ import static cn.ponfee.scheduler.common.util.Collects.get;
  *
  * @author Ponfee
  */
-@JSONType(mappingTo = Worker.FastjsonDeserializeMarker.class) // fastjson
-@JsonDeserialize(using = Worker.JacksonDeserializer.class)    // jackson
+@JSONType(deserializer = Worker.FastjsonDeserializer.class) // fastjson
+@JsonDeserialize(using = Worker.JacksonDeserializer.class)  // jackson
 public final class Worker extends Server {
     private static final long serialVersionUID = 8981019172872301692L;
 
@@ -117,9 +125,6 @@ public final class Worker extends Server {
 
     // -----------------------------------------------------custom fastjson deserialize
 
-    @JSONType(deserializer = FastjsonDeserializer.class)
-    public static class FastjsonDeserializeMarker { }
-
     /**
      * Custom deserialize Worker based fastjson.
      */
@@ -141,7 +146,7 @@ public final class Worker extends Server {
     // -----------------------------------------------------custom jackson deserialize
 
     /**
-     * Custom deserialize Worker based fastjson.
+     * Custom deserialize Worker based jackson.
      */
     public static class JacksonDeserializer extends JsonDeserializer<Worker> {
         @Override

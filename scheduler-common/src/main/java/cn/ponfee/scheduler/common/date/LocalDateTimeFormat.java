@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.common.date;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -21,17 +29,17 @@ import static cn.ponfee.scheduler.common.date.JavaUtilDateFormat.*;
 @ThreadSafe
 public class LocalDateTimeFormat {
 
-    public static final DateTimeFormatter PATTERN_01 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter PATTERN_01 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    public static final DateTimeFormatter PATTERN_11 = DateTimeFormatter.ofPattern(Dates.DEFAULT_DATE_FORMAT);
-    public static final DateTimeFormatter PATTERN_12 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-    public static final DateTimeFormatter PATTERN_13 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-    public static final DateTimeFormatter PATTERN_14 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss");
+    public  static final DateTimeFormatter PATTERN_11 = DateTimeFormatter.ofPattern(Dates.DEFAULT_DATE_FORMAT);
+    private static final DateTimeFormatter PATTERN_12 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    private static final DateTimeFormatter PATTERN_13 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateTimeFormatter PATTERN_14 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss");
 
-    public static final DateTimeFormatter PATTERN_21 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-    public static final DateTimeFormatter PATTERN_22 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
-    public static final DateTimeFormatter PATTERN_23 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    public static final DateTimeFormatter PATTERN_24 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS");
+    private static final DateTimeFormatter PATTERN_21 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final DateTimeFormatter PATTERN_22 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
+    private static final DateTimeFormatter PATTERN_23 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private static final DateTimeFormatter PATTERN_24 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS");
 
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss

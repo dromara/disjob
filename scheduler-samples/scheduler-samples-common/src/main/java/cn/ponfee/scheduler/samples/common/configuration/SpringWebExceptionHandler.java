@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.samples.common.configuration;
 
 import cn.ponfee.scheduler.common.base.exception.BaseCheckedException;
@@ -25,9 +33,11 @@ import java.util.List;
  *
  * @author Ponfee
  */
-@ControllerAdvice // @RestControllerAdvice(annotations = BindControllerAdvice.class)
+@ControllerAdvice(/*assignableTypes = cn.ponfee.scheduler.common.spring.MarkRpcController.class*/)
 public class SpringWebExceptionHandler {
+
     private static final Logger LOG = LoggerFactory.getLogger(SpringWebExceptionHandler.class);
+
     private static final String APPLICATION_JSON_VALUE_UTF8 = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8";
     private static final String TEXT_PLAIN_VALUE_UTF8 = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8";
 
@@ -43,7 +53,7 @@ public class SpringWebExceptionHandler {
         LOG.error("Global exception aspect advice", e);
 
         String errorMsg = Throwables.getRootCauseMessage(e), respMsg;
-        if (!isReturnResultMethod(handlerMethod)) {
+        if (!isMethodReturnResultType(handlerMethod)) {
             boolean isBadRequest = BAD_REQUEST_EXCEPTIONS.stream().anyMatch(t -> t.isInstance(e));
             response.setStatus((isBadRequest ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR).value());
 
@@ -59,7 +69,7 @@ public class SpringWebExceptionHandler {
         out.flush();
     }
 
-    private static boolean isReturnResultMethod(HandlerMethod handlerMethod) {
+    private static boolean isMethodReturnResultType(HandlerMethod handlerMethod) {
         if (handlerMethod == null) {
             return false;
         }

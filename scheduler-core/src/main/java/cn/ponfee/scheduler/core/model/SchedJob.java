@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.core.model;
 
 import cn.ponfee.scheduler.common.base.model.BaseEntity;
@@ -166,7 +174,7 @@ public class SchedJob extends BaseEntity implements Serializable {
 
     public void checkAndDefaultSetting() {
         if (jobState == null) {
-            this.jobState = JobState.STOPPED.value();
+            this.jobState = JobState.DISABLE.value();
         }
         if (weightScore == null) {
             this.weightScore = 1;

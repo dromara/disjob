@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-registry-api</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler registry api module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>

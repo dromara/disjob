@@ -13,6 +13,8 @@
 
   <artifactId>scheduler-core</artifactId>
   <name>${project.artifactId}</name>
+  <description>Distributed scheduler core module</description>
+  <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
     <dependency>

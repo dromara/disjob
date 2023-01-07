@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.scheduler.registry.redis;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
@@ -31,14 +39,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private static final long REDIS_KEY_TTL_MILLIS = 30L * 86400 * 1000;
 
-    private static final int PERIOD_SECONDS = 3;
+    private static final int REGISTER_PERIOD_SECONDS = 3;
 
     private static final String CHANNEL = "channel";
 
     /**
      * Default registry server keep alive in 5000 milliseconds
      */
-    protected static final int DEFAULT_REGISTRY_KEEP_ALIVE_MILLISECONDS = 5000;
+    protected static final int DEFAULT_REGISTRY_KEEP_ALIVE_MILLISECONDS = 30000;
 
     /**
      * Default discovery servers refresh interval milliseconds
@@ -93,7 +101,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             } catch (Throwable t) {
                 log.error("Do scheduled register occur error: " + registered, t);
             }
-        }, PERIOD_SECONDS, PERIOD_SECONDS, TimeUnit.SECONDS);
+        }, REGISTER_PERIOD_SECONDS, REGISTER_PERIOD_SECONDS, TimeUnit.SECONDS);
 
         this.refreshIntervalMilliseconds = refreshIntervalMilliseconds;
 
