@@ -9,13 +9,14 @@
 package cn.ponfee.scheduler.core.base;
 
 import cn.ponfee.scheduler.common.concurrent.Threads;
-import cn.ponfee.scheduler.common.date.JavaUtilDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static cn.ponfee.scheduler.common.date.JavaUtilDateFormat.PATTERN_51;
 
 /**
  * The abstract heartbeat thread.
@@ -32,14 +33,9 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
-     * Stop operate flag.
+     * Thread is whether stopped status
      */
-    private final AtomicBoolean stop = new AtomicBoolean(false);
-
-    /**
-     * Stop state, {@code true} has been stopped.
-     */
-    private volatile boolean stopped = false;
+    private final AtomicBoolean stopped = new AtomicBoolean(false);
 
     /**
      * Heartbeat interval milliseconds.
@@ -67,22 +63,22 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
         } catch (InterruptedException e) {
             log.error("Sleep occur error at starting, stopped=" + stopped, e);
             Thread.currentThread().interrupt();
-            if (stopped) {
+            if (stopped.get()) {
                 return;
             }
         }
 
-        while (!stopped) {
+        while (!stopped.get()) {
             if (super.isInterrupted()) {
                 log.warn("Thread interrupted.");
-                stopped = true;
+                stopped.compareAndSet(false, true);
                 return;
             }
 
             boolean result;
             long start = System.currentTimeMillis();
             if (log.isDebugEnabled()) {
-                log.debug("Heartbeat round date time: {}", JavaUtilDateFormat.PATTERN_51.format(new Date(start)));
+                log.debug("Heartbeat round date time: {}", PATTERN_51.format(new Date(start)));
             }
             try {
                 // true is busy loop
@@ -108,14 +104,14 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                 } catch (InterruptedException e) {
                     log.error("Sleep occur error in loop, stopped=" + stopped, e);
                     Thread.currentThread().interrupt();
-                    if (stopped) {
+                    if (stopped.get()) {
                         return;
                     }
                 }
             }
         }
 
-        stopped = true;
+        stopped.compareAndSet(false, true);
         log.info("Heartbeat end.");
     }
 
@@ -143,7 +139,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     }
 
     public void toStop() {
-        stopped = true;
+        stopped.compareAndSet(false, true);
     }
 
     /**
@@ -153,7 +149,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
      */
     public boolean doStop(long joinMillis) {
         toStop();
-        if (!stop.compareAndSet(false, true)) {
+        if (!stopped.compareAndSet(false, true)) {
             log.warn("Repeat do stop thread: {}", this.getName());
             return false;
         }

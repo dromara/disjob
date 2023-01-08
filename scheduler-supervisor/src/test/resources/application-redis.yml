@@ -20,3 +20,9 @@ spring.redis:
       min-idle: 4
       max-wait: 5000
     shutdown-timeout: 5000
+
+# redis registry configuration
+distributed.scheduler.registry.redis:
+    session-timeout-ms: 15000
+    registry-period-ms: 2000
+    discovery-period-ms:  2000

@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.common.concurrent.Threads;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;
+import cn.ponfee.scheduler.registry.consul.configuration.ConsulRegistryProperties;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
@@ -58,11 +59,11 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     private final ConsulSubscriberThread   consulSubscriberThread;
 
-    protected ConsulServerRegistry(String namespace, String host, int port, String token) {
+    protected ConsulServerRegistry(String namespace, ConsulRegistryProperties config) {
         super(namespace, ':');
 
-        this.client = new ConsulClient(host, port);
-        this.token = token;
+        this.client = new ConsulClient(config.getHost(), config.getPort());
+        this.token = config.getToken();
 
         int period = Math.max(CHECK_PASS_INTERVAL_SECONDS, 1);
         this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("consul_server_registry", true));
@@ -81,7 +82,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     @Override
     public final void register(R server) {
-        if (closed) {
+        if (closed.get()) {
             return;
         }
 
@@ -115,8 +116,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     @Override
     public void close() {
-        closed = true;
-        if (!close.compareAndSet(false, true)) {
+        if (!closed.compareAndSet(false, true)) {
             log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
@@ -160,7 +160,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     }
 
     private void checkPass() {
-        if (closed) {
+        if (closed.get()) {
             return;
         }
         for (R server : registered) {
@@ -206,7 +206,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
         @Override
         public void run() {
-            while (!closed) {
+            while (!closed.get()) {
                 try {
                     Response<List<HealthService>> response = getDiscoveryServers(lastConsulIndex, WAIT_TIME_SECONDS);
                     Long currentIndex = response.getConsulIndex();

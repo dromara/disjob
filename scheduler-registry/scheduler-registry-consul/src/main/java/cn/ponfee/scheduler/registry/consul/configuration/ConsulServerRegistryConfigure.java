@@ -50,8 +50,8 @@ public class ConsulServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                                     ConsulProperties props) {
-            return new ConsulSupervisorRegistry(namespace, props.getHost(), props.getPort(), props.getToken());
+                                                     ConsulRegistryProperties config) {
+            return new ConsulSupervisorRegistry(namespace, config);
         }
     }
 
@@ -66,8 +66,8 @@ public class ConsulServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                             ConsulProperties props) {
-            return new ConsulWorkerRegistry(namespace, props.getHost(), props.getPort(), props.getToken());
+                                             ConsulRegistryProperties config) {
+            return new ConsulWorkerRegistry(namespace, config);
         }
     }
 

@@ -29,7 +29,7 @@
     <maven.install.skip>true</maven.install.skip>
     <maven.deploy.skip>true</maven.deploy.skip>
 
-    <distributed.scheduler.version>1.7</distributed.scheduler.version>
+    <distributed.scheduler.version>1.8-SNAPSHOT</distributed.scheduler.version>
     <springboot.version>2.7.7</springboot.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
   </properties>
@@ -212,6 +212,14 @@
     <repository>
       <id>nexus.nuiton.org-thirdparty</id>
       <url>https://nexus.nuiton.org/nexus/content/repositories/thirdparty</url>
+    </repository>
+    <repository>
+      <id>oss.sonatype.org-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+    <repository>
+      <id>s01.oss.sonatype.org-snapshots</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
     </repository>
   </repositories>
 

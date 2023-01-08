@@ -106,10 +106,11 @@ distributed-scheduler
 @EnableConfigurationProperties({
     SupervisorProperties.class,
     HttpProperties.class,
-    ConsulProperties.class,
-    NacosProperties.class,
-    ZookeeperProperties.class,
-    EtcdProperties.class,
+    RedisRegistryProperties.class,
+    ConsulRegistryProperties.class,
+    NacosRegistryProperties.class,
+    ZookeeperRegistryProperties.class,
+    EtcdRegistryProperties.class,
 })
 @EnableSupervisor
 @EnableRedisServerRegistry // EnableRedisServerRegistry, EnableConsulServerRegistry, EnableNacosServerRegistry, EnableZookeeperServerRegistry, EnableEtcdServerRegistry

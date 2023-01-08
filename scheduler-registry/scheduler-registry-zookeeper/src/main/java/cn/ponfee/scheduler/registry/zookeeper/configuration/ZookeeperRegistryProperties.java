@@ -17,17 +17,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
- * Zookeeper configuration properties.
+ * Zookeeper registry configuration properties.
  *
  * @author Ponfee
  */
-@ConfigurationProperties(prefix = ZookeeperProperties.ZOOKEEPER_KEY_PREFIX)
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".zookeeper")
 @Getter
 @Setter
-public class ZookeeperProperties extends ToJsonString implements java.io.Serializable {
+public class ZookeeperRegistryProperties extends ToJsonString implements java.io.Serializable {
     private static final long serialVersionUID = -8395535372974631095L;
-
-    public static final String ZOOKEEPER_KEY_PREFIX = JobConstants.SCHEDULER_KEY_PREFIX + ".zookeeper";
 
     private String connectString = "localhost:2181";
     private String username;

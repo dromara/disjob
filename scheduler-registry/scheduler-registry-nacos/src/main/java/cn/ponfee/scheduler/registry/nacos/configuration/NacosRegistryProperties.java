@@ -16,14 +16,14 @@ import org.springframework.cglib.beans.BeanMap;
 import java.util.Properties;
 
 /**
- * Nacos configuration properties.
+ * Nacos registry configuration properties.
  *
  * @author Ponfee
  * @see com.alibaba.nacos.api.PropertyKeyConst
  */
-@ConfigurationProperties(prefix = JobConstants.SCHEDULER_KEY_PREFIX + ".nacos")
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".nacos")
 @Data
-public class NacosProperties {
+public class NacosRegistryProperties {
 
     /**
      * Nacos server address

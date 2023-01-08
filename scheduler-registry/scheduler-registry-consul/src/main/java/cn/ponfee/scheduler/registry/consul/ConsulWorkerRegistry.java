@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.registry.consul;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
+import cn.ponfee.scheduler.registry.consul.configuration.ConsulRegistryProperties;
 
 /**
  * Registry worker based consul.
@@ -19,8 +20,8 @@ import cn.ponfee.scheduler.registry.WorkerRegistry;
  */
 public class ConsulWorkerRegistry extends ConsulServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public ConsulWorkerRegistry(String namespace, String host, int port, String token) {
-        super(namespace, host, port, token);
+    public ConsulWorkerRegistry(String namespace, ConsulRegistryProperties config) {
+        super(namespace, config);
     }
 
 }

@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.EventType;
 import cn.ponfee.scheduler.registry.ServerRegistry;
+import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -38,20 +39,7 @@ import static cn.ponfee.scheduler.common.base.Constants.COLON;
 public abstract class RedisServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
     private static final long REDIS_KEY_TTL_MILLIS = 30L * 86400 * 1000;
-
-    private static final int REGISTER_PERIOD_SECONDS = 3;
-
     private static final String CHANNEL = "channel";
-
-    /**
-     * Default registry server keep alive in 5000 milliseconds
-     */
-    protected static final int DEFAULT_REGISTRY_KEEP_ALIVE_MILLISECONDS = 30000;
-
-    /**
-     * Default discovery servers refresh interval milliseconds
-     */
-    protected static final int DEFAULT_DISCOVERY_REFRESH_INTERVAL_MILLISECONDS = 3000;
 
     /**
      * Registry publish redis message channel
@@ -70,12 +58,13 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     // -------------------------------------------------Registry
 
-    private final long keepAliveInMillis;
+    private final long sessionTimeoutMs;
+    private final long registryPeriodMs;
     private final ScheduledThreadPoolExecutor registryScheduledExecutor;
 
     // -------------------------------------------------Discovery
 
-    private final long refreshIntervalMilliseconds;
+    private final long discoveryPeriodMs;
     private volatile long nextRefreshTimeMillis = 0;
 
     // -------------------------------------------------Subscribe
@@ -84,16 +73,16 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     public RedisServerRegistry(String namespace,
                                StringRedisTemplate stringRedisTemplate,
-                               long keepAliveInMillis,
-                               long refreshIntervalMilliseconds) {
+                               RedisRegistryProperties config) {
         super(namespace, ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
-        this.keepAliveInMillis = keepAliveInMillis;
+        this.sessionTimeoutMs = config.getSessionTimeoutMs();
+        this.registryPeriodMs = config.getRegistryPeriodMs();
         this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_server_registry", true));
         this.registryScheduledExecutor.scheduleWithFixedDelay(() -> {
-            if (closed) {
+            if (closed.get()) {
                 return;
             }
             try {
@@ -101,9 +90,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             } catch (Throwable t) {
                 log.error("Do scheduled register occur error: " + registered, t);
             }
-        }, REGISTER_PERIOD_SECONDS, REGISTER_PERIOD_SECONDS, TimeUnit.SECONDS);
+        }, registryPeriodMs, registryPeriodMs, TimeUnit.MILLISECONDS);
 
-        this.refreshIntervalMilliseconds = refreshIntervalMilliseconds;
+        this.discoveryPeriodMs = config.getDiscoveryPeriodMs();
 
         // redis pub/sub
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
@@ -141,7 +130,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public final void register(R server) {
-        if (closed) {
+        if (closed.get()) {
             return;
         }
 
@@ -172,8 +161,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public void close() {
-        closed = true;
-        if (!close.compareAndSet(false, true)) {
+        if (!closed.compareAndSet(false, true)) {
             log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
@@ -223,7 +211,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        Double score = (double) (System.currentTimeMillis() + keepAliveInMillis);
+        Double score = (double) (System.currentTimeMillis() + sessionTimeoutMs);
         Set<ZSetOperations.TypedTuple<String>> tuples = servers
             .stream()
             .map(e -> ZSetOperations.TypedTuple.of(e.serialize(), score))
@@ -272,7 +260,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void updateRefresh() {
-        this.nextRefreshTimeMillis = System.currentTimeMillis() + refreshIntervalMilliseconds;
+        this.nextRefreshTimeMillis = System.currentTimeMillis() + discoveryPeriodMs;
     }
 
 }

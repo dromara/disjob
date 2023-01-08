@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;
-import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
@@ -32,7 +32,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     private final CuratorFrameworkClient client;
 
-    protected ZookeeperServerRegistry(String namespace, ZookeeperProperties props) {
+    protected ZookeeperServerRegistry(String namespace, ZookeeperRegistryProperties config) {
         super(namespace, '/');
         // zookeeper parent path must start with "/"
         String registryRootPath0 = separator + registryRootPath;
@@ -40,8 +40,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
         CountDownLatch latch = new CountDownLatch(1);
         try {
-            this.client = new CuratorFrameworkClient(props, client0 -> {
-                if (closed) {
+            this.client = new CuratorFrameworkClient(config, client0 -> {
+                if (closed.get()) {
                     return;
                 }
                 for (R server : registered) {
@@ -57,7 +57,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             //client.listenChildChanged(discoveryRootPath0);
             client.watchChildChanged(discoveryRootPath0, latch, this::doRefreshDiscoveryServers);
         } catch (Exception e) {
-            throw new IllegalStateException("Connect zookeeper failed: " + props, e);
+            throw new IllegalStateException("Connect zookeeper failed: " + config, e);
         } finally {
             latch.countDown();
         }
@@ -72,7 +72,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     @Override
     public final void register(R server) {
-        if (closed) {
+        if (closed.get()) {
             return;
         }
 
@@ -101,8 +101,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     @Override
     public void close() {
-        closed = true;
-        if (!close.compareAndSet(false, true)) {
+        if (!closed.compareAndSet(false, true)) {
             log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }

@@ -21,12 +21,13 @@ import cn.ponfee.scheduler.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
-import cn.ponfee.scheduler.registry.consul.ConsulWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
+import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
 import cn.ponfee.scheduler.samples.worker.redis.AbstractRedisTemplateCreator;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
@@ -52,6 +54,8 @@ public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+        printBanner();
+
         YamlProperties props;
         try (InputStream inputStream = loadConfigStream(args)) {
             props = new YamlProperties(inputStream);
@@ -66,8 +70,8 @@ public class Main {
         StringRedisTemplate stringRedisTemplate = AbstractRedisTemplateCreator.create("redis.", props).getStringRedisTemplate();
 
         String namespace = props.getString(JobConstants.SCHEDULER_NAMESPACE);
-        WorkerRegistry workerRegistry = new RedisWorkerRegistry(namespace, stringRedisTemplate);
-        //WorkerRegistry workerRegistry = new ConsulWorkerRegistry(namespace, "127.0.0.1", 8500, null);
+        WorkerRegistry workerRegistry = createRedisWorkerRegistry(namespace, stringRedisTemplate, JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis", props);
+        //WorkerRegistry workerRegistry = createConsulWorkerRegistry(namespace, JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".consul", props);
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
             .connectTimeout(props.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.connect-timeout", 2000))
@@ -111,5 +115,35 @@ public class Main {
             return new FileInputStream(filePath);
         }
     }
+
+    private static void printBanner() {
+        try {
+            Map<String, String> map = new ResourceScanner("/").scan4text("banner.txt");
+            if (MapUtils.isNotEmpty(map)) {
+                System.out.println(map.values().iterator().next());
+            }
+        } catch (Exception ignored) {
+            //
+        }
+    }
+
+    private static WorkerRegistry createRedisWorkerRegistry(String namespace, StringRedisTemplate redisTemplate,
+                                                            String keyPrefix, YamlProperties props) {
+        RedisRegistryProperties config = new RedisRegistryProperties();
+        config.setSessionTimeoutMs(props.getLong(keyPrefix + ".session-timeout-ms", 30000));
+        config.setSessionTimeoutMs(props.getLong(keyPrefix + ".registry-period-ms", 3000));
+        config.setSessionTimeoutMs(props.getLong(keyPrefix + ".discovery-period-ms", 3000));
+        return new RedisWorkerRegistry(namespace, redisTemplate, config);
+    }
+
+    /*
+    private static WorkerRegistry createConsulWorkerRegistry(String namespace, String keyPrefix, YamlProperties props) {
+        ConsulRegistryProperties config = new ConsulRegistryProperties();
+        config.setHost(props.getString(keyPrefix + ".host", "localhost"));
+        config.setPort(props.getInt   (keyPrefix + ".port", 8500));
+        config.setHost(props.getString(keyPrefix + ".token"));
+        return new ConsulWorkerRegistry(namespace, config);
+    }
+    */
 
 }

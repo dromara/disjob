@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.registry.nacos;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
-import cn.ponfee.scheduler.registry.nacos.configuration.NacosProperties;
+import cn.ponfee.scheduler.registry.nacos.configuration.NacosRegistryProperties;
 
 /**
  * Registry worker based nacos.
@@ -20,7 +20,7 @@ import cn.ponfee.scheduler.registry.nacos.configuration.NacosProperties;
  */
 public class NacosWorkerRegistry extends NacosServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public NacosWorkerRegistry(String namespace, NacosProperties config) {
+    public NacosWorkerRegistry(String namespace, NacosRegistryProperties config) {
         super(namespace, config);
     }
 

@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.registry.zookeeper;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
-import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 
 /**
  * Registry worker based zookeeper.
@@ -20,8 +20,8 @@ import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
  */
 public class ZookeeperWorkerRegistry extends ZookeeperServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public ZookeeperWorkerRegistry(String namespace, ZookeeperProperties props) {
-        super(namespace, props);
+    public ZookeeperWorkerRegistry(String namespace, ZookeeperRegistryProperties config) {
+        super(namespace, config);
     }
 
 }

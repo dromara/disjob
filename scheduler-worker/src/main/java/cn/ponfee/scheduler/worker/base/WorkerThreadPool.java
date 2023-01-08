@@ -91,14 +91,9 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     private final AtomicInteger threadCounter = new AtomicInteger(0);
 
     /**
-     * Close pool operation
+     * Pool is whether closed status
      */
-    private final AtomicBoolean close = new AtomicBoolean(false);
-
-    /**
-     * Closed state
-     */
-    private volatile boolean closed = false;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
@@ -120,7 +115,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
      * @return {@code true} if thread pool accepted
      */
     public boolean submit(ExecuteParam param) {
-        if (closed) {
+        if (closed.get()) {
             return false;
         }
 
@@ -141,7 +136,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         Operations toOps = stopParam.operation();
         Assert.isTrue(toOps != null && toOps != Operations.TRIGGER, "Invalid stop operation: " + toOps);
 
-        if (closed) {
+        if (closed.get()) {
             return;
         }
 
@@ -178,8 +173,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
     @Override
     public void close() {
-        closed = true;
-        if (!close.compareAndSet(false, true)) {
+        if (!closed.compareAndSet(false, true)) {
             LOG.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
@@ -217,7 +211,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     @Override
     public void run() {
         try {
-            while (!closed) {
+            while (!closed.get()) {
                 ExecuteParam param = taskQueue.takeFirst();
 
                 // take a worker
@@ -609,19 +603,14 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         private final BlockingQueue<ExecuteParam> workQueue = new SynchronousQueue<>();
 
         /**
-         * Do stop operation state
+         * Thread is whether stopped status
          */
-        private final AtomicBoolean stop = new AtomicBoolean(false);
+        private final AtomicBoolean stopped = new AtomicBoolean(false);
 
         /**
          * Atomic reference object of executing param
          */
         private final AtomicReference<ExecuteParam> executingParam = new AtomicReference<>();
-
-        /**
-         * State of whether stop
-         */
-        private volatile boolean stopped = false;
 
         public WorkerThread(WorkerThreadPool threadPool,
                             SupervisorService supervisorClient,
@@ -636,7 +625,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         }
 
         public final void execute(ExecuteParam param) throws InterruptedException {
-            if (stopped || isStopped()) {
+            if (stopped.get() || isStopped()) {
                 throw new BrokenThreadException("Worker thread already stopped: " + super.getName());
             }
             if (!workQueue.offer(param, 100, TimeUnit.MILLISECONDS)) {
@@ -645,12 +634,12 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         }
 
         public final void toStop() {
-            stopped = true;
+            stopped.compareAndSet(false, true);
         }
 
         public final boolean doStop(int sleepCount, long sleepMillis, long joinMillis) {
             toStop();
-            if (!stop.compareAndSet(false, true)) {
+            if (!stopped.compareAndSet(false, true)) {
                 LOG.error("Repeat do stop worker thread: {}", super.getName());
                 return false;
             }
@@ -676,7 +665,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
         @Override
         public void run() {
-            while (!stopped) {
+            while (!stopped.get()) {
                 if (super.isInterrupted()) {
                     LOG.warn("Worker boss thread interrupted.");
                     threadPool.removeWorkerThread(this);

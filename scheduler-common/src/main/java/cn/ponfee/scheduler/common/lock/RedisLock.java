@@ -380,14 +380,13 @@ public class RedisLock implements Lock, java.io.Serializable {
             try {
                 ret = conn.evalSha(UNLOCK_SCRIPT_SHA1, ReturnType.INTEGER, 1, keysAndArgs);
             } catch (Exception e) {
-                if (!exceptionContainsNoScriptError(e)) {
-                    throw (e instanceof RuntimeException)
-                        ? (RuntimeException) e
-                        : new RedisSystemException(e.getMessage(), e);
+                if (exceptionContainsNoScriptError(e)) {
+                    LOG.info(e.getMessage());
+                    ret = conn.eval(UNLOCK_SCRIPT_BYTES, ReturnType.INTEGER, 1, keysAndArgs);
+                } else {
+                    throw (e instanceof RuntimeException) ? (RuntimeException) e : new RedisSystemException(e.getMessage(), e);
                 }
-                ret = conn.eval(UNLOCK_SCRIPT_BYTES, ReturnType.INTEGER, 1, keysAndArgs);
             }
-            //Assert.state(result == UNLOCK_SUCCESS, "Fail result, except: " + UNLOCK_SUCCESS + ", actual: " + result);
             return ret != null && ret == UNLOCK_SUCCESS;
         });
 

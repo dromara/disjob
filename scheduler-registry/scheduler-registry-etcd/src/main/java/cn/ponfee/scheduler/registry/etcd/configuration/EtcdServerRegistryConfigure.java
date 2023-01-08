@@ -50,8 +50,8 @@ public class EtcdServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                                     EtcdProperties properties) {
-            return new EtcdSupervisorRegistry(namespace, properties);
+                                                     EtcdRegistryProperties config) {
+            return new EtcdSupervisorRegistry(namespace, config);
         }
     }
 
@@ -66,8 +66,8 @@ public class EtcdServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                             EtcdProperties properties) {
-            return new EtcdWorkerRegistry(namespace, properties);
+                                             EtcdRegistryProperties config) {
+            return new EtcdWorkerRegistry(namespace, config);
         }
     }
 

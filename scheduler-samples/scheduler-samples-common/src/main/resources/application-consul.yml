@@ -1,3 +1,3 @@
-distributed.scheduler.consul:
+distributed.scheduler.registry.consul:
   host: localhost
   port: 8500

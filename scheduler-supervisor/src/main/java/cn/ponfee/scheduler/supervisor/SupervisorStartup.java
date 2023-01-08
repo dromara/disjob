@@ -31,7 +31,7 @@ public class SupervisorStartup implements AutoCloseable {
     private final TaskDispatcher taskDispatcher;
     private final SupervisorRegistry supervisorRegistry;
 
-    private final AtomicBoolean start = new AtomicBoolean(false);
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     private SupervisorStartup(Supervisor currentSupervisor,
                               int jobHeartbeatIntervalSeconds,
@@ -58,7 +58,7 @@ public class SupervisorStartup implements AutoCloseable {
     }
 
     public void start() {
-        if (!start.compareAndSet(false, true)) {
+        if (!started.compareAndSet(false, true)) {
             return;
         }
         scanJobHeartbeatThread.start();

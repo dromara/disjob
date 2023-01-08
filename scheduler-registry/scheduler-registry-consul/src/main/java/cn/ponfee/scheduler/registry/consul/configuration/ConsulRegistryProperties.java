@@ -6,22 +6,34 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.registry.zookeeper;
+package cn.ponfee.scheduler.registry.consul.configuration;
 
-import cn.ponfee.scheduler.core.base.Supervisor;
-import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.registry.SupervisorRegistry;
-import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperRegistryProperties;
+import cn.ponfee.scheduler.core.base.JobConstants;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Registry supervisor based zookeeper.
+ * Consul registry configuration properties.
  *
  * @author Ponfee
  */
-public class ZookeeperSupervisorRegistry extends ZookeeperServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".consul")
+@Data
+public class ConsulRegistryProperties {
 
-    public ZookeeperSupervisorRegistry(String namespace, ZookeeperRegistryProperties config) {
-        super(namespace, config);
-    }
+    /**
+     * Consul client host
+     */
+    private String host = "localhost";
+
+    /**
+     * Consul client port
+     */
+    private int port = 8500;
+
+    /**
+     * Consul token
+     */
+    private String token;
 
 }

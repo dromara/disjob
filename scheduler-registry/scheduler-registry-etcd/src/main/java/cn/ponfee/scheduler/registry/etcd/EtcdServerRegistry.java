@@ -14,7 +14,7 @@ import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ConnectionStateListener;
 import cn.ponfee.scheduler.registry.ServerRegistry;
-import cn.ponfee.scheduler.registry.etcd.configuration.EtcdProperties;
+import cn.ponfee.scheduler.registry.etcd.configuration.EtcdRegistryProperties;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.support.CloseableClient;
@@ -65,13 +65,13 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
      */
     private volatile CloseableClient keepAlive;
 
-    protected EtcdServerRegistry(String namespace, EtcdProperties properties) {
+    protected EtcdServerRegistry(String namespace, EtcdRegistryProperties config) {
         super(namespace, '/');
-        this.ttl = properties.getSessionTimeoutMs() / 2000;
+        this.ttl = config.getSessionTimeoutMs() / 2000;
 
         CountDownLatch latch = new CountDownLatch(1);
         try {
-            this.client = new EtcdClient(properties);
+            this.client = new EtcdClient(config);
             this.keepAliveCheckScheduler = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("keep_alive_check_scheduler", true));
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
@@ -102,7 +102,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     @Override
     public final void register(R server) {
-        if (closed) {
+        if (closed.get()) {
             return;
         }
 
@@ -134,8 +134,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     @Override
     public void close() {
-        closed = true;
-        if (!close.compareAndSet(false, true)) {
+        if (!closed.compareAndSet(false, true)) {
             log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }

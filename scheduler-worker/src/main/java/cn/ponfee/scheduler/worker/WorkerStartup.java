@@ -31,7 +31,7 @@ public class WorkerStartup implements AutoCloseable {
     private final TaskReceiver taskReceiver;
     private final WorkerHeartbeatThread workerHeartbeatThread;
 
-    private final AtomicBoolean start = new AtomicBoolean(false);
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     private WorkerStartup(Worker currentWorker,
                           int maximumPoolSize,
@@ -54,7 +54,7 @@ public class WorkerStartup implements AutoCloseable {
     }
 
     public void start() {
-        if (!start.compareAndSet(false, true)) {
+        if (!started.compareAndSet(false, true)) {
             return;
         }
         workerThreadPool.start();

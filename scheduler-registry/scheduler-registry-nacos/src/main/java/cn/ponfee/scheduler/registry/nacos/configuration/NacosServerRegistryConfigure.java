@@ -50,7 +50,7 @@ public class NacosServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                                     NacosProperties config) {
+                                                     NacosRegistryProperties config) {
             return new NacosSupervisorRegistry(namespace, config);
         }
     }
@@ -66,7 +66,7 @@ public class NacosServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                             NacosProperties config) {
+                                             NacosRegistryProperties config) {
             return new NacosWorkerRegistry(namespace, config);
         }
     }

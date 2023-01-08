@@ -16,13 +16,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Arrays;
 
 /**
- * Etcd configuration properties.
+ * Etcd registry configuration properties.
  *
  * @author Ponfee
  */
-@ConfigurationProperties(prefix = JobConstants.SCHEDULER_KEY_PREFIX + ".etcd")
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".etcd")
 @Data
-public class EtcdProperties {
+public class EtcdRegistryProperties {
 
     /**
      * Server endpoints, multiple addresses separated by ","

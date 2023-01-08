@@ -6,34 +6,34 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.registry.consul.configuration;
+package cn.ponfee.scheduler.registry.redis.configuration;
 
 import cn.ponfee.scheduler.core.base.JobConstants;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Consul configuration properties.
+ * Redis registry configuration properties.
  *
  * @author Ponfee
  */
-@ConfigurationProperties(prefix = JobConstants.SCHEDULER_KEY_PREFIX + ".consul")
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis")
 @Data
-public class ConsulProperties {
+public class RedisRegistryProperties {
 
     /**
-     * Consul client host
+     * Session timeout milliseconds
      */
-    private String host = "localhost";
+    private long sessionTimeoutMs = 30 * 1000;
 
     /**
-     * Consul client port
+     * Registry period milliseconds
      */
-    private int port = 8500;
+    private long registryPeriodMs = 3 * 1000;
 
     /**
-     * Consul token
+     * Discovery period milliseconds
      */
-    private String token;
+    private long discoveryPeriodMs = 3 * 1000;
 
 }

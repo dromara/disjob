@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.registry.zookeeper;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
-import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -43,14 +43,14 @@ public class CuratorFrameworkClient implements AutoCloseable {
     private final CuratorFramework curatorFramework;
     private final ReconnectCallback reconnectCallback;
 
-    public CuratorFrameworkClient(ZookeeperProperties props, ReconnectCallback reconnectCallback) throws Exception {
+    public CuratorFrameworkClient(ZookeeperRegistryProperties config, ReconnectCallback reconnectCallback) throws Exception {
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-            .connectString(props.getConnectString())
-            .connectionTimeoutMs(props.getConnectionTimeoutMs())
-            .sessionTimeoutMs(props.getSessionTimeoutMs())
-            .retryPolicy(buildRetryPolicy(props));
+            .connectString(config.getConnectString())
+            .connectionTimeoutMs(config.getConnectionTimeoutMs())
+            .sessionTimeoutMs(config.getSessionTimeoutMs())
+            .retryPolicy(buildRetryPolicy(config));
 
-        Optional.ofNullable(props.authorization()).ifPresent(s -> builder.authorization("digest", s.getBytes()));
+        Optional.ofNullable(config.authorization()).ifPresent(s -> builder.authorization("digest", s.getBytes()));
 
         this.curatorFramework = builder.build();
         curatorFramework.getConnectionStateListenable().addListener(new CuratorConnectionStateListener());
@@ -58,7 +58,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
         curatorFramework.start();
         boolean isStarted = curatorFramework.getState().equals(CuratorFrameworkState.STARTED);
         Assert.state(isStarted, "Curator framework not started: " + curatorFramework.getState());
-        boolean isConnected = curatorFramework.blockUntilConnected(props.getMaxWaitTimeMs(), TimeUnit.MILLISECONDS);
+        boolean isConnected = curatorFramework.blockUntilConnected(config.getMaxWaitTimeMs(), TimeUnit.MILLISECONDS);
         Assert.state(isConnected, "Curator framework not connected: " + curatorFramework.getState());
 
         this.reconnectCallback = reconnectCallback;
@@ -274,11 +274,11 @@ public class CuratorFrameworkClient implements AutoCloseable {
         }
     }
 
-    private static RetryPolicy buildRetryPolicy(ZookeeperProperties props) {
+    private static RetryPolicy buildRetryPolicy(ZookeeperRegistryProperties config) {
         return new ExponentialBackoffRetry(
-            props.getBaseSleepTimeMs(),
-            props.getMaxRetries(),
-            props.getMaxSleepMs()
+            config.getBaseSleepTimeMs(),
+            config.getMaxRetries(),
+            config.getMaxSleepMs()
         );
     }
 

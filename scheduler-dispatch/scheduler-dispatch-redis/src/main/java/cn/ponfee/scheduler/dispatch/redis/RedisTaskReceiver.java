@@ -77,7 +77,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     private final RedisKeyRenewal redisKeyRenewal;
     private final byte[][] keysAndArgs;
     private final ScheduledThreadPoolExecutor receiveTaskScheduledExecutor;
-    private final AtomicBoolean start = new AtomicBoolean(false);
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     public RedisTaskReceiver(Worker currentWorker,
                              TimingWheel<ExecuteParam> timingWheel,
@@ -94,7 +94,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
     @Override
     public void start() {
-        if (!start.compareAndSet(false, true)) {
+        if (!started.compareAndSet(false, true)) {
             return;
         }
         receiveTaskScheduledExecutor.scheduleWithFixedDelay(() -> {
@@ -120,13 +120,13 @@ public class RedisTaskReceiver extends TaskReceiver {
             try {
                 return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, keysAndArgs);
             } catch (Exception e) {
-                LOG.warn("Call redis eval sha occur error.", e);
-                if (!RedisLock.exceptionContainsNoScriptError(e)) {
-                    throw (e instanceof RuntimeException)
-                        ? (RuntimeException) e
-                        : new RedisSystemException(e.getMessage(), e);
+                if (RedisLock.exceptionContainsNoScriptError(e)) {
+                    LOG.info(e.getMessage());
+                    return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, keysAndArgs);
+                } else {
+                    LOG.error("Call redis eval sha occur error.", e);
+                    throw (e instanceof RuntimeException) ? (RuntimeException) e : new RedisSystemException(e.getMessage(), e);
                 }
-                return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, keysAndArgs);
             }
         });
 

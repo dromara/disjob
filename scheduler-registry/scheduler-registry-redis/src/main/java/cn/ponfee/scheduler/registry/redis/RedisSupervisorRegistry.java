@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.registry.redis;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
+import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
@@ -20,20 +21,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  */
 public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public RedisSupervisorRegistry(String namespace, StringRedisTemplate stringRedisTemplate) {
-        this(
-            namespace,
-            stringRedisTemplate,
-            DEFAULT_REGISTRY_KEEP_ALIVE_MILLISECONDS,
-            DEFAULT_DISCOVERY_REFRESH_INTERVAL_MILLISECONDS
-        );
-    }
-
-    public RedisSupervisorRegistry(String namespace,
-                                   StringRedisTemplate stringRedisTemplate,
-                                   long keepAliveInMillis,
-                                   long refreshIntervalMilliseconds) {
-        super(namespace, stringRedisTemplate, keepAliveInMillis, refreshIntervalMilliseconds);
+    public RedisSupervisorRegistry(String namespace, StringRedisTemplate stringRedisTemplate, RedisRegistryProperties config) {
+        super(namespace, stringRedisTemplate, config);
     }
 
 }

@@ -11,15 +11,16 @@ package cn.ponfee.scheduler.samples.worker;
 import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.dispatch.http.configuration.EnableHttpTaskDispatching;
 import cn.ponfee.scheduler.dispatch.redis.configuration.EnableRedisTaskDispatching;
-import cn.ponfee.scheduler.registry.consul.configuration.ConsulProperties;
+import cn.ponfee.scheduler.registry.consul.configuration.ConsulRegistryProperties;
 import cn.ponfee.scheduler.registry.consul.configuration.EnableConsulServerRegistry;
 import cn.ponfee.scheduler.registry.etcd.configuration.EnableEtcdServerRegistry;
-import cn.ponfee.scheduler.registry.etcd.configuration.EtcdProperties;
+import cn.ponfee.scheduler.registry.etcd.configuration.EtcdRegistryProperties;
 import cn.ponfee.scheduler.registry.nacos.configuration.EnableNacosServerRegistry;
-import cn.ponfee.scheduler.registry.nacos.configuration.NacosProperties;
+import cn.ponfee.scheduler.registry.nacos.configuration.NacosRegistryProperties;
 import cn.ponfee.scheduler.registry.redis.configuration.EnableRedisServerRegistry;
+import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
 import cn.ponfee.scheduler.registry.zookeeper.configuration.EnableZookeeperServerRegistry;
-import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperProperties;
+import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import cn.ponfee.scheduler.worker.configuration.EnableWorker;
 import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
 import org.springframework.boot.SpringApplication;
@@ -35,10 +36,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties({
     WorkerProperties.class,
     HttpProperties.class,
-    ConsulProperties.class,
-    NacosProperties.class,
-    ZookeeperProperties.class,
-    EtcdProperties.class,
+    RedisRegistryProperties.class,
+    ConsulRegistryProperties.class,
+    NacosRegistryProperties.class,
+    ZookeeperRegistryProperties.class,
+    EtcdRegistryProperties.class,
 })
 @EnableWorker
 @EnableRedisServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry

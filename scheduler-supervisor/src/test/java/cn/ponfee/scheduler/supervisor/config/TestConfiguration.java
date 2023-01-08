@@ -19,6 +19,8 @@ import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.dispatch.redis.RedisTaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisSupervisorRegistry;
+import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,6 +32,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Ponfee
  */
+@EnableConfigurationProperties(RedisRegistryProperties.class)
 @Configuration
 public class TestConfiguration {
 
@@ -39,12 +42,14 @@ public class TestConfiguration {
      * <p>StringRedisTemplate stringRedisTemplate
      *
      * @param stringRedisTemplate the auto-configured redis template by spring container
+     * @param config              redis registry configuration
      * @return SupervisorRegistry
      * @see org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
      */
     @Bean
-    public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate) {
-        return new RedisSupervisorRegistry("", stringRedisTemplate);
+    public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate,
+                                                 RedisRegistryProperties config) {
+        return new RedisSupervisorRegistry("", stringRedisTemplate, config);
     }
 
     @Bean

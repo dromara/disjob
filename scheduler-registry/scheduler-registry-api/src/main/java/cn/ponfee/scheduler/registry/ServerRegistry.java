@@ -49,14 +49,9 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected final Set<R> registered = ConcurrentHashMap.newKeySet();
 
     /**
-     * Close registry operation
+     * Server registry is whether closed status
      */
-    protected final AtomicBoolean close = new AtomicBoolean(false);
-
-    /**
-     * Closed registry state
-     */
-    protected volatile boolean closed = false;
+    protected final AtomicBoolean closed = new AtomicBoolean(false);
 
     protected ServerRegistry(String namespace, char separator) {
         this.separator = separator;

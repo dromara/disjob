@@ -22,13 +22,13 @@
     https://blog.csdn.net/qq_42651904/article/details/121191238
 
     发布命令：
-      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.7-SNAPSHOT && mvn clean deploy -DskipTests -Dcheckstyle.skip -U
+      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.8-SNAPSHOT && mvn clean deploy -DskipTests -Dcheckstyle.skip -U
       2.1）release交互模式：
           | ```bash
           | mvn release:update-versions \
           |   -B \
           |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.7-SNAPSHOT \
+          |   -DdevelopmentVersion=1.8-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
           |   -Darguments="-Dcheckstyle.skip"
@@ -38,13 +38,13 @@
           | mvn release:update-versions \
           |   -B \
           |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.7-SNAPSHOT \
+          |   -DdevelopmentVersion=1.8-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
           |   -Darguments="-Dcheckstyle.skip" \
-          |   -DreleaseVersion=1.7 \
-          |   -Dtag=v1.7 \
-          |   -DdevelopmentVersion=1.7-SNAPSHOT
+          |   -DreleaseVersion=1.8 \
+          |   -Dtag=v1.8 \
+          |   -DdevelopmentVersion=1.8-SNAPSHOT
           | ```
 
     注意事项：

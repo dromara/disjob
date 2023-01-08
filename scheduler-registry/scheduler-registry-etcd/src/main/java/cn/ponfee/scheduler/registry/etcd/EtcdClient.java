@@ -14,7 +14,7 @@ import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.common.util.Fields;
 import cn.ponfee.scheduler.registry.ConnectionStateListener;
-import cn.ponfee.scheduler.registry.etcd.configuration.EtcdProperties;
+import cn.ponfee.scheduler.registry.etcd.configuration.EtcdRegistryProperties;
 import com.google.common.collect.ImmutableList;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
@@ -68,7 +68,7 @@ public class EtcdClient implements AutoCloseable {
     /**
      * Etcd properties
      */
-    private final EtcdProperties config;
+    private final EtcdRegistryProperties config;
 
     /**
      * Etcd native client
@@ -83,11 +83,11 @@ public class EtcdClient implements AutoCloseable {
 
     private volatile boolean lastConnectState;
 
-    public EtcdClient(EtcdProperties properties) {
-        this.config = properties;
+    public EtcdClient(EtcdRegistryProperties config) {
+        this.config = config;
         this.client = Client.builder()
-            .endpoints(properties.endpoints())
-            .maxInboundMessageSize(properties.getMaxInboundMessageSize())
+            .endpoints(config.endpoints())
+            .maxInboundMessageSize(config.getMaxInboundMessageSize())
             .build();
 
         this.healthCheckScheduler = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("health_check_scheduler", true));

@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;
-import cn.ponfee.scheduler.registry.nacos.configuration.NacosProperties;
+import cn.ponfee.scheduler.registry.nacos.configuration.NacosRegistryProperties;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -48,7 +48,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
      */
     private final EventListener eventListener;
 
-    protected NacosServerRegistry(String namespace, NacosProperties config) {
+    protected NacosServerRegistry(String namespace, NacosRegistryProperties config) {
         super(namespace, ':');
         this.groupName = StringUtils.isBlank(namespace) ? Constants.DEFAULT_GROUP : namespace.trim();
 
@@ -79,7 +79,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public final void register(R server) {
-        if (closed) {
+        if (closed.get()) {
             return;
         }
 
@@ -109,8 +109,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public void close() {
-        closed = true;
-        if (!close.compareAndSet(false, true)) {
+        if (!closed.compareAndSet(false, true)) {
             log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }

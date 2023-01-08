@@ -39,43 +39,43 @@ public class JavaUtilDateFormat extends DateFormat {
     /**
      * For {@link Date#toString()} "EEE MMM dd HH:mm:ss zzz yyyy" format
      */
-    private static final Pattern DATE_TO_STRING_PATTERN = Pattern.compile("^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) [A-Z][a-z]{2} \\d{2} \\d{2}:\\d{2}:\\d{2} CST \\d{4}$");
+    static final Pattern DATE_TO_STRING_PATTERN = Pattern.compile("^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) [A-Z][a-z]{2} \\d{2} \\d{2}:\\d{2}:\\d{2} CST \\d{4}$");
 
     /**
      * 日期时间戳：秒/毫秒
      */
-    public  static final Pattern DATE_TIMESTAMP_PATTERN = Pattern.compile("^0|[1-9]\\d*$");
+    static final Pattern DATE_TIMESTAMP_PATTERN = Pattern.compile("^0|[1-9]\\d*$");
 
-    private static final FastDateFormat PATTERN_11 = FastDateFormat.getInstance("yyyyMM");
-    private static final FastDateFormat PATTERN_12 = FastDateFormat.getInstance("yyyy-MM");
-    private static final FastDateFormat PATTERN_13 = FastDateFormat.getInstance("yyyy/MM");
+    static final FastDateFormat PATTERN_11 = FastDateFormat.getInstance("yyyyMM");
+    static final FastDateFormat PATTERN_12 = FastDateFormat.getInstance("yyyy-MM");
+    static final FastDateFormat PATTERN_13 = FastDateFormat.getInstance("yyyy/MM");
 
-    private static final FastDateFormat PATTERN_21 = FastDateFormat.getInstance("yyyyMMdd");
-    private static final FastDateFormat PATTERN_22 = FastDateFormat.getInstance("yyyy-MM-dd");
-    private static final FastDateFormat PATTERN_23 = FastDateFormat.getInstance("yyyy/MM/dd");
+    static final FastDateFormat PATTERN_21 = FastDateFormat.getInstance("yyyyMMdd");
+    static final FastDateFormat PATTERN_22 = FastDateFormat.getInstance("yyyy-MM-dd");
+    static final FastDateFormat PATTERN_23 = FastDateFormat.getInstance("yyyy/MM/dd");
 
-    private static final FastDateFormat PATTERN_31 = FastDateFormat.getInstance("yyyyMMddHHmmss");
-    private static final FastDateFormat PATTERN_32 = FastDateFormat.getInstance("yyyyMMddHHmmssSSS");
+    static final FastDateFormat PATTERN_31 = FastDateFormat.getInstance("yyyyMMddHHmmss");
+    static final FastDateFormat PATTERN_32 = FastDateFormat.getInstance("yyyyMMddHHmmssSSS");
 
-    private static final FastDateFormat PATTERN_41 = FastDateFormat.getInstance(Dates.DEFAULT_DATE_FORMAT);
-    private static final FastDateFormat PATTERN_42 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
-    private static final FastDateFormat PATTERN_43 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
-    private static final FastDateFormat PATTERN_44 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss");
+    static final FastDateFormat PATTERN_41 = FastDateFormat.getInstance(Dates.DEFAULT_DATE_FORMAT);
+    static final FastDateFormat PATTERN_42 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
+    static final FastDateFormat PATTERN_43 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
+    static final FastDateFormat PATTERN_44 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss");
 
-    public  static final FastDateFormat PATTERN_51 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-    private static final FastDateFormat PATTERN_52 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS");
-    private static final FastDateFormat PATTERN_53 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    private static final FastDateFormat PATTERN_54 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS");
+    public static final FastDateFormat PATTERN_51 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+    static final FastDateFormat PATTERN_52 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS");
+    static final FastDateFormat PATTERN_53 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    static final FastDateFormat PATTERN_54 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS");
 
-    private static final FastDateFormat PATTERN_61 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS'Z'");
-    private static final FastDateFormat PATTERN_62 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS'Z'");
-    private static final FastDateFormat PATTERN_63 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    private static final FastDateFormat PATTERN_64 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'");
+    static final FastDateFormat PATTERN_61 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS'Z'");
+    static final FastDateFormat PATTERN_62 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS'Z'");
+    static final FastDateFormat PATTERN_63 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    static final FastDateFormat PATTERN_64 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS'Z'");
 
-    private static final FastDateFormat PATTERN_71 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSSX");
-    private static final FastDateFormat PATTERN_72 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSSX");
-    private static final FastDateFormat PATTERN_73 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-    private static final FastDateFormat PATTERN_74 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSSX");
+    static final FastDateFormat PATTERN_71 = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSSX");
+    static final FastDateFormat PATTERN_72 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSSX");
+    static final FastDateFormat PATTERN_73 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    static final FastDateFormat PATTERN_74 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSSX");
 
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss

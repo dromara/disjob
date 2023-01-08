@@ -1,4 +1,4 @@
-[![Blog](https://img.shields.io/badge/blog-@ponfee-informational.svg)](http://www.ponfee.cn)
+[![Blog](https://img.shields.io/badge/blog-@Ponfee-informational.svg?logo=Pelican)](http://www.ponfee.cn)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8s)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
@@ -106,10 +106,11 @@ distributed-scheduler
 @EnableConfigurationProperties({
     SupervisorProperties.class,
     HttpProperties.class,
-    ConsulProperties.class,
-    NacosProperties.class,
-    ZookeeperProperties.class,
-    EtcdProperties.class,
+    RedisRegistryProperties.class,
+    ConsulRegistryProperties.class,
+    NacosRegistryProperties.class,
+    ZookeeperRegistryProperties.class,
+    EtcdRegistryProperties.class,
 })
 @EnableSupervisor
 @EnableRedisServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry

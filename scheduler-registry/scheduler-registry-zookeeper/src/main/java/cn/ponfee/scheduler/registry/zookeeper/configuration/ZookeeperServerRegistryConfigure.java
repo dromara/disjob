@@ -49,8 +49,8 @@ public class ZookeeperServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                                     ZookeeperProperties props) {
-            return new ZookeeperSupervisorRegistry(namespace, props);
+                                                     ZookeeperRegistryProperties config) {
+            return new ZookeeperSupervisorRegistry(namespace, config);
         }
     }
 
@@ -65,8 +65,8 @@ public class ZookeeperServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                             ZookeeperProperties props) {
-            return new ZookeeperWorkerRegistry(namespace, props);
+                                             ZookeeperRegistryProperties config) {
+            return new ZookeeperWorkerRegistry(namespace, config);
         }
     }
 

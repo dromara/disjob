@@ -60,8 +60,9 @@ public class RedisServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                                     StringRedisTemplate stringRedisTemplate) {
-            return new RedisSupervisorRegistry(namespace, stringRedisTemplate);
+                                                     StringRedisTemplate stringRedisTemplate,
+                                                     RedisRegistryProperties config) {
+            return new RedisSupervisorRegistry(namespace, stringRedisTemplate, config);
         }
     }
 
@@ -76,8 +77,9 @@ public class RedisServerRegistryConfigure {
         @Bean
         @ConditionalOnMissingBean
         public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                             StringRedisTemplate stringRedisTemplate) {
-            return new RedisWorkerRegistry(namespace, stringRedisTemplate);
+                                             StringRedisTemplate stringRedisTemplate,
+                                             RedisRegistryProperties config) {
+            return new RedisWorkerRegistry(namespace, stringRedisTemplate, config);
         }
     }
 
