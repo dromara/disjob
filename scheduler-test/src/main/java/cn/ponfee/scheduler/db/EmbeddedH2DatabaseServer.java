@@ -71,7 +71,7 @@ public class EmbeddedH2DatabaseServer {
         return "jdbc:h2:" + dataDir + dbName;
     }
 
-    private static void testScript(JdbcTemplate jdbcTemplate) throws Exception {
+    private static void testScript(JdbcTemplate jdbcTemplate) {
         String scriptPath = MavenProjects.getProjectBaseDir() + "/src/test/DB/H2/H2_SCRIPT.sql";
 
         // 加载脚本方式一：
@@ -92,7 +92,7 @@ public class EmbeddedH2DatabaseServer {
         });
 
         List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM test1");
-        Assert.assertEquals("fdsaf23r23", result.get(0).get("NAME"));
+        Assert.assertEquals("ae452457b1df438fa441e5640b162da6", result.get(0).get("NAME"));
         System.out.println("Query result: " + Jsons.toJson(result));
     }
 

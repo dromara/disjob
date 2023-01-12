@@ -27,18 +27,6 @@ public class SchedTask extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 4882055618593707631L;
 
-    public SchedTask() {
-    }
-
-    public SchedTask(String taskParam) {
-        this.taskParam = taskParam;
-    }
-
-    public SchedTask(long taskId, String worker) {
-        this.taskId = taskId;
-        this.worker = worker;
-    }
-
     /**
      * 全局唯一ID
      */
@@ -92,7 +80,7 @@ public class SchedTask extends BaseEntity implements Serializable {
     private String errorMsg;
 
     /**
-     * Builds sched tasks
+     * Creates sched tasks
      *
      * @param taskParam  the task param
      * @param taskId     the task id
@@ -100,8 +88,9 @@ public class SchedTask extends BaseEntity implements Serializable {
      * @param createTime the created time
      * @return SchedTask
      */
-    public static SchedTask from(String taskParam, long taskId, long trackId, Date createTime) {
-        SchedTask task = new SchedTask(taskParam == null ? "" : taskParam);
+    public static SchedTask create(String taskParam, long taskId, long trackId, Date createTime) {
+        SchedTask task = new SchedTask();
+        task.setTaskParam(taskParam == null ? "" : taskParam);
         task.setTaskId(taskId);
         task.setTrackId(trackId);
         task.setExecuteState(ExecuteState.WAITING.value());

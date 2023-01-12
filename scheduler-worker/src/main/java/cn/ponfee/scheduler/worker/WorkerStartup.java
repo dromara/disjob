@@ -85,6 +85,9 @@ public class WorkerStartup implements AutoCloseable {
         private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
 
+        private WorkerStartupBuilder() {
+        }
+
         public WorkerStartup.WorkerStartupBuilder currentWorker(Worker currentWorker) {
             this.currentWorker = currentWorker;
             return this;

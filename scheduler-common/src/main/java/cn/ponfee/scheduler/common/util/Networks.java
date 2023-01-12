@@ -279,7 +279,7 @@ public final class Networks {
      * Returns the host address is valid
      *
      * @param address
-     * @return if @code true} is valid, else invalid
+     * @return if {@code true} is valid, else invalid
      */
     private static boolean isValidHostAddress(InetAddress address) {
         if (address == null || address.isLoopbackAddress()) {

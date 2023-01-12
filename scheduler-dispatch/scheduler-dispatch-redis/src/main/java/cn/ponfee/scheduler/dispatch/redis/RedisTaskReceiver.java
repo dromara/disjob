@@ -73,7 +73,6 @@ public class RedisTaskReceiver extends TaskReceiver {
 
     private final Worker currentWorker;
     private final RedisTemplate<String, String> redisTemplate;
-    private final byte[] currentWorkerRedisKey;
     private final RedisKeyRenewal redisKeyRenewal;
     private final byte[][] keysAndArgs;
     private final ScheduledThreadPoolExecutor receiveTaskScheduledExecutor;
@@ -86,7 +85,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
         this.currentWorker = currentWorker;
         this.redisTemplate = redisTemplate;
-        this.currentWorkerRedisKey = RedisTaskDispatchingUtils.buildDispatchTasksKey(currentWorker).getBytes();
+        byte[] currentWorkerRedisKey = RedisTaskDispatchingUtils.buildDispatchTasksKey(currentWorker).getBytes();
         this.keysAndArgs = new byte[][]{currentWorkerRedisKey, LIST_POP_BATCH_SIZE_BYTES};
         this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, currentWorkerRedisKey);
         this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_task_receiver", true), ThreadPoolExecutors.DISCARD);

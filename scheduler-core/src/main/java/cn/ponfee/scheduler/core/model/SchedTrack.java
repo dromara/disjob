@@ -82,4 +82,18 @@ public class SchedTrack extends BaseEntity implements Serializable {
      */
     private Integer retriedCount;
 
+    public static SchedTrack create(long trackId, long jobId, RunType runType,
+                                    long triggerTime, int retriedCount, Date date) {
+        SchedTrack track = new SchedTrack();
+        track.setTrackId(trackId);
+        track.setJobId(jobId);
+        track.setRunType(runType.value());
+        track.setTriggerTime(triggerTime);
+        track.setRunState(RunState.WAITING.value());
+        track.setRetriedCount(retriedCount);
+        track.setUpdatedAt(date);
+        track.setCreatedAt(date);
+        return track;
+    }
+
 }

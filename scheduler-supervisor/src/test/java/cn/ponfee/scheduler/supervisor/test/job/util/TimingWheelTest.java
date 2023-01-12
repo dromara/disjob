@@ -101,14 +101,14 @@ public class TimingWheelTest {
     static int round = 100000;
 
     @Test
-    public void testRoundCurrentTimeMillis() throws InterruptedException {
+    public void testRoundCurrentTimeMillis() {
         for (int second, i = 0; i < round; i++) {
             second = (int) ((System.currentTimeMillis() % 60000) / 1000);
         }
     }
 
     @Test
-    public void testRoundCalendar() throws InterruptedException {
+    public void testRoundCalendar() {
         for (int second, i = 0; i < round; i++) {
             second = Calendar.getInstance().get(Calendar.SECOND);
         }

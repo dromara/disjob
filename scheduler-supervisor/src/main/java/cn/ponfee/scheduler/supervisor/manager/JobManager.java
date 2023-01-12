@@ -35,7 +35,6 @@ import com.google.common.base.Joiner;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -90,6 +89,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     private WorkerService workerClient;
 
     // ------------------------------------------------------------------query
+
     /**
      * Scan will be triggering sched jobs.
      *
@@ -143,62 +143,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return taskMapper.findByTrackId(trackId);
     }
 
-    // ------------------------------------------------------------------worker & dispatch
-
-    public boolean hasAliveExecuting(long trackId) {
-        return taskMapper.findByTrackId(trackId)
-                         .stream()
-                         .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
-                         .map(SchedTask::getWorker)
-                         .filter(StringUtils::isNotBlank)
-                         .anyMatch(this::isAliveWorker);
-    }
-
-    public boolean isAliveWorker(String text) {
-        return discoveryWorker.isDiscoveredServerAlive(Worker.deserialize(text));
-    }
-
-    public boolean hasNotFoundWorkers(String group) {
-        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers(group));
-    }
-
-    public boolean hasNotFoundWorkers() {
-        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers());
-    }
-
-    public Pair<SchedTrack, List<SchedTask>> buildTrackAndTasks(SchedJob job, Date now) throws JobException {
-        // 1、build sched track
-        SchedTrack track = new SchedTrack();
-        track.setTrackId(idGenerator.generateId());
-        track.setJobId(job.getJobId());
-        track.setRunType(RunType.SCHEDULE.value());
-        track.setTriggerTime(job.getNextTriggerTime());
-        track.setRunState(RunState.WAITING.value());
-        track.setRetriedCount(0);
-        track.setUpdatedAt(now);
-        track.setCreatedAt(now);
-
-        // 2、build sched tasks
-        List<SplitTask> splitTasks = splitTasks(job.getJobHandler(), job.getJobParam());
-        List<SchedTask> tasks = splitTasks.stream()
-            .map(e -> SchedTask.from(e.getTaskParam(), idGenerator.generateId(), track.getTrackId(), now))
-            .collect(Collectors.toList());
-
-        return Pair.of(track, tasks);
-    }
-
-    /**
-     * Dispatch task list to worker.
-     *
-     * @param job   the sched job
-     * @param track the sched track
-     * @param tasks the list of sched task
-     */
-    public void dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
-        taskDispatcher.dispatch(job, track, tasks);
-    }
-
     // ------------------------------------------------------------------operation without transaction
+
     @Override
     public boolean checkpoint(long taskId, String executeSnapshot) {
         return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
@@ -241,6 +187,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     }
 
     // ------------------------------------------------------------------operation within transaction
+
     @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) {
         Assert.notNull(job.getTriggerType(), "Trigger type cannot be null.");
@@ -250,7 +197,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         verifyJobHandler(job);
         job.checkAndDefaultSetting();
 
-        job.setJobId(idGenerator.generateId());
+        job.setJobId(generateId());
         Date now = new Date();
         parseTriggerConfig(job, now);
 
@@ -341,24 +288,21 @@ public class JobManager implements SupervisorService, MarkRpcController {
         SchedJob job = jobMapper.getByJobId(jobId);
         Assert.notNull(job, "Sched job not found: " + jobId);
 
-        Date now = new Date();
-
         // 1、build sched track and sched task list
-        Pair<SchedTrack, List<SchedTask>> pair = buildTrackAndTasks(job, now);
-        SchedTrack track = pair.getLeft();
-        List<SchedTask> tasks = pair.getRight();
-        Assert.notEmpty(tasks, "Invalid split, Not has executable task: " + job);
+        Date now = new Date();
+        SchedTrack track = SchedTrack.create(
+            generateId(), job.getJobId(), RunType.MANUAL, now.getTime(), 0, now
+        );
+        List<SchedTask> tasks = splitTasks(job, track.getTrackId(), now);
 
-        track.setRunType(RunType.MANUAL.value());
-        track.setTriggerTime(now.getTime());
+        // 2、save sched trace and sched task to database
         int row = trackMapper.insert(track);
         Assert.state(row == AFFECTED_ONE_ROW, "Insert sched track fail: " + track);
 
-        Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         row = taskMapper.insertBatch(tasks);
         Assert.state(row == tasks.size(), "Insert sched task fail: " + tasks);
 
-        // 2、dispatch job task
+        // 3、dispatch job task
         taskDispatcher.dispatch(job, track, tasks);
     }
 
@@ -740,6 +684,53 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return true;
     }
 
+    // ------------------------------------------------------------------other public methods
+
+    public long generateId() {
+        return idGenerator.generateId();
+    }
+
+    public List<SchedTask> splitTasks(SchedJob job, long trackId, Date date) throws JobException {
+        List<SplitTask> split = workerClient.split(job.getJobHandler(), job.getJobParam());
+        Assert.notEmpty(split, "Not split any task: " + job);
+
+        return split.stream()
+            .map(e -> SchedTask.create(e.getTaskParam(), generateId(), trackId, date))
+            .collect(Collectors.toList());
+    }
+
+    public boolean hasAliveExecuting(long trackId) {
+        return taskMapper.findByTrackId(trackId)
+            .stream()
+            .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
+            .map(SchedTask::getWorker)
+            .filter(StringUtils::isNotBlank)
+            .anyMatch(this::isAliveWorker);
+    }
+
+    public boolean isAliveWorker(String text) {
+        return discoveryWorker.isDiscoveredServerAlive(Worker.deserialize(text));
+    }
+
+    public boolean hasNotFoundWorkers(String group) {
+        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers(group));
+    }
+
+    public boolean hasNotFoundWorkers() {
+        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers());
+    }
+
+    /**
+     * Dispatch task list to worker.
+     *
+     * @param job   the sched job
+     * @param track the sched track
+     * @param tasks the list of sched task
+     */
+    public void dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
+        taskDispatcher.dispatch(job, track, tasks);
+    }
+
     // ------------------------------------------------------------------private methods
 
     /**
@@ -831,42 +822,29 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Date now = new Date();
 
         // 1、build sched track
-        SchedTrack retryTrack = new SchedTrack();
-        retryTrack.setTrackId(idGenerator.generateId());
-        retryTrack.setJobId(schedJob.getJobId());
-        retryTrack.setRunType(RunType.RETRY.value());
-        retryTrack.setRetriedCount(retriedCount + 1);
-        retryTrack.setTriggerTime(computeRetryTriggerTime(schedJob, retryTrack.getRetriedCount(), now));
-        retryTrack.setRunState(RunState.WAITING.value());
+        retriedCount++;
+        long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
+        SchedTrack retryTrack = SchedTrack.create(
+            generateId(), schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now
+        );
         retryTrack.setParentTrackId(RunType.RETRY.equals(prevTrack.getRunType()) ? prevTrack.getParentTrackId() : prevTrack.getTrackId());
-        retryTrack.setUpdatedAt(now);
-        retryTrack.setCreatedAt(now);
 
         // 2、build sched tasks
         List<SchedTask> tasks;
         switch (retryType) {
             case ALL:
-                // re-split tasks
-                List<SplitTask> splitTasks;
                 try {
-                    splitTasks = splitTasks(schedJob.getJobHandler(), schedJob.getJobParam());
+                    // re-split tasks
+                    tasks = splitTasks(schedJob, retryTrack.getTrackId(), now);
                 } catch (Exception e) {
                     LOG.error("Split job error: " + schedJob + ", " + prevTrack, e);
                     return;
                 }
-
-                if (CollectionUtils.isEmpty(splitTasks)) {
-                    LOG.error("Job split none tasks {} | {}", schedJob, prevTrack);
-                    return;
-                }
-                tasks = splitTasks.stream()
-                                  .map(e -> SchedTask.from(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
-                                  .collect(Collectors.toList());
                 break;
             case FAILED:
                 tasks = prevTasks.stream()
                                  .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
-                                 .map(e -> SchedTask.from(e.getTaskParam(), idGenerator.generateId(), retryTrack.getTrackId(), now))
+                                 .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryTrack.getTrackId(), now))
                                  .collect(Collectors.toList());
                 break;
             default:
@@ -894,36 +872,31 @@ public class JobManager implements SupervisorService, MarkRpcController {
             return;
         }
 
-        Date now = new Date();
         for (SchedDepend depend : schedDepends) {
-            SchedJob child = jobMapper.getByJobId(depend.getChildJobId());
-            if (child == null) {
+            SchedJob childJob = jobMapper.getByJobId(depend.getChildJobId());
+            if (childJob == null) {
                 LOG.error("Child sched job not found {}, {}", depend.getParentJobId(), depend.getChildJobId());
                 return;
             }
-            if (JobState.DISABLE.equals(child.getJobState())) {
+            if (JobState.DISABLE.equals(childJob.getJobState())) {
                 return;
             }
 
             try {
-                Pair<SchedTrack, List<SchedTask>> pair = buildTrackAndTasks(child, now);
-                SchedTrack track = pair.getLeft();
-                List<SchedTask> tasks = pair.getRight();
-                Assert.notEmpty(tasks, "Invalid split, Not has executable task: " + track);
-
-                // reset parent_track_id, runt_type and trigger_time
+                Date now = new Date();
+                SchedTrack track = SchedTrack.create(
+                    generateId(), childJob.getJobId(), RunType.DEPEND, parentTrack.getTriggerTime(), 0, now
+                );
                 track.setParentTrackId(parentTrack.getTrackId());
-                track.setRunType(RunType.DEPEND.value());
-                track.setTriggerTime(now.getTime());
+                List<SchedTask> tasks = splitTasks(childJob, track.getTrackId(), now);
 
                 // save to db
-                Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
                 trackMapper.insert(track);
                 taskMapper.insertBatch(tasks);
 
-                taskDispatcher.dispatch(child, track, tasks);
+                taskDispatcher.dispatch(childJob, track, tasks);
             } catch (Exception e) {
-                LOG.error("Depend job split failed: " + child, e);
+                LOG.error("Depend job split failed: " + childJob, e);
             }
         }
     }
@@ -996,12 +969,6 @@ public class JobManager implements SupervisorService, MarkRpcController {
         if (!result) {
             throw new IllegalArgumentException("Invalid job handler config: " + job.getJobHandler() + ", " + result);
         }
-    }
-
-    private List<SplitTask> splitTasks(String jobHandler, String jobParam) throws JobException {
-        List<SplitTask> tasks = workerClient.split(jobHandler, jobParam);
-        Assert.notEmpty(tasks, "Split task cannot empty.");
-        return tasks;
     }
 
     /**

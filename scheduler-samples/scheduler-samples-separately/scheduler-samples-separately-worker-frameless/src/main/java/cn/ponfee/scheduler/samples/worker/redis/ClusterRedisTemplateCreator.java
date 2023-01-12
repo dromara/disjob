@@ -19,7 +19,7 @@ import java.util.Arrays;
  *
  * @author Ponfee
  */
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class ClusterRedisTemplateCreator extends AbstractRedisTemplateCreator {
 
     private String clusterNodes;
@@ -33,8 +33,8 @@ public class ClusterRedisTemplateCreator extends AbstractRedisTemplateCreator {
         if (clusterMaxRedirects != null) {
             configuration.setMaxRedirects(clusterMaxRedirects);
         }
-        configuration.setUsername(username);
-        configuration.setPassword(password);
+        configuration.setUsername(super.username);
+        configuration.setPassword(super.password);
         return configuration;
     }
 

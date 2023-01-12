@@ -9,7 +9,6 @@
 package cn.ponfee.scheduler.common.util;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Maven标准的项目文件工具类(Only use in test case)
@@ -40,11 +39,7 @@ public class MavenProjects {
     }
 
     public static String getMainJavaFileAsLineString(Class<?> clazz) {
-        try {
-            return Files.toString(MavenProjects.getMainJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return Files.toString(MavenProjects.getMainJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static File getTestJavaFile(Class<?> clazz) {
@@ -56,11 +51,7 @@ public class MavenProjects {
     }
 
     public static String getTestJavaFileAsLineString(Class<?> clazz) {
-        try {
-            return Files.toString(MavenProjects.getTestJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return Files.toString(MavenProjects.getTestJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static String getMainJavaPath(String basePackage) {
@@ -89,11 +80,7 @@ public class MavenProjects {
     }
 
     public static String getMainScalaFileAsLineString(Class<?> clazz) {
-        try {
-            return Files.toString(MavenProjects.getMainScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return Files.toString(MavenProjects.getMainScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static File getTestScalaFile(Class<?> clazz) {
@@ -105,11 +92,7 @@ public class MavenProjects {
     }
 
     public static String getTestScalaFileAsLineString(Class<?> clazz) {
-        try {
-            return Files.toString(MavenProjects.getTestScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return Files.toString(MavenProjects.getTestScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
     public static String getMainScalaPath(String basePackage) {

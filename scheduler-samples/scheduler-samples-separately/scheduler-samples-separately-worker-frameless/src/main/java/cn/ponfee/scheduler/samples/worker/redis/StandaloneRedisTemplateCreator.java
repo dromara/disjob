@@ -17,7 +17,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
  *
  * @author Ponfee
  */
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class StandaloneRedisTemplateCreator extends AbstractRedisTemplateCreator {
 
     private String host;
@@ -26,9 +26,9 @@ public class StandaloneRedisTemplateCreator extends AbstractRedisTemplateCreator
     @Override
     protected RedisConfiguration createRedisConfiguration() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-        configuration.setDatabase(database);
-        configuration.setUsername(username);
-        configuration.setPassword(password);
+        configuration.setDatabase(super.database);
+        configuration.setUsername(super.username);
+        configuration.setPassword(super.password);
         configuration.setHostName(host);
         configuration.setPort(port);
         return configuration;

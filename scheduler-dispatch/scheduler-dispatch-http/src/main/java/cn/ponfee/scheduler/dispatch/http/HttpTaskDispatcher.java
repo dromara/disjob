@@ -31,7 +31,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
     }
 
     @Override
-    protected boolean dispatch(ExecuteParam executeParam) throws Exception {
+    protected boolean dispatch(ExecuteParam executeParam) {
         Worker worker = executeParam.getWorker();
         String url = String.format("http://%s:%d/%s", worker.getHost(), worker.getPort(), Constants.WORKER_RECEIVE_PATH);
         Boolean result = restTemplate.postForEntity(url, new Object[]{executeParam}, Boolean.class).getBody();

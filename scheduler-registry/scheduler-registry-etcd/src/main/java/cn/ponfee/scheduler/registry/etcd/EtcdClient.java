@@ -278,7 +278,7 @@ public class EtcdClient implements AutoCloseable {
             Throwables.caught(latch::await);
 
             List<WatchEvent> events = response.getEvents();
-            if (events.stream().allMatch(e -> !CHANGED_EVENT_TYPES.contains(e.getEventType()))) {
+            if (events.stream().noneMatch(e -> CHANGED_EVENT_TYPES.contains(e.getEventType()))) {
                 return;
             }
             if (events.stream().allMatch(e -> parentKey.equals(e.getKeyValue().getKey().toString(UTF_8)))) {

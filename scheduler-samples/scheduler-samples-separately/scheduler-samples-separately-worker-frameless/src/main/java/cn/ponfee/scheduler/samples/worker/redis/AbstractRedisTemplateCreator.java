@@ -33,7 +33,7 @@ import java.time.Duration;
  *
  * @author Ponfee
  */
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public abstract class AbstractRedisTemplateCreator {
 
     protected int database;
@@ -72,7 +72,7 @@ public abstract class AbstractRedisTemplateCreator {
         RedisConfiguration configuration = createRedisConfiguration();
 
         // ----------------------------------------pool config
-        GenericObjectPoolConfig genericObjectPoolConfig = new GenericObjectPoolConfig();
+        GenericObjectPoolConfig<?> genericObjectPoolConfig = new GenericObjectPoolConfig<>();
         genericObjectPoolConfig.setMaxIdle(maxIdle);
         genericObjectPoolConfig.setMinIdle(minIdle);
         genericObjectPoolConfig.setMaxTotal(maxActive);

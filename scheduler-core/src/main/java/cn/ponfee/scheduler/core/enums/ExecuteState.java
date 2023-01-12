@@ -8,8 +8,8 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.util.Enums;
 import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.util.Enums;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;

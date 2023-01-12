@@ -20,7 +20,6 @@ import cn.ponfee.scheduler.core.model.SchedTrack;
 import cn.ponfee.scheduler.supervisor.manager.JobManager;
 import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.util.Assert;
 
@@ -102,10 +101,10 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             }
 
             // 1、build sched track and sched task list
-            Pair<SchedTrack, List<SchedTask>> pair = jobManager.buildTrackAndTasks(job, now);
-            SchedTrack track = pair.getLeft();
-            List<SchedTask> tasks = pair.getRight();
-            Assert.notEmpty(tasks, "Invalid split, Not has executable task: " + job);
+            SchedTrack track = SchedTrack.create(
+                jobManager.generateId(), job.getJobId(), RunType.SCHEDULE, job.getNextTriggerTime(), 0, now
+            );
+            List<SchedTask> tasks = jobManager.splitTasks(job, track.getTrackId(), now);
 
             // 2、refresh next trigger time
             refreshNextTriggerTime(job, job.getNextTriggerTime(), now);
@@ -155,9 +154,8 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
      * @param job the sched job
      * @param now the now date time
      * @return {@code true} will block the next trigger
-     * @throws JobException if occur error
      */
-    private boolean checkBlockCollisionTrigger(SchedJob job, Date now) throws JobException {
+    private boolean checkBlockCollisionTrigger(SchedJob job, Date now) {
         CollisionStrategy collisionStrategy = CollisionStrategy.of(job.getCollisionStrategy());
         Long lastTriggerTime;
         if (CollisionStrategy.CONCURRENT == collisionStrategy || (lastTriggerTime = job.getLastTriggerTime()) == null) {

@@ -47,11 +47,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     private final String registryChannel;
 
     /**
-     * Registry subscribe redis message channel
-     */
-    private final String discoveryChannel;
-
-    /**
      * Spring string redis template
      */
     private final StringRedisTemplate stringRedisTemplate;
@@ -59,7 +54,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     // -------------------------------------------------Registry
 
     private final long sessionTimeoutMs;
-    private final long registryPeriodMs;
     private final ScheduledThreadPoolExecutor registryScheduledExecutor;
 
     // -------------------------------------------------Discovery
@@ -76,10 +70,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
                                RedisRegistryProperties config) {
         super(namespace, ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
-        this.discoveryChannel = discoveryRootPath + separator + CHANNEL;
+        String discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
-        this.registryPeriodMs = config.getRegistryPeriodMs();
+        long registryPeriodMs = config.getRegistryPeriodMs();
         this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_server_registry", true));
         this.registryScheduledExecutor.scheduleWithFixedDelay(() -> {
             if (closed.get()) {

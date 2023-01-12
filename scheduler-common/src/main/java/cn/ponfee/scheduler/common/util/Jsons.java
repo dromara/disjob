@@ -237,6 +237,7 @@ public final class Jsons {
 
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 反序列化时忽略未知属性
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);    // Date不序列化为时间戳
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);          // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
         mapper.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);    // BigDecimal禁用科学计数格式输出
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, false);     // 禁止无双引号字段
         mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, false);            // 禁止单引号字段

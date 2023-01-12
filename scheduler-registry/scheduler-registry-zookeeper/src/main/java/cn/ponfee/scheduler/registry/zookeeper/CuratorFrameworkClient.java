@@ -243,7 +243,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
     }
 
     private class CuratorConnectionStateListener implements ConnectionStateListener {
-        private final long UNKNOWN_SESSION_ID = -1L;
+        private static final long UNKNOWN_SESSION_ID = -1L;
         private long lastSessionId;
 
         @Override

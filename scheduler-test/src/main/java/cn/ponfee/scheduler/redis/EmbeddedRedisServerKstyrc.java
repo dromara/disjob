@@ -28,7 +28,7 @@ public final class EmbeddedRedisServerKstyrc {
     }
 
     public static RedisServer start() {
-        RedisServer redisServer = RedisServerBuilder.newBuilder()
+        RedisServer redisServer = RedisServer.builder()
             //.redisExecProvider(customRedisProvider)
             .port(6379)
             .slaveOf("localhost", 6378)

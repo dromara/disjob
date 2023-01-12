@@ -1,6 +1,6 @@
 [![Blog](https://img.shields.io/badge/blog-@Ponfee-informational.svg?logo=Pelican)](http://www.ponfee.cn)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8s)
+[![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
 [![Maven Central](https://img.shields.io/badge/maven--central-1.7-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
 
@@ -72,7 +72,7 @@ distributed-scheduler
 ## Build From Source
 
 ```bash
-./mvnw clean package -DskipTests -Dcheckstyle.skip -U
+./mvnw clean package -DskipTests -Dcheckstyle.skip=true -U
 ```
 
 ## Quick Start

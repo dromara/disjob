@@ -92,6 +92,9 @@ public class SupervisorStartup implements AutoCloseable {
         private DoInLocked scanTrackLocked;
         private TaskDispatcher taskDispatcher;
 
+        private SupervisorStartupBuilder() {
+        }
+
         public SupervisorStartupBuilder currentSupervisor(Supervisor currentSupervisor) {
             this.currentSupervisor = currentSupervisor;
             return this;

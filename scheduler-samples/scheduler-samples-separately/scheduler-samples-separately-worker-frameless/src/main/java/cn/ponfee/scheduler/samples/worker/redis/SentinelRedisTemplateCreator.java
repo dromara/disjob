@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class SentinelRedisTemplateCreator extends AbstractRedisTemplateCreator {
 
     private String sentinelMaster;
@@ -35,9 +35,9 @@ public class SentinelRedisTemplateCreator extends AbstractRedisTemplateCreator {
     @Override
     protected RedisConfiguration createRedisConfiguration() {
         RedisSentinelConfiguration configuration = new RedisSentinelConfiguration();
-        configuration.setDatabase(database);
-        configuration.setUsername(username);
-        configuration.setPassword(password);
+        configuration.setDatabase(super.database);
+        configuration.setUsername(super.username);
+        configuration.setPassword(super.password);
         configuration.setMaster(sentinelMaster);
 
         List<RedisNode> redisNodes = Arrays.stream(sentinelNodes.split(","))

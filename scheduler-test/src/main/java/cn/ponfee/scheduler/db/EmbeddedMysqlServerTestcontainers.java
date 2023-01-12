@@ -16,7 +16,7 @@ import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -34,11 +34,11 @@ import static cn.ponfee.scheduler.db.DBTools.DB_NAME;
  * @author Ponfee
  */
 public class EmbeddedMysqlServerTestcontainers {
-    private static final List<String> PORT_BINDINGS = Arrays.asList("3306:3306");
+    private static final List<String> PORT_BINDINGS = Collections.singletonList("3306:3306");
 
     public static void main(String[] args) {
         DockerImageName dockerImage = DockerImageName.parse("mysql/mysql-server:8.0.31").asCompatibleSubstituteFor("mysql");
-        try (MySQLContainer mySQLContainer = new MySQLContainer<>(dockerImage)
+        try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>(dockerImage)
             //.withConfigurationOverride("mysql_conf_override")
             .withPrivilegedMode(true)
             .withUsername("root")

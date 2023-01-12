@@ -13,7 +13,7 @@
 
   <artifactId>scheduler-test</artifactId>
   <name>${project.artifactId}</name>
-  <description>Distributed scheduler common module</description>
+  <description>Distributed scheduler test module</description>
   <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
@@ -46,7 +46,7 @@
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>embedded-redis</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>

@@ -136,7 +136,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
             return Collections.emptyList();
         }
 
-        servers.sort(Comparator.comparing(sortMapper::apply));
+        servers.sort(Comparator.comparing(sortMapper));
         return Collections.unmodifiableList(servers);
     }
 

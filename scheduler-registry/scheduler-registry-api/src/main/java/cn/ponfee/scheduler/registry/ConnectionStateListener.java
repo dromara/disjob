@@ -40,6 +40,9 @@ public interface ConnectionStateListener<C> {
         private Consumer<C> onConnected;
         private Consumer<C> onDisconnected;
 
+        private Builder() {
+        }
+
         public Builder<C> onConnected(Consumer<C> onConnected) {
             this.onConnected = onConnected;
             return this;

@@ -104,7 +104,7 @@ public class DBTools {
         System.out.println("Version: " + version);
 
         Integer value = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
-        Assert.assertTrue(value == 1);
+        Assert.assertEquals(1, (int) value);
     }
 
     public static void testQuerySchedJob(JdbcTemplate jdbcTemplate) {

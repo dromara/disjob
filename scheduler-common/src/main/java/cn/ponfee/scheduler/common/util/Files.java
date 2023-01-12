@@ -163,11 +163,11 @@ public final class Files {
     }
 
     // --------------------------------------------------------------------------file to string
-    public static String toString(String file) throws IOException {
+    public static String toString(String file) {
         return toString(new File(file), DEFAULT_CHARSET_NAME);
     }
 
-    public static String toString(File file) throws IOException {
+    public static String toString(File file) {
         return toString(file, DEFAULT_CHARSET_NAME);
     }
 

@@ -14,7 +14,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -35,7 +35,7 @@ import java.util.concurrent.CountDownLatch;
 public final class EmbeddedRedisServerTestcontainers {
 
     private static final String NACOS_DOCKER_IMAGE_NAME = "redis:6.2.8";
-    private static final List<String> PORT_BINDINGS = Arrays.asList("6379:6379");
+    private static final List<String> PORT_BINDINGS = Collections.singletonList("6379:6379");
 
     public static void main(String[] args) {
         DockerImageName consulImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("redis-test");
@@ -45,7 +45,7 @@ public final class EmbeddedRedisServerTestcontainers {
         // -p: setPortBindings
         // -v: withFileSystemBind
         // -e: withEnv
-        GenericContainer dockerRedisContainer = new GenericContainer(consulImage)
+        GenericContainer<?> dockerRedisContainer = new GenericContainer<>(consulImage)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedRedisServerTestcontainers.class)))
             // 挂载映射文件非必需
             //.withFileSystemBind("/opt/docker/redis", "/usr/local/etc/redis", BindMode.READ_ONLY)

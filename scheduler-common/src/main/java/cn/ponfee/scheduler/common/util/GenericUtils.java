@@ -149,7 +149,7 @@ public final class GenericUtils {
      * public class BeanClass extends BaseEntity<String> {}
      * }</pre>
      *
-     * @param clazz the sub class
+     * @param clazz the subclass
      * @param field the super class defined field
      * @return a Class of field actual type
      */
@@ -170,7 +170,7 @@ public final class GenericUtils {
      * public class ClassB extends classA<String>{}
      * }</pre>
      * 
-     * @param clazz            the sub class
+     * @param clazz            the subclass
      * @param method           the super class defined method
      * @param methodArgsIndex  the method arg index
      * @return a Class of method arg actual type
@@ -190,7 +190,7 @@ public final class GenericUtils {
      * public class ClassB extends classA<String>{}
      * }</pre>
      *
-     * @param clazz  the sub class
+     * @param clazz  the subclass
      * @param method the super class defined method
      * @return a Class of method return actual type
      */

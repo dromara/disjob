@@ -200,6 +200,9 @@ public class DiscoveryRestTemplate<D extends Server> {
         private Discovery<S> discoveryServer;
         private int maxRetryTimes;
 
+        private DiscoveryRestTemplateBuilder() {
+        }
+
         public DiscoveryRestTemplateBuilder<S> connectTimeout(int connectTimeout) {
             this.connectTimeout = connectTimeout;
             return this;
@@ -226,9 +229,7 @@ public class DiscoveryRestTemplate<D extends Server> {
         }
 
         public DiscoveryRestTemplate<S> build() {
-            return new DiscoveryRestTemplate<>(
-                connectTimeout, readTimeout, objectMapper, discoveryServer, maxRetryTimes
-            );
+            return new DiscoveryRestTemplate<>(connectTimeout, readTimeout, objectMapper, discoveryServer, maxRetryTimes);
         }
     }
 

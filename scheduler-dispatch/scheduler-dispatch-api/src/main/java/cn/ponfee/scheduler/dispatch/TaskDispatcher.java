@@ -180,7 +180,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
         }
 
         dispatchParam.retrying();
-        asyncDelayedExecutor.put(new DelayedData<>(dispatchParam, 1000 * IntMath.pow(dispatchParam.retried(), 2)));
+        asyncDelayedExecutor.put(new DelayedData<>(dispatchParam, 1000L * IntMath.pow(dispatchParam.retried(), 2)));
     }
 
 }

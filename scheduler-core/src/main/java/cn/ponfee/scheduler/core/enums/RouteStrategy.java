@@ -8,8 +8,8 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.util.Enums;
 import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.util.Enums;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.core.route.*;

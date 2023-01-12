@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.common.base;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.InvocationHandler;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -24,10 +25,11 @@ import java.util.function.Supplier;
 public class LazyLoader<T> implements Supplier<T> {
 
     private final Supplier<T> loader;
+
     private Optional<T> holder;
 
     private LazyLoader(Supplier<T> loader) {
-        this.loader = loader;
+        this.loader = Objects.requireNonNull(loader);
     }
 
     public static <T> LazyLoader<T> of(Supplier<T> loader) {
@@ -48,25 +50,27 @@ public class LazyLoader<T> implements Supplier<T> {
 
     @Override
     public T get() {
-        lazyLoad();
-        return holder.get();
+        return holder().get();
     }
 
     public void orElse(T defaultValue) {
-        lazyLoad();
-        holder.orElse(defaultValue);
+        holder().orElse(defaultValue);
+    }
+
+    public void orElseGet(Supplier<? extends T> other) {
+        holder().orElseGet(other);
     }
 
     public void ifPresent(Consumer<? super T> consumer) {
-        lazyLoad();
-        holder.ifPresent(consumer);
+        holder().ifPresent(consumer);
     }
 
     // ------------------------------------------------------------------------private methods
-    private void lazyLoad() {
+    private Optional<T> holder() {
         if (holder == null) {
             holder = Optional.ofNullable(loader.get());
         }
+        return holder;
     }
 
     private static <T, B extends T, C extends T> B of(Class<T> type, final LazyLoader<C> lazyLoader) {
