@@ -21,6 +21,8 @@ import cn.ponfee.scheduler.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
+import cn.ponfee.scheduler.registry.consul.ConsulWorkerRegistry;
+import cn.ponfee.scheduler.registry.consul.configuration.ConsulRegistryProperties;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
 import cn.ponfee.scheduler.samples.worker.redis.AbstractRedisTemplateCreator;
@@ -148,14 +150,12 @@ public class Main {
         return new RedisWorkerRegistry(namespace, redisTemplate, config);
     }
 
-    /*
     private static WorkerRegistry createConsulWorkerRegistry(String namespace, String keyPrefix, YamlProperties props) {
         ConsulRegistryProperties config = new ConsulRegistryProperties();
         config.setHost(props.getString(keyPrefix + ".host", "localhost"));
         config.setPort(props.getInt   (keyPrefix + ".port", 8500));
-        config.setHost(props.getString(keyPrefix + ".token"));
+        config.setToken(props.getString(keyPrefix + ".token"));
         return new ConsulWorkerRegistry(namespace, config);
     }
-    */
 
 }

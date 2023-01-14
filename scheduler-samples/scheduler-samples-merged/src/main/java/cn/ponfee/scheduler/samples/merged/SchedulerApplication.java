@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.samples.merged;
 
+import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.dispatch.http.configuration.EnableHttpTaskDispatching;
 import cn.ponfee.scheduler.dispatch.redis.configuration.EnableRedisTaskDispatching;
@@ -29,12 +30,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Import;
 
 /**
  * Scheduler application based spring boot
  *
  * @author Ponfee
  */
+@Import(Snowflake.class)
 @EnableConfigurationProperties({
     SupervisorProperties.class,
     WorkerProperties.class,
@@ -54,9 +57,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         DataSourceAutoConfiguration.class
     },
     scanBasePackages = {
+        "cn.ponfee.scheduler.supervisor",
         "cn.ponfee.scheduler.samples.common.configuration",
         "cn.ponfee.scheduler.samples.merged.configuration",
-        "cn.ponfee.scheduler.supervisor",
     }
 )
 public class SchedulerApplication {

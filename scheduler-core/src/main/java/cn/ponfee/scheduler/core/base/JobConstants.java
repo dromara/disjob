@@ -56,11 +56,6 @@ public class JobConstants {
     public static final String SPRING_BEAN_NAME_OBJECT_MAPPER = SCHEDULER_KEY_PREFIX + ".object-mapper";
 
     /**
-     * Worker client spring bean name.
-     */
-    public static final String SPRING_BEAN_NAME_WORKER_CLIENT = "workerClient";
-
-    /**
      * Current supervisor spring bean name
      */
     public static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = "currentSupervisor";

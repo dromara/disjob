@@ -13,6 +13,7 @@ import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.JobConstants;
+import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.test.EmbeddedMysqlAndRedisServer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +62,7 @@ public abstract class SpringBootTestBase<T> {
     }
 
     @EnableConfigurationProperties(HttpProperties.class)
+    @EnableSupervisor
     @SpringBootApplication(
         exclude = DataSourceAutoConfiguration.class,
         scanBasePackages = "cn.ponfee.scheduler.supervisor"

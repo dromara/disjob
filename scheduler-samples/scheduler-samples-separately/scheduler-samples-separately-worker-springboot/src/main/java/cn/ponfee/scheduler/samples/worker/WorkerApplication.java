@@ -51,7 +51,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
     },
     scanBasePackages = {
         "cn.ponfee.scheduler.samples.common.configuration",
-        "cn.ponfee.scheduler.samples.worker.configuration"
+        "cn.ponfee.scheduler.samples.worker.configuration",
     }
 )
 public class WorkerApplication {

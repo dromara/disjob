@@ -13,10 +13,8 @@ import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.spring.MarkRpcController;
 import cn.ponfee.scheduler.common.util.Collects;
-import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.SplitTask;
@@ -27,6 +25,7 @@ import cn.ponfee.scheduler.core.model.SchedTrack;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
+import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedTaskMapper;
@@ -85,8 +84,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
     @Resource
     private TaskDispatcher taskDispatcher;
 
-    @Resource(name = JobConstants.SPRING_BEAN_NAME_WORKER_CLIENT)
-    private WorkerService workerClient;
+    @Resource
+    private WorkerServiceClient workerServiceClient;
 
     // ------------------------------------------------------------------query
 
@@ -691,7 +690,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     }
 
     public List<SchedTask> splitTasks(SchedJob job, long trackId, Date date) throws JobException {
-        List<SplitTask> split = workerClient.split(job.getJobHandler(), job.getJobParam());
+        List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
         Assert.notEmpty(split, "Not split any task: " + job);
 
         return split.stream()
@@ -965,7 +964,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
 
     private void verifyJobHandler(SchedJob job) {
         Assert.isTrue(StringUtils.isNotEmpty(job.getJobHandler()), "Job handler cannot be empty.");
-        boolean result = workerClient.verify(job.getJobHandler(), job.getJobParam());
+        boolean result = workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
         if (!result) {
             throw new IllegalArgumentException("Invalid job handler config: " + job.getJobHandler() + ", " + result);
         }

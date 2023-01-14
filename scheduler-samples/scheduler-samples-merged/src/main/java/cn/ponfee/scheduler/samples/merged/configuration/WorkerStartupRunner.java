@@ -13,15 +13,12 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
-import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
 import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
-import cn.ponfee.scheduler.worker.rpc.WorkerRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,7 +26,6 @@ import org.springframework.stereotype.Component;
  *
  * @author Ponfee
  */
-@Import({WorkerRemote.class})
 @Component
 public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
 

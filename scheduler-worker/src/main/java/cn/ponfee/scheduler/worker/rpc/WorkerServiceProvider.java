@@ -6,8 +6,10 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.core.base;
+package cn.ponfee.scheduler.worker.rpc;
 
+import cn.ponfee.scheduler.common.spring.MarkRpcController;
+import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.JobHandlerUtils;
 import cn.ponfee.scheduler.core.handle.SplitTask;
@@ -15,11 +17,11 @@ import cn.ponfee.scheduler.core.handle.SplitTask;
 import java.util.List;
 
 /**
- * Worker service provided by local.
+ * Worker service provider.
  *
  * @author Ponfee
  */
-public class WorkerLocal implements WorkerService {
+public class WorkerServiceProvider implements WorkerService, MarkRpcController {
 
     @Override
     public boolean verify(String jobHandler, String jobParam) {

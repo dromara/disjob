@@ -21,6 +21,10 @@ import redis.embedded.RedisServer;
  */
 public final class EmbeddedMysqlAndRedisServer {
 
+    public static void main(String[] args) {
+        EmbeddedMysqlAndRedisServer.starter().start();
+    }
+
     private DB mariaDBServer;
     private RedisServer redisServer;
 
