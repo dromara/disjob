@@ -34,7 +34,7 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
     public WorkerHeartbeatThread(Discovery<Supervisor> discoverySupervisor,
                                  TimingWheel<ExecuteParam> timingWheel,
                                  WorkerThreadPool threadPool) {
-        super(1);
+        super(timingWheel.getTickMs());
         this.discoverySupervisor = discoverySupervisor;
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
@@ -47,27 +47,27 @@ public class WorkerHeartbeatThread extends AbstractHeartbeatThread {
             log.info("worker-thread-pool: {}, jvm-active-count: {}", workerThreadPool, Thread.activeCount());
         }
 
-        return process();
+        process();
+
+        return false;
     }
 
-    private boolean process() {
+    private void process() {
         // check has available supervisors
         if (CollectionUtils.isEmpty(discoverySupervisor.getDiscoveredServers())) {
             log.warn("Not available supervisors.");
-            return false;
+            return;
         }
 
-        List<ExecuteParam> ringTrigger = timingWheel.poll();
-        if (ringTrigger.isEmpty()) {
-            return false;
+        List<ExecuteParam> ringTriggers = timingWheel.poll();
+        if (ringTriggers.isEmpty()) {
+            return;
         }
 
-        for (ExecuteParam param : ringTrigger) {
+        for (ExecuteParam param : ringTriggers) {
             workerThreadPool.submit(param);
         }
-        ringTrigger.clear();
-
-        return true;
+        ringTriggers.clear();
     }
 
 }

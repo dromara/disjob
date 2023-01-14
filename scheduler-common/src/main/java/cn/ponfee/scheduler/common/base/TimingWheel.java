@@ -8,6 +8,8 @@
 
 package cn.ponfee.scheduler.common.base;
 
+import org.springframework.util.Assert;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -21,33 +23,36 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
     private static final long serialVersionUID = 4500377208898808026L;
 
     /**
-     * Millis number of per second.
+     * Tick duration milliseconds
      */
-    private static final int MILLIS_PER_SECOND = 1000;
+    private final long tickMs;
 
     /**
-     * Second number of per minute.
+     * Milliseconds duration per round
      */
-    private static final int SECONDS_PER_MINUTE = 60;
+    private final long msPerRound;
 
     /**
-     * Millis number of per minute.
+     * Ring buffer
      */
-    private static final int MILLIS_PER_MINUTE = MILLIS_PER_SECOND * SECONDS_PER_MINUTE;
+    private final TimingQueue<T>[] wheel;
 
-    private final TimingQueue<T>[] ringBuffer;
+    public TimingWheel(long tickMs, int ringSize) {
+        Assert.isTrue(tickMs > 0, "Tick milliseconds must be greater than 0");
+        Assert.isTrue(ringSize > 0, "Ring size must be greater than 0");
+        this.tickMs = tickMs;
+        this.msPerRound = tickMs * ringSize;
 
-    public TimingWheel() {
-        this(11);
+        TimingQueue[] array = new TimingQueue[ringSize];
+        // initialize 0 ~ ringSize slots
+        for (int i = 0; i < array.length; i++) {
+            array[i] = new TimingQueue<>();
+        }
+        this.wheel = array;
     }
 
-    public TimingWheel(int priorityQueueInitialCapacity) {
-        TimingQueue<T>[] array = (TimingQueue<T>[]) new TimingQueue[SECONDS_PER_MINUTE];
-        // initialize 0 ~ 59 slots
-        for (int i = 0; i < SECONDS_PER_MINUTE; i++) {
-            array[i] = new TimingQueue<>(priorityQueueInitialCapacity);
-        }
-        this.ringBuffer = array;
+    public final long getTickMs() {
+        return tickMs;
     }
 
     /**
@@ -61,9 +66,8 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
     }
 
     public final boolean offer(T timing) {
-        // 毫秒在[000 ~ 900]放入下一个刻度
-        // 毫秒在[901 ~ 999]放入下两个刻度
-        return offer(timing, System.currentTimeMillis() + 1099);
+        // 放入下一个刻度
+        return offer(timing, System.currentTimeMillis() + tickMs);
     }
 
     /**
@@ -80,8 +84,8 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
 
         // 如果小于leastTimeMillis，则放入leastTimeMillis所在的槽位
         long slotTimeMillis = Math.max(timing.timing(), leastTimeMillis);
-        int ringSecond = secondOfMinute(slotTimeMillis);
-        return ringBuffer[ringSecond].offer(timing);
+        int ringIndex = calculateIndex(slotTimeMillis);
+        return wheel[ringIndex].offer(timing);
     }
 
     public final List<T> poll() {
@@ -96,13 +100,13 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
      */
     public final List<T> poll(long latestTimeMillis) {
         List<T> ringTrigger = new ArrayList<>();
-        int ringSecond = secondOfMinute(latestTimeMillis);
-        long maximumTiming = (latestTimeMillis / MILLIS_PER_SECOND) * MILLIS_PER_SECOND + 999;
+        int ringIndex = calculateIndex(latestTimeMillis);
+        long maximumTiming = (latestTimeMillis / tickMs) * tickMs + tickMs;
         // process current and previous tick timingQueue
         for (int i = 0; i < 2; i++) {
-            TimingQueue<T> ringTick = ringBuffer[(ringSecond - i + SECONDS_PER_MINUTE) % SECONDS_PER_MINUTE];
+            TimingQueue<T> ringTick = wheel[(ringIndex - i + wheel.length) % wheel.length];
             T first;
-            while ((first = ringTick.peek()) != null && first.timing() <= maximumTiming) {
+            while ((first = ringTick.peek()) != null && first.timing() < maximumTiming) {
                 first = ringTick.poll();
 
                 // if run in single thread, there code block unnecessary
@@ -120,8 +124,8 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         return ringTrigger;
     }
 
-    private static int secondOfMinute(long timeMillis) {
-        return (int) ((timeMillis % MILLIS_PER_MINUTE) / MILLIS_PER_SECOND);
+    private int calculateIndex(long timeMillis) {
+        return (int) ((timeMillis % msPerRound) / tickMs);
     }
 
     /**
@@ -169,10 +173,6 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
 
         public TimingQueue() {
             this.queue = new PriorityQueue<>();
-        }
-
-        public TimingQueue(int initialCapacity) {
-            this.queue = new PriorityQueue<>(initialCapacity);
         }
 
         public synchronized T poll() {

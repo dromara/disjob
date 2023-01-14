@@ -44,7 +44,7 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
     private final SupervisorStartup supervisorStartup;
 
     public SupervisorStartupRunner(Supervisor currentSupervisor,
-                                   SupervisorProperties properties,
+                                   SupervisorProperties config,
                                    JobManager jobManager,
                                    @Qualifier(SPRING_BEAN_NAME_SCAN_JOB_LOCKED) DoInLocked scanJobLocked,
                                    @Qualifier(SPRING_BEAN_NAME_SCAN_TRACK_LOCKED) DoInLocked scanTrackLocked,
@@ -52,8 +52,8 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
                                    TaskDispatcher taskDispatcher) {
         this.supervisorStartup = SupervisorStartup.builder()
             .currentSupervisor(currentSupervisor)
-            .jobHeartbeatIntervalSeconds(properties.getJobHeartbeatIntervalSeconds())
-            .trackHeartbeatIntervalSeconds(properties.getTrackHeartbeatIntervalSeconds())
+            .jobHeartbeatIntervalMs(config.getJobHeartbeatIntervalMs())
+            .trackHeartbeatIntervalMs(config.getTrackHeartbeatIntervalMs())
             .supervisorRegistry(supervisorRegistry)
             .jobManager(jobManager)
             .scanJobLocked(scanJobLocked)

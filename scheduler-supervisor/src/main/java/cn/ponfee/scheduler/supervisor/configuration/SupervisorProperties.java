@@ -22,12 +22,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class SupervisorProperties {
 
     /**
-     * Scan sched_job heartbeat interval seconds, default 2 seconds.
+     * Scan sched_job heartbeat interval milliseconds
      */
-    private int jobHeartbeatIntervalSeconds = 2;
+    private int jobHeartbeatIntervalMs = 2000;
 
     /**
-     * Scan sched_track heartbeat interval seconds, default 2 seconds.
+     * Scan sched_track heartbeat interval milliseconds
      */
-    private int trackHeartbeatIntervalSeconds = 2;
+    private int trackHeartbeatIntervalMs = 2000;
 }

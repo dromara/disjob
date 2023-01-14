@@ -83,7 +83,10 @@ public class Main {
             .build();
         SupervisorService supervisorClient = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
 
-        TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel();
+        TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel(
+            props.getLong(WORKER_KEY_PREFIX + ".tick-ms", 100),
+            props.getInt(WORKER_KEY_PREFIX + ".ring-size", 60)
+        );
         // 此为非web应用，不支持HttpTaskReceiver（注：scheduler-samples-separately-worker-springboot应用可以支持HttpTaskReceiver）
         TaskReceiver taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
 

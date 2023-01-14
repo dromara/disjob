@@ -12,11 +12,8 @@ import cn.ponfee.scheduler.common.concurrent.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static cn.ponfee.scheduler.common.date.JavaUtilDateFormat.PATTERN_51;
 
 /**
  * The abstract heartbeat thread.
@@ -24,11 +21,6 @@ import static cn.ponfee.scheduler.common.date.JavaUtilDateFormat.PATTERN_51;
  * @author Ponfee
  */
 public abstract class AbstractHeartbeatThread extends Thread implements AutoCloseable {
-
-    /**
-     * Number of milliseconds per second.
-     */
-    private static final long MILLIS_PER_SECOND = 1000;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -40,11 +32,11 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     /**
      * Heartbeat interval milliseconds.
      */
-    private final long interval;
+    private final long heartbeatIntervalMs;
 
-    public AbstractHeartbeatThread(int heartbeatIntervalSeconds) {
+    public AbstractHeartbeatThread(long heartbeatIntervalMs) {
         log.info("Heartbeat thread init {}", this.getClass());
-        this.interval = TimeUnit.SECONDS.toMillis(heartbeatIntervalSeconds);
+        this.heartbeatIntervalMs = heartbeatIntervalMs;
 
         // init thread parameters
         super.setDaemon(true);
@@ -58,16 +50,6 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     public final void run() {
         log.info("Heartbeat started.");
 
-        try {
-            Thread.sleep(MILLIS_PER_SECOND - (System.currentTimeMillis() % MILLIS_PER_SECOND));
-        } catch (InterruptedException e) {
-            log.error("Sleep occur error at starting, stopped=" + stopped, e);
-            Thread.currentThread().interrupt();
-            if (stopped.get()) {
-                return;
-            }
-        }
-
         while (!stopped.get()) {
             if (super.isInterrupted()) {
                 log.warn("Thread interrupted.");
@@ -77,9 +59,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
 
             boolean result;
             long start = System.currentTimeMillis();
-            if (log.isDebugEnabled()) {
-                log.debug("Heartbeat round date time: {}", PATTERN_51.format(new Date(start)));
-            }
+
             try {
                 // true is busy loop
                 result = heartbeat();
@@ -89,18 +69,19 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
             }
 
             long end = System.currentTimeMillis();
-            if (result) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Heartbeat not do sleep, cost: {}", end - start);
-                }
-            } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Heartbeat processed time: {}", end - start);
+            }
+
+            // if result=false, need sleep a moment
+            if (!result) {
                 // gap interval milliseconds
-                long sleepTimeMillis = interval - (end % MILLIS_PER_SECOND);
-                if (log.isDebugEnabled()) {
-                    log.debug("Heartbeat will sleep time: {}", sleepTimeMillis);
-                }
+                long sleepTimeMillis = heartbeatIntervalMs - (end % heartbeatIntervalMs);
                 try {
                     TimeUnit.MILLISECONDS.sleep(sleepTimeMillis);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Heartbeat slept time: {}", sleepTimeMillis);
+                    }
                 } catch (InterruptedException e) {
                     log.error("Sleep occur error in loop, stopped=" + stopped, e);
                     Thread.currentThread().interrupt();
@@ -109,6 +90,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                     }
                 }
             }
+
         }
 
         stopped.compareAndSet(false, true);
@@ -116,12 +98,12 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     }
 
     /**
-     * Returns interval milliseconds.
+     * Returns heartbeat interval milliseconds.
      *
-     * @return interval milliseconds
+     * @return heartbeat interval milliseconds
      */
-    public final long interval() {
-        return interval;
+    public final long heartbeatIntervalMs() {
+        return heartbeatIntervalMs;
     }
 
     /**
@@ -135,7 +117,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
 
     @Override
     public void close() {
-        doStop(MILLIS_PER_SECOND);
+        doStop(1000);
     }
 
     public void toStop() {
@@ -155,7 +137,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
         }
 
         int count = 10;
-        return Threads.stopThread(this, count, interval / count, joinMillis);
+        return Threads.stopThread(this, count, heartbeatIntervalMs / count, joinMillis);
     }
 
     /**

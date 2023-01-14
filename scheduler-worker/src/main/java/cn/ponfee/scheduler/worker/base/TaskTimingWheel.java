@@ -19,6 +19,10 @@ import cn.ponfee.scheduler.core.param.ExecuteParam;
 public class TaskTimingWheel extends TimingWheel<ExecuteParam> {
     private static final long serialVersionUID = 5234431161365689615L;
 
+    public TaskTimingWheel(long tickMs, int ringSize) {
+        super(tickMs, ringSize);
+    }
+
     @Override
     protected boolean verify(ExecuteParam param) {
         if (param.getWorker() == null) {

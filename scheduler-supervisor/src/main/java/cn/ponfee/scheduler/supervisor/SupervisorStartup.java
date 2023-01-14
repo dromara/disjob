@@ -34,16 +34,16 @@ public class SupervisorStartup implements AutoCloseable {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private SupervisorStartup(Supervisor currentSupervisor,
-                              int jobHeartbeatIntervalSeconds,
-                              int trackHeartbeatIntervalSeconds,
+                              int jobHeartbeatIntervalMs,
+                              int trackHeartbeatIntervalMs,
                               SupervisorRegistry supervisorRegistry,
                               JobManager jobManager,
                               DoInLocked scanJobLocked,
                               DoInLocked scanTrackLocked,
                               TaskDispatcher taskDispatcher) {
         Assert.notNull(currentSupervisor, "Current supervisor cannot null.");
-        Assert.isTrue(jobHeartbeatIntervalSeconds > 0, "Job heart beat interval seconds must be greater zero.");
-        Assert.isTrue(trackHeartbeatIntervalSeconds > 0, "Track heart beat interval seconds must be greater zero.");
+        Assert.isTrue(jobHeartbeatIntervalMs > 0, "Job heart beat interval milliseconds must be greater zero.");
+        Assert.isTrue(trackHeartbeatIntervalMs > 0, "Track heart beat interval milliseconds must be greater zero.");
         Assert.notNull(supervisorRegistry, "Supervisor registry cannot null.");
         Assert.notNull(jobManager, "Job manager cannot null.");
         Assert.notNull(scanJobLocked, "Scan job locked cannot null.");
@@ -52,8 +52,8 @@ public class SupervisorStartup implements AutoCloseable {
 
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
-        this.scanJobHeartbeatThread = new ScanJobHeartbeatThread(jobHeartbeatIntervalSeconds, scanJobLocked, jobManager);
-        this.scanTrackHeartbeatThread = new ScanTrackHeartbeatThread(trackHeartbeatIntervalSeconds, scanTrackLocked, jobManager);
+        this.scanJobHeartbeatThread = new ScanJobHeartbeatThread(jobHeartbeatIntervalMs, scanJobLocked, jobManager);
+        this.scanTrackHeartbeatThread = new ScanTrackHeartbeatThread(trackHeartbeatIntervalMs, scanTrackLocked, jobManager);
         this.taskDispatcher = taskDispatcher;
     }
 
@@ -84,8 +84,8 @@ public class SupervisorStartup implements AutoCloseable {
 
     public static class Builder {
         private Supervisor currentSupervisor;
-        private int jobHeartbeatIntervalSeconds;
-        private int trackHeartbeatIntervalSeconds;
+        private int jobHeartbeatIntervalMs;
+        private int trackHeartbeatIntervalMs;
         private SupervisorRegistry supervisorRegistry;
         private JobManager jobManager;
         private DoInLocked scanJobLocked;
@@ -100,13 +100,13 @@ public class SupervisorStartup implements AutoCloseable {
             return this;
         }
 
-        public Builder jobHeartbeatIntervalSeconds(int jobHeartbeatIntervalSeconds) {
-            this.jobHeartbeatIntervalSeconds = jobHeartbeatIntervalSeconds;
+        public Builder jobHeartbeatIntervalMs(int jobHeartbeatIntervalMs) {
+            this.jobHeartbeatIntervalMs = jobHeartbeatIntervalMs;
             return this;
         }
 
-        public Builder trackHeartbeatIntervalSeconds(int trackHeartbeatIntervalSeconds) {
-            this.trackHeartbeatIntervalSeconds = trackHeartbeatIntervalSeconds;
+        public Builder trackHeartbeatIntervalMs(int trackHeartbeatIntervalMs) {
+            this.trackHeartbeatIntervalMs = trackHeartbeatIntervalMs;
             return this;
         }
 
@@ -137,7 +137,7 @@ public class SupervisorStartup implements AutoCloseable {
 
         public SupervisorStartup build() {
             return new SupervisorStartup(
-                currentSupervisor,jobHeartbeatIntervalSeconds, trackHeartbeatIntervalSeconds,
+                currentSupervisor,jobHeartbeatIntervalMs, trackHeartbeatIntervalMs,
                 supervisorRegistry, jobManager, scanJobLocked, scanTrackLocked, taskDispatcher
             );
         }

@@ -39,10 +39,10 @@ public class ScanTrackHeartbeatThread extends AbstractHeartbeatThread {
 
     private long nextScanExpireRunningTimeMillis = 0;
 
-    public ScanTrackHeartbeatThread(int heartbeatIntervalSeconds,
+    public ScanTrackHeartbeatThread(int heartbeatIntervalMs,
                                     DoInLocked doInLocked,
                                     JobManager jobManager) {
-        super(heartbeatIntervalSeconds);
+        super(heartbeatIntervalMs);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
     }

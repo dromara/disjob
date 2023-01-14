@@ -180,7 +180,10 @@ public class TimingWheelTest {
 
     @Test
     public void testTimingWheel() {
-        TimingWheel<ExecuteParam> timingWheel = new TimingWheel<ExecuteParam>() {};
+        long tickMs = 100;
+        int ringSize = 60;
+        long msPerRound = tickMs * ringSize;
+        TimingWheel<ExecuteParam> timingWheel = new TimingWheel<ExecuteParam>(tickMs, ringSize) {};
         long hour = TimeUnit.HOURS.toMillis(10);
         System.out.println("hour=" + hour);
 
@@ -188,13 +191,13 @@ public class TimingWheelTest {
             timingWheel.offer(new ExecuteParam(Operations.TRIGGER, 0L, 0L, 0L, System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour)));
         }
 
-        TimingWheel.TimingQueue<ExecuteParam>[] array = (TimingWheel.TimingQueue<ExecuteParam>[]) Fields.get(timingWheel, "ringBuffer");
+        TimingWheel.TimingQueue<ExecuteParam>[] array = (TimingWheel.TimingQueue<ExecuteParam>[]) Fields.get(timingWheel, "wheel");
         for (int tick = 0; tick < array.length; tick++) {
             System.out.println(tick);
             TimingWheel.TimingQueue<ExecuteParam> queue = array[tick];
             long prev = 0;
             for (ExecuteParam e; (e = queue.poll()) != null; ) {
-                Assertions.assertEquals(tick, (int) (((e.timing()) % 60000) / 1000));
+                Assertions.assertEquals(tick, (int) (((e.timing()) % msPerRound) / tickMs));
                 Assertions.assertTrue(prev <= e.timing());
             }
             Assertions.assertTrue(queue.isEmpty());

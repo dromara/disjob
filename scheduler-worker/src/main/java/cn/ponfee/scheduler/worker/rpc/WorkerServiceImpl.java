@@ -17,11 +17,11 @@ import cn.ponfee.scheduler.core.handle.SplitTask;
 import java.util.List;
 
 /**
- * Worker service provided by remote.
+ * Worker service implementation.
  *
  * @author Ponfee
  */
-public class WorkerRemote implements WorkerService, MarkRpcController {
+public class WorkerServiceImpl implements WorkerService, MarkRpcController {
 
     @Override
     public boolean verify(String jobHandler, String jobParam) {

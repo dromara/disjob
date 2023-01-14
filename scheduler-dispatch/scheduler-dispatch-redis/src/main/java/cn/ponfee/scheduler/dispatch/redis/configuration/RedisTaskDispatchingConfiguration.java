@@ -22,13 +22,15 @@ import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.Ordered;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.Nullable;
+
+import static cn.ponfee.scheduler.core.base.JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER;
+import static cn.ponfee.scheduler.core.base.JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL;
 
 /**
  * Redis task dispatcher & receiver configuration.
@@ -61,9 +63,8 @@ public class RedisTaskDispatchingConfiguration {
      */
     @Configuration(proxyBeanMethods = false)
     @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-    @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-    @ConditionalOnBean({Worker.class})
-    @ConditionalOnSingleCandidate(TimingWheel.class)
+    @DependsOn({SPRING_BEAN_NAME_CURRENT_WORKER, SPRING_BEAN_NAME_TIMING_WHEEL})
+    @ConditionalOnBean({Worker.class, TimingWheel.class})
     public static class RedisTaskReceiverConfiguration {
         @Bean
         @ConditionalOnMissingBean

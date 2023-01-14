@@ -3,6 +3,8 @@ distributed.scheduler:
   namespace: test_namespace
   worker:
     group: default
+    tick-ms: 100
+    ring-size: 60
     maximum-pool-size: 100
     keep-alive-time-seconds: 300
 

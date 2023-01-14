@@ -43,13 +43,13 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
     private final JobManager jobManager;
     private final long afterSeconds;
 
-    public ScanJobHeartbeatThread(int heartbeatIntervalSeconds,
+    public ScanJobHeartbeatThread(int heartbeatIntervalMs,
                                   DoInLocked doInLocked,
                                   JobManager jobManager) {
-        super(heartbeatIntervalSeconds);
+        super(heartbeatIntervalMs);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
-        this.afterSeconds = interval() << 1;
+        this.afterSeconds = heartbeatIntervalMs() << 1;
     }
 
     @Override

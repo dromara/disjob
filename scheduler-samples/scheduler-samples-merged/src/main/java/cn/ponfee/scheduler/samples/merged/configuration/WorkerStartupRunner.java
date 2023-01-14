@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Ponfee
  */
-@Import({WorkerRemote.class, TaskTimingWheel.class})
+@Import({WorkerRemote.class})
 @Component
 public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
 

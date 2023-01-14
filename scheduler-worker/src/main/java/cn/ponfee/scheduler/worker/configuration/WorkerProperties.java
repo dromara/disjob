@@ -27,6 +27,16 @@ public class WorkerProperties {
     private String group = "default";
 
     /**
+     * Worker timing wheel tick milliseconds.
+     */
+    private long tickMs = 100;
+
+    /**
+     * Worker timing wheel ring size.
+     */
+    private int ringSize = 60;
+
+    /**
      * Worker maximum pool size, default 100.
      */
     private int maximumPoolSize = 100;

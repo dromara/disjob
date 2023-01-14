@@ -13,12 +13,15 @@ import cn.ponfee.scheduler.common.util.Networks;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -33,7 +36,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(EnableWorker.CurrentWorkerConfiguration.class)
+@Import({EnableWorker.CurrentWorkerConfiguration.class, EnableWorker.TimingWheelConfiguration.class})
 public @interface EnableWorker {
 
     @ConditionalOnClass({Worker.class})
@@ -44,8 +47,8 @@ public @interface EnableWorker {
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean
         public Worker currentWorker(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
-                                    @Value("${" + JobConstants.WORKER_KEY_PREFIX + ".group:default}") String group) {
-            Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), Networks.getHostIp(), port);
+                                    WorkerProperties config) {
+            Worker currentWorker = new Worker(config.getGroup(), ObjectUtils.uuid32(), Networks.getHostIp(), port);
             // inject current worker: Worker.class.getDeclaredClasses()[0]
             try {
                 ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
@@ -54,6 +57,16 @@ public @interface EnableWorker {
                 throw new AssertionError("Setting as current worker occur error.", e);
             }
             return currentWorker;
+        }
+    }
+
+    @ConditionalOnBean({Worker.class})
+    @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
+    class TimingWheelConfiguration {
+        @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
+        @ConditionalOnMissingBean
+        public TaskTimingWheel timingWheel(WorkerProperties config) {
+            return new TaskTimingWheel(config.getTickMs(), config.getRingSize());
         }
     }
 

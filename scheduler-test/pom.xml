@@ -53,10 +53,12 @@
       <artifactId>testcontainers</artifactId>
     </dependency>
 
+    <!-- cannot remove: testcontainers dependency junit, and scope must be compile -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.13.2</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 

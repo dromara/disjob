@@ -20,6 +20,7 @@ import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
+import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
 import cn.ponfee.scheduler.worker.rpc.WorkerRemote;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,18 +55,13 @@ public class WorkerConfiguration {
     }
 
     @Bean
-    public TimingWheel<ExecuteParam> timingWheel() {
-        return new TaskTimingWheel();
-    }
-
-    @Bean
-    public SupervisorService supervisorClient(HttpProperties properties,
+    public SupervisorService supervisorClient(HttpProperties httpConfig,
                                               WorkerRegistry workerRegistry,
                                               @Nullable @Qualifier(SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-            .connectTimeout(properties.getConnectTimeout())
-            .readTimeout(properties.getReadTimeout())
-            .maxRetryTimes(properties.getMaxRetryTimes())
+            .connectTimeout(httpConfig.getConnectTimeout())
+            .readTimeout(httpConfig.getReadTimeout())
+            .maxRetryTimes(httpConfig.getMaxRetryTimes())
             .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(workerRegistry)
             .build();
