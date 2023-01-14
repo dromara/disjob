@@ -6,11 +6,10 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.redis;
+package cn.ponfee.scheduler.test.redis;
 
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import redis.embedded.RedisServer;
-import redis.embedded.RedisServerBuilder;
 
 /**
  * Embedded redis server.
@@ -23,15 +22,15 @@ import redis.embedded.RedisServerBuilder;
 public final class EmbeddedRedisServerKstyrc {
 
     public static void main(String[] args) {
-        RedisServer redisServer = start();
+        RedisServer redisServer = start(6379, 6380);
         Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(redisServer::stop)));
     }
 
-    public static RedisServer start() {
+    public static RedisServer start(int masterPort, int slavePort) {
         RedisServer redisServer = RedisServer.builder()
             //.redisExecProvider(customRedisProvider)
-            .port(6379)
-            .slaveOf("localhost", 6378)
+            .port(masterPort)
+            .slaveOf("localhost", slavePort)
             .setting("requirepass 123456")
 
             // redis 6.0 ACL: https://blog.csdn.net/qq_29235677/article/details/121475204

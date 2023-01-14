@@ -6,10 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.db;
+package cn.ponfee.scheduler.test.db;
 
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.common.util.MavenProjects;
 import cn.ponfee.scheduler.common.util.Numbers;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -17,9 +16,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ import java.util.Map;
 public class DBTools {
 
     public static final String DB_NAME = "distributed_scheduler";
-    public static final String DB_SCRIPT_PATH = MavenProjects.getProjectBaseDir() + "/../db-script/JOB_TABLES_DDL.sql";
+    public static final String DB_SCRIPT_PATH = "JOB_TABLES_DDL.sql";
 
     public static JdbcTemplate createJdbcTemplate(String url, String user, String password) {
         HikariConfig config = new HikariConfig();
@@ -45,7 +45,9 @@ public class DBTools {
     }
 
     public static String loadScript() throws Exception {
-        return IOUtils.toString(new FileInputStream(DB_SCRIPT_PATH), StandardCharsets.UTF_8);
+        try (InputStream inputStream = new ClassPathResource(DB_SCRIPT_PATH).getInputStream()){
+            return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        }
     }
 
     public static void testNativeConnection(String driver, String url, String user, String password) throws Exception {

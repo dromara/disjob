@@ -78,11 +78,11 @@ public class SupervisorStartup implements AutoCloseable {
 
     // ----------------------------------------------------------------------------------------builder
 
-    public static SupervisorStartup.SupervisorStartupBuilder builder() {
-        return new SupervisorStartup.SupervisorStartupBuilder();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public static class SupervisorStartupBuilder {
+    public static class Builder {
         private Supervisor currentSupervisor;
         private int jobHeartbeatIntervalSeconds;
         private int trackHeartbeatIntervalSeconds;
@@ -92,45 +92,45 @@ public class SupervisorStartup implements AutoCloseable {
         private DoInLocked scanTrackLocked;
         private TaskDispatcher taskDispatcher;
 
-        private SupervisorStartupBuilder() {
+        private Builder() {
         }
 
-        public SupervisorStartupBuilder currentSupervisor(Supervisor currentSupervisor) {
+        public Builder currentSupervisor(Supervisor currentSupervisor) {
             this.currentSupervisor = currentSupervisor;
             return this;
         }
 
-        public SupervisorStartupBuilder jobHeartbeatIntervalSeconds(int jobHeartbeatIntervalSeconds) {
+        public Builder jobHeartbeatIntervalSeconds(int jobHeartbeatIntervalSeconds) {
             this.jobHeartbeatIntervalSeconds = jobHeartbeatIntervalSeconds;
             return this;
         }
 
-        public SupervisorStartupBuilder trackHeartbeatIntervalSeconds(int trackHeartbeatIntervalSeconds) {
+        public Builder trackHeartbeatIntervalSeconds(int trackHeartbeatIntervalSeconds) {
             this.trackHeartbeatIntervalSeconds = trackHeartbeatIntervalSeconds;
             return this;
         }
 
-        public SupervisorStartupBuilder supervisorRegistry(SupervisorRegistry supervisorRegistry) {
+        public Builder supervisorRegistry(SupervisorRegistry supervisorRegistry) {
             this.supervisorRegistry = supervisorRegistry;
             return this;
         }
 
-        public SupervisorStartupBuilder jobManager(JobManager jobManager) {
+        public Builder jobManager(JobManager jobManager) {
             this.jobManager = jobManager;
             return this;
         }
 
-        public SupervisorStartupBuilder scanJobLocked(DoInLocked scanJobLocked) {
+        public Builder scanJobLocked(DoInLocked scanJobLocked) {
             this.scanJobLocked = scanJobLocked;
             return this;
         }
 
-        public SupervisorStartupBuilder scanTrackLocked(DoInLocked scanTrackLocked) {
+        public Builder scanTrackLocked(DoInLocked scanTrackLocked) {
             this.scanTrackLocked = scanTrackLocked;
             return this;
         }
 
-        public SupervisorStartupBuilder taskDispatcher(TaskDispatcher taskDispatcher) {
+        public Builder taskDispatcher(TaskDispatcher taskDispatcher) {
             this.taskDispatcher = taskDispatcher;
             return this;
         }

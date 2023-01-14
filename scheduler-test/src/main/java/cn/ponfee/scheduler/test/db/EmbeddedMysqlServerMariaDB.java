@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.db;
+package cn.ponfee.scheduler.test.db;
 
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfiguration;
@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.scheduler.db.DBTools.DB_NAME;
+import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
 
 /**
  * MariaDB Server
@@ -35,19 +35,18 @@ import static cn.ponfee.scheduler.db.DBTools.DB_NAME;
  */
 public class EmbeddedMysqlServerMariaDB {
 
-    private static final int PORT = 3306;
-    private static final String JDBC_URL = "jdbc:mysql://localhost:" + PORT + "/" + DB_NAME;
-
     public static void main(String[] args) throws Exception {
-        DB db = start();
+        DB db = start(3306);
         Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(db::stop)));
     }
 
-    public static DB start() throws Exception {
+    public static DB start(int port) throws Exception {
+        String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
+
         String dataDir = createDataDirectory();
 
         DBConfiguration configuration = DBConfigurationBuilder.newBuilder()
-            .setPort(PORT) // OR, default: setPort(0); => autom. detect free port
+            .setPort(port) // OR, default: setPort(0); => autom. detect free port
             .setDataDir(dataDir) // just an example
             //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
             .build();
@@ -58,18 +57,18 @@ public class EmbeddedMysqlServerMariaDB {
         System.out.println("Embedded maria db started!");
 
         db.source(IOUtils.toInputStream(loadScript(), StandardCharsets.UTF_8));
-        JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(JDBC_URL, DB_NAME, DB_NAME);
+        JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(jdbcUrl, DB_NAME, DB_NAME);
 
-        System.out.println("\n\n--------------------------------------------------------testDatabase");
-        DBTools.testNativeConnection("com.mysql.cj.jdbc.Driver", JDBC_URL, DB_NAME, DB_NAME);
+        System.out.println("\n--------------------------------------------------------testDatabase");
+        DBTools.testNativeConnection("com.mysql.cj.jdbc.Driver", jdbcUrl, DB_NAME, DB_NAME);
 
-        System.out.println("\n\n--------------------------------------------------------testMysql");
+        System.out.println("\n--------------------------------------------------------testMysql");
         DBTools.testMysql(jdbcTemplate);
 
-        System.out.println("\n\n--------------------------------------------------------testJdbcTemplate");
+        System.out.println("\n--------------------------------------------------------testJdbcTemplate");
         DBTools.testJdbcTemplate(jdbcTemplate);
 
-        System.out.println("\n\n--------------------------------------------------------testQuerySql");
+        System.out.println("\n--------------------------------------------------------testQuerySql");
         DBTools.testQuerySchedJob(jdbcTemplate);
         return db;
     }

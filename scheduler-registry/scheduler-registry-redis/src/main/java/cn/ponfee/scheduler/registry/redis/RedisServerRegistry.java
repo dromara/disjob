@@ -160,7 +160,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        Throwables.caught(redisMessageListenerContainer::stop);
+        Throwables.caught(() -> redisMessageListenerContainer.stop());
         Throwables.caught(registryScheduledExecutor::shutdownNow);
         registered.forEach(this::deregister);
         registered.clear();

@@ -148,6 +148,12 @@
 
     <!-- test -->
     <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-test</artifactId>
+      <version>${distributed-scheduler.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
@@ -170,14 +176,6 @@
     <repository>
       <id>central</id>
       <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-    <repository>
-      <id>nexus.nuiton.org-central</id>
-      <url>https://nexus.nuiton.org/nexus/content/repositories/central</url>
-    </repository>
-    <repository>
-      <id>nexus.nuiton.org-thirdparty</id>
-      <url>https://nexus.nuiton.org/nexus/content/repositories/thirdparty</url>
     </repository>
     <repository>
       <id>oss.sonatype.org-snapshots</id>

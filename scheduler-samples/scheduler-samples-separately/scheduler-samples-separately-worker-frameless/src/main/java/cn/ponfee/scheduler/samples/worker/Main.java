@@ -27,10 +27,11 @@ import cn.ponfee.scheduler.samples.worker.redis.AbstractRedisTemplateCreator;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 
@@ -38,7 +39,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
@@ -117,6 +118,13 @@ public class Main {
     }
 
     private static void printBanner() {
+        try (InputStream inputStream = new ClassPathResource("banner.txt").getInputStream()) {
+            String banner = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            System.out.println(banner);
+        } catch (Exception ignored) {
+            //
+        }
+        /*
         try {
             Map<String, String> map = new ResourceScanner("/").scan4text("banner.txt");
             if (MapUtils.isNotEmpty(map)) {
@@ -125,6 +133,7 @@ public class Main {
         } catch (Exception ignored) {
             //
         }
+        */
     }
 
     private static WorkerRegistry createRedisWorkerRegistry(String namespace, StringRedisTemplate redisTemplate,

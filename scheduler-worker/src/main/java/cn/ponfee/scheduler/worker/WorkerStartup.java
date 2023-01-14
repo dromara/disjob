@@ -73,11 +73,11 @@ public class WorkerStartup implements AutoCloseable {
 
     // ----------------------------------------------------------------------------------------builder
 
-    public static WorkerStartup.WorkerStartupBuilder builder() {
-        return new WorkerStartup.WorkerStartupBuilder();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public static class WorkerStartupBuilder {
+    public static class Builder {
         private Worker currentWorker;
         private int maximumPoolSize;
         private int keepAliveTimeSeconds;
@@ -85,35 +85,35 @@ public class WorkerStartup implements AutoCloseable {
         private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
 
-        private WorkerStartupBuilder() {
+        private Builder() {
         }
 
-        public WorkerStartup.WorkerStartupBuilder currentWorker(Worker currentWorker) {
+        public Builder currentWorker(Worker currentWorker) {
             this.currentWorker = currentWorker;
             return this;
         }
 
-        public WorkerStartup.WorkerStartupBuilder maximumPoolSize(int maximumPoolSize) {
+        public Builder maximumPoolSize(int maximumPoolSize) {
             this.maximumPoolSize = maximumPoolSize;
             return this;
         }
 
-        public WorkerStartup.WorkerStartupBuilder keepAliveTimeSeconds(int keepAliveTimeSeconds) {
+        public Builder keepAliveTimeSeconds(int keepAliveTimeSeconds) {
             this.keepAliveTimeSeconds = keepAliveTimeSeconds;
             return this;
         }
 
-        public WorkerStartup.WorkerStartupBuilder supervisorClient(SupervisorService supervisorClient) {
+        public Builder supervisorClient(SupervisorService supervisorClient) {
             this.supervisorClient = supervisorClient;
             return this;
         }
 
-        public WorkerStartup.WorkerStartupBuilder workerRegistry(WorkerRegistry workerRegistry) {
+        public Builder workerRegistry(WorkerRegistry workerRegistry) {
             this.workerRegistry = workerRegistry;
             return this;
         }
 
-        public WorkerStartup.WorkerStartupBuilder taskReceiver(TaskReceiver taskReceiver) {
+        public Builder taskReceiver(TaskReceiver taskReceiver) {
             this.taskReceiver = taskReceiver;
             return this;
         }

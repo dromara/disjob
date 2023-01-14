@@ -77,7 +77,7 @@ distributed-scheduler
 
 ## Quick Start
 
-1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/db/EmbeddedMysqlServerMariaDB.java))
+1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
 
 2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
   - 如果不使用Redis做注册中心、任务分发及分布式锁，可排除[scheduler-common](scheduler-common/pom.xml)模块下的Maven依赖`spring-boot-starter-data-redis`
@@ -95,7 +95,7 @@ distributed-scheduler
 - 已配置不同端口，可同时启动
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
 - 注册中心或任务分发的类型选择是在Spring boot启动类中切换注解
-  - EnableRedisServerRegistry启用Redis做为注册中心([内置redis-server](scheduler-test/src/main/java/cn/ponfee/scheduler/redis/EmbeddedRedisServerKstyrc.java))
+  - EnableRedisServerRegistry启用Redis做为注册中心([内置redis-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java))
   - EnableConsulServerRegistry启用Consul做为注册中心([内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
   - EnableNacosServerRegistry启用Nacos做为注册中心([内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java))
   - EnableEtcdServerRegistry启用Etcd做为注册中心([内置etcd-server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))

@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.redis;
+package cn.ponfee.scheduler.test.redis;
 
 import org.junit.Assert;
 import org.slf4j.LoggerFactory;

@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.db;
+package cn.ponfee.scheduler.test.db;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static cn.ponfee.scheduler.db.DBTools.DB_NAME;
+import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
 
 /**
  * <pre>
@@ -58,13 +58,13 @@ public class EmbeddedMysqlServerTestcontainers {
             ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, ""), "", DBTools.loadScript());
             JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, DB_NAME, DB_NAME);
 
-            System.out.println("\n\n--------------------------------------------------------testMysql");
+            System.out.println("\n--------------------------------------------------------testMysql");
             DBTools.testMysql(jdbcTemplate);
 
-            System.out.println("\n\n--------------------------------------------------------testJdbcTemplate");
+            System.out.println("\n--------------------------------------------------------testJdbcTemplate");
             DBTools.testJdbcTemplate(jdbcTemplate);
 
-            System.out.println("\n\n--------------------------------------------------------testQuerySql");
+            System.out.println("\n--------------------------------------------------------testQuerySql");
             DBTools.testQuerySchedJob(jdbcTemplate);
 
             new CountDownLatch(1).await();

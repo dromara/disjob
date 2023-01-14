@@ -103,7 +103,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
         if (asyncExecutor != null) {
             // destroy the async executor
-            ThreadPoolExecutors.shutdown(asyncExecutor);
+            ThreadPoolExecutors.shutdown(asyncExecutor, 1);
         }
     }
 

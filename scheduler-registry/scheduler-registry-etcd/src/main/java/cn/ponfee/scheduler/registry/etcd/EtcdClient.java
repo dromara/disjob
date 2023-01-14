@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.registry.etcd;
 
+import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
@@ -275,7 +276,7 @@ public class EtcdClient implements AutoCloseable {
 
         @Override
         public void accept(WatchResponse response) {
-            Throwables.caught(latch::await);
+            CheckedThrowing.caught(() -> latch.await());
 
             List<WatchEvent> events = response.getEvents();
             if (events.stream().noneMatch(e -> CHANGED_EVENT_TYPES.contains(e.getEventType()))) {

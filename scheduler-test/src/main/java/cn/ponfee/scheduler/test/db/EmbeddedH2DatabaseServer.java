@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.db;
+package cn.ponfee.scheduler.test.db;
 
 import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.Jsons;
@@ -48,13 +48,13 @@ public class EmbeddedH2DatabaseServer {
 
         JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(jdbcUrl, username, password);
 
-        System.out.println("\n\n--------------------------------------------------------testDatabase");
+        System.out.println("\n--------------------------------------------------------testDatabase");
         DBTools.testNativeConnection("org.h2.Driver", jdbcUrl, username, password);
 
-        System.out.println("\n\n--------------------------------------------------------testJdbcTemplate");
+        System.out.println("\n--------------------------------------------------------testJdbcTemplate");
         DBTools.testJdbcTemplate(jdbcTemplate);
 
-        System.out.println("\n\n--------------------------------------------------------testScript");
+        System.out.println("\n--------------------------------------------------------testScript");
         testScript(jdbcTemplate);
 
         new CountDownLatch(1).await();

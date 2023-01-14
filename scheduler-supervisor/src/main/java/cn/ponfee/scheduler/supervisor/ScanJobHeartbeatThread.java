@@ -21,7 +21,6 @@ import cn.ponfee.scheduler.supervisor.manager.JobManager;
 import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.util.Assert;
 
 import java.util.Collections;
 import java.util.Date;

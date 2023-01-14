@@ -189,41 +189,41 @@ public class DiscoveryRestTemplate<D extends Server> {
 
     // ----------------------------------------------------------------------------------------builder
 
-    public static <S extends Server> DiscoveryRestTemplateBuilder<S> builder() {
-        return new DiscoveryRestTemplateBuilder<>();
+    public static <S extends Server> Builder<S> builder() {
+        return new Builder<>();
     }
 
-    public static class DiscoveryRestTemplateBuilder<S extends Server> {
+    public static class Builder<S extends Server> {
         private int connectTimeout;
         private int readTimeout;
         private ObjectMapper objectMapper;
         private Discovery<S> discoveryServer;
         private int maxRetryTimes;
 
-        private DiscoveryRestTemplateBuilder() {
+        private Builder() {
         }
 
-        public DiscoveryRestTemplateBuilder<S> connectTimeout(int connectTimeout) {
+        public Builder<S> connectTimeout(int connectTimeout) {
             this.connectTimeout = connectTimeout;
             return this;
         }
 
-        public DiscoveryRestTemplateBuilder<S> readTimeout(int readTimeout) {
+        public Builder<S> readTimeout(int readTimeout) {
             this.readTimeout = readTimeout;
             return this;
         }
 
-        public DiscoveryRestTemplateBuilder<S> objectMapper(ObjectMapper objectMapper) {
+        public Builder<S> objectMapper(ObjectMapper objectMapper) {
             this.objectMapper = objectMapper;
             return this;
         }
 
-        public DiscoveryRestTemplateBuilder<S> discoveryServer(Discovery<S> discoveryServer) {
+        public Builder<S> discoveryServer(Discovery<S> discoveryServer) {
             this.discoveryServer = discoveryServer;
             return this;
         }
 
-        public DiscoveryRestTemplateBuilder<S> maxRetryTimes(int maxRetryTimes) {
+        public Builder<S> maxRetryTimes(int maxRetryTimes) {
             this.maxRetryTimes = maxRetryTimes;
             return this;
         }

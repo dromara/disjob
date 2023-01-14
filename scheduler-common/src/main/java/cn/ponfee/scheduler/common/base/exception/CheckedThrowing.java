@@ -8,6 +8,9 @@
 
 package cn.ponfee.scheduler.common.base.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -20,6 +23,19 @@ import java.util.function.Supplier;
  * @author Ponfee
  */
 public final class CheckedThrowing {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CheckedThrowing.class);
+
+    /**
+     * eg: new Thread(CheckedThrowing.runnable(printer::print))
+     *
+     * @param runnable the ThrowingRunnable
+     * @param <T>      the type of Throwable
+     * @return Runnable instance
+     */
+    public static <T extends Throwable> Runnable runnable(ThrowingRunnable<T> runnable) {
+        return ThrowingRunnable.checked(runnable);
+    }
 
     public static <R, T extends Throwable> Callable<R> callable(ThrowingCallable<R, T> callable) {
         return ThrowingCallable.checked(callable);
@@ -37,22 +53,78 @@ public final class CheckedThrowing {
         return ThrowingSupplier.checked(supplier);
     }
 
-    /**
-     * eg: new Thread(CheckedThrowing.runnable(printer::print))
-     *
-     * @param runnable the ThrowingRunnable
-     * @param <T>      the type of Throwable
-     * @return Runnable instance
-     */
-    public static <T extends Throwable> Runnable runnable(ThrowingRunnable<T> runnable) {
-        return ThrowingRunnable.checked(runnable);
-    }
-
     public static <E, T extends Throwable> Comparator<? super E> comparator(ThrowingComparator<E, T> comparator) {
         return ThrowingComparator.checked(comparator);
     }
 
-    // -------------------------------------------------------------------------------definitions
+    // -------------------------------------------------------------------------------caught
+
+    public static void caught(ThrowingRunnable runnable) {
+        try {
+            runnable.run();
+        } catch (Throwable t) {
+            LOG.error(t.getMessage(), t);
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    public static <R> R caught(ThrowingSupplier<R, ?> supplier) {
+        try {
+            return supplier.get();
+        } catch (Throwable t) {
+            LOG.error(t.getMessage(), t);
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return null;
+        }
+    }
+
+    public static <E> void caught(ThrowingConsumer<E, ?> consumer, E arg) {
+        try {
+            consumer.accept(arg);
+        } catch (Throwable t) {
+            LOG.error(t.getMessage(), t);
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    public static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg) {
+        return caught(function, arg, null);
+    }
+
+    public static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg, R defaultValue) {
+        try {
+            return function.apply(arg);
+        } catch (Throwable t) {
+            LOG.error(t.getMessage(), t);
+            if (t instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return defaultValue;
+        }
+    }
+
+    // -------------------------------------------------------------------------------interface definitions
+
+    @FunctionalInterface
+    public interface ThrowingRunnable<T extends Throwable> {
+        void run() throws T;
+
+        static <T extends Throwable> Runnable checked(ThrowingRunnable<T> runnable) {
+            return () -> {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    throw toRuntimeException(t);
+                }
+            };
+        }
+    }
 
     /**
      * Lambda function checked exception
@@ -139,21 +211,6 @@ public final class CheckedThrowing {
     }
 
     @FunctionalInterface
-    public interface ThrowingRunnable<T extends Throwable> {
-        void run() throws T;
-
-        static <T extends Throwable> Runnable checked(ThrowingRunnable<T> runnable) {
-            return () -> {
-                try {
-                    runnable.run();
-                } catch (Throwable t) {
-                    throw toRuntimeException(t);
-                }
-            };
-        }
-    }
-
-    @FunctionalInterface
     public interface ThrowingComparator<E, T extends Throwable> {
         int compare(E e1, E e2) throws T;
 
@@ -171,4 +228,5 @@ public final class CheckedThrowing {
     private static RuntimeException toRuntimeException(Throwable t) {
         return (t instanceof RuntimeException) ? (RuntimeException) t : new RuntimeException(t);
     }
+
 }
