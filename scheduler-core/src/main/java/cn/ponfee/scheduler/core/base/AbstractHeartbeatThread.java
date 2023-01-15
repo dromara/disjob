@@ -30,13 +30,13 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     private final AtomicBoolean stopped = new AtomicBoolean(false);
 
     /**
-     * Heartbeat interval milliseconds.
+     * Heartbeat period milliseconds.
      */
-    private final long heartbeatIntervalMs;
+    private final long heartbeatPeriodMs;
 
-    public AbstractHeartbeatThread(long heartbeatIntervalMs) {
+    public AbstractHeartbeatThread(long heartbeatPeriodMs) {
         log.info("Heartbeat thread init {}", this.getClass());
-        this.heartbeatIntervalMs = heartbeatIntervalMs;
+        this.heartbeatPeriodMs = heartbeatPeriodMs;
 
         // init thread parameters
         super.setDaemon(true);
@@ -75,8 +75,8 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
 
             // if result=false, need sleep a moment
             if (!result) {
-                // gap interval milliseconds
-                long sleepTimeMillis = heartbeatIntervalMs - (end % heartbeatIntervalMs);
+                // gap period milliseconds
+                long sleepTimeMillis = heartbeatPeriodMs - (end % heartbeatPeriodMs);
                 try {
                     TimeUnit.MILLISECONDS.sleep(sleepTimeMillis);
                     if (log.isDebugEnabled()) {
@@ -98,12 +98,12 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     }
 
     /**
-     * Returns heartbeat interval milliseconds.
+     * Returns heartbeat period milliseconds.
      *
-     * @return heartbeat interval milliseconds
+     * @return heartbeat period milliseconds
      */
-    public final long heartbeatIntervalMs() {
-        return heartbeatIntervalMs;
+    public final long heartbeatPeriodMs() {
+        return heartbeatPeriodMs;
     }
 
     /**
@@ -137,13 +137,13 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
         }
 
         int count = 10;
-        return Threads.stopThread(this, count, heartbeatIntervalMs / count, joinMillis);
+        return Threads.stopThread(this, count, heartbeatPeriodMs / count, joinMillis);
     }
 
     /**
      * Provide custom implementation for subclass.
      *
-     * @return {@code true} if busy loop, need sleep interval time.
+     * @return {@code true} if busy loop, need sleep period time.
      */
     protected abstract boolean heartbeat();
 

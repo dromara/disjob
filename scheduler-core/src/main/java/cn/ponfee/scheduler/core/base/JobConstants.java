@@ -58,16 +58,16 @@ public class JobConstants {
     /**
      * Current supervisor spring bean name
      */
-    public static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = "currentSupervisor";
+    public static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = SCHEDULER_KEY_PREFIX + ".bean.currentSupervisor";
 
     /**
      * Current worker spring bean name
      */
-    public static final String SPRING_BEAN_NAME_CURRENT_WORKER = "currentWorker";
+    public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SCHEDULER_KEY_PREFIX + ".bean.currentWorker";
 
     /**
      * Timing wheel spring bean name
      */
-    public static final String SPRING_BEAN_NAME_TIMING_WHEEL = "timingWheel";
+    public static final String SPRING_BEAN_NAME_TIMING_WHEEL = SCHEDULER_KEY_PREFIX + ".bean.timingWheel";
 
 }

@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.ext.ScriptUtils;
-import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collections;
@@ -36,16 +34,16 @@ import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
 public class EmbeddedMysqlServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Collections.singletonList("3306:3306");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         DockerImageName dockerImage = DockerImageName.parse("mysql/mysql-server:8.0.31").asCompatibleSubstituteFor("mysql");
         try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>(dockerImage)
-            //.withConfigurationOverride("mysql_conf_override")
+            //.withConfigurationOverride("mysql_conf_override") // resource file: “resources/mysql_conf_override/my.cnf”
             .withPrivilegedMode(true)
             .withUsername("root")
             .withPassword("")
             .withDatabaseName("test")
             .withEnv("MYSQL_ROOT_HOST", "%")
-            //.withInitScript(scriptPath)
+            .withInitScript(DBTools.DB_SCRIPT_PATH) // IOUtils.resourceToString(script-path, UTF_8, DBTools.class.getClassLoader())
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
         ) {
             mySQLContainer.setPortBindings(PORT_BINDINGS);
@@ -55,7 +53,13 @@ public class EmbeddedMysqlServerTestcontainers {
             mySQLContainer.start();
             System.out.println("Embedded docker mysql started!");
             //mySQLContainer.execInContainer("mysqld --skip-grant-tables");
-            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, ""), "", DBTools.loadScript());
+
+            /*
+            // the script-path only use for log, so here set a empty string
+            String scriptPath = "", scriptContent = DBTools.loadScript();
+            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, "SELECT 1"), scriptPath, scriptContent);
+            */
+
             JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, DB_NAME, DB_NAME);
 
             System.out.println("\n--------------------------------------------------------testMysql");
@@ -68,8 +72,6 @@ public class EmbeddedMysqlServerTestcontainers {
             DBTools.testQuerySchedJob(jdbcTemplate);
 
             new CountDownLatch(1).await();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

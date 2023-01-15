@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.samples.common.configuration;
 import cn.ponfee.scheduler.common.spring.LocalizedMethodArgumentResolver;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.HttpProperties;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -40,8 +41,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
-import static cn.ponfee.scheduler.core.base.JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER;
-
 /**
  * Spring web mvc configuration
  *
@@ -57,7 +56,7 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
      *
      * @return ObjectMapper
      */
-    @Bean({"objectMapper", SPRING_BEAN_NAME_OBJECT_MAPPER})
+    @Bean({"objectMapper", JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER})
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Primary
     public ObjectMapper objectMapper() {

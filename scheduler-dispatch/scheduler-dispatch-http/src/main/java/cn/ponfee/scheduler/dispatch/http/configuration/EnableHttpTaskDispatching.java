@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.dispatch.http.configuration;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.HttpProperties;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
@@ -23,21 +24,16 @@ import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.Ordered;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.annotation.*;
-
-import static cn.ponfee.scheduler.core.base.JobConstants.*;
 
 /**
  * Enable http task dispatch
@@ -50,22 +46,19 @@ import static cn.ponfee.scheduler.core.base.JobConstants.*;
 @Import(EnableHttpTaskDispatching.HttpTaskDispatchingConfiguration.class)
 public @interface EnableHttpTaskDispatching {
 
-    @Configuration
     class HttpTaskDispatchingConfiguration {
-
         /**
          * Configuration http task dispatcher.
          */
-        @ConditionalOnClass({RestTemplate.class})
-        @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-        @DependsOn(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @ConditionalOnBean({Supervisor.class})
+        @ConditionalOnClass(RestTemplate.class)
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @ConditionalOnBean(Supervisor.class)
         @ConditionalOnMissingBean
         @Bean
         public TaskDispatcher taskDispatcher(HttpProperties properties,
                                              SupervisorRegistry discoveryWorker,
                                              @Nullable TimingWheel<ExecuteParam> timingWheel,
-                                             @Nullable @Qualifier(SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
+                                             @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
             DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
                 .connectTimeout(properties.getConnectTimeout())
                 .readTimeout(properties.getReadTimeout())
@@ -80,8 +73,7 @@ public @interface EnableHttpTaskDispatching {
         /**
          * Configuration http task receiver.
          */
-        @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-        @DependsOn({SPRING_BEAN_NAME_CURRENT_WORKER, SPRING_BEAN_NAME_TIMING_WHEEL})
+        @DependsOn({JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER, JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL})
         @ConditionalOnBean({Worker.class, TimingWheel.class})
         @ConditionalOnMissingBean
         @Bean

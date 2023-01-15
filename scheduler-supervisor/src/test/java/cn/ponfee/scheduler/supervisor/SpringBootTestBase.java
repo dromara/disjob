@@ -11,7 +11,6 @@ package cn.ponfee.scheduler.supervisor;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.GenericUtils;
-import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.test.EmbeddedMysqlAndRedisServer;
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -54,19 +52,10 @@ public abstract class SpringBootTestBase<T> {
 
     static {
         EmbeddedMysqlAndRedisServer.starter().start();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
-    @EnableConfigurationProperties(HttpProperties.class)
     @EnableSupervisor
-    @SpringBootApplication(
-        exclude = DataSourceAutoConfiguration.class,
-        scanBasePackages = "cn.ponfee.scheduler.supervisor"
-    )
+    @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
     public static class Application {
         public static void main(String[] args) {
             SpringApplication.run(Application.class, args);

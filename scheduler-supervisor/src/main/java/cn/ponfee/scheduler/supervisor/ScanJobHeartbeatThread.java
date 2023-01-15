@@ -43,18 +43,19 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
     private final JobManager jobManager;
     private final long afterSeconds;
 
-    public ScanJobHeartbeatThread(int heartbeatIntervalMs,
+    public ScanJobHeartbeatThread(int heartbeatPeriodMs,
                                   DoInLocked doInLocked,
                                   JobManager jobManager) {
-        super(heartbeatIntervalMs);
+        super(heartbeatPeriodMs);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
-        this.afterSeconds = heartbeatIntervalMs() << 1;
+        this.afterSeconds = heartbeatPeriodMs() << 1;
     }
 
     @Override
     protected boolean heartbeat() {
         if (jobManager.hasNotFoundWorkers()) {
+            log.warn("Not found available worker.");
             return false;
         }
         Boolean result = doInLocked.apply(() -> {

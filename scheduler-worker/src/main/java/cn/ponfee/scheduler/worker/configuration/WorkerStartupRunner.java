@@ -6,27 +6,24 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.samples.worker.configuration;
+package cn.ponfee.scheduler.worker.configuration;
 
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.WorkerStartup;
-import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
 
 /**
  * Worker startup runner.
  *
  * @author Ponfee
  */
-@Component
 public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartupRunner.class);
@@ -35,6 +32,7 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
 
     public WorkerStartupRunner(Worker currentWorker,
                                WorkerProperties properties,
+                               // if current server also is a supervisor -> JobManager, else -> DiscoveryRestProxy.create()
                                SupervisorService supervisorClient,
                                WorkerRegistry workerRegistry,
                                TaskReceiver taskReceiver) {
@@ -50,14 +48,16 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
 
     @Override
     public void run(ApplicationArguments args) {
+        LOG.info("Scheduler worker launch begin...");
         workerStartup.start();
+        LOG.info("Scheduler worker launch end.");
     }
 
     @Override
     public void destroy() {
-        LOG.info("Scheduler worker destroy start...");
+        LOG.info("Scheduler worker stop begin...");
         workerStartup.close();
-        LOG.info("Scheduler worker destroy end.");
+        LOG.info("Scheduler worker stop end.");
     }
 
 }

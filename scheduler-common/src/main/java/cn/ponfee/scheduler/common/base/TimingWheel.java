@@ -17,10 +17,80 @@ import java.util.PriorityQueue;
 /**
  * Timing wheel structure.
  *
+ * <p>TimingWheel(100, 60):
+ * <pre>
+ *   00.000[00, 59]
+ *   00.100[01, 00]
+ *   00.200[02, 01]
+ *   00.300[03, 02]
+ *   00.400[04, 03]
+ *   00.500[05, 04]
+ *   00.600[06, 05]
+ *   00.700[07, 06]
+ *   00.800[08, 07]
+ *   00.900[09, 08]
+ *   01.000[10, 09]
+ *   01.100[11, 10]
+ *   01.200[12, 11]
+ *   01.300[13, 12]
+ *   01.400[14, 13]
+ *   01.500[15, 14]
+ *   01.600[16, 15]
+ *   01.700[17, 16]
+ *   01.800[18, 17]
+ *   01.900[19, 18]
+ *   02.000[20, 19]
+ *   02.120[21, 20]
+ *   02.200[22, 21]
+ *   02.300[23, 22]
+ *   02.400[24, 23]
+ *   02.500[25, 24]
+ *   02.600[26, 25]
+ *   02.700[27, 26]
+ *   02.800[28, 27]
+ *   02.900[29, 28]
+ *   03.000[30, 29]
+ *   03.100[31, 30]
+ *   03.200[32, 31]
+ *   03.300[33, 32]
+ *   03.400[34, 33]
+ *   03.500[35, 34]
+ *   03.600[36, 35]
+ *   03.700[37, 36]
+ *   03.800[38, 37]
+ *   03.900[39, 38]
+ *   04.000[40, 39]
+ *   04.100[41, 40]
+ *   04.200[42, 41]
+ *   04.300[43, 42]
+ *   04.400[44, 43]
+ *   04.500[45, 44]
+ *   04.600[46, 45]
+ *   04.700[47, 46]
+ *   04.800[48, 47]
+ *   04.900[49, 48]
+ *   05.000[50, 49]
+ *   05.100[51, 50]
+ *   05.210[52, 51]
+ *   05.300[53, 52]
+ *   05.400[54, 53]
+ *   05.500[55, 54]
+ *   05.600[56, 55]
+ *   05.700[57, 56]
+ *   05.800[58, 57]
+ *   05.900[59, 58]
+ *
+ *   06.000[00, 59]
+ *   06.100[01, 00]
+ *   06.200[02, 01]
+ * </pre>
+ *
  * @author Ponfee
  */
 public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements java.io.Serializable {
     private static final long serialVersionUID = 4500377208898808026L;
+
+    private static final int PROCESS_SLOTS_SIZE = 2;
 
     /**
      * Tick duration milliseconds
@@ -33,7 +103,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
     private final long msPerRound;
 
     /**
-     * Ring buffer
+     * Ring buffer of wheel
      */
     private final TimingQueue<T>[] wheel;
 
@@ -53,6 +123,10 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
 
     public final long getTickMs() {
         return tickMs;
+    }
+
+    public final int getRingSize() {
+        return wheel.length;
     }
 
     /**
@@ -103,7 +177,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         int ringIndex = calculateIndex(latestTimeMillis);
         long maximumTiming = (latestTimeMillis / tickMs) * tickMs + tickMs;
         // process current and previous tick timingQueue
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < PROCESS_SLOTS_SIZE; i++) {
             TimingQueue<T> ringTick = wheel[(ringIndex - i + wheel.length) % wheel.length];
             T first;
             while ((first = ringTick.peek()) != null && first.timing() < maximumTiming) {

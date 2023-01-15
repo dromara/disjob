@@ -16,10 +16,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
@@ -45,9 +43,7 @@ public class DBTools {
     }
 
     public static String loadScript() throws Exception {
-        try (InputStream inputStream = new ClassPathResource(DB_SCRIPT_PATH).getInputStream()){
-            return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        }
+        return IOUtils.resourceToString(DB_SCRIPT_PATH, StandardCharsets.UTF_8, DBTools.class.getClassLoader());
     }
 
     public static void testNativeConnection(String driver, String url, String user, String password) throws Exception {

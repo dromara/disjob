@@ -24,10 +24,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -39,19 +39,29 @@ import java.lang.annotation.*;
 
 /**
  * Enable worker role
+ * <p>必须注解到具有@Component的类上且该类能被spring扫描到
  *
  * @author Ponfee
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(EnableWorker.EnableWorkerConfiguration.class)
+@EnableConfigurationProperties(WorkerProperties.class)
+@Import({
+    EnableWorker.EnableWorkerConfiguration.class,
+    EnableWorker.EnableHttpProperties.class,
+    WorkerStartupRunner.class,
+})
 public @interface EnableWorker {
 
-    @ConditionalOnClass({Worker.class})
+    @ConditionalOnMissingBean(HttpProperties.class)
+    @EnableConfigurationProperties(HttpProperties.class)
+    class EnableHttpProperties {
+    }
+
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
-    @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
     class EnableWorkerConfiguration {
+        @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
@@ -68,8 +78,9 @@ public @interface EnableWorker {
             return currentWorker;
         }
 
-        @ConditionalOnMissingBean
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         @ConditionalOnMissingClass("cn.ponfee.scheduler.supervisor.manager.JobManager")
+        @ConditionalOnMissingBean
         @Bean
         public SupervisorService supervisorServiceClient(HttpProperties httpConfig,
                                                          WorkerRegistry workerRegistry,
@@ -84,12 +95,12 @@ public @interface EnableWorker {
             return DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
         }
 
-        @Order(Ordered.HIGHEST_PRECEDENCE)
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
+        @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         public TaskTimingWheel timingWheel(WorkerProperties config) {
-            return new TaskTimingWheel(config.getTickMs(), config.getRingSize());
+            return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)

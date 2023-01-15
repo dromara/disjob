@@ -1,7 +1,7 @@
 # scheduler worker configuration
 distributed.scheduler.worker:
   group: default
-  tick-ms: 100
-  ring-size: 60
+  timing-wheel-tick-ms: 100
+  timing-wheel-ring-size: 60
   maximum-pool-size: 100
   keep-alive-time-seconds: 300

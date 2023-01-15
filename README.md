@@ -61,6 +61,8 @@ distributed-scheduler
 
 ## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
 
+> [注意](https://developer.aliyun.com/mvn/search)：如果本地maven settings.xml配置了aliyun镜像仓库导致无法下载，需要删除aliyun maven mirror的配置
+
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
@@ -80,7 +82,7 @@ distributed-scheduler
 1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
 
 2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
-  - 如果不使用Redis做注册中心、任务分发及分布式锁，可排除[scheduler-common](scheduler-common/pom.xml)模块下的Maven依赖`spring-boot-starter-data-redis`
+  - 如果使用默认的本地配置([如consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件
   - 不依赖Web容器的Worker应用的配置文件是在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. 编写自己的任务处理器[PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
@@ -103,32 +105,14 @@ distributed-scheduler
   - EnableRedisTaskDispatching启用Redis做任务分发
   - EnableHttpTaskDispatching启用Http做任务分发
 ```java
-@EnableConfigurationProperties({
-    SupervisorProperties.class,
-    HttpProperties.class,
-    RedisRegistryProperties.class,
-    ConsulRegistryProperties.class,
-    NacosRegistryProperties.class,
-    ZookeeperRegistryProperties.class,
-    EtcdRegistryProperties.class,
-})
 @EnableSupervisor
-@EnableRedisServerRegistry // EnableRedisServerRegistry、EnableConsulServerRegistry、EnableNacosServerRegistry、EnableZookeeperServerRegistry、EnableEtcdServerRegistry
-@EnableRedisTaskDispatching // EnableRedisTaskDispatching、EnableHttpTaskDispatching
-@SpringBootApplication(
-    exclude = {
-        DataSourceAutoConfiguration.class
-    },
-    scanBasePackages = {
-        "cn.ponfee.scheduler.samples.common.configuration",
-        "cn.ponfee.scheduler.samples.supervisor.configuration",
-        "cn.ponfee.scheduler.supervisor",
-    }
-)
-public class SupervisorApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(SupervisorApplication.class, args);
-    }
+@EnableWorker
+@EnableRedisServerRegistry // EnableRedisServerRegistry, EnableConsulServerRegistry, EnableNacosServerRegistry, EnableZookeeperServerRegistry, EnableEtcdServerRegistry
+@EnableRedisTaskDispatching // EnableRedisTaskDispatching, EnableHttpTaskDispatching
+public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
+  public static void main(String[] args) {
+    SpringApplication.run(SchedulerApplication.class, args);
+  }
 }
 ```
 
@@ -173,7 +157,7 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 
 ## Todo List
 
-- [x] 处理器解耦：JobHandler代码部署在Worker中，Worker提供处理器校验及拆分任务的接口[WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerRemote.java)
+- [x] Worker提供任务校验及拆分的Http接口供Supervisor调用[WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB

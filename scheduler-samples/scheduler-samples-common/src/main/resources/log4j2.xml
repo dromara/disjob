@@ -56,6 +56,19 @@
       <AppenderRef ref="RollingFile" />
     </Logger>
 
+    <!--<Logger name="cn.ponfee.scheduler.supervisor.ScanJobHeartbeatThread" level="debug" additivity="false">
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="RollingFile" />
+    </Logger>
+    <Logger name="cn.ponfee.scheduler.supervisor.ScanTrackHeartbeatThread" level="debug" additivity="false">
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="RollingFile" />
+    </Logger>
+    <Logger name="cn.ponfee.scheduler.worker.WorkerHeartbeatThread" level="debug" additivity="false">
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="RollingFile" />
+    </Logger>-->
+
     <!-- 当根据日志名字获取不到指定的日志器时就使用Root作为默认的日志器 -->
     <Root level="WARN">
       <AppenderRef ref="Console" />

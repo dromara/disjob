@@ -6,28 +6,17 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.supervisor.configuration;
+package cn.ponfee.scheduler.samples.common;
 
-import cn.ponfee.scheduler.core.base.JobConstants;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
- * Supervisor configuration properties.
+ * Abstract Scheduler Samples Application
  *
  * @author Ponfee
  */
-@ConfigurationProperties(prefix = JobConstants.SUPERVISOR_KEY_PREFIX)
-@Data
-public class SupervisorProperties {
+@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+public abstract class AbstractSchedulerSamplesApplication {
 
-    /**
-     * Scan sched_job heartbeat period milliseconds
-     */
-    private int jobHeartbeatPeriodMs = 2000;
-
-    /**
-     * Scan sched_track heartbeat period milliseconds
-     */
-    private int trackHeartbeatPeriodMs = 2000;
 }

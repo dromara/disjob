@@ -6,14 +6,13 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.samples.supervisor.configuration;
+package cn.ponfee.scheduler.supervisor.configuration;
 
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.SupervisorStartup;
-import cn.ponfee.scheduler.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.scheduler.supervisor.manager.JobManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
 
 import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEAN_NAME_SCAN_JOB_LOCKED;
 import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRACK_LOCKED;
@@ -31,7 +29,6 @@ import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEA
  *
  * @author Ponfee
  */
-@Component
 public class SupervisorStartupRunner implements ApplicationRunner, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartupRunner.class);
@@ -47,8 +44,8 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
                                    TaskDispatcher taskDispatcher) {
         this.supervisorStartup = SupervisorStartup.builder()
             .currentSupervisor(currentSupervisor)
-            .jobHeartbeatIntervalMs(config.getJobHeartbeatIntervalMs())
-            .trackHeartbeatIntervalMs(config.getTrackHeartbeatIntervalMs())
+            .jobHeartbeatPeriodMs(config.getJobHeartbeatPeriodMs())
+            .trackHeartbeatPeriodMs(config.getTrackHeartbeatPeriodMs())
             .supervisorRegistry(supervisorRegistry)
             .jobManager(jobManager)
             .scanJobLocked(scanJobLocked)
@@ -59,14 +56,16 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
 
     @Override
     public void run(ApplicationArguments args) {
+        LOG.info("Scheduler supervisor launch begin...");
         supervisorStartup.start();
+        LOG.info("Scheduler supervisor launch end.");
     }
 
     @Override
     public void destroy() {
-        LOG.info("Scheduler supervisor destroy start...");
+        LOG.info("Scheduler supervisor stop begin...");
         supervisorStartup.close();
-        LOG.info("Scheduler supervisor destroy end.");
+        LOG.info("Scheduler supervisor stop end.");
     }
 
 }

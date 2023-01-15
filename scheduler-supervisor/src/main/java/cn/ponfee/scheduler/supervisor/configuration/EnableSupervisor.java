@@ -19,6 +19,7 @@ import cn.ponfee.scheduler.core.base.*;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
+import cn.ponfee.scheduler.supervisor.SupervisorStartup;
 import cn.ponfee.scheduler.supervisor.base.SupervisorConstants;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
 import cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig;
@@ -27,10 +28,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -41,6 +44,7 @@ import java.lang.annotation.*;
 
 /**
  * Enable supervisor role
+ * <p>必须注解到具有@Component的类上且该类能被spring扫描到
  *
  * <pre>
  * @Order、Order接口、@AutoConfigureBefore、@AutoConfigureAfter、@AutoConfigureOrder的顺序：
@@ -53,13 +57,27 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(EnableSupervisor.EnableSupervisorConfiguration.class)
+@EnableConfigurationProperties(SupervisorProperties.class)
+@Import({
+    EnableSupervisor.EnableComponentScan.class,
+    EnableSupervisor.EnableHttpProperties.class,
+    EnableSupervisor.EnableSupervisorConfiguration.class,
+    SupervisorStartupRunner.class,
+})
 public @interface EnableSupervisor {
 
-    @ConditionalOnClass({Supervisor.class})
+    @ComponentScan(basePackageClasses = SupervisorStartup.class)
+    class EnableComponentScan {
+    }
+
+    @ConditionalOnMissingBean(HttpProperties.class)
+    @EnableConfigurationProperties(HttpProperties.class)
+    class EnableHttpProperties {
+    }
+
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
-    @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
     class EnableSupervisorConfiguration {
+        @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
@@ -75,12 +93,12 @@ public @interface EnableSupervisor {
             return currentSupervisor;
         }
 
-        @ConditionalOnClass({WorkerService.class})
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
         public WorkerServiceClient workerServiceClient(HttpProperties properties,
                                                        SupervisorRegistry supervisorRegistry,
-                                                       @Nullable Worker worker,
+                                                       @Nullable Worker currentWorker,
                                                        @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
             DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
                 .connectTimeout(properties.getConnectTimeout())
@@ -89,8 +107,8 @@ public @interface EnableSupervisor {
                 .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
                 .discoveryServer(supervisorRegistry)
                 .build();
-            WorkerService remote = DiscoveryRestProxy.create(WorkerService.class, discoveryRestTemplate);
-            return new WorkerServiceClient(worker, remote);
+            WorkerService remoteWorkerService = DiscoveryRestProxy.create(WorkerService.class, discoveryRestTemplate);
+            return new WorkerServiceClient(currentWorker, remoteWorkerService);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_JOB_LOCKED)

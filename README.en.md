@@ -61,6 +61,8 @@ distributed-scheduler
 
 ## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
 
+> [Note](https://developer.aliyun.com/mvn/search): if configured aliyun maven central mirror and cannot download, should be removed aliyun mirror configuration
+
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
@@ -80,7 +82,7 @@ distributed-scheduler
 1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
 
 2. Modify configuration files such as Mysql, Redis, Consul, Nacos, Zookeeper, Etcd: [scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
-- If you do not use Redis as a registration center, task distribution and distributed lock, should be exclusive [scheduler-common](scheduler-common/pom.xml) maven dependency `spring-boot-starter-data-redis`
+- if use default localhost configuration([e.g consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file
 - non-web application worker configuration: [worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. Create a job handler class [PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
@@ -103,32 +105,14 @@ distributed-scheduler
     - EnableRedisTaskDispatching use redis to dispatch task
     - EnableHttpTaskDispatching use http to dispatch task
 ```java
-@EnableConfigurationProperties({
-    SupervisorProperties.class,
-    HttpProperties.class,
-    RedisRegistryProperties.class,
-    ConsulRegistryProperties.class,
-    NacosRegistryProperties.class,
-    ZookeeperRegistryProperties.class,
-    EtcdRegistryProperties.class,
-})
 @EnableSupervisor
+@EnableWorker
 @EnableRedisServerRegistry // EnableRedisServerRegistry, EnableConsulServerRegistry, EnableNacosServerRegistry, EnableZookeeperServerRegistry, EnableEtcdServerRegistry
 @EnableRedisTaskDispatching // EnableRedisTaskDispatching, EnableHttpTaskDispatching
-@SpringBootApplication(
-    exclude = {
-        DataSourceAutoConfiguration.class
-    },
-    scanBasePackages = {
-        "cn.ponfee.scheduler.samples.common.configuration",
-        "cn.ponfee.scheduler.samples.supervisor.configuration",
-        "cn.ponfee.scheduler.supervisor",
-    }
-)
-public class SupervisorApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(SupervisorApplication.class, args);
-    }
+public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
+  public static void main(String[] args) {
+    SpringApplication.run(SchedulerApplication.class, args);
+  }
 }
 ```
 
@@ -173,7 +157,7 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 ## Todo List
 
-- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks [WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerRemote.java)
+- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks [WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)
 - [x] Extended registry: Zookeeper, Etcd, Nacos
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB

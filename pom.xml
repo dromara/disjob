@@ -16,13 +16,20 @@
   <version>${revision}</version>
   <packaging>pom</packaging>
 
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+  </repositories>
+
   <!-- 发布到中央仓库的参考文章：
     https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid
     https://liuyanzhao.com/1500353647236747264.html
     https://blog.csdn.net/qq_42651904/article/details/121191238
 
     发布命令：
-      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.8-SNAPSHOT && mvn clean deploy -DskipTests -Dcheckstyle.skip=true -U
+      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.8-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U
       2.1）release交互模式：
           | ```bash
           | mvn release:update-versions \
@@ -31,6 +38,7 @@
           |   -DdevelopmentVersion=1.8-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
+          |   -Prelease \
           |   -Darguments="-Dcheckstyle.skip=true"
           | ```
       2.2）release非交互式：
@@ -41,6 +49,7 @@
           |   -DdevelopmentVersion=1.8-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
+          |   -Prelease \
           |   -Darguments="-Dcheckstyle.skip=true" \
           |   -DreleaseVersion=1.8 \
           |   -Dtag=v1.8 \
@@ -218,7 +227,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- test -->
+    <!-- Test dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -272,24 +281,68 @@
     </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <!-- 1、“https://repo1.maven.org/maven2”与“https://repo.maven.apache.org/maven2”是同一个仓库(central，即mavenCentral)
-           2、central是在“$MAVEN_HOME/lib/maven-model-builder.jar!/org/apache/maven/model/pom-4.0.0.xml”中配置的
-           3、central仓的镜像：https://maven.aliyun.com/repository/central
-           4、central仓和jcenter仓的聚合镜像仓：https://maven.aliyun.com/repository/public
-           5、搜索地址：https://search.maven.org/
-           6、文档：https://developer.aliyun.com/mvn/guide
-      -->
-      <id>central</id>
-      <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-    <!--<repository>
-      2022-02-01后jcenter不再支持下载(已停用)
-      <id>jcenter</id>
-      <url>https://jcenter.bintray.com</url>
-    </repository>-->
-  </repositories>
+  <profiles>
+    <profile>
+      <id>develop</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+    <profile>
+      <id>release</id>
+      <properties>
+        <jacoco.skip>false</jacoco.skip>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.5.3</version>
+            <configuration>
+              <autoVersionSubmodules>true</autoVersionSubmodules>
+              <useReleaseProfile>false</useReleaseProfile>
+              <releaseProfiles>release</releaseProfiles>
+              <generateReleasePoms>false</generateReleasePoms>
+              <tagNameFormat>v@{project.version}</tagNameFormat>
+              <arguments>-DskipTests</arguments>
+              <preparationGoals>clean verify</preparationGoals>
+              <goals>deploy</goals>
+              <checkModificationExcludes>
+                <checkModificationExclude>**/pom.xml</checkModificationExclude>
+              </checkModificationExcludes>
+            </configuration>
+          </plugin>
+          <!-- <plugin>
+            Note: 加上会导致把可执行的jar包deploy到sonatype上
+            Nexus-bug: https://issues.sonatype.org/browse/NEXUS-9138
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            </configuration>
+          </plugin> -->
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
@@ -300,7 +353,7 @@
         <filtering>false</filtering>
       </resource>
       <resource>
-        <!--mybatis xml-->
+        <!-- mybatis xml -->
         <directory>src/main/java</directory>
         <includes>
           <include>**/*.xml</include>
@@ -371,7 +424,7 @@
           <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
           <encoding>${file.encoding}</encoding>
           <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
-          <!--<annotationProcessorPaths>
+          <!-- <annotationProcessorPaths>
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
@@ -392,7 +445,7 @@
               <artifactId>spring-context-indexer</artifactId>
               <version>${spring-framework.version}</version>
             </path>
-          </annotationProcessorPaths>-->
+          </annotationProcessorPaths> -->
         </configuration>
       </plugin>
       <plugin>
@@ -459,50 +512,6 @@
           <doclint>none</doclint>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.3</version>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <useReleaseProfile>false</useReleaseProfile>
-          <releaseProfiles>release</releaseProfiles>
-          <generateReleasePoms>false</generateReleasePoms>
-          <tagNameFormat>v@{project.version}</tagNameFormat>
-          <arguments>-DskipTests</arguments>
-          <preparationGoals>clean verify</preparationGoals>
-          <goals>deploy</goals>
-          <checkModificationExcludes>
-            <checkModificationExclude>**/pom.xml</checkModificationExclude>
-          </checkModificationExcludes>
-        </configuration>
-      </plugin>
-      <!--<plugin>
-        Note: 加上会导致把可执行的jar包deploy到sonatype上
-        Nexus-bug: https://issues.sonatype.org/browse/NEXUS-9138
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <serverId>ossrh</serverId>
-          <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-          <autoReleaseAfterClose>false</autoReleaseAfterClose>
-        </configuration>
-      </plugin>-->
     </plugins>
 
   </build>
