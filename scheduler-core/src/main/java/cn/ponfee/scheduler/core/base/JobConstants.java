@@ -51,23 +51,28 @@ public class JobConstants {
     public static final String HTTP_KEY_PREFIX = SCHEDULER_KEY_PREFIX + ".http";
 
     /**
+     * Spring container bean name prefix.
+     */
+    public static final String SPRING_BEAN_NAME_PREFIX = SCHEDULER_KEY_PREFIX + ".bean";
+
+    /**
      * Http serialize and deserialize object mapper spring bean name.
      */
-    public static final String SPRING_BEAN_NAME_OBJECT_MAPPER = SCHEDULER_KEY_PREFIX + ".object-mapper";
+    public static final String SPRING_BEAN_NAME_OBJECT_MAPPER = SPRING_BEAN_NAME_PREFIX + ".object-mapper";
 
     /**
      * Current supervisor spring bean name
      */
-    public static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = SCHEDULER_KEY_PREFIX + ".bean.currentSupervisor";
-
-    /**
-     * Current worker spring bean name
-     */
-    public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SCHEDULER_KEY_PREFIX + ".bean.currentWorker";
+    public static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = SPRING_BEAN_NAME_PREFIX + ".current-supervisor";
 
     /**
      * Timing wheel spring bean name
      */
-    public static final String SPRING_BEAN_NAME_TIMING_WHEEL = SCHEDULER_KEY_PREFIX + ".bean.timingWheel";
+    public static final String SPRING_BEAN_NAME_TIMING_WHEEL = SPRING_BEAN_NAME_PREFIX + ".timing-wheel";
+
+    /**
+     * Current worker spring bean name
+     */
+    public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SPRING_BEAN_NAME_PREFIX + ".current-worker";
 
 }

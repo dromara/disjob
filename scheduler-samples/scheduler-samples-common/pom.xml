@@ -35,6 +35,13 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-core</artifactId>
     </dependency>
+
+    <!-- Registry: select one implementation for server registry -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-registry-redis</artifactId>
+    </dependency>
+    <!--
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-redis</artifactId>
@@ -55,6 +62,14 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-registry-etcd</artifactId>
     </dependency>
+    -->
+
+    <!-- Dispatching: select one implementation for task dispatching -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>scheduler-dispatch-redis</artifactId>
+    </dependency>
+    <!--
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-dispatch-redis</artifactId>
@@ -63,5 +78,7 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>scheduler-dispatch-http</artifactId>
     </dependency>
+    -->
   </dependencies>
+
 </project>

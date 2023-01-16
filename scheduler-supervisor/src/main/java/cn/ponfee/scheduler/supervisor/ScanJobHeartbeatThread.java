@@ -110,8 +110,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             refreshNextTriggerTime(job, job.getNextTriggerTime(), now);
 
             // 3、update and save data
-            boolean result = jobManager.updateAndSave(job, track, tasks);
-            if (result) {
+            if (jobManager.updateAndSave(job, track, tasks)) {
                 // 4、dispatch job task
                 jobManager.dispatch(job, track, tasks);
             }

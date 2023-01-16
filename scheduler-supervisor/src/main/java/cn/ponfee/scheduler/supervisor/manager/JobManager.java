@@ -11,7 +11,9 @@ package cn.ponfee.scheduler.supervisor.manager;
 import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
+import cn.ponfee.scheduler.common.base.tuple.Tuple3;
 import cn.ponfee.scheduler.common.spring.MarkRpcController;
+import cn.ponfee.scheduler.common.spring.TransactionUtils;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
@@ -49,6 +51,38 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
 
 /**
  * Manage Schedule job.
+ *
+ * <p>Spring事务提交后执行一些后置操作
+ *
+ * <pre>方案1: {@code
+ *  TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+ *      @Override
+ *      public void afterCommit() {
+ *          dispatch(job, track, tasks);
+ *      }
+ *  });
+ * }</pre>
+ *
+ * <pre>方案2: {@code
+ *  @Resource
+ *  private ApplicationEventPublisher eventPublisher;
+ *
+ *  private static class DispatchTaskEvent extends ApplicationEvent {
+ *      public DispatchTaskEvent(Runnable source) {
+ *          super(source);
+ *      }
+ *  }
+ *
+ *  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+ *  private void handle(DispatchTaskEvent event) {
+ *      ((Runnable) event.getSource()).run();
+ *  }
+ *
+ *  {
+ *    // some db operation code ....
+ *    eventPublisher.publishEvent(new DispatchTaskEvent(() -> dispatch(job, track, tasks)));
+ *  }
+ * }</pre>
  *
  * @author Ponfee
  */
@@ -272,7 +306,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Assert.isTrue(row >= AFFECTED_ONE_ROW, "Sched task state update failed, track_id=" + trackId);
 
         if (taskTargetState0 == ExecuteState.WAITING) {
-            dispatch(trackId, row);
+            Tuple3<SchedJob, SchedTrack, List<SchedTask>> params = buildDispatchParams(trackId, row);
+            TransactionUtils.doAfterTransactionCommit(() -> dispatch(params.a, params.b, params.c));
         }
     }
 
@@ -302,7 +337,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Assert.state(row == tasks.size(), "Insert sched task fail: " + tasks);
 
         // 3、dispatch job task
-        taskDispatcher.dispatch(job, track, tasks);
+        TransactionUtils.doAfterTransactionCommit(() -> dispatch(job, track, tasks));
     }
 
     /**
@@ -473,7 +508,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             }
         } else {
             // dispatch and pause executing tasks
-            taskDispatcher.dispatch(executingTasks);
+            TransactionUtils.doAfterTransactionCommit(() -> dispatch(executingTasks));
         }
 
         return true;
@@ -572,7 +607,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             }
         } else {
             // dispatch and cancel executing tasks
-            taskDispatcher.dispatch(executingTasks);
+            TransactionUtils.doAfterTransactionCommit(() -> dispatch(executingTasks));
         }
 
         return true;
@@ -651,7 +686,8 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Assert.state(row >= AFFECTED_ONE_ROW, "Resume sched task failed.");
 
         // dispatch task
-        dispatch(trackId, row);
+        Tuple3<SchedJob, SchedTrack, List<SchedTask>> params = buildDispatchParams(trackId, row);
+        TransactionUtils.doAfterTransactionCommit(() -> dispatch(params.a, params.b, params.c));
 
         return true;
     }
@@ -719,15 +755,12 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers());
     }
 
-    /**
-     * Dispatch task list to worker.
-     *
-     * @param job   the sched job
-     * @param track the sched track
-     * @param tasks the list of sched task
-     */
-    public void dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
-        taskDispatcher.dispatch(job, track, tasks);
+    public boolean dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
+        return taskDispatcher.dispatch(job, track, tasks);
+    }
+
+    public boolean dispatch(List<ExecuteParam> tasks) {
+        return taskDispatcher.dispatch(tasks);
     }
 
     // ------------------------------------------------------------------private methods
@@ -856,7 +889,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         trackMapper.insert(retryTrack);
         taskMapper.insertBatch(tasks);
 
-        taskDispatcher.dispatch(schedJob, retryTrack, tasks);
+        TransactionUtils.doAfterTransactionCommit(() -> dispatch(schedJob, retryTrack, tasks));
     }
 
     /**
@@ -893,7 +926,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 trackMapper.insert(track);
                 taskMapper.insertBatch(tasks);
 
-                taskDispatcher.dispatch(childJob, track, tasks);
+                TransactionUtils.doAfterTransactionCommit(() -> dispatch(childJob, track, tasks));
             } catch (Exception e) {
                 LOG.error("Depend job split failed: " + childJob, e);
             }
@@ -922,7 +955,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return executingTasks;
     }
 
-    private void dispatch(long trackId, int expectTaskSize) {
+    private Tuple3<SchedJob, SchedTrack, List<SchedTask>> buildDispatchParams(long trackId, int expectTaskSize) {
         SchedTrack track = trackMapper.getByTrackId(trackId);
         SchedJob job = jobMapper.getByJobId(track.getJobId());
         List<SchedTask> waitingTasks = taskMapper.getByTrackId(trackId)
@@ -930,7 +963,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
             .collect(Collectors.toList());
         Assert.isTrue(waitingTasks.size() == expectTaskSize, "Dispatching tasks size inconsistent, expect=" + expectTaskSize + ", actual=" + waitingTasks.size());
-        taskDispatcher.dispatch(job, track, waitingTasks);
+        return Tuple3.of(job, track, waitingTasks);
     }
 
     private void parseTriggerConfig(SchedJob job, Date date) {

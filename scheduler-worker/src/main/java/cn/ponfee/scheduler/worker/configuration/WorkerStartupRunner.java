@@ -18,12 +18,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.core.Ordered;
 
 /**
  * Worker startup runner.
  *
  * @author Ponfee
  */
+@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartupRunner.class);

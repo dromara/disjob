@@ -59,20 +59,20 @@ import java.lang.annotation.*;
 @Documented
 @EnableConfigurationProperties(SupervisorProperties.class)
 @Import({
-    EnableSupervisor.EnableComponentScan.class,
     EnableSupervisor.EnableHttpProperties.class,
     EnableSupervisor.EnableSupervisorConfiguration.class,
+    EnableSupervisor.EnableComponentScan.class,
     SupervisorStartupRunner.class,
 })
 public @interface EnableSupervisor {
 
-    @ComponentScan(basePackageClasses = SupervisorStartup.class)
-    class EnableComponentScan {
-    }
-
     @ConditionalOnMissingBean(HttpProperties.class)
     @EnableConfigurationProperties(HttpProperties.class)
     class EnableHttpProperties {
+    }
+
+    @ComponentScan(basePackageClasses = SupervisorStartup.class)
+    class EnableComponentScan {
     }
 
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)

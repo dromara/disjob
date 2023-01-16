@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -56,8 +57,8 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
      *
      * @return ObjectMapper
      */
-    @Bean({"objectMapper", JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER})
     @Order(Ordered.HIGHEST_PRECEDENCE)
+    @Bean({"objectMapper", JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER})
     @Primary
     public ObjectMapper objectMapper() {
         return Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
@@ -79,6 +80,7 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
         return messageConverter;
     }
 
+    @ConditionalOnBean(HttpProperties.class)
     @Bean
     public RestTemplate restTemplate(HttpProperties properties) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();

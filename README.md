@@ -61,7 +61,7 @@ distributed-scheduler
 
 ## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
 
-> [注意](https://developer.aliyun.com/mvn/search)：如果本地maven settings.xml配置了aliyun镜像仓库导致无法下载，需要删除aliyun maven mirror的配置
+> [**注意**](https://developer.aliyun.com/mvn/search): **最近aliyun那边的镜像仓受Maven中央仓库网络限制，部分依赖可能会从中央仓库同步文件失败，如果依赖查找不到(即无法下载)请在`settings.xml`文件中删除aliyun mirror的配置(不建议使用aliyun maven mirror)**
 
 ```xml
 <dependency>
@@ -82,33 +82,33 @@ distributed-scheduler
 1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
 
 2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
-  - 如果使用默认的本地配置([如consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件
-  - 不依赖Web容器的Worker应用的配置文件是在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+  - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件
+  - 不依赖Web容器的Worker应用的配置文件在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. 编写自己的任务处理器[PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
 4. 启动[scheduler-samples/](scheduler-samples/)目录下的各应用，包括：
+
 ```Plain Text
  1）scheduler-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
  2）scheduler-samples-separately-supervisor         # Supervisor单独部署的Spring boot应用
  3）scheduler-samples-separately-worker-springboot  # Worker单独部署的Spring boot应用
  4）scheduler-samples-separately-worker-frameless   # Worker单独部署，不依赖Web容器，直接运行Main方法启动
 ```
+
 - 已配置不同端口，可同时启动
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
-- 注册中心或任务分发的类型选择是在Spring boot启动类中切换注解
-  - EnableRedisServerRegistry启用Redis做为注册中心([内置redis-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java))
-  - EnableConsulServerRegistry启用Consul做为注册中心([内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
-  - EnableNacosServerRegistry启用Nacos做为注册中心([内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java))
-  - EnableEtcdServerRegistry启用Etcd做为注册中心([内置etcd-server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))
-  - EnableZookeeperServerRegistry启用Zookeeper做为注册中心([内置zookeeper-server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java))
-  - EnableRedisTaskDispatching启用Redis做任务分发
-  - EnableHttpTaskDispatching启用Http做任务分发
+- 注册中心及分发任务的具体实现：在[pom文件](scheduler-samples/scheduler-samples-common/pom.xml)中引入指定的依赖即可
+- 项目已内置一些本地启动的server(部分依赖本地docker)
+  - [内置redis-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java)
+  - [内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)
+  - [内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)
+  - [内置etcd-server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
+  - [内置zookeeper-server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)
+
 ```java
 @EnableSupervisor
 @EnableWorker
-@EnableRedisServerRegistry // EnableRedisServerRegistry, EnableConsulServerRegistry, EnableNacosServerRegistry, EnableZookeeperServerRegistry, EnableEtcdServerRegistry
-@EnableRedisTaskDispatching // EnableRedisTaskDispatching, EnableHttpTaskDispatching
 public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
   public static void main(String[] args) {
     SpringApplication.run(SchedulerApplication.class, args);
@@ -119,6 +119,7 @@ public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
 5. 执行以下curl命令添加任务(选择任一运行中的Supervisor应用替换`localhost:8081`)
   - `triggerConf`修改为大于当前时间的日期值以便即将触发(如当前时间的下一分钟)
   - `jobHandler`为刚编写的任务处理器类的全限定名（也支持直接贴源代码）
+
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/add' \
 --header 'Content-Type: application/json' \
@@ -134,6 +135,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 ```
 
 6. 查询库表验证任务是否添加成功，以及可查看任务的执行信息：
+
 ```sql
 -- 刚CURL添加的任务会落入该表中
 SELECT * FROM sched_job;
@@ -145,7 +147,9 @@ SELECT * from sched_task;
 -- 可执行以下SQL让该JOB再次触发执行
 UPDATE sched_job SET job_state=1, misfire_strategy=3, last_trigger_time=NULL, next_trigger_time=1664944641000 WHERE job_name='PrimeCountJobHandler';
 ```
+
 - 也可执行以下CURL命令手动触发执行一次(选择一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
+
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236701614080' \
 --header 'Content-Type: application/json'

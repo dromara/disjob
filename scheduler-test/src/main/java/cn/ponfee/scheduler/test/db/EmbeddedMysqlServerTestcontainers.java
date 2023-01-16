@@ -55,9 +55,11 @@ public class EmbeddedMysqlServerTestcontainers {
             //mySQLContainer.execInContainer("mysqld --skip-grant-tables");
 
             /*
-            // the script-path only use for log, so here set a empty string
-            String scriptPath = "", scriptContent = DBTools.loadScript();
-            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, "SELECT 1"), scriptPath, scriptContent);
+            // the script-path only use for log, so here set to empty string
+            String scriptPath = "";
+            String jdbcUrlParameter = "?useSSL=false&connectTimeout=2000&socketTimeout=5000";
+            String scriptContent = DBTools.loadScript();
+            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, scriptContent);
             */
 
             JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, DB_NAME, DB_NAME);

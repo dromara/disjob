@@ -48,8 +48,8 @@ import java.lang.annotation.*;
 @Documented
 @EnableConfigurationProperties(WorkerProperties.class)
 @Import({
-    EnableWorker.EnableWorkerConfiguration.class,
     EnableWorker.EnableHttpProperties.class,
+    EnableWorker.EnableWorkerConfiguration.class,
     WorkerStartupRunner.class,
 })
 public @interface EnableWorker {
@@ -63,6 +63,15 @@ public @interface EnableWorker {
     class EnableWorkerConfiguration {
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
+        @ConditionalOnMissingBean
+        @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
+        public TaskTimingWheel timingWheel(WorkerProperties config) {
+            return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
+        }
+
+        @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+        @Order(Ordered.HIGHEST_PRECEDENCE)
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         public Worker currentWorker(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
@@ -93,14 +102,6 @@ public @interface EnableWorker {
                 .discoveryServer(workerRegistry)
                 .build();
             return DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        @Order(Ordered.HIGHEST_PRECEDENCE)
-        @ConditionalOnMissingBean
-        @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
-        public TaskTimingWheel timingWheel(WorkerProperties config) {
-            return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)

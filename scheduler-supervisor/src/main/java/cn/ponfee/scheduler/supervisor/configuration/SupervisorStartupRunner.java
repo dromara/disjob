@@ -20,6 +20,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.core.Ordered;
 
 import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEAN_NAME_SCAN_JOB_LOCKED;
 import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRACK_LOCKED;
@@ -29,6 +31,7 @@ import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEA
  *
  * @author Ponfee
  */
+@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 public class SupervisorStartupRunner implements ApplicationRunner, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartupRunner.class);

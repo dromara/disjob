@@ -61,7 +61,7 @@ distributed-scheduler
 
 ## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
 
-> [Note](https://developer.aliyun.com/mvn/search): if configured aliyun maven central mirror and cannot download, should be removed aliyun mirror configuration
+> [Note](https://developer.aliyun.com/mvn/search): If it cannot download, please remove **aliyun maven central mirror** configuration from the `settings.xml` file.
 
 ```xml
 <dependency>
@@ -88,27 +88,27 @@ distributed-scheduler
 3. Create a job handler class [PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
 4. Startup there applications [scheduler-samples/](scheduler-samples/): 
+
 ```Plain Text
  1）scheduler-samples-merged                        # Applicaion of merged deployment supervisor and worker
  2）scheduler-samples-separately-supervisor         # Spring boot application of only deployment supervisor
  3）scheduler-samples-separately-worker-springboot  # Spring boot application of only deployment worker
  4）scheduler-samples-separately-worker-frameless   # Non-web application of only deployment worker
 ```
+
 - Different ports have been configured and can be started at the same time
 - You can run the startup class in the development tool, or directly run the built jar package
-- The type selection of the registry or task distribution is to switch annotations in the Spring boot startup class
-    - EnableRedisServerRegistry use redis as a registry([embed redis server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java))
-    - EnableConsulServerRegistry use consul as a registry([embed consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java))
-    - EnableNacosServerRegistry use nacos as a registry([embed nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java))
-    - EnableEtcdServerRegistry use etcd as a registry([embed etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java))
-    - EnableZookeeperServerRegistry use zookeeper as a registry([embed zookeeper server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java))
-    - EnableRedisTaskDispatching use redis to dispatch task
-    - EnableHttpTaskDispatching use http to dispatch task
+- select registry center and dispatch mode [use by pom](scheduler-samples/scheduler-samples-common/pom.xml) import
+- Embedded same servers can direct startup on local
+    - [embedded redis server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java)
+    - [embedded consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)
+    - [embedded nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)
+    - [embedded etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
+    - [embedded zookeeper server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)
+
 ```java
 @EnableSupervisor
 @EnableWorker
-@EnableRedisServerRegistry // EnableRedisServerRegistry, EnableConsulServerRegistry, EnableNacosServerRegistry, EnableZookeeperServerRegistry, EnableEtcdServerRegistry
-@EnableRedisTaskDispatching // EnableRedisTaskDispatching, EnableHttpTaskDispatching
 public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
   public static void main(String[] args) {
     SpringApplication.run(SchedulerApplication.class, args);
@@ -119,6 +119,7 @@ public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
 5. Execute the following curl command to add tasks (select any running Supervisor application to replace `localhost:8081`)
 - `triggerConf` modified to  next minute of the current time
 - `jobHandler` is the fully qualified name of the newly written task processor class (also supports source code)
+
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/add' \
 --header 'Content-Type: application/json' \
@@ -134,6 +135,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 ```
 
 6. Query the database table to verify whether the task is added successfully, and view the execution information of the task:
+
 ```sql
 -- Query the sched_job data added by curl  
 SELECT * FROM sched_job;
@@ -145,7 +147,9 @@ SELECT * from sched_task;
 -- The following SQL can be executed to trigger the execution of the JOB again
 UPDATE sched_job SET job_state=1, misfire_strategy=3, last_trigger_time=NULL, next_trigger_time=1664944641000 WHERE job_name='PrimeCountJobHandler';
 ```
+
 - You can also execute the following CURL command to manually trigger execution (select a supervisor to replace `localhost:8081`)
+
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236701614080' \
 --header 'Content-Type: application/json'
