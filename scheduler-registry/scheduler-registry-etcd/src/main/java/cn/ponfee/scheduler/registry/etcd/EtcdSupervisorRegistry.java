@@ -20,8 +20,8 @@ import cn.ponfee.scheduler.registry.etcd.configuration.EtcdRegistryProperties;
  */
 public class EtcdSupervisorRegistry extends EtcdServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public EtcdSupervisorRegistry(String namespace, EtcdRegistryProperties config) {
-        super(namespace, config);
+    public EtcdSupervisorRegistry(EtcdRegistryProperties config) {
+        super(config);
     }
 
 }

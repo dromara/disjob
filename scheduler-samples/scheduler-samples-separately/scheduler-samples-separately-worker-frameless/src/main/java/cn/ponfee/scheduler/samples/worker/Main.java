@@ -74,9 +74,8 @@ public class Main {
 
         StringRedisTemplate stringRedisTemplate = AbstractRedisTemplateCreator.create("redis.", props).getStringRedisTemplate();
 
-        String namespace = props.getString(JobConstants.SCHEDULER_NAMESPACE);
-        WorkerRegistry workerRegistry = createRedisWorkerRegistry(namespace, stringRedisTemplate, JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis", props);
-        //WorkerRegistry workerRegistry = createConsulWorkerRegistry(namespace, JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".consul", props);
+        WorkerRegistry workerRegistry = createRedisWorkerRegistry(stringRedisTemplate, JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis", props);
+        //WorkerRegistry workerRegistry = createConsulWorkerRegistry(JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".consul", props);
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
             .connectTimeout(props.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.connect-timeout", 2000))
@@ -149,22 +148,24 @@ public class Main {
         */
     }
 
-    private static WorkerRegistry createRedisWorkerRegistry(String namespace, StringRedisTemplate redisTemplate,
+    private static WorkerRegistry createRedisWorkerRegistry(StringRedisTemplate redisTemplate,
                                                             String keyPrefix, YamlProperties props) {
         RedisRegistryProperties config = new RedisRegistryProperties();
+        config.setNamespace(props.getString(keyPrefix + ".namespace"));
         config.setSessionTimeoutMs(props.getLong(keyPrefix + ".session-timeout-ms", 30000));
-        config.setSessionTimeoutMs(props.getLong(keyPrefix + ".registry-period-ms", 3000));
-        config.setSessionTimeoutMs(props.getLong(keyPrefix + ".discovery-period-ms", 3000));
-        return new RedisWorkerRegistry(namespace, redisTemplate, config);
+        config.setRegistryPeriodMs(props.getLong(keyPrefix + ".registry-period-ms", 3000));
+        config.setDiscoveryPeriodMs(props.getLong(keyPrefix + ".discovery-period-ms", 3000));
+        return new RedisWorkerRegistry(redisTemplate, config);
     }
 
     /*
-    private static WorkerRegistry createConsulWorkerRegistry(String namespace, String keyPrefix, YamlProperties props) {
+    private static WorkerRegistry createConsulWorkerRegistry(String keyPrefix, YamlProperties props) {
         ConsulRegistryProperties config = new ConsulRegistryProperties();
+        config.setNamespace(props.getString(keyPrefix + ".namespace"));
         config.setHost(props.getString(keyPrefix + ".host", "localhost"));
-        config.setPort(props.getInt   (keyPrefix + ".port", 8500));
+        config.setPort(props.getInt(keyPrefix + ".port", 8500));
         config.setToken(props.getString(keyPrefix + ".token"));
-        return new ConsulWorkerRegistry(namespace, config);
+        return new ConsulWorkerRegistry(config);
     }
     */
 

@@ -17,8 +17,7 @@ import cn.ponfee.scheduler.core.param.ExecuteParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
@@ -96,12 +95,12 @@ public class CommonTest {
 
         System.out.println("-----\n");
         ints = IntStream.range(0, 256).toArray();
-        System.out.println("origin: "+Arrays.toString(ints));
+        System.out.println("origin: " + Arrays.toString(ints));
         Collects.partition(ints, 5)
             .stream()
-            .peek(e -> System.out.println("partitioned: "+Arrays.toString(e)))
+            .peek(e -> System.out.println("partitioned: " + Arrays.toString(e)))
             .skip(4)
-            .peek(e -> System.out.println("last: "+Arrays.toString(e)))
+            .peek(e -> System.out.println("last: " + Arrays.toString(e)))
             .forEach(e -> Assertions.assertTrue(Arrays.equals(new int[]{205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255}, e)));
     }
 
@@ -127,6 +126,39 @@ public class CommonTest {
             Assertions.assertTrue(Collects.getLast(split).b == number - 1);
             Assertions.assertTrue(Collects.getLast(Numbers.partition(number, size)).b == number - 1);
         }
+    }
+
+    @Test
+    public void testMap() {
+        Map<String, Integer> map1 = new LinkedHashMap<>();
+        map1.put("a", 1);
+        map1.put("b", 2);
+        map1.put("c", 3);
+        map1.put("d", 3);
+        Assertions.assertEquals("{a=1, b=2, c=3, d=3}", map1.toString());
+
+        map1.put("c", 5);
+        Assertions.assertEquals("{a=1, b=2, c=5, d=3}", map1.toString());
+
+        Collection<Integer> values1 = map1.values();
+
+        Assertions.assertEquals("[1, 2, 5, 3]", values1.toString());
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> values1.add(5));
+
+        values1.remove(5);
+        Assertions.assertEquals("[1, 2, 3]", values1.toString());
+
+        map1.put("e", 7);
+        Assertions.assertEquals("[1, 2, 3, 7]", values1.toString());
+
+        // --------------------------------------------------map2
+        Map<String, Integer> map2 = Collections.unmodifiableMap(map1);
+        Assertions.assertEquals("{a=1, b=2, d=3, e=7}", map2.toString());
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> map2.put("f", 8));
+
+        Collection<Integer> values2 = map2.values();
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> values2.add(10));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> values2.remove(1));
     }
 
 }

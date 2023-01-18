@@ -32,8 +32,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     private final CuratorFrameworkClient client;
 
-    protected ZookeeperServerRegistry(String namespace, ZookeeperRegistryProperties config) {
-        super(namespace, '/');
+    protected ZookeeperServerRegistry(ZookeeperRegistryProperties config) {
+        super(config.getNamespace(), '/');
         // zookeeper parent path must start with "/"
         String registryRootPath0 = separator + registryRootPath;
         String discoveryRootPath0 = separator + discoveryRootPath;

@@ -1,3 +1,5 @@
 distributed.scheduler.registry.consul:
+  namespace: consul_namespace
   host: localhost
   port: 8500
+  token:

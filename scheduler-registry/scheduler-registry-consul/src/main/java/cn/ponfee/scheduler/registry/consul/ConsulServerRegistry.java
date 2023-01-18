@@ -22,6 +22,7 @@ import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,11 +60,11 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     private final ConsulSubscriberThread   consulSubscriberThread;
 
-    protected ConsulServerRegistry(String namespace, ConsulRegistryProperties config) {
-        super(namespace, ':');
+    protected ConsulServerRegistry(ConsulRegistryProperties config) {
+        super(config.getNamespace(), ':');
 
         this.client = new ConsulClient(config.getHost(), config.getPort());
-        this.token = config.getToken();
+        this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();
 
         int period = Math.max(CHECK_PASS_INTERVAL_SECONDS, 1);
         this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("consul_server_registry", true));

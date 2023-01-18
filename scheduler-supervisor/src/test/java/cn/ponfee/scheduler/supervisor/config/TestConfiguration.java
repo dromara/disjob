@@ -46,7 +46,7 @@ public class TestConfiguration {
     @Bean
     public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate,
                                                  RedisRegistryProperties config) {
-        return new RedisSupervisorRegistry("", stringRedisTemplate, config);
+        return new RedisSupervisorRegistry(stringRedisTemplate, config);
     }
 
     @Bean

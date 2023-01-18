@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.registry.redis.configuration;
 
 import cn.ponfee.scheduler.core.base.JobConstants;
+import cn.ponfee.scheduler.registry.AbstractRegistryProperties;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -17,9 +18,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author Ponfee
  */
-@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis")
 @Data
-public class RedisRegistryProperties {
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis")
+public class RedisRegistryProperties extends AbstractRegistryProperties {
+    private static final long serialVersionUID = -6079627443420731390L;
 
     /**
      * Session timeout milliseconds

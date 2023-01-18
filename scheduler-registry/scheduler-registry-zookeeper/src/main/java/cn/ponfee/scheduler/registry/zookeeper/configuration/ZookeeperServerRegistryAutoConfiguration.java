@@ -1,6 +1,5 @@
 package cn.ponfee.scheduler.registry.zookeeper.configuration;
 
-import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -8,7 +7,6 @@ import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.configuration.MarkServerRegistryAutoConfiguration;
 import cn.ponfee.scheduler.registry.zookeeper.ZookeeperSupervisorRegistry;
 import cn.ponfee.scheduler.registry.zookeeper.ZookeeperWorkerRegistry;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,9 +26,8 @@ public class ZookeeperServerRegistryAutoConfiguration extends MarkServerRegistry
     @ConditionalOnBean(Supervisor.class)
     @ConditionalOnMissingBean
     @Bean
-    public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                                 ZookeeperRegistryProperties config) {
-        return new ZookeeperSupervisorRegistry(namespace, config);
+    public SupervisorRegistry supervisorRegistry(ZookeeperRegistryProperties config) {
+        return new ZookeeperSupervisorRegistry(config);
     }
 
     /**
@@ -39,9 +36,8 @@ public class ZookeeperServerRegistryAutoConfiguration extends MarkServerRegistry
     @ConditionalOnBean(Worker.class)
     @ConditionalOnMissingBean
     @Bean
-    public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                         ZookeeperRegistryProperties config) {
-        return new ZookeeperWorkerRegistry(namespace, config);
+    public WorkerRegistry workerRegistry(ZookeeperRegistryProperties config) {
+        return new ZookeeperWorkerRegistry(config);
     }
 
 }

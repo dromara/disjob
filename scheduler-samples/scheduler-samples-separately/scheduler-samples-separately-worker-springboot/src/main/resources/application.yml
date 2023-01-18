@@ -1,3 +1,2 @@
 server.port: 8083
-distributed.scheduler.namespace: test_namespace
-spring.profiles.include: web,worker,redis
+spring.profiles.include: web,worker,redis,consul

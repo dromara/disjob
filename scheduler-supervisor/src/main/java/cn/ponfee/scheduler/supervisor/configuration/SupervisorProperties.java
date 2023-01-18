@@ -37,6 +37,11 @@ public class SupervisorProperties {
      */
     private long scanRunningTrackPeriodMs = 30000;
 
+    /**
+     * Force use local worker service client.
+     */
+    private boolean forceLocalWorkerService = false;
+
     public void check() {
         Assert.isTrue(scanTriggeringJobPeriodMs > 0, "Scan triggering job period ms must be greater than 0.");
         Assert.isTrue(scanWaitingTrackPeriodMs > 0, "Scan waiting track period ms must be greater than 0.");

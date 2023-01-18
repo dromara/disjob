@@ -6,22 +6,27 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.registry.nacos;
+package cn.ponfee.scheduler.registry;
 
-import cn.ponfee.scheduler.core.base.Supervisor;
-import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.registry.WorkerRegistry;
-import cn.ponfee.scheduler.registry.nacos.configuration.NacosRegistryProperties;
+import cn.ponfee.scheduler.common.base.ToJsonString;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
 
 /**
- * Registry worker based nacos.
+ * Abstract registry properties definition.
  *
  * @author Ponfee
  */
-public class NacosWorkerRegistry extends NacosServerRegistry<Worker, Supervisor> implements WorkerRegistry {
+@Getter
+@Setter
+public abstract class AbstractRegistryProperties extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -4967408535982883608L;
 
-    public NacosWorkerRegistry(NacosRegistryProperties config) {
-        super(config);
-    }
+    /**
+     * Registry namespace
+     */
+    private String namespace;
 
 }

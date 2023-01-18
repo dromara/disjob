@@ -8,8 +8,8 @@
 
 package cn.ponfee.scheduler.registry.zookeeper.configuration;
 
-import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.core.base.JobConstants;
+import cn.ponfee.scheduler.registry.AbstractRegistryProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -24,7 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".zookeeper")
 @Getter
 @Setter
-public class ZookeeperRegistryProperties extends ToJsonString implements java.io.Serializable {
+public class ZookeeperRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -8395535372974631095L;
 
     private String connectString = "localhost:2181";

@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.registry.etcd.configuration;
 
 import cn.ponfee.scheduler.core.base.JobConstants;
+import cn.ponfee.scheduler.registry.AbstractRegistryProperties;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,9 +21,10 @@ import java.util.Arrays;
  *
  * @author Ponfee
  */
-@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".etcd")
 @Data
-public class EtcdRegistryProperties {
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".etcd")
+public class EtcdRegistryProperties extends AbstractRegistryProperties {
+    private static final long serialVersionUID = -7448688693230439783L;
 
     /**
      * Server endpoints, multiple addresses separated by ","

@@ -21,8 +21,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  */
 public class RedisSupervisorRegistry extends RedisServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public RedisSupervisorRegistry(String namespace, StringRedisTemplate stringRedisTemplate, RedisRegistryProperties config) {
-        super(namespace, stringRedisTemplate, config);
+    public RedisSupervisorRegistry(StringRedisTemplate stringRedisTemplate, RedisRegistryProperties config) {
+        super(stringRedisTemplate, config);
     }
 
 }

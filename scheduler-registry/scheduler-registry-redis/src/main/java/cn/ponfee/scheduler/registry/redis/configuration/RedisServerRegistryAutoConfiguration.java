@@ -1,6 +1,5 @@
 package cn.ponfee.scheduler.registry.redis.configuration;
 
-import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -8,7 +7,6 @@ import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.configuration.MarkServerRegistryAutoConfiguration;
 import cn.ponfee.scheduler.registry.redis.RedisSupervisorRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,10 +34,9 @@ public class RedisServerRegistryAutoConfiguration extends MarkServerRegistryAuto
     @ConditionalOnBean(Supervisor.class) // 如果注解没有入参，则默认以方法的返回类型判断，即容器中已存在类型为SupervisorRegistry的实例才创建
     @ConditionalOnMissingBean            // 如果注解没有入参，则默认以方法的返回类型判断，即容器中不存在类型为SupervisorRegistry的实例才创建
     @Bean
-    public SupervisorRegistry supervisorRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                                 StringRedisTemplate stringRedisTemplate,
+    public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate,
                                                  RedisRegistryProperties config) {
-        return new RedisSupervisorRegistry(namespace, stringRedisTemplate, config);
+        return new RedisSupervisorRegistry(stringRedisTemplate, config);
     }
 
     /**
@@ -48,10 +45,9 @@ public class RedisServerRegistryAutoConfiguration extends MarkServerRegistryAuto
     @ConditionalOnBean(Worker.class)
     @ConditionalOnMissingBean
     @Bean
-    public WorkerRegistry workerRegistry(@Value("${" + JobConstants.SCHEDULER_NAMESPACE + ":}") String namespace,
-                                         StringRedisTemplate stringRedisTemplate,
+    public WorkerRegistry workerRegistry(StringRedisTemplate stringRedisTemplate,
                                          RedisRegistryProperties config) {
-        return new RedisWorkerRegistry(namespace, stringRedisTemplate, config);
+        return new RedisWorkerRegistry(stringRedisTemplate, config);
     }
 
 }

@@ -20,8 +20,8 @@ import cn.ponfee.scheduler.registry.nacos.configuration.NacosRegistryProperties;
  */
 public class NacosSupervisorRegistry extends NacosServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public NacosSupervisorRegistry(String namespace, NacosRegistryProperties config) {
-        super(namespace, config);
+    public NacosSupervisorRegistry(NacosRegistryProperties config) {
+        super(config);
     }
 
 }

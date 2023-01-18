@@ -66,8 +66,8 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
      */
     private volatile CloseableClient keepAlive;
 
-    protected EtcdServerRegistry(String namespace, EtcdRegistryProperties config) {
-        super(namespace, '/');
+    protected EtcdServerRegistry(EtcdRegistryProperties config) {
+        super(config.getNamespace(), '/');
         this.ttl = config.getSessionTimeoutMs() / 2000;
 
         CountDownLatch latch = new CountDownLatch(1);

@@ -15,7 +15,6 @@ import cn.ponfee.scheduler.core.handle.JobHandlerUtils;
 import cn.ponfee.scheduler.core.handle.SplitTask;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Worker service client
@@ -36,12 +35,16 @@ public class WorkerServiceClient {
         }
     };
 
-    private final Worker currentWorker;
     private final WorkerService remoteWorkerService;
+    private final String currentGroup;
 
-    public WorkerServiceClient(Worker currentWorker, WorkerService remoteWorkerService) {
-        this.currentWorker = currentWorker;
-        this.remoteWorkerService = Objects.requireNonNull(remoteWorkerService);
+    public WorkerServiceClient() {
+        this(null, null);
+    }
+
+    public WorkerServiceClient(WorkerService remoteWorkerService, Worker currentWorker) {
+        this.remoteWorkerService = remoteWorkerService;
+        this.currentGroup = currentWorker == null ? null : currentWorker.getGroup();
     }
 
     public boolean verify(String group, String jobHandler, String jobParam) {
@@ -55,7 +58,7 @@ public class WorkerServiceClient {
     // ------------------------------------------------------------private methods
 
     private WorkerService get(String group) {
-        return (currentWorker != null && group.equals(currentWorker.getGroup()))
+        return (remoteWorkerService == null || group.equals(currentGroup))
             ? LOCAL_WORKER_SERVICE
             : remoteWorkerService;
     }

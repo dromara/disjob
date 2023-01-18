@@ -20,8 +20,8 @@ import cn.ponfee.scheduler.registry.consul.configuration.ConsulRegistryPropertie
  */
 public class ConsulWorkerRegistry extends ConsulServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public ConsulWorkerRegistry(String namespace, ConsulRegistryProperties config) {
-        super(namespace, config);
+    public ConsulWorkerRegistry(ConsulRegistryProperties config) {
+        super(config);
     }
 
 }

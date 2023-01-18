@@ -1,3 +1,2 @@
 server.port: 8082
-distributed.scheduler.namespace: test_namespace
-spring.profiles.include: web,mysql,supervisor,redis
+spring.profiles.include: web,mysql,supervisor,redis,consul
