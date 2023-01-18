@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -143,18 +144,18 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         long taskId = stopParam.getTaskId();
         Pair<WorkerThread, ExecuteParam> pair = activePool.stopTask(taskId, toOps);
         if (pair == null) {
-            LOG.warn("Not found stoppable task {} - {}", taskId, toOps);
+            LOG.warn("Not found stoppable task {} | {}", taskId, toOps);
             try {
                 terminateTask(supervisorClient, stopParam, toOps);
             } catch (Exception e) {
-                LOG.error("Abort stopped task occur error: {} - {}", taskId, toOps);
+                LOG.error("Abort stopped task occur error: {} | {}", taskId, toOps);
             }
             return;
         }
 
         WorkerThread thread = pair.getLeft();
         ExecuteParam param = pair.getRight();
-        LOG.info("Stop task: {} - {} - {}", taskId, toOps, thread.getName());
+        LOG.info("Stop task: {} | {} | {}", taskId, toOps, thread.getName());
         try {
             param.interrupt();
             // stop the work thread
@@ -163,7 +164,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             try {
                 terminateTask(supervisorClient, param, toOps);
             } catch (Exception e) {
-                LOG.error("Normal stop task occur error: {} - {} - {}", taskId, toOps, thread.getName());
+                LOG.error("Normal stop task occur error: {} | {} | {}", taskId, toOps, thread.getName());
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
@@ -249,7 +250,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     stopWorkerThread(thread, true);
                 } catch (IllegalTaskException e) {
                     LOG.error(e.getMessage());
-                    // discard this execute param
+                    // discard the execute param
                     param = null;
                     // return this worker thread
                     idlePool.putFirst(thread);
@@ -373,7 +374,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return;
         }
 
-        LOG.info("Pause the current sched task {} - {}", param.getTrackId(), param.getTaskId());
+        LOG.info("Pause the current sched task {} | {}", param.getTrackId(), param.getTaskId());
         terminateTask(supervisorClient, param, toOps);
         supervisorClient.updateTaskErrorMsg(param.getTaskId(), errorMsg);
 
@@ -388,7 +389,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return;
         }
 
-        LOG.info("Cancel the current sched task {} - {}", param.getTrackId(), param.getTaskId());
+        LOG.info("Cancel the current sched task {} | {}", param.getTrackId(), param.getTaskId());
         terminateTask(supervisorClient, param, toOps);
         supervisorClient.updateTaskErrorMsg(param.getTaskId(), errorMsg);
 
@@ -426,13 +427,13 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         // update to 'null' operations
         if (!param.updateOperation(currentOps, null)) {
             LOG.warn(
-                "Change execution param operation conflict: {} - {} - {} - {}", 
+                "Change execution param operation conflict: {} | {} | {} | {}", 
                 param.getTaskId(), currentOps, param.operation(), targetState
             );
             return false;
         }
 
-        LOG.info("Change execution param operation success: {} - {} - {}", param.getTaskId(), currentOps, targetState);
+        LOG.info("Change execution param operation success: {} | {} | {}", param.getTaskId(), currentOps, targetState);
         switch (currentOps) {
             case TRIGGER:
                 return supervisorClient.terminateExecutingTask(param, targetState, errorMsg);
@@ -490,7 +491,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
             thread.updateExecuteParam(param, null);
             pool.remove(taskId);
-            LOG.info("Removed active pool worker thread: {} - {}", taskId, thread.getName());
+            LOG.info("Removed active pool worker thread: {} | {}", taskId, thread.getName());
             return Pair.of(thread, param);
         }
 
@@ -524,13 +525,13 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     Operations fromOps = param.operation(), toOps = Operations.PAUSE;
                     boolean status = (fromOps == Operations.TRIGGER) && param.updateOperation(fromOps, toOps);
                     if (!status) {
-                        LOG.error("Change execution param ops failed on thread pool close: {} - {} - {}", param, fromOps, toOps);
+                        LOG.error("Change execution param ops failed on thread pool close: {} | {} | {}", param, fromOps, toOps);
                     }
                     try {
                         // stop the work thread
                         WorkerThreadPool.this.stopWorkerThread(thread, true);
                     } catch (Exception e) {
-                        LOG.error("Stop worker thread occur error on thread pool close: " + param + " - " + thread, e);
+                        LOG.error("Stop worker thread occur error on thread pool close: " + param + " | " + thread, e);
                     }
                     if (status) {
                         try {
@@ -717,25 +718,25 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         }
 
         private void runTask(ExecuteParam param) throws Exception {
-            SchedTask task = supervisorClient.getTask(param.getTaskId());
-            if (task == null) {
-                LOG.error("Sched task not found {}", param);
-                return;
-            }
-
-            ExecuteState fromState = ExecuteState.of(task.getExecuteState());
-            if (fromState != WAITING) {
-                LOG.warn("Task state not executable: {} - {} - {}", task.getTaskId(), fromState, param.operation());
-                return;
-            }
-
-            SchedJob schedJob = supervisorClient.getJob(param.getJobId());
-            if (schedJob == null) {
-                LOG.error("Sched job not found {}", param);
-                return;
-            }
-
+            SchedTask task;
+            SchedJob schedJob;
             try {
+                if ((task = supervisorClient.getTask(param.getTaskId())) == null) {
+                    LOG.error("Sched task not found {}", param);
+                    return;
+                }
+
+                ExecuteState fromState = ExecuteState.of(task.getExecuteState());
+                if (fromState != WAITING) {
+                    LOG.warn("Task state not executable: {} | {} | {}", task.getTaskId(), fromState, param.operation());
+                    return;
+                }
+
+                if ((schedJob = supervisorClient.getJob(param.getJobId())) == null) {
+                    LOG.error("Sched job not found {}", param);
+                    return;
+                }
+
                 // update database records start state(sched_track, sched_task)
                 boolean status = supervisorClient.startTask(param);
                 if (!status) {
@@ -743,8 +744,15 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     return;
                 }
             } catch (Exception e) {
-                LOG.warn("Task start fail.", e);
-                return;
+                LOG.warn("Start task fail: " + param, e);
+                try {
+                    // reset sched_task.worker
+                    supervisorClient.updateTaskWorker(Collections.singletonList(param.getTaskId()), "");
+                } catch (Exception ex) {
+                    // here need to manual handle
+                    LOG.error("Reset task worker occur error: " + param, ex);
+                }
+                return; // discard task
             }
 
             // 1、prepare
@@ -802,7 +810,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     LOG.info("Task executed finished {}", param);
                     terminateTask(supervisorClient, param, FINISHED, null);
                 } else {
-                    LOG.error("Task executed failed {} - {}", param, result);
+                    LOG.error("Task executed failed {} | {}", param, result);
                     terminateTask(supervisorClient, param, EXECUTE_FAILED, result.getMsg());
                 }
             } catch (TimeoutException e) {

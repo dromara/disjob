@@ -140,7 +140,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
     }
 
     public final boolean offer(T timing) {
-        // 放入下一个刻度
+        // “+ tickMs”：放入下一个刻度
         return offer(timing, System.currentTimeMillis() + tickMs);
     }
 

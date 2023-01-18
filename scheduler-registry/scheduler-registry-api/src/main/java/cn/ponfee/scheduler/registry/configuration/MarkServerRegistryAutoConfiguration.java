@@ -19,7 +19,6 @@ public abstract class MarkServerRegistryAutoConfiguration {
         if (MUTEX.compareAndSet(false, true)) {
             log.info("Imported server registry: {}", getClass());
         } else {
-            log.error("Conflict importing server registry: {}", getClass());
             throw new Error("Conflict importing server registry: " + getClass());
         }
     }

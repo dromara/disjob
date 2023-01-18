@@ -4,10 +4,9 @@
 <Configuration status="WARN" monitorInterval="1800" strict="true" name="distributed-scheduler-log">
 
   <properties>
-    <!-- 系统属性变量：System.getProperty("log.home")，${variable_name:-default_value} -->
-    <property name="LOG_HOME">${log.home:-../logs}</property>
-
-    <property name="APP_NAME">distributed-scheduler</property>
+    <!-- 系统属性变量：System.getProperty("log.home")，${sys:variable_name:-default_value} -->
+    <property name="LOG_HOME">${sys:log.home:-../logs}</property>
+    <property name="APP_NAME">${sys:app.name:-scheduler-samples}</property>
     <property name="PATTERN_CONSOLE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %highlight{%-5p} | %c{1} >>>> %msg%n</property>
     <property name="PATTERN_FILE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %traceId | %-5p | ${sys:PID} | %t | %l : %msg%n</property>
   </properties>
@@ -43,6 +42,7 @@
 
   <Loggers>
     <!-- additivity指定是否同时输出日志到父类的appender，缺省为true -->
+    <!--
     <Logger name="cn.ponfee.scheduler" level="INFO" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
@@ -51,23 +51,19 @@
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-    <Logger name="cn.ponfee.scheduler.registry" level="DEBUG" additivity="false">
+    <Logger name="cn.ponfee.scheduler.registry" level="INFO" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-
-    <!--<Logger name="cn.ponfee.scheduler.supervisor.ScanJobHeartbeatThread" level="debug" additivity="false">
+    <Logger name="cn.ponfee.scheduler.supervisor" level="debug" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-    <Logger name="cn.ponfee.scheduler.supervisor.ScanTrackHeartbeatThread" level="debug" additivity="false">
+    <Logger name="cn.ponfee.scheduler.worker" level="debug" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-    <Logger name="cn.ponfee.scheduler.worker.WorkerHeartbeatThread" level="debug" additivity="false">
-      <AppenderRef ref="Console" />
-      <AppenderRef ref="RollingFile" />
-    </Logger>-->
+    -->
 
     <!-- 当根据日志名字获取不到指定的日志器时就使用Root作为默认的日志器 -->
     <Root level="WARN">

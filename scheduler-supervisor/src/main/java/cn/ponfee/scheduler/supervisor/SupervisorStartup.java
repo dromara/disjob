@@ -13,7 +13,11 @@ import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
-import cn.ponfee.scheduler.supervisor.manager.JobManager;
+import cn.ponfee.scheduler.supervisor.configuration.SupervisorProperties;
+import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
+import cn.ponfee.scheduler.supervisor.thread.ScanRunningTrackThread;
+import cn.ponfee.scheduler.supervisor.thread.ScanTriggeringJobThread;
+import cn.ponfee.scheduler.supervisor.thread.ScanWaitingTrackThread;
 import org.springframework.util.Assert;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,34 +30,43 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SupervisorStartup implements AutoCloseable {
 
     private final Supervisor currentSupervisor;
-    private final ScanJobHeartbeatThread scanJobHeartbeatThread;
-    private final ScanTrackHeartbeatThread scanTrackHeartbeatThread;
+    private final ScanTriggeringJobThread scanTriggeringJobThread;
+    private final ScanWaitingTrackThread scanWaitingTrackThread;
+    private final ScanRunningTrackThread scanRunningTrackThread;
     private final TaskDispatcher taskDispatcher;
     private final SupervisorRegistry supervisorRegistry;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private SupervisorStartup(Supervisor currentSupervisor,
-                              int jobHeartbeatPeriodMs,
-                              int trackHeartbeatPeriodMs,
+                              SupervisorProperties supervisorConfig,
                               SupervisorRegistry supervisorRegistry,
-                              JobManager jobManager,
-                              DoInLocked scanJobLocked,
-                              DoInLocked scanTrackLocked,
+                              SchedulerJobManager schedulerJobManager,
+                              DoInLocked scanTriggeringJobLocker,
+                              DoInLocked scanWaitingTrackLocker,
+                              DoInLocked scanRunningTrackLocker,
                               TaskDispatcher taskDispatcher) {
         Assert.notNull(currentSupervisor, "Current supervisor cannot null.");
-        Assert.isTrue(jobHeartbeatPeriodMs > 0, "Job heart beat period milliseconds must be greater zero.");
-        Assert.isTrue(trackHeartbeatPeriodMs > 0, "Track heart beat period milliseconds must be greater zero.");
+        Assert.notNull(supervisorConfig, "Supervisor config cannot null.");
         Assert.notNull(supervisorRegistry, "Supervisor registry cannot null.");
-        Assert.notNull(jobManager, "Job manager cannot null.");
-        Assert.notNull(scanJobLocked, "Scan job locked cannot null.");
-        Assert.notNull(scanTrackLocked, "Scan track locked cannot null.");
+        Assert.notNull(schedulerJobManager, "Scheduler job manager cannot null.");
+        Assert.notNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
+        Assert.notNull(scanWaitingTrackLocker, "Scan waiting track locker cannot null.");
+        Assert.notNull(scanRunningTrackLocker, "Scan running track locker cannot null.");
         Assert.notNull(taskDispatcher, "Task dispatcher cannot null.");
+        supervisorConfig.check();
 
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
-        this.scanJobHeartbeatThread = new ScanJobHeartbeatThread(jobHeartbeatPeriodMs, scanJobLocked, jobManager);
-        this.scanTrackHeartbeatThread = new ScanTrackHeartbeatThread(trackHeartbeatPeriodMs, scanTrackLocked, jobManager);
+        this.scanTriggeringJobThread = new ScanTriggeringJobThread(
+            supervisorConfig.getScanTriggeringJobPeriodMs(), scanTriggeringJobLocker, schedulerJobManager
+        );
+        this.scanWaitingTrackThread = new ScanWaitingTrackThread(
+            supervisorConfig.getScanWaitingTrackPeriodMs(), scanWaitingTrackLocker, schedulerJobManager
+        );
+        this.scanRunningTrackThread = new ScanRunningTrackThread(
+            supervisorConfig.getScanRunningTrackPeriodMs(), scanRunningTrackLocker, schedulerJobManager
+        );
         this.taskDispatcher = taskDispatcher;
     }
 
@@ -61,19 +74,22 @@ public class SupervisorStartup implements AutoCloseable {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        scanJobHeartbeatThread.start();
-        scanTrackHeartbeatThread.start();
+        scanTriggeringJobThread.start();
+        scanWaitingTrackThread.start();
+        scanRunningTrackThread.start();
         supervisorRegistry.register(currentSupervisor);
     }
 
     @Override
     public void close() {
         Throwables.caught(supervisorRegistry::close);
-        Throwables.caught(scanTrackHeartbeatThread::toStop);
-        Throwables.caught(scanJobHeartbeatThread::toStop);
+        Throwables.caught(scanRunningTrackThread::toStop);
+        Throwables.caught(scanWaitingTrackThread::toStop);
+        Throwables.caught(scanTriggeringJobThread::toStop);
         Throwables.caught(taskDispatcher::close);
-        Throwables.caught(() -> scanTrackHeartbeatThread.doStop(1000));
-        Throwables.caught(() -> scanJobHeartbeatThread.doStop(1000));
+        Throwables.caught(() -> scanRunningTrackThread.doStop(1000));
+        Throwables.caught(() -> scanWaitingTrackThread.doStop(1000));
+        Throwables.caught(() -> scanTriggeringJobThread.doStop(1000));
     }
 
     // ----------------------------------------------------------------------------------------builder
@@ -84,12 +100,12 @@ public class SupervisorStartup implements AutoCloseable {
 
     public static class Builder {
         private Supervisor currentSupervisor;
-        private int jobHeartbeatPeriodMs;
-        private int trackHeartbeatPeriodMs;
+        private SupervisorProperties supervisorConfig;
         private SupervisorRegistry supervisorRegistry;
-        private JobManager jobManager;
-        private DoInLocked scanJobLocked;
-        private DoInLocked scanTrackLocked;
+        private SchedulerJobManager schedulerJobManager;
+        private DoInLocked scanTriggeringJobLocker;
+        private DoInLocked scanWaitingTrackLocker;
+        private DoInLocked scanRunningTrackLocker;
         private TaskDispatcher taskDispatcher;
 
         private Builder() {
@@ -100,13 +116,8 @@ public class SupervisorStartup implements AutoCloseable {
             return this;
         }
 
-        public Builder jobHeartbeatPeriodMs(int jobHeartbeatPeriodMs) {
-            this.jobHeartbeatPeriodMs = jobHeartbeatPeriodMs;
-            return this;
-        }
-
-        public Builder trackHeartbeatPeriodMs(int trackHeartbeatPeriodMs) {
-            this.trackHeartbeatPeriodMs = trackHeartbeatPeriodMs;
+        public Builder supervisorConfig(SupervisorProperties supervisorConfig) {
+            this.supervisorConfig = supervisorConfig;
             return this;
         }
 
@@ -115,18 +126,23 @@ public class SupervisorStartup implements AutoCloseable {
             return this;
         }
 
-        public Builder jobManager(JobManager jobManager) {
-            this.jobManager = jobManager;
+        public Builder schedulerJobManager(SchedulerJobManager schedulerJobManager) {
+            this.schedulerJobManager = schedulerJobManager;
             return this;
         }
 
-        public Builder scanJobLocked(DoInLocked scanJobLocked) {
-            this.scanJobLocked = scanJobLocked;
+        public Builder scanTriggeringJobLocker(DoInLocked scanTriggeringJobLocker) {
+            this.scanTriggeringJobLocker = scanTriggeringJobLocker;
             return this;
         }
 
-        public Builder scanTrackLocked(DoInLocked scanTrackLocked) {
-            this.scanTrackLocked = scanTrackLocked;
+        public Builder scanWaitingTrackLocker(DoInLocked scanWaitingTrackLocker) {
+            this.scanWaitingTrackLocker = scanWaitingTrackLocker;
+            return this;
+        }
+
+        public Builder scanRunningTrackLocker(DoInLocked scanRunningTrackLocker) {
+            this.scanRunningTrackLocker = scanRunningTrackLocker;
             return this;
         }
 
@@ -137,8 +153,8 @@ public class SupervisorStartup implements AutoCloseable {
 
         public SupervisorStartup build() {
             return new SupervisorStartup(
-                currentSupervisor,jobHeartbeatPeriodMs, trackHeartbeatPeriodMs,
-                supervisorRegistry, jobManager, scanJobLocked, scanTrackLocked, taskDispatcher
+                currentSupervisor, supervisorConfig, supervisorRegistry, schedulerJobManager,
+                scanTriggeringJobLocker, scanWaitingTrackLocker, scanRunningTrackLocker, taskDispatcher
             );
         }
     }

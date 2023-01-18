@@ -111,14 +111,19 @@ public @interface EnableSupervisor {
             return new WorkerServiceClient(currentWorker, remoteWorkerService);
         }
 
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_JOB_LOCKED)
-        public DoInLocked scanJobLocked(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_JOB);
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
+        public DoInLocked scanTriggeringJobLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
         }
 
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRACK_LOCKED)
-        public DoInLocked scanTrackLocked(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRACK);
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_TRACK_LOCKER)
+        public DoInLocked scanWaitingTrackLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_TRACK);
+        }
+
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_TRACK_LOCKER)
+        public DoInLocked scanRunningTrackLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_TRACK);
         }
 
         @ConditionalOnMissingBean

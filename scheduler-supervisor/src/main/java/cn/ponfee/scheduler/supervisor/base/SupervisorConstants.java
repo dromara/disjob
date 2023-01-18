@@ -15,24 +15,38 @@ package cn.ponfee.scheduler.supervisor.base;
  */
 public class SupervisorConstants {
 
-    /**
-     * Scan job lock sql
-     */
-    public static final String LOCK_SQL_SCAN_JOB = "SELECT `name` FROM sched_lock WHERE name='scan_job' FOR UPDATE";
+    // ----------------------------------------------------------------scan lock sql
 
     /**
-     * Scan track lock sql
+     * Scan triggering job lock sql
      */
-    public static final String LOCK_SQL_SCAN_TRACK = "SELECT `name` FROM sched_lock WHERE name='scan_track' FOR UPDATE";
+    public static final String LOCK_SQL_SCAN_TRIGGERING_JOB = "SELECT `name` FROM sched_lock WHERE name='scan_triggering_job' FOR UPDATE";
 
     /**
-     * Spring bean name of scan sched_job table
+     * Scan waiting track lock sql
      */
-    public static final String SPRING_BEAN_NAME_SCAN_JOB_LOCKED = "scanJobLocked";
+    public static final String LOCK_SQL_SCAN_WAITING_TRACK = "SELECT `name` FROM sched_lock WHERE name='scan_waiting_track' FOR UPDATE";
 
     /**
-     * Spring bean name of scan sched_track table
+     * Scan running track lock sql
      */
-    public static final String SPRING_BEAN_NAME_SCAN_TRACK_LOCKED = "scanTrackLocked";
+    public static final String LOCK_SQL_SCAN_RUNNING_TRACK = "SELECT `name` FROM sched_lock WHERE name='scan_running_track' FOR UPDATE";
+
+    // ----------------------------------------------------------------scan locker name
+
+    /**
+     * Spring bean name of scan triggering job locker
+     */
+    public static final String SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER = "scan-triggering-job-locker";
+
+    /**
+     * Spring bean name of scan waiting track locker
+     */
+    public static final String SPRING_BEAN_NAME_SCAN_WAITING_TRACK_LOCKER = "scan-waiting-track-locker";
+
+    /**
+     * Spring bean name of scan running track locker
+     */
+    public static final String SPRING_BEAN_NAME_SCAN_RUNNING_TRACK_LOCKER = "scan-running-track-locker";
 
 }

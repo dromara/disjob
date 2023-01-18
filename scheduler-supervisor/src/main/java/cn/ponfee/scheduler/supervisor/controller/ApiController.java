@@ -15,7 +15,7 @@ import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedJob;
-import cn.ponfee.scheduler.supervisor.manager.JobManager;
+import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -31,55 +31,55 @@ public class ApiController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApiController.class);
 
-    private final JobManager jobManager;
+    private final SchedulerJobManager schedulerJobManager;
 
-    public ApiController(JobManager jobManager) {
-        this.jobManager = jobManager;
+    public ApiController(SchedulerJobManager schedulerJobManager) {
+        this.schedulerJobManager = schedulerJobManager;
     }
 
     // ------------------------------------------------------------------ sched job
 
     @PostMapping("job/add")
     public Result<Void> addJob(@RequestBody SchedJob job) {
-        jobManager.addJob(job);
+        schedulerJobManager.addJob(job);
         return Result.success();
     }
 
     @PutMapping("job/update")
     public Result<Void> updateJob(@RequestBody SchedJob job) {
         LOG.info("Do updating sched job {}", job.getJobId());
-        jobManager.updateJob(job);
+        schedulerJobManager.updateJob(job);
         return Result.success();
     }
 
     @DeleteMapping("job/delete")
     public Result<Void> deleteJob(@RequestParam("jobId") long jobId) {
         LOG.info("Do deleting sched job {}", jobId);
-        jobManager.deleteJob(jobId);
+        schedulerJobManager.deleteJob(jobId);
         return Result.success();
     }
 
     @GetMapping("job/get")
     public Result<SchedJob> getJob(@RequestParam("jobId") long jobId) {
-        return Result.success(jobManager.getJob(jobId));
+        return Result.success(schedulerJobManager.getJob(jobId));
     }
 
     @PostMapping("job/disable")
     public Result<Boolean> disableJob(@RequestParam("jobId") long jobId) {
         LOG.info("Do disable sched job {}", jobId);
-        return Result.success(jobManager.changeJobState(jobId, JobState.DISABLE));
+        return Result.success(schedulerJobManager.changeJobState(jobId, JobState.DISABLE));
     }
 
     @PostMapping("job/enable")
     public Result<Boolean> enableJob(@RequestParam("jobId") long jobId) {
         LOG.info("Do enable sched job {}", jobId);
-        return Result.success(jobManager.changeJobState(jobId, JobState.ENABLE));
+        return Result.success(schedulerJobManager.changeJobState(jobId, JobState.ENABLE));
     }
 
     @PostMapping("job/trigger")
     public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
         LOG.info("Do manual trigger the sched job {}", jobId);
-        jobManager.trigger(jobId);
+        schedulerJobManager.trigger(jobId);
         return Result.success();
     }
 
@@ -88,25 +88,25 @@ public class ApiController {
     @PostMapping("track/pause")
     public Result<Boolean> pauseTrack(@RequestParam("trackId") long trackId) {
         LOG.info("Do pausing sched track {}", trackId);
-        return Result.success(jobManager.pauseTrack(trackId));
+        return Result.success(schedulerJobManager.pauseTrack(trackId));
     }
 
     @PostMapping("track/cancel")
     public Result<Boolean> cancelTrack(@RequestParam("trackId") long trackId) {
         LOG.info("Do canceling sched track {}", trackId);
-        return Result.success(jobManager.cancelTrack(trackId, Operations.MANUAL_CANCEL));
+        return Result.success(schedulerJobManager.cancelTrack(trackId, Operations.MANUAL_CANCEL));
     }
 
     @PostMapping("track/resume")
     public Result<Boolean> resumeTrack(@RequestParam("trackId") long trackId) {
         LOG.info("Do resuming sched track {}", trackId);
-        return Result.success(jobManager.resume(trackId));
+        return Result.success(schedulerJobManager.resume(trackId));
     }
 
     @PostMapping("track/fresume")
     public Result<Void> forceResumeTrack(@RequestParam("trackId") long trackId) {
         LOG.info("Do force resuming sched track {}", trackId);
-        jobManager.forceUpdateState(trackId, RunState.WAITING.value(), ExecuteState.WAITING.value());
+        schedulerJobManager.forceUpdateState(trackId, RunState.WAITING.value(), ExecuteState.WAITING.value());
         return Result.success();
     }
 
@@ -118,8 +118,8 @@ public class ApiController {
         RunState.of(trackTargetState);
         ExecuteState.of(taskTargetState);
 
-        LOG.info("Do force update sched track state {} - {} - {}", trackId, trackTargetState, taskTargetState);
-        jobManager.forceUpdateState(trackId, trackTargetState, taskTargetState);
+        LOG.info("Do force update sched track state {} | {} | {}", trackId, trackTargetState, taskTargetState);
+        schedulerJobManager.forceUpdateState(trackId, trackTargetState, taskTargetState);
         return Result.success();
     }
 
@@ -127,15 +127,15 @@ public class ApiController {
     public Result<Void> deleteTrack(@RequestParam("trackId") long trackId) {
         LOG.info("Do deleting sched track {}", trackId);
 
-        jobManager.deleteTrack(trackId);
+        schedulerJobManager.deleteTrack(trackId);
         return Result.success();
     }
 
     @GetMapping("track/get")
     public Result<Object[]> getTrack(@RequestParam("trackId") long trackId) {
         return Result.success(new Object[]{
-            jobManager.getTrack(trackId),
-            jobManager.getTasks(trackId)
+            schedulerJobManager.getTrack(trackId),
+            schedulerJobManager.findLargeTaskByTrackId(trackId)
         });
     }
 

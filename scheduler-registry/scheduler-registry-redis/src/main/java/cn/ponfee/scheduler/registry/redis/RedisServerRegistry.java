@@ -131,7 +131,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         doRegister(Collections.singleton(server));
         registered.add(server);
         publish(server, EventType.REGISTER);
-        log.info("Server registered: {} - {}", registryRole.name(), server);
+        log.info("Server registered: {} | {}", registryRole.name(), server);
     }
 
     @Override
@@ -139,7 +139,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         registered.remove(server);
         Throwables.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
         Throwables.caught(() -> publish(server, EventType.DEREGISTER));
-        log.info("Server deregister: {} - {}", registryRole.name(), server);
+        log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 
     // ------------------------------------------------------------------Discovery
@@ -181,7 +181,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             String s0 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));
             String s1 = message.substring(pos += 1);
 
-            log.info("Subscribed message: {} - {}", pattern, message);
+            log.info("Subscribed message: {} | {}", pattern, message);
             subscribe(EventType.valueOf(s0), discoveryRole.deserialize(s1));
         } catch (Throwable t) {
             log.error("Parse subscribed message error: " + message + ", " + pattern, t);

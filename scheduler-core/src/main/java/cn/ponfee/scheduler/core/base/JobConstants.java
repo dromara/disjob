@@ -16,6 +16,11 @@ package cn.ponfee.scheduler.core.base;
 public class JobConstants {
 
     /**
+     * Process batch size
+     */
+    public static final int PROCESS_BATCH_SIZE = 200;
+
+    /**
      * Spring web server port
      */
     public static final String SPRING_WEB_SERVER_PORT = "server.port";

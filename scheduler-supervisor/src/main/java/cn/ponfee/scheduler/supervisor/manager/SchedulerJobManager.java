@@ -19,7 +19,6 @@ import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.exception.JobException;
-import cn.ponfee.scheduler.core.handle.SplitTask;
 import cn.ponfee.scheduler.core.model.SchedDepend;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
@@ -36,13 +35,10 @@ import com.google.common.base.Joiner;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,17 +75,16 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
  *  }
  *
  *  {
- *    // some db operation code ....
+ *    // some database operation code ....
  *    eventPublisher.publishEvent(new DispatchTaskEvent(() -> dispatch(job, track, tasks)));
+ *    // others operation code ....
  *  }
  * }</pre>
  *
  * @author Ponfee
  */
 @Component
-public class JobManager implements SupervisorService, MarkRpcController {
-
-    private final static Logger LOG = LoggerFactory.getLogger(JobManager.class);
+public class SchedulerJobManager extends AbstractSupervisorManager implements SupervisorService, MarkRpcController {
 
     private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_SUFFIX;
     private static final int AFFECTED_ONE_ROW = 1;
@@ -97,42 +92,27 @@ public class JobManager implements SupervisorService, MarkRpcController {
     private static final List<Integer> CANCELABLE_RUN_STATE_LIST = Collects.convert(RunState.CANCELABLE_LIST, RunState::value);
     private static final List<Integer> EXECUTABLE_EXECUTE_STATE_LIST = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::value);
 
-    @Resource
-    private SchedJobMapper jobMapper;
+    private final SchedJobMapper jobMapper;
+    private final SchedTrackMapper trackMapper;
+    private final SchedTaskMapper taskMapper;
+    private final SchedDependMapper dependMapper;
 
-    @Resource
-    private SchedTrackMapper trackMapper;
-
-    @Resource
-    private SchedTaskMapper taskMapper;
-
-    @Resource
-    private SchedDependMapper dependMapper;
-
-    @Resource
-    private IdGenerator idGenerator;
-
-    @Resource
-    private SupervisorRegistry discoveryWorker;
-
-    @Resource
-    private TaskDispatcher taskDispatcher;
-
-    @Resource
-    private WorkerServiceClient workerServiceClient;
-
-    // ------------------------------------------------------------------query
-
-    /**
-     * Scan will be triggering sched jobs.
-     *
-     * @param maxNextTriggerTime the maxNextTriggerTime
-     * @param size               the size
-     * @return will be triggering sched jobs
-     */
-    public List<SchedJob> findBeTriggering(long maxNextTriggerTime, int size) {
-        return jobMapper.findBeTriggering(maxNextTriggerTime, size);
+    public SchedulerJobManager(IdGenerator idGenerator,
+                               SupervisorRegistry discoveryWorker,
+                               TaskDispatcher taskDispatcher,
+                               WorkerServiceClient workerServiceClient,
+                               SchedJobMapper jobMapper,
+                               SchedTrackMapper trackMapper,
+                               SchedTaskMapper taskMapper,
+                               SchedDependMapper dependMapper) {
+        super(idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
+        this.jobMapper = jobMapper;
+        this.trackMapper = trackMapper;
+        this.taskMapper = taskMapper;
+        this.dependMapper = dependMapper;
     }
+
+    // ------------------------------------------------------------------database query
 
     @Override
     public SchedJob getJob(long jobId) {
@@ -148,20 +128,31 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return taskMapper.getByTaskId(taskId);
     }
 
-    public List<SchedTask> getTasks(long trackId) {
-        return taskMapper.getByTrackId(trackId);
+    public List<SchedTask> findMediumTaskByTrackId(long trackId) {
+        return taskMapper.findMediumByTrackId(trackId);
     }
 
-    public List<SchedTrack> findExpireWaiting(long expireTime, Date maxUpdateTime, int size) {
-        return trackMapper.findExpireState(RunState.WAITING.value(), expireTime, maxUpdateTime, size);
+    public List<SchedTask> findLargeTaskByTrackId(long trackId) {
+        return taskMapper.findLargeByTrackId(trackId);
     }
 
-    public List<SchedTrack> findExpireRunning(long expireTime, Date maxUpdateTime, int size) {
-        return trackMapper.findExpireState(RunState.RUNNING.value(), expireTime, maxUpdateTime, size);
+    /**
+     * Scan will be triggering sched jobs.
+     *
+     * @param maxNextTriggerTime the maxNextTriggerTime
+     * @param size               the size
+     * @return will be triggering sched jobs
+     */
+    public List<SchedJob> findBeTriggering(long maxNextTriggerTime, int size) {
+        return jobMapper.findBeTriggering(maxNextTriggerTime, size);
     }
 
-    public List<SchedTask> findTasks(long trackId) {
-        return taskMapper.findByTrackId(trackId);
+    public List<SchedTrack> findExpireWaiting(Date expireTime, int size) {
+        return trackMapper.findExpireState(RunState.WAITING.value(), expireTime.getTime(), expireTime, size);
+    }
+
+    public List<SchedTrack> findExpireRunning(Date expireTime, int size) {
+        return trackMapper.findExpireState(RunState.RUNNING.value(), expireTime.getTime(), expireTime, size);
     }
 
     public SchedTrack getByTriggerTime(long jobId, long triggerTime, int runType) {
@@ -172,11 +163,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return trackMapper.findUnterminatedRetry(trackId);
     }
 
-    public List<SchedTask> findByTrackId(long trackId) {
-        return taskMapper.findByTrackId(trackId);
-    }
-
-    // ------------------------------------------------------------------operation without transaction
+    // ------------------------------------------------------------------database single operation without @Transactional annotation
 
     @Override
     public boolean checkpoint(long taskId, String executeSnapshot) {
@@ -210,24 +197,37 @@ public class JobManager implements SupervisorService, MarkRpcController {
     }
 
     @Override
+    public boolean updateTaskWorker(List<Long> taskIds, String worker) {
+        if (StringUtils.isNotBlank(worker)) {
+            try {
+                Worker.deserialize(worker);
+            } catch (Exception e) {
+                log.error("Invalid worker serialized text: {}", worker);
+                return false;
+            }
+        }
+        return taskMapper.updateWorker(taskIds, worker) >= AFFECTED_ONE_ROW;
+    }
+
+    @Override
     public boolean updateTaskErrorMsg(long taskId, String errorMsg) {
         try {
             return taskMapper.updateErrorMsg(taskId, errorMsg) == AFFECTED_ONE_ROW;
         } catch (Exception e) {
-            LOG.error("Update sched task error msg failed: " + taskId, e);
+            log.error("Update sched task error msg failed: " + taskId, e);
             return false;
         }
     }
 
     // ------------------------------------------------------------------operation within transaction
 
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) {
         Assert.notNull(job.getTriggerType(), "Trigger type cannot be null.");
         Assert.notNull(job.getTriggerConf(), "Trigger conf cannot be null.");
         Assert.isNull(job.getLastTriggerTime(), "Last trigger time must be null.");
         Assert.isNull(job.getNextTriggerTime(), "Next trigger time must be null.");
-        verifyJobHandler(job);
+        super.verifyJobHandler(job);
         job.checkAndDefaultSetting();
 
         job.setJobId(generateId());
@@ -241,7 +241,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         jobMapper.insert(job);
     }
 
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) {
         Assert.notNull(job.getJobId(), "Job id cannot be null");
         Assert.notNull(job.getVersion(), "Version cannot be null");
@@ -250,7 +250,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.isTrue(StringUtils.isEmpty(job.getJobParam()), "Job param must be null if not set job handler.");
         } else {
-            verifyJobHandler(job);
+            super.verifyJobHandler(job);
         }
 
         job.checkAndDefaultSetting();
@@ -274,14 +274,14 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Assert.state(jobMapper.updateByJobId(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
     }
 
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void deleteJob(long jobId) {
         Assert.isTrue(jobMapper.deleteByJobId(jobId) == AFFECTED_ONE_ROW, "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
         dependMapper.deleteByChildJobId(jobId);
     }
 
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void deleteTrack(long trackId) {
         SchedTrack track = trackMapper.getByTrackId(trackId);
         Assert.notNull(track, "Sched track not found: " + trackId);
@@ -295,7 +295,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         taskMapper.deleteByTrackId(trackId);
     }
 
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void forceUpdateState(long trackId, int trackTargetState, int taskTargetState) {
         ExecuteState taskTargetState0 = ExecuteState.of(taskTargetState);
         Assert.isTrue(taskTargetState0.runState() == RunState.of(trackTargetState), "Inconsistent state: " + trackTargetState + ", " + taskTargetState);
@@ -307,7 +307,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
 
         if (taskTargetState0 == ExecuteState.WAITING) {
             Tuple3<SchedJob, SchedTrack, List<SchedTask>> params = buildDispatchParams(trackId, row);
-            TransactionUtils.doAfterTransactionCommit(() -> dispatch(params.a, params.b, params.c));
+            TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
         }
     }
 
@@ -317,7 +317,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param jobId the job id
      * @throws JobException if occur error
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void trigger(long jobId) throws JobException {
         SchedJob job = jobMapper.getByJobId(jobId);
         Assert.notNull(job, "Sched job not found: " + jobId);
@@ -337,7 +337,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         Assert.state(row == tasks.size(), "Insert sched task fail: " + tasks);
 
         // 3、dispatch job task
-        TransactionUtils.doAfterTransactionCommit(() -> dispatch(job, track, tasks));
+        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, track, tasks));
     }
 
     /**
@@ -348,7 +348,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param tasks the tasks
      * @return if {@code true} operated success
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean updateAndSave(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
         int row = jobMapper.updateNextTriggerTime(job);
         if (row == 0) {
@@ -371,7 +371,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param param the execution param
      * @return {@code true} if start successfully
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean startTask(ExecuteParam param) {
         Integer state = trackMapper.getStateByTrackId(param.getTrackId());
@@ -404,7 +404,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param errorMsg the errorMsg
      * @return {@code true} if termination was successful
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
         Integer state = trackMapper.lockAndGetState(param.getTrackId());
@@ -422,7 +422,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         );
         boolean result = (row == AFFECTED_ONE_ROW);
         if (!result) {
-            LOG.warn("Conflict terminate task {}, {}", param.getTaskId(), toState);
+            log.warn("Conflict terminate task {}, {}", param.getTaskId(), toState);
         }
 
         // terminate track
@@ -436,7 +436,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param trackId the trackId
      * @return if {@code true} terminate successfully
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean terminate(long trackId) {
         Integer state = trackMapper.lockAndGetState(trackId);
         Assert.notNull(state, "Terminate failed, track_id not found: " + trackId);
@@ -455,7 +455,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param trackId the track id
      * @return {@code true} if paused successfully
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean pauseTrack(long trackId) {
         Integer state = trackMapper.lockAndGetState(trackId);
@@ -479,7 +479,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
 
         if (executingTasks.isEmpty()) {
             // has non executing execute_state, update sched track state
-            List<ExecuteState> stateList = taskMapper.findByTrackId(trackId)
+            List<ExecuteState> stateList = taskMapper.findMediumByTrackId(trackId)
                                                      .stream()
                                                      .map(e -> ExecuteState.of(e.getExecuteState()))
                                                      .collect(Collectors.toList());
@@ -504,11 +504,11 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 row = trackMapper.updateState(trackId, toRunState.value(), runState.value(), null);
             }
             if (row != AFFECTED_ONE_ROW) {
-                LOG.warn("Pause track from {} to {} conflict", runState, toRunState);
+                log.warn("Pause track from {} to {} conflict", runState, toRunState);
             }
         } else {
             // dispatch and pause executing tasks
-            TransactionUtils.doAfterTransactionCommit(() -> dispatch(executingTasks));
+            TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(executingTasks));
         }
 
         return true;
@@ -521,12 +521,12 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param errorMsg the execution error message
      * @return {@code true} if paused successfully
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean pauseExecutingTask(ExecuteParam param, String errorMsg) {
         Integer state = trackMapper.lockAndGetState(param.getTrackId());
         if (!RunState.RUNNING.equals(state)) {
-            LOG.warn("Pause executing task failed: {} - {}", param, state);
+            log.warn("Pause executing task failed: {} | {}", param, state);
             return false;
         }
 
@@ -538,11 +538,11 @@ public class JobManager implements SupervisorService, MarkRpcController {
             null
         );
         if (row != AFFECTED_ONE_ROW) {
-            LOG.warn("Paused task unsuccessful.");
+            log.warn("Paused task unsuccessful.");
             return false;
         }
 
-        boolean allPaused = taskMapper.findByTrackId(param.getTrackId())
+        boolean allPaused = taskMapper.findMediumByTrackId(param.getTrackId())
                                       .stream()
                                       .map(e -> ExecuteState.of(e.getExecuteState()))
                                       .noneMatch(ExecuteState.PAUSABLE_LIST::contains);
@@ -551,7 +551,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 param.getTrackId(), RunState.PAUSED.value(), RunState.RUNNING.value(), null
             );
             if (row != AFFECTED_ONE_ROW) {
-                LOG.error("Update sched track to paused state conflict: {} - {}", param.getTrackId(), param.getTaskId());
+                log.error("Update sched track to paused state conflict: {} | {}", param.getTrackId(), param.getTaskId());
             }
         }
 
@@ -567,7 +567,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param operation the operation
      * @return {@code true} if canceled successfully
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean cancelTrack(long trackId, Operations operation) {
         Assert.isTrue(operation.targetState().isFailure(), "Expect cancel ops, but actual: " + operation);
@@ -592,7 +592,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
 
         if (executingTasks.isEmpty()) {
             // has non executing execute_state
-            boolean failure = taskMapper.findByTrackId(trackId)
+            boolean failure = taskMapper.findMediumByTrackId(trackId)
                                         .stream()
                                         .anyMatch(e -> ExecuteState.of(e.getExecuteState()).isFailure());
             RunState toRunState = failure ? RunState.CANCELED : RunState.FINISHED;
@@ -603,11 +603,11 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 new Date()
             );
             if (row != AFFECTED_ONE_ROW) {
-                LOG.warn("Pause track from {} to {} conflict", runState, toRunState);
+                log.warn("Pause track from {} to {} conflict", runState, toRunState);
             }
         } else {
             // dispatch and cancel executing tasks
-            TransactionUtils.doAfterTransactionCommit(() -> dispatch(executingTasks));
+            TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(executingTasks));
         }
 
         return true;
@@ -621,7 +621,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param errorMsg the executed error message
      * @return {@code true} if canceled successfully
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean cancelExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
         Assert.isTrue(toState.isFailure(), "Target state expect failure state, but actual: " + toState);
@@ -638,11 +638,11 @@ public class JobManager implements SupervisorService, MarkRpcController {
             errorMsg
         );
         if (row != AFFECTED_ONE_ROW) {
-            LOG.warn("Canceled task unsuccessful.");
+            log.warn("Canceled task unsuccessful.");
             return false;
         }
 
-        boolean allTerminated = taskMapper.findByTrackId(param.getTrackId())
+        boolean allTerminated = taskMapper.findMediumByTrackId(param.getTrackId())
                                           .stream()
                                           .map(e -> ExecuteState.of(e.getExecuteState()))
                                           .allMatch(ExecuteState::isTerminal);
@@ -654,7 +654,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 new Date()
             );
             if (row != AFFECTED_ONE_ROW) {
-                LOG.error("Update sched track to canceled state conflict: {} - {}", param.getTrackId(), param.getTaskId());
+                log.error("Update sched track to canceled state conflict: {} | {}", param.getTrackId(), param.getTaskId());
             }
         }
         return true;
@@ -666,7 +666,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @param trackId the trackId
      * @return {@code true} if resumed successfully
      */
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean resume(long trackId) {
         Integer state = trackMapper.lockAndGetState(trackId);
         Assert.notNull(state, "Cancel failed, track_id not found: " + trackId);
@@ -687,19 +687,19 @@ public class JobManager implements SupervisorService, MarkRpcController {
 
         // dispatch task
         Tuple3<SchedJob, SchedTrack, List<SchedTask>> params = buildDispatchParams(trackId, row);
-        TransactionUtils.doAfterTransactionCommit(() -> dispatch(params.a, params.b, params.c));
+        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
 
         return true;
     }
 
-    @Transactional(value = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean updateState(ExecuteState toState, List<SchedTask> tasks, SchedTrack track) {
         if (trackMapper.lockAndGetId(track.getTrackId()) == null) {
             return false;
         }
         int row = trackMapper.updateState(track.getTrackId(), toState.runState().value(), track.getRunState(), track.getVersion());
         if (row != AFFECTED_ONE_ROW) {
-            LOG.warn("Conflict update track run state: {} - {}", track, toState.runState());
+            log.warn("Conflict update track run state: {} | {}", track, toState.runState());
             return false;
         }
 
@@ -719,50 +719,6 @@ public class JobManager implements SupervisorService, MarkRpcController {
         return true;
     }
 
-    // ------------------------------------------------------------------other public methods
-
-    public long generateId() {
-        return idGenerator.generateId();
-    }
-
-    public List<SchedTask> splitTasks(SchedJob job, long trackId, Date date) throws JobException {
-        List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-        Assert.notEmpty(split, "Not split any task: " + job);
-
-        return split.stream()
-            .map(e -> SchedTask.create(e.getTaskParam(), generateId(), trackId, date))
-            .collect(Collectors.toList());
-    }
-
-    public boolean hasAliveExecuting(long trackId) {
-        return taskMapper.findByTrackId(trackId)
-            .stream()
-            .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
-            .map(SchedTask::getWorker)
-            .filter(StringUtils::isNotBlank)
-            .anyMatch(this::isAliveWorker);
-    }
-
-    public boolean isAliveWorker(String text) {
-        return discoveryWorker.isDiscoveredServerAlive(Worker.deserialize(text));
-    }
-
-    public boolean hasNotFoundWorkers(String group) {
-        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers(group));
-    }
-
-    public boolean hasNotFoundWorkers() {
-        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers());
-    }
-
-    public boolean dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
-        return taskDispatcher.dispatch(job, track, tasks);
-    }
-
-    public boolean dispatch(List<ExecuteParam> tasks) {
-        return taskDispatcher.dispatch(tasks);
-    }
-
     // ------------------------------------------------------------------private methods
 
     /**
@@ -773,10 +729,10 @@ public class JobManager implements SupervisorService, MarkRpcController {
      * @return {@code true} if terminate successfully
      */
     private boolean terminate(long trackId, boolean force) {
-        List<SchedTask> tasks = taskMapper.findByTrackId(trackId);
+        List<SchedTask> tasks = taskMapper.findMediumByTrackId(trackId);
         if (CollectionUtils.isEmpty(tasks)) {
             // cannot happen
-            LOG.error("Not found sched track task data {}", trackId);
+            log.error("Not found sched track task data {}", trackId);
             return false;
         }
 
@@ -824,7 +780,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
             dependJob(trackId);
         } else {
             // cannot happen
-            LOG.error("Unknown retry run state " + runState);
+            log.error("Unknown retry run state " + runState);
         }
 
         return true;
@@ -834,11 +790,11 @@ public class JobManager implements SupervisorService, MarkRpcController {
         SchedTrack prevTrack = trackMapper.getByTrackId(trackId);
         SchedJob schedJob = jobMapper.getByJobId(prevTrack.getJobId());
         if (schedJob == null) {
-            LOG.error("Sched job not found {}", prevTrack.getJobId());
+            log.error("Sched job not found {}", prevTrack.getJobId());
             return;
         }
 
-        List<SchedTask> prevTasks = taskMapper.getByTrackId(trackId);
+        List<SchedTask> prevTasks = taskMapper.findLargeByTrackId(trackId);
         RetryType retryType = RetryType.of(schedJob.getRetryType());
         if (retryType == RetryType.NONE || schedJob.getRetryCount() < 1) {
             // not retry
@@ -869,7 +825,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                     // re-split tasks
                     tasks = splitTasks(schedJob, retryTrack.getTrackId(), now);
                 } catch (Exception e) {
-                    LOG.error("Split job error: " + schedJob + ", " + prevTrack, e);
+                    log.error("Split job error: " + schedJob + ", " + prevTrack, e);
                     return;
                 }
                 break;
@@ -880,7 +836,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
                                  .collect(Collectors.toList());
                 break;
             default:
-                LOG.error("Job unsupported retry type {}", schedJob);
+                log.error("Job unsupported retry type {}", schedJob);
                 return;
         }
 
@@ -889,7 +845,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         trackMapper.insert(retryTrack);
         taskMapper.insertBatch(tasks);
 
-        TransactionUtils.doAfterTransactionCommit(() -> dispatch(schedJob, retryTrack, tasks));
+        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(schedJob, retryTrack, tasks));
     }
 
     /**
@@ -907,7 +863,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
         for (SchedDepend depend : schedDepends) {
             SchedJob childJob = jobMapper.getByJobId(depend.getChildJobId());
             if (childJob == null) {
-                LOG.error("Child sched job not found {}, {}", depend.getParentJobId(), depend.getChildJobId());
+                log.error("Child sched job not found {}, {}", depend.getParentJobId(), depend.getChildJobId());
                 return;
             }
             if (JobState.DISABLE.equals(childJob.getJobState())) {
@@ -926,9 +882,9 @@ public class JobManager implements SupervisorService, MarkRpcController {
                 trackMapper.insert(track);
                 taskMapper.insertBatch(tasks);
 
-                TransactionUtils.doAfterTransactionCommit(() -> dispatch(childJob, track, tasks));
+                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(childJob, track, tasks));
             } catch (Exception e) {
-                LOG.error("Depend job split failed: " + childJob, e);
+                log.error("Depend job split failed: " + childJob, e);
             }
         }
     }
@@ -936,18 +892,18 @@ public class JobManager implements SupervisorService, MarkRpcController {
     private List<ExecuteParam> loadExecutingTasks(long trackId, Operations ops) {
         SchedTrack schedTrackProxy = LazyLoader.of(SchedTrack.class, trackMapper::getByTrackId, trackId);
         List<ExecuteParam> executingTasks = new ArrayList<>();
-        taskMapper.findByTrackId(trackId)
+        taskMapper.findMediumByTrackId(trackId)
             .stream()
             .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
             .forEach(task -> {
                 Worker worker = Worker.deserialize(task.getWorker());
-                if (discoveryWorker.isDiscoveredServerAlive(worker)) {
+                if (super.isAliveWorker(worker)) {
                     ExecuteParam param = new ExecuteParam(ops, task.getTaskId(), trackId, schedTrackProxy.getJobId(), 0L);
                     param.setWorker(worker);
                     executingTasks.add(param);
                 } else {
                     // update dead task
-                    LOG.info("Cancel the dead task {}", task);
+                    log.info("Cancel the dead task {}", task);
                     // ExecuteState.EXECUTE_TIMEOUT.value()
                     taskMapper.updateState(task.getTaskId(), ops.targetState().value(), ExecuteState.EXECUTING.value(), null, null);
                 }
@@ -958,7 +914,7 @@ public class JobManager implements SupervisorService, MarkRpcController {
     private Tuple3<SchedJob, SchedTrack, List<SchedTask>> buildDispatchParams(long trackId, int expectTaskSize) {
         SchedTrack track = trackMapper.getByTrackId(trackId);
         SchedJob job = jobMapper.getByJobId(track.getJobId());
-        List<SchedTask> waitingTasks = taskMapper.getByTrackId(trackId)
+        List<SchedTask> waitingTasks = taskMapper.findLargeByTrackId(trackId)
             .stream()
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
             .collect(Collectors.toList());
@@ -992,14 +948,6 @@ public class JobManager implements SupervisorService, MarkRpcController {
             Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerConf(), date);
             Assert.notNull(nextTriggerTime, "Has not next trigger time " + job.getTriggerConf());
             job.setNextTriggerTime(nextTriggerTime.getTime());
-        }
-    }
-
-    private void verifyJobHandler(SchedJob job) {
-        Assert.isTrue(StringUtils.isNotEmpty(job.getJobHandler()), "Job handler cannot be empty.");
-        boolean result = workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-        if (!result) {
-            throw new IllegalArgumentException("Invalid job handler config: " + job.getJobHandler() + ", " + result);
         }
     }
 

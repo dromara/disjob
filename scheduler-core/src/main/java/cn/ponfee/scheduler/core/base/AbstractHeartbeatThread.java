@@ -32,7 +32,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     /**
      * Heartbeat period milliseconds.
      */
-    private final long heartbeatPeriodMs;
+    protected final long heartbeatPeriodMs;
 
     public AbstractHeartbeatThread(long heartbeatPeriodMs) {
         log.info("Heartbeat thread init {}", this.getClass());
@@ -57,14 +57,14 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                 return;
             }
 
-            boolean result;
+            boolean isBusyLoop;
             long start = System.currentTimeMillis();
 
             try {
                 // true is busy loop
-                result = heartbeat();
+                isBusyLoop = heartbeat();
             } catch (Exception e) {
-                result = false;
+                isBusyLoop = true;
                 log.error("Heartbeat occur error, stopped=" + stopped, e);
             }
 
@@ -73,8 +73,8 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                 log.debug("Heartbeat processed time: {}", end - start);
             }
 
-            // if result=false, need sleep a moment
-            if (!result) {
+            // if busyLoop, need sleep a moment
+            if (isBusyLoop) {
                 // gap period milliseconds
                 long sleepTimeMillis = heartbeatPeriodMs - (end % heartbeatPeriodMs);
                 try {
@@ -95,15 +95,6 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
 
         stopped.compareAndSet(false, true);
         log.info("Heartbeat end.");
-    }
-
-    /**
-     * Returns heartbeat period milliseconds.
-     *
-     * @return heartbeat period milliseconds
-     */
-    public final long heartbeatPeriodMs() {
-        return heartbeatPeriodMs;
     }
 
     /**

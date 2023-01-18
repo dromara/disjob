@@ -25,9 +25,9 @@ public interface SchedTaskMapper {
 
     SchedTask getByTaskId(long taskId);
 
-    List<SchedTask> getByTrackId(long trackId);
+    List<SchedTask> findMediumByTrackId(long trackId);
 
-    List<SchedTask> findByTrackId(long trackId);
+    List<SchedTask> findLargeByTrackId(long trackId);
 
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
@@ -66,5 +66,15 @@ public interface SchedTaskMapper {
      * @return delete sql affected rows
      */
     int deleteByTrackId(long trackId);
+
+    /**
+     * Update sched_task.worker value when worker received the task
+     *
+     * @param taskIds the list of task id
+     * @param worker  the worker
+     * @return update sql affected rows
+     */
+    int updateWorker(@Param("taskIds") List<Long> taskIds,
+                     @Param("worker") String worker);
 
 }

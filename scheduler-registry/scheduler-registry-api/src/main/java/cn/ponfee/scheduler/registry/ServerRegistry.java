@@ -82,7 +82,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected final void refreshDiscoveredServers(List<D> servers) {
         discoveryServer.refreshServers(servers);
         if (log.isDebugEnabled()) {
-            log.debug("Refreshed discovery servers: {} - {}", discoveryRole.name(), servers);
+            log.debug("Refreshed discovery servers: {} | {}", discoveryRole.name(), servers);
         }
     }
 

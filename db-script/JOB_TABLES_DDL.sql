@@ -137,7 +137,9 @@ CREATE TABLE `sched_depend` (
 -- ----------------------------
 -- INITIALIZE DATA
 -- ----------------------------
-INSERT INTO sched_lock(`name`) VALUES ('scan_job');
-INSERT INTO sched_lock(`name`) VALUES ('scan_track');
+INSERT INTO sched_lock(`name`) VALUES ('scan_triggering_job');
+INSERT INTO sched_lock(`name`) VALUES ('scan_waiting_track');
+INSERT INTO sched_lock(`name`) VALUES ('scan_running_track');
+
 INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (3988904755200, 'default', 'NoopJobHandler', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param', 0, 0, 0, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1655199233000, 1655199234000);
 INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (4236701614080, 'default', 'PrimeCountJobHandler', 'cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler', 0, '{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}', 2, 2, 1000, 2, '2022-10-06 22:53:00', 0, 1, 3, 1, 1665067980000, NULL);

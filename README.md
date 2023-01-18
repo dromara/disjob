@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-1.7-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
+[![Maven Central](https://img.shields.io/badge/maven--central-1.8-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
 
 **`简体中文`** | [English](README.en.md)
 
@@ -67,7 +67,7 @@ distributed-scheduler
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-{xxx}</artifactId>
-  <version>1.7</version>
+  <version>1.8</version>
 </dependency>
 ```
 
@@ -81,13 +81,13 @@ distributed-scheduler
 
 1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
 
-2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
+2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources](scheduler-samples/scheduler-samples-common/src/main/resources)
   - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件
   - 不依赖Web容器的Worker应用的配置文件在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. 编写自己的任务处理器[PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
-4. 启动[scheduler-samples/](scheduler-samples/)目录下的各应用，包括：
+4. 启动[scheduler-samples](scheduler-samples)目录下的各应用，包括：
 
 ```Plain Text
  1）scheduler-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
@@ -99,7 +99,7 @@ distributed-scheduler
 - 已配置不同端口，可同时启动
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
 - 注册中心及分发任务的具体实现：在[pom文件](scheduler-samples/scheduler-samples-common/pom.xml)中引入指定的依赖即可
-- 项目已内置一些本地启动的server(部分依赖本地docker)
+- 项目已内置一些本地启动的server(部分要依赖本地docker环境)
   - [内置redis-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java)
   - [内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)
   - [内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)

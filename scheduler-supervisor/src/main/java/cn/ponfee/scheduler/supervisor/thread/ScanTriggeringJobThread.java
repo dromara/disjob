@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.supervisor;
+package cn.ponfee.scheduler.supervisor.thread;
 
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.date.Dates;
@@ -17,7 +17,7 @@ import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.model.SchedTrack;
-import cn.ponfee.scheduler.supervisor.manager.JobManager;
+import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.dao.DuplicateKeyException;
@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
+
 /**
  * The schedule job heartbeat thread, <br/>
  * find the sched_job which will be trigger, <br/>
@@ -34,44 +36,43 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
+public class ScanTriggeringJobThread extends AbstractHeartbeatThread {
 
-    private static final int QUERY_BATCH_SIZE = 200;
     private static final int SCAN_COLLISION_INTERVAL_SECONDS = 60;
 
     private final DoInLocked doInLocked;
-    private final JobManager jobManager;
-    private final long afterSeconds;
+    private final SchedulerJobManager schedulerJobManager;
+    private final long afterMilliseconds;
 
-    public ScanJobHeartbeatThread(int heartbeatPeriodMs,
-                                  DoInLocked doInLocked,
-                                  JobManager jobManager) {
-        super(heartbeatPeriodMs);
+    public ScanTriggeringJobThread(long heartbeatPeriodMs0,
+                                   DoInLocked doInLocked,
+                                   SchedulerJobManager schedulerJobManager) {
+        super(heartbeatPeriodMs0);
         this.doInLocked = doInLocked;
-        this.jobManager = jobManager;
-        this.afterSeconds = heartbeatPeriodMs() << 1;
+        this.schedulerJobManager = schedulerJobManager;
+        this.afterMilliseconds = (heartbeatPeriodMs << 2); // 3s * 4 = 12s
     }
 
     @Override
     protected boolean heartbeat() {
-        if (jobManager.hasNotFoundWorkers()) {
+        if (schedulerJobManager.hasNotFoundWorkers()) {
             log.warn("Not found available worker.");
-            return false;
+            return true;
         }
         Boolean result = doInLocked.apply(() -> {
             Date now = new Date();
-            long maxNextTriggerTime = now.getTime() + afterSeconds;
-            List<SchedJob> jobs = jobManager.findBeTriggering(maxNextTriggerTime, QUERY_BATCH_SIZE);
+            long maxNextTriggerTime = now.getTime() + afterMilliseconds;
+            List<SchedJob> jobs = schedulerJobManager.findBeTriggering(maxNextTriggerTime, PROCESS_BATCH_SIZE);
             if (jobs == null || jobs.isEmpty()) {
-                return false;
+                return true;
             }
             for (SchedJob job : jobs) {
                 processJob(job, now, maxNextTriggerTime);
             }
-            return true;
+            return false;
         });
 
-        return result != null && result;
+        return result == null || result;
     }
 
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {
@@ -81,15 +82,15 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             if (job.getNextTriggerTime() == null) {
                 job.setRemark("Stop recompute reason: has not next trigger time");
                 log.info(job.getRemark() + ": " + job);
-                jobManager.stopJob(job);
+                schedulerJobManager.stopJob(job);
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
-                jobManager.updateNextTriggerTime(job);
+                schedulerJobManager.updateNextTriggerTime(job);
                 return;
             }
 
             // check has available workers
-            if (jobManager.hasNotFoundWorkers(job.getJobGroup())) {
+            if (schedulerJobManager.hasNotFoundWorkers(job.getJobGroup())) {
                 updateNextScanTime(job, now, 15);
                 log.warn("Scan job not found available group '{}' workers.", job.getJobGroup());
                 return;
@@ -102,29 +103,29 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
 
             // 1、build sched track and sched task list
             SchedTrack track = SchedTrack.create(
-                jobManager.generateId(), job.getJobId(), RunType.SCHEDULE, job.getNextTriggerTime(), 0, now
+                schedulerJobManager.generateId(), job.getJobId(), RunType.SCHEDULE, job.getNextTriggerTime(), 0, now
             );
-            List<SchedTask> tasks = jobManager.splitTasks(job, track.getTrackId(), now);
+            List<SchedTask> tasks = schedulerJobManager.splitTasks(job, track.getTrackId(), now);
 
             // 2、refresh next trigger time
             refreshNextTriggerTime(job, job.getNextTriggerTime(), now);
 
             // 3、update and save data
-            if (jobManager.updateAndSave(job, track, tasks)) {
+            if (schedulerJobManager.updateAndSave(job, track, tasks)) {
                 // 4、dispatch job task
-                jobManager.dispatch(job, track, tasks);
+                schedulerJobManager.dispatch(job, track, tasks);
             }
         } catch (DuplicateKeyException e){
-            if (jobManager.updateNextTriggerTime(job)) {
-                log.info("Conflict trigger time: {} - {}", job, e.getMessage());
+            if (schedulerJobManager.updateNextTriggerTime(job)) {
+                log.info("Conflict trigger time: {} | {}", job, e.getMessage());
             } else {
-                log.error("Conflict trigger time: {} - {}", job, e.getMessage());
+                log.error("Conflict trigger time: {} | {}", job, e.getMessage());
             }
         } catch (JobException | IllegalArgumentException e) {
             log.error(e.getMessage() + ": " + job, e);
             job.setRemark("Stop reason: " + e.getMessage());
             job.setNextTriggerTime(null);
-            jobManager.stopJob(job);
+            schedulerJobManager.stopJob(job);
         } catch (Exception e) {
             log.error("Process handle job occur error: " + job, e);
         }
@@ -138,7 +139,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
      * @return accurate next trigger time milliseconds
      */
     private Long recomputeNextTriggerTime(SchedJob job, Date now) {
-        if (now.getTime() <= (job.getNextTriggerTime() + afterSeconds)) {
+        if (now.getTime() <= (job.getNextTriggerTime() + afterMilliseconds)) {
             // 1、如果没有过期：保持原有的nextTriggerTime
             return job.getNextTriggerTime();
         } else {
@@ -161,7 +162,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             return false;
         }
 
-        SchedTrack lastTrack = jobManager.getByTriggerTime(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
+        SchedTrack lastTrack = schedulerJobManager.getByTriggerTime(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
         if (lastTrack == null) {
             return false;
         }
@@ -175,16 +176,17 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
             case PAUSED:
                 return checkBlockCollisionTrigger(job, Collections.singletonList(trackId), collisionStrategy, now);
             case RUNNING:
-                if (jobManager.hasAliveExecuting(trackId)) {
+                List<SchedTask> tasks = schedulerJobManager.findMediumTaskByTrackId(trackId);
+                if (schedulerJobManager.hasAliveExecuting(tasks)) {
                     return checkBlockCollisionTrigger(job, Collections.singletonList(trackId), collisionStrategy, now);
                 } else {
                     // all workers are dead
                     log.info("Collision, all worker dead, terminate the sched track: {}", trackId);
-                    jobManager.cancelTrack(trackId, Operations.COLLISION_CANCEL);
+                    schedulerJobManager.cancelTrack(trackId, Operations.COLLISION_CANCEL);
                     return false;
                 }
             case CANCELED:
-                List<SchedTrack> list = jobManager.findUnterminatedRetry(trackId);
+                List<SchedTrack> list = schedulerJobManager.findUnterminatedRetry(trackId);
                 if (CollectionUtils.isEmpty(list)) {
                     return false;
                 } else {
@@ -213,7 +215,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
                     job.setRemark("Disable collision reason: has not next trigger time.");
                     job.setJobState(JobState.DISABLE.value());
                 }
-                jobManager.updateNextTriggerTime(job);
+                schedulerJobManager.updateNextTriggerTime(job);
                 return true;
             case SERIAL:
                 // 串行执行：更新下一次的扫描时间
@@ -221,7 +223,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                trackIds.forEach(trackId -> CheckedThrowing.supplier(() -> jobManager.cancelTrack(trackId, Operations.COLLISION_CANCEL)));
+                trackIds.forEach(trackId -> CheckedThrowing.supplier(() -> schedulerJobManager.cancelTrack(trackId, Operations.COLLISION_CANCEL)));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collision strategy: " + collisionStrategy.name());
@@ -230,7 +232,7 @@ public class ScanJobHeartbeatThread extends AbstractHeartbeatThread {
 
     private void updateNextScanTime(SchedJob job, Date now, int delayedSeconds) {
         Date nextScanTime = Dates.plusSeconds(now, delayedSeconds);
-        jobManager.updateNextScanTime(job.getJobId(), nextScanTime, job.getVersion());
+        schedulerJobManager.updateNextScanTime(job.getJobId(), nextScanTime, job.getVersion());
     }
 
     /**

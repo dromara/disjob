@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.samples.supervisor;
 
 import cn.ponfee.scheduler.samples.common.AbstractSchedulerSamplesApplication;
+import cn.ponfee.scheduler.samples.common.util.Constants;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import org.springframework.boot.SpringApplication;
 
@@ -19,6 +20,10 @@ import org.springframework.boot.SpringApplication;
  */
 @EnableSupervisor
 public class SupervisorApplication extends AbstractSchedulerSamplesApplication {
+
+    static {
+        System.setProperty(Constants.APP_NAME, "scheduler-samples-separately-supervisor");
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(SupervisorApplication.class, args);

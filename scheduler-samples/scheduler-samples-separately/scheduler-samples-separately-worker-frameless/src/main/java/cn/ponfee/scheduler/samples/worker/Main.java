@@ -23,6 +23,7 @@ import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
+import cn.ponfee.scheduler.samples.common.util.Constants;
 import cn.ponfee.scheduler.samples.worker.redis.AbstractRedisTemplateCreator;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
@@ -31,7 +32,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 
@@ -51,6 +51,10 @@ import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
  * @author Ponfee
  */
 public class Main {
+
+    static {
+        System.setProperty(Constants.APP_NAME, "scheduler-samples-separately-worker-frameless");
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
@@ -81,7 +85,7 @@ public class Main {
             .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(workerRegistry)
             .build();
-        SupervisorService supervisorClient = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
+        SupervisorService SupervisorServiceClient = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
 
         TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel(
             props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),
@@ -94,7 +98,7 @@ public class Main {
             .currentWorker(currentWorker)
             .maximumPoolSize(props.getInt(WORKER_KEY_PREFIX + ".maximum-pool-size"))
             .keepAliveTimeSeconds(props.getInt(WORKER_KEY_PREFIX + ".keep-alive-time-seconds"))
-            .supervisorClient(supervisorClient)
+            .SupervisorServiceClient(SupervisorServiceClient)
             .taskReceiver(taskReceiver)
             .workerRegistry(workerRegistry)
             .build();
@@ -120,13 +124,19 @@ public class Main {
         }
     }
 
-    private static void printBanner() {
+    private static void printBanner() throws IOException {
+        String banner = IOUtils.resourceToString("banner.txt", StandardCharsets.UTF_8, WorkerStartup.class.getClassLoader());
+        System.out.println(banner);
+
+        /*
         try (InputStream inputStream = new ClassPathResource("banner.txt").getInputStream()) {
             String banner = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             System.out.println(banner);
         } catch (Exception ignored) {
             //
         }
+        */
+
         /*
         try {
             Map<String, String> map = new ResourceScanner("/").scan4text("banner.txt");

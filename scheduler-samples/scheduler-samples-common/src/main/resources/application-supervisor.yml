@@ -1,4 +1,0 @@
-# scheduler supervisor configuration
-distributed.scheduler.supervisor:
-  job-heartbeat-period-ms: 2000
-  track-heartbeat-period-ms: 2000

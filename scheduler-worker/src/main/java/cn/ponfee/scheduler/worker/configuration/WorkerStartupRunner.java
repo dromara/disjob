@@ -36,14 +36,14 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
     public WorkerStartupRunner(Worker currentWorker,
                                WorkerProperties properties,
                                // if current server also is a supervisor -> JobManager, else -> DiscoveryRestProxy.create()
-                               SupervisorService supervisorClient,
+                               SupervisorService SupervisorServiceClient,
                                WorkerRegistry workerRegistry,
                                TaskReceiver taskReceiver) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
             .maximumPoolSize(properties.getMaximumPoolSize())
             .keepAliveTimeSeconds(properties.getKeepAliveTimeSeconds())
-            .supervisorClient(supervisorClient)
+            .SupervisorServiceClient(SupervisorServiceClient)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)
             .build();

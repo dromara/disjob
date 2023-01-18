@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-1.7-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
+[![Maven Central](https://img.shields.io/badge/maven--central-1.8-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
 
 **`English`** | [简体中文](README.md)
 
@@ -61,13 +61,13 @@ distributed-scheduler
 
 ## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
 
-> [Note](https://developer.aliyun.com/mvn/search): If it cannot download, please remove **aliyun maven central mirror** configuration from the `settings.xml` file.
+> [Note](https://developer.aliyun.com/mvn/search): If it cannot download, please remove **aliyun maven central mirror** configuration from the maven `settings.xml` file.
 
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-{xxx}</artifactId>
-  <version>1.7</version>
+  <version>1.8</version>
 </dependency>
 ```
 
@@ -81,13 +81,13 @@ distributed-scheduler
 
 1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
 
-2. Modify configuration files such as Mysql, Redis, Consul, Nacos, Zookeeper, Etcd: [scheduler-samples-common/src/main/resources/](scheduler-samples/scheduler-samples-common/src/main/resources/)
+2. Modify configuration files such as Mysql, Redis, Consul, Nacos, Zookeeper, Etcd: [scheduler-samples-common/src/main/resources](scheduler-samples/scheduler-samples-common/src/main/resources)
 - if use default localhost configuration([e.g consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file
 - non-web application worker configuration: [worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. Create a job handler class [PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
-4. Startup there applications [scheduler-samples/](scheduler-samples/): 
+4. Startup there applications [scheduler-samples](scheduler-samples): 
 
 ```Plain Text
  1）scheduler-samples-merged                        # Applicaion of merged deployment supervisor and worker

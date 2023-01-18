@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.samples.worker;
 
 import cn.ponfee.scheduler.samples.common.AbstractSchedulerSamplesApplication;
+import cn.ponfee.scheduler.samples.common.util.Constants;
 import cn.ponfee.scheduler.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
 
@@ -19,6 +20,10 @@ import org.springframework.boot.SpringApplication;
  */
 @EnableWorker
 public class WorkerApplication extends AbstractSchedulerSamplesApplication {
+
+    static {
+        System.setProperty(Constants.APP_NAME, "scheduler-samples-separately-worker-springboot");
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(WorkerApplication.class, args);

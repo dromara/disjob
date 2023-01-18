@@ -51,7 +51,7 @@ public interface SchedTrackMapper {
 
     List<SchedTrack> findExpireState(@Param("runState") int runState,
                                      @Param("expireTime") long expireTime,
-                                     @Param("maxUpdateTime") Date maxUpdateTime,
+                                     @Param("updateTime") Date updateTime,
                                      @Param("size") int size);
 
     List<SchedTrack> findUnterminatedRetry(long parentTrackId);

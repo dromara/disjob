@@ -51,14 +51,14 @@
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
-  <select id="getByTrackId" parameterType="_long" resultMap="LargeResultMap">
-    SELECT <include refid="Large_Column_List" />
+  <select id="findMediumByTrackId" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" />
     FROM sched_task
     WHERE track_id = #{trackId,jdbcType=BIGINT}
   </select>
 
-  <select id="findByTrackId" parameterType="_long" resultMap="BaseResultMap">
-    SELECT <include refid="Base_Column_List" />
+  <select id="findLargeByTrackId" parameterType="_long" resultMap="LargeResultMap">
+    SELECT <include refid="Large_Column_List" />
     FROM sched_task
     WHERE track_id = #{trackId,jdbcType=BIGINT}
   </select>
@@ -140,21 +140,12 @@
     WHERE track_id = #{trackId,jdbcType=BIGINT} AND execute_state > 30
   </delete>
 
-  <!--
-  <update id="updateWorker" parameterType="collection">
+  <update id="updateWorker">
     UPDATE sched_task
-      <trim prefix="SET worker = CASE task_id" suffix="END,">
-        <foreach collection="collection" item="item">
-          WHEN #{item.taskId} THEN #{item.worker,jdbcType=VARCHAR}
-        </foreach>
-      </trim>
-      version = version+1
-    WHERE execute_state = 10 AND task_id IN (
-        <foreach collection="collection" separator="," item="item">
-          #{item.taskId,jdbcType=BIGINT}
-        </foreach>
-      )
+    SET worker = #{worker,jdbcType=VARCHAR},
+        version = version+1
+    WHERE task_id IN (<foreach collection="taskIds" separator="," item="id">#{id,jdbcType=BIGINT}</foreach>)
+      AND execute_state = 10
   </update>
-  -->
 
 </mapper>

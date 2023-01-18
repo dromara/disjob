@@ -68,7 +68,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
         try {
             curatorFramework.create().creatingParentsIfNeeded().forPath(path);
         } catch (KeeperException.NodeExistsException e) {
-            LOG.debug("Node path already exists: {} - {}", path, e.getMessage());
+            LOG.debug("Node path already exists: {} | {}", path, e.getMessage());
         }
     }
 
@@ -76,7 +76,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
         try {
             curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (KeeperException.NodeExistsException e) {
-            LOG.debug("Node path already exists: {} - {}", path, e.getMessage());
+            LOG.debug("Node path already exists: {} | {}", path, e.getMessage());
             if (retries > 0) {
                 deletePath(path);
                 createEphemeral(path, --retries);
@@ -107,7 +107,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
         try {
             curatorFramework.delete()/*.guaranteed()*/.deletingChildrenIfNeeded().forPath(path);
         } catch (KeeperException.NoNodeException e) {
-            LOG.debug("Node path not exists: {} - {}", path, e.getMessage());
+            LOG.debug("Node path not exists: {} | {}", path, e.getMessage());
         }
     }
 
@@ -180,7 +180,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
                         LOG.info("curator patch children cache remove servers: {}", removingServer);
                         break;
                     default:
-                        LOG.debug("Discard zookeeper event: {} - {}", event.getType(), event.getData().getPath());
+                        LOG.debug("Discard zookeeper event: {} | {}", event.getType(), event.getData().getPath());
                         break;
                 }
             })

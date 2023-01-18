@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.samples.merged;
 
 import cn.ponfee.scheduler.samples.common.AbstractSchedulerSamplesApplication;
+import cn.ponfee.scheduler.samples.common.util.Constants;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
@@ -21,6 +22,10 @@ import org.springframework.boot.SpringApplication;
 @EnableSupervisor
 @EnableWorker
 public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
+
+    static {
+        System.setProperty(Constants.APP_NAME, "scheduler-samples-merged");
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(SchedulerApplication.class, args);

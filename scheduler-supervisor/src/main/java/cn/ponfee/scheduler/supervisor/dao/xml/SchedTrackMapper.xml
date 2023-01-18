@@ -94,7 +94,7 @@
     FROM sched_track
     WHERE run_state = #{runState,jdbcType=TINYINT} 
       AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
-      AND updated_at   &lt; #{maxUpdateTime,jdbcType=TIMESTAMP}
+      AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
     ORDER BY trigger_time ASC
     LIMIT #{size}
   </select>

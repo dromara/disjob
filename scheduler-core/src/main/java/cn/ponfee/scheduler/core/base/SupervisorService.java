@@ -17,6 +17,8 @@ import cn.ponfee.scheduler.core.param.ExecuteParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.List;
+
 /**
  * Supervisor provides api, for the worker communication.
  *
@@ -34,6 +36,9 @@ public interface SupervisorService extends Checkpoint {
 
     @PostMapping(PREFIX_PATH + "task/start")
     boolean startTask(ExecuteParam param) throws Exception;
+
+    @PostMapping(PREFIX_PATH + "task_worker/update")
+    boolean updateTaskWorker(List<Long> taskIds, String worker);
 
     @PostMapping(PREFIX_PATH + "task_error_msg/update")
     boolean updateTaskErrorMsg(long taskId, String errorMsg) throws Exception;
@@ -58,4 +63,5 @@ public interface SupervisorService extends Checkpoint {
     @Override
     @PostMapping(PREFIX_PATH + "task/checkpoint")
     boolean checkpoint(long taskId, String executeSnapshot) throws Exception;
+
 }

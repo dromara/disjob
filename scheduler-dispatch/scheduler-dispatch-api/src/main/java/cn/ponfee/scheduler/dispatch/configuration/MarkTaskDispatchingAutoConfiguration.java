@@ -19,7 +19,6 @@ public abstract class MarkTaskDispatchingAutoConfiguration {
         if (MUTEX.compareAndSet(false, true)) {
             log.info("Imported task dispatching: {}", getClass());
         } else {
-            log.error("Conflict importing task dispatching: {}", getClass());
             throw new Error("Conflict importing task dispatching: " + getClass());
         }
     }

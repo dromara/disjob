@@ -13,7 +13,7 @@ import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.SupervisorStartup;
-import cn.ponfee.scheduler.supervisor.manager.JobManager;
+import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -23,8 +23,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.core.Ordered;
 
-import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEAN_NAME_SCAN_JOB_LOCKED;
-import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRACK_LOCKED;
+import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.*;
 
 /**
  * Supervisor startup runner.
@@ -39,20 +38,21 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
     private final SupervisorStartup supervisorStartup;
 
     public SupervisorStartupRunner(Supervisor currentSupervisor,
-                                   SupervisorProperties config,
-                                   JobManager jobManager,
-                                   @Qualifier(SPRING_BEAN_NAME_SCAN_JOB_LOCKED) DoInLocked scanJobLocked,
-                                   @Qualifier(SPRING_BEAN_NAME_SCAN_TRACK_LOCKED) DoInLocked scanTrackLocked,
+                                   SupervisorProperties supervisorConfig,
+                                   SchedulerJobManager schedulerJobManager,
+                                   @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) DoInLocked scanTriggeringJobLocker,
+                                   @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_TRACK_LOCKER) DoInLocked scanWaitingTrackLocker,
+                                   @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_TRACK_LOCKER) DoInLocked scanRunningTrackLocker,
                                    SupervisorRegistry supervisorRegistry,
                                    TaskDispatcher taskDispatcher) {
         this.supervisorStartup = SupervisorStartup.builder()
             .currentSupervisor(currentSupervisor)
-            .jobHeartbeatPeriodMs(config.getJobHeartbeatPeriodMs())
-            .trackHeartbeatPeriodMs(config.getTrackHeartbeatPeriodMs())
+            .supervisorConfig(supervisorConfig)
             .supervisorRegistry(supervisorRegistry)
-            .jobManager(jobManager)
-            .scanJobLocked(scanJobLocked)
-            .scanTrackLocked(scanTrackLocked)
+            .schedulerJobManager(schedulerJobManager)
+            .scanTriggeringJobLocker(scanTriggeringJobLocker)
+            .scanWaitingTrackLocker(scanWaitingTrackLocker)
+            .scanRunningTrackLocker(scanRunningTrackLocker)
             .taskDispatcher(taskDispatcher)
             .build();
     }
