@@ -101,7 +101,7 @@ public @interface EnableWorker {
                 .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
                 .discoveryServer(workerRegistry)
                 .build();
-            return DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
+            return DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)

@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.springframework.http.HttpMethod.*;
+
 /**
  * Retry rest template(Method pattern)
  *
@@ -54,13 +56,12 @@ public class DiscoveryRestTemplate<D extends Server> {
 
     private final static Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
 
+    private static final Set<HttpMethod> QUERY_PARAMS = ImmutableSet.of(GET, DELETE, HEAD, OPTIONS);
+
     public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
     public static final Object[] EMPTY = new Object[0];
-    private static final Set<HttpMethod> QUERY_PARAMS = ImmutableSet.of(
-        HttpMethod.GET, HttpMethod.DELETE, HttpMethod.HEAD, HttpMethod.OPTIONS
-    );
 
     private final RestTemplate restTemplate;
     private final Discovery<D> discoveryServer;
@@ -93,14 +94,6 @@ public class DiscoveryRestTemplate<D extends Server> {
         this.maxRetryTimes = maxRetryTimes;
     }
 
-    public <T> T execute(String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
-        return doExecute(null, path, httpMethod, returnType, arguments);
-    }
-
-    public <T> T execute(String group, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
-        return doExecute(group, path, httpMethod, returnType, arguments);
-    }
-
     /**
      * 当returnType=Void.class时：
      * 1）如果响应的为非异常的http状态码，则返回结果都是null
@@ -115,10 +108,10 @@ public class DiscoveryRestTemplate<D extends Server> {
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    private <T> T doExecute(String group, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
+    public <T> T execute(String group, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
         List<D> servers = discoveryServer.getDiscoveredServers(group);
         if (CollectionUtils.isEmpty(servers)) {
-            throw new IllegalStateException("Not found available " + discoveryServer.discoveryRole().name());
+            throw new IllegalStateException("Not found available grouped '" + group + "' " + discoveryServer.discoveryRole().name());
         }
 
         int serverNumber = servers.size();

@@ -76,7 +76,7 @@ public class ObjectUtilsTest {
             for (Method method : clazz.getMethods()) {
                 if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
                     String cname = method.getDeclaringClass().getName();
-                    if (!cname.contains("$") && cname.startsWith("code.ponfee.commons")) {
+                    if (!cname.contains("$") && cname.startsWith("code.ponfee")) {
                         System.out.println(clazz+"  "+method);
                     }
                 }

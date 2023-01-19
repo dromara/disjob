@@ -109,6 +109,44 @@ public final class CheckedThrowing {
         }
     }
 
+    // -------------------------------------------------------------------------------checked
+
+    public static void checked(ThrowingRunnable runnable) {
+        try {
+            runnable.run();
+        } catch (Throwable t) {
+            throw toRuntimeException(t);
+        }
+    }
+
+    public static <R> R checked(ThrowingSupplier<R, ?> supplier) {
+        try {
+            return supplier.get();
+        } catch (Throwable t) {
+            throw toRuntimeException(t);
+        }
+    }
+
+    public static <E> void checked(ThrowingConsumer<E, ?> consumer, E arg) {
+        try {
+            consumer.accept(arg);
+        } catch (Throwable t) {
+            throw toRuntimeException(t);
+        }
+    }
+
+    public static <E, R> R checked(ThrowingFunction<E, R, ?> function, E arg) {
+        return caught(function, arg, null);
+    }
+
+    public static <E, R> R checked(ThrowingFunction<E, R, ?> function, E arg, R defaultValue) {
+        try {
+            return function.apply(arg);
+        } catch (Throwable t) {
+            throw toRuntimeException(t);
+        }
+    }
+
     // -------------------------------------------------------------------------------interface definitions
 
     @FunctionalInterface

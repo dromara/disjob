@@ -55,7 +55,7 @@ public class ScanTriggeringJobThread extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (schedulerJobManager.hasNotFoundWorkers()) {
+        if (schedulerJobManager.hasNotDiscoveredWorkers()) {
             log.warn("Not found available worker.");
             return true;
         }
@@ -90,7 +90,7 @@ public class ScanTriggeringJobThread extends AbstractHeartbeatThread {
             }
 
             // check has available workers
-            if (schedulerJobManager.hasNotFoundWorkers(job.getJobGroup())) {
+            if (schedulerJobManager.hasNotDiscoveredWorkers(job.getJobGroup())) {
                 updateNextScanTime(job, now, 15);
                 log.warn("Scan job not found available group '{}' workers.", job.getJobGroup());
                 return;

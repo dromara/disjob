@@ -46,7 +46,7 @@ public class ScanRunningTrackThread extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (schedulerJobManager.hasNotFoundWorkers()) {
+        if (schedulerJobManager.hasNotDiscoveredWorkers()) {
             log.warn("Not found available worker.");
             return true;
         }

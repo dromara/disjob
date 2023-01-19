@@ -128,37 +128,4 @@ public class CommonTest {
         }
     }
 
-    @Test
-    public void testMap() {
-        Map<String, Integer> map1 = new LinkedHashMap<>();
-        map1.put("a", 1);
-        map1.put("b", 2);
-        map1.put("c", 3);
-        map1.put("d", 3);
-        Assertions.assertEquals("{a=1, b=2, c=3, d=3}", map1.toString());
-
-        map1.put("c", 5);
-        Assertions.assertEquals("{a=1, b=2, c=5, d=3}", map1.toString());
-
-        Collection<Integer> values1 = map1.values();
-
-        Assertions.assertEquals("[1, 2, 5, 3]", values1.toString());
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> values1.add(5));
-
-        values1.remove(5);
-        Assertions.assertEquals("[1, 2, 3]", values1.toString());
-
-        map1.put("e", 7);
-        Assertions.assertEquals("[1, 2, 3, 7]", values1.toString());
-
-        // --------------------------------------------------map2
-        Map<String, Integer> map2 = Collections.unmodifiableMap(map1);
-        Assertions.assertEquals("{a=1, b=2, d=3, e=7}", map2.toString());
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> map2.put("f", 8));
-
-        Collection<Integer> values2 = map2.values();
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> values2.add(10));
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> values2.remove(1));
-    }
-
 }

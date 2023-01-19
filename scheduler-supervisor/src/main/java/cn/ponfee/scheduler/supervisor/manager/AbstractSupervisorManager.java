@@ -101,15 +101,15 @@ public abstract class AbstractSupervisorManager {
 
     public boolean isAliveWorker(Worker worker) {
         return worker != null
-            && discoveryWorker.isDiscoveredServerAlive(worker);
+            && discoveryWorker.isDiscoveredServer(worker);
     }
 
-    public boolean hasNotFoundWorkers(String group) {
+    public boolean hasNotDiscoveredWorkers(String group) {
         return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers(group));
     }
 
-    public boolean hasNotFoundWorkers() {
-        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers());
+    public boolean hasNotDiscoveredWorkers() {
+        return !discoveryWorker.hasDiscoveredServers();
     }
 
     public boolean dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {

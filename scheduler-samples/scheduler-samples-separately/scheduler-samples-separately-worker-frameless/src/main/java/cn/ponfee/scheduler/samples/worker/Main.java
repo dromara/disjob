@@ -84,7 +84,7 @@ public class Main {
             .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(workerRegistry)
             .build();
-        SupervisorService SupervisorServiceClient = DiscoveryRestProxy.create(SupervisorService.class, discoveryRestTemplate);
+        SupervisorService SupervisorServiceClient = DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
 
         TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel(
             props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),

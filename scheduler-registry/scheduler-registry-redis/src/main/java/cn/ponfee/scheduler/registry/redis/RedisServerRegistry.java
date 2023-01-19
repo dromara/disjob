@@ -107,16 +107,24 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         return result != null && result;
     }
 
+    // ------------------------------------------------------------------redis的pub/sub并不是很可靠，所以这里去定时刷新
+
     @Override
     public final List<D> getDiscoveredServers(String group) {
-        if (requireRefresh()) {
-            synchronized (this) {
-                if (requireRefresh()) {
-                    doRefreshDiscoveryServers();
-                }
-            }
-        }
+        doRefreshDiscoveryServersIfNecessary();
         return super.getDiscoveredServers(group);
+    }
+
+    @Override
+    public final boolean hasDiscoveredServers() {
+        doRefreshDiscoveryServersIfNecessary();
+        return super.hasDiscoveredServers();
+    }
+
+    @Override
+    public final boolean isDiscoveredServer(D server) {
+        doRefreshDiscoveryServersIfNecessary();
+        return super.isDiscoveredServer(server);
     }
 
     // ------------------------------------------------------------------Registry
@@ -139,15 +147,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         Throwables.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
         Throwables.caught(() -> publish(server, EventType.DEREGISTER));
         log.info("Server deregister: {} | {}", registryRole.name(), server);
-    }
-
-    // ------------------------------------------------------------------Discovery
-
-    @Override
-    public boolean isDiscoveredServerAlive(D server) {
-        ZSetOperations<String, String> zsetOps = stringRedisTemplate.opsForZSet();
-        Double aliveTimeMillis = zsetOps.score(discoveryRootPath, server.serialize());
-        return aliveTimeMillis != null && aliveTimeMillis > System.currentTimeMillis();
     }
 
     // ------------------------------------------------------------------Close
@@ -194,7 +193,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         stringRedisTemplate.convertAndSend(registryChannel, publish);
     }
 
-    private synchronized void subscribe(EventType eventType, D server) {
+    private void subscribe(EventType eventType, D server) {
         // refresh the discovery
         doRefreshDiscoveryServers();
     }
@@ -222,7 +221,18 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         });
     }
 
-    private void doRefreshDiscoveryServers() {
+    private void doRefreshDiscoveryServersIfNecessary() {
+        if (!requireRefresh()) {
+            return;
+        }
+        synchronized (this) {
+            if (requireRefresh()) {
+                doRefreshDiscoveryServers();
+            }
+        }
+    }
+
+    private synchronized void doRefreshDiscoveryServers() {
         long now = System.currentTimeMillis();
         List<Object> result = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
             @Override

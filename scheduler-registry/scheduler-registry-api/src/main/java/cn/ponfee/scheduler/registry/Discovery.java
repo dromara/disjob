@@ -21,15 +21,6 @@ import java.util.List;
 public interface Discovery<D extends Server> extends AutoCloseable {
 
     /**
-     * Gets all alive discovered servers.
-     *
-     * @return all alive discovered servers
-     */
-    default List<D> getDiscoveredServers() {
-        return getDiscoveredServers(null);
-    }
-
-    /**
      * Gets grouped alive discovered servers.
      *
      * @param group the discovered interested group
@@ -38,14 +29,18 @@ public interface Discovery<D extends Server> extends AutoCloseable {
     List<D> getDiscoveredServers(String group);
 
     /**
+     * Returns is whether discovered any server.
+     * @return {@code true} if discovered at least one server.
+     */
+    boolean hasDiscoveredServers();
+
+    /**
      * Returns a boolean for the server is whether alive.
      *
      * @param server the server
      * @return {@code true} if is alive
      */
-    default boolean isDiscoveredServerAlive(D server) {
-        return getDiscoveredServers().contains(server);
-    }
+    boolean isDiscoveredServer(D server);
 
     /**
      * Returns discovery server role.

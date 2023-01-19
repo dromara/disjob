@@ -18,7 +18,6 @@ import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.registry.Discovery;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
 import com.google.common.collect.Lists;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,7 +68,7 @@ public class RotatingTimingWheelThread extends AbstractHeartbeatThread {
 
     private void process() {
         // check has available supervisors
-        if (CollectionUtils.isEmpty(discoverySupervisor.getDiscoveredServers())) {
+        if (!discoverySupervisor.hasDiscoveredServers()) {
             if ((round & 0x1F) == 0) {
                 log.warn("Not found available supervisor.");
             }

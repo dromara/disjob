@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.registry;
 
-import cn.ponfee.scheduler.common.base.DoubleListViewer;
+import cn.ponfee.scheduler.common.base.ImmutableHashList;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.core.base.Supervisor;
@@ -19,10 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -91,6 +93,16 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         return discoveryServer.getServers(group);
     }
 
+    @Override
+    public boolean hasDiscoveredServers() {
+        return discoveryServer.hasServers();
+    }
+
+    @Override
+    public boolean isDiscoveredServer(D server) {
+        return discoveryServer.isAlive(server);
+    }
+
     /**
      * Close registry.
      */
@@ -121,25 +133,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         return namespace.trim() + separator;
     }
 
-    /**
-     * Sort for help use server route
-     *
-     * @param servers    the server list
-     * @param sortMapper the sort value mapper
-     * @param <S>        server type
-     * @return sorted list of servers
-     * @see cn.ponfee.scheduler.core.enums.RouteStrategy
-     * @see cn.ponfee.scheduler.core.route.ExecutionRouter
-     */
-    private static <S extends Server, T extends Comparable<T>> List<S> sortServers(List<S> servers, Function<S, T> sortMapper) {
-        if (CollectionUtils.isEmpty(servers)) {
-            return Collections.emptyList();
-        }
-
-        servers.sort(Comparator.comparing(sortMapper));
-        return Collections.unmodifiableList(servers);
-    }
-
     private static <S extends Server> DiscoveryServer<S> createDiscoveryServer(ServerRole discoveryRole) {
         switch (discoveryRole) {
             case WORKER:
@@ -159,9 +152,13 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      */
     private static abstract class DiscoveryServer<S extends Server> {
 
+        abstract void refreshServers(List<S> servers);
+
         abstract List<S> getServers(String group);
 
-        abstract void refreshServers(List<S> servers);
+        abstract boolean hasServers();
+
+        abstract boolean isAlive(S server);
 
         abstract void close();
     }
@@ -170,17 +167,27 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      * Discovery supervisor.
      */
     private static final class DiscoverySupervisor extends DiscoveryServer<Supervisor> {
-        private volatile List<Supervisor> supervisors = Collections.emptyList();
+        private volatile ImmutableHashList<String, Supervisor> supervisors = ImmutableHashList.empty();
 
         @Override
-        List<Supervisor> getServers(String group) {
-            Assert.isNull(group, "Supervisor not support group, the group argument expect null, but actual is '" + group + "'.");
-            return supervisors;
+        void refreshServers(List<Supervisor> discoveredSupervisors) {
+            this.supervisors = ImmutableHashList.of(discoveredSupervisors, Supervisor::serialize);
         }
 
         @Override
-        void refreshServers(List<Supervisor> servers) {
-            this.supervisors = sortServers(servers, Server::getHost);
+        List<Supervisor> getServers(String group) {
+            Assert.isNull(group, "Discovery supervisor not support grouping.");
+            return supervisors.values();
+        }
+
+        @Override
+        boolean hasServers() {
+            return !supervisors.isEmpty();
+        }
+
+        @Override
+        boolean isAlive(Supervisor supervisor) {
+            return supervisors.contains(supervisor);
         }
 
         @Override
@@ -193,39 +200,42 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      * Discovery worker.
      */
     private static final class DiscoveryWorker extends DiscoveryServer<Worker> {
-        private volatile Map<String, List<Worker>> groupedWorkers = Collections.emptyMap();
-        private volatile List<Worker> allWorkers = Collections.emptyList();
-
-        @Override
-        List<Worker> getServers(String group) {
-            return group == null ? allWorkers : groupedWorkers.get(group);
-        }
+        private volatile Map<String, ImmutableHashList<String, Worker>> groupedWorkers = Collections.emptyMap();
 
         @Override
         void refreshServers(List<Worker> discoveredWorkers) {
-            Map<String, List<Worker>> map;
-            List<Worker> list;
             if (CollectionUtils.isEmpty(discoveredWorkers)) {
-                map = Collections.emptyMap();
-                list = Collections.emptyList();
+                this.groupedWorkers = Collections.emptyMap();
             } else {
-                // unnecessary use Collections.unmodifiableMap(map)
-                map = discoveredWorkers.stream()
+                this.groupedWorkers = discoveredWorkers.stream()
                     .collect(Collectors.groupingBy(Worker::getGroup))
                     .entrySet()
                     .stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> sortServers(e.getValue(), Worker::getInstanceId)));
-                list = new DoubleListViewer<>(map.values());
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> ImmutableHashList.of(e.getValue(), Worker::serialize)));
             }
+        }
 
-            this.groupedWorkers = map;
-            this.allWorkers = list;
+        @Override
+        List<Worker> getServers(String group) {
+            Assert.hasText(group, "Discovery worker must be grouping.");
+            ImmutableHashList<String, Worker> workers = groupedWorkers.get(group);
+            return workers == null ? Collections.emptyList() : workers.values();
+        }
+
+        @Override
+        boolean hasServers() {
+            return !groupedWorkers.isEmpty();
+        }
+
+        @Override
+        boolean isAlive(Worker worker) {
+            ImmutableHashList<String, Worker> workers = groupedWorkers.get(worker.getGroup());
+            return workers == null ? false : workers.contains(worker);
         }
 
         @Override
         void close() {
             this.groupedWorkers = null;
-            this.allWorkers = null;
         }
     }
 

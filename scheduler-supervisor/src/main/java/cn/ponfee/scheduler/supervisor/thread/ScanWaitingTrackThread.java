@@ -46,7 +46,7 @@ public class ScanWaitingTrackThread extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (schedulerJobManager.hasNotFoundWorkers()) {
+        if (schedulerJobManager.hasNotDiscoveredWorkers()) {
             log.warn("Not found available worker.");
             return true;
         }
@@ -108,7 +108,7 @@ public class ScanWaitingTrackThread extends AbstractHeartbeatThread {
         }
 
         // check not found worker
-        if (schedulerJobManager.hasNotFoundWorkers(job.getJobGroup())) {
+        if (schedulerJobManager.hasNotDiscoveredWorkers(job.getJobGroup())) {
             schedulerJobManager.renewUpdateTime(track, now);
             log.warn("Scan track not found available group '{}' workers.", job.getJobGroup());
             return;

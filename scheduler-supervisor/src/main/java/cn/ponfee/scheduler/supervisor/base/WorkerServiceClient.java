@@ -13,6 +13,7 @@ import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.JobHandlerUtils;
 import cn.ponfee.scheduler.core.handle.SplitTask;
+import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 
 import java.util.List;
 
@@ -58,9 +59,14 @@ public class WorkerServiceClient {
     // ------------------------------------------------------------private methods
 
     private WorkerService get(String group) {
-        return (remoteWorkerService == null || group.equals(currentGroup))
-            ? LOCAL_WORKER_SERVICE
-            : remoteWorkerService;
+        if ((remoteWorkerService == null || group.equals(currentGroup))) {
+            return LOCAL_WORKER_SERVICE;
+        } else {
+            if (remoteWorkerService instanceof DiscoveryRestProxy.ImplantGroup) {
+                ((DiscoveryRestProxy.ImplantGroup) remoteWorkerService).group(group);
+            }
+            return remoteWorkerService;
+        }
     }
 
 }

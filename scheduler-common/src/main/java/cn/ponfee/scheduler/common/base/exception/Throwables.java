@@ -63,64 +63,7 @@ public final class Throwables {
         return "error: <" + ClassUtils.getName(throwable.getClass()) + ">";
     }
 
-    // -----------------------------------------------------------------ignore
-
-    /**
-     * Ignore the throwable
-     *
-     * @param ignored the Throwable
-     */
-    public static void ignore(Throwable ignored) {
-        ignore(ignored, true);
-    }
-
-    /**
-     * Ignore the throwable, if {@code console} is true then will be
-     * print the throwable stack trace to console
-     *
-     * @param ignored the Throwable
-     * @param console whether print console, {@code true} is print
-     */
-    public static void ignore(Throwable ignored, boolean console) {
-        if (console) {
-            console(ignored);
-        }
-    }
-
-    /**
-     * Prints the throwable stack trace to console
-     *
-     * @param throwable the Throwable
-     */
-    public static void console(Throwable throwable) {
-        throwable.printStackTrace();
-    }
-
-    // -----------------------------------------------------------------checked
-
-    public static void checked(Throwable throwable) {
-        checked(throwable, null);
-    }
-
-    /**
-     * Checked the throwable
-     *
-     * @param throwable the throwable
-     * @param msg       the msg
-     */
-    public static void checked(Throwable throwable, String msg) {
-        if (throwable instanceof RuntimeException) {
-            throw (RuntimeException) throwable;
-        } else {
-            if (msg != null) {
-                throw new RuntimeException(msg, throwable);
-            } else {
-                throw new RuntimeException(throwable);
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------caught
+    // -----------------------------------------------------------------caught throwable and log error message
 
     public static void caught(Runnable runnable) {
         try {

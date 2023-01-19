@@ -111,7 +111,7 @@ public @interface EnableSupervisor {
                     .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
                     .discoveryServer(supervisorRegistry)
                     .build();
-                WorkerService remoteWorkerService = DiscoveryRestProxy.create(WorkerService.class, discoveryRestTemplate);
+                WorkerService remoteWorkerService = DiscoveryRestProxy.create(true, WorkerService.class, discoveryRestTemplate);
                 return new WorkerServiceClient(remoteWorkerService, currentWorker);
             }
         }
