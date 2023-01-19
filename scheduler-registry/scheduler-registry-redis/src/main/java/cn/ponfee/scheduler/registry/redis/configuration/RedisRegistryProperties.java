@@ -10,7 +10,8 @@ package cn.ponfee.scheduler.registry.redis.configuration;
 
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.registry.AbstractRegistryProperties;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -18,7 +19,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author Ponfee
  */
-@Data
+@Getter
+@Setter
 @ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis")
 public class RedisRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -6079627443420731390L;
@@ -32,10 +34,5 @@ public class RedisRegistryProperties extends AbstractRegistryProperties {
      * Registry period milliseconds
      */
     private long registryPeriodMs = 3 * 1000;
-
-    /**
-     * Discovery period milliseconds
-     */
-    private long discoveryPeriodMs = 3 * 1000;
 
 }

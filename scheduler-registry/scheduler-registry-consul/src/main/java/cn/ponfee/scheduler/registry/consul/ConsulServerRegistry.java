@@ -190,7 +190,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 .map(HealthService::getService)
                 .filter(Objects::nonNull)
                 .map(s -> s.getId().substring(discoveryRootPath.length() + 1))
-                .map(s -> (D) discoveryRole.deserialize(s))
+                .<D>map(discoveryRole::deserialize)
                 .collect(Collectors.toList());
         }
         refreshDiscoveredServers(servers);

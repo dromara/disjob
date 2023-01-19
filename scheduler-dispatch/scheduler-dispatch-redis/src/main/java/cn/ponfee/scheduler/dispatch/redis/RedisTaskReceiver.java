@@ -9,10 +9,10 @@
 package cn.ponfee.scheduler.dispatch.redis;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
-import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.lock.RedisLock;
 import cn.ponfee.scheduler.common.spring.RedisKeyRenewal;
+import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
+import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
@@ -26,8 +26,6 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -69,14 +67,14 @@ public class RedisTaskReceiver extends TaskReceiver {
     /**
      * List left pop batch size
      */
-    private static final byte[] LIST_POP_BATCH_SIZE_BYTES = "200".getBytes(UTF_8);
+    private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(JobConstants.PROCESS_BATCH_SIZE).getBytes(UTF_8);
 
     private final Worker currentWorker;
     private final RedisTemplate<String, String> redisTemplate;
     private final RedisKeyRenewal redisKeyRenewal;
     private final byte[][] keysAndArgs;
-    private final ScheduledThreadPoolExecutor receiveTaskScheduledExecutor;
     private final AtomicBoolean started = new AtomicBoolean(false);
+    private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
     public RedisTaskReceiver(Worker currentWorker,
                              TimingWheel<ExecuteParam> timingWheel,
@@ -88,29 +86,24 @@ public class RedisTaskReceiver extends TaskReceiver {
         byte[] currentWorkerRedisKey = RedisTaskDispatchingUtils.buildDispatchTasksKey(currentWorker).getBytes();
         this.keysAndArgs = new byte[][]{currentWorkerRedisKey, LIST_POP_BATCH_SIZE_BYTES};
         this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, currentWorkerRedisKey);
-        this.receiveTaskScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_task_receiver", true), ThreadPoolExecutors.DISCARD);
+        this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000);
     }
 
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
+            LOG.warn("Repeat call start method.");
             return;
         }
-        receiveTaskScheduledExecutor.scheduleWithFixedDelay(() -> {
-            try {
-                doReceive();
-            } catch (Exception e) {
-                LOG.error("Redis task receive scheduled error.", e);
-            }
-        }, 3, 1, TimeUnit.SECONDS);
+        this.receiveHeartbeatThread.start();
     }
 
     @Override
     public void close() {
-        receiveTaskScheduledExecutor.shutdownNow();
+        this.receiveHeartbeatThread.close();
     }
 
-    private void doReceive() {
+    private boolean doReceive() {
         List<byte[]> result = redisTemplate.execute((RedisCallback<List<byte[]>>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
                 throw new UnsupportedOperationException("Unsupported pipelined or queueing redis operations.");
@@ -132,13 +125,26 @@ public class RedisTaskReceiver extends TaskReceiver {
         redisKeyRenewal.renewIfNecessary();
 
         if (result == null || result.isEmpty()) {
-            return;
+            return true;
         }
 
         for (byte[] bytes : result) {
             ExecuteParam executeParam = ExecuteParam.deserialize(bytes);
             executeParam.setWorker(currentWorker);
             super.receive(executeParam);
+        }
+
+        return result.size() < JobConstants.PROCESS_BATCH_SIZE;
+    }
+
+    private class ReceiveHeartbeatThread extends AbstractHeartbeatThread {
+        public ReceiveHeartbeatThread(long heartbeatPeriodMs) {
+            super(heartbeatPeriodMs);
+        }
+
+        @Override
+        protected boolean heartbeat() {
+            return doReceive();
         }
     }
 

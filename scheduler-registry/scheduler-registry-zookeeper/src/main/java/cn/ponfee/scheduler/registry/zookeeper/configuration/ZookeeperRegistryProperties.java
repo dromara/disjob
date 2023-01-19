@@ -21,9 +21,9 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  *
  * @author Ponfee
  */
-@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".zookeeper")
 @Getter
 @Setter
+@ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".zookeeper")
 public class ZookeeperRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -8395535372974631095L;
 

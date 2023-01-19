@@ -58,7 +58,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     // -------------------------------------------------Discovery
 
-    private final long discoveryPeriodMs;
     private volatile long nextRefreshTimeMillis = 0;
 
     // -------------------------------------------------Subscribe
@@ -69,10 +68,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
                                RedisRegistryProperties config) {
         super(config.getNamespace(), ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
-        String discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
-        long registryPeriodMs = config.getRegistryPeriodMs();
         this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_server_registry", true));
         this.registryScheduledExecutor.scheduleWithFixedDelay(() -> {
             if (closed.get()) {
@@ -83,9 +80,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             } catch (Throwable t) {
                 log.error("Do scheduled register occur error: " + registered, t);
             }
-        }, registryPeriodMs, registryPeriodMs, TimeUnit.MILLISECONDS);
-
-        this.discoveryPeriodMs = config.getDiscoveryPeriodMs();
+        }, config.getRegistryPeriodMs(), config.getRegistryPeriodMs(), TimeUnit.MILLISECONDS);
 
         // redis pub/sub
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
@@ -93,7 +88,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         container.setTaskExecutor(registryScheduledExecutor);
         MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, "subscribe");
         listenerAdapter.afterPropertiesSet();
-        container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryChannel));
+        container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryRootPath + separator + CHANNEL));
         container.afterPropertiesSet();
         container.start();
         this.redisMessageListenerContainer = container;
@@ -252,7 +247,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             discovered = Collections.emptySet();
         }
 
-        List<D> servers = discovered.stream().map(s -> (D) discoveryRole.deserialize(s)).collect(Collectors.toList());
+        List<D> servers = discovered.stream().<D>map(discoveryRole::deserialize).collect(Collectors.toList());
         refreshDiscoveredServers(servers);
 
         updateRefresh();
@@ -263,7 +258,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void updateRefresh() {
-        this.nextRefreshTimeMillis = System.currentTimeMillis() + discoveryPeriodMs;
+        this.nextRefreshTimeMillis = System.currentTimeMillis() + sessionTimeoutMs;
     }
 
 }

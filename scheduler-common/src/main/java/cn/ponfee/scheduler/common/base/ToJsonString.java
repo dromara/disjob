@@ -18,7 +18,7 @@ import cn.ponfee.scheduler.common.util.Jsons;
 public abstract class ToJsonString {
 
     @Override
-    public String toString() {
+    public final String toString() {
         return Jsons.toJson(this);
     }
 }

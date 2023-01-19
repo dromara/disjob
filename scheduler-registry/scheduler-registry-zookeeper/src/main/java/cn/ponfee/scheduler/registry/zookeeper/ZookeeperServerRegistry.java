@@ -127,7 +127,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         } else {
             servers = list.stream()
                 .filter(Objects::nonNull)
-                .map(s -> (D) discoveryRole.deserialize(s))
+                .<D>map(discoveryRole::deserialize)
                 .collect(Collectors.toList());
         }
         refreshDiscoveredServers(servers);

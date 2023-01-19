@@ -23,6 +23,8 @@ import java.lang.reflect.Modifier;
  */
 public class ObjectUtilsTest {
 
+    private final static String TEST_NAME = ObjectUtils.uuid32();
+
     @Test
     public void testNewInstance() {
         Assert.assertNotNull(Networks.getHostIp());
@@ -84,5 +86,4 @@ public class ObjectUtilsTest {
         }
     }
 
-    private final static String TEST_NAME = ObjectUtils.uuid32();
 }

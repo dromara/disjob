@@ -11,7 +11,6 @@ distributed.scheduler:
       namespace: redis_namespace
       session-timeout-ms: 60000
       registry-period-ms: 4000
-      discovery-period-ms: 4000
     consul:
       namespace: consul_namespace
       host: localhost

@@ -154,7 +154,6 @@ public class Main {
         config.setNamespace(props.getString(keyPrefix + ".namespace"));
         config.setSessionTimeoutMs(props.getLong(keyPrefix + ".session-timeout-ms", 30000));
         config.setRegistryPeriodMs(props.getLong(keyPrefix + ".registry-period-ms", 3000));
-        config.setDiscoveryPeriodMs(props.getLong(keyPrefix + ".discovery-period-ms", 3000));
         return new RedisWorkerRegistry(redisTemplate, config);
     }
 

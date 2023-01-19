@@ -52,13 +52,13 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
 
         while (!stopped.get()) {
             if (super.isInterrupted()) {
-                log.warn("Thread interrupted.");
+                log.warn("Thread exit by interrupted.");
                 stopped.compareAndSet(false, true);
                 return;
             }
 
             boolean isBusyLoop;
-            long start = System.currentTimeMillis();
+            long begin = System.currentTimeMillis();
 
             try {
                 // true is busy loop
@@ -70,12 +70,12 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
 
             long end = System.currentTimeMillis();
             if (log.isDebugEnabled()) {
-                log.debug("Heartbeat processed time: {}", end - start);
+                log.debug("Heartbeat processed time: {}", end - begin);
             }
 
             // if busyLoop, need sleep a moment
             if (isBusyLoop) {
-                // gap period milliseconds
+                // gap period milliseconds(with fixed delay)
                 long sleepTimeMillis = heartbeatPeriodMs - (end % heartbeatPeriodMs);
                 try {
                     TimeUnit.MILLISECONDS.sleep(sleepTimeMillis);
@@ -86,6 +86,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                     log.error("Sleep occur error in loop, stopped=" + stopped, e);
                     Thread.currentThread().interrupt();
                     if (stopped.get()) {
+                        log.info("Thread exit by stopped.");
                         return;
                     }
                 }

@@ -140,7 +140,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             servers = instances.stream()
                 .map(Instance::getInstanceId)
                 .filter(Objects::nonNull)
-                .map(s -> (D) discoveryRole.deserialize(s))
+                .<D>map(discoveryRole::deserialize)
                 .collect(Collectors.toList());
         }
         refreshDiscoveredServers(servers);

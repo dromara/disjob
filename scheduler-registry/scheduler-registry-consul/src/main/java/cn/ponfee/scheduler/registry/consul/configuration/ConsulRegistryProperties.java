@@ -10,7 +10,8 @@ package cn.ponfee.scheduler.registry.consul.configuration;
 
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.registry.AbstractRegistryProperties;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -18,7 +19,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author Ponfee
  */
-@Data
+@Getter
+@Setter
 @ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".consul")
 public class ConsulRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -851364562631134942L;

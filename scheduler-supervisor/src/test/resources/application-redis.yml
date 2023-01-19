@@ -25,4 +25,3 @@ spring.redis:
 distributed.scheduler.registry.redis:
     session-timeout-ms: 15000
     registry-period-ms: 2000
-    discovery-period-ms:  2000

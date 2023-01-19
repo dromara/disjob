@@ -8,18 +8,24 @@
 
 package cn.ponfee.scheduler.worker.configuration;
 
+import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.core.base.JobConstants;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.io.Serializable;
 
 /**
  * Worker configuration properties.
  *
  * @author Ponfee
  */
+@Getter
+@Setter
 @ConfigurationProperties(prefix = JobConstants.WORKER_KEY_PREFIX)
-@Data
-public class WorkerProperties {
+public class WorkerProperties extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = 7914242555106016172L;
 
     /**
      * Worker group name, default 'default' value.

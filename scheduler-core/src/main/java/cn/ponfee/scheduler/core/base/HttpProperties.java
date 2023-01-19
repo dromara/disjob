@@ -8,17 +8,23 @@
 
 package cn.ponfee.scheduler.core.base;
 
-import lombok.Data;
+import cn.ponfee.scheduler.common.base.ToJsonString;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.io.Serializable;
 
 /**
  * Worker configuration properties.
  *
  * @author Ponfee
  */
+@Getter
+@Setter
 @ConfigurationProperties(prefix = JobConstants.HTTP_KEY_PREFIX)
-@Data
-public class HttpProperties {
+public class HttpProperties extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = 5956808059609905150L;
 
     /**
      * Http rest connect timeout milliseconds, default 2000.

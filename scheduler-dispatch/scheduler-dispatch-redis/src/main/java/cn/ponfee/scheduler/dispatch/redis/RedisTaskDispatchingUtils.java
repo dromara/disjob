@@ -18,8 +18,10 @@ import cn.ponfee.scheduler.core.base.Worker;
  */
 final class RedisTaskDispatchingUtils {
 
+    private static final String REDIS_DISPATCH_KEY_PREFIX = JobConstants.SCHEDULER_KEY_PREFIX + ".tasks.dispatch.";
+
     static String buildDispatchTasksKey(Worker worker) {
-        return String.format(JobConstants.SCHEDULER_KEY_PREFIX + ".dispatch.tasks.%s.%s", worker.getGroup(), worker.getInstanceId());
+        return REDIS_DISPATCH_KEY_PREFIX + worker.serialize();
     }
 
 }

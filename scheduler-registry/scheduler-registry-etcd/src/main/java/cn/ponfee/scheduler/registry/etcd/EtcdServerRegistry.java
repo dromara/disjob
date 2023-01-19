@@ -160,7 +160,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         } else {
             servers = list.stream()
                 .filter(Objects::nonNull)
-                .map(s -> (D) discoveryRole.deserialize(s))
+                .<D>map(discoveryRole::deserialize)
                 .collect(Collectors.toList());
         }
         refreshDiscoveredServers(servers);

@@ -50,9 +50,7 @@ import java.util.Date;
 //@ActiveProfiles({"STG"})
 public abstract class SpringBootTestBase<T> {
 
-    static {
-        EmbeddedMysqlAndRedisServer.starter().start();
-    }
+    private static EmbeddedMysqlAndRedisServer embeddedMysqlAndRedisServer;
 
     @EnableSupervisor
     @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
@@ -88,9 +86,12 @@ public abstract class SpringBootTestBase<T> {
     }
 
     @BeforeAll
-    public static void beforeAll() {
+    public synchronized static void beforeAll() {
         System.out.println("------------------------SpringBootTestBase#beforeAll#" + Dates.format(new Date()));
         System.setProperty(JobConstants.SPRING_WEB_SERVER_PORT, "8080");
+        if (embeddedMysqlAndRedisServer == null) {
+            embeddedMysqlAndRedisServer = EmbeddedMysqlAndRedisServer.starter().start();
+        }
     }
 
     @BeforeEach

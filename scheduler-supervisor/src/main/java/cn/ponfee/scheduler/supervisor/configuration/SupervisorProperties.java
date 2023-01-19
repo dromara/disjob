@@ -8,19 +8,25 @@
 
 package cn.ponfee.scheduler.supervisor.configuration;
 
+import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.core.base.JobConstants;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.Assert;
+
+import java.io.Serializable;
 
 /**
  * Supervisor configuration properties.
  *
  * @author Ponfee
  */
+@Getter
+@Setter
 @ConfigurationProperties(prefix = JobConstants.SUPERVISOR_KEY_PREFIX)
-@Data
-public class SupervisorProperties {
+public class SupervisorProperties extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -7896732123210543684L;
 
     /**
      * Scan triggering job period milliseconds

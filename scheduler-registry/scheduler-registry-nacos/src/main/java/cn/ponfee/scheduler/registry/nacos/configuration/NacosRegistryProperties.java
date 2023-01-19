@@ -10,7 +10,8 @@ package cn.ponfee.scheduler.registry.nacos.configuration;
 
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.registry.AbstractRegistryProperties;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cglib.beans.BeanMap;
 
@@ -22,7 +23,8 @@ import java.util.Properties;
  * @author Ponfee
  * @see com.alibaba.nacos.api.PropertyKeyConst
  */
-@Data
+@Getter
+@Setter
 @ConfigurationProperties(prefix = JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".nacos")
 public class NacosRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = 2961908276104522907L;
