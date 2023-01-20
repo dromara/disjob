@@ -135,7 +135,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
      */
     private void stop(ExecuteParam stopParam) {
         Operations toOps = stopParam.operation();
-        Assert.isTrue(toOps != null && toOps != Operations.TRIGGER, "Invalid stop operation: " + toOps);
+        Assert.isTrue(toOps != null && toOps != Operations.TRIGGER, () -> "Invalid stop operation: " + toOps);
 
         if (closed.get()) {
             return;
@@ -505,7 +505,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             WorkerThread removed = pool.remove(param.getTaskId());
 
             // cannot happen
-            Assert.isTrue(thread == removed, "Inconsistent worker thread: " + param.getTaskId() + ", " + thread.getName() + ", " + removed.getName());
+            Assert.isTrue(thread == removed, () -> "Inconsistent worker thread: " + param.getTaskId() + ", " + thread.getName() + ", " + removed.getName());
             return param;
         }
 

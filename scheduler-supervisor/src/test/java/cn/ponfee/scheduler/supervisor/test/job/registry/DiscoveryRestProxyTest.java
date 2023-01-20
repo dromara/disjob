@@ -8,14 +8,8 @@
 
 package cn.ponfee.scheduler.supervisor.test.job.registry;
 
-import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.base.Supervisor;
-import cn.ponfee.scheduler.core.base.SupervisorService;
-import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
-import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.junit.jupiter.api.Test;
 
 /**

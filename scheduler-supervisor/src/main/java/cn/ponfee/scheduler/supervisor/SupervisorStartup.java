@@ -15,9 +15,9 @@ import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
-import cn.ponfee.scheduler.supervisor.thread.ScanRunningTrackThread;
-import cn.ponfee.scheduler.supervisor.thread.ScanTriggeringJobThread;
-import cn.ponfee.scheduler.supervisor.thread.ScanWaitingTrackThread;
+import cn.ponfee.scheduler.supervisor.thread.RunningTrackScanner;
+import cn.ponfee.scheduler.supervisor.thread.TriggeringJobScanner;
+import cn.ponfee.scheduler.supervisor.thread.WaitingTrackScanner;
 import org.springframework.util.Assert;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,9 +30,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SupervisorStartup implements AutoCloseable {
 
     private final Supervisor currentSupervisor;
-    private final ScanTriggeringJobThread scanTriggeringJobThread;
-    private final ScanWaitingTrackThread scanWaitingTrackThread;
-    private final ScanRunningTrackThread scanRunningTrackThread;
+    private final TriggeringJobScanner triggeringJobScanner;
+    private final WaitingTrackScanner waitingTrackScanner;
+    private final RunningTrackScanner runningTrackScanner;
     private final TaskDispatcher taskDispatcher;
     private final SupervisorRegistry supervisorRegistry;
 
@@ -58,13 +58,13 @@ public class SupervisorStartup implements AutoCloseable {
 
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
-        this.scanTriggeringJobThread = new ScanTriggeringJobThread(
+        this.triggeringJobScanner = new TriggeringJobScanner(
             supervisorConfig.getScanTriggeringJobPeriodMs(), scanTriggeringJobLocker, schedulerJobManager
         );
-        this.scanWaitingTrackThread = new ScanWaitingTrackThread(
+        this.waitingTrackScanner = new WaitingTrackScanner(
             supervisorConfig.getScanWaitingTrackPeriodMs(), scanWaitingTrackLocker, schedulerJobManager
         );
-        this.scanRunningTrackThread = new ScanRunningTrackThread(
+        this.runningTrackScanner = new RunningTrackScanner(
             supervisorConfig.getScanRunningTrackPeriodMs(), scanRunningTrackLocker, schedulerJobManager
         );
         this.taskDispatcher = taskDispatcher;
@@ -74,22 +74,22 @@ public class SupervisorStartup implements AutoCloseable {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        scanTriggeringJobThread.start();
-        scanWaitingTrackThread.start();
-        scanRunningTrackThread.start();
+        triggeringJobScanner.start();
+        waitingTrackScanner.start();
+        runningTrackScanner.start();
         supervisorRegistry.register(currentSupervisor);
     }
 
     @Override
     public void close() {
         Throwables.caught(supervisorRegistry::close);
-        Throwables.caught(scanRunningTrackThread::toStop);
-        Throwables.caught(scanWaitingTrackThread::toStop);
-        Throwables.caught(scanTriggeringJobThread::toStop);
+        Throwables.caught(runningTrackScanner::toStop);
+        Throwables.caught(waitingTrackScanner::toStop);
+        Throwables.caught(triggeringJobScanner::toStop);
         Throwables.caught(taskDispatcher::close);
-        Throwables.caught(() -> scanRunningTrackThread.doStop(1000));
-        Throwables.caught(() -> scanWaitingTrackThread.doStop(1000));
-        Throwables.caught(() -> scanTriggeringJobThread.doStop(1000));
+        Throwables.caught(() -> runningTrackScanner.doStop(1000));
+        Throwables.caught(() -> waitingTrackScanner.doStop(1000));
+        Throwables.caught(() -> triggeringJobScanner.doStop(1000));
     }
 
     // ----------------------------------------------------------------------------------------builder

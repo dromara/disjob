@@ -57,9 +57,9 @@ public class CuratorFrameworkClient implements AutoCloseable {
 
         curatorFramework.start();
         boolean isStarted = curatorFramework.getState().equals(CuratorFrameworkState.STARTED);
-        Assert.state(isStarted, "Curator framework not started: " + curatorFramework.getState());
+        Assert.state(isStarted, () -> "Curator framework not started: " + curatorFramework.getState());
         boolean isConnected = curatorFramework.blockUntilConnected(config.getMaxWaitTimeMs(), TimeUnit.MILLISECONDS);
-        Assert.state(isConnected, "Curator framework not connected: " + curatorFramework.getState());
+        Assert.state(isConnected, () -> "Curator framework not connected: " + curatorFramework.getState());
 
         this.reconnectCallback = reconnectCallback;
     }

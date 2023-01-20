@@ -13,8 +13,6 @@ import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,27 +24,20 @@ import java.nio.charset.StandardCharsets;
  */
 public class CommandJobHandler extends JobHandler<String> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CommandJobHandler.class);
-
     @Override
     public Result<String> execute(Checkpoint checkpoint) throws Exception {
         Process process = Runtime.getRuntime().exec(task.getTaskParam());
-
         try (InputStream input = process.getInputStream()) {
             String verbose = IOUtils.toString(input, StandardCharsets.UTF_8);
-
             process.waitFor();
             int code = process.exitValue();
             if (code == 0) {
-                LOG.info("Command execute success, verbose: {}.", verbose);
+                log.info("Command execute success: {} | {}", task.getId(), verbose);
                 return Result.success(verbose);
+            } else {
+                log.error("Command execute failed: {} | {} | {}", task, code, verbose);
+                return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + verbose);
             }
-
-            LOG.info("Command execute fail, code: {}, verbose: {}, task: {}.", code, verbose, task);
-            return Result.failure(
-                JobCodeMsg.JOB_EXECUTE_FAILED.getCode(),
-                "Command fail, code: " + code + ", verbose: " + verbose + ", task-id: " + task.getTaskId()
-            );
         }
     }
 

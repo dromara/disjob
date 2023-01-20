@@ -42,7 +42,7 @@ public class ExecuteParamTest {
         });
         String json = param.toString();
         System.out.println(json);
-        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"jobId\":3,\"triggerTime\":4,\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"instanceId\":\"i\"}}");
+        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"jobId\":3,\"triggerTime\":4,\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"workerId\":\"i\"}}");
         Assertions.assertEquals(json, JSON.parseObject(json, ExecuteParam.class).toString());
     }
 
@@ -59,7 +59,7 @@ public class ExecuteParamTest {
         });
         String json = param.toString();
         System.out.println(json);
-        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"jobId\":3,\"triggerTime\":4,\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"instanceId\":\"i\"}}");
+        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"trackId\":2,\"jobId\":3,\"triggerTime\":4,\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"workerId\":\"i\"}}");
         Assertions.assertEquals(json, Jsons.fromJson(json, ExecuteParam.class).toString());
     }
 

@@ -70,7 +70,7 @@ public class SchedTask extends BaseEntity implements Serializable {
     private String executeSnapshot;
 
     /**
-     * 工作进程(JVM进程，GROUP:INSTANCE-ID:HOST:PORT)
+     * 工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)
      */
     private String worker;
 

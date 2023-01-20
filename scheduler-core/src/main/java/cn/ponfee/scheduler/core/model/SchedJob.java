@@ -51,7 +51,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String jobHandler;
 
     /**
-     * Job状态：0-已停止；1-已启动；
+     * Job状态：0-已禁用；1-已启用；
      *
      * @see JobState
      */
@@ -158,7 +158,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String remark;
 
     /**
-     * 是否已删除
+     * 是否已删除：0-否；NULL-是(用NULL来解决因软删引起的唯一索引冲突问题)；
      */
     private Boolean deleted;
 
@@ -213,8 +213,8 @@ public class SchedJob extends BaseEntity implements Serializable {
 
         // verify
         JobState.of(jobState);
-        Assert.isTrue(weightScore > 0, "Invalid weight score: " + weightScore);
-        Assert.isTrue(executeTimeout >= 0, "Invalid execute timeout: " + executeTimeout);
+        Assert.isTrue(weightScore > 0, () -> "Invalid weight score: " + weightScore);
+        Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
         CollisionStrategy.of(collisionStrategy);
         MisfireStrategy.of(misfireStrategy);
         RouteStrategy.of(routeStrategy);

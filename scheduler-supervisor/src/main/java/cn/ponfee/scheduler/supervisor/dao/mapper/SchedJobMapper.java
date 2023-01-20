@@ -91,5 +91,4 @@ public interface SchedJobMapper {
      */
     int deleteByJobId(long jobId);
 
-    int countJobIds(List<Long> jobIds);
 }

@@ -104,7 +104,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             String[] array = parameterMap.get(argName);
             Assert.isTrue(
                 array == null || array.length <= 1,
-                "Argument cannot be multiple value, name: " + argName + ", value: " + Jsons.toJson(array)
+                () -> "Argument cannot be multiple value, name: " + argName + ", value: " + Jsons.toJson(array)
             );
             String argValue = Collects.get(array, 0);
             Type argType = method.getGenericParameterTypes()[i];

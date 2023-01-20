@@ -42,24 +42,24 @@
 
   <Loggers>
     <!-- additivity指定是否同时输出日志到父类的appender，缺省为true -->
-    <!--
     <Logger name="cn.ponfee.scheduler" level="INFO" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-    <Logger name="cn.ponfee.scheduler.supervisor.dao" level="INFO" additivity="false">
+    <!--
+    <Logger name="cn.ponfee.scheduler.supervisor.dao" level="DEBUG" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-    <Logger name="cn.ponfee.scheduler.registry" level="INFO" additivity="false">
+    <Logger name="cn.ponfee.scheduler.registry" level="DEBUG" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-    <Logger name="cn.ponfee.scheduler.supervisor" level="debug" additivity="false">
+    <Logger name="cn.ponfee.scheduler.supervisor" level="DEBUG" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
-    <Logger name="cn.ponfee.scheduler.worker" level="debug" additivity="false">
+    <Logger name="cn.ponfee.scheduler.worker" level="DEBUG" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>

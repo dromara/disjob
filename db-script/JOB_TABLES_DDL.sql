@@ -97,7 +97,7 @@ CREATE TABLE `sched_task` (
     `execute_duration`     bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT '执行时长(毫秒)',
     `execute_state`        tinyint(3)    unsigned  NOT NULL                                                       COMMENT '执行状态：10-等待执行；20-正在执行；30-暂停执行；40-正常完成；50-实例化失败取消；51-校验失败取消；52-初始化异常取消；53-执行失败取消；54-执行异常取消；55-执行超时取消；56-数据不一致取消；57-执行冲突取消(sched_job.collision_strategy=3)；58-手动取消；',
     `execute_snapshot`     text                    DEFAULT NULL                                                   COMMENT '保存的执行快照数据',
-    `worker`               varchar(255)            DEFAULT NULL                                                   COMMENT '工作进程(JVM进程，GROUP:INSTANCE-ID:HOST:PORT)',
+    `worker`               varchar(255)            DEFAULT NULL                                                   COMMENT '工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)',
     `error_msg`            varchar(4096)           DEFAULT NULL                                                   COMMENT '执行错误信息',
     `version`              int(11)       unsigned  NOT NULL DEFAULT '1'                                           COMMENT '行记录版本号',
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -141,5 +141,11 @@ INSERT INTO sched_lock(`name`) VALUES ('scan_triggering_job');
 INSERT INTO sched_lock(`name`) VALUES ('scan_waiting_track');
 INSERT INTO sched_lock(`name`) VALUES ('scan_running_track');
 
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (3988904755200, 'default', 'NoopJobHandler', 'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler', 0, 'test param', 0, 0, 0, 1, '0/5 * * * * ?', 0, 1, 3, 1, 1655199233000, 1655199234000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `retry_type`, `retry_count`, `retry_interval`, `trigger_type`, `trigger_conf`, `execute_timeout`, `collision_strategy`, `misfire_strategy`, `route_strategy`, `last_trigger_time`, `next_trigger_time`) VALUES (4236701614080, 'default', 'PrimeCountJobHandler', 'cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler', 0, '{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}', 2, 2, 1000, 2, '2022-10-06 22:53:00', 0, 1, 3, 1, 1665067980000, NULL);
+-- ----------------------------
+-- INITIALIZE TEST SAMPLES JOB
+-- ----------------------------
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `trigger_type`, `trigger_conf`, `misfire_strategy`, `next_trigger_time`) VALUES (3988904755200, 'default', 'noop-job',    'cn.ponfee.scheduler.core.handle.impl.NoopJobHandler',             1, '',                                                                  1, '0 0/5 * * * ?',       2, unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `trigger_type`, `trigger_conf`, `misfire_strategy`, `next_trigger_time`) VALUES (3988904755300, 'default', 'http-job',    'cn.ponfee.scheduler.core.handle.impl.HttpJobHandler',             1, '{"method":"GET", "url":"https://www.baidu.com"}',                   1, '0 0/1 * * * ?',       2, unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_param`, `trigger_type`, `trigger_conf`, `misfire_strategy`, `next_trigger_time`) VALUES (4236701614080, 'default', 'prime-count', 'cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler', 1, '{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}', 2, '2022-10-06 22:53:00', 3, unix_timestamp()*1000);
+
+-- {"method":"GET","url":"http://localhost:8082/api/job/get","params":{"jobId":3988904755300},"headers":{"Content-Type":"application/json"}}

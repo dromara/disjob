@@ -14,7 +14,7 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
-import cn.ponfee.scheduler.worker.thread.RotatingTimingWheelThread;
+import cn.ponfee.scheduler.worker.thread.RotatingTimingWheel;
 import org.springframework.util.Assert;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +30,7 @@ public class WorkerStartup implements AutoCloseable {
     private final Worker currentWorker;
     private final WorkerRegistry workerRegistry;
     private final TaskReceiver taskReceiver;
-    private final RotatingTimingWheelThread rotatingTimingWheelThread;
+    private final RotatingTimingWheel rotatingTimingWheel;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -51,7 +51,7 @@ public class WorkerStartup implements AutoCloseable {
         this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, SupervisorServiceClient);
         this.workerRegistry = workerRegistry;
         this.taskReceiver = taskReceiver;
-        this.rotatingTimingWheelThread = new RotatingTimingWheelThread(
+        this.rotatingTimingWheel = new RotatingTimingWheel(
             currentWorker, SupervisorServiceClient, workerRegistry,
             taskReceiver.getTimingWheel(), workerThreadPool
         );
@@ -62,7 +62,7 @@ public class WorkerStartup implements AutoCloseable {
             return;
         }
         workerThreadPool.start();
-        rotatingTimingWheelThread.start();
+        rotatingTimingWheel.start();
         taskReceiver.start();
         workerRegistry.register(currentWorker);
     }
@@ -71,7 +71,7 @@ public class WorkerStartup implements AutoCloseable {
     public void close() {
         Throwables.caught(workerRegistry::close);
         Throwables.caught(taskReceiver::close);
-        Throwables.caught(() -> rotatingTimingWheelThread.doStop(1000));
+        Throwables.caught(() -> rotatingTimingWheel.doStop(1000));
         Throwables.caught(workerThreadPool::close);
     }
 

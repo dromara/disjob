@@ -67,6 +67,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     private volatile CloseableClient keepAlive;
 
     protected EtcdServerRegistry(EtcdRegistryProperties config) {
+        // etcd separator must be '/'
         super(config.getNamespace(), '/');
         this.ttl = config.getSessionTimeoutMs() / 2000;
 

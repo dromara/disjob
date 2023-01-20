@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.common.base.Constants.TX_MANAGER_SUFFIX;
@@ -935,10 +936,19 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                                             .map(e -> Long.parseLong(e.trim()))
                                             .distinct()
                                             .collect(Collectors.toList());
-            Assert.isTrue(
-                !parentJobIds.isEmpty() && jobMapper.countJobIds(parentJobIds) == parentJobIds.size(),
-                "Has parent job id not found " + job.getTriggerConf()
-            );
+            Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + job.getTriggerConf());
+
+            Map<Long, SchedJob> parentJobMap = jobMapper.findByJobIds(parentJobIds)
+                .stream()
+                .collect(Collectors.toMap(SchedJob::getJobId, Function.identity()));
+            for (Long parentJobId : parentJobIds) {
+                SchedJob parentJob = parentJobMap.get(parentJobId);
+                Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
+                Assert.isTrue(
+                    job.getJobGroup().equals(parentJob.getJobGroup()),
+                    () -> "Parent job '" + parentJob.getJobId() + "' group '" + parentJob.getJobGroup() + "' different '" + job.getJobGroup() + "'"
+                );
+            }
             dependMapper.insertBatch(
                 parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList())
             );

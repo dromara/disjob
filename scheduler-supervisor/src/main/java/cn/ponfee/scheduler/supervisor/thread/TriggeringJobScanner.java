@@ -36,7 +36,7 @@ import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
  *
  * @author Ponfee
  */
-public class ScanTriggeringJobThread extends AbstractHeartbeatThread {
+public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private static final int SCAN_COLLISION_INTERVAL_SECONDS = 60;
 
@@ -44,13 +44,13 @@ public class ScanTriggeringJobThread extends AbstractHeartbeatThread {
     private final SchedulerJobManager schedulerJobManager;
     private final long afterMilliseconds;
 
-    public ScanTriggeringJobThread(long heartbeatPeriodMs0,
-                                   DoInLocked doInLocked,
-                                   SchedulerJobManager schedulerJobManager) {
+    public TriggeringJobScanner(long heartbeatPeriodMs0,
+                                DoInLocked doInLocked,
+                                SchedulerJobManager schedulerJobManager) {
         super(heartbeatPeriodMs0);
         this.doInLocked = doInLocked;
         this.schedulerJobManager = schedulerJobManager;
-        this.afterMilliseconds = (heartbeatPeriodMs << 2); // 3s * 4 = 12s
+        this.afterMilliseconds = (heartbeatPeriodMs * 3); // 3s * 3 = 9s
     }
 
     @Override

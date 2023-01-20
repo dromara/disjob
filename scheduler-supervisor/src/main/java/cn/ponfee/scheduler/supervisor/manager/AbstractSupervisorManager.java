@@ -20,6 +20,7 @@ import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
+@RequiredArgsConstructor
 public abstract class AbstractSupervisorManager {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -44,16 +46,6 @@ public abstract class AbstractSupervisorManager {
     private final SupervisorRegistry discoveryWorker;
     private final TaskDispatcher taskDispatcher;
     private final WorkerServiceClient workerServiceClient;
-
-    public AbstractSupervisorManager(IdGenerator idGenerator,
-                                     SupervisorRegistry discoveryWorker,
-                                     TaskDispatcher taskDispatcher,
-                                     WorkerServiceClient workerServiceClient) {
-        this.idGenerator = idGenerator;
-        this.discoveryWorker = discoveryWorker;
-        this.taskDispatcher = taskDispatcher;
-        this.workerServiceClient = workerServiceClient;
-    }
 
     public long generateId() {
         return idGenerator.generateId();

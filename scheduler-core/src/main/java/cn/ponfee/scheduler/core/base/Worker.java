@@ -45,33 +45,33 @@ public final class Worker extends Server {
     private final String group;
 
     /**
-     * Instance id(Auto generate when class {@code Constants} loaded)
+     * Worker id(a string value of UUID)
      */
-    private final String instanceId;
+    private final String workerId;
 
     private transient final String serializedValue;
 
-    public Worker(String group, String instanceId, String host, int port) {
+    public Worker(String group, String workerId, String host, int port) {
         super(host, port);
 
-        Assert.isTrue(!instanceId.contains(COLON), "Instance-id cannot contains symbol ':'");
+        Assert.isTrue(!workerId.contains(COLON), "Worker id cannot contains symbol ':'");
         Assert.isTrue(!group.contains(COLON), "Group name cannot contains symbol ':'");
         this.group = group;
-        this.instanceId = instanceId;
+        this.workerId = workerId;
 
-        this.serializedValue = group + COLON + instanceId + COLON + host + COLON + port;
+        this.serializedValue = group + COLON + workerId + COLON + host + COLON + port;
     }
 
     @Override
     public boolean equals(Object o) {
         return super.equals(o)
             && Objects.equals(group, ((Worker) o).group)
-            && Objects.equals(instanceId, ((Worker) o).instanceId);
+            && Objects.equals(workerId, ((Worker) o).workerId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(group, instanceId, host, port);
+        return Objects.hash(group, workerId, host, port);
     }
 
     @Override
@@ -92,15 +92,15 @@ public final class Worker extends Server {
         String group = get(array, 0);
         Assert.hasText(group, "Worker group cannot bank.");
 
-        String instanceId = get(array, 1);
-        Assert.hasText(instanceId, "Worker instance-id cannot bank.");
+        String workerId = get(array, 1);
+        Assert.hasText(workerId, "Worker id cannot bank.");
 
         String host = get(array, 2);
-        Assert.hasText(instanceId, "Worker host cannot bank.");
+        Assert.hasText(host, "Worker host cannot bank.");
 
         int port = Numbers.toInt(get(array, 3));
 
-        return new Worker(group, instanceId, host, port);
+        return new Worker(group, workerId, host, port);
     }
 
     public boolean matches(String taskGroup) {
@@ -113,8 +113,8 @@ public final class Worker extends Server {
         return group;
     }
 
-    public String getInstanceId() {
-        return instanceId;
+    public String getWorkerId() {
+        return workerId;
     }
 
     // --------------------------------------------------------current worker
@@ -160,10 +160,10 @@ public final class Worker extends Server {
             return null;
         }
         String group = ObjectUtils.cast(map.get("group"), String.class);
-        String instanceId = ObjectUtils.cast(map.get("instanceId"), String.class);
+        String workerId = ObjectUtils.cast(map.get("workerId"), String.class);
         String host = ObjectUtils.cast(map.get("host"), String.class);
         int port = ObjectUtils.cast(map.get("port"), int.class);
-        return new Worker(group, instanceId, host, port);
+        return new Worker(group, workerId, host, port);
     }
 
     /**

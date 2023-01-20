@@ -78,8 +78,8 @@ public class LazyLoader<T> implements Supplier<T> {
         enhancer.setSuperclass(type);
         enhancer.setUseCache(true);
         enhancer.setInterceptDuringConstruction(false);
-        //enhancer.setCallback(Proxy.getInvocationHandler(lazyLoader.get())); // Error
-        //enhancer.setCallback((MethodInterceptor) (beanProxy, method, args, methodProxy) -> method.invoke(lazyLoader.get(), args));
+        //enhancer.setCallback(Proxy.getInvocationHandler(lazyLoader.get())); // Occur error
+        //enhancer.setCallback((org.springframework.cglib.proxy.MethodInterceptor) (beanProxy, method, args, methodProxy) -> method.invoke(lazyLoader.get(), args));
         enhancer.setCallback((InvocationHandler) (beanProxy, method, args) -> method.invoke(lazyLoader.get(), args));
         return (B) enhancer.create();
     }

@@ -74,7 +74,7 @@ distributed-scheduler
 ## Build From Source
 
 ```bash
-./mvnw clean package -DskipTests -Dcheckstyle.skip=true -U
+./mvnw -Drevision=_ versions:set -DnewVersion=1.9-SNAPSHOT && mvn clean install -DskipTests -Dcheckstyle.skip=true -U
 ```
 
 ## Quick Start

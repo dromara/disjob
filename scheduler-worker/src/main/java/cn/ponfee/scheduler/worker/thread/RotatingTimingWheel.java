@@ -29,9 +29,9 @@ import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
  *
  * @author Ponfee
  */
-public class RotatingTimingWheelThread extends AbstractHeartbeatThread {
+public class RotatingTimingWheel extends AbstractHeartbeatThread {
 
-    private static final int LOG_ROUND = 1000;
+    private static final int LOGING_ROUND_COUNT = 1000;
 
     private final Worker currentWorker;
     private final SupervisorService supervisorServiceClient;
@@ -41,11 +41,11 @@ public class RotatingTimingWheelThread extends AbstractHeartbeatThread {
 
     private int round = 0;
 
-    public RotatingTimingWheelThread(Worker currentWorker,
-                                     SupervisorService supervisorServiceClient,
-                                     Discovery<Supervisor> discoverySupervisor,
-                                     TimingWheel<ExecuteParam> timingWheel,
-                                     WorkerThreadPool threadPool) {
+    public RotatingTimingWheel(Worker currentWorker,
+                               SupervisorService supervisorServiceClient,
+                               Discovery<Supervisor> discoverySupervisor,
+                               TimingWheel<ExecuteParam> timingWheel,
+                               WorkerThreadPool threadPool) {
         super(timingWheel.getTickMs());
         this.currentWorker = currentWorker;
         this.supervisorServiceClient = supervisorServiceClient;
@@ -56,7 +56,7 @@ public class RotatingTimingWheelThread extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (++round == LOG_ROUND) {
+        if (++round == LOGING_ROUND_COUNT) {
             round = 0;
             log.info("worker-thread-pool: {}, jvm-active-count: {}", workerThreadPool, Thread.activeCount());
         }

@@ -50,6 +50,10 @@ import java.util.Date;
 //@ActiveProfiles({"STG"})
 public abstract class SpringBootTestBase<T> {
 
+    static {
+        System.setProperty("app.name", "scheduler-supervisor-test");
+    }
+
     private static EmbeddedMysqlAndRedisServer embeddedMysqlAndRedisServer;
 
     @EnableSupervisor

@@ -143,7 +143,7 @@ public enum TriggerType implements IntValue<TriggerType> {
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid period config: " + triggerConf, e);
             }
-            Assert.isTrue(conf != null && conf.isValid(), "Invalid period config: " + triggerConf);
+            Assert.isTrue(conf != null && conf.isValid(), () -> "Invalid period config: " + triggerConf);
 
             DatePeriods period = conf.getPeriod();
             List<Date> result = new ArrayList<>(count);
@@ -236,7 +236,7 @@ public enum TriggerType implements IntValue<TriggerType> {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        Assert.isTrue(list.size() == 1, "The list expect one size, but actual is " + list.size());
+        Assert.isTrue(list.size() == 1, () -> "The list expect one size, but actual is " + list.size());
         return list.get(0);
     }
 }

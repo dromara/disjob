@@ -191,11 +191,4 @@
         AND is_deleted = 0
     </update>
 
-    <select id="countJobIds" parameterType="collection" resultType="int">
-      SELECT COUNT(*) cnt
-      FROM sched_job
-      WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=TINYINT}</foreach>)
-        AND is_deleted = 0
-    </select>
-
 </mapper>

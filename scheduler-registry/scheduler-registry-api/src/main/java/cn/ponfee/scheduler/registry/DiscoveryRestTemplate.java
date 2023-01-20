@@ -9,11 +9,11 @@
 package cn.ponfee.scheduler.registry;
 
 import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.spring.RestTemplateUtils;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -24,7 +24,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
@@ -41,10 +40,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-
-import static org.springframework.http.HttpMethod.*;
 
 /**
  * Retry rest template(Method pattern)
@@ -55,8 +51,6 @@ import static org.springframework.http.HttpMethod.*;
 public class DiscoveryRestTemplate<D extends Server> {
 
     private final static Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
-
-    private static final Set<HttpMethod> QUERY_PARAMS = ImmutableSet.of(GET, DELETE, HEAD, OPTIONS);
 
     public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
@@ -76,10 +70,7 @@ public class DiscoveryRestTemplate<D extends Server> {
         httpMessageConverter.setObjectMapper(objectMapper);
         httpMessageConverter.setSupportedMediaTypes(Collects.concat(httpMessageConverter.getSupportedMediaTypes(), MediaType.TEXT_PLAIN));
 
-        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(connectTimeout);
-        requestFactory.setReadTimeout(readTimeout);
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate(connectTimeout, readTimeout);
         restTemplate.setMessageConverters(Arrays.asList(
             new ByteArrayHttpMessageConverter(),
             new StringHttpMessageConverter(StandardCharsets.UTF_8),
@@ -122,7 +113,7 @@ public class DiscoveryRestTemplate<D extends Server> {
             try {
                 URI uri;
                 HttpEntity<?> httpEntity;
-                if (QUERY_PARAMS.contains(httpMethod)) {
+                if (RestTemplateUtils.QUERY_PARAMS.contains(httpMethod)) {
                     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
                     if (ArrayUtils.isNotEmpty(arguments)) {
                         builder.queryParams(buildQueryParams(arguments));
