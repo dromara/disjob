@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * No operation job handler.
+ * No operation job handler, use job handler test.
  *
  * @author Ponfee
  */

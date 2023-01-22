@@ -44,22 +44,11 @@ import java.util.Map;
  * @author Ponfee
  */
 public class HttpJobHandler extends JobHandler<String> {
+
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
     private static final int DEFAULT_READ_TIMEOUT = 5000;
 
-    private final static RestTemplate REST_TEMPLATE = RestTemplateUtils.buildRestTemplate(
-        DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT
-    );
-    static {
-        REST_TEMPLATE.setMessageConverters(Arrays.asList(
-            new ByteArrayHttpMessageConverter(),
-            new StringHttpMessageConverter(StandardCharsets.UTF_8),
-            new ResourceHttpMessageConverter(),
-            new SourceHttpMessageConverter<>(),
-            new FormHttpMessageConverter(),
-            RestTemplateUtils.buildJackson2HttpMessageConverter()
-        ));
-    }
+    private final static RestTemplate REST_TEMPLATE = createRestTemplate();
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) {
@@ -70,8 +59,8 @@ public class HttpJobHandler extends JobHandler<String> {
         if (RestTemplateUtils.QUERY_PARAMS.contains(method)) {
             Assert.isNull(req.body, () -> "Http method '" + req.method + "' not supported request body.");
         }
-
         Assert.hasText(req.url, "Http url cannot be empty.");
+
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(req.url);
         MultiValueMap<String, String> paramsMap = RestTemplateUtils.toMultiValueMap(req.params);
         if (paramsMap != null) {
@@ -85,6 +74,7 @@ public class HttpJobHandler extends JobHandler<String> {
         Class<String> responseType = String.class;
         RequestCallback requestCallback = REST_TEMPLATE.httpEntityCallback(httpEntity, responseType);
         ResponseExtractor<ResponseEntity<String>> responseExtractor = REST_TEMPLATE.responseEntityExtractor(responseType);
+
         try {
             ResponseEntity<String> res;
             if (equals(req.connectionTimeout, DEFAULT_CONNECT_TIMEOUT) && equals(req.readTimeout, DEFAULT_READ_TIMEOUT)) {
@@ -111,7 +101,7 @@ public class HttpJobHandler extends JobHandler<String> {
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + res.getStatusCode() + ", response: " + res.getBody());
             }
         } catch (Exception e) {
-            log.error("Http job execute failed: " + task, e);
+            log.error("Http request failed: " + task, e);
             return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), Throwables.getRootCauseMessage(e));
         }
     }
@@ -127,6 +117,19 @@ public class HttpJobHandler extends JobHandler<String> {
         private String body;
         private Integer connectionTimeout; // unit milliseconds
         private Integer readTimeout;       // unit milliseconds
+    }
+
+    private static RestTemplate createRestTemplate() {
+        RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate(DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
+        restTemplate.setMessageConverters(Arrays.asList(
+            new ByteArrayHttpMessageConverter(),
+            new StringHttpMessageConverter(StandardCharsets.UTF_8),
+            new ResourceHttpMessageConverter(),
+            new SourceHttpMessageConverter<>(),
+            new FormHttpMessageConverter(),
+            RestTemplateUtils.buildJackson2HttpMessageConverter()
+        ));
+        return restTemplate;
     }
 
     private static boolean equals(Integer source, int target) {

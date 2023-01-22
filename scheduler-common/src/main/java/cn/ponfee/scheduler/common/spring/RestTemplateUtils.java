@@ -49,7 +49,7 @@ public class RestTemplateUtils {
         messageConverter.setSupportedMediaTypes(Collects.concat(messageConverter.getSupportedMediaTypes(), MediaType.TEXT_PLAIN));
         return messageConverter;
     }
-    
+
     public static RestTemplate buildRestTemplate(int connectTimeout, int readTimeout) {
         //SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
@@ -104,16 +104,18 @@ public class RestTemplateUtils {
         }
 
         if (value instanceof Collection) {
-            return ((Collection<?>) value).stream()
-                .map(RestTemplateUtils::toString)
-                .collect(Collectors.toList());
+            Collection<?> coll = (Collection<?>) value;
+            if (coll.isEmpty()) {
+                return null;
+            }
+            return coll.stream().map(RestTemplateUtils::toString).collect(Collectors.toList());
         }
 
         return Collections.singletonList(toString(value));
     }
 
     private static String toString(Object value) {
-        return Objects.toString(value, null);
+        return value == null ? null : value.toString();
     }
 
     private static class HttpContextFactory implements BiFunction<HttpMethod, URI, HttpContext> {
