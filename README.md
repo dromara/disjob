@@ -79,7 +79,7 @@ distributed-scheduler
 
 ## Quick Start
 
-1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
+1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java)，启动自动初始化SQL脚本)
 
 2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources](scheduler-samples/scheduler-samples-common/src/main/resources)
   - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件
@@ -117,7 +117,7 @@ public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
 ```
 
 5. 执行以下curl命令添加任务(选择任一运行中的Supervisor应用替换`localhost:8081`)
-  - `triggerConf`修改为大于当前时间的日期值以便即将触发(如当前时间的下一分钟)
+  - `triggerValue`修改为大于当前时间的日期值以便即将触发(如当前时间的下一分钟)
   - `jobHandler`为刚编写的任务处理器类的全限定名（也支持直接贴源代码）
 
 ```bash
@@ -130,7 +130,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
     "triggerType": 2,
-    "triggerConf": "2022-10-06 12:00:00"
+    "triggerValue": "2022-10-06 12:00:00"
 }'
 ```
 

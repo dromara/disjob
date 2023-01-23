@@ -22,7 +22,7 @@ import org.springframework.boot.SpringApplication;
 public class WorkerApplication extends AbstractSchedulerSamplesApplication {
 
     static {
-        System.setProperty(Constants.APP_NAME, "scheduler-samples-separately-worker-springboot");
+        System.setProperty(Constants.APP_NAME, "separately-worker");
     }
 
     public static void main(String[] args) {

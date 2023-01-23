@@ -46,7 +46,11 @@ public class RestTemplateUtils {
     public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter() {
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
         messageConverter.setObjectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL));
-        messageConverter.setSupportedMediaTypes(Collects.concat(messageConverter.getSupportedMediaTypes(), MediaType.TEXT_PLAIN));
+        messageConverter.setSupportedMediaTypes(Collects.concat(
+            messageConverter.getSupportedMediaTypes(),
+            MediaType.TEXT_PLAIN,
+            MediaType.TEXT_HTML
+        ));
         return messageConverter;
     }
 

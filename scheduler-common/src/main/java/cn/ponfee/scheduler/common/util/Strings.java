@@ -67,4 +67,20 @@ public final class Strings {
         // 如果p匹配完了，说明匹配成功
         return idxp == p.length();
     }
+
+    /**
+     * Count str occur on text.
+     *
+     * @param text the text
+     * @param str  the string
+     * @return number of occur count
+     */
+    public static int count(String text, String str) {
+        int count = 0;
+        for (int len = str.length(), index=-len; (index = text.indexOf(str, index + len)) != -1; ) {
+            count++;
+        }
+        return count;
+    }
+
 }

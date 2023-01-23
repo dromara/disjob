@@ -68,7 +68,11 @@ public class DiscoveryRestTemplate<D extends Server> {
                                   int maxRetryTimes) {
         MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
         httpMessageConverter.setObjectMapper(objectMapper);
-        httpMessageConverter.setSupportedMediaTypes(Collects.concat(httpMessageConverter.getSupportedMediaTypes(), MediaType.TEXT_PLAIN));
+        httpMessageConverter.setSupportedMediaTypes(Collects.concat(
+            httpMessageConverter.getSupportedMediaTypes(), 
+            MediaType.TEXT_PLAIN,
+            MediaType.TEXT_HTML
+        ));
 
         RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate(connectTimeout, readTimeout);
         restTemplate.setMessageConverters(Arrays.asList(
@@ -102,7 +106,8 @@ public class DiscoveryRestTemplate<D extends Server> {
     public <T> T execute(String group, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
         List<D> servers = discoveryServer.getDiscoveredServers(group);
         if (CollectionUtils.isEmpty(servers)) {
-            throw new IllegalStateException("Not found available grouped '" + group + "' " + discoveryServer.discoveryRole().name());
+            String errMsg = (group == null ? " " : " '" + group + "' ");
+            throw new IllegalStateException("Not found available" + errMsg + discoveryServer.discoveryRole());
         }
 
         int serverNumber = servers.size();

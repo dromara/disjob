@@ -44,7 +44,7 @@ public class CommandJobHandler extends JobHandler<String> {
             String verbose = IOUtils.toString(input, charset);
             int code = process.waitFor();
             if (code == 0) {
-                log.info("Command execute success: {} | {}", task.getId(), verbose);
+                log.info("Command execute success: {} | {}", task.getTaskId(), verbose);
                 return Result.success(verbose);
             } else {
                 log.error("Command execute failed: {} | {} | {}", task, code, verbose);

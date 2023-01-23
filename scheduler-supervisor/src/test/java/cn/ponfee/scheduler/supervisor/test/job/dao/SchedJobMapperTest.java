@@ -55,7 +55,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setStartTime(null);
         job.setEndTime(null);
         job.setTriggerType(TriggerType.CRON.value());
-        job.setTriggerConf("0/10 * * * * ?");
+        job.setTriggerValue("0/10 * * * * ?");
         job.setExecuteTimeout(3600000);
         job.setCollisionStrategy(CollisionStrategy.CONCURRENT.value());
         job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
@@ -94,7 +94,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setTriggerType(TriggerType.ONCE.value());
 
         String date = "2022-06-16 11:37:00";
-        job.setTriggerConf(date);
+        job.setTriggerValue(date);
         job.setNextTriggerTime(Dates.toDate(date).getTime());
         job.setExecuteTimeout(3600000);
         job.setMisfireStrategy(MisfireStrategy.LAST.value());
@@ -133,7 +133,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setTriggerType(TriggerType.ONCE.value());
 
         String date = "2022-06-17 18:02:00";
-        job.setTriggerConf(date);
+        job.setTriggerValue(date);
         job.setNextTriggerTime(Dates.toDate(date).getTime());
         job.setExecuteTimeout(3600000);
         job.setMisfireStrategy(MisfireStrategy.LAST.value());

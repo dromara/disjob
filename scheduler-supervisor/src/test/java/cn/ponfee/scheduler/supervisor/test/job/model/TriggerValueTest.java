@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.supervisor.test.job.model;
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.model.PeriodTriggerConf;
+import cn.ponfee.scheduler.core.model.PeriodTriggerValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,17 +20,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Ponfee
  */
-public class TriggerConfTest {
+public class TriggerValueTest {
 
     @Test
-    public void testConf() {
+    public void testValue() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> DatePeriods.valueOf("ABC"));
 
         String conf = "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":2}";
-        PeriodTriggerConf triggerConf = Jsons.fromJson(conf, PeriodTriggerConf.class);
-        Assertions.assertEquals(triggerConf.getPeriod(), DatePeriods.DAILY);
-        Assertions.assertEquals(triggerConf.getStep(), 2);
-        Assertions.assertEquals(triggerConf.getStart(), Dates.toDate("2000-01-01 00:00:00"));
+        PeriodTriggerValue triggerValue = Jsons.fromJson(conf, PeriodTriggerValue.class);
+        Assertions.assertEquals(triggerValue.getPeriod(), DatePeriods.DAILY);
+        Assertions.assertEquals(triggerValue.getStep(), 2);
+        Assertions.assertEquals(triggerValue.getStart(), Dates.toDate("2000-01-01 00:00:00"));
     }
 
     @Test

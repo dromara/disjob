@@ -24,7 +24,7 @@ import org.springframework.boot.SpringApplication;
 public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
 
     static {
-        System.setProperty(Constants.APP_NAME, "scheduler-samples-merged");
+        System.setProperty(Constants.APP_NAME, "merged-scheduler");
     }
 
     public static void main(String[] args) {

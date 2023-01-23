@@ -17,14 +17,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Period trigger config data structure.
- * <p>trigger_conf of trigger_type=PERIOD
+ * Period trigger value data structure.
+ * <p>trigger_value of trigger_type=PERIOD
  *
  * @author Ponfee
  * @see TriggerType#PERIOD
  */
 @Data
-public class PeriodTriggerConf implements Serializable {
+public class PeriodTriggerValue implements Serializable {
 
     private static final long serialVersionUID = -8395535372974631095L;
 

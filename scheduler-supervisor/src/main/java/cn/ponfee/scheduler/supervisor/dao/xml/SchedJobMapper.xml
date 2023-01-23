@@ -15,7 +15,7 @@
       <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
       <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
       <result column="trigger_type" jdbcType="TINYINT" property="triggerType" />
-      <result column="trigger_conf" jdbcType="VARCHAR" property="triggerConf" />
+      <result column="trigger_value" jdbcType="VARCHAR" property="triggerValue" />
       <result column="execute_timeout" jdbcType="INTEGER" property="executeTimeout" />
       <result column="collision_strategy" jdbcType="TINYINT" property="collisionStrategy" />
       <result column="misfire_strategy" jdbcType="TINYINT" property="misfireStrategy" />
@@ -36,7 +36,7 @@
 
     <sql id="Base_Column_List">
       job_id, job_group, job_name, job_handler, job_state, job_param, retry_type,
-      retry_count, retry_interval, start_time, end_time, trigger_type, trigger_conf, execute_timeout,
+      retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value, execute_timeout,
       collision_strategy, misfire_strategy, route_strategy, weight_score, remark, last_trigger_time,
       next_trigger_time, next_scan_time, alarm_subscribers, version, IFNULL(is_deleted, 1) is_deleted,
       updated_by, created_by, updated_at, created_at
@@ -71,7 +71,7 @@
         job_handler, job_state, job_param,
         retry_type, retry_count, retry_interval,
         start_time, end_time, trigger_type,
-        trigger_conf, execute_timeout, collision_strategy,
+        trigger_value, execute_timeout, collision_strategy,
         misfire_strategy, route_strategy, weight_score,
         remark, next_trigger_time, next_scan_time, alarm_subscribers,
         version, updated_by, created_by, updated_at, created_at
@@ -80,7 +80,7 @@
         #{jobHandler,jdbcType=LONGVARCHAR}, #{jobState,jdbcType=TINYINT}, #{jobParam,jdbcType=LONGVARCHAR},
         #{retryType,jdbcType=TINYINT}, #{retryCount,jdbcType=TINYINT}, #{retryInterval,jdbcType=INTEGER},
         #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{triggerType,jdbcType=TINYINT},
-        #{triggerConf,jdbcType=VARCHAR}, #{executeTimeout,jdbcType=INTEGER}, #{collisionStrategy,jdbcType=TINYINT},
+        #{triggerValue,jdbcType=VARCHAR}, #{executeTimeout,jdbcType=INTEGER}, #{collisionStrategy,jdbcType=TINYINT},
         #{misfireStrategy,jdbcType=TINYINT}, #{routeStrategy,jdbcType=TINYINT}, #{weightScore,jdbcType=TINYINT},
         #{remark,jdbcType=VARCHAR}, #{nextTriggerTime,jdbcType=BIGINT}, NOW(3), #{alarmSubscribers,jdbcType=VARCHAR},
         1, #{updatedBy,jdbcType=VARCHAR}, #{createdBy,jdbcType=VARCHAR}, #{updatedAt,jdbcType=TIMESTAMP},
@@ -104,7 +104,7 @@
           end_time = #{endTime,jdbcType=TIMESTAMP},
           <if test="triggerType != null">
             trigger_type = #{triggerType,jdbcType=TINYINT},
-            trigger_conf = #{triggerConf,jdbcType=VARCHAR},
+            trigger_value = #{triggerValue,jdbcType=VARCHAR},
           </if>
           next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
           execute_timeout = #{executeTimeout,jdbcType=INTEGER},

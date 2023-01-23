@@ -225,7 +225,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) {
         Assert.notNull(job.getTriggerType(), "Trigger type cannot be null.");
-        Assert.notNull(job.getTriggerConf(), "Trigger conf cannot be null.");
+        Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null.");
         Assert.isNull(job.getLastTriggerTime(), "Last trigger time must be null.");
         Assert.isNull(job.getNextTriggerTime(), "Next trigger time must be null.");
         super.verifyJobHandler(job);
@@ -262,9 +262,9 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
         Date now = new Date();
         if (job.getTriggerType() == null) {
-            Assert.isNull(job.getTriggerConf(), "Trigger conf must be null if not set trigger type.");
+            Assert.isNull(job.getTriggerValue(), "Trigger value must be null if not set trigger type.");
         } else {
-            Assert.notNull(job.getTriggerConf(), "Trigger conf cannot be null if has set trigger type.");
+            Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
             // update last trigger time or depends parent job id
             dependMapper.deleteByChildJobId(job.getJobId());
             parseTriggerConfig(job, now);
@@ -926,17 +926,17 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     private void parseTriggerConfig(SchedJob job, Date date) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
         Assert.isTrue(
-            triggerType.isValid(job.getTriggerConf()),
-            "Invalid trigger config: " + job.getTriggerType() + ", " + job.getTriggerConf()
+            triggerType.isValid(job.getTriggerValue()),
+            "Invalid trigger value: " + job.getTriggerType() + ", " + job.getTriggerValue()
         );
 
         if (triggerType == TriggerType.DEPEND) {
-            List<Long> parentJobIds = Arrays.stream(job.getTriggerConf().split(Constants.COMMA))
+            List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Constants.COMMA))
                                             .filter(StringUtils::isNotBlank)
                                             .map(e -> Long.parseLong(e.trim()))
                                             .distinct()
                                             .collect(Collectors.toList());
-            Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + job.getTriggerConf());
+            Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + job.getTriggerValue());
 
             Map<Long, SchedJob> parentJobMap = jobMapper.findByJobIds(parentJobIds)
                 .stream()
@@ -952,11 +952,11 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             dependMapper.insertBatch(
                 parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList())
             );
-            job.setTriggerConf(Joiner.on(Constants.COMMA).join(parentJobIds));
+            job.setTriggerValue(Joiner.on(Constants.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
-            Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerConf(), date);
-            Assert.notNull(nextTriggerTime, "Has not next trigger time " + job.getTriggerConf());
+            Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), date);
+            Assert.notNull(nextTriggerTime, "Has not next trigger time " + job.getTriggerValue());
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }
     }

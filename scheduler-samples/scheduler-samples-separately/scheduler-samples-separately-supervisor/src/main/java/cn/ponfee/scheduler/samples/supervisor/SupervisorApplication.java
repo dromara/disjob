@@ -22,7 +22,7 @@ import org.springframework.boot.SpringApplication;
 public class SupervisorApplication extends AbstractSchedulerSamplesApplication {
 
     static {
-        System.setProperty(Constants.APP_NAME, "scheduler-samples-separately-supervisor");
+        System.setProperty(Constants.APP_NAME, "separately-supervisor");
     }
 
     public static void main(String[] args) {

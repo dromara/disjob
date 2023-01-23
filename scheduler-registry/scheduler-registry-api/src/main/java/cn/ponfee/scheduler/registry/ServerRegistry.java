@@ -108,7 +108,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      */
     @Override
     public void close() {
-        discoveryServer.close();
+        // No-op
     }
 
     @Override
@@ -159,8 +159,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         abstract boolean hasServers();
 
         abstract boolean isAlive(S server);
-
-        abstract void close();
     }
 
     /**
@@ -188,11 +186,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         @Override
         boolean isAlive(Supervisor supervisor) {
             return supervisors.contains(supervisor);
-        }
-
-        @Override
-        void close() {
-            this.supervisors = null;
         }
     }
 
@@ -231,11 +224,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         boolean isAlive(Worker worker) {
             ImmutableHashList<String, Worker> workers = groupedWorkers.get(worker.getGroup());
             return workers != null && workers.contains(worker);
-        }
-
-        @Override
-        void close() {
-            this.groupedWorkers = null;
         }
     }
 

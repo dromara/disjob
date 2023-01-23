@@ -9,16 +9,16 @@
 package cn.ponfee.scheduler.common.base;
 
 import cn.ponfee.scheduler.common.util.Numbers;
-import cn.ponfee.scheduler.common.util.ObjectUtils;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Get the value with typed for dictionary key-value
  *
- * @author Ponfee
  * @param <K> the key type
  * @param <V> the value type
+ * @author Ponfee
  */
 public interface TypedKeyValue<K, V> {
 
@@ -27,15 +27,13 @@ public interface TypedKeyValue<K, V> {
     V removeKey(K key);
 
     default boolean hasKey(K key) {
-        return !ObjectUtils.isEmpty(getValue(key));
+        return getValue(key) != null;
     }
 
     // --------------------------------------------------------object
 
     default V getRequired(K key) {
-        V value = getValue(key);
-        assertPresented(key, value);
-        return value;
+        return getRequired(key, Function.identity());
     }
 
     default V get(K key, V defaultVal) {
@@ -45,9 +43,7 @@ public interface TypedKeyValue<K, V> {
 
     // --------------------------------------------------------string
     default String getRequiredString(K key) {
-        V value = getValue(key);
-        assertPresented(key, value);
-        return value.toString();
+        return getRequired(key, Object::toString);
     }
 
     default String getString(K key) {
@@ -72,7 +68,9 @@ public interface TypedKeyValue<K, V> {
         if (value instanceof Boolean) {
             return (boolean) value;
         }
-        assertPresented(key, value);
+        if (value == null) {
+            throw new IllegalArgumentException("Not presented value of '" + key + "'");
+        }
         switch (value.toString()) {
             case "TRUE" : case "True" : case "true" : return true;
             case "FALSE": case "False": case "false": return false;
@@ -98,9 +96,7 @@ public interface TypedKeyValue<K, V> {
 
     // --------------------------------------------------------------int
     default int getRequiredInt(K key) {
-        Integer value = Numbers.toWrapInt(getValue(key));
-        assertPresented(key, value);
-        return value;
+        return getRequired(key, Numbers::toInt);
     }
 
     default int getInt(K key, int defaultValue) {
@@ -121,9 +117,7 @@ public interface TypedKeyValue<K, V> {
 
     // --------------------------------------------------------------long
     default long getRequiredLong(K key) {
-        Long value = Numbers.toWrapLong(getValue(key));
-        assertPresented(key, value);
-        return value;
+        return getRequired(key, Numbers::toLong);
     }
 
     default long getLong(K key, long defaultValue) {
@@ -144,9 +138,7 @@ public interface TypedKeyValue<K, V> {
 
     // --------------------------------------------------------------float
     default float getRequiredFloat(K key) {
-        Float value = Numbers.toWrapFloat(getValue(key));
-        assertPresented(key, value);
-        return value;
+        return getRequired(key, Numbers::toFloat);
     }
 
     default float getFloat(K key, float defaultValue) {
@@ -167,9 +159,7 @@ public interface TypedKeyValue<K, V> {
 
     // --------------------------------------------------------------double
     default double getRequiredDouble(K key) {
-        Double value = Numbers.toWrapDouble(getValue(key));
-        assertPresented(key, value);
-        return value;
+        return getRequired(key, Numbers::toDouble);
     }
 
     default double getDouble(K key, double defaultValue) {
@@ -189,10 +179,13 @@ public interface TypedKeyValue<K, V> {
         return Numbers.toWrapDouble(removeKey(key));
     }
 
-    // ---------------------------------------------------- static methods
-    static void assertPresented(Object key, Object value) {
-        if (ObjectUtils.isEmpty(value)) {
+    // ---------------------------------------------------- methods
+    default <R> R getRequired(K key, Function<V, R> mapper) {
+        V value = getValue(key);
+        if (value == null) {
             throw new IllegalArgumentException("Not presented value of '" + key + "'");
         }
+        return mapper.apply(value);
     }
+
 }

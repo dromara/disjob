@@ -99,7 +99,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     /**
      * 触发器配置(对应trigger_type)：1-Crontab表达式；2-时间格式；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-父任务job_id(多个逗号分隔)；
      */
-    private String triggerConf;
+    private String triggerValue;
 
     /**
      * 执行超时时间(毫秒)，若大于0则执行超时会中断任务

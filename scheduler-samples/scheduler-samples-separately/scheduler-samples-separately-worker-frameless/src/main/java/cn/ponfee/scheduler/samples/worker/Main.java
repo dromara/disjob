@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.samples.worker;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.spring.YamlProperties;
 import cn.ponfee.scheduler.common.util.*;
 import cn.ponfee.scheduler.core.base.JobConstants;
@@ -55,7 +56,7 @@ import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
 public class Main {
 
     static {
-        System.setProperty(Constants.APP_NAME, "scheduler-samples-separately-worker-frameless");
+        System.setProperty(Constants.APP_NAME, "frameless-worker");
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
@@ -136,11 +137,13 @@ public class Main {
             .build();
 
         try {
-            Runtime.getRuntime().addShutdownHook(new Thread(workerStartup::close));
-            Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(vertxWebServer::stop)));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                Throwables.caught(workerStartup::close);
+                CheckedThrowing.caught(vertxWebServer::close);
+            }));
 
+            vertxWebServer.deploy();
             workerStartup.start();
-            vertxWebServer.start();
 
             new CountDownLatch(1).await();
         } catch (InterruptedException e) {

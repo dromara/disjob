@@ -43,8 +43,13 @@ public class SpringContextTest extends SpringBootTestBase {
     }
 
     @Test
-    public void testConfig() {
-        Assertions.assertEquals(environment.getProperty("application.properties.conf"), "test123");
+    public void testSpringConfig() {
+        // Spring boot 默认加载：application.properties, application.yaml, application.yml
+        Assertions.assertEquals(environment.getProperty("application.properties.conf"), "1111");
+        Assertions.assertEquals(environment.getProperty("application.yaml.conf"), "2222");
+        Assertions.assertEquals(environment.getProperty("application.yml.conf"), "3333");
+
+        // spring.profiles.active: test
         Assertions.assertEquals(environment.getProperty("test.env.foo"), "bar");
     }
 

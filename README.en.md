@@ -79,7 +79,7 @@ distributed-scheduler
 
 ## Quick Start
 
-1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java))
+1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
 
 2. Modify configuration files such as Mysql, Redis, Consul, Nacos, Zookeeper, Etcd: [scheduler-samples-common/src/main/resources](scheduler-samples/scheduler-samples-common/src/main/resources)
 - if use default localhost configuration([e.g consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file
@@ -117,7 +117,7 @@ public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
 ```
 
 5. Execute the following curl command to add tasks (select any running Supervisor application to replace `localhost:8081`)
-- `triggerConf` modified to  next minute of the current time
+- `triggerValue` modified to  next minute of the current time
 - `jobHandler` is the fully qualified name of the newly written task processor class (also supports source code)
 
 ```bash
@@ -130,7 +130,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
     "triggerType": 2,
-    "triggerConf": "2022-10-06 12:00:00"
+    "triggerValue": "2022-10-06 12:00:00"
 }'
 ```
 

@@ -49,14 +49,14 @@ public final class TriggerTimeUtils {
                 // already executed once, none next time
                 return null;
             } else if (misfireStrategy == MisfireStrategy.DISCARD) {
-                next = triggerType.computeNextFireTime(job.getTriggerConf(), current);
+                next = triggerType.computeNextFireTime(job.getTriggerValue(), current);
             } else {
-                next = triggerType.computeNextFireTime(job.getTriggerConf(), new Date(0));
+                next = triggerType.computeNextFireTime(job.getTriggerValue(), new Date(0));
             }
         } else if (misfireStrategy == MisfireStrategy.DISCARD || last == null) {
             // 2、如果misfire为丢失策略或这个Job从未触发执行过，则以初始化方式来计算
             base = max(max(last, start), current);
-            next = triggerType.computeNextFireTime(job.getTriggerConf(), base);
+            next = triggerType.computeNextFireTime(job.getTriggerValue(), base);
         } else {
             // 3、如果这个Job有触发执行记录，则基于最近一次调度时间(last_sched_time)来计算
 
@@ -67,13 +67,13 @@ public final class TriggerTimeUtils {
                     Date temp = null, recently;
                     do {
                         recently = temp;
-                        base = temp = triggerType.computeNextFireTime(job.getTriggerConf(), base);
+                        base = temp = triggerType.computeNextFireTime(job.getTriggerValue(), base);
                     } while (temp != null && temp.before(current));
 
                     next = recently != null ? recently : temp;
                     break;
                 case EVERY:
-                    next = triggerType.computeNextFireTime(job.getTriggerConf(), base);
+                    next = triggerType.computeNextFireTime(job.getTriggerValue(), base);
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported misfire strategy: " + job.getMisfireStrategy());
