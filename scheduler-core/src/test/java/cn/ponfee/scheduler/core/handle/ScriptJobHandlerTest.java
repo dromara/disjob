@@ -6,9 +6,10 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
+package cn.ponfee.scheduler.core.handle;
+
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import org.junit.Assert;

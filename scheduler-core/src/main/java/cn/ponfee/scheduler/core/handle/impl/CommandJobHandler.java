@@ -9,15 +9,18 @@
 package cn.ponfee.scheduler.core.handle.impl;
 
 import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
+import lombok.Data;
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
 
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
+import java.nio.charset.Charset;
 
 /**
  * The job handler for executes system operation command.
@@ -30,11 +33,15 @@ public class CommandJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) throws Exception {
-        Assert.hasText(task.getTaskParam(), "Task param cannot be empty.");
-        String[] cmdarray = Jsons.fromJson(task.getTaskParam(), String[].class);
-        Process process = Runtime.getRuntime().exec(cmdarray);
+        Assert.hasText(task.getTaskParam(), "Command param cannot be empty.");
+        CommandParam commandParam = Jsons.fromJson(task.getTaskParam(), CommandParam.class);
+        Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");
+        Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
+
+        Charset charset = Files.charset(commandParam.charset);
+
         try (InputStream input = process.getInputStream()) {
-            String verbose = IOUtils.toString(input, StandardCharsets.UTF_8);
+            String verbose = IOUtils.toString(input, charset);
             int code = process.waitFor();
             if (code == 0) {
                 log.info("Command execute success: {} | {}", task.getId(), verbose);
@@ -44,6 +51,15 @@ public class CommandJobHandler extends JobHandler<String> {
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + verbose);
             }
         }
+    }
+
+    @Data
+    public static class CommandParam implements Serializable {
+        private static final long serialVersionUID = 2079640617453920047L;
+
+        private String[] cmdarray;
+        private String[] envp;
+        private String charset;
     }
 
 }

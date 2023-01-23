@@ -16,9 +16,9 @@ import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -117,7 +117,7 @@ public class RedisTaskReceiver extends TaskReceiver {
                     return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, keysAndArgs);
                 } else {
                     LOG.error("Call redis eval sha occur error.", e);
-                    throw (e instanceof RuntimeException) ? (RuntimeException) e : new RedisSystemException(e.getMessage(), e);
+                    return ExceptionUtils.rethrow(e);
                 }
             }
         });

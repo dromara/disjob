@@ -32,7 +32,7 @@ public final class EmbeddedEtcdServerTestcontainers {
             .withAdditionalArgs("--max-txn-ops", "1024")
             .build();
 
-        etcd.containers().stream().forEach(container -> {
+        etcd.containers().forEach(container -> {
             container.setPortBindings(PORT_BINDINGS);
             // other docker container settings
         });

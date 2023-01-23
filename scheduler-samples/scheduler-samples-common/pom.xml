@@ -67,7 +67,7 @@
     <!-- Dispatching: select one implementation for task dispatching -->
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>scheduler-dispatch-redis</artifactId>
+      <artifactId>scheduler-dispatch-http</artifactId>
     </dependency>
     <!--
     <dependency>

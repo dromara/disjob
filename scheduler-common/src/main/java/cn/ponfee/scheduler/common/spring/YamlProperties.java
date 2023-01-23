@@ -22,6 +22,7 @@ import java.util.Properties;
  * @author Ponfee
  */
 public class YamlProperties extends Properties implements TypedMap<Object, Object> {
+    private static final long serialVersionUID = -1599483902442715272L;
 
     public YamlProperties(File file) throws IOException {
         try (InputStream inputStream = new FileInputStream(file)) {

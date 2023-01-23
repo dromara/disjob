@@ -2,6 +2,7 @@ package cn.ponfee.scheduler.core.handle.impl;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
@@ -15,7 +16,6 @@ import org.springframework.util.Assert;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ForkJoinPool;
 
 /**
@@ -34,7 +34,7 @@ public class ScriptJobHandler extends JobHandler<String> {
         Assert.notNull(scriptParam, "Invalid script param: " + scriptParam);
         Assert.notNull(scriptParam.type, "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
-        Charset charset = scriptParam.charset == null ? StandardCharsets.UTF_8 : Charset.forName(scriptParam.charset);
+        Charset charset = Files.charset(scriptParam.charset);
 
         String scriptFileName = scriptParam.type.buildFileName(task().getTaskId());
         String scriptPath = prepareScriptFile(scriptParam.script, scriptFileName, charset);
@@ -134,7 +134,7 @@ public class ScriptJobHandler extends JobHandler<String> {
                 if (!SystemUtils.IS_OS_WINDOWS) {
                     chmodFile(scriptPath);
                 }
-                return Runtime.getRuntime().exec(new String[]{"python", scriptPath}, envp);
+                return Runtime.getRuntime().exec(new String[]{"python3", scriptPath}, envp);
             }
         },
         ;
@@ -155,7 +155,6 @@ public class ScriptJobHandler extends JobHandler<String> {
         private String script;
         private String[] envp;
     }
-
 
     private static String prepareScriptFile(String script, String scriptFileName, Charset charset) throws IOException {
         Assert.hasText(script, "Script source cannot be empty.");

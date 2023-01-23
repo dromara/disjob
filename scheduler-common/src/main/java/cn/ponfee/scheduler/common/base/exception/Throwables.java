@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.common.base.exception;
 
+import cn.ponfee.scheduler.common.concurrent.Threads;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -70,9 +71,7 @@ public final class Throwables {
             runnable.run();
         } catch (Throwable t) {
             LOG.error(t.getMessage(), t);
-            if (t instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+            Threads.interruptIfNecessary(t);
         }
     }
 
@@ -81,9 +80,7 @@ public final class Throwables {
             return supplier.get();
         } catch (Throwable t) {
             LOG.error(t.getMessage(), t);
-            if (t instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+            Threads.interruptIfNecessary(t);
             return null;
         }
     }
@@ -93,9 +90,7 @@ public final class Throwables {
             consumer.accept(arg);
         } catch (Throwable t) {
             LOG.error(t.getMessage(), t);
-            if (t instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+            Threads.interruptIfNecessary(t);
         }
     }
 
@@ -108,9 +103,7 @@ public final class Throwables {
             return function.apply(arg);
         } catch (Throwable t) {
             LOG.error(t.getMessage(), t);
-            if (t instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+            Threads.interruptIfNecessary(t);
             return defaultValue;
         }
     }

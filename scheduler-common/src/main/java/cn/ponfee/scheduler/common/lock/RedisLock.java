@@ -11,10 +11,10 @@ package cn.ponfee.scheduler.common.lock;
 import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.NonTransientDataAccessException;
-import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -384,7 +384,7 @@ public class RedisLock implements Lock, java.io.Serializable {
                     LOG.info(e.getMessage());
                     ret = conn.eval(UNLOCK_SCRIPT_BYTES, ReturnType.INTEGER, 1, keysAndArgs);
                 } else {
-                    throw (e instanceof RuntimeException) ? (RuntimeException) e : new RedisSystemException(e.getMessage(), e);
+                    return ExceptionUtils.rethrow(e);
                 }
             }
             return ret != null && ret == UNLOCK_SUCCESS;

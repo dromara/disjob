@@ -95,7 +95,7 @@ public class DiscoveryRestProxy {
                     key -> ExtendMethodHandles.getSpecialMethodHandle(method).bindTo(proxy)
                 );
                 return methodHandle.invokeWithArguments(args);
-            } else if (ImplantGroup.class.isInstance(proxy)) {
+            } else if (proxy instanceof ImplantGroup) {
                 String group = IMPLANTED_GROUP_THREADLOCAL.get();
                 try {
                     return discoveryRestTemplate.execute(group, request.path, request.httpMethod, method.getGenericReturnType(), args);

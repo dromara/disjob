@@ -302,7 +302,7 @@ public class JavaUtilDateFormat extends DateFormat {
 
     static String padding(String source) {
         // example: 2022/07/18T15:11:11Z, 2022/07/18T15:11:11.Z, 2022/07/18T15:11:11.1Z, 2022/07/18T15:11:11.13Z
-        String[] array = source.split("[\\.Z]");
+        String[] array = source.split("[.Z]");
         return array[0] + "." + (array.length == 1 ? "000" : Strings.padEnd(array[1], 3, '0'));
     }
 

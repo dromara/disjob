@@ -1,3 +1,5 @@
+server.port: 8084
+
 # scheduler worker configuration
 distributed.scheduler:
   worker:

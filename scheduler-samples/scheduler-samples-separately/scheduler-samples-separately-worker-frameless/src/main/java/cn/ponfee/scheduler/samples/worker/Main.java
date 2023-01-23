@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.samples.worker;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
+import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.spring.YamlProperties;
 import cn.ponfee.scheduler.common.util.*;
 import cn.ponfee.scheduler.core.base.JobConstants;
@@ -17,7 +18,7 @@ import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
-import cn.ponfee.scheduler.dispatch.redis.RedisTaskReceiver;
+import cn.ponfee.scheduler.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
@@ -25,6 +26,7 @@ import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
 import cn.ponfee.scheduler.samples.common.util.Constants;
 import cn.ponfee.scheduler.samples.worker.redis.AbstractRedisTemplateCreator;
+import cn.ponfee.scheduler.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -58,7 +60,9 @@ public class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    private static StringRedisTemplate stringRedisTemplate = null;
+
+    public static void main(String[] args) throws Exception {
         printBanner();
 
         YamlProperties props;
@@ -66,16 +70,52 @@ public class Main {
             props = new YamlProperties(inputStream);
         }
 
+        int port = props.getRequiredInt("server.port");
+
         String group = props.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");
-        Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), Networks.getHostIp(), 0);
+        Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), Networks.getHostIp(), port);
         // inject current worker
         ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
 
-        StringRedisTemplate stringRedisTemplate = AbstractRedisTemplateCreator.create("redis.", props).getStringRedisTemplate();
+        TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel(
+            props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),
+            props.getInt(WORKER_KEY_PREFIX + ".timing-wheel-ring-size", 60)
+        );
 
-        WorkerRegistry workerRegistry = createRedisWorkerRegistry(stringRedisTemplate, JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis", props);
-        //WorkerRegistry workerRegistry = createConsulWorkerRegistry(JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".consul", props);
+
+
+
+        // --------------------- create registry(select redis or consul) --------------------- //
+        WorkerRegistry workerRegistry;
+        {
+            // redis registry
+            workerRegistry = createRedisWorkerRegistry(JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".redis", props);
+
+            // consul registry
+            //workerRegistry = createConsulWorkerRegistry(JobConstants.SCHEDULER_REGISTRY_KEY_PREFIX + ".consul", props);
+        }
+        // --------------------- create registry(select redis or consul) --------------------- //
+
+
+
+
+        // --------------------- create registry(select redis or http) --------------------- //
+        TaskReceiver taskReceiver;
+        VertxWebServer vertxWebServer;
+        {
+            // redis dispatching
+            //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
+            //vertxWebServer = new VertxWebServer(props.getRequiredInt("server.port"), null);
+
+            // http dispatching
+            taskReceiver = new HttpTaskReceiver(timingWheel);
+            vertxWebServer = new VertxWebServer(port, taskReceiver);
+        }
+        // --------------------- create registry(select redis or http) --------------------- //
+
+
+
 
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
             .connectTimeout(props.getInt(JobConstants.SCHEDULER_KEY_PREFIX + ".http.connect-timeout", 2000))
@@ -85,13 +125,6 @@ public class Main {
             .discoveryServer(workerRegistry)
             .build();
         SupervisorService SupervisorServiceClient = DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
-
-        TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel(
-            props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),
-            props.getInt(WORKER_KEY_PREFIX + ".timing-wheel-ring-size", 60)
-        );
-        // 此为非web应用，不支持HttpTaskReceiver（注：scheduler-samples-separately-worker-springboot应用可以支持HttpTaskReceiver）
-        TaskReceiver taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
 
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
@@ -104,7 +137,11 @@ public class Main {
 
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(workerStartup::close));
+            Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(vertxWebServer::stop)));
+
             workerStartup.start();
+            vertxWebServer.start();
+
             new CountDownLatch(1).await();
         } catch (InterruptedException e) {
             LOG.error("Sleep interrupted.", e);
@@ -124,37 +161,18 @@ public class Main {
     }
 
     private static void printBanner() throws IOException {
-        String banner = IOUtils.resourceToString("banner.txt", StandardCharsets.UTF_8, WorkerStartup.class.getClassLoader());
+        String banner = IOUtils.resourceToString(
+            "banner.txt", StandardCharsets.UTF_8, WorkerStartup.class.getClassLoader()
+        );
         System.out.println(banner);
-
-        /*
-        try (InputStream inputStream = new ClassPathResource("banner.txt").getInputStream()) {
-            String banner = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            System.out.println(banner);
-        } catch (Exception ignored) {
-            //
-        }
-        */
-
-        /*
-        try {
-            Map<String, String> map = new ResourceScanner("/").scan4text("banner.txt");
-            if (MapUtils.isNotEmpty(map)) {
-                System.out.println(map.values().iterator().next());
-            }
-        } catch (Exception ignored) {
-            //
-        }
-        */
     }
 
-    private static WorkerRegistry createRedisWorkerRegistry(StringRedisTemplate redisTemplate,
-                                                            String keyPrefix, YamlProperties props) {
+    private static WorkerRegistry createRedisWorkerRegistry(String keyPrefix, YamlProperties props) {
         RedisRegistryProperties config = new RedisRegistryProperties();
         config.setNamespace(props.getString(keyPrefix + ".namespace"));
         config.setSessionTimeoutMs(props.getLong(keyPrefix + ".session-timeout-ms", 30000));
         config.setRegistryPeriodMs(props.getLong(keyPrefix + ".registry-period-ms", 3000));
-        return new RedisWorkerRegistry(redisTemplate, config);
+        return new RedisWorkerRegistry(stringRedisTemplate(props), config);
     }
 
     /*
@@ -167,5 +185,12 @@ public class Main {
         return new ConsulWorkerRegistry(config);
     }
     */
+
+    private synchronized static StringRedisTemplate stringRedisTemplate(YamlProperties props) {
+        if (stringRedisTemplate == null) {
+            stringRedisTemplate = AbstractRedisTemplateCreator.create("redis.", props).getStringRedisTemplate();
+        }
+        return stringRedisTemplate;
+    }
 
 }

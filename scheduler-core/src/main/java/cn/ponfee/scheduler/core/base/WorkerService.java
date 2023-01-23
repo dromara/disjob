@@ -23,10 +23,10 @@ public interface WorkerService {
 
     String PREFIX_PATH = "worker/rpc/";
 
-    @PostMapping(PREFIX_PATH + "verify")
+    @PostMapping(PREFIX_PATH + "job/verify")
     boolean verify(String jobHandler, String jobParam);
 
-    @PostMapping(PREFIX_PATH + "split")
+    @PostMapping(PREFIX_PATH + "job/split")
     List<SplitTask> split(String jobHandler, String jobParam) throws JobException;
 
 }

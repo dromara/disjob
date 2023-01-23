@@ -230,7 +230,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         @Override
         boolean isAlive(Worker worker) {
             ImmutableHashList<String, Worker> workers = groupedWorkers.get(worker.getGroup());
-            return workers == null ? false : workers.contains(worker);
+            return workers != null && workers.contains(worker);
         }
 
         @Override

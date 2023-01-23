@@ -165,9 +165,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 terminateTask(supervisorClient, param, toOps);
             } catch (Exception e) {
                 LOG.error("Normal stop task occur error: {} | {} | {}", taskId, toOps, thread.getName());
-                if (e instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
+                Threads.interruptIfNecessary(e);
             }
         }
     }
@@ -702,6 +700,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     if (e instanceof InterruptedException) {
                         LOG.error("Worker thread execute interrupted: " + executeParam, e);
                         threadPool.removeWorkerThread(this);
+                        Thread.currentThread().interrupt();
                         return;
                     } else {
                         LOG.error("Worker thread execute failed: " + executeParam, e);

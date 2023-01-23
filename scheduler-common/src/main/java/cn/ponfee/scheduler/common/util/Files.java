@@ -320,4 +320,9 @@ public final class Files {
 
         return prefix + String.join(UNIX_FOLDER_SEPARATOR, pathElements);
     }
+
+    public static Charset charset(String charsetName) {
+        return charsetName == null ? DEFAULT_CHARSET : Charset.forName(charsetName);
+    }
+
 }
