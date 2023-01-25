@@ -79,7 +79,7 @@ distributed-scheduler
 
 ## Quick Start
 
-1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java)，启动自动初始化SQL脚本)
+1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
 
 2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources](scheduler-samples/scheduler-samples-common/src/main/resources)
   - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件

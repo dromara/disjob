@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.test.common.util;
 
+import cn.ponfee.scheduler.common.spring.ResourceScanner;
 import cn.ponfee.scheduler.common.util.*;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.model.SchedJob;

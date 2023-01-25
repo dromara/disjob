@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.util;
+package cn.ponfee.scheduler.common.spring;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;

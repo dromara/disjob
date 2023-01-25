@@ -18,6 +18,7 @@ import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.worker.rpc.WorkerServiceProvider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
@@ -55,7 +56,8 @@ public class VertxWebServer extends AbstractVerticle {
     }
 
     public final void deploy() {
-        Vertx vertx0 = Vertx.vertx();
+        VertxOptions options = new VertxOptions();
+        Vertx vertx0 = Vertx.vertx(options);
 
         // here super.vertx is null
 
@@ -112,7 +114,9 @@ public class VertxWebServer extends AbstractVerticle {
             });
         }
 
-        HttpServerOptions options = new HttpServerOptions();
+        HttpServerOptions options = new HttpServerOptions()
+            .setIdleTimeout(120)
+            .setIdleTimeoutUnit(TimeUnit.SECONDS);
         HttpServer server = super.vertx.createHttpServer(options);
         server.requestHandler(router);
         server.listen(port);

@@ -31,8 +31,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class CopyrightTest {
 
-    private static final String baseDir = MavenProjects.getProjectBaseDir();
-    private static final String copyright = CheckedThrowing.checked(
+    private static final String BASE_DIR = MavenProjects.getProjectBaseDir();
+    private static final String COPYRIGHT = CheckedThrowing.checked(
         () -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightTest.class.getClassLoader())
     );
 
@@ -46,7 +46,7 @@ public class CopyrightTest {
             try {
                 if (!text.contains("** \\______   \\____   _____/ ____\\____   ____    Copyright (c) 2017-20")) {
                     Writer writer = new FileWriter(file.getAbsolutePath());
-                    IOUtils.write(copyright, writer);
+                    IOUtils.write(COPYRIGHT, writer);
                     IOUtils.write(text, writer);
                     writer.flush();
                     writer.close();
@@ -55,7 +55,7 @@ public class CopyrightTest {
 
                 if (!text.contains("** \\______   \\____   _____/ ____\\____   ____    Copyright (c) 2017-2023 Ponfee  **")) {
                     Writer writer = new FileWriter(file.getAbsolutePath());
-                    IOUtils.write(copyright, writer);
+                    IOUtils.write(COPYRIGHT, writer);
                     IOUtils.write(text.substring(83 * 7 + 1), writer);
                     writer.flush();
                     writer.close();
@@ -89,7 +89,7 @@ public class CopyrightTest {
 
     private static void handleFile(Consumer<File> consumer) {
         FileUtils
-            .listFiles(new File(baseDir).getParentFile(), new String[]{"java"}, true)
+            .listFiles(new File(BASE_DIR).getParentFile(), new String[]{"java"}, true)
             .forEach(e -> CheckedThrowing.checked(() -> consumer.accept(e)));
     }
 

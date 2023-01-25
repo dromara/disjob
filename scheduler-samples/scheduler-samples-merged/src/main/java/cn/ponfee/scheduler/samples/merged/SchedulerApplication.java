@@ -8,17 +8,20 @@
 
 package cn.ponfee.scheduler.samples.merged;
 
+import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.samples.common.AbstractSchedulerSamplesApplication;
 import cn.ponfee.scheduler.samples.common.util.Constants;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.Import;
 
 /**
  * Scheduler application based spring boot
  *
  * @author Ponfee
  */
+@Import(Snowflake.class) // IdGenerator
 @EnableSupervisor
 @EnableWorker
 public class SchedulerApplication extends AbstractSchedulerSamplesApplication {

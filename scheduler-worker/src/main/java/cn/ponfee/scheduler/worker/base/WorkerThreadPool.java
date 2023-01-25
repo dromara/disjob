@@ -30,7 +30,6 @@ import org.springframework.util.Assert;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -72,12 +71,12 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     private final long keepAliveTimeSeconds;
 
     /**
-     * Active thread pool
+     * Active worker thread pool
      */
     private final ActiveThreadPool                 activePool = new ActiveThreadPool();
 
     /**
-     * Idle thread pool
+     * Idle worker thread pool
      */
     private final LinkedBlockingDeque<WorkerThread>  idlePool = new LinkedBlockingDeque<>();
 
@@ -87,9 +86,9 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     private final LinkedBlockingDeque<ExecuteParam> taskQueue = new LinkedBlockingDeque<>();
 
     /**
-     * Counts thread number
+     * Counts worker thread number
      */
-    private final AtomicInteger threadCounter = new AtomicInteger(0);
+    private final AtomicInteger workerThreadCounter = new AtomicInteger(0);
 
     /**
      * Pool is whether closed status
@@ -153,18 +152,18 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return;
         }
 
-        WorkerThread thread = pair.getLeft();
+        WorkerThread workerThread = pair.getLeft();
         ExecuteParam param = pair.getRight();
-        LOG.info("Stop task: {} | {} | {}", taskId, toOps, thread.getName());
+        LOG.info("Stop task: {} | {} | {}", taskId, toOps, workerThread.getName());
         try {
             param.interrupt();
             // stop the work thread
-            stopWorkerThread(thread, true);
+            stopWorkerThread(workerThread, true);
         } finally {
             try {
                 terminateTask(supervisorClient, param, toOps);
             } catch (Exception e) {
-                LOG.error("Normal stop task occur error: {} | {} | {}", taskId, toOps, thread.getName());
+                LOG.error("Normal stop task occur error: {} | {} | {}", taskId, toOps, workerThread.getName());
                 Threads.interruptIfNecessary(e);
             }
         }
@@ -184,7 +183,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         Throwables.caught(activePool::stopPool);
 
         // 1.2、change idle pool thread state
-        Throwables.caught(() -> idlePool.forEach(WorkerThread::toStop));
+        idlePool.forEach(e -> Throwables.caught(e::toStop));
 
         // 1.3、clear task execution param queue
         Throwables.caught(taskQueue::clear);
@@ -194,12 +193,12 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         Throwables.caught(() -> Threads.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
-        Throwables.caught(() -> idlePool.forEach(e -> stopWorkerThread(e, true)));
+        idlePool.forEach(e -> Throwables.caught(() -> stopWorkerThread(e, true)));
         Throwables.caught(idlePool::clear);
 
         // 2.3、stop executing pool thread
         Throwables.caught(activePool::closePool);
-        threadCounter.set(0);
+        workerThreadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
         Throwables.caught(() -> ThreadPoolExecutors.shutdown(STOP_TASK_POOL, 1));
@@ -214,44 +213,44 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 ExecuteParam param = taskQueue.takeFirst();
 
                 // take a worker
-                WorkerThread thread = idlePool.pollFirst();
-                if (thread == null) {
-                    thread = createWorkerThreadIfNecessary();
+                WorkerThread workerThread = idlePool.pollFirst();
+                if (workerThread == null) {
+                    workerThread = createWorkerThreadIfNecessary();
                 }
-                if (thread == null) {
-                    thread = idlePool.takeFirst();
+                if (workerThread == null) {
+                    workerThread = idlePool.takeFirst();
                 }
 
-                if (thread.isStopped()) {
+                if (workerThread.isStopped()) {
                     LOG.info("Worker thread already stopped.");
                     // re-execute this execution param
                     taskQueue.putFirst(param);
                     // destroy this worker thread
-                    stopWorkerThread(thread, true);
+                    stopWorkerThread(workerThread, true);
                     continue;
                 }
 
                 try {
-                    activePool.doExecute(thread, param);
+                    activePool.doExecute(workerThread, param);
                 } catch (InterruptedException e) {
                     LOG.error("Do execute occur thread interrupted.", e);
                     // discard this execution param
                     param = null;
                     // destroy this worker thread
-                    stopWorkerThread(thread, true);
+                    stopWorkerThread(workerThread, true);
                     throw e;
                 } catch (BrokenThreadException e) {
                     LOG.error("Do execute broken thread.", e);
                     // re-execute this execution param
                     taskQueue.putFirst(param);
                     // destroy this worker thread
-                    stopWorkerThread(thread, true);
+                    stopWorkerThread(workerThread, true);
                 } catch (IllegalTaskException e) {
                     LOG.error(e.getMessage());
                     // discard the execute param
                     param = null;
                     // return this worker thread
-                    idlePool.putFirst(thread);
+                    idlePool.putFirst(workerThread);
                 } catch (DuplicateTaskException e) {
                     LOG.error(e.getMessage());
                     try {
@@ -261,7 +260,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                         LOG.error("Cancel duplicate task occur error: " + param, ex);
                     }
                     // return this worker thread
-                    idlePool.putFirst(thread);
+                    idlePool.putFirst(workerThread);
                 }
             }
         } catch (InterruptedException e) {
@@ -278,7 +277,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     public String toString() {
         return String.format(
             "maximum-pool-size=%d, total-count=%d, active-count=%d, idle-count=%d, task-count=%d",
-            maximumPoolSize, threadCounter.get(), activePool.size(), idlePool.size(), taskQueue.size()
+            maximumPoolSize, workerThreadCounter.get(), activePool.size(), idlePool.size(), taskQueue.size()
         );
     }
 
@@ -288,22 +287,24 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
      * Task executed finished, then return the worker thread to idle pool.
      * <p>Called this method current thread is WorkerThread
      * 
-     * @param thread the worker thread
+     * @param workerThread the worker thread
      * @return {@code true} if return to idle pool successfully
      */
-    private boolean returnWorkerThread(WorkerThread thread) {
-        if (activePool.removeThread(thread) == null) {
-            LOG.warn("Return thread failed, because not found: {}", thread.getName());
+    private boolean returnWorkerThread(WorkerThread workerThread) {
+        if (activePool.removeThread(workerThread) == null) {
+            // maybe already removed by other operation
+            LOG.warn("Return thread failed, because not found: {}", workerThread.getName());
             return false;
         }
 
-        // return to idle pool
+        // return the detached worker thread to idle pool
         try {
-            idlePool.putFirst(thread);
+            idlePool.putFirst(workerThread);
             return true;
         } catch (InterruptedException e) {
             LOG.error("Return thread to idle pool interrupted.", e);
             Thread.currentThread().interrupt();
+            stopWorkerThread(workerThread, false);
             return false;
         }
     }
@@ -311,61 +312,58 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     /**
      * Remove the worker thread from active pool and destroy it.
      *
-     * @param thread the worker thread
+     * @param workerThread the worker thread
      */
-    private void removeWorkerThread(WorkerThread thread) {
-        thread.toStop();
+    private void removeWorkerThread(WorkerThread workerThread) {
+        workerThread.toStop();
 
-        boolean hasRemoved = activePool.removeThread(thread) != null;
+        boolean hasRemoved = activePool.removeThread(workerThread) != null;
 
         if (!hasRemoved) {
-            for (Iterator<WorkerThread> iter = idlePool.iterator(); iter.hasNext(); ) {
-                if (iter.next() == thread) {
-                    iter.remove();
-                    hasRemoved = true;
-                    break;
-                }
-            }
+            hasRemoved = idlePool.remove(workerThread);
         }
 
         if (!hasRemoved) {
-            LOG.warn("Not found removable thread: {}", thread.getName());
+            LOG.warn("Not found removable thread: {}", workerThread.getName());
         }
 
-        stopWorkerThread(thread, false);
+        stopWorkerThread(workerThread, false);
     }
 
     /**
      * Stop and discard the worker thread(death)
      *
-     * @param thread the worker
-     * @param doStop if whether do stop the thread
+     * @param workerThread the worker thread
+     * @param doStop       if whether do stop the thread
      */
-    private void stopWorkerThread(WorkerThread thread, boolean doStop) {
-        threadCounter.decrementAndGet();
+    private void stopWorkerThread(WorkerThread workerThread, boolean doStop) {
+        workerThreadCounter.decrementAndGet();
         if (doStop) {
-            LOG.info("Worker thread death: {}", thread.getName());
-            thread.doStop(0, 0, 200);
+            LOG.info("Worker thread death: {}", workerThread.getName());
+            workerThread.doStop(0, 0, 200);
+        } else {
+            workerThread.toStop();
         }
     }
 
     /**
-     * 实际上是单线程在调用此方法，可以不加synchronized
-     * <p>但"判断是否已经是最大线程数"与"创新建线程"是要合为原子操作的，所以加上synchronized是作语义上的考虑
+     * if current thread count less than maximumPoolSize, then create new thread to pool.
      *
      * @return created worker thread object
      */
-    private synchronized WorkerThread createWorkerThreadIfNecessary() {
-        if (threadCounter.get() >= maximumPoolSize) {
-            return null;
+    private WorkerThread createWorkerThreadIfNecessary() {
+        for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
+            if (workerThreadCounter.compareAndSet(count, count + 1)) {
+                WorkerThread thread = new WorkerThread(this, supervisorClient, keepAliveTimeSeconds);
+                LOG.info("Created worker thread, current size: {}", count + 1);
+                return thread;
+            }
         }
-
-        WorkerThread thread = new WorkerThread(this, supervisorClient, keepAliveTimeSeconds);
-        LOG.info("Created worker thread, current size: {}", threadCounter.incrementAndGet());
-        return thread;
+        return null;
     }
 
     // -------------------------------------------------------------------private static definitions
+
     private static void pauseTask(SupervisorService supervisorClient, ExecuteParam param, Operations toOps, String errorMsg) throws Exception {
         Operations fromOps = param.operation();
         if (fromOps != Operations.TRIGGER || !param.updateOperation(fromOps, toOps)) {
@@ -449,7 +447,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         //private final BiMap<Long, WorkerThread> activePool = Maps.synchronizedBiMap(HashBiMap.create());
         private final Map<Long, WorkerThread> pool = new HashMap<>();
 
-        synchronized void doExecute(WorkerThread thread, ExecuteParam param) throws InterruptedException {
+        synchronized void doExecute(WorkerThread workerThread, ExecuteParam param) throws InterruptedException {
             if (param == null || param.operation() != Operations.TRIGGER) {
                 // cannot happen
                 throw new IllegalTaskException("Invalid execute param: " + param);
@@ -462,17 +460,17 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     : new DuplicateTaskException("Task id duplicate: " + param + ", " + exists.executingParam());
             }
 
-            if (!thread.updateExecuteParam(null, param)) {
-                throw new BrokenThreadException("Execute worker thread conflict: " + thread.getName() + ", " + thread.executingParam());
+            if (!workerThread.updateExecuteParam(null, param)) {
+                throw new BrokenThreadException("Execute worker thread conflict: " + workerThread.getName() + ", " + workerThread.executingParam());
             }
 
             try {
-                thread.execute(param);
+                workerThread.execute(param);
             } catch (Exception e) {
-                thread.updateExecuteParam(param, null);
+                workerThread.updateExecuteParam(param, null);
                 throw e;
             }
-            pool.put(param.getTaskId(), thread);
+            pool.put(param.getTaskId(), workerThread);
         }
 
         synchronized Pair<WorkerThread, ExecuteParam> stopTask(long taskId, Operations toOps) {
@@ -493,24 +491,27 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return Pair.of(thread, param);
         }
 
-        synchronized ExecuteParam removeThread(WorkerThread thread) {
-            ExecuteParam param = thread.executingParam();
+        synchronized ExecuteParam removeThread(WorkerThread workerThread) {
+            ExecuteParam param = workerThread.executingParam();
             if (param == null) {
                 return null;
             }
 
-            thread.updateExecuteParam(param, null);
+            workerThread.updateExecuteParam(param, null);
             WorkerThread removed = pool.remove(param.getTaskId());
 
             // cannot happen
-            Assert.isTrue(thread == removed, () -> "Inconsistent worker thread: " + param.getTaskId() + ", " + thread.getName() + ", " + removed.getName());
+            Assert.isTrue(
+                workerThread == removed,
+                () -> "Inconsistent worker thread: " + param.getTaskId() + ", " + workerThread.getName() + ", " + removed.getName()
+            );
             return param;
         }
 
         synchronized void stopPool() {
-            pool.forEach((id, thread) -> {
-                thread.toStop();
-                thread.executingParam().interrupt();
+            pool.forEach((id, workerThread) -> {
+                workerThread.toStop();
+                workerThread.executingParam().interrupt();
             });
         }
 
@@ -518,8 +519,8 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             pool.entrySet()
                 .parallelStream()
                 .forEach(entry -> {
-                    WorkerThread thread = entry.getValue();
-                    ExecuteParam param = thread.executingParam();
+                    WorkerThread workerThread = entry.getValue();
+                    ExecuteParam param = workerThread.executingParam();
                     Operations fromOps = param.operation(), toOps = Operations.PAUSE;
                     boolean status = (fromOps == Operations.TRIGGER) && param.updateOperation(fromOps, toOps);
                     if (!status) {
@@ -527,9 +528,9 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     }
                     try {
                         // stop the work thread
-                        WorkerThreadPool.this.stopWorkerThread(thread, true);
+                        WorkerThreadPool.this.stopWorkerThread(workerThread, true);
                     } catch (Exception e) {
-                        LOG.error("Stop worker thread occur error on thread pool close: " + param + " | " + thread, e);
+                        LOG.error("Stop worker thread occur error on thread pool close: " + param + " | " + workerThread, e);
                     }
                     if (status) {
                         try {
@@ -539,7 +540,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                         }
                     }
 
-                    thread.updateExecuteParam(param, null);
+                    workerThread.updateExecuteParam(param, null);
                 });
 
             pool.clear();
@@ -582,7 +583,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         private static final AtomicInteger FUTURE_TASK_NAMED_SEQ = new AtomicInteger(1);
 
         /**
-         * Worker thread pool
+         * Worker thread pool reference
          */
         private final WorkerThreadPool threadPool;
 
