@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-1.8-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
+[![Maven Central](https://img.shields.io/badge/maven--central-1.8-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.dev/namespace/cn.ponfee)
 
 **`English`** | [简体中文](README.md)
 
@@ -59,7 +59,7 @@ distributed-scheduler
 - Provides the ability to control tasks during execution, and can suspend/cancel the tasks in progress at any time, and can also resume the execution of suspended tasks
 - Provides the ability to execute tasks dependently. After multiple tasks build a DAG dependency relationship, the tasks will be executed sequentially according to the established dependency order
 
-## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
+## [Download From Maven Central](https://central.sonatype.dev/namespace/cn.ponfee)
 
 > [Note](https://developer.aliyun.com/mvn/search): If it cannot download, please remove **aliyun maven central mirror** configuration from the maven `settings.xml` file.
 

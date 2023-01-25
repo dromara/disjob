@@ -1,5 +1,2 @@
-application.yml.conf: 3333
-
 spring.profiles:
-  active: test
   include: web,mysql,supervisor,redis

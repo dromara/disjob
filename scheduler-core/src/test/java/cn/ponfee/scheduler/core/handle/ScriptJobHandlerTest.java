@@ -34,9 +34,8 @@ public class ScriptJobHandlerTest {
         scriptJobHandler.task(task);
 
         Result<String> execute = scriptJobHandler.execute(Checkpoint.DISCARD);
-        Assert.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, shell!\"}", Jsons.toJson(execute));
+        Assert.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
     }
-
 
     @Test
     public void testPython() throws Exception {
@@ -52,7 +51,7 @@ public class ScriptJobHandlerTest {
         scriptJobHandler.task(task);
 
         Result<String> execute = scriptJobHandler.execute(Checkpoint.DISCARD);
-        Assert.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\"}", Jsons.toJson(execute));
+        Assert.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
     
 }

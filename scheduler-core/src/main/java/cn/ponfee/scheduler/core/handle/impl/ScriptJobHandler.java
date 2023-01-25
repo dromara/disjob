@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.handle.impl;
 
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.Jsons;
@@ -17,14 +17,19 @@ import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.springframework.util.Assert;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.concurrent.ForkJoinPool;
+
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.commons.lang3.SystemUtils.OS_NAME;
 
 /**
  * Script job handler.
@@ -39,8 +44,8 @@ public class ScriptJobHandler extends JobHandler<String> {
     @Override
     public Result<String> execute(Checkpoint checkpoint) throws Exception {
         ScriptParam scriptParam = Jsons.fromJson(task.getTaskParam(), ScriptParam.class);
-        Assert.notNull(scriptParam, "Invalid script param: " + scriptParam);
-        Assert.notNull(scriptParam.type, "Script type cannot be null: " + scriptParam);
+        Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
+        Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
         Charset charset = Files.charset(scriptParam.charset);
 
@@ -49,17 +54,18 @@ public class ScriptJobHandler extends JobHandler<String> {
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
 
-        StringBuilder verbose = new StringBuilder();
-        StringBuilder error = new StringBuilder();
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
-            ForkJoinPool.commonPool().execute(() -> readProcessMsg(is, verbose, charset));
-            ForkJoinPool.commonPool().execute(() -> readProcessMsg(es, error, charset));
-            // process.exitValue()
+            String verbose = CheckedThrowing.caught(() -> IOUtils.toString(is, charset));
+            String error = CheckedThrowing.caught(() -> IOUtils.toString(es, charset));
             int code = process.waitFor();
+            // process.exitValue()
             if (code == 0) {
-                return Result.success(verbose.toString());
+                return Result.success(verbose);
             } else {
-                return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Script execute failed, code: " + code + ", verbose: " + verbose + ", error: " + error);
+                return Result.failure(
+                    JobCodeMsg.JOB_EXECUTE_FAILED.getCode(),
+                    "Script execute failed: code=" + code + ", verbose=" + verbose + ", error=" + error
+                );
             }
         }
     }
@@ -71,7 +77,7 @@ public class ScriptJobHandler extends JobHandler<String> {
         CMD {
             @Override
             public void check() {
-                Assert.isTrue(SystemUtils.IS_OS_WINDOWS, () -> "Command script cannot supported os '" + SystemUtils.OS_NAME + "'");
+                Assert.isTrue(IS_OS_WINDOWS, () -> "Command script cannot supported os '" + OS_NAME + "'");
             }
 
             @Override
@@ -90,7 +96,7 @@ public class ScriptJobHandler extends JobHandler<String> {
         POWERSHELL {
             @Override
             public void check() {
-                Assert.isTrue(SystemUtils.IS_OS_WINDOWS, () -> "Powershell script cannot supported os '" + SystemUtils.OS_NAME + "'");
+                Assert.isTrue(IS_OS_WINDOWS, () -> "Powershell script cannot supported os '" + OS_NAME + "'");
             }
 
             @Override
@@ -109,7 +115,7 @@ public class ScriptJobHandler extends JobHandler<String> {
         SHELL {
             @Override
             public void check() {
-                Assert.isTrue(!SystemUtils.IS_OS_WINDOWS, () -> "Shell script cannot supported windows os '" + SystemUtils.OS_NAME + "'");
+                Assert.isTrue(!IS_OS_WINDOWS, () -> "Shell script cannot supported windows os '" + OS_NAME + "'");
             }
 
             @Override
@@ -139,10 +145,10 @@ public class ScriptJobHandler extends JobHandler<String> {
 
             @Override
             public Process exec(String scriptPath, String[] envp) throws Exception {
-                if (!SystemUtils.IS_OS_WINDOWS) {
+                if (!IS_OS_WINDOWS) {
                     chmodFile(scriptPath);
                 }
-                return Runtime.getRuntime().exec(new String[]{"python3", scriptPath}, envp);
+                return Runtime.getRuntime().exec(new String[]{"python", scriptPath}, envp);
             }
         },
         ;
@@ -188,21 +194,10 @@ public class ScriptJobHandler extends JobHandler<String> {
         return scriptPath;
     }
 
-    private static void readProcessMsg(InputStream is, StringBuilder sb, Charset charset) {
-        String line;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(is, charset))) {
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-        } catch (Exception e) {
-            sb.append("Error: ").append(Throwables.getRootCauseMessage(e));
-        }
-    }
-
     private static void chmodFile(String scriptPath) throws Exception {
         //Runtime.getRuntime().exec(new String[]{"/bin/chmod", "755", scriptPath}).waitFor();
         int code = new ProcessBuilder("/bin/chmod", "755", scriptPath).start().waitFor();
-        Assert.state(code == 0, "Chmod script file '" + scriptPath + "' failed, code: " + code);
+        Assert.state(code == 0, () -> "Chmod script file '" + scriptPath + "' failed, code: " + code);
     }
 
 }

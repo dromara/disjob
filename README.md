@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-1.8-orange.svg?style=plastic&logo=apachemaven)](https://mvnrepository.com/search?q=cn.ponfee)
+[![Maven Central](https://img.shields.io/badge/maven--central-1.8-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.dev/namespace/cn.ponfee)
 
 **`简体中文`** | [English](README.en.md)
 
@@ -59,7 +59,7 @@ distributed-scheduler
 - 提供执行中的任务控制能力，可随时暂停/取消正在执行中的任务，亦可恢复执行被暂停的任务
 - 提供任务依赖执行的能力，多个任务构建好DAG依赖关系后，任务便按既定的依赖顺序依次执行
 
-## [Download From Maven Central](https://mvnrepository.com/search?q=cn.ponfee)
+## [Download From Maven Central](https://central.sonatype.dev/namespace/cn.ponfee)
 
 > [**注意**](https://developer.aliyun.com/mvn/search): **最近aliyun那边的镜像仓受Maven中央仓库网络限制，部分依赖可能会从中央仓库同步文件失败，如果依赖查找不到(即无法下载)请在`settings.xml`文件中删除aliyun mirror的配置(不建议使用aliyun maven mirror)**
 

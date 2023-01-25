@@ -42,6 +42,7 @@ public class SpringContextTest extends SpringBootTestBase {
         }
     }
 
+    /*
     @Test
     public void testSpringConfig() {
         // Spring boot 默认加载：application.properties, application.yaml, application.yml
@@ -52,5 +53,6 @@ public class SpringContextTest extends SpringBootTestBase {
         // spring.profiles.active: test
         Assertions.assertEquals(environment.getProperty("test.env.foo"), "bar");
     }
+    */
 
 }

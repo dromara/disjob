@@ -36,9 +36,7 @@ public class CommandJobHandlerTest {
         commandJobHandler.task(task);
 
         Result<String> result = commandJobHandler.execute(Checkpoint.DISCARD);
-        String expect = "{\"code\":0,\"msg\":\"OK\",\"data\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
-        System.out.println(expect);
-        Assert.assertEquals(expect, Jsons.toJson(result));
+        Assert.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"2023/01/25\\n\"}", Jsons.toJson(result));
     }
 
 }

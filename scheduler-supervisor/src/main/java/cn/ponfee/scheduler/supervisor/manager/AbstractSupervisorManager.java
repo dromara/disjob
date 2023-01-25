@@ -61,7 +61,7 @@ public abstract class AbstractSupervisorManager {
 
     public List<SchedTask> splitTasks(SchedJob job, long trackId, Date date) throws JobException {
         List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-        Assert.notEmpty(split, "Not split any task: " + job);
+        Assert.notEmpty(split, () -> "Not split any task: " + job);
 
         return split.stream()
             .map(e -> SchedTask.create(e.getTaskParam(), generateId(), trackId, date))
