@@ -207,6 +207,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                 return false;
             }
         }
+        // set or clear task worker
         return taskMapper.updateWorker(taskIds, worker) >= AFFECTED_ONE_ROW;
     }
 
@@ -257,7 +258,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         job.checkAndDefaultSetting();
 
         SchedJob dbSchedJob = jobMapper.getByJobId(job.getJobId());
-        Assert.notNull(dbSchedJob, "Sched job id not found " + job.getJobId());
+        Assert.notNull(dbSchedJob, () -> "Sched job id not found " + job.getJobId());
         job.setNextTriggerTime(dbSchedJob.getNextTriggerTime());
 
         Date now = new Date();
@@ -285,13 +286,13 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void deleteTrack(long trackId) {
         SchedTrack track = trackMapper.getByTrackId(trackId);
-        Assert.notNull(track, "Sched track not found: " + trackId);
+        Assert.notNull(track, () -> "Sched track not found: " + trackId);
 
         RunState runState = RunState.of(track.getRunState());
-        Assert.isTrue(runState.isTerminal(), "Cannot delete unterminated sched track: " + trackId + ", run state=" + runState);
+        Assert.isTrue(runState.isTerminal(), () -> "Cannot delete unterminated sched track: " + trackId + ", run state=" + runState);
 
         int row = trackMapper.deleteByTrackId(trackId);
-        Assert.isTrue(row == AFFECTED_ONE_ROW, "Delete sched track conflict: " + trackId);
+        Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched track conflict: " + trackId);
 
         taskMapper.deleteByTrackId(trackId);
     }
@@ -299,12 +300,12 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void forceUpdateState(long trackId, int trackTargetState, int taskTargetState) {
         ExecuteState taskTargetState0 = ExecuteState.of(taskTargetState);
-        Assert.isTrue(taskTargetState0.runState() == RunState.of(trackTargetState), "Inconsistent state: " + trackTargetState + ", " + taskTargetState);
+        Assert.isTrue(taskTargetState0.runState() == RunState.of(trackTargetState), () -> "Inconsistent state: " + trackTargetState + ", " + taskTargetState);
         int row = trackMapper.forceUpdateState(trackId, trackTargetState);
-        Assert.isTrue(row == AFFECTED_ONE_ROW, "Sched track state update failed " + trackId);
+        Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Sched track state update failed " + trackId);
 
         row = taskMapper.forceUpdateState(trackId, taskTargetState);
-        Assert.isTrue(row >= AFFECTED_ONE_ROW, "Sched task state update failed, track_id=" + trackId);
+        Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Sched task state update failed, track_id=" + trackId);
 
         if (taskTargetState0 == ExecuteState.WAITING) {
             Tuple3<SchedJob, SchedTrack, List<SchedTask>> params = buildDispatchParams(trackId, row);
@@ -321,7 +322,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void trigger(long jobId) throws JobException {
         SchedJob job = jobMapper.getByJobId(jobId);
-        Assert.notNull(job, "Sched job not found: " + jobId);
+        Assert.notNull(job, () -> "Sched job not found: " + jobId);
 
         // 1、build sched track and sched task list
         Date now = new Date();
@@ -332,10 +333,10 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
         // 2、save sched trace and sched task to database
         int row = trackMapper.insert(track);
-        Assert.state(row == AFFECTED_ONE_ROW, "Insert sched track fail: " + track);
+        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched track fail: " + track);
 
         row = taskMapper.insertBatch(tasks);
-        Assert.state(row == tasks.size(), "Insert sched task fail: " + tasks);
+        Assert.state(row == tasks.size(), () -> "Insert sched task fail: " + tasks);
 
         // 3、dispatch job task
         TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, track, tasks));
@@ -358,11 +359,11 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
 
         row = trackMapper.insert(track);
-        Assert.state(row == AFFECTED_ONE_ROW, "Insert sched track fail: " + track);
+        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched track fail: " + track);
 
         Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         row = taskMapper.insertBatch(tasks);
-        Assert.state(row == tasks.size(), "Insert sched task fail: " + tasks);
+        Assert.state(row == tasks.size(), () -> "Insert sched task fail: " + tasks);
         return true;
     }
 
@@ -376,10 +377,10 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Override
     public boolean startTask(ExecuteParam param) {
         Integer state = trackMapper.getStateByTrackId(param.getTrackId());
-        Assert.state(state != null, "Sched track not found: " + param);
+        Assert.state(state != null, () -> "Sched track not found: " + param);
         RunState runState = RunState.of(state);
         // sched_track.run_state must in (WAITING, RUNNING)
-        Assert.state(RunState.PAUSABLE_LIST.contains(runState), "Start track failed: " + param + ", " + runState);
+        Assert.state(RunState.PAUSABLE_LIST.contains(runState), () -> "Start track failed: " + param + ", " + runState);
 
         Date now = new Date();
         // start sched track(also possibly started by other task)
@@ -392,7 +393,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             // conflict: the task executed by other executor
             return false;
         } else {
-            Assert.state(taskRow == AFFECTED_ONE_ROW, "Start task failed: " + param);
+            Assert.state(taskRow == AFFECTED_ONE_ROW, () -> "Start task failed: " + param);
             return true;
         }
     }
@@ -409,7 +410,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Override
     public boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
         Integer state = trackMapper.lockAndGetState(param.getTrackId());
-        Assert.notNull(state, "Terminate failed, track_id not found: " + param.getTrackId());
+        Assert.notNull(state, () -> "Terminate failed, track_id not found: " + param.getTrackId());
         if (RunState.of(state).isTerminal()) {
             // already terminated
             return false;
@@ -440,7 +441,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean terminate(long trackId) {
         Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, "Terminate failed, track_id not found: " + trackId);
+        Assert.notNull(state, () -> "Terminate failed, track_id not found: " + trackId);
         if (RunState.of(state).isTerminal()) {
             // already terminated
             return false;
@@ -460,7 +461,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Override
     public boolean pauseTrack(long trackId) {
         Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, "Pause failed, track_id not found: " + trackId);
+        Assert.notNull(state, () -> "Pause failed, track_id not found: " + trackId);
 
         RunState runState = RunState.of(state);
         if (!RunState.PAUSABLE_LIST.contains(runState)) {
@@ -571,9 +572,9 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean cancelTrack(long trackId, Operations operation) {
-        Assert.isTrue(operation.targetState().isFailure(), "Expect cancel ops, but actual: " + operation);
+        Assert.isTrue(operation.targetState().isFailure(), () -> "Expect cancel ops, but actual: " + operation);
         Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, "Cancel failed, track_id not found: " + trackId);
+        Assert.notNull(state, () -> "Cancel failed, track_id not found: " + trackId);
 
         RunState runState = RunState.of(state);
         if (runState.isTerminal()) {
@@ -625,7 +626,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean cancelExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
-        Assert.isTrue(toState.isFailure(), "Target state expect failure state, but actual: " + toState);
+        Assert.isTrue(toState.isFailure(), () -> "Target state expect failure state, but actual: " + toState);
         Integer state = trackMapper.lockAndGetState(param.getTrackId());
         if (!RunState.RUNNING.equals(state)) {
             return false;
@@ -670,7 +671,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean resume(long trackId) {
         Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, "Cancel failed, track_id not found: " + trackId);
+        Assert.notNull(state, () -> "Cancel failed, track_id not found: " + trackId);
         if (!RunState.PAUSED.equals(state)) {
             return false;
         }
@@ -714,7 +715,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                 task.getVersion()
             );
         }
-        Assert.state(row >= AFFECTED_ONE_ROW, "Conflict update state: " + toState + ", " + tasks + ", " + track);
+        Assert.state(row >= AFFECTED_ONE_ROW, () -> "Conflict update state: " + toState + ", " + tasks + ", " + track);
 
         // updated successfully
         return true;
@@ -771,7 +772,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                  .filter(e -> !ExecuteState.of(e.getExecuteState()).isTerminal())
                  .forEach(e -> {
                      int affectedRow = taskMapper.terminate(e.getTaskId(), ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null);
-                     Assert.state(affectedRow == AFFECTED_ONE_ROW, "Terminate task state conflict " + e);
+                     Assert.state(affectedRow == AFFECTED_ONE_ROW, () -> "Terminate task state conflict " + e);
                  });
         }
 
@@ -919,7 +920,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             .stream()
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
             .collect(Collectors.toList());
-        Assert.isTrue(waitingTasks.size() == expectTaskSize, "Dispatching tasks size inconsistent, expect=" + expectTaskSize + ", actual=" + waitingTasks.size());
+        Assert.isTrue(waitingTasks.size() == expectTaskSize, () -> "Dispatching tasks size inconsistent, expect=" + expectTaskSize + ", actual=" + waitingTasks.size());
         return Tuple3.of(job, track, waitingTasks);
     }
 
@@ -927,7 +928,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
         Assert.isTrue(
             triggerType.isValid(job.getTriggerValue()),
-            "Invalid trigger value: " + job.getTriggerType() + ", " + job.getTriggerValue()
+            () -> "Invalid trigger value: " + job.getTriggerType() + ", " + job.getTriggerValue()
         );
 
         if (triggerType == TriggerType.DEPEND) {
@@ -956,7 +957,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             job.setNextTriggerTime(null);
         } else {
             Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), date);
-            Assert.notNull(nextTriggerTime, "Has not next trigger time " + job.getTriggerValue());
+            Assert.notNull(nextTriggerTime, () -> "Has not next trigger time " + job.getTriggerValue());
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }
     }
@@ -970,9 +971,9 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
      * @return retry trigger time milliseconds
      */
     private static long computeRetryTriggerTime(SchedJob job, int failCount, Date current) {
-        Assert.isTrue(!RetryType.NONE.equals(job.getRetryType()), "Sched job '" + job.getJobId() + "' retry type is NONE.");
-        Assert.isTrue(job.getRetryCount() > 0, "Sched job '" + job.getJobId() + "' retry count must greater than 0, but actual " + job.getRetryCount());
-        Assert.isTrue(failCount <= job.getRetryCount(), "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
+        Assert.isTrue(!RetryType.NONE.equals(job.getRetryType()), () -> "Sched job '" + job.getJobId() + "' retry type is NONE.");
+        Assert.isTrue(job.getRetryCount() > 0, () -> "Sched job '" + job.getJobId() + "' retry count must greater than 0, but actual " + job.getRetryCount());
+        Assert.isTrue(failCount <= job.getRetryCount(), () -> "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
         // exponential backoff
         return current.getTime() + (long) job.getRetryInterval() * IntMath.pow(failCount, 2);
     }

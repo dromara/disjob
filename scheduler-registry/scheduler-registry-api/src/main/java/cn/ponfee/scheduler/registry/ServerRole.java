@@ -40,7 +40,7 @@ public enum ServerRole {
     private final String key;
 
     ServerRole(Class<? extends Server> type, String key) {
-        Assert.isTrue(!Modifier.isAbstract(type.getModifiers()), "Server type cannot be abstract class: " + type);
+        Assert.isTrue(!Modifier.isAbstract(type.getModifiers()), () -> "Server type cannot be abstract class: " + type);
         this.type = type;
         this.key = key;
     }

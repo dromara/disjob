@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
@@ -71,7 +72,7 @@ public class Main {
             props = new YamlProperties(inputStream);
         }
 
-        int port = props.getRequiredInt("server.port");
+        int port = Optional.ofNullable(props.getInt("server.port")).orElse(Networks.findAvailablePort(10000));
 
         String group = props.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");
