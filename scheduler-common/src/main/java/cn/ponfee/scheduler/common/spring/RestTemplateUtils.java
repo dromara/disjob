@@ -28,16 +28,20 @@ import org.springframework.core.NamedThreadLocal;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 import java.lang.reflect.Array;
 import java.net.URI;
-import java.security.cert.X509Certificate;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -55,15 +59,22 @@ public class RestTemplateUtils {
     public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter() {
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
         messageConverter.setObjectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL));
-        messageConverter.setSupportedMediaTypes(Collects.concat(
-            messageConverter.getSupportedMediaTypes(),
-            MediaType.TEXT_PLAIN,
-            MediaType.TEXT_HTML
-        ));
+        extensionSupportedMediaTypes(messageConverter);
         return messageConverter;
     }
 
-    public static RestTemplate buildRestTemplate(int connectTimeout, int readTimeout) {
+    public static void extensionSupportedMediaTypes(MappingJackson2HttpMessageConverter converter) {
+        List<MediaType> supportedMediaTypes = Collects.concat(
+            converter.getSupportedMediaTypes(),
+            MediaType.TEXT_PLAIN,
+            MediaType.TEXT_HTML,
+            MediaType.MULTIPART_FORM_DATA
+        );
+        converter.setSupportedMediaTypes(supportedMediaTypes);
+    }
+
+    public static RestTemplate buildRestTemplate(int connectTimeout, int readTimeout, Charset charset,
+                                                 MappingJackson2HttpMessageConverter httpMessageConverter) {
         SSLContext sslContext;
         try {
             sslContext = SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
@@ -84,7 +95,16 @@ public class RestTemplateUtils {
         requestFactory.setReadTimeout(readTimeout);
         requestFactory.setHttpContextFactory(new HttpContextFactory());
 
-        return new RestTemplate(requestFactory);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        restTemplate.setMessageConverters(Arrays.asList(
+            new ByteArrayHttpMessageConverter(),
+            new StringHttpMessageConverter(charset),
+            new ResourceHttpMessageConverter(),
+            new SourceHttpMessageConverter<>(),
+            new FormHttpMessageConverter(),
+            httpMessageConverter
+        ));
+        return restTemplate;
     }
 
     public static MultiValueMap<String, String> toMultiValueMap(Map<String, Object> params) {
@@ -130,6 +150,8 @@ public class RestTemplateUtils {
         return value == null ? null : value.toString();
     }
 
+    // -----------------------------------------------------------------------static class
+
     public static class HttpContextHolder {
         private static final ThreadLocal<RequestConfig> THREAD_LOCAL = new NamedThreadLocal<>("request-config");
 
@@ -159,6 +181,7 @@ public class RestTemplateUtils {
         }
     }
 
+    /*
     private static class SkipX509TrustManager implements X509TrustManager {
         @Override
         public X509Certificate[] getAcceptedIssuers() {
@@ -166,12 +189,11 @@ public class RestTemplateUtils {
         }
 
         @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) {
-        }
+        public void checkClientTrusted(X509Certificate[] chain, String authType) { }
 
         @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {
-        }
+        public void checkServerTrusted(X509Certificate[] chain, String authType) { }
     }
+    */
 
 }

@@ -10,7 +10,6 @@ package cn.ponfee.scheduler.samples.common.configuration;
 
 import cn.ponfee.scheduler.common.spring.LocalizedMethodArgumentResolver;
 import cn.ponfee.scheduler.common.spring.RestTemplateUtils;
-import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.JobConstants;
@@ -24,10 +23,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.*;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -38,7 +35,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -73,25 +69,19 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
         messageConverter.setObjectMapper(objectMapper());
-        messageConverter.setSupportedMediaTypes(Collects.concat(messageConverter.getSupportedMediaTypes(), MediaType.TEXT_PLAIN));
+        RestTemplateUtils.extensionSupportedMediaTypes(messageConverter);
         return messageConverter;
     }
 
     @ConditionalOnBean(HttpProperties.class)
     @Bean
     public RestTemplate restTemplate(HttpProperties properties) {
-        RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate(
-            properties.getConnectTimeout(), properties.getReadTimeout()
-        );
-        restTemplate.setMessageConverters(Arrays.asList(
-            new ByteArrayHttpMessageConverter(),
-            new StringHttpMessageConverter(StandardCharsets.UTF_8),
-            new ResourceHttpMessageConverter(),
-            new SourceHttpMessageConverter<>(),
-            new FormHttpMessageConverter(),
+        return RestTemplateUtils.buildRestTemplate(
+            properties.getConnectTimeout(),
+            properties.getReadTimeout(),
+            StandardCharsets.UTF_8,
             mappingJackson2HttpMessageConverter()
-        ));
-        return restTemplate;
+        );
     }
 
     @Override

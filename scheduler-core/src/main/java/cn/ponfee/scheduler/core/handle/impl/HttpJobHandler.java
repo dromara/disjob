@@ -20,11 +20,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.ResourceHttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RequestCallback;
@@ -35,7 +30,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -48,7 +42,12 @@ public class HttpJobHandler extends JobHandler<String> {
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
     private static final int DEFAULT_READ_TIMEOUT = 5000;
 
-    private final static RestTemplate REST_TEMPLATE = createRestTemplate();
+    private final static RestTemplate REST_TEMPLATE = RestTemplateUtils.buildRestTemplate(
+        DEFAULT_CONNECT_TIMEOUT,
+        DEFAULT_READ_TIMEOUT,
+        StandardCharsets.UTF_8,
+        RestTemplateUtils.buildJackson2HttpMessageConverter()
+    );
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) {
@@ -115,21 +114,8 @@ public class HttpJobHandler extends JobHandler<String> {
         private Map<String, Object> params;
         private Map<String, Object> headers;
         private String body;
-        private Integer connectionTimeout; // unit milliseconds
-        private Integer readTimeout;       // unit milliseconds
-    }
-
-    private static RestTemplate createRestTemplate() {
-        RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate(DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
-        restTemplate.setMessageConverters(Arrays.asList(
-            new ByteArrayHttpMessageConverter(),
-            new StringHttpMessageConverter(StandardCharsets.UTF_8),
-            new ResourceHttpMessageConverter(),
-            new SourceHttpMessageConverter<>(),
-            new FormHttpMessageConverter(),
-            RestTemplateUtils.buildJackson2HttpMessageConverter()
-        ));
-        return restTemplate;
+        private Integer connectionTimeout; // milliseconds unit
+        private Integer readTimeout;       // milliseconds unit
     }
 
     private static boolean equals(Integer source, int target) {

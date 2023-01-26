@@ -10,7 +10,6 @@ package cn.ponfee.scheduler.registry;
 
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.spring.RestTemplateUtils;
-import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,14 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.ResourceHttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.*;
@@ -38,7 +31,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -52,9 +44,12 @@ public class DiscoveryRestTemplate<D extends Server> {
 
     private final static Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
 
-    public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
-    public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
-    public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
+    public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {
+    }.getType();
+    public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {
+    }.getType();
+    public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {
+    }.getType();
     public static final Object[] EMPTY = new Object[0];
 
     private final RestTemplate restTemplate;
@@ -68,23 +63,11 @@ public class DiscoveryRestTemplate<D extends Server> {
                                   int maxRetryTimes) {
         MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
         httpMessageConverter.setObjectMapper(objectMapper);
-        httpMessageConverter.setSupportedMediaTypes(Collects.concat(
-            httpMessageConverter.getSupportedMediaTypes(), 
-            MediaType.TEXT_PLAIN,
-            MediaType.TEXT_HTML
-        ));
+        RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);
 
-        RestTemplate restTemplate = RestTemplateUtils.buildRestTemplate(connectTimeout, readTimeout);
-        restTemplate.setMessageConverters(Arrays.asList(
-            new ByteArrayHttpMessageConverter(),
-            new StringHttpMessageConverter(StandardCharsets.UTF_8),
-            new ResourceHttpMessageConverter(),
-            new SourceHttpMessageConverter<>(),
-            new FormHttpMessageConverter(),
-            httpMessageConverter
-        ));
-
-        this.restTemplate = restTemplate;
+        this.restTemplate = RestTemplateUtils.buildRestTemplate(
+            connectTimeout, readTimeout, StandardCharsets.UTF_8, httpMessageConverter
+        );
         this.discoveryServer = discoveryServer;
         this.maxRetryTimes = maxRetryTimes;
     }
