@@ -234,11 +234,13 @@ public class CuratorFrameworkClient implements AutoCloseable {
         public void process(WatchedEvent event) throws Exception {
             CheckedThrowing.caught(() -> latch.await());
             LOG.info("Watched event type: " + event.getType());
-            if (processor == null || event.getType() == Watcher.Event.EventType.None) {
+
+            final Consumer<List<String>> action = processor;
+            if (action == null || event.getType() == Watcher.Event.EventType.None) {
                 return;
             }
             List<String> children = curatorFramework.getChildren().usingWatcher(this).forPath(path);
-            processor.accept(children);
+            action.accept(children);
         }
     }
 

@@ -40,6 +40,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public abstract class AbstractSupervisorManager {
 
+    private static final int MAX_SPLIT_SIZE = 10000;
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final IdGenerator idGenerator;
@@ -62,6 +64,7 @@ public abstract class AbstractSupervisorManager {
     public List<SchedTask> splitTasks(SchedJob job, long trackId, Date date) throws JobException {
         List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
         Assert.notEmpty(split, () -> "Not split any task: " + job);
+        Assert.isTrue(split.size() <= MAX_SPLIT_SIZE, () -> "Split task size must less than " + MAX_SPLIT_SIZE + ", job=" + job);
 
         return split.stream()
             .map(e -> SchedTask.create(e.getTaskParam(), generateId(), trackId, date))

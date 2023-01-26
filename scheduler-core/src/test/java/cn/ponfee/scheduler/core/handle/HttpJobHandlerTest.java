@@ -24,10 +24,10 @@ public class HttpJobHandlerTest {
     public void testHttpJobHandler() {
         SchedTask task = new SchedTask();
         task.setTaskId(1L);
-        HttpJobHandler.HttpRequest request = new HttpJobHandler.HttpRequest();
-        request.setMethod("GET");
-        request.setUrl("https://www.baidu.com");
-        task.setTaskParam(Jsons.toJson(request));
+        HttpJobHandler.HttpJobRequest req = new HttpJobHandler.HttpJobRequest();
+        req.setMethod("GET");
+        req.setUrl("https://www.baidu.com");
+        task.setTaskParam(Jsons.toJson(req));
         HttpJobHandler httpJobHandler = new HttpJobHandler();
         httpJobHandler.task(task);
 

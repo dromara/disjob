@@ -145,7 +145,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     }
 
     public void interrupt() {
-        TaskExecutor<?> executor = this.taskExecutor;
+        final TaskExecutor<?> executor = this.taskExecutor;
         if (executor != null) {
             executor.interrupt();
         }

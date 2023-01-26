@@ -168,7 +168,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         private volatile ImmutableHashList<String, Supervisor> supervisors = ImmutableHashList.empty();
 
         @Override
-        void refreshServers(List<Supervisor> discoveredSupervisors) {
+        synchronized void refreshServers(List<Supervisor> discoveredSupervisors) {
             this.supervisors = ImmutableHashList.of(discoveredSupervisors, Supervisor::serialize);
         }
 
@@ -196,7 +196,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         private volatile Map<String, ImmutableHashList<String, Worker>> groupedWorkers = Collections.emptyMap();
 
         @Override
-        void refreshServers(List<Worker> discoveredWorkers) {
+        synchronized void refreshServers(List<Worker> discoveredWorkers) {
             if (CollectionUtils.isEmpty(discoveredWorkers)) {
                 this.groupedWorkers = Collections.emptyMap();
             } else {

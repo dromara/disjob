@@ -51,7 +51,7 @@ public class HttpJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) {
-        HttpRequest req = Jsons.fromJson(task.getTaskParam(), HttpRequest.class);
+        HttpJobRequest req = Jsons.fromJson(task.getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");
         HttpMethod method = HttpMethod.valueOf(req.method.toUpperCase());
@@ -106,7 +106,7 @@ public class HttpJobHandler extends JobHandler<String> {
     }
 
     @Data
-    public static class HttpRequest implements Serializable {
+    public static class HttpJobRequest implements Serializable {
         private static final long serialVersionUID = 6173514568347976014L;
 
         private String method;
