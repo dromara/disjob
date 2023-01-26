@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.common.util.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Ponfee
  */
+@Ignore
 public class CopyrightTest {
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir();

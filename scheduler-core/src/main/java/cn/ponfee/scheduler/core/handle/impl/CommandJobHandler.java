@@ -11,14 +11,12 @@ package cn.ponfee.scheduler.core.handle.impl;
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
+import cn.ponfee.scheduler.core.util.ProcessUtils;
 import lombok.Data;
-import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 
@@ -36,21 +34,10 @@ public class CommandJobHandler extends JobHandler<String> {
         Assert.hasText(task.getTaskParam(), "Command param cannot be empty.");
         CommandParam commandParam = Jsons.fromJson(task.getTaskParam(), CommandParam.class);
         Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");
-        Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
-
         Charset charset = Files.charset(commandParam.charset);
 
-        try (InputStream input = process.getInputStream()) {
-            String verbose = IOUtils.toString(input, charset);
-            int code = process.waitFor();
-            if (code == 0) {
-                log.info("Command execute success: {} | {}", task.getTaskId(), verbose);
-                return Result.success(verbose);
-            } else {
-                log.error("Command execute failed: {} | {} | {}", task, code, verbose);
-                return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + verbose);
-            }
-        }
+        Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
+        return ProcessUtils.complete(process, charset, task, log);
     }
 
     @Data

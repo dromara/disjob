@@ -17,7 +17,13 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustAllStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContexts;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -27,8 +33,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import java.lang.reflect.Array;
 import java.net.URI;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -55,11 +64,26 @@ public class RestTemplateUtils {
     }
 
     public static RestTemplate buildRestTemplate(int connectTimeout, int readTimeout) {
+        SSLContext sslContext;
+        try {
+            sslContext = SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
+            /*
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{new SkipX509TrustManager()}, new SecureRandom());
+            */
+        } catch (Exception e) {
+            throw new SecurityException(e);
+        }
+        SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslConnectionSocketFactory).build();
+
         //SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        requestFactory.setHttpClient(httpClient);
         requestFactory.setConnectTimeout(connectTimeout);
         requestFactory.setReadTimeout(readTimeout);
         requestFactory.setHttpContextFactory(new HttpContextFactory());
+
         return new RestTemplate(requestFactory);
     }
 
@@ -72,22 +96,6 @@ public class RestTemplateUtils {
             .filter(e -> StringUtils.isNotBlank(e.getKey()) && ObjectUtils.isNotEmpty(e.getValue()))
             .collect(Collectors.toMap(Map.Entry::getKey, e -> toListString(e.getValue())));
         return MapUtils.isEmpty(map) ? null : new LinkedMultiValueMap<>(map);
-    }
-
-    public static class HttpContextHolder {
-        private static final ThreadLocal<RequestConfig> THREAD_LOCAL = new NamedThreadLocal<>("request-config");
-
-        public static void bind(RequestConfig requestConfig) {
-            THREAD_LOCAL.set(requestConfig);
-        }
-
-        private static RequestConfig get() {
-            return THREAD_LOCAL.get();
-        }
-
-        public static void unbind() {
-            THREAD_LOCAL.remove();
-        }
     }
 
     private static List<String> toListString(Object value) {
@@ -122,6 +130,22 @@ public class RestTemplateUtils {
         return value == null ? null : value.toString();
     }
 
+    public static class HttpContextHolder {
+        private static final ThreadLocal<RequestConfig> THREAD_LOCAL = new NamedThreadLocal<>("request-config");
+
+        public static void bind(RequestConfig requestConfig) {
+            THREAD_LOCAL.set(requestConfig);
+        }
+
+        private static RequestConfig get() {
+            return THREAD_LOCAL.get();
+        }
+
+        public static void unbind() {
+            THREAD_LOCAL.remove();
+        }
+    }
+
     private static class HttpContextFactory implements BiFunction<HttpMethod, URI, HttpContext> {
         @Override
         public HttpContext apply(HttpMethod httpMethod, URI uri) {
@@ -132,6 +156,21 @@ public class RestTemplateUtils {
             HttpContext context = HttpClientContext.create();
             context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
             return context;
+        }
+    }
+
+    private static class SkipX509TrustManager implements X509TrustManager {
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
         }
     }
 

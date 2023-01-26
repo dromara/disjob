@@ -8,25 +8,23 @@
 
 package cn.ponfee.scheduler.core.handle.impl;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
+import cn.ponfee.scheduler.core.util.ProcessUtils;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Base64;
 
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.commons.lang3.SystemUtils.OS_NAME;
@@ -48,26 +46,15 @@ public class ScriptJobHandler extends JobHandler<String> {
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
         Charset charset = Files.charset(scriptParam.charset);
+        String script0 = (scriptParam.encode == Encode.BASE64)
+            ? new String(Base64.getUrlDecoder().decode(scriptParam.script), charset)
+            : scriptParam.script;
 
         String scriptFileName = scriptParam.type.buildFileName(task().getTaskId());
-        String scriptPath = prepareScriptFile(scriptParam.script, scriptFileName, charset);
+        String scriptPath = prepareScriptFile(script0, scriptFileName, charset);
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
-
-        try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
-            String verbose = CheckedThrowing.caught(() -> IOUtils.toString(is, charset));
-            String error = CheckedThrowing.caught(() -> IOUtils.toString(es, charset));
-            int code = process.waitFor();
-            // process.exitValue()
-            if (code == 0) {
-                return Result.success(verbose);
-            } else {
-                return Result.failure(
-                    JobCodeMsg.JOB_EXECUTE_FAILED.getCode(),
-                    "Script execute failed: code=" + code + ", verbose=" + verbose + ", error=" + error
-                );
-            }
-        }
+        return ProcessUtils.complete(process, charset, task, log);
     }
 
     public enum ScriptType {
@@ -160,6 +147,17 @@ public class ScriptJobHandler extends JobHandler<String> {
         public abstract Process exec(String scriptPath, String[] envp) throws Exception;
     }
 
+    public enum Encode {
+        /**
+         * java.lang.String
+         */
+        STRING,
+        /**
+         * Base64.getUrlEncoder().withoutPadding().encodeToString(byte[] data)
+         */
+        BASE64
+    }
+
     @Data
     public static class ScriptParam implements Serializable {
         private static final long serialVersionUID = 4733248467785540711L;
@@ -168,12 +166,13 @@ public class ScriptJobHandler extends JobHandler<String> {
         private String charset;
         private String script;
         private String[] envp;
+        private Encode encode = Encode.STRING;
     }
 
     private static String prepareScriptFile(String script, String scriptFileName, Charset charset) throws IOException {
         Assert.hasText(script, "Script source cannot be empty.");
-
         String scriptPath = WORKER_DIR + scriptFileName;
+
         File scriptFile = new File(scriptPath);
         if (scriptFile.exists()) {
             return scriptPath;
@@ -186,6 +185,7 @@ public class ScriptJobHandler extends JobHandler<String> {
 
         // download script from url
         if (StringUtils.startsWithAny(script, DOWNLOAD_PROTOCOL)) {
+            // read-timeout: 10 minutes
             FileUtils.copyURLToFile(new URL(script), scriptFile, 5000, 600000);
             return scriptPath;
         }
