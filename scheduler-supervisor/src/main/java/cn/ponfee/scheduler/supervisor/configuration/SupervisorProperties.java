@@ -34,14 +34,14 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private long scanTriggeringJobPeriodMs = 3000;
 
     /**
-     * Scan waiting track period milliseconds
+     * Scan waiting instance period milliseconds
      */
-    private long scanWaitingTrackPeriodMs = 5000;
+    private long scanWaitingInstancePeriodMs = 5000;
 
     /**
-     * Scan running track period milliseconds
+     * Scan running instance period milliseconds
      */
-    private long scanRunningTrackPeriodMs = 30000;
+    private long scanRunningInstancePeriodMs = 30000;
 
     /**
      * Force use local worker service client.
@@ -50,8 +50,8 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
 
     public void check() {
         Assert.isTrue(scanTriggeringJobPeriodMs > 0, "Scan triggering job period ms must be greater than 0.");
-        Assert.isTrue(scanWaitingTrackPeriodMs > 0, "Scan waiting track period ms must be greater than 0.");
-        Assert.isTrue(scanRunningTrackPeriodMs > 0, "Scan running track period ms must be greater than 0.");
+        Assert.isTrue(scanWaitingInstancePeriodMs > 0, "Scan waiting instance period ms must be greater than 0.");
+        Assert.isTrue(scanRunningInstancePeriodMs > 0, "Scan running instance period ms must be greater than 0.");
     }
 
 }

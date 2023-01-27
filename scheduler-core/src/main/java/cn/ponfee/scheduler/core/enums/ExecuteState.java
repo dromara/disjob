@@ -111,7 +111,7 @@ public enum ExecuteState implements IntValue<ExecuteState> {
     private final int value;
 
     /**
-     * mapped sched_track.run_state
+     * mapped sched_instance.run_state
      */
     private final RunState runState;
 

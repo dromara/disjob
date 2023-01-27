@@ -141,7 +141,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 SELECT * FROM sched_job;
 
 -- 查看任务的执行信息
-SELECT * from sched_track;
+SELECT * from sched_instance;
 SELECT * from sched_task;
 
 -- 可执行以下SQL让该JOB再次触发执行

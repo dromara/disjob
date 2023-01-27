@@ -1,5 +1,5 @@
 # scheduler supervisor configuration
 distributed.scheduler.supervisor:
   scan-triggering-job-period-ms: 3000
-  scan-waiting-track-period-ms: 5000
-  scan-running-track-period-ms: 30000
+  scan-waiting-instance-period-ms: 5000
+  scan-running-instance-period-ms: 30000

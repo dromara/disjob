@@ -4,7 +4,7 @@
 
     <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedTask">
       <result column="task_id" jdbcType="BIGINT" property="taskId" />
-      <result column="track_id" jdbcType="BIGINT" property="trackId" />
+      <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
       <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
       <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
       <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
@@ -22,7 +22,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-      task_id, track_id, execute_start_time, execute_end_time, execute_duration,
+      task_id, instance_id, execute_start_time, execute_end_time, execute_duration,
       execute_state, worker, version, updated_at, created_at
     </sql>
 
@@ -32,13 +32,13 @@
 
     <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
       INSERT INTO sched_task (
-        task_id, track_id,
+        task_id, instance_id,
         task_param, execute_state, 
         version, updated_at, created_at
       ) VALUES 
       <foreach collection="collection" item="item" separator=",">
       (
-        #{item.taskId,jdbcType=BIGINT}, #{item.trackId,jdbcType=BIGINT},
+        #{item.taskId,jdbcType=BIGINT}, #{item.instanceId,jdbcType=BIGINT},
         #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
         1, #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
       )
@@ -51,16 +51,16 @@
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
-  <select id="findMediumByTrackId" parameterType="_long" resultMap="BaseResultMap">
+  <select id="findMediumByInstanceId" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List" />
     FROM sched_task
-    WHERE track_id = #{trackId,jdbcType=BIGINT}
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="findLargeByTrackId" parameterType="_long" resultMap="LargeResultMap">
+  <select id="findLargeByInstanceId" parameterType="_long" resultMap="LargeResultMap">
     SELECT <include refid="Large_Column_List" />
     FROM sched_task
-    WHERE track_id = #{trackId,jdbcType=BIGINT}
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
   <!-- use `IFNULL` function reason: possibly re-execute the paused task -->
@@ -104,11 +104,11 @@
     UPDATE sched_task
     SET execute_state = #{targetState,jdbcType=TINYINT},
         version = version+1
-    WHERE track_id = #{trackId,jdbcType=BIGINT}
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND execute_state!=20 AND #{targetState,jdbcType=TINYINT}!=20 AND execute_state!=#{targetState,jdbcType=TINYINT}
   </update>
 
-  <update id="updateStateByTrackId">
+  <update id="updateStateByInstanceId">
     UPDATE sched_task
     SET execute_state = #{toState,jdbcType=TINYINT},
         <if test="executeEndTime != null">
@@ -116,7 +116,7 @@
           execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
         </if>
         version = version+1
-    WHERE track_id = #{trackId,jdbcType=BIGINT}
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND execute_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
   </update>
 
@@ -135,9 +135,9 @@
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </update>
 
-  <delete id="deleteByTrackId" parameterType="_long">
+  <delete id="deleteByInstanceId" parameterType="_long">
     DELETE FROM sched_task
-    WHERE track_id = #{trackId,jdbcType=BIGINT} AND execute_state > 30
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state > 30
   </delete>
 
   <update id="updateWorker">

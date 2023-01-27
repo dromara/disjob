@@ -34,7 +34,7 @@ CREATE TABLE `sched_job` (
     `job_param`            text                    DEFAULT NULL                                                   COMMENT 'Job参数',
     `retry_type`           tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试类型：0-不重试；1-重试所有的Task；2-只重试失败的Task；',
     `retry_count`          tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败可重试的最大次数',
-    `retry_interval`       int(11)       unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试间隔(毫秒)，阶梯递增(square of sched_track.retried_count)',
+    `retry_interval`       int(11)       unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)',
     `start_time`           datetime                DEFAULT NULL                                                   COMMENT 'Job起始时间(为空不限制)',
     `end_time`             datetime                DEFAULT NULL                                                   COMMENT 'Job结束时间(为空不限制)',
     `trigger_type`         tinyint(3)    unsigned  NOT NULL                                                       COMMENT '触发器类型：1-Crontab方式；2-指定时间执行一次；3-周期性执行；4-任务依赖；',
@@ -63,10 +63,10 @@ CREATE TABLE `sched_job` (
     KEY `ix_updated_at` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='任务配置表';
 
-CREATE TABLE `sched_track` (
+CREATE TABLE `sched_instance` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
-    `track_id`             bigint(20)    unsigned  NOT NULL                                                       COMMENT '全局唯一ID',
-    `parent_track_id`      bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'run_type IN (DEPEND, RETRY)时的父ID',
+    `instance_id`          bigint(20)    unsigned  NOT NULL                                                       COMMENT '全局唯一ID',
+    `parent_instance_id`   bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'run_type IN (DEPEND, RETRY)时的父ID',
     `job_id`               bigint(20)    unsigned  NOT NULL                                                       COMMENT 'sched_job.job_id',
     `trigger_time`         bigint(20)    unsigned  NOT NULL                                                       COMMENT '触发时间(毫秒时间戳)',
     `run_type`             tinyint(3)    unsigned  NOT NULL DEFAULT '1'                                           COMMENT '运行类型：1-SCHEDULE；2-DEPEND；3-RETRY；4-MANUAL；',
@@ -79,9 +79,9 @@ CREATE TABLE `sched_track` (
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_track_id` (`track_id`),
+    UNIQUE KEY `uk_instance_id` (`instance_id`),
     UNIQUE KEY `uk_job_id_trigger_time_run_type` (`job_id`, `trigger_time`, `run_type`),
-    KEY `ix_parent_track_id` (`parent_track_id`),
+    KEY `ix_parent_instance_id` (`parent_instance_id`),
     KEY `ix_run_state_trigger_time` (`run_state`, `trigger_time`) COMMENT '用于扫表',
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
@@ -90,7 +90,7 @@ CREATE TABLE `sched_track` (
 CREATE TABLE `sched_task` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
     `task_id`              bigint(20)              NOT NULL                                                       COMMENT '全局唯一ID',
-    `track_id`             bigint(20)    unsigned  NOT NULL                                                       COMMENT 'sched_track.track_id',
+    `instance_id`          bigint(20)    unsigned  NOT NULL                                                       COMMENT 'sched_instance.instance_id',
     `task_param`           text                    DEFAULT NULL                                                   COMMENT 'job_handler执行task的参数(参考sched_job.job_param)',
     `execute_start_time`   datetime(3)             DEFAULT NULL                                                   COMMENT '执行开始时间',
     `execute_end_time`     datetime(3)             DEFAULT NULL                                                   COMMENT '执行结束时间',
@@ -104,7 +104,7 @@ CREATE TABLE `sched_task` (
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_task_id` (`task_id`),
-    KEY `ix_track_id` (`track_id`),
+    KEY `ix_instance_id` (`instance_id`),
     KEY `ix_created_at` (`created_at`),
     KEY `ix_updated_at` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='具体执行的任务数据';
@@ -138,8 +138,8 @@ CREATE TABLE `sched_depend` (
 -- INITIALIZE DATA
 -- ----------------------------
 INSERT INTO sched_lock(`name`) VALUES ('scan_triggering_job');
-INSERT INTO sched_lock(`name`) VALUES ('scan_waiting_track');
-INSERT INTO sched_lock(`name`) VALUES ('scan_running_track');
+INSERT INTO sched_lock(`name`) VALUES ('scan_waiting_instance');
+INSERT INTO sched_lock(`name`) VALUES ('scan_running_instance');
 
 -- ----------------------------
 -- INITIALIZE TEST SAMPLES JOB

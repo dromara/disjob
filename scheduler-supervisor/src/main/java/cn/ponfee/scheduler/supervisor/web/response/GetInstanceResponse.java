@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.supervisor.web.response;
 
 import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.model.SchedTrack;
+import cn.ponfee.scheduler.core.model.SchedInstance;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Get track response structure.
+ * Get schedule instance response structure.
  *
  * @author Ponfee
  */
@@ -28,9 +28,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetTrackResponse extends ToJsonString implements Serializable {
+public class GetInstanceResponse extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 3495155528208478258L;
 
-    private SchedTrack track;
+    private SchedInstance instance;
     private List<SchedTask> tasks;
 }

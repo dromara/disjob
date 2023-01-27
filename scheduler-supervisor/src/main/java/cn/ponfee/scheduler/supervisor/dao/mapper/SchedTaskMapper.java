@@ -25,9 +25,9 @@ public interface SchedTaskMapper {
 
     SchedTask getByTaskId(long taskId);
 
-    List<SchedTask> findMediumByTrackId(long trackId);
+    List<SchedTask> findMediumByInstanceId(long instanceId);
 
-    List<SchedTask> findLargeByTrackId(long trackId);
+    List<SchedTask> findLargeByInstanceId(long instanceId);
 
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
@@ -45,10 +45,10 @@ public interface SchedTaskMapper {
                     @Param("errorMsg") String errorMsg,
                     @Param("version") Integer version);
 
-    int forceUpdateState(@Param("trackId") long trackId,
+    int forceUpdateState(@Param("instanceId") long instanceId,
                          @Param("targetState") int targetState);
 
-    int updateStateByTrackId(@Param("trackId") long trackId,
+    int updateStateByInstanceId(@Param("instanceId") long instanceId,
                              @Param("toState") int toState,
                              @Param("fromStateList") List<Integer> fromStateList,
                              @Param("executeEndTime") Date executeEndTime);
@@ -62,10 +62,10 @@ public interface SchedTaskMapper {
     /**
      * Delete the sched task.
      *
-     * @param trackId the track id
+     * @param instanceId the instance id
      * @return delete sql affected rows
      */
-    int deleteByTrackId(long trackId);
+    int deleteByInstanceId(long instanceId);
 
     /**
      * Update sched_task.worker value when worker received the task

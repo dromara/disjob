@@ -14,9 +14,9 @@ import cn.ponfee.scheduler.common.concurrent.DelayedData;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
+import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.model.SchedTrack;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.registry.Discovery;
 import com.google.common.math.IntMath;
@@ -88,20 +88,20 @@ public abstract class TaskDispatcher implements AutoCloseable {
     /**
      * Assign a worker and dispatch to the assigned worker.
      *
-     * @param job   the job
-     * @param track the track
-     * @param tasks the list of task
+     * @param job      the job
+     * @param instance the instance
+     * @param tasks    the list of task
      * @return {@code true} if the first dispatch successful
      */
-    public final boolean dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
+    public final boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
         List<DispatchParam> dispatchParams = new ArrayList<>(tasks.size());
         for (SchedTask task : tasks) {
             ExecuteParam executeParam = new ExecuteParam(
                 Operations.TRIGGER,
                 task.getTaskId(),
-                track.getTrackId(),
+                instance.getInstanceId(),
                 job.getJobId(),
-                track.getTriggerTime()
+                instance.getTriggerTime()
             );
             DispatchParam dispatchParam = new DispatchParam(
                 executeParam,

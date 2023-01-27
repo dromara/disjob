@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * The run type enum definition.
- * <p>mapped by sched_track.run_type
+ * <p>mapped by sched_instance.run_type
  *
  * @author Ponfee
  */

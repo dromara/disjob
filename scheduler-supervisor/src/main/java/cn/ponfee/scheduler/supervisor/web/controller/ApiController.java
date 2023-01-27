@@ -18,13 +18,13 @@ import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import cn.ponfee.scheduler.supervisor.web.request.AddSchedJobRequest;
 import cn.ponfee.scheduler.supervisor.web.request.UpdateSchedJobRequest;
-import cn.ponfee.scheduler.supervisor.web.response.GetTrackResponse;
+import cn.ponfee.scheduler.supervisor.web.response.GetInstanceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Provides to external invoke, for manage the sched job & track & task
+ * Provides to external invoke, for manage the sched job & instance & task
  *
  * @author Ponfee
  */
@@ -86,61 +86,61 @@ public class ApiController {
         return Result.success();
     }
 
-    // ------------------------------------------------------------------ sched track
+    // ------------------------------------------------------------------ sched instance
 
-    @PostMapping("track/pause")
-    public Result<Boolean> pauseTrack(@RequestParam("trackId") long trackId) {
-        LOG.info("Do pausing sched track {}", trackId);
-        return Result.success(schedulerJobManager.pauseTrack(trackId));
+    @PostMapping("instance/pause")
+    public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
+        LOG.info("Do pausing sched instance {}", instanceId);
+        return Result.success(schedulerJobManager.pauseInstance(instanceId));
     }
 
-    @PostMapping("track/cancel")
-    public Result<Boolean> cancelTrack(@RequestParam("trackId") long trackId) {
-        LOG.info("Do canceling sched track {}", trackId);
-        return Result.success(schedulerJobManager.cancelTrack(trackId, Operations.MANUAL_CANCEL));
+    @PostMapping("instance/cancel")
+    public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
+        LOG.info("Do canceling sched instance {}", instanceId);
+        return Result.success(schedulerJobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL));
     }
 
-    @PostMapping("track/resume")
-    public Result<Boolean> resumeTrack(@RequestParam("trackId") long trackId) {
-        LOG.info("Do resuming sched track {}", trackId);
-        return Result.success(schedulerJobManager.resume(trackId));
+    @PostMapping("instance/resume")
+    public Result<Boolean> resumeInstance(@RequestParam("instanceId") long instanceId) {
+        LOG.info("Do resuming sched instance {}", instanceId);
+        return Result.success(schedulerJobManager.resume(instanceId));
     }
 
-    @PostMapping("track/fresume")
-    public Result<Void> forceResumeTrack(@RequestParam("trackId") long trackId) {
-        LOG.info("Do force resuming sched track {}", trackId);
-        schedulerJobManager.forceUpdateState(trackId, RunState.WAITING.value(), ExecuteState.WAITING.value());
+    @PostMapping("instance/fresume")
+    public Result<Void> forceResumeInstance(@RequestParam("instanceId") long instanceId) {
+        LOG.info("Do force resuming sched instance {}", instanceId);
+        schedulerJobManager.forceUpdateState(instanceId, RunState.WAITING.value(), ExecuteState.WAITING.value());
         return Result.success();
     }
 
-    @PutMapping("track/fupdate_state")
-    public Result<Void> forceUpdateTrackState(@RequestParam("trackId") long trackId,
-                                              @RequestParam("trackTargetState") int trackTargetState,
-                                              @RequestParam("taskTargetState") int taskTargetState) {
+    @PutMapping("instance/fupdate_state")
+    public Result<Void> forceUpdateInstanceState(@RequestParam("instanceId") long instanceId,
+                                                 @RequestParam("instanceTargetState") int instanceTargetState,
+                                                 @RequestParam("taskTargetState") int taskTargetState) {
         // verify the state
-        RunState.of(trackTargetState);
+        RunState.of(instanceTargetState);
         ExecuteState.of(taskTargetState);
 
-        LOG.info("Do force update sched track state {} | {} | {}", trackId, trackTargetState, taskTargetState);
-        schedulerJobManager.forceUpdateState(trackId, trackTargetState, taskTargetState);
+        LOG.info("Do force update sched instance state {} | {} | {}", instanceId, instanceTargetState, taskTargetState);
+        schedulerJobManager.forceUpdateState(instanceId, instanceTargetState, taskTargetState);
         return Result.success();
     }
 
-    @DeleteMapping("track/delete")
-    public Result<Void> deleteTrack(@RequestParam("trackId") long trackId) {
-        LOG.info("Do deleting sched track {}", trackId);
+    @DeleteMapping("instance/delete")
+    public Result<Void> deleteInstance(@RequestParam("instanceId") long instanceId) {
+        LOG.info("Do deleting sched instance {}", instanceId);
 
-        schedulerJobManager.deleteTrack(trackId);
+        schedulerJobManager.deleteInstance(instanceId);
         return Result.success();
     }
 
-    @GetMapping("track/get")
-    public Result<GetTrackResponse> getTrack(@RequestParam("trackId") long trackId) {
-        GetTrackResponse result = new GetTrackResponse(
-            schedulerJobManager.getTrack(trackId),
-            schedulerJobManager.findLargeTaskByTrackId(trackId)
+    @GetMapping("instance/get")
+    public Result<GetInstanceResponse> getInstance(@RequestParam("instanceId") long instanceId) {
+        GetInstanceResponse response = new GetInstanceResponse(
+            schedulerJobManager.getInstance(instanceId),
+            schedulerJobManager.findLargeTaskByInstanceId(instanceId)
         );
-        return Result.success(result);
+        return Result.success(response);
     }
 
 }

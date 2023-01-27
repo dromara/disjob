@@ -141,7 +141,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 SELECT * FROM sched_job;
 
 -- Query the job execution data
-SELECT * from sched_track;
+SELECT * from sched_instance;
 SELECT * from sched_task;
 
 -- The following SQL can be executed to trigger the execution of the JOB again

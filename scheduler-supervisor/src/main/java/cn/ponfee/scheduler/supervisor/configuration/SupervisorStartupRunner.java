@@ -41,8 +41,8 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
                                    SupervisorProperties supervisorConfig,
                                    SchedulerJobManager schedulerJobManager,
                                    @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) DoInLocked scanTriggeringJobLocker,
-                                   @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_TRACK_LOCKER) DoInLocked scanWaitingTrackLocker,
-                                   @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_TRACK_LOCKER) DoInLocked scanRunningTrackLocker,
+                                   @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) DoInLocked scanWaitingInstanceLocker,
+                                   @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) DoInLocked scanRunningInstanceLocker,
                                    SupervisorRegistry supervisorRegistry,
                                    TaskDispatcher taskDispatcher) {
         this.supervisorStartup = SupervisorStartup.builder()
@@ -51,8 +51,8 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
             .supervisorRegistry(supervisorRegistry)
             .schedulerJobManager(schedulerJobManager)
             .scanTriggeringJobLocker(scanTriggeringJobLocker)
-            .scanWaitingTrackLocker(scanWaitingTrackLocker)
-            .scanRunningTrackLocker(scanRunningTrackLocker)
+            .scanWaitingInstanceLocker(scanWaitingInstanceLocker)
+            .scanRunningInstanceLocker(scanRunningInstanceLocker)
             .taskDispatcher(taskDispatcher)
             .build();
     }

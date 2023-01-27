@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Split schedule job to one track and many tasks.
+ * Split schedule job to one instance and many tasks.
  *
  * @author Ponfee
  */

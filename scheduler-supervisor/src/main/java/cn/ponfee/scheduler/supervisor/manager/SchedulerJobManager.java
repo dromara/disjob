@@ -20,17 +20,17 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedDepend;
+import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.model.SchedTrack;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedDependMapper;
+import cn.ponfee.scheduler.supervisor.dao.mapper.SchedInstanceMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedTaskMapper;
-import cn.ponfee.scheduler.supervisor.dao.mapper.SchedTrackMapper;
 import com.google.common.base.Joiner;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,7 +55,7 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
  *  TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
  *      @Override
  *      public void afterCommit() {
- *          dispatch(job, track, tasks);
+ *          dispatch(job, instance, tasks);
  *      }
  *  });
  * }</pre>
@@ -77,7 +77,7 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
  *
  *  {
  *    // some database operation code ...
- *    eventPublisher.publishEvent(new DispatchTaskEvent(() -> dispatch(job, track, tasks)));
+ *    eventPublisher.publishEvent(new DispatchTaskEvent(() -> dispatch(job, instance, tasks)));
  *    // others operation code ...
  *  }
  * }</pre>
@@ -94,7 +94,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     private static final List<Integer> EXECUTABLE_EXECUTE_STATE_LIST = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::value);
 
     private final SchedJobMapper jobMapper;
-    private final SchedTrackMapper trackMapper;
+    private final SchedInstanceMapper instanceMapper;
     private final SchedTaskMapper taskMapper;
     private final SchedDependMapper dependMapper;
 
@@ -103,12 +103,12 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                                TaskDispatcher taskDispatcher,
                                WorkerServiceClient workerServiceClient,
                                SchedJobMapper jobMapper,
-                               SchedTrackMapper trackMapper,
+                               SchedInstanceMapper instanceMapper,
                                SchedTaskMapper taskMapper,
                                SchedDependMapper dependMapper) {
         super(idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
         this.jobMapper = jobMapper;
-        this.trackMapper = trackMapper;
+        this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;
         this.dependMapper = dependMapper;
     }
@@ -120,8 +120,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         return jobMapper.getByJobId(jobId);
     }
 
-    public SchedTrack getTrack(long trackId) {
-        return trackMapper.getByTrackId(trackId);
+    public SchedInstance getInstance(long instanceId) {
+        return instanceMapper.getByInstanceId(instanceId);
     }
 
     @Override
@@ -129,12 +129,12 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         return taskMapper.getByTaskId(taskId);
     }
 
-    public List<SchedTask> findMediumTaskByTrackId(long trackId) {
-        return taskMapper.findMediumByTrackId(trackId);
+    public List<SchedTask> findMediumTaskByInstanceId(long instanceId) {
+        return taskMapper.findMediumByInstanceId(instanceId);
     }
 
-    public List<SchedTask> findLargeTaskByTrackId(long trackId) {
-        return taskMapper.findLargeByTrackId(trackId);
+    public List<SchedTask> findLargeTaskByInstanceId(long instanceId) {
+        return taskMapper.findLargeByInstanceId(instanceId);
     }
 
     /**
@@ -148,20 +148,20 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         return jobMapper.findBeTriggering(maxNextTriggerTime, size);
     }
 
-    public List<SchedTrack> findExpireWaiting(Date expireTime, int size) {
-        return trackMapper.findExpireState(RunState.WAITING.value(), expireTime.getTime(), expireTime, size);
+    public List<SchedInstance> findExpireWaiting(Date expireTime, int size) {
+        return instanceMapper.findExpireState(RunState.WAITING.value(), expireTime.getTime(), expireTime, size);
     }
 
-    public List<SchedTrack> findExpireRunning(Date expireTime, int size) {
-        return trackMapper.findExpireState(RunState.RUNNING.value(), expireTime.getTime(), expireTime, size);
+    public List<SchedInstance> findExpireRunning(Date expireTime, int size) {
+        return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime.getTime(), expireTime, size);
     }
 
-    public SchedTrack getByTriggerTime(long jobId, long triggerTime, int runType) {
-        return trackMapper.getByTriggerTime(jobId, triggerTime, runType);
+    public SchedInstance getByTriggerTime(long jobId, long triggerTime, int runType) {
+        return instanceMapper.getByTriggerTime(jobId, triggerTime, runType);
     }
 
-    public List<SchedTrack> findUnterminatedRetry(long trackId) {
-        return trackMapper.findUnterminatedRetry(trackId);
+    public List<SchedInstance> findUnterminatedRetry(long instanceId) {
+        return instanceMapper.findUnterminatedRetry(instanceId);
     }
 
     // ------------------------------------------------------------------database single operation without @Transactional annotation
@@ -171,8 +171,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
     }
 
-    public boolean renewUpdateTime(SchedTrack track, Date updateTime) {
-        return trackMapper.renewUpdateTime(track.getTrackId(), updateTime, track.getVersion()) == AFFECTED_ONE_ROW;
+    public boolean renewUpdateTime(SchedInstance instance, Date updateTime) {
+        return instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()) == AFFECTED_ONE_ROW;
     }
 
     public boolean changeJobState(long jobId, JobState to) {
@@ -280,31 +280,31 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     }
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void deleteTrack(long trackId) {
-        SchedTrack track = trackMapper.getByTrackId(trackId);
-        Assert.notNull(track, () -> "Sched track not found: " + trackId);
+    public void deleteInstance(long instanceId) {
+        SchedInstance instance = instanceMapper.getByInstanceId(instanceId);
+        Assert.notNull(instance, () -> "Sched instance not found: " + instanceId);
 
-        RunState runState = RunState.of(track.getRunState());
-        Assert.isTrue(runState.isTerminal(), () -> "Cannot delete unterminated sched track: " + trackId + ", run state=" + runState);
+        RunState runState = RunState.of(instance.getRunState());
+        Assert.isTrue(runState.isTerminal(), () -> "Cannot delete unterminated sched instance: " + instanceId + ", run state=" + runState);
 
-        int row = trackMapper.deleteByTrackId(trackId);
-        Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched track conflict: " + trackId);
+        int row = instanceMapper.deleteByInstanceId(instanceId);
+        Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);
 
-        taskMapper.deleteByTrackId(trackId);
+        taskMapper.deleteByInstanceId(instanceId);
     }
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void forceUpdateState(long trackId, int trackTargetState, int taskTargetState) {
+    public void forceUpdateState(long instanceId, int instanceTargetState, int taskTargetState) {
         ExecuteState taskTargetState0 = ExecuteState.of(taskTargetState);
-        Assert.isTrue(taskTargetState0.runState() == RunState.of(trackTargetState), () -> "Inconsistent state: " + trackTargetState + ", " + taskTargetState);
-        int row = trackMapper.forceUpdateState(trackId, trackTargetState);
-        Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Sched track state update failed " + trackId);
+        Assert.isTrue(taskTargetState0.runState() == RunState.of(instanceTargetState), () -> "Inconsistent state: " + instanceTargetState + ", " + taskTargetState);
+        int row = instanceMapper.forceUpdateState(instanceId, instanceTargetState);
+        Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Sched instance state update failed " + instanceId);
 
-        row = taskMapper.forceUpdateState(trackId, taskTargetState);
-        Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Sched task state update failed, track_id=" + trackId);
+        row = taskMapper.forceUpdateState(instanceId, taskTargetState);
+        Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Sched task state update failed, instance_id=" + instanceId);
 
         if (taskTargetState0 == ExecuteState.WAITING) {
-            Tuple3<SchedJob, SchedTrack, List<SchedTask>> params = buildDispatchParams(trackId, row);
+            Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, row);
             TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
         }
     }
@@ -320,42 +320,42 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         SchedJob job = jobMapper.getByJobId(jobId);
         Assert.notNull(job, () -> "Sched job not found: " + jobId);
 
-        // 1、build sched track and sched task list
+        // 1、build sched instance and sched task list
         Date now = new Date();
-        SchedTrack track = SchedTrack.create(
+        SchedInstance instance = SchedInstance.create(
             generateId(), job.getJobId(), RunType.MANUAL, now.getTime(), 0, now
         );
-        List<SchedTask> tasks = splitTasks(job, track.getTrackId(), now);
+        List<SchedTask> tasks = splitTasks(job, instance.getInstanceId(), now);
 
         // 2、save sched trace and sched task to database
-        int row = trackMapper.insert(track);
-        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched track fail: " + track);
+        int row = instanceMapper.insert(instance);
+        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched instance fail: " + instance);
 
         row = taskMapper.insertBatch(tasks);
         Assert.state(row == tasks.size(), () -> "Insert sched task fail: " + tasks);
 
         // 3、dispatch job task
-        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, track, tasks));
+        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, instance, tasks));
     }
 
     /**
-     * Update sched job, and save one sched track and many tasks.
+     * Update sched job, and save one sched instance and many tasks.
      *
-     * @param job   the job
-     * @param track the track
-     * @param tasks the tasks
+     * @param job      the job
+     * @param instance the instance
+     * @param tasks    the tasks
      * @return if {@code true} operated success
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean updateAndSave(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
+    public boolean updateAndSave(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
         int row = jobMapper.updateNextTriggerTime(job);
         if (row == 0) {
             // conflict operation, need not process
             return false;
         }
 
-        row = trackMapper.insert(track);
-        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched track fail: " + track);
+        row = instanceMapper.insert(instance);
+        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched instance fail: " + instance);
 
         Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         row = taskMapper.insertBatch(tasks);
@@ -372,20 +372,20 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean startTask(ExecuteParam param) {
-        Integer state = trackMapper.getStateByTrackId(param.getTrackId());
-        Assert.state(state != null, () -> "Sched track not found: " + param);
+        Integer state = instanceMapper.getStateByInstanceId(param.getInstanceId());
+        Assert.state(state != null, () -> "Sched instance not found: " + param);
         RunState runState = RunState.of(state);
-        // sched_track.run_state must in (WAITING, RUNNING)
-        Assert.state(RunState.PAUSABLE_LIST.contains(runState), () -> "Start track failed: " + param + ", " + runState);
+        // sched_instance.run_state must in (WAITING, RUNNING)
+        Assert.state(RunState.PAUSABLE_LIST.contains(runState), () -> "Start instance failed: " + param + ", " + runState);
 
         Date now = new Date();
-        // start sched track(also possibly started by other task)
-        int trackRow = trackMapper.start(param.getTrackId(), now);
+        // start sched instance(also possibly started by other task)
+        int instanceRow = instanceMapper.start(param.getInstanceId(), now);
 
         // start sched task
         int taskRow = taskMapper.start(param.getTaskId(), param.getWorker().toString(), now);
 
-        if (trackRow == 0 && taskRow == 0) {
+        if (instanceRow == 0 && taskRow == 0) {
             // conflict: the task executed by other executor
             return false;
         } else {
@@ -405,8 +405,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
-        Integer state = trackMapper.lockAndGetState(param.getTrackId());
-        Assert.notNull(state, () -> "Terminate failed, track_id not found: " + param.getTrackId());
+        Integer state = instanceMapper.lockAndGetState(param.getInstanceId());
+        Assert.notNull(state, () -> "Terminate failed, instance_id not found: " + param.getInstanceId());
         if (RunState.of(state).isTerminal()) {
             // already terminated
             return false;
@@ -423,41 +423,41 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             log.warn("Conflict terminate task {}, {}", param.getTaskId(), toState);
         }
 
-        // terminate track
-        terminate(param.getTrackId(), false);
+        // terminate instance
+        terminate(param.getInstanceId(), false);
         return result;
     }
 
     /**
-     * Terminate the running track and task.
+     * Terminate the running instance and task.
      *
-     * @param trackId the trackId
+     * @param instanceId the instanceId
      * @return if {@code true} terminate successfully
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean terminate(long trackId) {
-        Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, () -> "Terminate failed, track_id not found: " + trackId);
+    public boolean terminate(long instanceId) {
+        Integer state = instanceMapper.lockAndGetState(instanceId);
+        Assert.notNull(state, () -> "Terminate failed, instance_id not found: " + instanceId);
         if (RunState.of(state).isTerminal()) {
             // already terminated
             return false;
         }
-        return terminate(trackId, true);
+        return terminate(instanceId, true);
     }
 
     // ------------------------------------------------------------------manual pause
 
     /**
-     * Pause task by sched track id
+     * Pause task by sched instance id
      *
-     * @param trackId the track id
+     * @param instanceId the instance id
      * @return {@code true} if paused successfully
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
-    public boolean pauseTrack(long trackId) {
-        Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, () -> "Pause failed, track_id not found: " + trackId);
+    public boolean pauseInstance(long instanceId) {
+        Integer state = instanceMapper.lockAndGetState(instanceId);
+        Assert.notNull(state, () -> "Pause failed, instance_id not found: " + instanceId);
 
         RunState runState = RunState.of(state);
         if (!RunState.PAUSABLE_LIST.contains(runState)) {
@@ -465,19 +465,19 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
 
         // update waiting task
-        taskMapper.updateStateByTrackId(
-            trackId,
+        taskMapper.updateStateByInstanceId(
+            instanceId,
             ExecuteState.PAUSED.value(), 
             Collections.singletonList(ExecuteState.WAITING.value()), 
             null
         );
 
         // load the alive executing tasks
-        List<ExecuteParam> executingTasks = loadExecutingTasks(trackId, Operations.PAUSE);
+        List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, Operations.PAUSE);
 
         if (executingTasks.isEmpty()) {
-            // has non executing execute_state, update sched track state
-            List<ExecuteState> stateList = taskMapper.findMediumByTrackId(trackId)
+            // has non executing execute_state, update sched instance state
+            List<ExecuteState> stateList = taskMapper.findMediumByInstanceId(instanceId)
                                                      .stream()
                                                      .map(e -> ExecuteState.of(e.getExecuteState()))
                                                      .collect(Collectors.toList());
@@ -492,17 +492,17 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
             int row;
             if (toRunState.isTerminal()) {
-                row = trackMapper.terminate(
-                    trackId,
+                row = instanceMapper.terminate(
+                    instanceId,
                     toRunState.value(), 
                     Collections.singletonList(runState.value()), 
                     new Date()
                 );
             } else {
-                row = trackMapper.updateState(trackId, toRunState.value(), runState.value(), null);
+                row = instanceMapper.updateState(instanceId, toRunState.value(), runState.value(), null);
             }
             if (row != AFFECTED_ONE_ROW) {
-                log.warn("Pause track from {} to {} conflict", runState, toRunState);
+                log.warn("Pause instance from {} to {} conflict", runState, toRunState);
             }
         } else {
             // dispatch and pause executing tasks
@@ -522,7 +522,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public boolean pauseExecutingTask(ExecuteParam param, String errorMsg) {
-        Integer state = trackMapper.lockAndGetState(param.getTrackId());
+        Integer state = instanceMapper.lockAndGetState(param.getInstanceId());
         if (!RunState.RUNNING.equals(state)) {
             log.warn("Pause executing task failed: {} | {}", param, state);
             return false;
@@ -540,16 +540,16 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             return false;
         }
 
-        boolean allPaused = taskMapper.findMediumByTrackId(param.getTrackId())
+        boolean allPaused = taskMapper.findMediumByInstanceId(param.getInstanceId())
                                       .stream()
                                       .map(e -> ExecuteState.of(e.getExecuteState()))
                                       .noneMatch(ExecuteState.PAUSABLE_LIST::contains);
         if (allPaused) {
-            row = trackMapper.updateState(
-                param.getTrackId(), RunState.PAUSED.value(), RunState.RUNNING.value(), null
+            row = instanceMapper.updateState(
+                param.getInstanceId(), RunState.PAUSED.value(), RunState.RUNNING.value(), null
             );
             if (row != AFFECTED_ONE_ROW) {
-                log.error("Update sched track to paused state conflict: {} | {}", param.getTrackId(), param.getTaskId());
+                log.error("Update sched instance to paused state conflict: {} | {}", param.getInstanceId(), param.getTaskId());
             }
         }
 
@@ -559,18 +559,18 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     // ------------------------------------------------------------------manual cancel
 
     /**
-     * Cancel task by sched track id
+     * Cancel task by sched instance id
      *
-     * @param trackId   the track id
-     * @param operation the operation
+     * @param instanceId the instance id
+     * @param operation  the operation
      * @return {@code true} if canceled successfully
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
-    public boolean cancelTrack(long trackId, Operations operation) {
+    public boolean cancelInstance(long instanceId, Operations operation) {
         Assert.isTrue(operation.targetState().isFailure(), () -> "Expect cancel ops, but actual: " + operation);
-        Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, () -> "Cancel failed, track_id not found: " + trackId);
+        Integer state = instanceMapper.lockAndGetState(instanceId);
+        Assert.notNull(state, () -> "Cancel failed, instance_id not found: " + instanceId);
 
         RunState runState = RunState.of(state);
         if (runState.isTerminal()) {
@@ -578,30 +578,30 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
 
         // update waiting & paused state task
-        taskMapper.updateStateByTrackId(
-            trackId,
+        taskMapper.updateStateByInstanceId(
+            instanceId,
             operation.targetState().value(),
             EXECUTABLE_EXECUTE_STATE_LIST, 
             new Date()
         );
 
         // load the alive executing tasks
-        List<ExecuteParam> executingTasks = loadExecutingTasks(trackId, operation);
+        List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, operation);
 
         if (executingTasks.isEmpty()) {
             // has non executing execute_state
-            boolean failure = taskMapper.findMediumByTrackId(trackId)
+            boolean failure = taskMapper.findMediumByInstanceId(instanceId)
                                         .stream()
                                         .anyMatch(e -> ExecuteState.of(e.getExecuteState()).isFailure());
             RunState toRunState = failure ? RunState.CANCELED : RunState.FINISHED;
-            int row = trackMapper.terminate(
-                trackId,
+            int row = instanceMapper.terminate(
+                instanceId,
                 toRunState.value(), 
                 Collections.singletonList(runState.value()), 
                 new Date()
             );
             if (row != AFFECTED_ONE_ROW) {
-                log.warn("Pause track from {} to {} conflict", runState, toRunState);
+                log.warn("Pause instance from {} to {} conflict", runState, toRunState);
             }
         } else {
             // dispatch and cancel executing tasks
@@ -623,7 +623,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     @Override
     public boolean cancelExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
         Assert.isTrue(toState.isFailure(), () -> "Target state expect failure state, but actual: " + toState);
-        Integer state = trackMapper.lockAndGetState(param.getTrackId());
+        Integer state = instanceMapper.lockAndGetState(param.getInstanceId());
         if (!RunState.RUNNING.equals(state)) {
             return false;
         }
@@ -640,43 +640,43 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             return false;
         }
 
-        boolean allTerminated = taskMapper.findMediumByTrackId(param.getTrackId())
+        boolean allTerminated = taskMapper.findMediumByInstanceId(param.getInstanceId())
                                           .stream()
                                           .map(e -> ExecuteState.of(e.getExecuteState()))
                                           .allMatch(ExecuteState::isTerminal);
         if (allTerminated) {
-            row = trackMapper.terminate(
-                param.getTrackId(),
+            row = instanceMapper.terminate(
+                param.getInstanceId(),
                 RunState.CANCELED.value(),
                 Collections.singletonList(RunState.RUNNING.value()),
                 new Date()
             );
             if (row != AFFECTED_ONE_ROW) {
-                log.error("Update sched track to canceled state conflict: {} | {}", param.getTrackId(), param.getTaskId());
+                log.error("Update sched instance to canceled state conflict: {} | {}", param.getInstanceId(), param.getTaskId());
             }
         }
         return true;
     }
 
     /**
-     * Resume sched track from paused state to waiting state
+     * Resume sched instance from paused state to waiting state
      *
-     * @param trackId the trackId
+     * @param instanceId the instanceId
      * @return {@code true} if resumed successfully
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean resume(long trackId) {
-        Integer state = trackMapper.lockAndGetState(trackId);
-        Assert.notNull(state, () -> "Cancel failed, track_id not found: " + trackId);
+    public boolean resume(long instanceId) {
+        Integer state = instanceMapper.lockAndGetState(instanceId);
+        Assert.notNull(state, () -> "Cancel failed, instance_id not found: " + instanceId);
         if (!RunState.PAUSED.equals(state)) {
             return false;
         }
 
-        int row = trackMapper.updateState(trackId, RunState.WAITING.value(), RunState.PAUSED.value(), null);
-        Assert.state(row == AFFECTED_ONE_ROW, "Resume sched track failed.");
+        int row = instanceMapper.updateState(instanceId, RunState.WAITING.value(), RunState.PAUSED.value(), null);
+        Assert.state(row == AFFECTED_ONE_ROW, "Resume sched instance failed.");
 
-        row = taskMapper.updateStateByTrackId(
-            trackId,
+        row = taskMapper.updateStateByInstanceId(
+            instanceId,
             ExecuteState.WAITING.value(), 
             Collections.singletonList(ExecuteState.PAUSED.value()), 
             null
@@ -684,20 +684,20 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         Assert.state(row >= AFFECTED_ONE_ROW, "Resume sched task failed.");
 
         // dispatch task
-        Tuple3<SchedJob, SchedTrack, List<SchedTask>> params = buildDispatchParams(trackId, row);
+        Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, row);
         TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
 
         return true;
     }
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean updateState(ExecuteState toState, List<SchedTask> tasks, SchedTrack track) {
-        if (trackMapper.lockAndGetId(track.getTrackId()) == null) {
+    public boolean updateState(ExecuteState toState, List<SchedTask> tasks, SchedInstance instance) {
+        if (instanceMapper.lockAndGetId(instance.getInstanceId()) == null) {
             return false;
         }
-        int row = trackMapper.updateState(track.getTrackId(), toState.runState().value(), track.getRunState(), track.getVersion());
+        int row = instanceMapper.updateState(instance.getInstanceId(), toState.runState().value(), instance.getRunState(), instance.getVersion());
         if (row != AFFECTED_ONE_ROW) {
-            log.warn("Conflict update track run state: {} | {}", track, toState.runState());
+            log.warn("Conflict update instance run state: {} | {}", instance, toState.runState());
             return false;
         }
 
@@ -711,7 +711,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                 task.getVersion()
             );
         }
-        Assert.state(row >= AFFECTED_ONE_ROW, () -> "Conflict update state: " + toState + ", " + tasks + ", " + track);
+        Assert.state(row >= AFFECTED_ONE_ROW, () -> "Conflict update state: " + toState + ", " + tasks + ", " + instance);
 
         // updated successfully
         return true;
@@ -720,17 +720,17 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
     // ------------------------------------------------------------------private methods
 
     /**
-     * Terminate the running track and task.
+     * Terminate the running instance and task.
      *
-     * @param trackId       the trackId
-     * @param force         is whether force terminate
+     * @param instanceId the instanceId
+     * @param force      is whether force terminate
      * @return {@code true} if terminate successfully
      */
-    private boolean terminate(long trackId, boolean force) {
-        List<SchedTask> tasks = taskMapper.findMediumByTrackId(trackId);
+    private boolean terminate(long instanceId, boolean force) {
+        List<SchedTask> tasks = taskMapper.findMediumByInstanceId(instanceId);
         if (CollectionUtils.isEmpty(tasks)) {
             // cannot happen
-            log.error("Not found sched track task data {}", trackId);
+            log.error("Not found sched instance task data {}", instanceId);
             return false;
         }
 
@@ -758,7 +758,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             }
         }
 
-        int row = trackMapper.terminate(trackId, runState.value(), CANCELABLE_RUN_STATE_LIST, runEndTime);
+        int row = instanceMapper.terminate(instanceId, runState.value(), CANCELABLE_RUN_STATE_LIST, runEndTime);
         if (row != AFFECTED_ONE_ROW) {
             return false;
         }
@@ -773,9 +773,9 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
 
         if (runState == RunState.CANCELED) {
-            retryJob(trackId);
+            retryJob(instanceId);
         } else if (runState == RunState.FINISHED) {
-            dependJob(trackId);
+            dependJob(instanceId);
         } else {
             // cannot happen
             log.error("Unknown retry run state " + runState);
@@ -784,22 +784,22 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         return true;
     }
 
-    private void retryJob(long trackId) {
-        SchedTrack prevTrack = trackMapper.getByTrackId(trackId);
-        SchedJob schedJob = jobMapper.getByJobId(prevTrack.getJobId());
+    private void retryJob(long instanceId) {
+        SchedInstance prevInstance = instanceMapper.getByInstanceId(instanceId);
+        SchedJob schedJob = jobMapper.getByJobId(prevInstance.getJobId());
         if (schedJob == null) {
-            log.error("Sched job not found {}", prevTrack.getJobId());
+            log.error("Sched job not found {}", prevInstance.getJobId());
             return;
         }
 
-        List<SchedTask> prevTasks = taskMapper.findLargeByTrackId(trackId);
+        List<SchedTask> prevTasks = taskMapper.findLargeByInstanceId(instanceId);
         RetryType retryType = RetryType.of(schedJob.getRetryType());
         if (retryType == RetryType.NONE || schedJob.getRetryCount() < 1) {
             // not retry
             return;
         }
 
-        int retriedCount = Optional.ofNullable(prevTrack.getRetriedCount()).orElse(0);
+        int retriedCount = Optional.ofNullable(prevInstance.getRetriedCount()).orElse(0);
         if (retriedCount >= schedJob.getRetryCount()) {
             // already retried maximum times
             return;
@@ -807,13 +807,13 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
         Date now = new Date();
 
-        // 1、build sched track
+        // 1、build sched instance
         retriedCount++;
         long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
-        SchedTrack retryTrack = SchedTrack.create(
+        SchedInstance retryInstance = SchedInstance.create(
             generateId(), schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now
         );
-        retryTrack.setParentTrackId(RunType.RETRY.equals(prevTrack.getRunType()) ? prevTrack.getParentTrackId() : prevTrack.getTrackId());
+        retryInstance.setParentInstanceId(RunType.RETRY.equals(prevInstance.getRunType()) ? prevInstance.getParentInstanceId() : prevInstance.getInstanceId());
 
         // 2、build sched tasks
         List<SchedTask> tasks;
@@ -821,16 +821,16 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             case ALL:
                 try {
                     // re-split tasks
-                    tasks = splitTasks(schedJob, retryTrack.getTrackId(), now);
+                    tasks = splitTasks(schedJob, retryInstance.getInstanceId(), now);
                 } catch (Exception e) {
-                    log.error("Split job error: " + schedJob + ", " + prevTrack, e);
+                    log.error("Split job error: " + schedJob + ", " + prevInstance, e);
                     return;
                 }
                 break;
             case FAILED:
                 tasks = prevTasks.stream()
                                  .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
-                                 .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryTrack.getTrackId(), now))
+                                 .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstance.getInstanceId(), now))
                                  .collect(Collectors.toList());
                 break;
             default:
@@ -840,20 +840,20 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
         // 3、save to db
         Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
-        trackMapper.insert(retryTrack);
+        instanceMapper.insert(retryInstance);
         taskMapper.insertBatch(tasks);
 
-        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(schedJob, retryTrack, tasks));
+        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(schedJob, retryInstance, tasks));
     }
 
     /**
      * Crates dependency jbo task.
      *
-     * @param trackId the parent trace id
+     * @param instanceId the parent trace id
      */
-    private void dependJob(long trackId) {
-        SchedTrack parentTrack = trackMapper.getByTrackId(trackId);
-        List<SchedDepend> schedDepends = dependMapper.findByParentJobId(parentTrack.getJobId());
+    private void dependJob(long instanceId) {
+        SchedInstance parentInstance = instanceMapper.getByInstanceId(instanceId);
+        List<SchedDepend> schedDepends = dependMapper.findByParentJobId(parentInstance.getJobId());
         if (CollectionUtils.isEmpty(schedDepends)) {
             return;
         }
@@ -870,33 +870,33 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
             try {
                 Date now = new Date();
-                SchedTrack track = SchedTrack.create(
-                    generateId(), childJob.getJobId(), RunType.DEPEND, parentTrack.getTriggerTime(), 0, now
+                SchedInstance instance = SchedInstance.create(
+                    generateId(), childJob.getJobId(), RunType.DEPEND, parentInstance.getTriggerTime(), 0, now
                 );
-                track.setParentTrackId(parentTrack.getTrackId());
-                List<SchedTask> tasks = splitTasks(childJob, track.getTrackId(), now);
+                instance.setParentInstanceId(parentInstance.getInstanceId());
+                List<SchedTask> tasks = splitTasks(childJob, instance.getInstanceId(), now);
 
                 // save to db
-                trackMapper.insert(track);
+                instanceMapper.insert(instance);
                 taskMapper.insertBatch(tasks);
 
-                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(childJob, track, tasks));
+                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(childJob, instance, tasks));
             } catch (Exception e) {
                 log.error("Depend job split failed: " + childJob, e);
             }
         }
     }
 
-    private List<ExecuteParam> loadExecutingTasks(long trackId, Operations ops) {
-        SchedTrack schedTrackProxy = LazyLoader.of(SchedTrack.class, trackMapper::getByTrackId, trackId);
+    private List<ExecuteParam> loadExecutingTasks(long instanceId, Operations ops) {
+        SchedInstance schedInstanceProxy = LazyLoader.of(SchedInstance.class, instanceMapper::getByInstanceId, instanceId);
         List<ExecuteParam> executingTasks = new ArrayList<>();
-        taskMapper.findMediumByTrackId(trackId)
+        taskMapper.findMediumByInstanceId(instanceId)
             .stream()
             .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
             .forEach(task -> {
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (super.isAliveWorker(worker)) {
-                    ExecuteParam param = new ExecuteParam(ops, task.getTaskId(), trackId, schedTrackProxy.getJobId(), 0L);
+                    ExecuteParam param = new ExecuteParam(ops, task.getTaskId(), instanceId, schedInstanceProxy.getJobId(), 0L);
                     param.setWorker(worker);
                     executingTasks.add(param);
                 } else {
@@ -909,15 +909,15 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         return executingTasks;
     }
 
-    private Tuple3<SchedJob, SchedTrack, List<SchedTask>> buildDispatchParams(long trackId, int expectTaskSize) {
-        SchedTrack track = trackMapper.getByTrackId(trackId);
-        SchedJob job = jobMapper.getByJobId(track.getJobId());
-        List<SchedTask> waitingTasks = taskMapper.findLargeByTrackId(trackId)
+    private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParams(long instanceId, int expectTaskSize) {
+        SchedInstance instance = instanceMapper.getByInstanceId(instanceId);
+        SchedJob job = jobMapper.getByJobId(instance.getJobId());
+        List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceId(instanceId)
             .stream()
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
             .collect(Collectors.toList());
         Assert.isTrue(waitingTasks.size() == expectTaskSize, () -> "Dispatching tasks size inconsistent, expect=" + expectTaskSize + ", actual=" + waitingTasks.size());
-        return Tuple3.of(job, track, waitingTasks);
+        return Tuple3.of(job, instance, waitingTasks);
     }
 
     private void parseTriggerConfig(SchedJob job, Date date) {

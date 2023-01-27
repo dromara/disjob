@@ -16,7 +16,7 @@ import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.model.SchedTrack;
+import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -32,7 +32,7 @@ import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
 /**
  * The schedule job heartbeat thread, <br/>
  * find the sched_job which will be trigger, <br/>
- * split to one sched_track and many sched_task
+ * split to one sched_instance and many sched_task
  *
  * @author Ponfee
  */
@@ -102,19 +102,19 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return;
             }
 
-            // 1、build sched track and sched task list
-            SchedTrack track = SchedTrack.create(
+            // 1、build sched instance and sched task list
+            SchedInstance instance = SchedInstance.create(
                 schedulerJobManager.generateId(), job.getJobId(), RunType.SCHEDULE, job.getNextTriggerTime(), 0, now
             );
-            List<SchedTask> tasks = schedulerJobManager.splitTasks(job, track.getTrackId(), now);
+            List<SchedTask> tasks = schedulerJobManager.splitTasks(job, instance.getInstanceId(), now);
 
             // 2、refresh next trigger time
             refreshNextTriggerTime(job, job.getNextTriggerTime(), now);
 
             // 3、update and save data
-            if (schedulerJobManager.updateAndSave(job, track, tasks)) {
+            if (schedulerJobManager.updateAndSave(job, instance, tasks)) {
                 // 4、dispatch job task
-                schedulerJobManager.dispatch(job, track, tasks);
+                schedulerJobManager.dispatch(job, instance, tasks);
             }
         } catch (DuplicateKeyException e){
             if (schedulerJobManager.updateNextTriggerTime(job)) {
@@ -163,43 +163,43 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         }
 
-        SchedTrack lastTrack = schedulerJobManager.getByTriggerTime(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
-        if (lastTrack == null) {
+        SchedInstance lastInstance = schedulerJobManager.getByTriggerTime(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
+        if (lastInstance == null) {
             return false;
         }
 
-        long trackId = lastTrack.getTrackId();
-        RunState runState = RunState.of(lastTrack.getRunState());
+        long instanceId = lastInstance.getInstanceId();
+        RunState runState = RunState.of(lastInstance.getRunState());
         switch (runState) {
             case FINISHED:
                 return false;
             case WAITING:
             case PAUSED:
-                return checkBlockCollisionTrigger(job, Collections.singletonList(trackId), collisionStrategy, now);
+                return checkBlockCollisionTrigger(job, Collections.singletonList(instanceId), collisionStrategy, now);
             case RUNNING:
-                List<SchedTask> tasks = schedulerJobManager.findMediumTaskByTrackId(trackId);
+                List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instanceId);
                 if (schedulerJobManager.hasAliveExecuting(tasks)) {
-                    return checkBlockCollisionTrigger(job, Collections.singletonList(trackId), collisionStrategy, now);
+                    return checkBlockCollisionTrigger(job, Collections.singletonList(instanceId), collisionStrategy, now);
                 } else {
                     // all workers are dead
-                    log.info("Collision, all worker dead, terminate the sched track: {}", trackId);
-                    schedulerJobManager.cancelTrack(trackId, Operations.COLLISION_CANCEL);
+                    log.info("Collision, all worker dead, terminate the sched instance: {}", instanceId);
+                    schedulerJobManager.cancelInstance(instanceId, Operations.COLLISION_CANCEL);
                     return false;
                 }
             case CANCELED:
-                List<SchedTrack> list = schedulerJobManager.findUnterminatedRetry(trackId);
+                List<SchedInstance> list = schedulerJobManager.findUnterminatedRetry(instanceId);
                 if (CollectionUtils.isEmpty(list)) {
                     return false;
                 } else {
-                    List<Long> trackIds = list.stream().map(SchedTrack::getTrackId).collect(Collectors.toList());
-                    return checkBlockCollisionTrigger(job, trackIds, collisionStrategy, now);
+                    List<Long> instanceIds = list.stream().map(SchedInstance::getInstanceId).collect(Collectors.toList());
+                    return checkBlockCollisionTrigger(job, instanceIds, collisionStrategy, now);
                 }
             default:
                 throw new UnsupportedOperationException("Unsupported run state: " + runState.name());
         }
     }
 
-    private boolean checkBlockCollisionTrigger(SchedJob job, List<Long> trackIds, CollisionStrategy collisionStrategy, Date now) {
+    private boolean checkBlockCollisionTrigger(SchedJob job, List<Long> instanceIds, CollisionStrategy collisionStrategy, Date now) {
         switch (collisionStrategy) {
             case DISCARD:
                 // 丢弃执行：基于当前时间来更新下一次的执行时间
@@ -224,7 +224,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                trackIds.forEach(trackId -> CheckedThrowing.supplier(() -> schedulerJobManager.cancelTrack(trackId, Operations.COLLISION_CANCEL)));
+                instanceIds.forEach(instanceId -> CheckedThrowing.supplier(() -> schedulerJobManager.cancelInstance(instanceId, Operations.COLLISION_CANCEL)));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collision strategy: " + collisionStrategy.name());

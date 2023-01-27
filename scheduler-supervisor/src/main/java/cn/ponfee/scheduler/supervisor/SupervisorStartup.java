@@ -15,9 +15,9 @@ import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
-import cn.ponfee.scheduler.supervisor.thread.RunningTrackScanner;
+import cn.ponfee.scheduler.supervisor.thread.RunningInstanceScanner;
 import cn.ponfee.scheduler.supervisor.thread.TriggeringJobScanner;
-import cn.ponfee.scheduler.supervisor.thread.WaitingTrackScanner;
+import cn.ponfee.scheduler.supervisor.thread.WaitingInstanceScanner;
 import org.springframework.util.Assert;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,8 +31,8 @@ public class SupervisorStartup implements AutoCloseable {
 
     private final Supervisor currentSupervisor;
     private final TriggeringJobScanner triggeringJobScanner;
-    private final WaitingTrackScanner waitingTrackScanner;
-    private final RunningTrackScanner runningTrackScanner;
+    private final WaitingInstanceScanner waitingInstanceScanner;
+    private final RunningInstanceScanner runningInstanceScanner;
     private final TaskDispatcher taskDispatcher;
     private final SupervisorRegistry supervisorRegistry;
 
@@ -43,16 +43,16 @@ public class SupervisorStartup implements AutoCloseable {
                               SupervisorRegistry supervisorRegistry,
                               SchedulerJobManager schedulerJobManager,
                               DoInLocked scanTriggeringJobLocker,
-                              DoInLocked scanWaitingTrackLocker,
-                              DoInLocked scanRunningTrackLocker,
+                              DoInLocked scanWaitingInstanceLocker,
+                              DoInLocked scanRunningInstanceLocker,
                               TaskDispatcher taskDispatcher) {
         Assert.notNull(currentSupervisor, "Current supervisor cannot null.");
         Assert.notNull(supervisorConfig, "Supervisor config cannot null.");
         Assert.notNull(supervisorRegistry, "Supervisor registry cannot null.");
         Assert.notNull(schedulerJobManager, "Scheduler job manager cannot null.");
         Assert.notNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
-        Assert.notNull(scanWaitingTrackLocker, "Scan waiting track locker cannot null.");
-        Assert.notNull(scanRunningTrackLocker, "Scan running track locker cannot null.");
+        Assert.notNull(scanWaitingInstanceLocker, "Scan waiting instance locker cannot null.");
+        Assert.notNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
         Assert.notNull(taskDispatcher, "Task dispatcher cannot null.");
         supervisorConfig.check();
 
@@ -61,11 +61,11 @@ public class SupervisorStartup implements AutoCloseable {
         this.triggeringJobScanner = new TriggeringJobScanner(
             supervisorConfig.getScanTriggeringJobPeriodMs(), scanTriggeringJobLocker, schedulerJobManager
         );
-        this.waitingTrackScanner = new WaitingTrackScanner(
-            supervisorConfig.getScanWaitingTrackPeriodMs(), scanWaitingTrackLocker, schedulerJobManager
+        this.waitingInstanceScanner = new WaitingInstanceScanner(
+            supervisorConfig.getScanWaitingInstancePeriodMs(), scanWaitingInstanceLocker, schedulerJobManager
         );
-        this.runningTrackScanner = new RunningTrackScanner(
-            supervisorConfig.getScanRunningTrackPeriodMs(), scanRunningTrackLocker, schedulerJobManager
+        this.runningInstanceScanner = new RunningInstanceScanner(
+            supervisorConfig.getScanRunningInstancePeriodMs(), scanRunningInstanceLocker, schedulerJobManager
         );
         this.taskDispatcher = taskDispatcher;
     }
@@ -75,20 +75,20 @@ public class SupervisorStartup implements AutoCloseable {
             return;
         }
         triggeringJobScanner.start();
-        waitingTrackScanner.start();
-        runningTrackScanner.start();
+        waitingInstanceScanner.start();
+        runningInstanceScanner.start();
         supervisorRegistry.register(currentSupervisor);
     }
 
     @Override
     public void close() {
         Throwables.caught(supervisorRegistry::close);
-        Throwables.caught(runningTrackScanner::toStop);
-        Throwables.caught(waitingTrackScanner::toStop);
+        Throwables.caught(runningInstanceScanner::toStop);
+        Throwables.caught(waitingInstanceScanner::toStop);
         Throwables.caught(triggeringJobScanner::toStop);
         Throwables.caught(taskDispatcher::close);
-        Throwables.caught(() -> runningTrackScanner.doStop(1000));
-        Throwables.caught(() -> waitingTrackScanner.doStop(1000));
+        Throwables.caught(() -> runningInstanceScanner.doStop(1000));
+        Throwables.caught(() -> waitingInstanceScanner.doStop(1000));
         Throwables.caught(() -> triggeringJobScanner.doStop(1000));
     }
 
@@ -104,8 +104,8 @@ public class SupervisorStartup implements AutoCloseable {
         private SupervisorRegistry supervisorRegistry;
         private SchedulerJobManager schedulerJobManager;
         private DoInLocked scanTriggeringJobLocker;
-        private DoInLocked scanWaitingTrackLocker;
-        private DoInLocked scanRunningTrackLocker;
+        private DoInLocked scanWaitingInstanceLocker;
+        private DoInLocked scanRunningInstanceLocker;
         private TaskDispatcher taskDispatcher;
 
         private Builder() {
@@ -136,13 +136,13 @@ public class SupervisorStartup implements AutoCloseable {
             return this;
         }
 
-        public Builder scanWaitingTrackLocker(DoInLocked scanWaitingTrackLocker) {
-            this.scanWaitingTrackLocker = scanWaitingTrackLocker;
+        public Builder scanWaitingInstanceLocker(DoInLocked scanWaitingInstanceLocker) {
+            this.scanWaitingInstanceLocker = scanWaitingInstanceLocker;
             return this;
         }
 
-        public Builder scanRunningTrackLocker(DoInLocked scanRunningTrackLocker) {
-            this.scanRunningTrackLocker = scanRunningTrackLocker;
+        public Builder scanRunningInstanceLocker(DoInLocked scanRunningInstanceLocker) {
+            this.scanRunningInstanceLocker = scanRunningInstanceLocker;
             return this;
         }
 
@@ -154,7 +154,7 @@ public class SupervisorStartup implements AutoCloseable {
         public SupervisorStartup build() {
             return new SupervisorStartup(
                 currentSupervisor, supervisorConfig, supervisorRegistry, schedulerJobManager,
-                scanTriggeringJobLocker, scanWaitingTrackLocker, scanRunningTrackLocker, taskDispatcher
+                scanTriggeringJobLocker, scanWaitingInstanceLocker, scanRunningInstanceLocker, taskDispatcher
             );
         }
     }

@@ -77,7 +77,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer retryCount;
 
     /**
-     * 调度失败重试间隔(毫秒)，阶梯递增(square of sched_track.retried_count)
+     * 调度失败重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)
      */
     private Integer retryInterval;
 

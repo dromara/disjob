@@ -33,9 +33,9 @@ public class SchedTask extends BaseEntity implements Serializable {
     private Long taskId;
 
     /**
-     * sched_track.track_id
+     * sched_instance.instance_id
      */
-    private Long trackId;
+    private Long instanceId;
 
     /**
      * job_handler执行task的参数(参考sched_job.job_param)
@@ -84,15 +84,15 @@ public class SchedTask extends BaseEntity implements Serializable {
      *
      * @param taskParam  the task param
      * @param taskId     the task id
-     * @param trackId    the track id
+     * @param instanceId the instance id
      * @param createTime the created time
      * @return SchedTask
      */
-    public static SchedTask create(String taskParam, long taskId, long trackId, Date createTime) {
+    public static SchedTask create(String taskParam, long taskId, long instanceId, Date createTime) {
         SchedTask task = new SchedTask();
         task.setTaskParam(taskParam == null ? "" : taskParam);
         task.setTaskId(taskId);
-        task.setTrackId(trackId);
+        task.setInstanceId(instanceId);
         task.setExecuteState(ExecuteState.WAITING.value());
         task.setUpdatedAt(createTime);
         task.setCreatedAt(createTime);

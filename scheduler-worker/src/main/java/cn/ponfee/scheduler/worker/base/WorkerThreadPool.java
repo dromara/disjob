@@ -370,12 +370,12 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return;
         }
 
-        LOG.info("Pause the current sched task {} | {}", param.getTrackId(), param.getTaskId());
+        LOG.info("Pause the current sched task {} | {}", param.getInstanceId(), param.getTaskId());
         terminateTask(supervisorClient, param, toOps);
         supervisorClient.updateTaskErrorMsg(param.getTaskId(), errorMsg);
 
-        LOG.info("Pause the sched track other tasks: {}", param.getTrackId());
-        supervisorClient.pauseTrack(param.getTrackId());
+        LOG.info("Pause the sched instance other tasks: {}", param.getInstanceId());
+        supervisorClient.pauseInstance(param.getInstanceId());
 
     }
 
@@ -385,12 +385,12 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return;
         }
 
-        LOG.info("Cancel the current sched task {} | {}", param.getTrackId(), param.getTaskId());
+        LOG.info("Cancel the current sched task {} | {}", param.getInstanceId(), param.getTaskId());
         terminateTask(supervisorClient, param, toOps);
         supervisorClient.updateTaskErrorMsg(param.getTaskId(), errorMsg);
 
-        LOG.info("Cancel the sched track other tasks: {}", param);
-        supervisorClient.cancelTrack(param.getTrackId(), toOps);
+        LOG.info("Cancel the sched instance other tasks: {}", param);
+        supervisorClient.cancelInstance(param.getInstanceId(), toOps);
     }
 
     private static String toErrorMsg(Exception e) {
@@ -737,7 +737,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     return;
                 }
 
-                // update database records start state(sched_track, sched_task)
+                // update database records start state(sched_instance, sched_task)
                 boolean status = supervisorClient.startTask(param);
                 if (!status) {
                     LOG.warn("Task start conflicted {}", param);

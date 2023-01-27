@@ -46,7 +46,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
 
     private final AtomicReference<Operations> operation;
     private final long taskId;
-    private final long trackId;
+    private final long instanceId;
     private final long jobId;
     private final long triggerTime;
 
@@ -65,15 +65,15 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      *
      * @param operation   the operation
      * @param taskId      the task id
-     * @param trackId     the track id
+     * @param instanceId  the instance id
      * @param jobId       the job id
      * @param triggerTime the trigger time
      */
-    public ExecuteParam(Operations operation, long taskId, long trackId, long jobId, long triggerTime) {
+    public ExecuteParam(Operations operation, long taskId, long instanceId, long jobId, long triggerTime) {
         Assert.notNull(operation, "Operation cannot null.");
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
-        this.trackId = trackId;
+        this.instanceId = instanceId;
         this.jobId = jobId;
         this.triggerTime = triggerTime;
     }
@@ -83,15 +83,15 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      *
      * @param operation   the operation(if terminate task, this is null value)
      * @param taskId      the task id
-     * @param trackId     the track id
+     * @param instanceId  the instance id
      * @param jobId       the job id
      * @param triggerTime the trigger time
      * @param worker      the worker
      */
-    private ExecuteParam(Operations operation, long taskId, long trackId, long jobId, long triggerTime, Worker worker) {
+    private ExecuteParam(Operations operation, long taskId, long instanceId, long jobId, long triggerTime, Worker worker) {
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
-        this.trackId = trackId;
+        this.instanceId = instanceId;
         this.jobId = jobId;
         this.triggerTime = triggerTime;
         this.worker = worker;
@@ -102,8 +102,8 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         return taskId;
     }
 
-    public long getTrackId() {
-        return trackId;
+    public long getInstanceId() {
+        return instanceId;
     }
 
     public long getJobId() {
@@ -167,7 +167,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         ExecuteParam other = (ExecuteParam) o;
         return this.operation.get() == other.operation.get()
             && this.taskId          == other.taskId
-            && this.trackId         == other.trackId
+            && this.instanceId      == other.instanceId
             && this.jobId           == other.jobId
             && this.triggerTime     == other.triggerTime;
     }
@@ -186,14 +186,14 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
             return false;
         }
         return this.taskId      == other.taskId
-            && this.trackId     == other.trackId
+            && this.instanceId  == other.instanceId
             && this.jobId       == other.jobId
             && this.triggerTime == other.triggerTime;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(operation.get().ordinal(), taskId, trackId, jobId, triggerTime);
+        return Objects.hash(operation.get().ordinal(), taskId, instanceId, jobId, triggerTime);
     }
 
     /**
@@ -206,7 +206,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         return ByteBuffer.allocate(33)
             .put((byte) operation.get().ordinal())
             .putLong(taskId)
-            .putLong(trackId)
+            .putLong(instanceId)
             .putLong(jobId)
             .putLong(triggerTime)
             .array();
@@ -268,12 +268,12 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         }
         Operations operation = ObjectUtils.cast(map.get("operation"), Operations.class);
         long taskId = ObjectUtils.cast(map.get("taskId"), long.class);
-        long trackId = ObjectUtils.cast(map.get("trackId"), long.class);
+        long instanceId = ObjectUtils.cast(map.get("instanceId"), long.class);
         long jobId = ObjectUtils.cast(map.get("jobId"), long.class);
         long triggerTime = ObjectUtils.cast(map.get("triggerTime"), long.class);
         Worker worker = Worker.castToWorker((Map<String, Object>) map.get("worker"));
         // operation is null if terminate task
-        return new ExecuteParam(operation, taskId, trackId, jobId, triggerTime, worker);
+        return new ExecuteParam(operation, taskId, instanceId, jobId, triggerTime, worker);
     }
 
 }

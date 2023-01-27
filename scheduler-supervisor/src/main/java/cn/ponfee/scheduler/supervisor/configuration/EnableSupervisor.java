@@ -121,14 +121,14 @@ public @interface EnableSupervisor {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
         }
 
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_TRACK_LOCKER)
-        public DoInLocked scanWaitingTrackLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_TRACK);
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
+        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_INSTANCE);
         }
 
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_TRACK_LOCKER)
-        public DoInLocked scanRunningTrackLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_TRACK);
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
+        public DoInLocked scanRunningInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
         }
 
         @ConditionalOnMissingBean

@@ -23,14 +23,14 @@ public class SupervisorConstants {
     public static final String LOCK_SQL_SCAN_TRIGGERING_JOB = "SELECT `name` FROM sched_lock WHERE name='scan_triggering_job' FOR UPDATE";
 
     /**
-     * Scan waiting track lock sql
+     * Scan waiting instance lock sql
      */
-    public static final String LOCK_SQL_SCAN_WAITING_TRACK = "SELECT `name` FROM sched_lock WHERE name='scan_waiting_track' FOR UPDATE";
+    public static final String LOCK_SQL_SCAN_WAITING_INSTANCE = "SELECT `name` FROM sched_lock WHERE name='scan_waiting_instance' FOR UPDATE";
 
     /**
-     * Scan running track lock sql
+     * Scan running instance lock sql
      */
-    public static final String LOCK_SQL_SCAN_RUNNING_TRACK = "SELECT `name` FROM sched_lock WHERE name='scan_running_track' FOR UPDATE";
+    public static final String LOCK_SQL_SCAN_RUNNING_INSTANCE = "SELECT `name` FROM sched_lock WHERE name='scan_running_instance' FOR UPDATE";
 
     // ----------------------------------------------------------------scan locker name
 
@@ -40,13 +40,13 @@ public class SupervisorConstants {
     public static final String SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER = "scan-triggering-job-locker";
 
     /**
-     * Spring bean name of scan waiting track locker
+     * Spring bean name of scan waiting instance locker
      */
-    public static final String SPRING_BEAN_NAME_SCAN_WAITING_TRACK_LOCKER = "scan-waiting-track-locker";
+    public static final String SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER = "scan-waiting-instance-locker";
 
     /**
-     * Spring bean name of scan running track locker
+     * Spring bean name of scan running instance locker
      */
-    public static final String SPRING_BEAN_NAME_SCAN_RUNNING_TRACK_LOCKER = "scan-running-track-locker";
+    public static final String SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER = "scan-running-instance-locker";
 
 }

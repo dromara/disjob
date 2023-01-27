@@ -14,7 +14,7 @@ import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.model.SchedTrack;
+import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -25,19 +25,19 @@ import java.util.stream.Collectors;
 import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
 /**
- * Scan running a long time, but still is running state sched_track record.
+ * Scan running a long time, but still is running state sched_instance record.
  *
  * @author Ponfee
  */
-public class RunningTrackScanner extends AbstractHeartbeatThread {
+public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     private final DoInLocked doInLocked;
     private final SchedulerJobManager schedulerJobManager;
     private final long beforeMilliseconds;
 
-    public RunningTrackScanner(long heartbeatPeriodMs0,
-                               DoInLocked doInLocked,
-                               SchedulerJobManager schedulerJobManager) {
+    public RunningInstanceScanner(long heartbeatPeriodMs0,
+                                  DoInLocked doInLocked,
+                                  SchedulerJobManager schedulerJobManager) {
         super(heartbeatPeriodMs0);
         this.doInLocked = doInLocked;
         this.schedulerJobManager = schedulerJobManager;
@@ -57,34 +57,34 @@ public class RunningTrackScanner extends AbstractHeartbeatThread {
 
     private boolean process() {
         Date now = new Date(), expireTime = new Date(now.getTime() - beforeMilliseconds);
-        List<SchedTrack> tracks = schedulerJobManager.findExpireRunning(expireTime, PROCESS_BATCH_SIZE);
-        if (CollectionUtils.isEmpty(tracks)) {
+        List<SchedInstance> instances = schedulerJobManager.findExpireRunning(expireTime, PROCESS_BATCH_SIZE);
+        if (CollectionUtils.isEmpty(instances)) {
             return true;
         }
 
-        for (SchedTrack track : tracks) {
-            processEach(track, now);
+        for (SchedInstance instance : instances) {
+            processEach(instance, now);
         }
 
-        return tracks.size() < PROCESS_BATCH_SIZE;
+        return instances.size() < PROCESS_BATCH_SIZE;
     }
 
-    private void processEach(SchedTrack track, Date now) {
-        List<SchedTask> tasks = schedulerJobManager.findMediumTaskByTrackId(track.getTrackId());
+    private void processEach(SchedInstance instance, Date now) {
+        List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instance.getInstanceId());
 
         // sieve the waiting tasks
         List<SchedTask> waitingTasks = tasks.stream()
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
             .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            boolean isUpdateSuccess = schedulerJobManager.renewUpdateTime(track, now);
+            boolean isUpdateSuccess = schedulerJobManager.renewUpdateTime(instance, now);
             if (isUpdateSuccess) {
                 // sieve the un-dispatch waiting tasks to do re-dispatch
                 List<SchedTask> dispatchingTasks = schedulerJobManager.filterDispatchingTask(waitingTasks);
                 if (CollectionUtils.isNotEmpty(dispatchingTasks)) {
-                    log.info("Redispatch sched track: {} | {}", track, Jsons.toJson(dispatchingTasks));
-                    SchedJob schedJob = schedulerJobManager.getJob(track.getJobId());
-                    schedulerJobManager.dispatch(schedJob, track, dispatchingTasks);
+                    log.info("Redispatch sched instance: {} | {}", instance, Jsons.toJson(dispatchingTasks));
+                    SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
+                    schedulerJobManager.dispatch(schedJob, instance, dispatchingTasks);
                 }
             }
             return;
@@ -92,13 +92,13 @@ public class RunningTrackScanner extends AbstractHeartbeatThread {
 
         // check has executing task
         if (schedulerJobManager.hasAliveExecuting(tasks)) {
-            schedulerJobManager.renewUpdateTime(track, now);
+            schedulerJobManager.renewUpdateTime(instance, now);
             return;
         }
 
         // all workers are dead
-        log.info("Scan track, all worker dead, terminate the sched track: {}", track.getTrackId());
-        schedulerJobManager.terminate(track.getTrackId());
+        log.info("Scan instance, all worker dead, terminate the sched instance: {}", instance.getInstanceId());
+        schedulerJobManager.terminate(instance.getInstanceId());
     }
 
 }

@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * The run state enum definition.
- * <p>mapped by sched_track.run_state
+ * <p>mapped by sched_instance.run_state
  *
  * @author Ponfee
  */

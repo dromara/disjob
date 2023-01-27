@@ -18,25 +18,25 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * The schedule track entity, mapped database table sched_track
+ * The schedule instance entity, mapped database table sched_instance
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SchedTrack extends BaseEntity implements Serializable {
+public class SchedInstance extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -1457861792948169949L;
 
     /**
      * 全局唯一ID
      */
-    private Long trackId;
+    private Long instanceId;
 
     /**
      * run_type IN (DEPEND, RETRY)时的父ID
      */
-    private Long parentTrackId;
+    private Long parentInstanceId;
 
     /**
      * sched_job.job_id
@@ -82,18 +82,18 @@ public class SchedTrack extends BaseEntity implements Serializable {
      */
     private Integer retriedCount;
 
-    public static SchedTrack create(long trackId, long jobId, RunType runType,
-                                    long triggerTime, int retriedCount, Date date) {
-        SchedTrack track = new SchedTrack();
-        track.setTrackId(trackId);
-        track.setJobId(jobId);
-        track.setRunType(runType.value());
-        track.setTriggerTime(triggerTime);
-        track.setRunState(RunState.WAITING.value());
-        track.setRetriedCount(retriedCount);
-        track.setUpdatedAt(date);
-        track.setCreatedAt(date);
-        return track;
+    public static SchedInstance create(long instanceId, long jobId, RunType runType,
+                                       long triggerTime, int retriedCount, Date date) {
+        SchedInstance instance = new SchedInstance();
+        instance.setInstanceId(instanceId);
+        instance.setJobId(jobId);
+        instance.setRunType(runType.value());
+        instance.setTriggerTime(triggerTime);
+        instance.setRunState(RunState.WAITING.value());
+        instance.setRetriedCount(retriedCount);
+        instance.setUpdatedAt(date);
+        instance.setCreatedAt(date);
+        return instance;
     }
 
 }

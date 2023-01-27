@@ -15,7 +15,7 @@ import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.SplitTask;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.model.SchedTrack;
+import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -61,7 +61,7 @@ public abstract class AbstractSupervisorManager {
         );
     }
 
-    public List<SchedTask> splitTasks(SchedJob job, long trackId, Date date) throws JobException {
+    public List<SchedTask> splitTasks(SchedJob job, long instanceId, Date date) throws JobException {
         List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
         Assert.notEmpty(split, () -> "Not split any task: " + job);
         Assert.isTrue(
@@ -70,7 +70,7 @@ public abstract class AbstractSupervisorManager {
         );
 
         return split.stream()
-            .map(e -> SchedTask.create(e.getTaskParam(), generateId(), trackId, date))
+            .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, date))
             .collect(Collectors.toList());
     }
 
@@ -110,8 +110,8 @@ public abstract class AbstractSupervisorManager {
         return !discoveryWorker.hasDiscoveredServers();
     }
 
-    public boolean dispatch(SchedJob job, SchedTrack track, List<SchedTask> tasks) {
-        return taskDispatcher.dispatch(job, track, tasks);
+    public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
+        return taskDispatcher.dispatch(job, instance, tasks);
     }
 
     public boolean dispatch(List<ExecuteParam> tasks) {

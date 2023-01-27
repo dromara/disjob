@@ -43,11 +43,11 @@ public interface SupervisorService extends Checkpoint {
     @PostMapping(PREFIX_PATH + "task_error_msg/update")
     boolean updateTaskErrorMsg(long taskId, String errorMsg) throws Exception;
 
-    @PostMapping(PREFIX_PATH + "track/pause")
-    boolean pauseTrack(long trackId) throws Exception;
+    @PostMapping(PREFIX_PATH + "instance/pause")
+    boolean pauseInstance(long instanceId) throws Exception;
 
-    @PostMapping(PREFIX_PATH + "track/cancel")
-    boolean cancelTrack(long trackId, Operations operation) throws Exception;
+    @PostMapping(PREFIX_PATH + "instance/cancel")
+    boolean cancelInstance(long instanceId, Operations operation) throws Exception;
 
     @PostMapping(PREFIX_PATH + "executing_task/pause")
     boolean pauseExecutingTask(ExecuteParam param, String errorMsg) throws Exception;
