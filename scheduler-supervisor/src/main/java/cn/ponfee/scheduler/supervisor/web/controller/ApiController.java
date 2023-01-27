@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.supervisor.controller;
+package cn.ponfee.scheduler.supervisor.web.controller;
 
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
@@ -16,6 +16,9 @@ import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
+import cn.ponfee.scheduler.supervisor.web.request.AddSchedJobRequest;
+import cn.ponfee.scheduler.supervisor.web.request.UpdateSchedJobRequest;
+import cn.ponfee.scheduler.supervisor.web.response.GetTrackResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -40,15 +43,15 @@ public class ApiController {
     // ------------------------------------------------------------------ sched job
 
     @PostMapping("job/add")
-    public Result<Void> addJob(@RequestBody SchedJob job) {
-        schedulerJobManager.addJob(job);
+    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) {
+        schedulerJobManager.addJob(req.tosSchedJob());
         return Result.success();
     }
 
     @PutMapping("job/update")
-    public Result<Void> updateJob(@RequestBody SchedJob job) {
-        LOG.info("Do updating sched job {}", job.getJobId());
-        schedulerJobManager.updateJob(job);
+    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) {
+        LOG.info("Do updating sched job {}", req.getJobId());
+        schedulerJobManager.updateJob(req.tosSchedJob());
         return Result.success();
     }
 
@@ -132,11 +135,12 @@ public class ApiController {
     }
 
     @GetMapping("track/get")
-    public Result<Object[]> getTrack(@RequestParam("trackId") long trackId) {
-        return Result.success(new Object[]{
+    public Result<GetTrackResponse> getTrack(@RequestParam("trackId") long trackId) {
+        GetTrackResponse result = new GetTrackResponse(
             schedulerJobManager.getTrack(trackId),
             schedulerJobManager.findLargeTaskByTrackId(trackId)
-        });
+        );
+        return Result.success(result);
     }
 
 }

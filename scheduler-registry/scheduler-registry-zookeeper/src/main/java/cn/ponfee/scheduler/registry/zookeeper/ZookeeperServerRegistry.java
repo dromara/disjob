@@ -120,7 +120,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     private synchronized void doRefreshDiscoveryServers(List<String> list) {
         List<D> servers;
-        log.info("Watched servers: " + list);
+        log.info("Watched servers {}", list);
         if (CollectionUtils.isEmpty(list)) {
             log.error("Not discovered available {} from zookeeper.", discoveryRole.name());
             servers = Collections.emptyList();

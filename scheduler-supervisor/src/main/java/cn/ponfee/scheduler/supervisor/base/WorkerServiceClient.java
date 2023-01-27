@@ -39,10 +39,6 @@ public class WorkerServiceClient {
     private final WorkerService remoteWorkerService;
     private final String currentGroup;
 
-    public WorkerServiceClient() {
-        this(null, null);
-    }
-
     public WorkerServiceClient(WorkerService remoteWorkerService, Worker currentWorker) {
         this.remoteWorkerService = remoteWorkerService;
         this.currentGroup = currentWorker == null ? null : currentWorker.getGroup();
@@ -61,12 +57,12 @@ public class WorkerServiceClient {
     private WorkerService get(String group) {
         if ((remoteWorkerService == null || group.equals(currentGroup))) {
             return LOCAL_WORKER_SERVICE;
-        } else {
-            if (remoteWorkerService instanceof DiscoveryRestProxy.ImplantGroup) {
-                ((DiscoveryRestProxy.ImplantGroup) remoteWorkerService).group(group);
-            }
-            return remoteWorkerService;
         }
+
+        if (remoteWorkerService instanceof DiscoveryRestProxy.ImplantGroup) {
+            ((DiscoveryRestProxy.ImplantGroup) remoteWorkerService).group(group);
+        }
+        return remoteWorkerService;
     }
 
 }

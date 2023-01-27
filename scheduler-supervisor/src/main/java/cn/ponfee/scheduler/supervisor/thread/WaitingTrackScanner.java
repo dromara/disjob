@@ -115,7 +115,9 @@ public class WaitingTrackScanner extends AbstractHeartbeatThread {
         }
 
         if (schedulerJobManager.renewUpdateTime(track, now)) {
-            log.info("Redispatch sched track: {} | {}", track, Dates.format(now));
+            if (log.isInfoEnabled()) {
+                log.info("Redispatch sched track: {} | {}", track, Dates.format(now));
+            }
             schedulerJobManager.dispatch(job, track, dispatchingTasks);
         }
     }

@@ -35,7 +35,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
     protected final long heartbeatPeriodMs;
 
     public AbstractHeartbeatThread(long heartbeatPeriodMs) {
-        log.info("Heartbeat thread init {}", this.getClass());
+        log.info("Heartbeat thread init {}", getClass());
         this.heartbeatPeriodMs = heartbeatPeriodMs;
 
         // init thread parameters
@@ -79,9 +79,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                 long sleepTimeMillis = heartbeatPeriodMs - (end % heartbeatPeriodMs);
                 try {
                     TimeUnit.MILLISECONDS.sleep(sleepTimeMillis);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Heartbeat slept time: {}", sleepTimeMillis);
-                    }
+                    log.debug("Heartbeat slept time: {}", sleepTimeMillis);
                 } catch (InterruptedException e) {
                     log.error("Sleep occur error in loop, stopped=" + stopped, e);
                     Thread.currentThread().interrupt();

@@ -221,14 +221,12 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
     }
 
-    // ------------------------------------------------------------------operation within transaction
+    // ------------------------------------------------------------------operation within @Transactional annotation
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) {
-        Assert.notNull(job.getTriggerType(), "Trigger type cannot be null.");
-        Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null.");
-        Assert.isNull(job.getLastTriggerTime(), "Last trigger time must be null.");
-        Assert.isNull(job.getNextTriggerTime(), "Next trigger time must be null.");
+        job.verifyPreAdd();
+
         super.verifyJobHandler(job);
         job.checkAndDefaultSetting();
 
@@ -245,10 +243,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) {
-        Assert.notNull(job.getJobId(), "Job id cannot be null");
-        Assert.notNull(job.getVersion(), "Version cannot be null");
-        Assert.isNull(job.getLastTriggerTime(), "Last trigger time must be null");
-        Assert.isNull(job.getNextTriggerTime(), "Next trigger time must be null.");
+        job.verifyPreUpdate();
+
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.isTrue(StringUtils.isEmpty(job.getJobParam()), "Job param must be null if not set job handler.");
         } else {

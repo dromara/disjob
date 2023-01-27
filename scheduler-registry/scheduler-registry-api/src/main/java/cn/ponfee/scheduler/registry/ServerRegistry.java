@@ -81,11 +81,9 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      *
      * @param servers discovered servers
      */
-    protected final void refreshDiscoveredServers(List<D> servers) {
+    protected synchronized final void refreshDiscoveredServers(List<D> servers) {
         discoveryServer.refreshServers(servers);
-        if (log.isDebugEnabled()) {
-            log.debug("Refreshed discovery servers: {} | {}", discoveryRole.name(), servers);
-        }
+        log.debug("Refreshed discovery servers: {} | {}", discoveryRole.name(), servers);
     }
 
     @Override
@@ -168,7 +166,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         private volatile ImmutableHashList<String, Supervisor> supervisors = ImmutableHashList.empty();
 
         @Override
-        synchronized void refreshServers(List<Supervisor> discoveredSupervisors) {
+        void refreshServers(List<Supervisor> discoveredSupervisors) {
             this.supervisors = ImmutableHashList.of(discoveredSupervisors, Supervisor::serialize);
         }
 
@@ -196,7 +194,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         private volatile Map<String, ImmutableHashList<String, Worker>> groupedWorkers = Collections.emptyMap();
 
         @Override
-        synchronized void refreshServers(List<Worker> discoveredWorkers) {
+        void refreshServers(List<Worker> discoveredWorkers) {
             if (CollectionUtils.isEmpty(discoveredWorkers)) {
                 this.groupedWorkers = Collections.emptyMap();
             } else {

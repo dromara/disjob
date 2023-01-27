@@ -18,6 +18,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 import static cn.ponfee.scheduler.common.date.Dates.format;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.length;
 
 /**
  * The schedule job entity, mapped database table sched_job
@@ -172,6 +174,24 @@ public class SchedJob extends BaseEntity implements Serializable {
      */
     private String createdBy;
 
+    public void verifyPreAdd() {
+        Assert.notNull(triggerType, "triggerType cannot be null.");
+        Assert.notNull(triggerValue, "triggerValue cannot be null.");
+        Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
+        Assert.isTrue(isNotBlank(jobGroup), "jobGroup cannot be blank.");
+        Assert.isTrue(length(jobGroup) <= 30, "jobGroup length cannot exceed 30.");
+        Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
+        Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
+        Assert.isTrue(length(alarmSubscribers) <= 512, "alarmSubscribers length cannot exceed 512.");
+        Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
+    }
+
+    public void verifyPreUpdate() {
+        Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
+        Assert.isTrue(getVersion() != null && getVersion() > 0, () -> "Invalid version: " + getVersion());
+        verifyPreAdd();
+    }
+
     public void checkAndDefaultSetting() {
         if (jobState == null) {
             this.jobState = JobState.DISABLE.value();
@@ -183,8 +203,7 @@ public class SchedJob extends BaseEntity implements Serializable {
         if (retryType == null) {
             this.retryType = RetryType.NONE.value();
         }
-        RetryType retryType0 = RetryType.of(getRetryType());
-        if (retryType0 == RetryType.NONE) {
+        if (RetryType.of(retryType) == RetryType.NONE) {
             if (retryCount == null) {
                 this.retryCount = 0;
             }

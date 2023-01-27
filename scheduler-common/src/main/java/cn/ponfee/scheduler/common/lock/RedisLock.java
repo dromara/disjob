@@ -398,7 +398,7 @@ public class RedisLock implements Lock, java.io.Serializable {
             UNLOCK_SCRIPT_OBJECT, Collections.singletonList(new String(lockKey)), new String(lockValue)
         );
         LOCK_VALUE.remove();
-        //Assert.state(result == UNLOCK_SUCCESS, "Fail result, except: " + UNLOCK_SUCCESS + ", actual: " + result);
+        //Assert.state(result == UNLOCK_SUCCESS, () -> "Fail result, except: " + UNLOCK_SUCCESS + ", actual: " + result);
         return result == UNLOCK_SUCCESS;
         */
     }

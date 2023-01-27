@@ -233,7 +233,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
         @Override
         public void process(WatchedEvent event) throws Exception {
             CheckedThrowing.caught(() -> latch.await());
-            LOG.info("Watched event type: " + event.getType());
+            LOG.info("Watched event type: {}", event.getType());
 
             final Consumer<List<String>> action = processor;
             if (action == null || event.getType() == Watcher.Event.EventType.None) {

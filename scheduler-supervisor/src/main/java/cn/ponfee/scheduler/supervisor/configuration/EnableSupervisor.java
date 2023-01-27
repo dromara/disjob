@@ -102,7 +102,7 @@ public @interface EnableSupervisor {
                                                        @Nullable Worker currentWorker,
                                                        @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
             if (supervisorConfig.isForceLocalWorkerService()) {
-                return new WorkerServiceClient();
+                return new WorkerServiceClient(null, null);
             } else {
                 DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
                     .connectTimeout(properties.getConnectTimeout())

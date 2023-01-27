@@ -80,8 +80,9 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // 重新再计算一次nextTriggerTime
             job.setNextTriggerTime(recomputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
-                job.setRemark("Stop recompute reason: has not next trigger time");
-                log.info(job.getRemark() + ": " + job);
+                String reason = "Stop recompute reason: has not next trigger time";
+                job.setRemark(reason);
+                log.info("{} | {}", reason, job);
                 schedulerJobManager.stopJob(job);
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {

@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public abstract class AbstractSupervisorManager {
 
-    private static final int MAX_SPLIT_SIZE = 10000;
+    private static final int MAX_SPLIT_TASK_SIZE = 1000;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -55,16 +55,19 @@ public abstract class AbstractSupervisorManager {
 
     public void verifyJobHandler(SchedJob job) {
         Assert.isTrue(StringUtils.isNotEmpty(job.getJobHandler()), "Job handler cannot be empty.");
-        boolean result = workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-        if (!result) {
-            throw new IllegalArgumentException("Invalid job handler config: " + job.getJobHandler() + ", " + result);
-        }
+        Assert.isTrue(
+            workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam()),
+            () -> "Invalid job handler: " + job.getJobHandler()
+        );
     }
 
     public List<SchedTask> splitTasks(SchedJob job, long trackId, Date date) throws JobException {
         List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
         Assert.notEmpty(split, () -> "Not split any task: " + job);
-        Assert.isTrue(split.size() <= MAX_SPLIT_SIZE, () -> "Split task size must less than " + MAX_SPLIT_SIZE + ", job=" + job);
+        Assert.isTrue(
+            split.size() <= MAX_SPLIT_TASK_SIZE,
+            () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job
+        );
 
         return split.stream()
             .map(e -> SchedTask.create(e.getTaskParam(), generateId(), trackId, date))
