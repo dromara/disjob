@@ -40,11 +40,13 @@
       <artifactId>jakarta.validation-api</artifactId>
       <version>${jakarta-validation.version}</version>
     </dependency>
-    <!--<dependency>
+    <!--
+    <dependency>
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
-      <version>6.2.5.Final</version>
-    </dependency>-->
+      <version>${hibernate-validator.version}</version>
+    </dependency>
+    -->
 
     <!-- apache log4j2 for log implementation -->
     <dependency>
@@ -89,17 +91,17 @@
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.83</version>
+      <version>${fastjson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.1-jre</version>
+      <version>${guava.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
-      <version>4.4</version>
+      <version>${commons-collections4.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -109,7 +111,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.11.0</version>
+      <version>${commons-io.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -119,7 +121,7 @@
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>2.12.2</version>
+      <version>${joda-time.version}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
@@ -136,12 +138,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-json</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
