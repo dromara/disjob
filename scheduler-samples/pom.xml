@@ -29,7 +29,7 @@
     <maven.install.skip>true</maven.install.skip>
     <maven.deploy.skip>true</maven.deploy.skip>
 
-    <distributed-scheduler.version>1.9-SNAPSHOT</distributed-scheduler.version>
+    <distributed-scheduler.version>1.9</distributed-scheduler.version>
     <spring-boot.version>2.7.8</spring-boot.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
   </properties>
