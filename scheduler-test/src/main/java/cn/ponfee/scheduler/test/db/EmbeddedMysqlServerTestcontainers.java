@@ -27,6 +27,9 @@ import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
  * docker pull mysql/mysql-server:8.0.31
  *
  * SELECT VERSION()  ->  8.0.27
+ *
+ * username: root
+ * password: 无需密码
  * </pre>
  *
  * @author Ponfee

@@ -28,6 +28,9 @@ import java.util.concurrent.CountDownLatch;
  *     --privileged=true \
  *     -p 6379:6379 \
  *     -d redis:6.2.8
+ *
+ * username: 无需用户名
+ * password: 123456
  * </pre>
  *
  * @author Ponfee

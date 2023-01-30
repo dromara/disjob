@@ -25,9 +25,9 @@ public abstract class MarkServerRegistryAutoConfiguration {
 
     public MarkServerRegistryAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
-            log.info("Imported server registry: {}", getClass());
+            log.info("Enabled registry center '{}'", getClass());
         } else {
-            throw new Error("Conflict importing server registry: " + getClass());
+            throw new Error("Enable registry center '" + getClass() + "' failed, imported more than one registry center.");
         }
     }
 

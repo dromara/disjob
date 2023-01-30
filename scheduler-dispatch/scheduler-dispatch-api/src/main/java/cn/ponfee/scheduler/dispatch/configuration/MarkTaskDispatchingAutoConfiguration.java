@@ -25,9 +25,9 @@ public abstract class MarkTaskDispatchingAutoConfiguration {
 
     public MarkTaskDispatchingAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
-            log.info("Imported task dispatching: {}", getClass());
+            log.info("Enabled task dispatching '{}'", getClass());
         } else {
-            throw new Error("Conflict importing task dispatching: " + getClass());
+            throw new Error("Enable task dispatching '" + getClass() + "' failed, imported more than one task dispatching.");
         }
     }
 

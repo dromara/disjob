@@ -30,6 +30,10 @@ import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
 /**
  * MariaDB Server
  * <p>SELECT VERSION()  ->  10.2.11-MariaDB
+ * <p>如果启动失败报未找到openssl错误，参考安装步骤(MacOSX)：“/scheduler-test/src/main/DB/MariaDB/MariaDB.md”
+ *
+ * <p>username: root
+ * <p>password: 无需密码
  *
  * @author Ponfee
  */

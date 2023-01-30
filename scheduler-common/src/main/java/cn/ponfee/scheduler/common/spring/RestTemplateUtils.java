@@ -78,10 +78,9 @@ public class RestTemplateUtils {
         SSLContext sslContext;
         try {
             sslContext = SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
-            /*
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, new TrustManager[]{new SkipX509TrustManager()}, new SecureRandom());
-            */
+
+            //sslContext = SSLContext.getInstance("TLS");
+            //sslContext.init(null, new TrustManager[]{new SkipX509TrustManager()}, new SecureRandom());
         } catch (Exception e) {
             throw new SecurityException(e);
         }
@@ -137,10 +136,7 @@ public class RestTemplateUtils {
 
         if (value instanceof Collection) {
             Collection<?> coll = (Collection<?>) value;
-            if (coll.isEmpty()) {
-                return null;
-            }
-            return coll.stream().map(RestTemplateUtils::toString).collect(Collectors.toList());
+            return coll.isEmpty() ? null : coll.stream().map(RestTemplateUtils::toString).collect(Collectors.toList());
         }
 
         return Collections.singletonList(toString(value));
@@ -183,10 +179,9 @@ public class RestTemplateUtils {
 
     /*
     private static class SkipX509TrustManager implements X509TrustManager {
+        private static final X509Certificate[] EMPTY = new X509Certificate[0];
         @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
+        public X509Certificate[] getAcceptedIssuers() { return EMPTY; }
 
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) { }

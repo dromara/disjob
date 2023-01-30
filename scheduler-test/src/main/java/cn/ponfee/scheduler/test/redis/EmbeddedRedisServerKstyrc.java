@@ -17,6 +17,9 @@ import redis.embedded.RedisServer;
  * <p><a href="https://blog.csdn.net/qq_45565645/article/details/125052006">redis configuration1</a>
  * <p><a href="https://huaweicloud.csdn.net/633564b3d3efff3090b55531.html">redis configuration2</a>
  *
+ * <p>username: 无需用户名
+ * <p>password: 123456
+ *
  * @author Ponfee
  */
 public final class EmbeddedRedisServerKstyrc {

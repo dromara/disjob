@@ -74,16 +74,16 @@ distributed-scheduler
 ## Build From Source
 
 ```bash
-./mvnw -Drevision=_ versions:set -DnewVersion=1.9-SNAPSHOT && mvn clean install -DskipTests -Dcheckstyle.skip=true -U
+./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean install -DskipTests -Dcheckstyle.skip=true -U
 ```
 
 ## Quick Start
 
 1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
 
-2. Modify configuration files such as Mysql, Redis, Consul, Nacos, Zookeeper, Etcd: [scheduler-samples-common/src/main/resources](scheduler-samples/scheduler-samples-common/src/main/resources)
-- if use default localhost configuration([e.g consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file
-- non-web application worker configuration: [worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+2. Modify configuration files such as [Mysql](scheduler-samples/conf-supervisor/application-mysql.yml), [Redis](scheduler-samples/scheduler-samples-common/src/main/resources/application-redis.yml), [Consul](scheduler-samples/scheduler-samples-common/src/main/resources/application-consul.yml) and so on.
+- if use default localhost configuration([e.g consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file(same as Nacos/Zookeeper/Etcd)
+- non spring-boot application of worker configuration: [worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. Create a job handler class [PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
@@ -93,7 +93,7 @@ distributed-scheduler
  1）scheduler-samples-merged                        # Applicaion of merged deployment supervisor and worker
  2）scheduler-samples-separately-supervisor         # Spring boot application of only deployment supervisor
  3）scheduler-samples-separately-worker-springboot  # Spring boot application of only deployment worker
- 4）scheduler-samples-separately-worker-frameless   # Non-web application of only deployment worker
+ 4）scheduler-samples-separately-worker-frameless   # Non spring-boot application of only deployment worker
 ```
 
 - Different ports have been configured and can be started at the same time
@@ -125,7 +125,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "jobGroup": "default",
-    "jobName": "PrimeCountJobHandler",
+    "jobName": "prime counter",
     "jobHandler": "cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler",
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
@@ -161,7 +161,7 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 ## Todo List
 
-- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks [WorkerRemote](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)
+- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks [WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)
 - [x] Extended registry: Zookeeper, Etcd, Nacos
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB

@@ -23,10 +23,8 @@
     </repository>
   </repositories>
 
-  <!-- 发布到中央仓库的参考文章：
-    https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid
-    https://liuyanzhao.com/1500353647236747264.html
-    https://blog.csdn.net/qq_42651904/article/details/121191238
+  <!--
+    参考文章：https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid
 
     发布命令：
       1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.9-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U
@@ -195,6 +193,7 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- Exclude logback, empty dependency -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-logging</artifactId>

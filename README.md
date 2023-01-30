@@ -42,9 +42,9 @@ distributed-scheduler
 │   ├── scheduler-samples-merged                             # Supervisor与Worker合并部署的范例（Spring boot应用）
 │   └── scheduler-samples-separately                         # Supervisor与Worker分离部署的范例模块
 │       ├── scheduler-samples-separately-supervisor          # Supervisor单独部署的范例（Spring boot应用）
-│       ├── scheduler-samples-separately-worker-frameless    # Worker单独部署的范例（不依赖Web容器，直接main方法启动）
+│       ├── scheduler-samples-separately-worker-frameless    # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
 │       └── scheduler-samples-separately-worker-springboot   # Worker单独部署的范例（Spring boot应用）
-├── scheduler-supervisor                                     # Supervisor代码（依赖于Spring Web环境，需要引导Spring扫描该包目录）
+├── scheduler-supervisor                                     # Supervisor代码（Spring-boot应用，需要引导Spring扫描该包目录）
 └── scheduler-worker                                         # Worker代码
 ```
 
@@ -61,7 +61,7 @@ distributed-scheduler
 
 ## [Download From Maven Central](https://central.sonatype.dev/namespace/cn.ponfee)
 
-> [**注意**](https://developer.aliyun.com/mvn/search): **最近aliyun那边的镜像仓受Maven中央仓库网络限制，部分依赖可能会从中央仓库同步文件失败，如果依赖查找不到(即无法下载)请在`settings.xml`文件中删除aliyun mirror的配置(不建议使用aliyun maven mirror)**
+> **注意**: 最近 [aliyun](https://developer.aliyun.com/mvn/search) 那边的镜像仓受Maven中央仓库网络限制，部分依赖可能会从中央仓库同步文件失败，如果依赖查找不到(即无法下载)请在`settings.xml`文件中删除aliyun mirror的配置(不建议使用aliyun maven mirror)
 
 ```xml
 <dependency>
@@ -74,16 +74,16 @@ distributed-scheduler
 ## Build From Source
 
 ```bash
-./mvnw -Drevision=_ versions:set -DnewVersion=1.9-SNAPSHOT && mvn clean install -DskipTests -Dcheckstyle.skip=true -U
+./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean install -DskipTests -Dcheckstyle.skip=true -U
 ```
 
 ## Quick Start
 
 1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
 
-2. 修改Mysql、Redis、Consul、Nacos、Zookeeper、Etcd等配置文件：[scheduler-samples-common/src/main/resources](scheduler-samples/scheduler-samples-common/src/main/resources)
-  - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件
-  - 不依赖Web容器的Worker应用的配置文件在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+2. 修改[Mysql](scheduler-samples/conf-supervisor/application-mysql.yml)、[Redis](scheduler-samples/scheduler-samples-common/src/main/resources/application-redis.yml)、[Consul](scheduler-samples/scheduler-samples-common/src/main/resources/application-consul.yml)等配置文件
+  - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件(包括Nacos、Zookeeper、Etcd等)
+  - 非Spring-boot的Worker应用的配置文件在[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
 3. 编写自己的任务处理器[PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
@@ -93,10 +93,10 @@ distributed-scheduler
  1）scheduler-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
  2）scheduler-samples-separately-supervisor         # Supervisor单独部署的Spring boot应用
  3）scheduler-samples-separately-worker-springboot  # Worker单独部署的Spring boot应用
- 4）scheduler-samples-separately-worker-frameless   # Worker单独部署，不依赖Web容器，直接运行Main方法启动
+ 4）scheduler-samples-separately-worker-frameless   # Worker单独部署(非Spring-boot应用)，直接运行Main方法启动
 ```
 
-- 已配置不同端口，可同时启动
+- 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
 - 注册中心及分发任务的具体实现：在[pom文件](scheduler-samples/scheduler-samples-common/pom.xml)中引入指定的依赖即可
 - 项目已内置一些本地启动的server(部分要依赖本地docker环境)
@@ -116,8 +116,8 @@ public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
 }
 ```
 
-5. 执行以下curl命令添加任务(选择任一运行中的Supervisor应用替换`localhost:8081`)
-  - `triggerValue`修改为大于当前时间的日期值以便即将触发(如当前时间的下一分钟)
+5. 执行以下curl命令添加任务(任选一台运行中的Supervisor应用替换`localhost:8081`)
+  - `triggerValue`修改为大于当前时间的日期值以便即将触发(如当前时间点的下一分钟)
   - `jobHandler`为刚编写的任务处理器类的全限定名（也支持直接贴源代码）
 
 ```bash
@@ -125,7 +125,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "jobGroup": "default",
-    "jobName": "PrimeCountJobHandler",
+    "jobName": "prime counter",
     "jobHandler": "cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler",
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
@@ -148,7 +148,7 @@ SELECT * from sched_task;
 UPDATE sched_job SET job_state=1, misfire_strategy=3, last_trigger_time=NULL, next_trigger_time=1664944641000 WHERE job_name='PrimeCountJobHandler';
 ```
 
-- 也可执行以下CURL命令手动触发执行一次(选择一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
+- 也可执行以下CURL命令手动触发执行一次(任选一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
 
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236701614080' \
