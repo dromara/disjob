@@ -16,8 +16,9 @@ package cn.ponfee.scheduler;
 /*
 @org.junit.runner.RunWith(org.junit.runners.Suite.class)
 @org.junit.runners.Suite.SuiteClasses({
-    RedisTest.class,
-    TimingWheelTest.class
+    cn.ponfee.scheduler.supervisor.test.job.util.CommonTest.class,
+    cn.ponfee.scheduler.supervisor.test.job.dao.SchedJobMapperTest.class,
+    cn.ponfee.scheduler.supervisor.test.common.transaction.JobTxManagerTest.class
 })
 */
 

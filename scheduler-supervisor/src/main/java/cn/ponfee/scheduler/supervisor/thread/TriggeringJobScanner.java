@@ -44,10 +44,10 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private final SchedulerJobManager schedulerJobManager;
     private final long afterMilliseconds;
 
-    public TriggeringJobScanner(long heartbeatPeriodMs0,
+    public TriggeringJobScanner(long heartbeatPeriodMilliseconds,
                                 DoInLocked doInLocked,
                                 SchedulerJobManager schedulerJobManager) {
-        super(heartbeatPeriodMs0);
+        super(heartbeatPeriodMilliseconds);
         this.doInLocked = doInLocked;
         this.schedulerJobManager = schedulerJobManager;
         this.afterMilliseconds = (heartbeatPeriodMs * 3); // 3s * 3 = 9s

@@ -4,13 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.8</version>
-    <relativePath/>
-  </parent>
-
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-parent</artifactId>
   <version>${revision}</version>
@@ -133,16 +126,15 @@
     <mybatis-spring-boot-starter.version>2.3.0</mybatis-spring-boot-starter.version>
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
     <embedded-redis.version>1.2</embedded-redis.version>
-    <objenesis.version>3.3</objenesis.version>
     <testcontainers.version>1.17.6</testcontainers.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>${junit-jupiter.version}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -209,7 +201,6 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -230,7 +221,6 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
-      <version>${spring-framework.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -238,7 +228,6 @@
     <dependency>
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator-annotation-processor</artifactId>
-      <version>${hibernate-validator.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -262,31 +251,21 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>${assertj.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
-      <version>${hamcrest.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.objenesis</groupId>
-      <artifactId>objenesis</artifactId>
-      <version>${objenesis.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
-      <version>${jsonassert.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -487,7 +466,7 @@
         <configuration>
           <printSummary>true</printSummary>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <forkCount>3</forkCount>
+          <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
           <argLine>${argLine} ${jacocoArgLine}</argLine>
         </configuration>

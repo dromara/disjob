@@ -4,13 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.8</version>
-    <relativePath/>
-  </parent>
-
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-samples</artifactId>
   <version>${revision}</version>
@@ -32,6 +25,8 @@
     <distributed-scheduler.version>1.9</distributed-scheduler.version>
     <spring-boot.version>2.7.8</spring-boot.version>
     <mapstruct.version>1.5.3.Final</mapstruct.version>
+    <testcontainers.version>1.17.6</testcontainers.version>
+    <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
   </properties>
 
   <modules>
@@ -43,9 +38,16 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>1.17.6</version>
+        <version>${testcontainers.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -131,7 +133,6 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -151,14 +152,12 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
-      <version>${spring-framework.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator-annotation-processor</artifactId>
-      <version>${hibernate-validator.version}</version>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
@@ -178,7 +177,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -220,19 +218,6 @@
         <filtering>false</filtering>
       </testResource>
     </testResources>
-
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>3.4.1</version>
-          <configuration>
-            <createDependencyReducedPom>false</createDependencyReducedPom>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
 
     <plugins>
       <plugin>

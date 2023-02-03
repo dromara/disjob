@@ -33,7 +33,6 @@
     <dependency>
       <groupId>com.mysql</groupId>
       <artifactId>mysql-connector-j</artifactId>
-      <version>${mysql.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>

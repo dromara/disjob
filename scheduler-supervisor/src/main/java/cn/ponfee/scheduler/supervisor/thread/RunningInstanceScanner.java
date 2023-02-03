@@ -35,10 +35,10 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
     private final SchedulerJobManager schedulerJobManager;
     private final long beforeMilliseconds;
 
-    public RunningInstanceScanner(long heartbeatPeriodMs0,
+    public RunningInstanceScanner(long heartbeatPeriodMilliseconds,
                                   DoInLocked doInLocked,
                                   SchedulerJobManager schedulerJobManager) {
-        super(heartbeatPeriodMs0);
+        super(heartbeatPeriodMilliseconds);
         this.doInLocked = doInLocked;
         this.schedulerJobManager = schedulerJobManager;
         this.beforeMilliseconds = (heartbeatPeriodMs << 2); // 30s * 4 = 120s
