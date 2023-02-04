@@ -152,11 +152,12 @@ public final class Networks {
      * else returns available port
      */
     public static int findAvailablePort(int startPort) {
-        if (startPort < 0 || startPort > 65535) {
+        int maxPortNumber = 65535;
+        if (startPort < 0 || startPort > maxPortNumber) {
             return -1;
         }
 
-        for (int port = startPort; port <= 65535; port++) {
+        for (int port = startPort; port <= maxPortNumber; port++) {
             if (isAvailablePort(port)) {
                 return port;
             }

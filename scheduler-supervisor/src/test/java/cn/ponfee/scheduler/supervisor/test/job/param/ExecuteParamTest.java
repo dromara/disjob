@@ -16,7 +16,6 @@ import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.TaskExecutor;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import com.alibaba.fastjson.JSON;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +28,8 @@ public class ExecuteParamTest {
     @Test
     public void testFastjson() {
         ExecuteParam param = new ExecuteParam(Operations.TRIGGER, 1, 2, 3, 4);
-        Assert.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"jobId\":3,\"triggerTime\":4}", Jsons.toJson(param));
-        Assert.assertEquals("{\"instanceId\":2,\"jobId\":3,\"operation\":\"TRIGGER\",\"taskId\":1,\"triggerTime\":4}", JSON.toJSONString(param));
+        Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"jobId\":3,\"triggerTime\":4}", Jsons.toJson(param));
+        Assertions.assertEquals("{\"instanceId\":2,\"jobId\":3,\"operation\":\"TRIGGER\",\"taskId\":1,\"triggerTime\":4}", JSON.toJSONString(param));
 
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);

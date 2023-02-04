@@ -9,13 +9,6 @@
   <version>${revision}</version>
   <packaging>pom</packaging>
 
-  <repositories>
-    <repository>
-      <id>central</id>
-      <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-  </repositories>
-
   <!--
     参考文章：https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid
 

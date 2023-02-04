@@ -37,22 +37,22 @@ public class WorkerStartup implements AutoCloseable {
     private WorkerStartup(Worker currentWorker,
                           int maximumPoolSize,
                           int keepAliveTimeSeconds,
-                          SupervisorService SupervisorServiceClient,
+                          SupervisorService supervisorServiceClient,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver) {
         Assert.notNull(currentWorker, "Current worker cannot null.");
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be greater zero.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be greater zero.");
-        Assert.notNull(SupervisorServiceClient, "Supervisor service client cannot null.");
+        Assert.notNull(supervisorServiceClient, "Supervisor service client cannot null.");
         Assert.notNull(workerRegistry, "Server registry cannot null.");
         Assert.notNull(taskReceiver, "Task receiver cannot null.");
 
         this.currentWorker = currentWorker;
-        this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, SupervisorServiceClient);
+        this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, supervisorServiceClient);
         this.workerRegistry = workerRegistry;
         this.taskReceiver = taskReceiver;
         this.rotatingTimingWheel = new RotatingTimingWheel(
-            currentWorker, SupervisorServiceClient, workerRegistry,
+            currentWorker, supervisorServiceClient, workerRegistry,
             taskReceiver.getTimingWheel(), workerThreadPool
         );
     }
@@ -85,7 +85,7 @@ public class WorkerStartup implements AutoCloseable {
         private Worker currentWorker;
         private int maximumPoolSize;
         private int keepAliveTimeSeconds;
-        private SupervisorService SupervisorServiceClient;
+        private SupervisorService supervisorServiceClient;
         private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
 
@@ -107,8 +107,8 @@ public class WorkerStartup implements AutoCloseable {
             return this;
         }
 
-        public Builder SupervisorServiceClient(SupervisorService SupervisorServiceClient) {
-            this.SupervisorServiceClient = SupervisorServiceClient;
+        public Builder supervisorServiceClient(SupervisorService supervisorServiceClient) {
+            this.supervisorServiceClient = supervisorServiceClient;
             return this;
         }
 
@@ -125,7 +125,7 @@ public class WorkerStartup implements AutoCloseable {
         public WorkerStartup build() {
             return new WorkerStartup(
                 currentWorker, maximumPoolSize, keepAliveTimeSeconds,
-                SupervisorServiceClient, workerRegistry, taskReceiver
+                supervisorServiceClient, workerRegistry, taskReceiver
             );
         }
     }

@@ -13,7 +13,7 @@ import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.handle.impl.CommandJobHandler;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
@@ -38,7 +38,7 @@ public class CommandJobHandlerTest {
         Result<String> result = commandJobHandler.execute(Checkpoint.DISCARD);
 
         String expect = "{\"code\":0,\"msg\":\"OK\",\"data\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
-        Assert.assertEquals(expect, Jsons.toJson(result));
+        Assertions.assertEquals(expect, Jsons.toJson(result));
     }
 
 }

@@ -149,7 +149,7 @@ public class TimingWheelTest {
         treeMap.forEach((k, v) -> System.out.println(k + " -> " + v));
         System.out.println("-------------\n");
         int size = treeMap.size(), count = 0;
-        for (; treeMap.firstKey() < 8; ) {
+        while (treeMap.firstKey() < 8) {
             count++;
             Map.Entry<Integer, String> entry = treeMap.pollFirstEntry();
             System.out.println(entry.getKey() + " -> " + entry.getValue());

@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.handle.impl.HttpJobHandler;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,7 +33,7 @@ public class HttpJobHandlerTest {
 
         Result<String> result = httpJobHandler.execute(Checkpoint.DISCARD);
         System.out.println(Jsons.toJson(result));
-        Assert.assertTrue(result.isSuccess());
+        Assertions.assertTrue(result.isSuccess());
     }
 
 }

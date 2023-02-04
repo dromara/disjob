@@ -251,7 +251,7 @@ public final class ObjectUtils {
     @SuppressWarnings("unchecked")
     public static <T> T newInstance(Class<T> type) {
         if (Map.class == type) { // interface
-            return (T) new HashMap<>();
+            return (T) new HashMap<>(8);
         } else if (Set.class == type) { // interface
             return (T) new HashSet<>();
         } else if (Collection.class == type || List.class == type) { // interface

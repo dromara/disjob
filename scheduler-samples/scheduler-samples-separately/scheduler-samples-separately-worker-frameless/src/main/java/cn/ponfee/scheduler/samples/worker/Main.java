@@ -132,7 +132,7 @@ public class Main {
             .currentWorker(currentWorker)
             .maximumPoolSize(props.getInt(WORKER_KEY_PREFIX + ".maximum-pool-size"))
             .keepAliveTimeSeconds(props.getInt(WORKER_KEY_PREFIX + ".keep-alive-time-seconds"))
-            .SupervisorServiceClient(SupervisorServiceClient)
+            .supervisorServiceClient(SupervisorServiceClient)
             .taskReceiver(taskReceiver)
             .workerRegistry(workerRegistry)
             .build();

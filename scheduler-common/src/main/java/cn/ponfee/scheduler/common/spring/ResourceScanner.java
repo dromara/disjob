@@ -142,7 +142,7 @@ public class ResourceScanner {
             wildcard = "*";
         }
 
-        Map<String, byte[]> result = new HashMap<>();
+        Map<String, byte[]> result = new HashMap<>(16);
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
             for (String path : this.scanPaths) {
@@ -191,7 +191,7 @@ public class ResourceScanner {
      * @return
      */
     public Map<String, String> scan4text(String wildcard, Charset charset) {
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> result = new HashMap<>(16);
         for (Entry<String, byte[]> entry : scan4binary(wildcard).entrySet()) {
             result.put(entry.getKey(), new String(entry.getValue(), charset));
         }

@@ -276,7 +276,7 @@ public class EtcdClient implements AutoCloseable {
 
         @Override
         public void accept(WatchResponse response) {
-            CheckedThrowing.caught(() -> latch.await());
+            CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable) latch::await);
 
             List<WatchEvent> events = response.getEvents();
             if (events.stream().noneMatch(e -> CHANGED_EVENT_TYPES.contains(e.getEventType()))) {

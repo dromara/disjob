@@ -9,10 +9,9 @@
 package cn.ponfee.scheduler.supervisor.test.common.util;
 
 import cn.ponfee.scheduler.common.util.Jsons;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +24,7 @@ import java.util.stream.IntStream;
 public class TreeMapTest {
 
     @Test
-    @Ignore
+    @Disabled
     public void testTreeMap() {
         Map<String, String> executing = new TreeMap<>(); // TreeMap HashMap
         IntStream.range(0, 256)
@@ -61,23 +60,23 @@ public class TreeMapTest {
         System.out.println(afterEmpty);
 
         int afterSize = finished.size();
-        Assert.assertEquals(beforeEmpty, afterEmpty);
-        Assert.assertEquals(beforeSize, afterSize);
-        Assert.assertEquals(beforeFull, afterFull);
+        Assertions.assertEquals(beforeEmpty, afterEmpty);
+        Assertions.assertEquals(beforeSize, afterSize);
+        Assertions.assertEquals(beforeFull, afterFull);
     }
 
     @Test
     public void testConcurrentHashSet() {
         Set<String> set = ConcurrentHashMap.newKeySet();
-        Assert.assertTrue(set.isEmpty());
+        Assertions.assertTrue(set.isEmpty());
 
         set.add("a");
         set.add("b");
-        Assert.assertEquals(set.size(), 2);
+        Assertions.assertEquals(set.size(), 2);
 
         set.add("b");
         set.add("c");
-        Assert.assertEquals(set.size(), 3);
+        Assertions.assertEquals(set.size(), 3);
     }
 
 
@@ -121,7 +120,7 @@ public class TreeMapTest {
 
         map.computeIfAbsent("a", key -> null);
         map.computeIfAbsent("a", key -> null);
-        Assert.assertNull(map.get("a"));
+        Assertions.assertNull(map.get("a"));
     }
 
 }

@@ -2,70 +2,72 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.scheduler.supervisor.dao.mapper.SchedTaskMapper">
 
-    <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedTask">
-      <result column="task_id" jdbcType="BIGINT" property="taskId" />
-      <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
-      <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
-      <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
-      <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
-      <result column="execute_state" jdbcType="TINYINT" property="executeState" />
-      <result column="worker" jdbcType="VARCHAR" property="worker" />
-      <result column="version" jdbcType="INTEGER" property="version" />
-      <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
-      <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
-    </resultMap>
+  <sql id="Table_Name">sched_task</sql>
 
-    <resultMap id="LargeResultMap" type="cn.ponfee.scheduler.core.model.SchedTask" extends="BaseResultMap" >
-      <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
-      <result column="execute_snapshot" jdbcType="VARCHAR" property="executeSnapshot" />
-      <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
-    </resultMap>
+  <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedTask">
+    <result column="task_id" jdbcType="BIGINT" property="taskId" />
+    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
+    <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
+    <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
+    <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
+    <result column="execute_state" jdbcType="TINYINT" property="executeState" />
+    <result column="worker" jdbcType="VARCHAR" property="worker" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+  </resultMap>
 
-    <sql id="Base_Column_List">
-      task_id, instance_id, execute_start_time, execute_end_time, execute_duration,
-      execute_state, worker, version, updated_at, created_at
-    </sql>
+  <resultMap id="LargeResultMap" type="cn.ponfee.scheduler.core.model.SchedTask" extends="BaseResultMap" >
+    <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
+    <result column="execute_snapshot" jdbcType="VARCHAR" property="executeSnapshot" />
+    <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
+  </resultMap>
 
-    <sql id="Large_Column_List">
-      <include refid="Base_Column_List" />, task_param, execute_snapshot, error_msg
-    </sql>
+  <sql id="Base_Column_List">
+    task_id, instance_id, execute_start_time, execute_end_time, execute_duration,
+    execute_state, worker, version, updated_at, created_at
+  </sql>
 
-    <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-      INSERT INTO sched_task (
-        task_id, instance_id,
-        task_param, execute_state, 
-        version, updated_at, created_at
-      ) VALUES 
-      <foreach collection="collection" item="item" separator=",">
-      (
-        #{item.taskId,jdbcType=BIGINT}, #{item.instanceId,jdbcType=BIGINT},
-        #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
-        1, #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
-      )
-      </foreach>
-    </insert>
+  <sql id="Large_Column_List">
+    <include refid="Base_Column_List" />, task_param, execute_snapshot, error_msg
+  </sql>
+
+  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO <include refid="Table_Name" /> (
+      task_id, instance_id,
+      task_param, execute_state,
+      version, updated_at, created_at
+    ) VALUES
+    <foreach collection="collection" item="item" separator=",">
+    (
+      #{item.taskId,jdbcType=BIGINT}, #{item.instanceId,jdbcType=BIGINT},
+      #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
+      1, #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
+    )
+    </foreach>
+  </insert>
 
   <select id="getByTaskId" parameterType="_long" resultMap="LargeResultMap">
     SELECT <include refid="Large_Column_List" />
-    FROM sched_task
+    FROM <include refid="Table_Name" />
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
   <select id="findMediumByInstanceId" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List" />
-    FROM sched_task
+    FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
   <select id="findLargeByInstanceId" parameterType="_long" resultMap="LargeResultMap">
     SELECT <include refid="Large_Column_List" />
-    FROM sched_task
+    FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
   <!-- use `IFNULL` function reason: possibly re-execute the paused task -->
   <update id="start">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET execute_state = 20,
         execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
         worker = #{worker,jdbcType=VARCHAR},
@@ -75,7 +77,7 @@
   </update>
 
   <update id="terminate">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET execute_state    = #{toState,jdbcType=TINYINT},
         execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
         execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
@@ -89,7 +91,7 @@
   </update>
 
   <update id="updateState">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET execute_state = #{toState,jdbcType=TINYINT},
         <if test="errorMsg!=null and errorMsg.length()>0">
           error_msg = #{errorMsg,jdbcType=VARCHAR},
@@ -101,7 +103,7 @@
   </update>
 
   <update id="forceUpdateState">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET execute_state = #{targetState,jdbcType=TINYINT},
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -109,7 +111,7 @@
   </update>
 
   <update id="updateStateByInstanceId">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET execute_state = #{toState,jdbcType=TINYINT},
         <if test="executeEndTime != null">
           execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
@@ -121,7 +123,7 @@
   </update>
 
   <update id="checkpoint">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET execute_snapshot = #{executeSnapshot,jdbcType=VARCHAR},
         version = version+1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
@@ -129,19 +131,19 @@
   </update>
 
   <update id="updateErrorMsg">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET error_msg = #{errorMsg,jdbcType=VARCHAR},
         version = version+1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </update>
 
   <delete id="deleteByInstanceId" parameterType="_long">
-    DELETE FROM sched_task
+    DELETE FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state > 30
   </delete>
 
   <update id="updateWorker">
-    UPDATE sched_task
+    UPDATE <include refid="Table_Name" />
     SET worker = #{worker,jdbcType=VARCHAR},
         version = version+1
     WHERE task_id IN (<foreach collection="taskIds" separator="," item="id">#{id,jdbcType=BIGINT}</foreach>)

@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.supervisor.test.common.util;
 
 import com.google.common.collect.Lists;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 

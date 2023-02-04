@@ -232,7 +232,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
 
         @Override
         public void process(WatchedEvent event) throws Exception {
-            CheckedThrowing.caught(() -> latch.await());
+            CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable) latch::await);
             LOG.info("Watched event type: {}", event.getType());
 
             final Consumer<List<String>> action = processor;

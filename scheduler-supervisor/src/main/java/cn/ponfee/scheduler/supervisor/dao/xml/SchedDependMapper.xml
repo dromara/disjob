@@ -2,6 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.scheduler.supervisor.dao.mapper.SchedDependMapper">
 
+  <sql id="Table_Name">sched_depend</sql>
+
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedDepend">
     <result column="parent_job_id" jdbcType="BIGINT" property="parentJobId" />
     <result column="child_job_id" jdbcType="BIGINT" property="childJobId" />
@@ -14,7 +16,7 @@
   </sql>
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
-    INSERT INTO sched_depend (
+    INSERT INTO <include refid="Table_Name" /> (
       parent_job_id, child_job_id
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
@@ -26,17 +28,17 @@
 
   <select id="findByParentJobId" parameterType="java.lang.Long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
-    FROM sched_depend
+    FROM <include refid="Table_Name" />
     WHERE parent_job_id = #{parentJobId,jdbcType=BIGINT}
   </select>
 
   <delete id="deleteByParentJobId" parameterType="_long">
-    DELETE FROM sched_depend
+    DELETE FROM <include refid="Table_Name" />
     WHERE parent_job_id = #{parentJobId,jdbcType=BIGINT}
   </delete>
 
   <delete id="deleteByChildJobId" parameterType="_long">
-    DELETE FROM sched_depend
+    DELETE FROM <include refid="Table_Name" />
     WHERE child_job_id = #{childJobId,jdbcType=BIGINT}
   </delete>
 

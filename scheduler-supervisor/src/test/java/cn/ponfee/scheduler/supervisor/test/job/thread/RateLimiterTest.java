@@ -10,8 +10,8 @@ package cn.ponfee.scheduler.supervisor.test.job.thread;
 
 import cn.ponfee.scheduler.common.concurrent.Threads;
 import com.google.common.util.concurrent.RateLimiter;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;

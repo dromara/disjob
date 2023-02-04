@@ -9,8 +9,8 @@
 package cn.ponfee.scheduler.supervisor.web.response;
 
 import cn.ponfee.scheduler.common.base.ToJsonString;
-import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.model.SchedInstance;
+import cn.ponfee.scheduler.core.model.SchedTask;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

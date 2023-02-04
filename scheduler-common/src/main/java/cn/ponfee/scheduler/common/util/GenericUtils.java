@@ -212,7 +212,7 @@ public final class GenericUtils {
     }
 
     public static Map<String, Class<?>> getActualTypeVariableMapping(Class<?> clazz) {
-        Map<String, Class<?>> result = new HashMap<>();
+        Map<String, Class<?>> result = new HashMap<>(8);
         for (Type type : getGenericTypes(clazz)) {
             resolveMapping(result, type);
         }

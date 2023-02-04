@@ -15,9 +15,8 @@ import cn.ponfee.scheduler.common.util.Networks;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.model.SchedJob;
-import org.junit.Assert;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -31,21 +30,21 @@ public class ObjectUtilsTest {
 
     @Test
     public void testNewInstance() {
-        Assert.assertNotNull(Networks.getHostIp());
-        Assert.assertTrue(new Boolean("True"));
-        Assert.assertFalse(new Boolean("1"));
-        Assert.assertFalse(new Boolean("0"));
-        Assert.assertFalse(ObjectUtils.newInstance(boolean.class));
-        Assert.assertFalse(ObjectUtils.newInstance(Boolean.class));
+        Assertions.assertNotNull(Networks.getHostIp());
+        Assertions.assertTrue(new Boolean("True"));
+        Assertions.assertFalse(new Boolean("1"));
+        Assertions.assertFalse(new Boolean("0"));
+        Assertions.assertFalse(ObjectUtils.newInstance(boolean.class));
+        Assertions.assertFalse(ObjectUtils.newInstance(Boolean.class));
     }
 
     @Test
     public void testFields() {
         SchedJob job = new SchedJob();
-        Assert.assertNull(Fields.get(job, "id"));
+        Assertions.assertNull(Fields.get(job, "id"));
         Long value = 1L;
         Fields.put(job, "id", value);
-        Assert.assertEquals(value, Fields.get(job, "id"));
+        Assertions.assertEquals(value, Fields.get(job, "id"));
     }
 
     @Test
@@ -53,10 +52,10 @@ public class ObjectUtilsTest {
         String value1 = ObjectUtilsTest.TEST_NAME;
         String value2 = ObjectUtils.uuid32();
         Fields.put(ObjectUtilsTest.class, "TEST_NAME", value2);
-        Assert.assertNotEquals(value1, value2);
-        Assert.assertNotEquals(value1, ObjectUtilsTest.TEST_NAME);
-        Assert.assertEquals(value2, ObjectUtilsTest.TEST_NAME);
-        Assert.assertEquals(value2, Fields.get(ObjectUtilsTest.class, "TEST_NAME"));
+        Assertions.assertNotEquals(value1, value2);
+        Assertions.assertNotEquals(value1, ObjectUtilsTest.TEST_NAME);
+        Assertions.assertEquals(value2, ObjectUtilsTest.TEST_NAME);
+        Assertions.assertEquals(value2, Fields.get(ObjectUtilsTest.class, "TEST_NAME"));
     }
 
     @Test

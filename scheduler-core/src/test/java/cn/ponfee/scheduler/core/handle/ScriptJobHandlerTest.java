@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,7 +34,7 @@ public class ScriptJobHandlerTest {
         scriptJobHandler.task(task);
 
         Result<String> execute = scriptJobHandler.execute(Checkpoint.DISCARD);
-        Assert.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
+        Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class ScriptJobHandlerTest {
         scriptJobHandler.task(task);
 
         Result<String> execute = scriptJobHandler.execute(Checkpoint.DISCARD);
-        Assert.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
+        Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
     
 }

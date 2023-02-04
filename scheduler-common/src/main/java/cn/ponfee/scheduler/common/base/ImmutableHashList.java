@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 public class ImmutableHashList<K extends Comparable<K>, V> {
-    private static final ImmutableHashList EMPTY = new ImmutableHashList();
+    private static final ImmutableHashList EMPTY = new ImmutableHashList<>();
 
     private final Function<V, K> mapper;
     private final Set<K> keys;

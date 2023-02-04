@@ -14,7 +14,7 @@ import org.hamcrest.beans.HasProperty;
 import org.hamcrest.beans.HasPropertyWithValue;
 import org.hamcrest.core.*;
 import org.hamcrest.text.IsEmptyString;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;

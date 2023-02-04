@@ -2,6 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ponfee.scheduler.supervisor.dao.mapper.SchedInstanceMapper">
 
+  <sql id="Table_Name">sched_instance</sql>
+
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedInstance">
     <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
     <result column="parent_instance_id" jdbcType="BIGINT" property="parentInstanceId" />
@@ -24,7 +26,7 @@
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.scheduler.core.model.SchedInstance" useGeneratedKeys="true">
-    INSERT INTO sched_instance (
+    INSERT INTO <include refid="Table_Name" /> (
       instance_id, parent_instance_id, job_id,
       trigger_time, run_type, run_state, retried_count,
       version, updated_at, created_at
@@ -37,19 +39,19 @@
 
   <select id="getByInstanceId" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List" />
-    FROM sched_instance
+    FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
   <select id="getStateByInstanceId" parameterType="_long" resultType="int">
     SELECT run_state
-    FROM sched_instance
+    FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
   <!-- use `IFNULL` function reason: possibly paused task re-execute -->
   <update id="start">
-    UPDATE sched_instance
+    UPDATE <include refid="Table_Name" />
     SET run_state = 20,
         run_start_time = IFNULL(run_start_time, #{runStartTime,jdbcType=TIMESTAMP}),
         version = version+1
@@ -62,7 +64,7 @@
    SELECT ROUND((UNIX_TIMESTAMP('2018-05-19 12:54:43.999') - UNIX_TIMESTAMP('2018-05-19 12:54:43.987')) * 1000)
   -->
   <update id="terminate">
-    UPDATE sched_instance
+    UPDATE <include refid="Table_Name" />
     SET run_state = #{toState,jdbcType=TINYINT},
         run_end_time = IF(run_start_time IS NULL, NULL, #{runEndTime,jdbcType=TIMESTAMP}),
         run_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, run_start_time, #{runEndTime,jdbcType=TIMESTAMP}) / 1000),
@@ -72,7 +74,7 @@
   </update>
 
   <update id="forceUpdateState">
-    UPDATE sched_instance
+    UPDATE <include refid="Table_Name" />
     SET run_state = #{targetState,jdbcType=TINYINT},
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -80,7 +82,7 @@
   </update>
 
   <update id="updateState">
-    UPDATE sched_instance
+    UPDATE <include refid="Table_Name" />
     SET run_state = #{toState,jdbcType=TINYINT},
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -90,24 +92,24 @@
 
   <select id="findExpireState" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
-    FROM sched_instance
+    FROM <include refid="Table_Name" />
     WHERE run_state = #{runState,jdbcType=TINYINT} 
       AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
       AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
-    ORDER BY trigger_time ASC
+    ORDER BY trigger_time
     LIMIT #{size}
   </select>
 
   <select id="findUnterminatedRetry" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
-    FROM sched_instance
+    FROM <include refid="Table_Name" />
     WHERE parent_instance_id = #{parentInstanceId,jdbcType=BIGINT}
       AND run_type = 3
       AND run_state NOT IN (40, 50)
   </select>
 
   <update id="renewUpdateTime">
-    UPDATE sched_instance
+    UPDATE <include refid="Table_Name" />
     SET updated_at = #{updateTime,jdbcType=TIMESTAMP},
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -115,21 +117,21 @@
   </update>
 
   <select id="lockAndGetId" parameterType="_long" resultType="long">
-    SELECT id FROM sched_instance WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
+    SELECT id FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
   </select>
 
   <select id="lockAndGetState" parameterType="_long" resultType="int">
-    SELECT run_state FROM sched_instance WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
+    SELECT run_state FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
   </select>
 
   <delete id="deleteByInstanceId" parameterType="_long">
-    DELETE FROM sched_instance
+    DELETE FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND run_state IN (40,50)
   </delete>
 
   <select id="getByTriggerTime" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
-    FROM sched_instance
+    FROM <include refid="Table_Name" />
     WHERE job_id=#{jobId,jdbcType=BIGINT}
       AND trigger_time=#{triggerTime,jdbcType=BIGINT}
       AND run_type=#{runType,jdbcType=TINYINT}
