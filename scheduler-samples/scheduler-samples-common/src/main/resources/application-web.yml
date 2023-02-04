@@ -7,6 +7,11 @@ management:
     gateway.enabled: true
     health.show-details: always
 
+# “swagger-ui” and “/api-docs endpoint” custom path
+springdoc:
+  swagger-ui.path: /docs.html
+  api-docs.path: /docs
+
 # tomcat server configuration
 server.tomcat.mbeanregistry.enabled: true
 

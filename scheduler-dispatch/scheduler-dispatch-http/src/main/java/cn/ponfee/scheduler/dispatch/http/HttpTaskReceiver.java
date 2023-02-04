@@ -12,6 +12,7 @@ import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.spring.MarkRpcController;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.PostMapping;
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
  *
  * @author Ponfee
  */
+@Hidden
 public class HttpTaskReceiver extends TaskReceiver implements MarkRpcController {
 
     public HttpTaskReceiver(TimingWheel<ExecuteParam> timingWheel) {

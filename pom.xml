@@ -117,6 +117,7 @@
     <commons-io.version>2.11.0</commons-io.version>
     <joda-time.version>2.12.2</joda-time.version>
     <mybatis-spring-boot-starter.version>2.3.0</mybatis-spring-boot-starter.version>
+    <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
     <embedded-redis.version>1.2</embedded-redis.version>
     <testcontainers.version>1.17.6</testcontainers.version>

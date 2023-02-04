@@ -9,28 +9,31 @@
 package cn.ponfee.scheduler.supervisor.web.response;
 
 import cn.ponfee.scheduler.common.base.ToJsonString;
-import cn.ponfee.scheduler.core.model.SchedInstance;
-import cn.ponfee.scheduler.core.model.SchedTask;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
- * Get schedule instance response structure.
+ * Schedule task response structure.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class GetInstanceResponse extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 3495155528208478258L;
+public class SchedTaskResponse extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = 3629610339544019607L;
 
-    private SchedInstance instance;
-    private List<SchedTask> tasks;
+    private Long taskId;
+    private Long instanceId;
+    private String taskParam;
+    private Date executeStartTime;
+    private Date executeEndTime;
+    private Long executeDuration;
+    private Integer executeState;
+    private String executeSnapshot;
+    private String worker;
+    private String errorMsg;
+
 }

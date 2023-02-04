@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.core.base;
 
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.SplitTask;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
+@Hidden
 public interface WorkerService {
 
     String PREFIX_PATH = "worker/rpc/";

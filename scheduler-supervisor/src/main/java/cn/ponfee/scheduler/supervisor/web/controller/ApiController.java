@@ -14,20 +14,28 @@ import cn.ponfee.scheduler.core.enums.JobState;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.exception.JobException;
+import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
+import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
+import cn.ponfee.scheduler.supervisor.web.converter.SchedJobConverter;
 import cn.ponfee.scheduler.supervisor.web.request.AddSchedJobRequest;
 import cn.ponfee.scheduler.supervisor.web.request.UpdateSchedJobRequest;
-import cn.ponfee.scheduler.supervisor.web.response.GetInstanceResponse;
+import cn.ponfee.scheduler.supervisor.web.response.SchedInstanceResponse;
+import cn.ponfee.scheduler.supervisor.web.response.SchedJobResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Provides to external invoke, for manage the sched job & instance & task
  *
  * @author Ponfee
  */
+@Tag(name = "Supervisor openapi", description = "cn.ponfee.scheduler.supervisor.web.controller.ApiController")
 @RestController
 @RequestMapping("api")
 public class ApiController {
@@ -63,8 +71,9 @@ public class ApiController {
     }
 
     @GetMapping("job/get")
-    public Result<SchedJob> getJob(@RequestParam("jobId") long jobId) {
-        return Result.success(schedulerJobManager.getJob(jobId));
+    public Result<SchedJobResponse> getJob(@RequestParam("jobId") long jobId) {
+        SchedJob schedJob = schedulerJobManager.getJob(jobId);
+        return Result.success(SchedJobConverter.INSTANCE.convert(schedJob));
     }
 
     @PostMapping("job/disable")
@@ -88,16 +97,16 @@ public class ApiController {
 
     // ------------------------------------------------------------------ sched instance
 
-    @PostMapping("instance/pause")
-    public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
-        LOG.info("Do pausing sched instance {}", instanceId);
-        return Result.success(schedulerJobManager.pauseInstance(instanceId));
-    }
-
     @PostMapping("instance/cancel")
     public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
         LOG.info("Do canceling sched instance {}", instanceId);
         return Result.success(schedulerJobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL));
+    }
+
+    @PostMapping("instance/pause")
+    public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
+        LOG.info("Do pausing sched instance {}", instanceId);
+        return Result.success(schedulerJobManager.pauseInstance(instanceId));
     }
 
     @PostMapping("instance/resume")
@@ -135,12 +144,14 @@ public class ApiController {
     }
 
     @GetMapping("instance/get")
-    public Result<GetInstanceResponse> getInstance(@RequestParam("instanceId") long instanceId) {
-        GetInstanceResponse response = new GetInstanceResponse(
-            schedulerJobManager.getInstance(instanceId),
-            schedulerJobManager.findLargeTaskByInstanceId(instanceId)
-        );
-        return Result.success(response);
+    public Result<SchedInstanceResponse> getInstance(@RequestParam("instanceId") long instanceId) {
+        SchedInstance instance = schedulerJobManager.getInstance(instanceId);
+        if (instance == null) {
+            return Result.success(null);
+        }
+
+        List<SchedTask> tasks = schedulerJobManager.findLargeTaskByInstanceId(instanceId);
+        return Result.success(SchedInstanceResponse.of(instance, tasks));
     }
 
 }

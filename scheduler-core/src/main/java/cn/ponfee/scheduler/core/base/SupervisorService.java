@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -24,6 +25,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
+@Hidden
 public interface SupervisorService extends Checkpoint {
 
     String PREFIX_PATH = "supervisor/rpc/";
