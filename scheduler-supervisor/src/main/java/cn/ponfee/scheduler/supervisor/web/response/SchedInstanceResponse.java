@@ -9,17 +9,16 @@
 package cn.ponfee.scheduler.supervisor.web.response;
 
 import cn.ponfee.scheduler.common.base.ToJsonString;
+import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.supervisor.web.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Schedule instance response structure.
@@ -50,10 +49,7 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
         }
 
         SchedInstanceResponse instanceResponse = SchedJobConverter.INSTANCE.convert(instance);
-        if (CollectionUtils.isNotEmpty(tasks)) {
-            List<SchedTaskResponse> list = tasks.stream().map(SchedJobConverter.INSTANCE::convert).collect(Collectors.toList());
-            instanceResponse.setTasks(list);
-        }
+        instanceResponse.setTasks(Collects.convert(tasks, SchedJobConverter.INSTANCE::convert));
         return instanceResponse;
     }
 }

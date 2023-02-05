@@ -103,6 +103,12 @@ public class Collects {
     }
 
     public static <S, T> List<T> convert(List<S> source, Function<S, T> mapper) {
+        if (source == null) {
+            return null;
+        }
+        if (source.isEmpty()) {
+            return Collections.emptyList();
+        }
         ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(source.size());
         source.stream().map(mapper).forEach(builder::add);
         return builder.build();

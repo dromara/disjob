@@ -9,7 +9,9 @@ management:
 
 # “swagger-ui” and “/api-docs endpoint” custom path
 springdoc:
-  swagger-ui.path: /docs.html
+  swagger-ui:
+    path: /docs.html
+    layout: StandaloneLayout
   api-docs.path: /docs
 
 # tomcat server configuration

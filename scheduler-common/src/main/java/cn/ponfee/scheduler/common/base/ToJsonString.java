@@ -19,6 +19,11 @@ public abstract class ToJsonString {
 
     @Override
     public final String toString() {
+        return toJsonString();
+    }
+
+    public final String toJsonString() {
         return Jsons.toJson(this);
     }
+
 }

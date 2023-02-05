@@ -23,7 +23,7 @@ Lightweight, easy to use, especially suitable for the execution of long tasks. S
 - code structure
 
 ```Plain Text
-distributed-scheduler
+distributed-scheduler                                        # Main project
 ├── scheduler-common                                         # Tools
 ├── scheduler-core                                           # Core classes code of task scheduling
 ├── scheduler-dispatch                                       # Task dispatch module
@@ -37,7 +37,7 @@ distributed-scheduler
 │   ├── scheduler-registry-redis                             # Server registry implementation based redis
 │   ├── scheduler-registry-etcd                              # Server registry implementation based etcd
 │   └── scheduler-registry-zookeeper                         # Server registry implementation based zookeeper
-├── scheduler-samples                                        # Samples module
+├── scheduler-samples                                        # Samples project
 │   ├── scheduler-samples-common                             # Common configuration and codes of samples
 │   ├── scheduler-samples-merged                             # Sample of merged deployment supervisor and worker(spring boot application)
 │   └── scheduler-samples-separately                         # Sample of separated deployment supervisor and worker
@@ -79,6 +79,10 @@ distributed-scheduler
 
 ## Quick Start
 
+0. Imports project to IDE (Contains two projects, shared the git repository):
+  - [main project](pom.xml)
+  - [samples project](scheduler-samples/pom.xml)
+
 1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
 
 2. Modify configuration files such as [Mysql](scheduler-samples/conf-supervisor/application-mysql.yml), [Redis](scheduler-samples/scheduler-samples-common/src/main/resources/application-redis.yml), [Consul](scheduler-samples/scheduler-samples-common/src/main/resources/application-consul.yml) and so on.
@@ -87,7 +91,7 @@ distributed-scheduler
 
 3. Create a job handler class [PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
 
-4. Startup there applications [scheduler-samples](scheduler-samples): 
+4. Startup applications in [samples project](scheduler-samples): 
 
 ```Plain Text
  1）scheduler-samples-merged                        # Applicaion of merged deployment supervisor and worker
