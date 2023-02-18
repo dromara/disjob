@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.base.IntValue;
+import org.springframework.util.Assert;
 
 /**
  * The job state enum definition.
@@ -42,9 +43,7 @@ public enum JobState implements IntValue<JobState> {
     }
 
     public static JobState of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Job state cannot be null.");
-        }
+        Assert.notNull(value, "Job state cannot be null.");
         for (JobState state : JobState.values()) {
             if (state.value == value) {
                 return state;

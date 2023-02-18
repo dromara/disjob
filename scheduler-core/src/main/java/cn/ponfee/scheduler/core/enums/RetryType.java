@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.base.IntValue;
 import cn.ponfee.scheduler.common.util.Enums;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public enum RetryType implements IntValue<RetryType> {
      * 不重试
      */
     NONE(0),
-    
+
     /**
      * 重试所有的Task(re-split job param to task param)
      */
@@ -52,13 +53,8 @@ public enum RetryType implements IntValue<RetryType> {
     }
 
     public static RetryType of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Retry type cannot be null.");
-        }
         RetryType runType = MAPPING.get(value);
-        if (runType == null) {
-            throw new IllegalArgumentException("Invalid retry type: " + value);
-        }
+        Assert.notNull(runType, () -> "Invalid retry type: " + value);
         return runType;
     }
 

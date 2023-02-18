@@ -13,13 +13,13 @@
     参考文章：https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid
 
     发布命令：
-      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.9-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U
+      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U
       2.1）release交互模式：
           | ```bash
           | mvn release:update-versions \
           |   -B \
           |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.9-SNAPSHOT \
+          |   -DdevelopmentVersion=1.10-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
           |   -Prelease \
@@ -30,14 +30,14 @@
           | mvn release:update-versions \
           |   -B \
           |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.9-SNAPSHOT \
+          |   -DdevelopmentVersion=1.10-SNAPSHOT \
           | && \
           | mvn release:prepare release:perform \
           |   -Prelease \
           |   -Darguments="-Dcheckstyle.skip=true" \
-          |   -DreleaseVersion=1.9 \
-          |   -Dtag=v1.9 \
-          |   -DdevelopmentVersion=1.9-SNAPSHOT
+          |   -DreleaseVersion=1.10 \
+          |   -Dtag=v1.10 \
+          |   -DdevelopmentVersion=1.10-SNAPSHOT
           | ```
 
     注意事项：

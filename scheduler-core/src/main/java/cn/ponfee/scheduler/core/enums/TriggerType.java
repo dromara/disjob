@@ -22,7 +22,6 @@ import org.springframework.util.Assert;
 
 import java.text.ParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * The trigger type enum definition.
@@ -173,11 +172,13 @@ public enum TriggerType implements IntValue<TriggerType> {
                 return false;
             }
             try {
-                List<Long> list = Arrays.stream(triggerValue.split(Constants.COMMA))
-                                        .filter(StringUtils::isNotBlank)
-                                        .map(e -> Long.parseLong(e.trim()))
-                                        .collect(Collectors.toList());
-                return !list.isEmpty() && list.stream().allMatch(e -> e > 0);
+                long count = Arrays.stream(triggerValue.split(Constants.COMMA))
+                    .filter(StringUtils::isNotBlank)
+                    .map(String::trim)
+                    .map(Long::parseLong)
+                    .filter(e -> e > 0)
+                    .count();
+                return count > 0;
             } catch (NumberFormatException ignored) {
                 return false;
             }
@@ -222,13 +223,8 @@ public enum TriggerType implements IntValue<TriggerType> {
     public abstract List<Date> computeNextFireTimes(String triggerValue, Date startTime, int count);
 
     public static TriggerType of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Trigger type cannot be null.");
-        }
         TriggerType triggerType = MAPPING.get(value);
-        if (triggerType == null) {
-            throw new IllegalArgumentException("Invalid trigger type: " + value);
-        }
+        Assert.notNull(triggerType, () -> "Invalid trigger type: " + value);
         return triggerType;
     }
 

@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.base.IntValue;
 import cn.ponfee.scheduler.common.util.Enums;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 
@@ -57,13 +58,8 @@ public enum RunType implements IntValue<RunType> {
     }
 
     public static RunType of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Run type cannot be null.");
-        }
         RunType runType = MAPPING.get(value);
-        if (runType == null) {
-            throw new IllegalArgumentException("Invalid run type: " + value);
-        }
+        Assert.notNull(runType, () -> "Invalid run type: " + value);
         return runType;
     }
 

@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.base.IntValue;
 import cn.ponfee.scheduler.common.util.Enums;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 
@@ -57,13 +58,8 @@ public enum CollisionStrategy implements IntValue<CollisionStrategy> {
     }
 
     public static CollisionStrategy of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Collision strategy cannot be null.");
-        }
         CollisionStrategy collisionStrategy = MAPPING.get(value);
-        if (collisionStrategy == null) {
-            throw new IllegalArgumentException("Invalid collision strategy: " + value);
-        }
+        Assert.notNull(collisionStrategy, () -> "Invalid collision strategy: " + value);
         return collisionStrategy;
     }
 }

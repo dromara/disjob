@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.core.enums;
 import cn.ponfee.scheduler.common.base.IntValue;
 import cn.ponfee.scheduler.common.util.Enums;
 import com.google.common.collect.ImmutableList;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -91,7 +92,7 @@ public enum ExecuteState implements IntValue<ExecuteState> {
 
     /**
      * State list of can transit to CANCELED
-     * 
+     *
      * @see #isTerminal()
      */
     public static final List<ExecuteState> CANCELABLE_LIST = ImmutableList.of(WAITING, EXECUTING, PAUSED);
@@ -138,13 +139,8 @@ public enum ExecuteState implements IntValue<ExecuteState> {
     }
 
     public static ExecuteState of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Execute state cannot be null.");
-        }
         ExecuteState executeState = MAPPING.get(value);
-        if (executeState == null) {
-            throw new IllegalArgumentException("Invalid execute state: " + value);
-        }
+        Assert.notNull(executeState, () -> "Invalid execute state: " + value);
         return executeState;
     }
 

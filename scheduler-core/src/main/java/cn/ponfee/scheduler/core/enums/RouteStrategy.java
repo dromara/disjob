@@ -13,6 +13,7 @@ import cn.ponfee.scheduler.common.util.Enums;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.core.route.*;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -71,13 +72,8 @@ public enum RouteStrategy implements IntValue<RouteStrategy> {
     }
 
     public static RouteStrategy of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Route strategy cannot be null.");
-        }
         RouteStrategy routeStrategy = MAPPING.get(value);
-        if (routeStrategy == null) {
-            throw new IllegalArgumentException("Invalid route strategy: " + value);
-        }
+        Assert.notNull(routeStrategy, () -> "Invalid route strategy: " + value);
         return routeStrategy;
     }
 

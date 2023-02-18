@@ -89,7 +89,6 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                     }
                 }
             }
-
         }
 
         stopped.compareAndSet(false, true);

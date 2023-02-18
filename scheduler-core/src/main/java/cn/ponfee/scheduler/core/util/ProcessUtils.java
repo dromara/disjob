@@ -69,13 +69,12 @@ public class ProcessUtils {
 
     private static void read(InputStream input, Charset charset, Consumer<String> consumer) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, charset))) {
+            String line;
             while (!Thread.currentThread().isInterrupted()) {
-                String line = reader.readLine();
-                if (line == null) {
+                if ((line = reader.readLine()) == null) {
                     return;
-                } else {
-                    consumer.accept(line);
                 }
+                consumer.accept(line);
             }
         } catch (IOException e) {
             consumer.accept("Read output error: " + ExceptionUtils.getStackTrace(e));

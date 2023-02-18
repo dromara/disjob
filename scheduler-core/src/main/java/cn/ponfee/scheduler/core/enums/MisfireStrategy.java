@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.core.enums;
 
 import cn.ponfee.scheduler.common.base.IntValue;
 import cn.ponfee.scheduler.common.util.Enums;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 
@@ -52,13 +53,8 @@ public enum MisfireStrategy implements IntValue<MisfireStrategy> {
     }
 
     public static MisfireStrategy of(Integer value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Misfire strategy cannot be null.");
-        }
         MisfireStrategy misfireStrategy = MAPPING.get(value);
-        if (misfireStrategy == null) {
-            throw new IllegalArgumentException("Invalid misfire strategy: " + value);
-        }
+        Assert.notNull(misfireStrategy, () -> "Invalid misfire strategy: " + value);
         return misfireStrategy;
     }
 }

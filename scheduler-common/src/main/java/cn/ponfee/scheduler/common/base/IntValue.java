@@ -22,7 +22,9 @@ public interface IntValue<T extends Enum<T> & IntValue<T>> {
     }
 
     default boolean equals(T other) {
-        return other != null && value() == other.value();
+        return other != null
+            && getClass() == other.getClass()
+            && value() == other.value();
     }
 
     static <T extends Enum<T> & IntValue<T>> T of(Class<T> type, Integer value) {

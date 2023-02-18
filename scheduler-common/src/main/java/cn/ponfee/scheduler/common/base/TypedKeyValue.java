@@ -24,8 +24,6 @@ public interface TypedKeyValue<K, V> {
 
     V getValue(K key);
 
-    V removeKey(K key);
-
     default boolean hasKey(K key) {
         return getValue(key) != null;
     }
@@ -54,14 +52,6 @@ public interface TypedKeyValue<K, V> {
         return Objects.toString(getValue(key), defaultVal);
     }
 
-    default String removeString(K key) {
-        return removeString(key, null);
-    }
-
-    default String removeString(K key, String defaultVal) {
-        return Objects.toString(removeKey(key), defaultVal);
-    }
-
     // --------------------------------------------------------boolean
     default boolean getRequiredBoolean(K key) {
         Object value = getValue(key);
@@ -86,14 +76,6 @@ public interface TypedKeyValue<K, V> {
         return Numbers.toWrapBoolean(getValue(key));
     }
 
-    default boolean removeBoolean(K key, boolean defaultValue) {
-        return Numbers.toBoolean(removeKey(key), defaultValue);
-    }
-
-    default Boolean removeBoolean(K key) {
-        return Numbers.toWrapBoolean(removeKey(key));
-    }
-
     // --------------------------------------------------------------int
     default int getRequiredInt(K key) {
         return getRequired(key, Numbers::toInt);
@@ -105,14 +87,6 @@ public interface TypedKeyValue<K, V> {
 
     default Integer getInt(K key) {
         return Numbers.toWrapInt(getValue(key));
-    }
-
-    default int removeInt(K key, int defaultValue) {
-        return Numbers.toInt(removeKey(key), defaultValue);
-    }
-
-    default Integer removeInt(K key) {
-        return Numbers.toWrapInt(removeKey(key));
     }
 
     // --------------------------------------------------------------long
@@ -128,14 +102,6 @@ public interface TypedKeyValue<K, V> {
         return Numbers.toWrapLong(getValue(key));
     }
 
-    default long removeLong(K key, long defaultValue) {
-        return Numbers.toLong(removeKey(key), defaultValue);
-    }
-
-    default Long removeLong(K key) {
-        return Numbers.toWrapLong(removeKey(key));
-    }
-
     // --------------------------------------------------------------float
     default float getRequiredFloat(K key) {
         return getRequired(key, Numbers::toFloat);
@@ -147,14 +113,6 @@ public interface TypedKeyValue<K, V> {
 
     default Float getFloat(K key) {
         return Numbers.toWrapFloat(getValue(key));
-    }
-
-    default float removeFloat(K key, float defaultValue) {
-        return Numbers.toFloat(removeKey(key), defaultValue);
-    }
-
-    default Float removeFloat(K key) {
-        return Numbers.toWrapFloat(removeKey(key));
     }
 
     // --------------------------------------------------------------double
@@ -169,14 +127,6 @@ public interface TypedKeyValue<K, V> {
 
     default Double getDouble(K key) {
         return Numbers.toWrapDouble(getValue(key));
-    }
-
-    default double removeDouble(K key, double defaultValue) {
-        return Numbers.toDouble(removeKey(key), defaultValue);
-    }
-
-    default Double removeDouble(K key) {
-        return Numbers.toWrapDouble(removeKey(key));
     }
 
     // ---------------------------------------------------- methods

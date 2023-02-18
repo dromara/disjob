@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.worker.base;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import org.springframework.util.Assert;
 
 /**
  * Timing wheel for execute sched task.
@@ -25,9 +26,8 @@ public class TaskTimingWheel extends TimingWheel<ExecuteParam> {
 
     @Override
     protected boolean verify(ExecuteParam param) {
-        if (param.getWorker() == null) {
-            throw new IllegalArgumentException("Worker cannot be null.");
-        }
+        Assert.notNull(param.getWorker(), "Worker cannot be null.");
         return true;
     }
+
 }

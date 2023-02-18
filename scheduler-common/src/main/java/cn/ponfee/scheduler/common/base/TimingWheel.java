@@ -136,7 +136,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
      * @return if {@code true} verify success
      */
     protected boolean verify(T timing) {
-        return true;
+        return timing != null;
     }
 
     public final boolean offer(T timing) {

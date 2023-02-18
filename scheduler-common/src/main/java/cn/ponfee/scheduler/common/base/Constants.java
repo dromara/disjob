@@ -39,6 +39,16 @@ public class Constants {
     /**
      * Dot symbol
      */
-    public static final String DOT = ".";
+    public static final char DOT = '.';
+
+    /**
+     * Hyphen symbol
+     */
+    public static final char HYPHEN = '-';
+
+    /**
+     * Slash symbol
+     */
+    public static final char SLASH = '/';
 
 }

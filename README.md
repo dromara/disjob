@@ -170,3 +170,6 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB
 - [ ] 本机多网卡时，绑定网卡的host ip获取
+
+## Stargazers over time
+[![Stargazers over time](https://starchart.cc/ponfee/distributed-scheduler.svg)](https://starchart.cc/ponfee/distributed-scheduler)

@@ -91,7 +91,7 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new LocalizedMethodArgumentResolver());
+        resolvers.add(new LocalizedMethodArgumentResolver(objectMapper()));
     }
 
     @Override

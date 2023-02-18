@@ -34,11 +34,11 @@ public class MavenProjects {
         return new File(getMainJavaPath("") + clazz.getCanonicalName().replace('.', '/') + ".java");
     }
 
-    public static byte[] getMainJavaFileAsByteArray(Class<?> clazz) {
+    public static byte[] getMainJavaFileAsBytes(Class<?> clazz) {
         return Files.toByteArray(MavenProjects.getMainJavaFile(clazz));
     }
 
-    public static String getMainJavaFileAsLineString(Class<?> clazz) {
+    public static String getMainJavaFileAsString(Class<?> clazz) {
         return Files.toString(MavenProjects.getMainJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
@@ -46,11 +46,11 @@ public class MavenProjects {
         return new File(getTestJavaPath("") + clazz.getCanonicalName().replace('.', '/') + ".java");
     }
 
-    public static byte[] getTestJavaFileAsByteArray(Class<?> clazz) {
+    public static byte[] getTestJavaFileAsBytes(Class<?> clazz) {
         return Files.toByteArray(MavenProjects.getTestJavaFile(clazz));
     }
 
-    public static String getTestJavaFileAsLineString(Class<?> clazz) {
+    public static String getTestJavaFileAsString(Class<?> clazz) {
         return Files.toString(MavenProjects.getTestJavaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
@@ -75,11 +75,11 @@ public class MavenProjects {
         return new File(getMainScalaPath("") + clazz.getCanonicalName().replace('.', '/') + ".scala");
     }
 
-    public static byte[] getMainScalaFileAsByteArray(Class<?> clazz) {
+    public static byte[] getMainScalaFileAsBytes(Class<?> clazz) {
         return Files.toByteArray(MavenProjects.getMainScalaFile(clazz));
     }
 
-    public static String getMainScalaFileAsLineString(Class<?> clazz) {
+    public static String getMainScalaFileAsString(Class<?> clazz) {
         return Files.toString(MavenProjects.getMainScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 
@@ -87,11 +87,11 @@ public class MavenProjects {
         return new File(getTestScalaPath("") + clazz.getCanonicalName().replace('.', '/') + ".scala");
     }
 
-    public static byte[] getTestScalaFileAsByteArray(Class<?> clazz) {
+    public static byte[] getTestScalaFileAsBytes(Class<?> clazz) {
         return Files.toByteArray(MavenProjects.getTestScalaFile(clazz));
     }
 
-    public static String getTestScalaFileAsLineString(Class<?> clazz) {
+    public static String getTestScalaFileAsString(Class<?> clazz) {
         return Files.toString(MavenProjects.getTestScalaFile(clazz)).replaceAll(EXCLUSION_STRING, "");
     }
 

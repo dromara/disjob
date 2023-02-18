@@ -17,13 +17,13 @@ import cn.ponfee.scheduler.common.util.Jsons;
  */
 public abstract class ToJsonString {
 
-    @Override
-    public final String toString() {
-        return toJsonString();
+    public final String toJson() {
+        return Jsons.toJson(this);
     }
 
-    public final String toJsonString() {
-        return Jsons.toJson(this);
+    @Override
+    public final String toString() {
+        return toJson();
     }
 
 }
