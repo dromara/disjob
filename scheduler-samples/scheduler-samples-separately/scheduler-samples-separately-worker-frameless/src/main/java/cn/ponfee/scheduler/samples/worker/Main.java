@@ -25,7 +25,7 @@ import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.scheduler.registry.redis.configuration.RedisRegistryProperties;
-import cn.ponfee.scheduler.samples.common.util.Constants;
+import cn.ponfee.scheduler.samples.common.util.SampleConstants;
 import cn.ponfee.scheduler.samples.worker.redis.AbstractRedisTemplateCreator;
 import cn.ponfee.scheduler.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.scheduler.worker.WorkerStartup;
@@ -57,7 +57,7 @@ import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
 public class Main {
 
     static {
-        System.setProperty(Constants.APP_NAME, "frameless-worker");
+        System.setProperty(SampleConstants.APP_NAME, "frameless-worker");
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);

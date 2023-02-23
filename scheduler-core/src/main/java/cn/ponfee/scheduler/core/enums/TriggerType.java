@@ -8,8 +8,8 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.Symbol.Str;
 import cn.ponfee.scheduler.common.date.CronExpression;
 import cn.ponfee.scheduler.common.date.DatePeriods;
 import cn.ponfee.scheduler.common.date.Dates;
@@ -172,7 +172,7 @@ public enum TriggerType implements IntValue<TriggerType> {
                 return false;
             }
             try {
-                long count = Arrays.stream(triggerValue.split(Constants.COMMA))
+                long count = Arrays.stream(triggerValue.split(Str.COMMA))
                     .filter(StringUtils::isNotBlank)
                     .map(String::trim)
                     .map(Long::parseLong)

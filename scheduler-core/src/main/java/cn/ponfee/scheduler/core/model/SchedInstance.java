@@ -40,6 +40,8 @@ public class SchedInstance extends BaseEntity implements Serializable {
 
     /**
      * sched_job.job_id
+     *
+     * @see SchedJob#getJobId()
      */
     private Long jobId;
 

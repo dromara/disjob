@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.samples.supervisor;
 
 import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.samples.common.AbstractSchedulerSamplesApplication;
-import cn.ponfee.scheduler.samples.common.util.Constants;
+import cn.ponfee.scheduler.samples.common.util.SampleConstants;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.Import;
@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Import;
 public class SupervisorApplication extends AbstractSchedulerSamplesApplication {
 
     static {
-        System.setProperty(Constants.APP_NAME, "separately-supervisor");
+        System.setProperty(SampleConstants.APP_NAME, "separately-supervisor");
     }
 
     public static void main(String[] args) {

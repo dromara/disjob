@@ -24,7 +24,7 @@ public class DelayedData<E> implements Delayed {
     private final long fireTime;
     private final E data;
 
-    public DelayedData(E data, long delayInMilliseconds) {
+    private DelayedData(E data, long delayInMilliseconds) {
         this.data = Objects.requireNonNull(data);
         this.fireTime = System.currentTimeMillis() + delayInMilliseconds;
     }

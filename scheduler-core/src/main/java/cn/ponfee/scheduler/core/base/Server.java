@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.base;
 
-import cn.ponfee.scheduler.common.base.Constants;
+import cn.ponfee.scheduler.common.base.Symbol.Str;
 import lombok.Getter;
 import org.springframework.util.Assert;
 
@@ -36,7 +36,7 @@ public abstract class Server implements Serializable {
     protected final int port;
 
     public Server(String host, int port) {
-        Assert.isTrue(!host.contains(Constants.COLON), "Host cannot contains symbol ':'");
+        Assert.isTrue(!host.contains(Str.COLON), "Host cannot contains symbol ':'");
         this.host = host;
         this.port = port;
     }

@@ -18,7 +18,7 @@ public class JobConstants {
     /**
      * Process batch size
      */
-    public static final int PROCESS_BATCH_SIZE = 200;
+    public static final int PROCESS_BATCH_SIZE = 500;
 
     /**
      * Spring web server port

@@ -28,6 +28,8 @@ import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
  *
  * SELECT VERSION()  ->  8.0.27
  *
+ * dependency maven junit:junit
+ *
  * username: root
  * password: 无需密码
  * </pre>
@@ -58,7 +60,7 @@ public class EmbeddedMysqlServerTestcontainers {
             //mySQLContainer.execInContainer("mysqld --skip-grant-tables");
 
             /*
-            // the script-path only use for log, so here set to empty string
+            // the script-path only use for log, so here can set to an empty string value
             String scriptPath = "";
             String jdbcUrlParameter = "?useSSL=false&connectTimeout=2000&socketTimeout=5000";
             String scriptContent = DBTools.loadScript();

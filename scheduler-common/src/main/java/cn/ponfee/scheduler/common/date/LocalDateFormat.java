@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.common.date;
 
-import cn.ponfee.scheduler.common.base.Constants;
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -59,9 +59,9 @@ public class LocalDateFormat {
                 return LocalDate.parse(source, PATTERN_01);
             case 10:
                 char c = source.charAt(4);
-                if (c == Constants.HYPHEN) {
+                if (c == Char.HYPHEN) {
                     return LocalDate.parse(source, PATTERN_02);
-                } else if (c == Constants.SLASH) {
+                } else if (c == Char.SLASH) {
                     return LocalDate.parse(source, PATTERN_03);
                 }
                 break;

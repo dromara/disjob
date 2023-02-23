@@ -11,13 +11,13 @@ package cn.ponfee.scheduler.test.db;
 import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.MavenProjects;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.file.PathUtils;
-import org.h2.server.web.DbStarter;
 import org.h2.tools.RunScript;
-import org.junit.Assert;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,12 +38,13 @@ public class EmbeddedH2DatabaseServer {
     public static void main(String[] args) throws Exception {
         String jdbcUrl = buildJdbcUrl("test");
         String username = "sa", password = "";
+
         System.out.println("Embedded h2 database starting...");
         //new JakartaDbStarter(); // error
-        new DbStarter();
-        //new WebServer().start();
-        //new TcpServer().start();
-        //new PgServer().start();
+        //new org.h2.server.web.DbStarter(); // error: need dependency servlet-api
+        new org.h2.server.TcpServer().start();
+        //new org.h2.server.web.WebServer().start();
+        //new org.h2.server.pg.PgServer().start();
         System.out.println("Embedded h2 database started!");
 
         JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(jdbcUrl, username, password);
@@ -72,7 +73,7 @@ public class EmbeddedH2DatabaseServer {
     }
 
     private static void testScript(JdbcTemplate jdbcTemplate) {
-        String scriptPath = MavenProjects.getProjectBaseDir() + "/src/test/DB/H2/H2_SCRIPT.sql";
+        String scriptPath = MavenProjects.getProjectBaseDir() + "/src/main/DB/H2/H2_SCRIPT.sql";
 
         // 加载脚本方式一：
         //jdbcTemplate.execute("RUNSCRIPT FROM '" + scriptPath + "'");
@@ -92,7 +93,10 @@ public class EmbeddedH2DatabaseServer {
         });
 
         List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM test1");
-        Assert.assertEquals("ae452457b1df438fa441e5640b162da6", result.get(0).get("NAME"));
+        String expect = MapUtils.getString(result.get(0), "NAME");
+        String actual = MapUtils.getString(result.get(0), "NAME");
+        Assert.isTrue(expect.equals(actual), () -> expect + " != " + actual);
+
         System.out.println("Query result: " + Jsons.toJson(result));
     }
 

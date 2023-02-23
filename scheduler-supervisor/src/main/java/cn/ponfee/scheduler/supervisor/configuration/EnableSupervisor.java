@@ -8,7 +8,6 @@
 
 package cn.ponfee.scheduler.supervisor.configuration;
 
-import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.lock.DoInDatabaseLocked;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
@@ -20,6 +19,7 @@ import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.SupervisorStartup;
+import cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig;
 import cn.ponfee.scheduler.supervisor.base.SupervisorConstants;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
 import cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig;
@@ -117,17 +117,17 @@ public @interface EnableSupervisor {
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public DoInLocked scanTriggeringJobLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanTriggeringJobLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_INSTANCE);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public DoInLocked scanRunningInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + Constants.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanRunningInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
         }
 

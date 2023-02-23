@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.common.date;
 
-import cn.ponfee.scheduler.common.base.Constants;
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.time.Instant;
@@ -87,10 +87,10 @@ public class LocalDateTimeFormat {
                 return LocalDateTime.parse(source + "000000", PATTERN_01);
             case 10:
                 char c = source.charAt(4);
-                if (c == Constants.HYPHEN) {
+                if (c == Char.HYPHEN) {
                     // yyyy-MM-dd
                     return LocalDateTime.parse(source + " 00:00:00", PATTERN_11);
-                } else if (c == Constants.SLASH) {
+                } else if (c == Char.SLASH) {
                     // yyyy/MM/dd
                     return LocalDateTime.parse(source + " 00:00:00", PATTERN_12);
                 } else if (JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {

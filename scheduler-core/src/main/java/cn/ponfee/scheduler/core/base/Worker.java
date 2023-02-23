@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.core.base;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.Numbers;
-import cn.ponfee.scheduler.common.util.ObjectUtils;
+import cn.ponfee.scheduler.core.model.SchedJob;
 import com.alibaba.fastjson.annotation.JSONType;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 
-import static cn.ponfee.scheduler.common.base.Constants.COLON;
+import static cn.ponfee.scheduler.common.base.Symbol.Str.COLON;
 import static cn.ponfee.scheduler.common.util.Collects.get;
 
 /**
@@ -40,7 +41,9 @@ public final class Worker extends Server {
     private static final long serialVersionUID = 8981019172872301692L;
 
     /**
-     * Group name, @see SchedJob#getJobGroup()
+     * Group name
+     *
+     * @see SchedJob#getJobGroup()
      */
     private final String group;
 
@@ -134,7 +137,7 @@ public final class Worker extends Server {
             if (GenericUtils.getRawType(type) != Worker.class) {
                 throw new UnsupportedOperationException("Cannot supported deserialize type: " + type);
             }
-            return castToWorker(parser.parseObject());
+            return of(parser.parseObject());
         }
 
         @Override
@@ -151,18 +154,19 @@ public final class Worker extends Server {
     public static class JacksonDeserializer extends JsonDeserializer<Worker> {
         @Override
         public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return castToWorker(p.readValueAs(Jsons.MAP_NORMAL));
+            return of(p.readValueAs(Jsons.MAP_NORMAL));
         }
     }
 
-    public static Worker castToWorker(Map<String, Object> map) {
+    public static Worker of(Map<String, ?> map) {
         if (map == null) {
             return null;
         }
-        String group = ObjectUtils.cast(map.get("group"), String.class);
-        String workerId = ObjectUtils.cast(map.get("workerId"), String.class);
-        String host = ObjectUtils.cast(map.get("host"), String.class);
-        int port = ObjectUtils.cast(map.get("port"), int.class);
+
+        String group = MapUtils.getString(map, "group");
+        String workerId = MapUtils.getString(map, "workerId");
+        String host = MapUtils.getString(map, "host");
+        int port = MapUtils.getIntValue(map, "port");
         return new Worker(group, workerId, host, port);
     }
 
@@ -170,7 +174,7 @@ public final class Worker extends Server {
      * Holder the current worker context.
      */
     private static class Current {
-        private static Worker current;
+        private static volatile Worker current;
 
         // need to use reflection do set
         // use synchronized modify for help multiple thread read reference(write to main memory)

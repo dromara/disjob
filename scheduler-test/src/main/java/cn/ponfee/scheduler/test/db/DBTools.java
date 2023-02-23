@@ -15,8 +15,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Assert;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.Assert;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -74,7 +74,10 @@ public class DBTools {
             result.add(resultSet.getString(1));
         }
 
-        Assert.assertTrue(CollectionUtils.isEqualCollection(data, result));
+        Assert.isTrue(
+            CollectionUtils.isEqualCollection(data, result),
+            () -> Jsons.toJson(data) + " != " + Jsons.toJson(result)
+        );
 
         stat.execute("DROP TABLE IF EXISTS test");
         conn.close();
@@ -92,7 +95,10 @@ public class DBTools {
         }
 
         List<String> result = jdbcTemplate.queryForList("SELECT `name` FROM test ORDER BY id ASC", String.class);
-        Assert.assertTrue(CollectionUtils.isEqualCollection(data, result));
+        Assert.isTrue(
+            CollectionUtils.isEqualCollection(data, result),
+            () -> Jsons.toJson(data) + " != " + Jsons.toJson(result)
+        );
 
         jdbcTemplate.execute("DROP TABLE IF EXISTS test");
     }
@@ -101,13 +107,16 @@ public class DBTools {
         String version = jdbcTemplate.queryForObject("SELECT VERSION()", String.class);
         System.out.println("Version: " + version);
 
-        Integer value = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
-        Assert.assertEquals(1, (int) value);
+        int expect = 1;
+        Integer actual = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
+        Assert.isTrue(expect == actual, () -> expect + " != " + actual);
     }
 
     public static void testQuerySchedJob(JdbcTemplate jdbcTemplate) {
         List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM sched_job ORDER BY id ASC");
-        Assert.assertEquals(3988904755200L, Numbers.toLong(result.get(0).get("job_id")));
+        long expect = 3988904755200L;
+        long actual = Numbers.toLong(result.get(0).get("job_id"));
+        Assert.isTrue(expect == actual, () -> expect + " != " + actual);
         System.out.println("Query result: " + Jsons.toJson(result));
     }
 

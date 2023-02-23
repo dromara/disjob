@@ -40,6 +40,7 @@ public interface TypedKeyValue<K, V> {
     }
 
     // --------------------------------------------------------string
+
     default String getRequiredString(K key) {
         return getRequired(key, Object::toString);
     }
@@ -53,6 +54,7 @@ public interface TypedKeyValue<K, V> {
     }
 
     // --------------------------------------------------------boolean
+
     default boolean getRequiredBoolean(K key) {
         Object value = getValue(key);
         if (value instanceof Boolean) {
@@ -77,6 +79,7 @@ public interface TypedKeyValue<K, V> {
     }
 
     // --------------------------------------------------------------int
+
     default int getRequiredInt(K key) {
         return getRequired(key, Numbers::toInt);
     }
@@ -90,6 +93,7 @@ public interface TypedKeyValue<K, V> {
     }
 
     // --------------------------------------------------------------long
+
     default long getRequiredLong(K key) {
         return getRequired(key, Numbers::toLong);
     }
@@ -103,6 +107,7 @@ public interface TypedKeyValue<K, V> {
     }
 
     // --------------------------------------------------------------float
+
     default float getRequiredFloat(K key) {
         return getRequired(key, Numbers::toFloat);
     }
@@ -116,6 +121,7 @@ public interface TypedKeyValue<K, V> {
     }
 
     // --------------------------------------------------------------double
+
     default double getRequiredDouble(K key) {
         return getRequired(key, Numbers::toDouble);
     }
@@ -129,7 +135,8 @@ public interface TypedKeyValue<K, V> {
         return Numbers.toWrapDouble(getValue(key));
     }
 
-    // ---------------------------------------------------- methods
+    // ----------------------------------------------------other methods
+
     default <R> R getRequired(K key, Function<V, R> mapper) {
         V value = getValue(key);
         if (value == null) {

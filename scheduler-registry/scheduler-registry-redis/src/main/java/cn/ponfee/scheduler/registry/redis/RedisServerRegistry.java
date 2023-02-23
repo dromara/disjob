@@ -28,7 +28,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.scheduler.common.base.Constants.COLON;
+import static cn.ponfee.scheduler.common.base.Symbol.Str.COLON;
 
 /**
  * Registry server based redis.
@@ -71,7 +71,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
         this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_server_registry", true));
-        this.registryScheduledExecutor.scheduleWithFixedDelay(() -> {
+
+        registryScheduledExecutor.scheduleWithFixedDelay(() -> {
             if (closed.get()) {
                 return;
             }

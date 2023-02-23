@@ -8,8 +8,10 @@
 
 package cn.ponfee.scheduler.test.redis;
 
-import org.junit.Assert;
+import cn.ponfee.scheduler.common.util.Jsons;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
@@ -64,7 +66,10 @@ public final class EmbeddedRedisServerTestcontainers {
 
             dockerRedisContainer.execInContainer("redis-cli", "config set requirepass 123456");
 
-            Assert.assertEquals(PORT_BINDINGS, dockerRedisContainer.getPortBindings());
+            Assert.isTrue(
+                CollectionUtils.isEqualCollection(PORT_BINDINGS, dockerRedisContainer.getPortBindings()),
+                () -> Jsons.toJson(PORT_BINDINGS) + "!=" + Jsons.toJson(dockerRedisContainer.getPortBindings())
+            );
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();

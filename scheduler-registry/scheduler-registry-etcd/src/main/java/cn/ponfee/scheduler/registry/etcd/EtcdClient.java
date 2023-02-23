@@ -76,11 +76,11 @@ public class EtcdClient implements AutoCloseable {
      */
     private final Client client;
 
-    private final ScheduledExecutorService healthCheckScheduler;
+    private final ScheduledExecutorService healthCheckScheduler = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("health_check_scheduler", true));
 
-    private final Map<String, Pair<Watch.Watcher, ChildChangedListener>> childWatchers;
+    private final Map<String, Pair<Watch.Watcher, ChildChangedListener>> childWatchers = new HashMap<>();
 
-    private final Set<ConnectionStateListener<EtcdClient>> connectionStateListeners;
+    private final Set<ConnectionStateListener<EtcdClient>> connectionStateListeners = ConcurrentHashMap.newKeySet();
 
     private volatile boolean lastConnectState;
 
@@ -90,11 +90,6 @@ public class EtcdClient implements AutoCloseable {
             .endpoints(config.endpoints())
             .maxInboundMessageSize(config.getMaxInboundMessageSize())
             .build();
-
-        this.healthCheckScheduler = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("health_check_scheduler", true));
-        this.childWatchers = new HashMap<>();
-        this.connectionStateListeners = ConcurrentHashMap.newKeySet();
-
         this.lastConnectState = isConnected();
 
         healthCheckScheduler.scheduleWithFixedDelay(() -> {

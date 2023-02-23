@@ -13,7 +13,7 @@ package cn.ponfee.scheduler.samples.common.util;
  *
  * @author Ponfee
  */
-public class Constants {
+public class SampleConstants {
 
     public static final String APP_NAME = "app.name";
 }

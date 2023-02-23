@@ -37,7 +37,8 @@ public final class ArrayHashKey implements java.io.Serializable, Comparable<Arra
         if (other == this) {
             return true;
         }
-        return other instanceof ArrayHashKey && Arrays.equals(key, ((ArrayHashKey) other).key);
+        return (other instanceof ArrayHashKey)
+            && Arrays.equals(key, ((ArrayHashKey) other).key);
     }
 
     @Override

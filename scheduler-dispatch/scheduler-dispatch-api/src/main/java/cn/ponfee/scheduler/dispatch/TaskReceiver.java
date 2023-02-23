@@ -10,7 +10,8 @@ package cn.ponfee.scheduler.dispatch;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
-import org.springframework.util.Assert;
+
+import java.util.Objects;
 
 /**
  * Worker receive dispatched task from supervisor.
@@ -22,8 +23,7 @@ public abstract class TaskReceiver implements AutoCloseable {
     private final TimingWheel<ExecuteParam> timingWheel;
 
     public TaskReceiver(TimingWheel<ExecuteParam> timingWheel) {
-        Assert.notNull(timingWheel, "Timing wheel cannot null.");
-        this.timingWheel = timingWheel;
+        this.timingWheel = Objects.requireNonNull(timingWheel);
     }
 
     /**

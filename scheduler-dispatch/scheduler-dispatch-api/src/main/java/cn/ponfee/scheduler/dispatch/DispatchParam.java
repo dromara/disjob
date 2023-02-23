@@ -11,6 +11,8 @@ package cn.ponfee.scheduler.dispatch;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
+import java.util.StringJoiner;
+
 /**
  * Dispatch param
  *
@@ -51,11 +53,12 @@ class DispatchParam {
 
     @Override
     public String toString() {
-        return "DispatchParam{" +
-            "executeParam=" + executeParam +
-            ", group='" + group + '\'' +
-            ", routeStrategy=" + routeStrategy +
-            ", retried=" + retried +
-            '}';
+        return new StringJoiner(", ", DispatchParam.class.getSimpleName() + "[", "]")
+            .add("executeParam=" + executeParam)
+            .add(group == null ? "group=null" : "group='" + group + "'")
+            .add("routeStrategy=" + routeStrategy)
+            .add("retried=" + retried)
+            .toString();
     }
+
 }

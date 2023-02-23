@@ -286,7 +286,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     /**
      * Task executed finished, then return the worker thread to idle pool.
      * <p>Called this method current thread is WorkerThread
-     * 
+     *
      * @param workerThread the worker thread
      * @return {@code true} if return to idle pool successfully
      */
@@ -423,7 +423,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         // update to 'null' operations
         if (!param.updateOperation(currentOps, null)) {
             LOG.warn(
-                "Change execution param operation conflict: {} | {} | {} | {}", 
+                "Change execution param operation conflict: {} | {} | {} | {}",
                 param.getTaskId(), currentOps, param.operation(), targetState
             );
             return false;

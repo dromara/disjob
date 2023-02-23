@@ -34,6 +34,8 @@ public class SchedTask extends BaseEntity implements Serializable {
 
     /**
      * sched_instance.instance_id
+     *
+     * @see SchedInstance#getInstanceId()
      */
     private Long instanceId;
 

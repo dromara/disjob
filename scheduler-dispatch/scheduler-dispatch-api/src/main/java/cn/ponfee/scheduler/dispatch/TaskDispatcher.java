@@ -20,6 +20,7 @@ import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.registry.Discovery;
 import com.google.common.math.IntMath;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -77,6 +78,9 @@ public abstract class TaskDispatcher implements AutoCloseable {
      * @return {@code true} if the first dispatch successful
      */
     public final boolean dispatch(List<ExecuteParam> executeParams) {
+        if (CollectionUtils.isEmpty(executeParams)) {
+            return false;
+        }
         List<DispatchParam> list = executeParams.stream()
             .peek(e -> Assert.notNull(e.getWorker(), "Dispatching execute param worker cannot be null."))
             .peek(e -> Assert.isTrue(e.operation() != Operations.TRIGGER, "Dispatching execute param operation cannot be TRIGGER."))
@@ -94,6 +98,9 @@ public abstract class TaskDispatcher implements AutoCloseable {
      * @return {@code true} if the first dispatch successful
      */
     public final boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
+        if (CollectionUtils.isEmpty(tasks)) {
+            return false;
+        }
         List<DispatchParam> dispatchParams = new ArrayList<>(tasks.size());
         for (SchedTask task : tasks) {
             ExecuteParam executeParam = new ExecuteParam(
@@ -180,7 +187,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
         }
 
         dispatchParam.retrying();
-        asyncDelayedExecutor.put(new DelayedData<>(dispatchParam, 1000L * IntMath.pow(dispatchParam.retried(), 2)));
+        asyncDelayedExecutor.put(DelayedData.of(dispatchParam, 1000L * IntMath.pow(dispatchParam.retried(), 2)));
     }
 
 }

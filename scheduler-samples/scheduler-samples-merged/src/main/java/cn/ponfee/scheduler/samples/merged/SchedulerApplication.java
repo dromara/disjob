@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.samples.merged;
 
 import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.samples.common.AbstractSchedulerSamplesApplication;
-import cn.ponfee.scheduler.samples.common.util.Constants;
+import cn.ponfee.scheduler.samples.common.util.SampleConstants;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Import;
 public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
 
     static {
-        System.setProperty(Constants.APP_NAME, "merged-scheduler");
+        System.setProperty(SampleConstants.APP_NAME, "merged-scheduler");
     }
 
     public static void main(String[] args) {

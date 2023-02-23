@@ -8,9 +8,9 @@
 
 package cn.ponfee.scheduler.supervisor.manager;
 
-import cn.ponfee.scheduler.common.base.Constants;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
+import cn.ponfee.scheduler.common.base.Symbol.Str;
 import cn.ponfee.scheduler.common.base.tuple.Tuple3;
 import cn.ponfee.scheduler.common.spring.MarkRpcController;
 import cn.ponfee.scheduler.common.spring.TransactionUtils;
@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.scheduler.common.base.Constants.TX_MANAGER_SUFFIX;
+import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_SUFFIX;
 import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NAME;
 
 /**
@@ -467,8 +467,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         // update waiting task
         taskMapper.updateStateByInstanceId(
             instanceId,
-            ExecuteState.PAUSED.value(), 
-            Collections.singletonList(ExecuteState.WAITING.value()), 
+            ExecuteState.PAUSED.value(),
+            Collections.singletonList(ExecuteState.WAITING.value()),
             null
         );
 
@@ -494,8 +494,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             if (toRunState.isTerminal()) {
                 row = instanceMapper.terminate(
                     instanceId,
-                    toRunState.value(), 
-                    Collections.singletonList(runState.value()), 
+                    toRunState.value(),
+                    Collections.singletonList(runState.value()),
                     new Date()
                 );
             } else {
@@ -529,9 +529,9 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
 
         int row = taskMapper.updateState(
-            param.getTaskId(), 
-            ExecuteState.PAUSED.value(), 
-            ExecuteState.EXECUTING.value(), 
+            param.getTaskId(),
+            ExecuteState.PAUSED.value(),
+            ExecuteState.EXECUTING.value(),
             errorMsg,
             null
         );
@@ -581,7 +581,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         taskMapper.updateStateByInstanceId(
             instanceId,
             operation.targetState().value(),
-            EXECUTABLE_EXECUTE_STATE_LIST, 
+            EXECUTABLE_EXECUTE_STATE_LIST,
             new Date()
         );
 
@@ -596,8 +596,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             RunState toRunState = failure ? RunState.CANCELED : RunState.FINISHED;
             int row = instanceMapper.terminate(
                 instanceId,
-                toRunState.value(), 
-                Collections.singletonList(runState.value()), 
+                toRunState.value(),
+                Collections.singletonList(runState.value()),
                 new Date()
             );
             if (row != AFFECTED_ONE_ROW) {
@@ -677,8 +677,8 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
         row = taskMapper.updateStateByInstanceId(
             instanceId,
-            ExecuteState.WAITING.value(), 
-            Collections.singletonList(ExecuteState.PAUSED.value()), 
+            ExecuteState.WAITING.value(),
+            Collections.singletonList(ExecuteState.PAUSED.value()),
             null
         );
         Assert.state(row >= AFFECTED_ONE_ROW, "Resume sched task failed.");
@@ -928,7 +928,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         );
 
         if (triggerType == TriggerType.DEPEND) {
-            List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Constants.COMMA))
+            List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Str.COMMA))
                                             .filter(StringUtils::isNotBlank)
                                             .map(e -> Long.parseLong(e.trim()))
                                             .distinct()
@@ -949,7 +949,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             dependMapper.insertBatch(
                 parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList())
             );
-            job.setTriggerValue(Joiner.on(Constants.COMMA).join(parentJobIds));
+            job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
             Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), date);

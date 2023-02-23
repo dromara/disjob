@@ -18,6 +18,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -37,17 +38,15 @@ import java.util.Date;
 @SpringBootTest(classes = SchedulerApplication.class)
 */
 
-// 使用的是org.junit.jupiter.api.extension.ExtendWith，
-// 所以如果用例要运行在spring容器环境中，就必须使用"@org.junit.jupiter.api.Test"
-@ExtendWith(SpringExtension.class)
+// 测试类(方法)要使用“@org.junit.jupiter.api.Test”来注解
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
 @SpringBootTest(
     //webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    // spring-boot-maven-plugin插件编译打包，故无法引用到类SchedulerApplication.class
     classes = SpringBootTestBase.Application.class
 )
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 //@ContextConfiguration(classes = { XXX.class })
-//@ActiveProfiles({"STG"})
+//@ActiveProfiles({"DEV"})
 public abstract class SpringBootTestBase<T> {
 
     static {

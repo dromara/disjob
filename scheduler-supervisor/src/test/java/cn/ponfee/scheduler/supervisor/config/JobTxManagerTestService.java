@@ -18,8 +18,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Arrays;
 
-import static cn.ponfee.scheduler.common.base.Constants.TX_MANAGER_SUFFIX;
-import static cn.ponfee.scheduler.common.base.Constants.TX_TEMPLATE_SUFFIX;
+import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_SUFFIX;
+import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_TEMPLATE_SUFFIX;
 import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NAME;
 
 /**

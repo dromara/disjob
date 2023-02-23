@@ -9,42 +9,6 @@
   <version>${revision}</version>
   <packaging>pom</packaging>
 
-  <!--
-    参考文章：https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid
-
-    发布命令：
-      1.1）deploy方式：mvn -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U
-      2.1）release交互模式：
-          | ```bash
-          | mvn release:update-versions \
-          |   -B \
-          |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.10-SNAPSHOT \
-          | && \
-          | mvn release:prepare release:perform \
-          |   -Prelease \
-          |   -Darguments="-Dcheckstyle.skip=true"
-          | ```
-      2.2）release非交互式：
-          | ```bash
-          | mvn release:update-versions \
-          |   -B \
-          |   -\-batch-mode \
-          |   -DdevelopmentVersion=1.10-SNAPSHOT \
-          | && \
-          | mvn release:prepare release:perform \
-          |   -Prelease \
-          |   -Darguments="-Dcheckstyle.skip=true" \
-          |   -DreleaseVersion=1.10 \
-          |   -Dtag=v1.10 \
-          |   -DdevelopmentVersion=1.10-SNAPSHOT
-          | ```
-
-    注意事项：
-      1）使用“mvnw”命令需要确认“~/.m2”目录下是否有settings.xml文件且正确配置<server>元素
-      2）release版本deploy完后还需要在“s01.oss.sonatype.org”页面上手动操作：“Staging Repositories” -> “Close” -> “Release”
-  -->
-
   <name>Distributed Scheduler</name>
   <description>A distributed task scheduling framework</description>
   <url>https://github.com/ponfee/distributed-scheduler</url>
@@ -68,16 +32,7 @@
     <url>https://github.com/ponfee/distributed-scheduler</url>
     <tag>HEAD</tag>
   </scm>
-  <!-- 根据version中是否带有“-SNAPSHOT”来判断是分发到snapshots库还是releases库 -->
   <distributionManagement>
-    <!-- 添加到maven的安装目录的settings.xml中
-    <servers>
-      <server>
-        <id>ossrh</id>
-        <username>username</username>
-        <password>password</password>
-      </server>
-    </servers> -->
     <snapshotRepository>
       <id>ossrh</id>
       <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
@@ -240,11 +195,6 @@
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-runner</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

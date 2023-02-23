@@ -25,8 +25,8 @@ public final class EmbeddedMysqlAndRedisServer {
         EmbeddedMysqlAndRedisServer.starter().start();
     }
 
-    private DB mariaDBServer;
-    private RedisServer redisServer;
+    private volatile DB mariaDBServer;
+    private volatile RedisServer redisServer;
 
     private EmbeddedMysqlAndRedisServer(int mysqlPort, int redisMasterPort, int redisSlavePort) {
         System.out.println("/*============================================================*\\");

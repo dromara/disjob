@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.common.date;
 
-import cn.ponfee.scheduler.common.base.Constants;
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -160,9 +160,9 @@ public class JavaUtilDateFormat extends DateFormat {
             case  8: return PATTERN_21.parse(source);
             case 10:
                 char separator = source.charAt(4);
-                if (separator == Constants.HYPHEN) {
+                if (separator == Char.HYPHEN) {
                     return PATTERN_22.parse(source);
-                } else if (separator == Constants.SLASH) {
+                } else if (separator == Char.SLASH) {
                     return PATTERN_23.parse(source);
                 } else if (DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
                     // long string(length 10) of unix timestamp(e.g. 1640966400)
@@ -189,7 +189,7 @@ public class JavaUtilDateFormat extends DateFormat {
                 } else {
                     return (isCrossbar(source) ? PATTERN_51 : PATTERN_52).parse(source);
                 }
-            case 26: 
+            case 26:
             case 29:
                 if (hasTSeparator(source)) {
                     // 2021-12-31T17:01:01.000+08、2021-12-31T17:01:01.000+08:00

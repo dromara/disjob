@@ -57,13 +57,6 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
     </dependency>
-
-    <!-- cannot remove: testcontainers dependency junit, and scope must be compile -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>compile</scope>
-    </dependency>
   </dependencies>
 
   <build>

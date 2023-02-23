@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -241,7 +242,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
             if (GenericUtils.getRawType(type) != ExecuteParam.class) {
                 throw new UnsupportedOperationException("Cannot supported deserialize type: " + type);
             }
-            return castToExecuteParam(parser.parseObject());
+            return of(parser.parseObject());
         }
 
         @Override
@@ -258,20 +259,22 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     public static class JacksonDeserializer extends JsonDeserializer<ExecuteParam> {
         @Override
         public ExecuteParam deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return castToExecuteParam(p.readValueAs(Jsons.MAP_NORMAL));
+            return of(p.readValueAs(Jsons.MAP_NORMAL));
         }
     }
 
-    private static ExecuteParam castToExecuteParam(Map<String, Object> map) {
+    private static ExecuteParam of(Map<String, ?> map) {
         if (map == null) {
             return null;
         }
+
         Operations operation = ObjectUtils.cast(map.get("operation"), Operations.class);
-        long taskId = ObjectUtils.cast(map.get("taskId"), long.class);
-        long instanceId = ObjectUtils.cast(map.get("instanceId"), long.class);
-        long jobId = ObjectUtils.cast(map.get("jobId"), long.class);
-        long triggerTime = ObjectUtils.cast(map.get("triggerTime"), long.class);
-        Worker worker = Worker.castToWorker((Map<String, Object>) map.get("worker"));
+        long taskId = MapUtils.getLongValue(map, "taskId");
+        long instanceId = MapUtils.getLongValue(map, "instanceId");
+        long jobId = MapUtils.getLongValue(map, "jobId");
+        long triggerTime = MapUtils.getLongValue(map, "triggerTime");
+        Worker worker = Worker.of((Map<String, ?>) map.get("worker"));
+
         // operation is null if terminate task
         return new ExecuteParam(operation, taskId, instanceId, jobId, triggerTime, worker);
     }

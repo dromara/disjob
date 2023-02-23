@@ -23,8 +23,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 
-import static cn.ponfee.scheduler.common.base.Constants.*;
-
 /**
  * mysql database job
  *
@@ -46,7 +44,7 @@ import static cn.ponfee.scheduler.common.base.Constants.*;
 @Configuration
 @MapperScan(
     basePackages = SchedulerDataSourceConfig.BASE_PACKAGE + ".mapper",
-    sqlSessionTemplateRef = SchedulerDataSourceConfig.DB_NAME + SQL_SESSION_TEMPLATE_SUFFIX
+    sqlSessionTemplateRef = SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_SUFFIX
 )
 public class SchedulerDataSourceConfig extends AbstractDataSourceConfig {
 
