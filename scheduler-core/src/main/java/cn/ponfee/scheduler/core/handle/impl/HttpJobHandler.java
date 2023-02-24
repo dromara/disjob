@@ -55,7 +55,7 @@ public class HttpJobHandler extends JobHandler<String> {
 
         Assert.hasText(req.method, "Http method cannot be empty.");
         HttpMethod method = HttpMethod.valueOf(req.method.toUpperCase());
-        if (RestTemplateUtils.QUERY_PARAMS.contains(method)) {
+        if (RestTemplateUtils.QUERY_PARAM_METHODS.contains(method)) {
             Assert.isNull(req.body, () -> "Http method '" + req.method + "' not supported request body.");
         }
         Assert.hasText(req.url, "Http url cannot be empty.");

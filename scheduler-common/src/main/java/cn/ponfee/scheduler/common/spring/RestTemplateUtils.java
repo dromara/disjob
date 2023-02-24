@@ -54,7 +54,7 @@ import static org.springframework.http.HttpMethod.*;
  * @author Ponfee
  */
 public class RestTemplateUtils {
-    public static final Set<HttpMethod> QUERY_PARAMS = ImmutableSet.of(GET, DELETE, HEAD, OPTIONS);
+    public static final Set<HttpMethod> QUERY_PARAM_METHODS = ImmutableSet.of(GET, DELETE, HEAD, OPTIONS);
 
     public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter() {
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();

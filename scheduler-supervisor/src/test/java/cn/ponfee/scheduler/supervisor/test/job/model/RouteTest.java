@@ -22,10 +22,7 @@ import javax.annotation.Resource;
 /**
  * @author Ponfee
  */
-public class RouteTest extends SpringBootTestBase {
-
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
+public class RouteTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void testAtomicCounter() {
@@ -41,12 +38,12 @@ public class RouteTest extends SpringBootTestBase {
     @Test
     public void testRedisAtomicCounter() {
         String key = "key_counter";
-        stringRedisTemplate.opsForValue().set(key, "10");
-        Assertions.assertEquals(10, Numbers.toLong(stringRedisTemplate.opsForValue().get(key)));
-        Assertions.assertEquals(11, stringRedisTemplate.opsForValue().increment(key));
-        Assertions.assertEquals(12, stringRedisTemplate.opsForValue().increment(key));
+        bean().opsForValue().set(key, "10");
+        Assertions.assertEquals(10, Numbers.toLong(bean().opsForValue().get(key)));
+        Assertions.assertEquals(11, bean().opsForValue().increment(key));
+        Assertions.assertEquals(12, bean().opsForValue().increment(key));
 
-        RedisAtomicCounter counter = new RedisAtomicCounter("test", stringRedisTemplate);
+        RedisAtomicCounter counter = new RedisAtomicCounter("test", bean());
         long init = counter.get();
         Assertions.assertEquals(1 + init, counter.getAndIncrement());
         Assertions.assertEquals(6 + init, counter.getAndAdd(5));

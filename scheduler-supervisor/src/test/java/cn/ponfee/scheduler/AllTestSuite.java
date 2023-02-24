@@ -30,6 +30,6 @@ package cn.ponfee.scheduler;
 @org.junit.platform.suite.api.Suite
 @org.junit.platform.suite.api.SuiteDisplayName("Scheduler supervisor test suite")
 @org.junit.platform.suite.api.SelectPackages("cn.ponfee.scheduler.supervisor")
-public class TestAllCase {
+public class AllTestSuite {
 
 }

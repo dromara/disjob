@@ -52,8 +52,7 @@ public class ThreadExceptionTest {
                     System.out.println(123);
                 }
             } catch (InterruptedException e) {
-                System.out.println(456);
-                e.printStackTrace();
+                System.out.println("InterruptedException " + e.getMessage());
             }
         });
 

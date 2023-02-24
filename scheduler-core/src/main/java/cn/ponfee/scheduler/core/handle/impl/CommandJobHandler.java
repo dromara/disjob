@@ -21,9 +21,11 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
- * The job handler for executes system operation command.
+ * <pre>
+ *  The job handler for executes system operation command.
  *
- * <p>Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
+ *  Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
+ * </pre>
  *
  * @author Ponfee
  */

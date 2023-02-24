@@ -45,7 +45,7 @@ public abstract class AbstractTxManagerTest<S extends AbstractTxManagerTestServi
     }
 
     @Override
-    protected void initiate() {
+    protected void initialize() {
         service = bean();
     }
 

@@ -12,7 +12,6 @@ import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.handle.TaskExecutor;
@@ -24,6 +23,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -268,7 +268,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
             return null;
         }
 
-        Operations operation = ObjectUtils.cast(map.get("operation"), Operations.class);
+        Operations operation = EnumUtils.getEnumIgnoreCase(Operations.class, MapUtils.getString(map, "operation"));
         long taskId = MapUtils.getLongValue(map, "taskId");
         long instanceId = MapUtils.getLongValue(map, "instanceId");
         long jobId = MapUtils.getLongValue(map, "jobId");

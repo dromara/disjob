@@ -12,7 +12,6 @@ import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.Resource;
@@ -20,19 +19,16 @@ import javax.annotation.Resource;
 /**
  * @author Ponfee
  */
-public class SpringContextTest extends SpringBootTestBase {
-
-    @Resource
-    private ApplicationContext applicationContext;
+public class SpringContextTest extends SpringBootTestBase<Object> {
 
     @Resource
     private Environment environment;
 
     @Test
     public void testClassName() {
-        String[] beanDefinitionNames = applicationContext.getBeanNamesForType(Object.class, false, true);
+        String[] beanDefinitionNames = applicationContext().getBeanNamesForType(Object.class, false, true);
         for (String beanDefinitionName : beanDefinitionNames) {
-            String className = ClassUtils.getName(applicationContext.getBean(beanDefinitionName).getClass());
+            String className = ClassUtils.getName(applicationContext().getBean(beanDefinitionName).getClass());
             if (!className.contains("/")) {
                 // exclude such as org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration$$Lambda$1323/394591403
                 Assertions.assertTrue(ClassUtils.QUALIFIED_CLASS_NAME_PATTERN.matcher(className).matches(), className);
@@ -42,9 +38,9 @@ public class SpringContextTest extends SpringBootTestBase {
         }
     }
 
-    /*
     @Test
     public void testSpringConfig() {
+        /*
         // Spring boot 默认加载：application.properties, application.yaml, application.yml
         Assertions.assertEquals(environment.getProperty("application.properties.conf"), "1111");
         Assertions.assertEquals(environment.getProperty("application.yaml.conf"), "2222");
@@ -52,7 +48,8 @@ public class SpringContextTest extends SpringBootTestBase {
 
         // spring.profiles.active: test
         Assertions.assertEquals(environment.getProperty("test.env.foo"), "bar");
+        */
+        System.out.println(environment);
     }
-    */
 
 }

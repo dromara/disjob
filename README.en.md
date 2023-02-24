@@ -170,6 +170,3 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB
 - [ ] When the machine has multiple network cards, the host ip of the specified network card is obtained
-
-## Stargazers over time
-[![Stargazers over time](https://starchart.cc/ponfee/distributed-scheduler.svg)](https://starchart.cc/ponfee/distributed-scheduler)

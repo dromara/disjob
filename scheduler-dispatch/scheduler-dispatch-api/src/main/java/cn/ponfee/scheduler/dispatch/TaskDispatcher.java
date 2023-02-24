@@ -72,7 +72,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
 
     /**
      * Dispatch the task to specified worker, which the worker is executing this task
-     * <p>this method use in pause or cancel executing task
+     * <p>this method is used to terminate(pause or cancel) the executing task
      *
      * @param executeParams the list of execution param
      * @return {@code true} if the first dispatch successful
@@ -82,8 +82,8 @@ public abstract class TaskDispatcher implements AutoCloseable {
             return false;
         }
         List<DispatchParam> list = executeParams.stream()
-            .peek(e -> Assert.notNull(e.getWorker(), "Dispatching execute param worker cannot be null."))
-            .peek(e -> Assert.isTrue(e.operation() != Operations.TRIGGER, "Dispatching execute param operation cannot be TRIGGER."))
+            .peek(e -> Assert.notNull(e.getWorker(), "Directional dispatching execute param worker cannot be null."))
+            .peek(e -> Assert.isTrue(e.operation() != Operations.TRIGGER, "Directional dispatching execute param operation cannot be TRIGGER."))
             .map(e -> new DispatchParam(e, null, null))
             .collect(Collectors.toList());
         return doDispatch(list);
@@ -182,7 +182,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
     private void retry(DispatchParam dispatchParam) {
         if (dispatchParam.retried() >= maxRetryTimes) {
             // discard
-            log.warn("Dispatched task retried max times still failed: " + dispatchParam.executeParam());
+            log.error("Dispatched task retried max times still failed: " + dispatchParam.executeParam());
             return;
         }
 

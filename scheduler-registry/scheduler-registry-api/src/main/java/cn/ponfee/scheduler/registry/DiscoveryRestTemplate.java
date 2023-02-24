@@ -101,7 +101,7 @@ public class DiscoveryRestTemplate<D extends Server> {
             try {
                 URI uri;
                 HttpEntity<?> httpEntity;
-                if (RestTemplateUtils.QUERY_PARAMS.contains(httpMethod)) {
+                if (RestTemplateUtils.QUERY_PARAM_METHODS.contains(httpMethod)) {
                     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
                     if (ArrayUtils.isNotEmpty(arguments)) {
                         builder.queryParams(buildQueryParams(arguments));
