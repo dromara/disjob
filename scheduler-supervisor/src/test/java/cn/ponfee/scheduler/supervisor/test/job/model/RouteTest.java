@@ -17,8 +17,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import javax.annotation.Resource;
-
 /**
  * @author Ponfee
  */
@@ -38,12 +36,12 @@ public class RouteTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void testRedisAtomicCounter() {
         String key = "key_counter";
-        bean().opsForValue().set(key, "10");
-        Assertions.assertEquals(10, Numbers.toLong(bean().opsForValue().get(key)));
-        Assertions.assertEquals(11, bean().opsForValue().increment(key));
-        Assertions.assertEquals(12, bean().opsForValue().increment(key));
+        bean.opsForValue().set(key, "10");
+        Assertions.assertEquals(10, Numbers.toLong(bean.opsForValue().get(key)));
+        Assertions.assertEquals(11, bean.opsForValue().increment(key));
+        Assertions.assertEquals(12, bean.opsForValue().increment(key));
 
-        RedisAtomicCounter counter = new RedisAtomicCounter("test", bean());
+        RedisAtomicCounter counter = new RedisAtomicCounter("test", bean);
         long init = counter.get();
         Assertions.assertEquals(1 + init, counter.getAndIncrement());
         Assertions.assertEquals(6 + init, counter.getAndAdd(5));

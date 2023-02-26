@@ -88,7 +88,7 @@ public @interface EnableWorker {
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        @ConditionalOnMissingClass("cn.ponfee.scheduler.supervisor.manager.JobManager")
+        @ConditionalOnMissingClass("cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager")
         @ConditionalOnMissingBean
         @Bean
         public SupervisorService supervisorServiceClient(HttpProperties httpConfig,

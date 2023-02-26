@@ -70,15 +70,6 @@ public class HashTest {
         Assertions.assertEquals(21, (int) get(limit, "06"));
         Assertions.assertEquals(91, (int) get(limit, "27"));
         Assertions.assertEquals(91, (int) get(limit, "28"));
-
-        System.out.println((int) 0xFFFFFFFFL);
-        System.out.println(Integer.MAX_VALUE);
-        System.out.println((int) 2166136261L);
-        System.out.println(2166136261L);
-        System.out.println("----");
-        for (int i = 0; i < 100; i++) {
-            System.out.println(ConsistentHash.HashFunction.MD5.hash("test-" + i));
-        }
     }
 
     @Test
@@ -99,13 +90,6 @@ public class HashTest {
         Assertions.assertEquals("900150983cd24fb0d6963f7d28e17f72", DigestUtils.md5Hex("abc".getBytes(StandardCharsets.UTF_8)));
         Assertions.assertEquals(" abc \n\r ".trim(), "abc");
         Assertions.assertEquals(String.class, Class.forName("java.lang.String"));
-        System.out.println("Thread.activeCount(): " + Thread.activeCount());
-        System.out.println("-------------");
-        System.out.println(ObjectUtils.getStackTrace());
-        System.out.println("-------------");
-        System.out.println("\n\n-------------");
-        System.out.println(ObjectUtils.getStackTrace(Thread.currentThread()));
-        System.out.println("-------------");
     }
 
     static long round = 1_000_000_000L;

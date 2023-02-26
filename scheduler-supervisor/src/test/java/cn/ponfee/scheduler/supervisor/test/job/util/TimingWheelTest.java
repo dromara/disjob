@@ -57,11 +57,11 @@ public class TimingWheelTest {
         ConcurrentHashMap<Integer, Integer> map = new ConcurrentHashMap<>(64, 1f);
         Assertions.assertEquals(0, map.size());
         Assertions.assertNull(Fields.get(map, "table"));
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i < 100; i++) {
             map.put(i, i);
             System.out.println("size: " + map.size() + ", mapping-count: " + map.mappingCount() + ", table-size: " + Array.getLength(Fields.get(map, "table")));
         }
-        Assertions.assertEquals(128, Array.getLength(Fields.get(map, "table")));
+        Assertions.assertEquals(256, Array.getLength(Fields.get(map, "table")));
     }
 
     @Test
@@ -170,7 +170,7 @@ public class TimingWheelTest {
         Assertions.assertEquals(100, timingQueue.size());
         ExecuteParam first = timingQueue.peek();
         for (ExecuteParam e; (e = timingQueue.poll()) != null; ) {
-            System.out.println(e.timing());
+            System.out.print(e.timing() + ", ");
             Assertions.assertEquals(first, e);
             first = timingQueue.peek();
         }
@@ -193,7 +193,7 @@ public class TimingWheelTest {
 
         TimingWheel.TimingQueue<ExecuteParam>[] array = (TimingWheel.TimingQueue<ExecuteParam>[]) Fields.get(timingWheel, "wheel");
         for (int tick = 0; tick < array.length; tick++) {
-            System.out.println(tick);
+            System.out.print(tick + ", ");
             TimingWheel.TimingQueue<ExecuteParam> queue = array[tick];
             long prev = 0;
             for (ExecuteParam e; (e = queue.poll()) != null; ) {

@@ -43,6 +43,7 @@ public final class EmbeddedMysqlAndRedisServer {
     }
 
     public synchronized void stop() {
+        CheckedThrowing.caught(() -> Thread.sleep(10000));
         if (mariaDBServer != null) {
             CheckedThrowing.caught(mariaDBServer::stop);
             mariaDBServer = null;

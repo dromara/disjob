@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class JobTxManagerTest extends AbstractTxManagerTest<JobTxManagerTestService, Long> {
+public class JobTxManagerTest extends TxManagerTestBase<JobTxManagerTestService, Long> {
 
     public JobTxManagerTest(@Autowired SchedJobMapper schedJobMapper) {
         super(() -> {

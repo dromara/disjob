@@ -26,12 +26,13 @@ public class ThreadExceptionTest {
         t.setUncaughtExceptionHandler((thread, throwable) -> {
             System.out.println(thread);
             System.out.println(thread == t);
-            throwable.printStackTrace();
+            System.out.println(throwable.getMessage());
         });
         t.start();
 
-        System.out.println(t);
+        System.out.println("ThreadExceptionTest#test join start: " + t);
         t.join();
+        System.out.println("ThreadExceptionTest#test join end: " + t);
     }
 
     @Test

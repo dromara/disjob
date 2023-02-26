@@ -4,10 +4,9 @@
 <Configuration status="WARN" monitorInterval="1800" strict="true" name="distributed-scheduler-log">
 
   <properties>
-    <!-- 系统属性变量：System.getProperty("log.home")，${variable_name:-default_value} -->
-    <property name="LOG_HOME">${log.home:-../logs}</property>
-
-    <property name="APP_NAME">distributed-scheduler</property>
+    <!-- 系统属性变量：System.getProperty("log.home")，${sys:variable_name:-default_value} -->
+    <property name="LOG_HOME">${sys:log.home:-../logs}</property>
+    <property name="APP_NAME">${sys:app.name:-scheduler-supervisor-test}</property>
     <property name="PATTERN_CONSOLE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %highlight{%-5p} | %c{1} >>>> %msg%n</property>
     <property name="PATTERN_FILE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %traceId | %-5p | ${sys:PID} | %t | %l : %msg%n</property>
   </properties>
@@ -20,7 +19,7 @@
     <!-- 输出到文件，按天或者超过100MB分割 -->
     <RollingFile name="RollingFile" fileName="${LOG_HOME}/${APP_NAME}.log" filePattern="${LOG_HOME}/$${date:yyyy-MM}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
       <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
-      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" /> 
+      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
       <PatternLayout pattern="${PATTERN_FILE}" />
       <Policies>
         <!-- 启动时就重新滚动日志 -->
@@ -47,6 +46,7 @@
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
+    <!--
     <Logger name="cn.ponfee.scheduler.supervisor.dao" level="INFO" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
@@ -55,6 +55,11 @@
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFile" />
     </Logger>
+    <Logger name="cn.ponfee.scheduler.supervisor" level="DEBUG" additivity="false">
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="RollingFile" />
+    </Logger>
+    -->
 
     <!-- 当根据日志名字获取不到指定的日志器时就使用Root作为默认的日志器 -->
     <Root level="WARN">

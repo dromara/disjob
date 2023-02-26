@@ -6,22 +6,20 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.supervisor.test.job.dao;
+package cn.ponfee.scheduler.supervisor.test.job.base;
 
-import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.SplitTask;
 import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * <pre>
@@ -35,22 +33,10 @@ import static org.mockito.Mockito.when;
  */
 public class WorkerServiceClientTest extends SpringBootTestBase<Object> {
 
-    @Mock
-    private WorkerService workerService;
-
-    /*
-    // 传递给WorkerServiceClient构造参数的mock对象与workerService的mock对象不是同一个
-    @InjectMocks
-    private WorkerServiceClient client;
-    */
-
     @Test
     public void testSplit() throws JobException {
-        //WorkerService workerService = Mockito.mock(WorkerService.class);
-
         String taskParam = "taskParam";
-        when(workerService.split(any(), any()))
-            .thenReturn(Collections.singletonList(new SplitTask(taskParam)));
+        doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerService).split(any(), any());
 
         WorkerServiceClient client = new WorkerServiceClient(workerService, null);
         List<SplitTask> result = client.split("group", null, null);

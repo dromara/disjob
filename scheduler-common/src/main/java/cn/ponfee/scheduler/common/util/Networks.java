@@ -38,9 +38,9 @@ public final class Networks {
 
     private static final Logger LOG = LoggerFactory.getLogger(Networks.class);
 
-    private static final String LOCALHOST_IP = "127.0.0.1";
-    private static final String LOCALHOST_NAME = "localhost";
-    private static final String EMPTY_IP = "0.0.0.0";
+    public static final String LOCALHOST_IP = "127.0.0.1";
+    public static final String LOCALHOST_NAME = "localhost";
+    public static final String EMPTY_IP = "0.0.0.0";
 
     /**
      * the max ip value
@@ -128,6 +128,22 @@ public final class Networks {
         return address == null ? LOCALHOST_NAME : address.getHostName();
     }
 
+    /**
+     * Returns the hostname port is connectable.
+     *
+     * @param hostname the hostname
+     * @param port     the port
+     * @param timeout  the timeout value to be used in milliseconds.
+     * @return {@code true} if connectable
+     */
+    public static boolean isConnectable(String hostname, int port, int timeout) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(hostname, port), timeout);
+            return true;
+        } catch (IOException ignored) {
+            return false;
+        }
+    }
 
     /**
      * Check the port is available

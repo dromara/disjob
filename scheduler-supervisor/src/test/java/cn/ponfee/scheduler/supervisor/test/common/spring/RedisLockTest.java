@@ -45,7 +45,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void test0() throws InterruptedException {
-        RedisLock redisLock = new RedisLock(bean(), "test:lock:" + ObjectUtils.uuid32(), 1000);
+        RedisLock redisLock = new RedisLock(bean, "test:lock:" + ObjectUtils.uuid32(), 1000);
         Assertions.assertTrue(redisLock.tryLock());
         Assertions.assertTrue(redisLock.isLocked());
         Assertions.assertTrue(redisLock.isHeldByCurrentThread());
@@ -67,7 +67,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void test1() throws IOException, InterruptedException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file())));
-        final Printer printer = new Printer(new RedisLock(bean(), "test:lock:1", 30000));
+        final Printer printer = new Printer(new RedisLock(bean, "test:lock:1", 30000));
         final AtomicInteger num = new AtomicInteger(0);
         String line;
         List<Thread> threads = new ArrayList<>();
@@ -91,7 +91,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void test2() throws IOException, InterruptedException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file())));
-        final Lock lock = new RedisLock(bean(), "test:lock:2", 30000);
+        final Lock lock = new RedisLock(bean, "test:lock:2", 30000);
         final AtomicInteger num = new AtomicInteger(0);
         String line;
         List<Thread> threads = new ArrayList<>();
@@ -125,7 +125,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
             final String line0 = line;
             if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
                 threads.add(new Thread(
-                    () -> new Printer(new RedisLock(bean(), "test:lock:3", 30000)).output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")
+                    () -> new Printer(new RedisLock(bean, "test:lock:3", 30000)).output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")
                 ));
             }
         }
@@ -141,7 +141,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void test4() throws IOException {
-        Printer printer = new Printer(new RedisLock(bean(), "test:lock:4", 30000));
+        Printer printer = new Printer(new RedisLock(bean, "test:lock:4", 30000));
         AtomicInteger num = new AtomicInteger(RATIO);
         System.out.println("\n=========================START========================");
         List<Map<Integer, String>> lines = Files.readLines(file(), StandardCharsets.UTF_8)
@@ -170,29 +170,29 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         String lockKey = "test:lock:" + ObjectUtils.uuid32();
         String actualKey = "lock:" + lockKey;
 
-        RedisLock redisLock = new RedisLock(bean(), lockKey, expire);
+        RedisLock redisLock = new RedisLock(bean, lockKey, expire);
         Assertions.assertTrue(redisLock.tryLock());
 
-        Assertions.assertTrue(bean().hasKey(actualKey));
+        Assertions.assertTrue(bean.hasKey(actualKey));
 
-        long ttl1 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        long ttl1 = bean.getExpire(actualKey, TimeUnit.MILLISECONDS);
         System.out.println("TTL1: " + ttl1);
         Assertions.assertTrue(ttl1 > 0 && ttl1 <= expire);
 
         Thread.sleep(expire);
 
-        long ttl2 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        long ttl2 = bean.getExpire(actualKey, TimeUnit.MILLISECONDS);
         System.out.println("TTL2: " + ttl2);
         Assertions.assertTrue(ttl2 <= 0);
 
         Thread.sleep(expire);
 
-        long ttl3 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        long ttl3 = bean.getExpire(actualKey, TimeUnit.MILLISECONDS);
         System.out.println("TTL3: " + ttl3);
         Assertions.assertTrue(ttl3 <= 0);
 
         redisLock.unlock();
-        long ttl4 = bean().getExpire(actualKey, TimeUnit.MILLISECONDS);
+        long ttl4 = bean.getExpire(actualKey, TimeUnit.MILLISECONDS);
         System.out.println("TTL4: " + ttl4);
         Assertions.assertEquals(-2, ttl4);
     }

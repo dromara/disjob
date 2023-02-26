@@ -45,6 +45,9 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
 
     /**
      * Force use local worker service client.
+     *
+     * @see cn.ponfee.scheduler.core.base.WorkerService#verify(String, String)
+     * @see cn.ponfee.scheduler.core.base.WorkerService#split(String, String)
      */
     private boolean forceLocalWorkerService = false;
 

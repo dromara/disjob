@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Ponfee
  */
-public class TestScheduledExecutor {
+public class ScheduledExecutorTest {
 
     @Test
     public void testSubmit() throws InterruptedException {

@@ -10,96 +10,91 @@ package cn.ponfee.scheduler.supervisor;
 
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.GenericUtils;
-import cn.ponfee.scheduler.core.base.JobConstants;
-import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
-import cn.ponfee.scheduler.test.EmbeddedMysqlAndRedisServer;
-import org.apache.commons.lang3.ArrayUtils;
+import cn.ponfee.scheduler.core.base.WorkerService;
+import cn.ponfee.scheduler.supervisor.base.SpringTestCollector;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * <pre>
  * Spring boot test base class
+ *
+ * 1、TestInstance：可以在非static方法上加@BeforeAll/@AfterAll注解
+ *   LifeCycle.PER_METHOD(default)：每个测试方法执行前创建新的测试类实例
+ *   Lifecycle.PER_CLASS：整个测试的过程中之创建一个测试类的实例
+ *
+ * 2、@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+ *   等同于：@ExtendWith(MockitoExtension.class)
+ * </pre>
  *
  * @param <T> bean type
  * @author Ponfee
  */
+
 /*
 @org.junit.runner.RunWith(org.springframework.test.context.junit4.SpringRunner.class)
 @SpringBootTest(classes = SchedulerApplication.class)
 */
 
 // 测试类(方法)要使用“@org.junit.jupiter.api.Test”来注解
-@ExtendWith({MockitoExtension.class, SpringExtension.class})
-//@MockitoSettings(strictness = Strictness.LENIENT)
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ExtendWith(SpringExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-    classes = SpringBootTestBase.Application.class
+    classes = SpringBootTestApplication.class
 )
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"DEV"})
 public abstract class SpringBootTestBase<T> {
 
-    // ----------------------------------------------------------static definitions
+    // Only reset mock bean which is defined on SpringBootTestBase
+    private static final List<Field> MOCK_BEAN_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestBase.class)
+        .stream()
+        .filter(e -> !Modifier.isStatic(e.getModifiers()))
+        .filter(e -> e.isAnnotationPresent(MockBean.class))
+        .peek(e -> {
+            if (!Modifier.isProtected(e.getModifiers())) {
+                throw new AssertionError("Mock bean must protected: " + e.toGenericString());
+            }
+        })
+        .collect(Collectors.toList());
 
-    private static final Class<?>[] EXCLUDE_CLASSES = {Void.class, Object.class};
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final ConcurrentMap<ApplicationContext, Set<Class<?>>> TEST_CLASSES_MAP = new ConcurrentHashMap<>();
+    // --------------------------------------mock bean definition
 
-    static {
-        System.setProperty("app.name", "scheduler-supervisor-test");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            StringBuilder printer = new StringBuilder();
-            printer.append("\n\n");
-            printer.append("/*=================================Spring container & Test case=================================*\\");
-            TEST_CLASSES_MAP.forEach((spring, classes) -> {
-                printer.append("\n");
-                printer.append(spring + ": \n");
-                printer.append(classes.stream().map(e -> "---- " + e.getName()).collect(Collectors.joining("\n")));
-                printer.append("\n");
-            });
-            printer.append("\\*=================================Spring container & Test case=================================*/");
-            printer.append("\n\n");
-            System.out.println(printer);
-        }));
-    }
+    @MockBean
+    protected WorkerService workerService;
 
-    @EnableSupervisor
-    @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-    public static class Application {
-        public static void main(String[] args) {
-            SpringApplication.run(Application.class, args);
-        }
-    }
+    // --------------------------------------member fields definition
 
-    private static EmbeddedMysqlAndRedisServer embeddedMysqlAndRedisServer;
-
-    // ----------------------------------------------------------member definitions
-
-    @Resource
-    private ApplicationContext applicationContext;
-
-    @Resource
-    private JdbcTemplate jdbcTemplate;
-
-    private T bean;
     private final String beanName;
+
+    protected T bean;
+
+    @Resource
+    protected ApplicationContext applicationContext;
 
     public SpringBootTestBase() {
         this(null);
@@ -109,55 +104,88 @@ public abstract class SpringBootTestBase<T> {
         this.beanName = beanName;
     }
 
-    protected void initialize() {
-        // do nothing
-    }
+    // --------------------------------------annotated junit methods definition
 
-    protected void destroy() {
-        // do nothing
-    }
-
-    protected final ApplicationContext applicationContext() {
-        return applicationContext;
-    }
-
-    protected final void executeSql(String sql) {
-        jdbcTemplate.execute(sql);
-    }
-
-    protected final T bean() {
-        return bean;
+    @BeforeAll
+    public static void beforeClass() {
+        System.out.println("before test class: " + Dates.format(new Date()));
     }
 
     @BeforeAll
-    public synchronized static void beforeAll() {
-        System.out.println("------------------------SpringBootTestBase#beforeAll: " + Dates.format(new Date()));
-        System.setProperty(JobConstants.SPRING_WEB_SERVER_PORT, "8080");
-        if (embeddedMysqlAndRedisServer == null) {
-            embeddedMysqlAndRedisServer = EmbeddedMysqlAndRedisServer.starter().start();
-        }
+    public final void beforeAll0() {
+        log.info("before test all");
+        beforeAll();
     }
 
     @BeforeEach
-    public final void beforeEach() {
+    public final void beforeEach0() {
+        log.info("before test each");
         Class<T> type = GenericUtils.getActualTypeArgument(getClass(), 0);
-        if (!ArrayUtils.contains(EXCLUDE_CLASSES, type)) {
-            bean = StringUtils.isBlank(beanName)
+        if (!Arrays.asList(Void.class, Object.class).contains(type)) {
+            this.bean = StringUtils.isBlank(beanName)
                 ? applicationContext.getBean(type)
                 : applicationContext.getBean(beanName, type);
         }
-        TEST_CLASSES_MAP.computeIfAbsent(applicationContext, k -> ConcurrentHashMap.newKeySet()).add(getClass());
-        initialize();
+        SpringTestCollector.collect(applicationContext, getClass());
+
+        initMock();
+        beforeEach();
     }
 
     @AfterEach
-    public final void afterEach() {
-        destroy();
+    public final void afterEach0() {
+        log.info("after test each");
+        afterEach();
+        resetMock();
     }
 
     @AfterAll
-    public synchronized static void afterAll() {
-        System.out.println("------------------------SpringBootTestBase#afterAll: " + Dates.format(new Date()));
+    public final void afterAll0() {
+        log.info("after test all");
+        afterAll();
+    }
+
+    @AfterAll
+    public static void afterClass() {
+        System.out.println("after test class: " + Dates.format(new Date()));
+    }
+
+    // --------------------------------------sub-class can override methods definition
+
+    protected void beforeAll() {
+        // default no-operation
+    }
+
+    protected void beforeEach() {
+        // default no-operation
+    }
+
+    protected void afterEach() {
+        // default no-operation
+    }
+
+    protected void afterAll() {
+        // default no-operation
+    }
+
+    // --------------------------------------private methods definition
+
+    private void initMock() {
+    }
+
+    private void resetMock() {
+        for (Field field : MOCK_BEAN_FIELDS) {
+            try {
+                Object mockBean = field.get(this);
+                if (mockBean == null) {
+                    log.error("Mock bean is null: " + field.toGenericString());
+                } else {
+                    Mockito.reset(mockBean);
+                }
+            } catch (Exception ex) {
+                log.error("Mock bean reset error: " + field.toGenericString(), ex);
+            }
+        }
     }
 
 }

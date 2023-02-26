@@ -70,7 +70,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setUpdatedAt(new Date());
         job.setCreatedAt(new Date());
 
-        int insert = bean().insert(job);
+        int insert = bean.insert(job);
         Assertions.assertEquals(1, insert);
     }
 
@@ -110,7 +110,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setUpdatedAt(new Date());
         job.setCreatedAt(new Date());
 
-        int insert = bean().insert(job);
+        int insert = bean.insert(job);
         Assertions.assertEquals(1, insert);
     }
 
@@ -149,7 +149,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setUpdatedAt(new Date());
         job.setCreatedAt(new Date());
 
-        int insert = bean().insert(job);
+        int insert = bean.insert(job);
         Assertions.assertEquals(1, insert);
     }
 }
