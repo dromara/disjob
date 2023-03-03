@@ -44,12 +44,9 @@ public class DiscoveryRestTemplate<D extends Server> {
 
     private final static Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
 
-    public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {
-    }.getType();
-    public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {
-    }.getType();
-    public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {
-    }.getType();
+    public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
+    public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
+    public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
     public static final Object[] EMPTY = new Object[0];
 
     private final RestTemplate restTemplate;

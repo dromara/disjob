@@ -45,22 +45,22 @@ public class WorkerServiceClient {
     }
 
     public boolean verify(String group, String jobHandler, String jobParam) {
-        return get(group).verify(jobHandler, jobParam);
+        return workerService(group).verify(jobHandler, jobParam);
     }
 
     public List<SplitTask> split(String group, String jobHandler, String jobParam) throws JobException {
-        return get(group).split(jobHandler, jobParam);
+        return workerService(group).split(jobHandler, jobParam);
     }
 
     // ------------------------------------------------------------private methods
 
-    private WorkerService get(String group) {
+    private WorkerService workerService(String group) {
         if ((remoteWorkerService == null || group.equals(currentGroup))) {
             return LOCAL_WORKER_SERVICE;
         }
 
-        if (remoteWorkerService instanceof DiscoveryRestProxy.ImplantGroup) {
-            ((DiscoveryRestProxy.ImplantGroup) remoteWorkerService).group(group);
+        if (remoteWorkerService instanceof DiscoveryRestProxy.GroupedServer) {
+            ((DiscoveryRestProxy.GroupedServer) remoteWorkerService).group(group);
         }
         return remoteWorkerService;
     }

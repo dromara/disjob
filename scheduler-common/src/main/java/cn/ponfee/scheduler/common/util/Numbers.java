@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.common.util;
 
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Chars;
@@ -32,28 +33,27 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 /**
  * <pre>
  * Number utility
- * 
+ *
  * 十进制：10
  * 二进制：0B10
  * 八进制：010
  * 十六进制：0X10
  * 小数点：1e-9
  * </pre>
- * 
+ *
  * @author Ponfee
  */
 public final class Numbers {
 
     private static final Logger LOG = LoggerFactory.getLogger(Numbers.class);
 
-    public static final int     INT_ZERO     = 0;
-    public static final Integer INTEGER_ZERO = INT_ZERO;
-    public static final byte    BYTE_ZERO    = 0x00;
-    public static final char    CHAR_ZERO    = '\u0000'; // equals '\0'
+    public static final int     ZERO_INT     = 0;
+    public static final Integer ZERO_INTEGER = 0;
+    public static final byte    ZERO_BYTE    = 0x00;
 
     // --------------------------------------------------------------character convert
     public static char toChar(Object obj) {
-        return toChar(obj, CHAR_ZERO);
+        return toChar(obj, Char.ZERO);
     }
 
     public static char toChar(Object obj, char defaultVal) {
@@ -94,7 +94,7 @@ public final class Numbers {
         } else if (obj instanceof Boolean) {
             return (Boolean) obj;
         } else if (obj instanceof Number) {
-            return ((Number) obj).byteValue() != BYTE_ZERO;
+            return ((Number) obj).byteValue() != ZERO_BYTE;
         } else {
             return Boolean.parseBoolean(obj.toString());
         }
@@ -366,7 +366,7 @@ public final class Numbers {
 
     /**
      * Returns a string value of double
-     * 
+     *
      * @param d      the double value
      * @param scale  the scale
      * @return a string
@@ -420,7 +420,7 @@ public final class Numbers {
      *   slice(11, 3)  ->  [4, 4, 3]
      *   slice(12, 3)  ->  [4, 4, 4]
      * </pre>
-     * 
+     *
      * @param quantity
      * @param segment
      * @return
@@ -518,7 +518,7 @@ public final class Numbers {
 
     /**
      * Returns the Long object is equals the Integer object
-     * 
+     *
      * @param a the Long a
      * @param b the Integer b
      * @return if is equals then return {@code true}

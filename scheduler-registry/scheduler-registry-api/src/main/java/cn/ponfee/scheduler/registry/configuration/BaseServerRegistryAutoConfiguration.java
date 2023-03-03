@@ -14,16 +14,16 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Representing a mark abstract class spring autoconfiguration for server registry.
+ * Base server registry autoConfiguration
  *
  * @author Ponfee
  */
-public abstract class MarkServerRegistryAutoConfiguration {
+public abstract class BaseServerRegistryAutoConfiguration {
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    public MarkServerRegistryAutoConfiguration() {
+    public BaseServerRegistryAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
             log.info("Enabled registry center '{}'", getClass());
         } else {

@@ -17,6 +17,11 @@ public final class Symbol {
 
     public interface Str {
         /**
+         * Zero symbol
+         */
+        String ZERO = "\u0000";
+
+        /**
          * Colon symbol
          */
         String COLON = ":";
@@ -88,6 +93,11 @@ public final class Symbol {
     }
 
     public interface Char {
+        /**
+         * Zero char symbol, equals '\0'
+         */
+        char ZERO = '\u0000';
+
         /**
          * Colon symbol
          */

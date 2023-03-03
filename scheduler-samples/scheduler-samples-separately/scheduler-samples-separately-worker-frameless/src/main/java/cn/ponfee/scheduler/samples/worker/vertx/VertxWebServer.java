@@ -19,7 +19,6 @@ import cn.ponfee.scheduler.worker.rpc.WorkerServiceProvider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -70,8 +69,13 @@ public class VertxWebServer extends AbstractVerticle {
             LOG.error("Cannot close un-deployed vertx.");
             return;
         }
+
+        // HttpServer.close()
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        super.vertx.close(ctx -> countDownLatch.countDown());
+        super.vertx.close(ctx -> {
+            ctx.result();
+            countDownLatch.countDown();
+        });
         try {
             countDownLatch.await(60, TimeUnit.SECONDS);
             LOG.info("Close vertx success.");
@@ -117,9 +121,11 @@ public class VertxWebServer extends AbstractVerticle {
         HttpServerOptions options = new HttpServerOptions()
             .setIdleTimeout(120)
             .setIdleTimeoutUnit(TimeUnit.SECONDS);
-        HttpServer server = super.vertx.createHttpServer(options);
-        server.requestHandler(router);
-        server.listen(port);
+
+        super.vertx
+            .createHttpServer(options)
+            .requestHandler(router)
+            .listen(port);
     }
 
     private static void response(RoutingContext ctx, int statusCode, Object result) {

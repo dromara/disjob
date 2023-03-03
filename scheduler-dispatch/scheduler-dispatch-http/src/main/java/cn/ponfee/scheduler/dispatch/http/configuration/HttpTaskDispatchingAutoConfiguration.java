@@ -17,7 +17,7 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
-import cn.ponfee.scheduler.dispatch.configuration.MarkTaskDispatchingAutoConfiguration;
+import cn.ponfee.scheduler.dispatch.configuration.BaseTaskDispatchingAutoConfiguration;
 import cn.ponfee.scheduler.dispatch.http.HttpTaskDispatcher;
 import cn.ponfee.scheduler.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
@@ -37,7 +37,7 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Ponfee
  */
-public class HttpTaskDispatchingAutoConfiguration extends MarkTaskDispatchingAutoConfiguration {
+public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAutoConfiguration {
 
     /**
      * Configuration http task dispatcher.

@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.base.Symbol.Str;
 import cn.ponfee.scheduler.common.base.tuple.Tuple3;
-import cn.ponfee.scheduler.common.spring.MarkRpcController;
+import cn.ponfee.scheduler.common.spring.RpcController;
 import cn.ponfee.scheduler.common.spring.TransactionUtils;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.base.SupervisorService;
@@ -85,7 +85,7 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
  * @author Ponfee
  */
 @Component
-public class SchedulerJobManager extends AbstractSupervisorManager implements SupervisorService, MarkRpcController {
+public class SchedulerJobManager extends AbstractSupervisorManager implements SupervisorService, RpcController {
 
     private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_SUFFIX;
     private static final int AFFECTED_ONE_ROW = 1;
@@ -322,9 +322,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
         // 1、build sched instance and sched task list
         Date now = new Date();
-        SchedInstance instance = SchedInstance.create(
-            generateId(), job.getJobId(), RunType.MANUAL, now.getTime(), 0, now
-        );
+        SchedInstance instance = SchedInstance.create(generateId(), job.getJobId(), RunType.MANUAL, now.getTime(), 0, now);
         List<SchedTask> tasks = splitTasks(job, instance.getInstanceId(), now);
 
         // 2、save sched trace and sched task to database
@@ -411,13 +409,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             // already terminated
             return false;
         }
-        int row = taskMapper.terminate(
-            param.getTaskId(),
-            toState.value(),
-            ExecuteState.EXECUTING.value(),
-            new Date(),
-            errorMsg
-        );
+        int row = taskMapper.terminate(param.getTaskId(), toState.value(), ExecuteState.EXECUTING.value(), new Date(), errorMsg);
         boolean result = (row == AFFECTED_ONE_ROW);
         if (!result) {
             log.warn("Conflict terminate task {}, {}", param.getTaskId(), toState);
@@ -465,12 +457,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
 
         // update waiting task
-        taskMapper.updateStateByInstanceId(
-            instanceId,
-            ExecuteState.PAUSED.value(),
-            Collections.singletonList(ExecuteState.WAITING.value()),
-            null
-        );
+        taskMapper.updateStateByInstanceId(instanceId, ExecuteState.PAUSED.value(), Collections.singletonList(ExecuteState.WAITING.value()), null);
 
         // load the alive executing tasks
         List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, Operations.PAUSE);
@@ -492,12 +479,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
             int row;
             if (toRunState.isTerminal()) {
-                row = instanceMapper.terminate(
-                    instanceId,
-                    toRunState.value(),
-                    Collections.singletonList(runState.value()),
-                    new Date()
-                );
+                row = instanceMapper.terminate(instanceId, toRunState.value(), Collections.singletonList(runState.value()), new Date());
             } else {
                 row = instanceMapper.updateState(instanceId, toRunState.value(), runState.value(), null);
             }
@@ -528,13 +510,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             return false;
         }
 
-        int row = taskMapper.updateState(
-            param.getTaskId(),
-            ExecuteState.PAUSED.value(),
-            ExecuteState.EXECUTING.value(),
-            errorMsg,
-            null
-        );
+        int row = taskMapper.updateState(param.getTaskId(), ExecuteState.PAUSED.value(), ExecuteState.EXECUTING.value(), errorMsg, null);
         if (row != AFFECTED_ONE_ROW) {
             log.warn("Paused task unsuccessful.");
             return false;
@@ -545,9 +521,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                                       .map(e -> ExecuteState.of(e.getExecuteState()))
                                       .noneMatch(ExecuteState.PAUSABLE_LIST::contains);
         if (allPaused) {
-            row = instanceMapper.updateState(
-                param.getInstanceId(), RunState.PAUSED.value(), RunState.RUNNING.value(), null
-            );
+            row = instanceMapper.updateState(param.getInstanceId(), RunState.PAUSED.value(), RunState.RUNNING.value(), null);
             if (row != AFFECTED_ONE_ROW) {
                 log.error("Update sched instance to paused state conflict: {} | {}", param.getInstanceId(), param.getTaskId());
             }
@@ -578,12 +552,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         }
 
         // update waiting & paused state task
-        taskMapper.updateStateByInstanceId(
-            instanceId,
-            operation.targetState().value(),
-            EXECUTABLE_EXECUTE_STATE_LIST,
-            new Date()
-        );
+        taskMapper.updateStateByInstanceId(instanceId, operation.targetState().value(), EXECUTABLE_EXECUTE_STATE_LIST, new Date());
 
         // load the alive executing tasks
         List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, operation);
@@ -594,12 +563,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                                         .stream()
                                         .anyMatch(e -> ExecuteState.of(e.getExecuteState()).isFailure());
             RunState toRunState = failure ? RunState.CANCELED : RunState.FINISHED;
-            int row = instanceMapper.terminate(
-                instanceId,
-                toRunState.value(),
-                Collections.singletonList(runState.value()),
-                new Date()
-            );
+            int row = instanceMapper.terminate(instanceId, toRunState.value(), Collections.singletonList(runState.value()), new Date());
             if (row != AFFECTED_ONE_ROW) {
                 log.warn("Pause instance from {} to {} conflict", runState, toRunState);
             }
@@ -628,13 +592,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
             return false;
         }
 
-        int row = taskMapper.terminate(
-            param.getTaskId(),
-            toState.value(),
-            ExecuteState.EXECUTING.value(),
-            new Date(),
-            errorMsg
-        );
+        int row = taskMapper.terminate(param.getTaskId(), toState.value(), ExecuteState.EXECUTING.value(), new Date(), errorMsg);
         if (row != AFFECTED_ONE_ROW) {
             log.warn("Canceled task unsuccessful.");
             return false;
@@ -645,12 +603,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                                           .map(e -> ExecuteState.of(e.getExecuteState()))
                                           .allMatch(ExecuteState::isTerminal);
         if (allTerminated) {
-            row = instanceMapper.terminate(
-                param.getInstanceId(),
-                RunState.CANCELED.value(),
-                Collections.singletonList(RunState.RUNNING.value()),
-                new Date()
-            );
+            row = instanceMapper.terminate(param.getInstanceId(), RunState.CANCELED.value(), Collections.singletonList(RunState.RUNNING.value()), new Date());
             if (row != AFFECTED_ONE_ROW) {
                 log.error("Update sched instance to canceled state conflict: {} | {}", param.getInstanceId(), param.getTaskId());
             }
@@ -675,12 +628,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         int row = instanceMapper.updateState(instanceId, RunState.WAITING.value(), RunState.PAUSED.value(), null);
         Assert.state(row == AFFECTED_ONE_ROW, "Resume sched instance failed.");
 
-        row = taskMapper.updateStateByInstanceId(
-            instanceId,
-            ExecuteState.WAITING.value(),
-            Collections.singletonList(ExecuteState.PAUSED.value()),
-            null
-        );
+        row = taskMapper.updateStateByInstanceId(instanceId, ExecuteState.WAITING.value(), Collections.singletonList(ExecuteState.PAUSED.value()), null);
         Assert.state(row >= AFFECTED_ONE_ROW, "Resume sched task failed.");
 
         // dispatch task
@@ -703,13 +651,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
         row = 0;
         for (SchedTask task : tasks) {
-            row += taskMapper.updateState(
-                task.getTaskId(),
-                toState.value(),
-                task.getExecuteState(),
-                null,
-                task.getVersion()
-            );
+            row += taskMapper.updateState(task.getTaskId(), toState.value(), task.getExecuteState(), null, task.getVersion());
         }
         Assert.state(row >= AFFECTED_ONE_ROW, () -> "Conflict update state: " + toState + ", " + tasks + ", " + instance);
 
@@ -746,9 +688,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                               .map(SchedTask::getExecuteEndTime)
                               .max(Comparator.naturalOrder())
                               .orElseThrow(IllegalStateException::new);
-            runState = taskStateList.stream().allMatch(ExecuteState.FINISHED::equals)
-                      ? RunState.FINISHED
-                      : RunState.CANCELED;
+            runState = taskStateList.stream().allMatch(ExecuteState.FINISHED::equals) ? RunState.FINISHED : RunState.CANCELED;
         } else {
             if (force) {
                 runEndTime = new Date();
@@ -810,9 +750,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
         // 1、build sched instance
         retriedCount++;
         long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
-        SchedInstance retryInstance = SchedInstance.create(
-            generateId(), schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now
-        );
+        SchedInstance retryInstance = SchedInstance.create(generateId(), schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
         retryInstance.setParentInstanceId(RunType.RETRY.equals(prevInstance.getRunType()) ? prevInstance.getParentInstanceId() : prevInstance.getInstanceId());
 
         // 2、build sched tasks
@@ -870,9 +808,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
             try {
                 Date now = new Date();
-                SchedInstance instance = SchedInstance.create(
-                    generateId(), childJob.getJobId(), RunType.DEPEND, parentInstance.getTriggerTime(), 0, now
-                );
+                SchedInstance instance = SchedInstance.create(generateId(), childJob.getJobId(), RunType.DEPEND, parentInstance.getTriggerTime(), 0, now);
                 instance.setParentInstanceId(parentInstance.getInstanceId());
                 List<SchedTask> tasks = splitTasks(childJob, instance.getInstanceId(), now);
 
@@ -922,10 +858,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
 
     private void parseTriggerConfig(SchedJob job, Date date) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
-        Assert.isTrue(
-            triggerType.isValid(job.getTriggerValue()),
-            () -> "Invalid trigger value: " + job.getTriggerType() + ", " + job.getTriggerValue()
-        );
+        Assert.isTrue(triggerType.isValid(job.getTriggerValue()), () -> "Invalid trigger value: " + job.getTriggerType() + ", " + job.getTriggerValue());
 
         if (triggerType == TriggerType.DEPEND) {
             List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Str.COMMA))
@@ -946,9 +879,7 @@ public class SchedulerJobManager extends AbstractSupervisorManager implements Su
                     () -> "Parent job '" + parentJob.getJobId() + "' group '" + parentJob.getJobGroup() + "' different '" + job.getJobGroup() + "'"
                 );
             }
-            dependMapper.insertBatch(
-                parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList())
-            );
+            dependMapper.insertBatch(parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList()));
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {

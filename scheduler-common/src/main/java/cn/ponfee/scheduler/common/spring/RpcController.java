@@ -17,5 +17,5 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @LocalizedMethodArguments
-public interface MarkRpcController {
+public interface RpcController {
 }

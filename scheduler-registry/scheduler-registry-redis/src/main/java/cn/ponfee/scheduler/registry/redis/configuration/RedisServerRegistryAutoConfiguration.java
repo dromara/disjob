@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
-import cn.ponfee.scheduler.registry.configuration.MarkServerRegistryAutoConfiguration;
+import cn.ponfee.scheduler.registry.configuration.BaseServerRegistryAutoConfiguration;
 import cn.ponfee.scheduler.registry.redis.RedisSupervisorRegistry;
 import cn.ponfee.scheduler.registry.redis.RedisWorkerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -27,7 +27,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  * @author Ponfee
  */
 @EnableConfigurationProperties(RedisRegistryProperties.class)
-public class RedisServerRegistryAutoConfiguration extends MarkServerRegistryAutoConfiguration {
+public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration {
 
     /**
      * Configuration redis supervisor registry.

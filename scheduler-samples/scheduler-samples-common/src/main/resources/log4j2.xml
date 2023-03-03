@@ -19,7 +19,7 @@
     <!-- 输出到文件，按天或者超过100MB分割 -->
     <RollingFile name="RollingFile" fileName="${LOG_HOME}/${APP_NAME}.log" filePattern="${LOG_HOME}/$${date:yyyy-MM}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
       <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
-      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" /> 
+      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
       <PatternLayout pattern="${PATTERN_FILE}" />
       <Policies>
         <!-- 启动时就重新滚动日志 -->
@@ -38,37 +38,27 @@
       <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件 -->
       <DefaultRolloverStrategy max="100" />
     </RollingFile>
+
+    <Async name="AsyncRollingFile">
+      <AppenderRef ref="RollingFile" />
+      <LinkedTransferQueue />
+    </Async>
   </Appenders>
 
   <Loggers>
     <!-- additivity指定是否同时输出日志到父类的appender，缺省为true -->
-    <Logger name="cn.ponfee.scheduler" level="INFO" additivity="false">
-      <AppenderRef ref="Console" />
-      <AppenderRef ref="RollingFile" />
-    </Logger>
+    <Logger name="cn.ponfee.scheduler" level="INFO" />
     <!--
-    <Logger name="cn.ponfee.scheduler.supervisor.dao" level="DEBUG" additivity="false">
-      <AppenderRef ref="Console" />
-      <AppenderRef ref="RollingFile" />
-    </Logger>
-    <Logger name="cn.ponfee.scheduler.registry" level="DEBUG" additivity="false">
-      <AppenderRef ref="Console" />
-      <AppenderRef ref="RollingFile" />
-    </Logger>
-    <Logger name="cn.ponfee.scheduler.supervisor" level="DEBUG" additivity="false">
-      <AppenderRef ref="Console" />
-      <AppenderRef ref="RollingFile" />
-    </Logger>
-    <Logger name="cn.ponfee.scheduler.worker" level="DEBUG" additivity="false">
-      <AppenderRef ref="Console" />
-      <AppenderRef ref="RollingFile" />
-    </Logger>
+    <Logger name="cn.ponfee.scheduler.registry" level="DEBUG" />
+    <Logger name="cn.ponfee.scheduler.supervisor" level="DEBUG" />
+    <Logger name="cn.ponfee.scheduler.supervisor.dao" level="DEBUG" />
+    <Logger name="cn.ponfee.scheduler.worker" level="DEBUG" />
     -->
 
     <!-- 当根据日志名字获取不到指定的日志器时就使用Root作为默认的日志器 -->
     <Root level="WARN">
       <AppenderRef ref="Console" />
-      <AppenderRef ref="RollingFile" />
+      <AppenderRef ref="AsyncRollingFile" />
     </Root>
   </Loggers>
 

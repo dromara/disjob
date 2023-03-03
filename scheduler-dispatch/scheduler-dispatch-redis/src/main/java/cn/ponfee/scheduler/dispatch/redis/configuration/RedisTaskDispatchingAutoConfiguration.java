@@ -14,7 +14,7 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
-import cn.ponfee.scheduler.dispatch.configuration.MarkTaskDispatchingAutoConfiguration;
+import cn.ponfee.scheduler.dispatch.configuration.BaseTaskDispatchingAutoConfiguration;
 import cn.ponfee.scheduler.dispatch.redis.RedisTaskDispatcher;
 import cn.ponfee.scheduler.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -29,7 +29,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Ponfee
  */
-public class RedisTaskDispatchingAutoConfiguration extends MarkTaskDispatchingAutoConfiguration {
+public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAutoConfiguration {
 
     /**
      * Configuration redis task dispatcher.

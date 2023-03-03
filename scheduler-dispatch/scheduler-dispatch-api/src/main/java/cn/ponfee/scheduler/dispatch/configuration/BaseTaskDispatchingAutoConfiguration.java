@@ -14,16 +14,16 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Representing a mark abstract class spring autoconfiguration for task dispatching.
+ * Base task dispatching autoConfiguration
  *
  * @author Ponfee
  */
-public abstract class MarkTaskDispatchingAutoConfiguration {
+public abstract class BaseTaskDispatchingAutoConfiguration {
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    public MarkTaskDispatchingAutoConfiguration() {
+    public BaseTaskDispatchingAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
             log.info("Enabled task dispatching '{}'", getClass());
         } else {

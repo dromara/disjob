@@ -35,6 +35,7 @@ public abstract class AbstractDataSourceConfig {
 
     public AbstractDataSourceConfig() {
         String basePackage = ClassUtils.getPackagePath(getClass());
+        // cn/ponfee/scheduler/supervisor/dao/xml/*.xml
         this.mapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", basePackage);
     }
 

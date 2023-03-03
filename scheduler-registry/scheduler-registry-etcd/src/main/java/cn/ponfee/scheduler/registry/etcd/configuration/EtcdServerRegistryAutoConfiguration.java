@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
-import cn.ponfee.scheduler.registry.configuration.MarkServerRegistryAutoConfiguration;
+import cn.ponfee.scheduler.registry.configuration.BaseServerRegistryAutoConfiguration;
 import cn.ponfee.scheduler.registry.etcd.EtcdSupervisorRegistry;
 import cn.ponfee.scheduler.registry.etcd.EtcdWorkerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Bean;
  * @author Ponfee
  */
 @EnableConfigurationProperties(EtcdRegistryProperties.class)
-public class EtcdServerRegistryAutoConfiguration extends MarkServerRegistryAutoConfiguration {
+public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration {
 
     /**
      * Configuration etcd supervisor registry.

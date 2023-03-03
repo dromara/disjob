@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.common.date;
 
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -20,8 +21,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
-
-import static cn.ponfee.scheduler.common.util.Strings.BLANK_CHAR;
 
 /**
  * Date utility based joda
@@ -670,12 +669,12 @@ public class Dates {
      */
     public static String toCronExpression(LocalDateTime dateTime) {
         return new StringBuilder(22)
-            .append(dateTime.getSecond()    ).append(BLANK_CHAR) // second
-            .append(dateTime.getMinute()    ).append(BLANK_CHAR) // minute
-            .append(dateTime.getHour()      ).append(BLANK_CHAR) // hour
-            .append(dateTime.getDayOfMonth()).append(BLANK_CHAR) // day
-            .append(dateTime.getMonthValue()).append(BLANK_CHAR) // month
-            .append('?'                     ).append(BLANK_CHAR) // week
+            .append(dateTime.getSecond()    ).append(Char.SPACE) // second
+            .append(dateTime.getMinute()    ).append(Char.SPACE) // minute
+            .append(dateTime.getHour()      ).append(Char.SPACE) // hour
+            .append(dateTime.getDayOfMonth()).append(Char.SPACE) // day
+            .append(dateTime.getMonthValue()).append(Char.SPACE) // month
+            .append('?'                     ).append(Char.SPACE) // week
             .append(dateTime.getYear()      )                    // year
             .toString();
     }

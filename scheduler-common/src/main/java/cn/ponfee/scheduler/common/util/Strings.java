@@ -10,12 +10,10 @@ package cn.ponfee.scheduler.common.util;
 
 /**
  * String utilities
- * 
+ *
  * @author Ponfee
  */
 public final class Strings {
-
-    public static final char BLANK_CHAR = ' ';
 
     /**
      * <pre>

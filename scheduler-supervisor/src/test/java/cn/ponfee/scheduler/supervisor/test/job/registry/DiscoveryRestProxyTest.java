@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 public class DiscoveryRestProxyTest {
 
     @Test
-    public void testImplantGroup() {
+    public void testGroupedServer() {
         /*
         DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
             .connectTimeout(2000)
@@ -33,7 +33,7 @@ public class DiscoveryRestProxyTest {
         */
 
         WorkerService remoteWorkerService = DiscoveryRestProxy.create(true, WorkerService.class, null);
-        ((DiscoveryRestProxy.ImplantGroup)remoteWorkerService).group("test");
+        ((DiscoveryRestProxy.GroupedServer)remoteWorkerService).group("test");
     }
 
 }

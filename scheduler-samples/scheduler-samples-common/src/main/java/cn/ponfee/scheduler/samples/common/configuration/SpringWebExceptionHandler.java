@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-@ControllerAdvice(/*assignableTypes = cn.ponfee.scheduler.common.spring.MarkRpcController.class*/)
+@ControllerAdvice(/*assignableTypes = cn.ponfee.scheduler.common.spring.RpcController.class*/)
 public class SpringWebExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpringWebExceptionHandler.class);

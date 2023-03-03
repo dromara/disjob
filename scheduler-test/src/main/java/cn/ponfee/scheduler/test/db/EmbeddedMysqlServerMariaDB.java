@@ -47,11 +47,10 @@ public class EmbeddedMysqlServerMariaDB {
     public static DB start(int port) throws Exception {
         String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
 
-        String dataDir = createDataDirectory();
-
         DBConfiguration configuration = DBConfigurationBuilder.newBuilder()
             .setPort(port) // OR, default: setPort(0); => autom. detect free port
-            .setDataDir(dataDir) // just an example
+            .setBaseDir(createDirectory("base"))
+            .setDataDir(createDirectory("data"))
             //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
             .build();
         DB db = DB.newEmbeddedDB(configuration);
@@ -84,8 +83,8 @@ public class EmbeddedMysqlServerMariaDB {
             .collect(Collectors.joining("\n"));
     }
 
-    private static String createDataDirectory() throws IOException {
-        String dataDir = MavenProjects.getProjectBaseDir() + "/target/mariadb/";
+    private static String createDirectory(String name) throws IOException {
+        String dataDir = MavenProjects.getProjectBaseDir() + "/target/mariadb/" + name + "/";
         File file = new File(dataDir);
         if (file.exists()) {
             PathUtils.deleteDirectory(file.toPath());

@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.worker.rpc;
 
-import cn.ponfee.scheduler.common.spring.MarkRpcController;
+import cn.ponfee.scheduler.common.spring.RpcController;
 import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.JobHandlerUtils;
@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class WorkerServiceProvider implements WorkerService, MarkRpcController {
+public class WorkerServiceProvider implements WorkerService, RpcController {
 
     @Override
     public boolean verify(String jobHandler, String jobParam) {

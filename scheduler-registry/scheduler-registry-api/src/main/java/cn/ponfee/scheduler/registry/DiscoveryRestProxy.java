@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.lang.invoke.MethodHandle;
@@ -55,17 +56,14 @@ public class DiscoveryRestProxy {
 
     private static final ThreadLocal<String> IMPLANTED_GROUP_THREADLOCAL = new ThreadLocal<>();
 
-    /**
-     * 植入Server group
-     */
-    public interface ImplantGroup {
+    public interface GroupedServer {
         default void group(String groupName) {
             IMPLANTED_GROUP_THREADLOCAL.set(groupName);
         }
     }
 
     public static <T> T create(boolean grouped, Class<T> interfaceType, DiscoveryRestTemplate<?> discoveryRestTemplate) {
-        Class<?>[] interfaces = grouped ? new Class[]{interfaceType, ImplantGroup.class} : new Class[]{interfaceType};
+        Class<?>[] interfaces = grouped ? new Class[]{interfaceType, GroupedServer.class} : new Class[]{interfaceType};
         String prefixPath = parsePath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
         InvocationHandler invocationHandler = new RestInvocationHandler(discoveryRestTemplate, prefixPath);
         return (T) Proxy.newProxyInstance(interfaceType.getClassLoader(), interfaces, invocationHandler);
@@ -85,29 +83,30 @@ public class DiscoveryRestProxy {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Request request = getRequest(prefixPath, method);
-            if (request == null) {
-                //if (method.getDeclaringClass() == ImplantGroup.class) {
-                //    assert method.equals(ImplantGroup.class.getDeclaredMethod("group", String.class));
-                //}
-                MethodHandle methodHandle = METHOD_HANDLE_CACHE.computeIfAbsent(
-                    method,
-                    key -> ExtendMethodHandles.getSpecialMethodHandle(method).bindTo(proxy)
-                );
-                return methodHandle.invokeWithArguments(args);
-            } else if (proxy instanceof ImplantGroup) {
-                String group = IMPLANTED_GROUP_THREADLOCAL.get();
-                try {
-                    return discoveryRestTemplate.execute(group, request.path, request.httpMethod, method.getGenericReturnType(), args);
-                } finally {
-                    IMPLANTED_GROUP_THREADLOCAL.remove();
+            Request request = buildRequest(prefixPath, method);
+            if (proxy instanceof GroupedServer) {
+                if (request == null) {
+                    //assert method.equals(GroupedServer.class.getDeclaredMethod("group", String.class));
+                    MethodHandle methodHandle = METHOD_HANDLE_CACHE.computeIfAbsent(
+                        method,
+                        key -> ExtendMethodHandles.getSpecialMethodHandle(method).bindTo(proxy)
+                    );
+                    return methodHandle.invokeWithArguments(args);
+                } else {
+                    String group = IMPLANTED_GROUP_THREADLOCAL.get();
+                    try {
+                        return discoveryRestTemplate.execute(group, request.path, request.httpMethod, method.getGenericReturnType(), args);
+                    } finally {
+                        IMPLANTED_GROUP_THREADLOCAL.remove();
+                    }
                 }
             } else {
+                Assert.state(request != null, () -> "Invalid http request method: " + method.toGenericString());
                 return discoveryRestTemplate.execute(null, request.path, request.httpMethod, method.getGenericReturnType(), args);
             }
         }
 
-        private static Request getRequest(String prefixPath, Method method) {
+        private static Request buildRequest(String prefixPath, Method method) {
             return REQUEST_CACHE.computeIfAbsent(method, key -> {
                 RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class);
                 if (mapping == null || ArrayUtils.isEmpty(mapping.method())) {
