@@ -169,4 +169,3 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 - [x] Extended registry: Zookeeper, Etcd, Nacos
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB
-- [ ] When the machine has multiple network cards, the host ip of the specified network card is obtained

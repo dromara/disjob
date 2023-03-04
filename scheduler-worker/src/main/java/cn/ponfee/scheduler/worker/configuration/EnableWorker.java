@@ -11,9 +11,9 @@ package cn.ponfee.scheduler.worker.configuration;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.common.util.Networks;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.*;
+import cn.ponfee.scheduler.core.util.JobUtils;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
@@ -75,8 +75,10 @@ public @interface EnableWorker {
         @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         public Worker currentWorker(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
+                                    @Value("${" + JobConstants.SCHEDULER_BOUND_SERVER_HOST + ":}") String boundHost,
                                     WorkerProperties config) {
-            Worker currentWorker = new Worker(config.getGroup(), ObjectUtils.uuid32(), Networks.getHostIp(), port);
+            String host = JobUtils.getLocalHost(boundHost);
+            Worker currentWorker = new Worker(config.getGroup(), ObjectUtils.uuid32(), host, port);
             // inject current worker: Worker.class.getDeclaredClasses()[0]
             try {
                 ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});

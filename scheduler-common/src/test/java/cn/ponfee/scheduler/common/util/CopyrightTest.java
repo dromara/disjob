@@ -6,11 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.core.handle;
+package cn.ponfee.scheduler.common.util;
 
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
-import cn.ponfee.scheduler.common.util.MavenProjects;
-import cn.ponfee.scheduler.common.util.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;

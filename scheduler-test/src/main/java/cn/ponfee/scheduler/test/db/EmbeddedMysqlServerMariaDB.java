@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
+import static cn.ponfee.scheduler.test.db.DBUtils.DB_NAME;
 
 /**
  * MariaDB Server
@@ -60,24 +60,24 @@ public class EmbeddedMysqlServerMariaDB {
         System.out.println("Embedded maria db started!");
 
         db.source(IOUtils.toInputStream(loadScript(), StandardCharsets.UTF_8));
-        JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(jdbcUrl, DB_NAME, DB_NAME);
+        JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate(jdbcUrl, DB_NAME, DB_NAME);
 
         System.out.println("\n--------------------------------------------------------testDatabase");
-        DBTools.testNativeConnection("com.mysql.cj.jdbc.Driver", jdbcUrl, DB_NAME, DB_NAME);
+        DBUtils.testNativeConnection("com.mysql.cj.jdbc.Driver", jdbcUrl, DB_NAME, DB_NAME);
 
         System.out.println("\n--------------------------------------------------------testMysql");
-        DBTools.testMysql(jdbcTemplate);
+        DBUtils.testMysql(jdbcTemplate);
 
         System.out.println("\n--------------------------------------------------------testJdbcTemplate");
-        DBTools.testJdbcTemplate(jdbcTemplate);
+        DBUtils.testJdbcTemplate(jdbcTemplate);
 
         System.out.println("\n--------------------------------------------------------testQuerySql");
-        DBTools.testQuerySchedJob(jdbcTemplate);
+        DBUtils.testQuerySchedJob(jdbcTemplate);
         return db;
     }
 
     private static String loadScript() throws Exception {
-        return Arrays.stream(DBTools.loadScript().split("\n"))
+        return Arrays.stream(DBUtils.loadScript().split("\n"))
             // fix error: The MariaDB server is running with the --skip-grant-tables option so it cannot execute this statement
             .filter(s -> !StringUtils.startsWithAny(s, "CREATE USER ", "GRANT ALL PRIVILEGES ON ", "FLUSH PRIVILEGES;"))
             .collect(Collectors.joining("\n"));

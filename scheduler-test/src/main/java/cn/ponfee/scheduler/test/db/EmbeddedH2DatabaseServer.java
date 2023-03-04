@@ -47,13 +47,13 @@ public class EmbeddedH2DatabaseServer {
         //new org.h2.server.pg.PgServer().start();
         System.out.println("Embedded h2 database started!");
 
-        JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate(jdbcUrl, username, password);
+        JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate(jdbcUrl, username, password);
 
         System.out.println("\n--------------------------------------------------------testDatabase");
-        DBTools.testNativeConnection("org.h2.Driver", jdbcUrl, username, password);
+        DBUtils.testNativeConnection("org.h2.Driver", jdbcUrl, username, password);
 
         System.out.println("\n--------------------------------------------------------testJdbcTemplate");
-        DBTools.testJdbcTemplate(jdbcTemplate);
+        DBUtils.testJdbcTemplate(jdbcTemplate);
 
         System.out.println("\n--------------------------------------------------------testScript");
         testScript(jdbcTemplate);

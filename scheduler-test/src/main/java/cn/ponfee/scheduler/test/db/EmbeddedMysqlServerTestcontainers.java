@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static cn.ponfee.scheduler.test.db.DBTools.DB_NAME;
+import static cn.ponfee.scheduler.test.db.DBUtils.DB_NAME;
 
 /**
  * <pre>
@@ -48,7 +48,7 @@ public class EmbeddedMysqlServerTestcontainers {
             .withPassword("")
             .withDatabaseName("test")
             .withEnv("MYSQL_ROOT_HOST", "%")
-            .withInitScript(DBTools.DB_SCRIPT_PATH) // IOUtils.resourceToString(script-path, UTF_8, DBTools.class.getClassLoader())
+            .withInitScript(DBUtils.DB_SCRIPT_PATH) // IOUtils.resourceToString(script-path, UTF_8, DBTools.class.getClassLoader())
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
         ) {
             mySQLContainer.setPortBindings(PORT_BINDINGS);
@@ -67,16 +67,16 @@ public class EmbeddedMysqlServerTestcontainers {
             ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, scriptContent);
             */
 
-            JdbcTemplate jdbcTemplate = DBTools.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, DB_NAME, DB_NAME);
+            JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, DB_NAME, DB_NAME);
 
             System.out.println("\n--------------------------------------------------------testMysql");
-            DBTools.testMysql(jdbcTemplate);
+            DBUtils.testMysql(jdbcTemplate);
 
             System.out.println("\n--------------------------------------------------------testJdbcTemplate");
-            DBTools.testJdbcTemplate(jdbcTemplate);
+            DBUtils.testJdbcTemplate(jdbcTemplate);
 
             System.out.println("\n--------------------------------------------------------testQuerySql");
-            DBTools.testQuerySchedJob(jdbcTemplate);
+            DBUtils.testQuerySchedJob(jdbcTemplate);
 
             new CountDownLatch(1).await();
         }

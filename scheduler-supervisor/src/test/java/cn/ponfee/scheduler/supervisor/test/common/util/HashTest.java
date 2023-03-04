@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.supervisor.test.common.util;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.util.Bytes;
 import cn.ponfee.scheduler.common.util.ClassUtils;
-import cn.ponfee.scheduler.common.util.Networks;
+import cn.ponfee.scheduler.common.util.NetUtils;
 import cn.ponfee.scheduler.core.enums.RunState;
 import com.google.common.math.IntMath;
 import org.apache.commons.codec.binary.Hex;
@@ -176,7 +176,7 @@ public class HashTest {
 
     @Test
     public void testNet() {
-        System.out.println(Networks.getHostIp());
+        System.out.println(NetUtils.getLocalHost());
     }
 
     @Test

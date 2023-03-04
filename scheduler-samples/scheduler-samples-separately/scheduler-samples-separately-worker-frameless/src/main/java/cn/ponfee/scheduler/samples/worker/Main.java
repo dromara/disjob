@@ -18,6 +18,7 @@ import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.util.JobUtils;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
@@ -46,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
+import static cn.ponfee.scheduler.core.base.JobConstants.SCHEDULER_BOUND_SERVER_HOST;
 import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
 
 /**
@@ -72,11 +74,12 @@ public class Main {
             props = new YamlProperties(inputStream);
         }
 
-        int port = Optional.ofNullable(props.getInt("server.port")).orElse(Networks.findAvailablePort(10000));
+        int port = Optional.ofNullable(props.getInt("server.port")).orElse(NetUtils.findAvailablePort(10000));
 
         String group = props.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");
-        Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), Networks.getHostIp(), port);
+        String boundHost = JobUtils.getLocalHost(props.getString(SCHEDULER_BOUND_SERVER_HOST));
+        Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), boundHost, port);
         // inject current worker
         ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
 

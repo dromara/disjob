@@ -44,7 +44,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_SUFFIX;
-import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NAME;
+import static cn.ponfee.scheduler.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
  * Manage Schedule job.
@@ -85,7 +85,7 @@ import static cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig.DB_NA
  * @author Ponfee
  */
 @Component
-public class SchedulerJobManager extends AbstractSupervisorManager implements SupervisorService, RpcController {
+public class SchedulerJobManager extends AbstractJobManager implements SupervisorService, RpcController {
 
     private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_SUFFIX;
     private static final int AFFECTED_ONE_ROW = 1;

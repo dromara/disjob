@@ -70,7 +70,7 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
-          <mainClass>cn.ponfee.scheduler.samples.merged.SchedulerApplication</mainClass>
+          <mainClass>cn.ponfee.scheduler.samples.merged.MergedApplication</mainClass>
         </configuration>
       </plugin>
     </plugins>

@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.samples.worker;
 
-import cn.ponfee.scheduler.samples.common.AbstractSchedulerSamplesApplication;
+import cn.ponfee.scheduler.samples.common.AbstractSamplesApplication;
 import cn.ponfee.scheduler.samples.common.util.SampleConstants;
 import cn.ponfee.scheduler.worker.configuration.EnableWorker;
 import org.springframework.boot.SpringApplication;
@@ -19,7 +19,7 @@ import org.springframework.boot.SpringApplication;
  * @author Ponfee
  */
 @EnableWorker
-public class WorkerApplication extends AbstractSchedulerSamplesApplication {
+public class WorkerApplication extends AbstractSamplesApplication {
 
     static {
         System.setProperty(SampleConstants.APP_NAME, "separately-worker");

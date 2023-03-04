@@ -169,4 +169,3 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB
-- [ ] 本机多网卡时，绑定网卡的host ip获取

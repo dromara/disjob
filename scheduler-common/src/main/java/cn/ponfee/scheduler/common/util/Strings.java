@@ -29,41 +29,41 @@ public final class Strings {
      * isMatch("aab", "c*a*b") = false
      * </pre>
      *
-     * @param s characters
-     * @param p pattern
-     * @return {@code true} if the characters match pattern
+     * @param s the text
+     * @param p the wildcard pattern
+     * @return {@code true} if the string match pattern
      */
-    public static boolean matches(String s, String p) {
-        int idxs = 0, idxp = 0, idxstar = -1, idxmatch = 0;
-        while (idxs < s.length()) {
-            // 当两个指针指向完全相同的字符时，或者p中遇到的是?时
-            if (idxp < p.length() && (s.charAt(idxs) == p.charAt(idxp) || p.charAt(idxp) == '?')) {
-                idxp++;
-                idxs++;
-                // 如果字符不同也没有?，但在p中遇到是*时，我们记录下*的位置，但不改变s的指针
-            } else if (idxp < p.length() && p.charAt(idxp) == '*') {
-                idxstar = idxp;
-                idxp++;
-                //遇到*后，我们用idxmatch来记录*匹配到的s字符串的位置，和不用*匹配到的s字符串位置相区分
-                idxmatch = idxs;
-                // 如果字符不同也没有?，p指向的也不是*，但之前已经遇到*的话，我们可以从idxmatch继续匹配任意字符
-            } else if (idxstar != -1) {
-                // 用上一个*来匹配，那我们p的指针也应该退回至上一个*的后面
-                idxp = idxstar + 1;
-                // 用*匹配到的位置递增
-                idxmatch++;
-                // s的指针退回至用*匹配到位置
-                idxs = idxmatch;
+    public static boolean isMatch(String s, String p) {
+        // 状态 dp[i][j] : 表示 s 的前 i 个字符和 p 的前 j 个字符是否匹配 (true 的话表示匹配)
+        // 状态转移方程：
+        //      1. 当 s[i] == p[j]，或者 p[j] == ? 那么 dp[i][j] = dp[i - 1][j - 1];
+        //      2. 当 p[j] == * 那么 dp[i][j] = dp[i][j - 1] || dp[i - 1][j]    其中：
+        //      dp[i][j - 1] 表示 * 代表的是空字符，例如 ab, ab*
+        //      dp[i - 1][j] 表示 * 代表的是非空字符，例如 abcd, ab*
+        // 初始化：
+        //      1. dp[0][0] 表示什么都没有，其值为 true
+        //      2. 第一行 dp[0][j]，换句话说，s 为空，与 p 匹配，所以只要 p 开始为 * 才为 true
+        //      3. 第一列 dp[i][0]，当然全部为 false
+        int m = s.length(), n = p.length();
+        boolean[][] dp = new boolean[m + 1][n + 1];
+        dp[0][0] = true;
+        for (int i = 1; i <= n; ++i) {
+            if (p.charAt(i - 1) == '*') {
+                dp[0][i] = true;
             } else {
-                return false;
+                break;
             }
         }
-        // 因为1个*能匹配无限序列，如果p末尾有多个*，我们都要跳过
-        while (idxp < p.length() && p.charAt(idxp) == '*') {
-            idxp++;
+        for (int i = 1; i <= m; ++i) {
+            for (int j = 1; j <= n; ++j) {
+                if (p.charAt(j - 1) == '*') {
+                    dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
+                } else if (p.charAt(j - 1) == '?' || s.charAt(i - 1) == p.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+            }
         }
-        // 如果p匹配完了，说明匹配成功
-        return idxp == p.length();
+        return dp[m][n];
     }
 
     /**
@@ -75,7 +75,7 @@ public final class Strings {
      */
     public static int count(String text, String str) {
         int count = 0;
-        for (int len = str.length(), index=-len; (index = text.indexOf(str, index + len)) != -1; ) {
+        for (int len = str.length(), index = -len; (index = text.indexOf(str, index + len)) != -1; ) {
             count++;
         }
         return count;

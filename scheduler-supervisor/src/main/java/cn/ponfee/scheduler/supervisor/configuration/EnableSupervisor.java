@@ -13,8 +13,8 @@ import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.common.util.Networks;
 import cn.ponfee.scheduler.core.base.*;
+import cn.ponfee.scheduler.core.util.JobUtils;
 import cn.ponfee.scheduler.registry.DiscoveryRestProxy;
 import cn.ponfee.scheduler.registry.DiscoveryRestTemplate;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -22,7 +22,7 @@ import cn.ponfee.scheduler.supervisor.SupervisorStartup;
 import cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig;
 import cn.ponfee.scheduler.supervisor.base.SupervisorConstants;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
-import cn.ponfee.scheduler.supervisor.dao.SchedulerDataSourceConfig;
+import cn.ponfee.scheduler.supervisor.dao.SupervisorDataSourceConfig;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -81,8 +81,10 @@ public @interface EnableSupervisor {
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        public Supervisor currentSupervisor(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port) {
-            Supervisor currentSupervisor = new Supervisor(Networks.getHostIp(), port);
+        public Supervisor currentSupervisor(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
+                                            @Value("${" + JobConstants.SCHEDULER_BOUND_SERVER_HOST + ":}") String boundHost) {
+            String host = JobUtils.getLocalHost(boundHost);
+            Supervisor currentSupervisor = new Supervisor(host, port);
             // inject current supervisor: Supervisor.class.getDeclaredClasses()[0]
             try {
                 ClassUtils.invoke(Class.forName(Supervisor.class.getName() + "$Current"), "set", new Object[]{currentSupervisor});
@@ -117,17 +119,17 @@ public @interface EnableSupervisor {
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public DoInLocked scanTriggeringJobLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanTriggeringJobLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_INSTANCE);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public DoInLocked scanRunningInstanceLocker(@Qualifier(SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanRunningInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
         }
 

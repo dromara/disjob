@@ -24,10 +24,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.sql.DataSource;
 
 /**
- * mysql database job
+ * Supervisor datasource configuration
  *
  * <pre>
- *  # database configuration
  *  spring.datasource.distributed-scheduler:
  *    driver-class-name: com.mysql.cj.jdbc.Driver
  *    jdbc-url: jdbc:mysql://112.74.170.75:3306/distributed_scheduler?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&&autoReconnect=true&failOverReadOnly=false&connectTimeout=2000&socketTimeout=5000
@@ -43,10 +42,10 @@ import javax.sql.DataSource;
  */
 @Configuration
 @MapperScan(
-    basePackages = SchedulerDataSourceConfig.BASE_PACKAGE + ".mapper",
-    sqlSessionTemplateRef = SchedulerDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_SUFFIX
+    basePackages = SupervisorDataSourceConfig.BASE_PACKAGE + ".mapper",
+    sqlSessionTemplateRef = SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_SUFFIX
 )
-public class SchedulerDataSourceConfig extends AbstractDataSourceConfig {
+public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
 
     /**
      * Package path

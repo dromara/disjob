@@ -12,11 +12,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
- * Abstract Scheduler Samples Application
+ * Abstract samples application
  *
  * @author Ponfee
  */
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-public abstract class AbstractSchedulerSamplesApplication {
+public abstract class AbstractSamplesApplication {
 
 }

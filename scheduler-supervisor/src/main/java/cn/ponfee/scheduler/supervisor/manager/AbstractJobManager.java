@@ -33,12 +33,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * The basic class of definition supervisor manager
+ * The base job manager
  *
  * @author Ponfee
  */
 @RequiredArgsConstructor
-public abstract class AbstractSupervisorManager {
+public abstract class AbstractJobManager {
 
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
 

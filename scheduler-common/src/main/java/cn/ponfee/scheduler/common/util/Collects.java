@@ -23,32 +23,43 @@ import java.util.function.Function;
 public class Collects {
 
     /**
-     * Gets the first element for list
+     * Gets the first element for values
      *
-     * @param list the list
-     * @param <T>  the list element type
-     * @return first element of list
+     * @param values the values
+     * @param <T>    the values element type
+     * @return first element of values
      */
-    public static <T> T getFirst(List<T> list) {
-        if (list == null || list.isEmpty()) {
+    public static <T> T getFirst(Collection<T> values) {
+        if (values == null || values.isEmpty()) {
             return null;
         }
-        return (list instanceof Deque) ? ((Deque<T>) list).getFirst() : list.get(0);
+        if (values instanceof Deque) {
+            return ((Deque<T>) values).getFirst();
+        }
+        if (values instanceof List) {
+            return ((List<T>) values).get(0);
+        }
+        return values.iterator().next();
     }
 
     /**
-     * Gets the last element for list
+     * Gets the last element for values
      *
-     * @param list the list
-     * @param <T>  the list element type
-     * @return last element of list
+     * @param values the values
+     * @param <T>    the values element type
+     * @return last element of values
      */
-    public static <T> T getLast(List<T> list) {
-        if (list == null || list.isEmpty()) {
+    public static <T> T getLast(Collection<T> values) {
+        if (values == null || values.isEmpty()) {
             return null;
         }
-        //return list.stream().reduce((a, b) -> b).orElse(null);
-        return (list instanceof Deque) ? ((Deque<T>) list).getLast() : list.get(list.size() - 1);
+        if (values instanceof Deque) {
+            return ((Deque<T>) values).getLast();
+        }
+        if (values instanceof List) {
+            return ((List<T>) values).get(values.size() - 1);
+        }
+        return values.stream().reduce((a, b) -> b).orElse(null);
     }
 
     public static <T> T get(T[] array, int index) {
@@ -66,7 +77,7 @@ public class Collects {
     }
 
     /**
-     * Returns consecutive sub array of an array, 
+     * Returns consecutive sub array of an array,
      * each of the same size (the final list may be smaller).
      *
      * <pre>

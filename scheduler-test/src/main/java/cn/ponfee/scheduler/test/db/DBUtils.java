@@ -29,7 +29,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public class DBTools {
+public class DBUtils {
 
     public static final String DB_NAME = "distributed_scheduler";
     public static final String DB_SCRIPT_PATH = "JOB_TABLES_DDL.sql";
@@ -43,7 +43,7 @@ public class DBTools {
     }
 
     public static String loadScript() throws Exception {
-        return IOUtils.resourceToString(DB_SCRIPT_PATH, StandardCharsets.UTF_8, DBTools.class.getClassLoader());
+        return IOUtils.resourceToString(DB_SCRIPT_PATH, StandardCharsets.UTF_8, DBUtils.class.getClassLoader());
     }
 
     public static void testNativeConnection(String driver, String url, String user, String password) throws Exception {

@@ -31,6 +31,11 @@ public class JobConstants {
     public static final String SCHEDULER_KEY_PREFIX = "distributed.scheduler";
 
     /**
+     * Server bound host
+     */
+    public static final String SCHEDULER_BOUND_SERVER_HOST = SCHEDULER_KEY_PREFIX + ".bound.server.host";
+
+    /**
      * Scheduler server registry key prefix
      */
     public static final String SCHEDULER_REGISTRY_KEY_PREFIX = SCHEDULER_KEY_PREFIX + ".registry";
