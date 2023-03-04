@@ -87,8 +87,6 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
             .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(waitingTasks)) {
-            // read conflict
-            log.info("Not has waiting tasks: {}", instance);
             return;
         }
 

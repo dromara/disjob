@@ -113,9 +113,9 @@ distributed-scheduler                                        # 主项目
 ```java
 @EnableSupervisor
 @EnableWorker
-public class SchedulerApplication extends AbstractSchedulerSamplesApplication {
+public class MergedApplication extends AbstractSamplesApplication {
   public static void main(String[] args) {
-    SpringApplication.run(SchedulerApplication.class, args);
+    SpringApplication.run(MergedApplication.class, args);
   }
 }
 ```

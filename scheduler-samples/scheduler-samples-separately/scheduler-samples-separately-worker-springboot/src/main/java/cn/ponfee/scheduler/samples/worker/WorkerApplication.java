@@ -22,6 +22,7 @@ import org.springframework.boot.SpringApplication;
 public class WorkerApplication extends AbstractSamplesApplication {
 
     static {
+        // for log4j log file dir
         System.setProperty(SampleConstants.APP_NAME, "separately-worker");
     }
 

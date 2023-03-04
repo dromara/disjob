@@ -8,14 +8,17 @@
 
 package cn.ponfee.scheduler.samples.common;
 
+import cn.ponfee.scheduler.common.base.Snowflake;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.Import;
 
 /**
  * Abstract samples application
  *
  * @author Ponfee
  */
+@Import(Snowflake.class) // IdGenerator for supervisor
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 public abstract class AbstractSamplesApplication {
 

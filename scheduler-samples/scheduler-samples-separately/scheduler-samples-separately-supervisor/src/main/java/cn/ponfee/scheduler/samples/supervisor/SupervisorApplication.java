@@ -8,23 +8,21 @@
 
 package cn.ponfee.scheduler.samples.supervisor;
 
-import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.samples.common.AbstractSamplesApplication;
 import cn.ponfee.scheduler.samples.common.util.SampleConstants;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.context.annotation.Import;
 
 /**
  * Supervisor application based spring boot
  *
  * @author Ponfee
  */
-@Import(Snowflake.class) // IdGenerator
 @EnableSupervisor
 public class SupervisorApplication extends AbstractSamplesApplication {
 
     static {
+        // for log4j log file dir
         System.setProperty(SampleConstants.APP_NAME, "separately-supervisor");
     }
 

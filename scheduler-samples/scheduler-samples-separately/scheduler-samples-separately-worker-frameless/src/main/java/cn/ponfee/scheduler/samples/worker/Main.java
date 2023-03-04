@@ -59,6 +59,7 @@ import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_KEY_PREFIX;
 public class Main {
 
     static {
+        // for log4j log file dir
         System.setProperty(SampleConstants.APP_NAME, "frameless-worker");
     }
 
