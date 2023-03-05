@@ -54,7 +54,7 @@ public enum RetryType implements IntValue<RetryType> {
 
     public static RetryType of(Integer value) {
         RetryType runType = MAPPING.get(value);
-        Assert.notNull(runType, () -> "Invalid retry type: " + value);
+        Assert.notNull(runType, () -> "Invalid retry type value: " + value);
         return runType;
     }
 

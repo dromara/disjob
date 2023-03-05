@@ -23,7 +23,7 @@ public abstract class TaskReceiver implements AutoCloseable {
     private final TimingWheel<ExecuteParam> timingWheel;
 
     public TaskReceiver(TimingWheel<ExecuteParam> timingWheel) {
-        this.timingWheel = Objects.requireNonNull(timingWheel);
+        this.timingWheel = Objects.requireNonNull(timingWheel, "Timing wheel cannot be null.");
     }
 
     /**

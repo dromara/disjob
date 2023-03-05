@@ -59,7 +59,7 @@ public enum RunType implements IntValue<RunType> {
 
     public static RunType of(Integer value) {
         RunType runType = MAPPING.get(value);
-        Assert.notNull(runType, () -> "Invalid run type: " + value);
+        Assert.notNull(runType, () -> "Invalid run type value: " + value);
         return runType;
     }
 

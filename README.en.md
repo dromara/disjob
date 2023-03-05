@@ -10,7 +10,7 @@
 
 ## Introduction
 
-A distributed job scheduler framework, in addition to the conventional distributed task scheduling function, it also provides splitting of custom subtasks, customized control of long tasks in execution, DAG task dependency, supervisor and worker separate deployment, and so on.
+A distributed job scheduler framework, in addition to the conventional distributed task scheduling function, it also provides splitting of custom subtasks, customized control of long tasks in execution, task dependency, supervisor and worker separate deployment, and so on.
 
 Lightweight, easy to use, especially suitable for the execution of long tasks. Scalability, extensibility, and stability, and has been runed in production.
 
@@ -57,7 +57,7 @@ distributed-scheduler                                        # Main project
 - Custom split tasks, override [JobHandler#split](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobSplitter.java) to split a job to many tasks
 - Provides automatic saving (checkpoint) of task execution snapshots, so that execution information is not lost, and tasks interrupted due to abnormalities can be continued to execute
 - Provides the ability to control tasks during execution, and can suspend/cancel the tasks in progress at any time, and can also resume the execution of suspended tasks
-- Provides the ability to execute tasks dependently. After multiple tasks build a DAG dependency relationship, the tasks will be executed sequentially according to the established dependency order
+- Provides the ability to execute tasks dependently. After multiple tasks build dependency relationship, the tasks will be executed sequentially according to the established dependency order
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 

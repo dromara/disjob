@@ -103,7 +103,7 @@ public class DBUtils {
         jdbcTemplate.execute("DROP TABLE IF EXISTS test");
     }
 
-    public static void testMysql(JdbcTemplate jdbcTemplate) {
+    public static void testMysqlVersion(JdbcTemplate jdbcTemplate) {
         String version = jdbcTemplate.queryForObject("SELECT VERSION()", String.class);
         System.out.println("Version: " + version);
 

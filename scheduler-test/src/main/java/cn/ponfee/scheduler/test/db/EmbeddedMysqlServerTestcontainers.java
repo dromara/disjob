@@ -70,7 +70,7 @@ public class EmbeddedMysqlServerTestcontainers {
             JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, DB_NAME, DB_NAME);
 
             System.out.println("\n--------------------------------------------------------testMysql");
-            DBUtils.testMysql(jdbcTemplate);
+            DBUtils.testMysqlVersion(jdbcTemplate);
 
             System.out.println("\n--------------------------------------------------------testJdbcTemplate");
             DBUtils.testJdbcTemplate(jdbcTemplate);

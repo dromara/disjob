@@ -43,13 +43,13 @@ public enum JobState implements IntValue<JobState> {
     }
 
     public static JobState of(Integer value) {
-        Assert.notNull(value, "Job state cannot be null.");
+        Assert.notNull(value, "Job state value cannot be null.");
         for (JobState state : JobState.values()) {
             if (state.value == value) {
                 return state;
             }
         }
-        throw new IllegalArgumentException("Invalid job state: " + value);
+        throw new IllegalArgumentException("Invalid job state value: " + value);
     }
 
 }

@@ -224,7 +224,7 @@ public enum TriggerType implements IntValue<TriggerType> {
 
     public static TriggerType of(Integer value) {
         TriggerType triggerType = MAPPING.get(value);
-        Assert.notNull(triggerType, () -> "Invalid trigger type: " + value);
+        Assert.notNull(triggerType, () -> "Invalid trigger type value: " + value);
         return triggerType;
     }
 
@@ -235,4 +235,5 @@ public enum TriggerType implements IntValue<TriggerType> {
         Assert.isTrue(list.size() == 1, () -> "The list expect one size, but actual is " + list.size());
         return list.get(0);
     }
+
 }

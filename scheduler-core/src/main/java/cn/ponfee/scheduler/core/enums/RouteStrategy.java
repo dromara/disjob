@@ -63,7 +63,7 @@ public enum RouteStrategy implements IntValue<RouteStrategy> {
 
     public static RouteStrategy of(Integer value) {
         RouteStrategy routeStrategy = MAPPING.get(value);
-        Assert.notNull(routeStrategy, () -> "Invalid route strategy: " + value);
+        Assert.notNull(routeStrategy, () -> "Invalid route strategy value: " + value);
         return routeStrategy;
     }
 

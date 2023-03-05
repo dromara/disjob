@@ -140,7 +140,7 @@ public enum ExecuteState implements IntValue<ExecuteState> {
 
     public static ExecuteState of(Integer value) {
         ExecuteState executeState = MAPPING.get(value);
-        Assert.notNull(executeState, () -> "Invalid execute state: " + value);
+        Assert.notNull(executeState, () -> "Invalid execute state value: " + value);
         return executeState;
     }
 

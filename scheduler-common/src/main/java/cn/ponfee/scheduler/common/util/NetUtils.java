@@ -102,7 +102,7 @@ public final class NetUtils {
         if (USED_PORT.get(port)) {
             return false;
         }
-        try (ServerSocket ss = new ServerSocket(port)) {
+        try (ServerSocket ignored = new ServerSocket(port)) {
             return true;
         } catch (IOException ignored) {
             USED_PORT.set(port);

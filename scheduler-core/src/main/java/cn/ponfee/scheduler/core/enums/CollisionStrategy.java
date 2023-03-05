@@ -59,7 +59,8 @@ public enum CollisionStrategy implements IntValue<CollisionStrategy> {
 
     public static CollisionStrategy of(Integer value) {
         CollisionStrategy collisionStrategy = MAPPING.get(value);
-        Assert.notNull(collisionStrategy, () -> "Invalid collision strategy: " + value);
+        Assert.notNull(collisionStrategy, () -> "Invalid collision strategy value: " + value);
         return collisionStrategy;
     }
+
 }

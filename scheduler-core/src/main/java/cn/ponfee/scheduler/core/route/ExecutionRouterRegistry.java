@@ -33,6 +33,7 @@ public class ExecutionRouterRegistry {
     }
 
     public static synchronized void register(ExecutionRouter executionRouter) {
+        Objects.requireNonNull(executionRouter, "Execution router cannot be null.");
         ROUTE_STRATEGY_MAPPING.put(executionRouter.routeStrategy(), executionRouter);
     }
 

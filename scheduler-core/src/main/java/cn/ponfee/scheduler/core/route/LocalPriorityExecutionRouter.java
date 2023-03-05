@@ -25,7 +25,7 @@ public class LocalPriorityExecutionRouter extends ExecutionRouter {
     private final ExecutionRouter otherExecutionRouter;
 
     public LocalPriorityExecutionRouter(ExecutionRouter otherExecutionRouter) {
-        this.otherExecutionRouter = Objects.requireNonNull(otherExecutionRouter);
+        this.otherExecutionRouter = Objects.requireNonNull(otherExecutionRouter, "Other execution router cannot be null.");
     }
 
     @Override

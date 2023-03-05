@@ -11,10 +11,7 @@ package cn.ponfee.scheduler.common.util;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -40,15 +37,16 @@ public class ConsistentHash<T> {
 
         HashFunction MD5 = key -> {
             byte[] digest = DigestUtils.md5(key);
-            assert digest.length == 16;
 
+            // digest.length == 16
             int hash = 0;
-            for (int i = 15; i >= 3; ) {
-                int h = ((digest[i--] & 0xFF) << 24)
-                      | ((digest[i--] & 0xFF) << 16)
-                      | ((digest[i--] & 0xFF) <<  8)
-                      | ((digest[i--] & 0xFF)      );
-                hash = (i == 11) ? h : (hash ^ h);
+            for (int i = 16; i > 3; ) {
+                // each grouped 4 byte block to int value
+                int h = ((digest[--i] & 0xFF) << 24)
+                      | ((digest[--i] & 0xFF) << 16)
+                      | ((digest[--i] & 0xFF) <<  8)
+                      | ((digest[--i] & 0xFF)      );
+                hash = (i == 12) ? h : (hash ^ h);
             }
             return hash;
         };
@@ -67,7 +65,7 @@ public class ConsistentHash<T> {
             return h;
         };
 
-        HashFunction CRC16 = key -> cn.ponfee.scheduler.common.util.CRC16.digest(key.getBytes(StandardCharsets.UTF_8));
+        HashFunction CRC_16 = key -> CRC16.digest(key.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -113,14 +111,8 @@ public class ConsistentHash<T> {
                           int vNodeCount,
                           Function<T, String> keyMapper,
                           HashFunction hashFunction) {
-        if (keyMapper == null) {
-            throw new NullPointerException("Key mapper is null.");
-        }
-        if (hashFunction == null) {
-            throw new NullPointerException("Hash function is null.");
-        }
-        this.keyMapper = keyMapper;
-        this.hashFunction = hashFunction;
+        this.keyMapper = Objects.requireNonNull(keyMapper, "Key mapper cannot be null.");
+        this.hashFunction = Objects.requireNonNull(hashFunction, "Hash function cannot be null.");
         if (pNodes != null) {
             for (T pNode : pNodes) {
                 addNode(pNode, vNodeCount);
@@ -173,8 +165,8 @@ public class ConsistentHash<T> {
         }
 
         SortedMap<Integer, VirtualNode> tailMap = ring.tailMap(hashFunction.hash(key));
-        VirtualNode virtualNode = tailMap.isEmpty() 
-                                ? ring.firstEntry().getValue() 
+        VirtualNode virtualNode = tailMap.isEmpty()
+                                ? ring.firstEntry().getValue()
                                 : ring.get(tailMap.firstKey());
         return virtualNode.physicalNode;
     }

@@ -54,7 +54,8 @@ public enum MisfireStrategy implements IntValue<MisfireStrategy> {
 
     public static MisfireStrategy of(Integer value) {
         MisfireStrategy misfireStrategy = MAPPING.get(value);
-        Assert.notNull(misfireStrategy, () -> "Invalid misfire strategy: " + value);
+        Assert.notNull(misfireStrategy, () -> "Invalid misfire strategy value: " + value);
         return misfireStrategy;
     }
+
 }

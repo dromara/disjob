@@ -8,7 +8,7 @@
 -- SET global validate_password_policy=LOW;
 -- SET sql_mode="NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION";
 -- DROP DATABASE IF EXISTS distributed_scheduler;
-CREATE DATABASE IF NOT EXISTS distributed_scheduler DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE IF NOT EXISTS distributed_scheduler DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 USE distributed_scheduler;
 
 
@@ -56,12 +56,12 @@ CREATE TABLE `sched_job` (
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_job_id` (`job_id`),
-    KEY `ix_job_group_job_name_is_deleted` (`job_group`, `job_name`, `is_deleted`),
-    KEY `ix_job_state_next_trigger_time` (`job_state`, `next_trigger_time`) COMMENT '用于扫表',
-    KEY `ix_created_at` (`created_at`),
-    KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='任务配置表';
+    UNIQUE KEY `uk_jobid` (`job_id`),
+    KEY `ix_jobgroup_jobname_isdeleted` (`job_group`, `job_name`, `is_deleted`),
+    KEY `ix_jobstate_nexttriggertime` (`job_state`, `next_trigger_time`) COMMENT '用于扫表',
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务配置表';
 
 CREATE TABLE `sched_instance` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -79,13 +79,13 @@ CREATE TABLE `sched_instance` (
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_instance_id` (`instance_id`),
-    UNIQUE KEY `uk_job_id_trigger_time_run_type` (`job_id`, `trigger_time`, `run_type`),
-    KEY `ix_parent_instance_id` (`parent_instance_id`),
-    KEY `ix_run_state_trigger_time` (`run_state`, `trigger_time`) COMMENT '用于扫表',
-    KEY `ix_created_at` (`created_at`),
-    KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='记录任务触发执行及生命周期的追踪';
+    UNIQUE KEY `uk_instanceid` (`instance_id`),
+    UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`),
+    KEY `ix_parentinstanceid` (`parent_instance_id`),
+    KEY `ix_runstate_triggertime` (`run_state`, `trigger_time`) COMMENT '用于扫表',
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='记录任务触发执行及生命周期的追踪';
 
 CREATE TABLE `sched_task` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -103,11 +103,11 @@ CREATE TABLE `sched_task` (
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_task_id` (`task_id`),
-    KEY `ix_instance_id` (`instance_id`),
-    KEY `ix_created_at` (`created_at`),
-    KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='具体执行的任务数据';
+    UNIQUE KEY `uk_taskid` (`task_id`),
+    KEY `ix_instanceid` (`instance_id`),
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='具体执行的任务数据';
 
 CREATE TABLE `sched_lock` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -116,9 +116,9 @@ CREATE TABLE `sched_lock` (
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_name` (`name`),
-    KEY `ix_created_at` (`created_at`),
-    KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='用于扫表时多个机器独占锁';
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用于扫表时多个机器独占锁';
 
 CREATE TABLE `sched_depend` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -127,11 +127,11 @@ CREATE TABLE `sched_depend` (
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_parent_job_id_child_job_id` (`parent_job_id`, `child_job_id`),
-    KEY `ix_child_job_id` (`child_job_id`),
-    KEY `ix_created_at` (`created_at`),
-    KEY `ix_updated_at` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='任务依赖表';
+    UNIQUE KEY `uk_parentjobid_childjobid` (`parent_job_id`, `child_job_id`),
+    KEY `ix_childjobid` (`child_job_id`),
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务依赖表';
 
 
 -- ----------------------------

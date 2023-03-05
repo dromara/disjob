@@ -104,7 +104,7 @@ public enum RunState implements IntValue<RunState> {
 
     public static RunState of(Integer value) {
         RunState runState = MAPPING.get(value);
-        Assert.notNull(runState, () -> "Invalid run state: " + value);
+        Assert.notNull(runState, () -> "Invalid run state value: " + value);
         return runState;
     }
 

@@ -66,7 +66,7 @@ public class EmbeddedMysqlServerMariaDB {
         DBUtils.testNativeConnection("com.mysql.cj.jdbc.Driver", jdbcUrl, DB_NAME, DB_NAME);
 
         System.out.println("\n--------------------------------------------------------testMysql");
-        DBUtils.testMysql(jdbcTemplate);
+        DBUtils.testMysqlVersion(jdbcTemplate);
 
         System.out.println("\n--------------------------------------------------------testJdbcTemplate");
         DBUtils.testJdbcTemplate(jdbcTemplate);
