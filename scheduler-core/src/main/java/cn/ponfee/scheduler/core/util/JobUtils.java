@@ -44,10 +44,10 @@ public class JobUtils {
     }
 
     private static String validateHost(String host, String from) {
-        if (NetUtils.isInvalidLocalHost(host)) {
-            throw new AssertionError("Invalid bound server host configured " + from + ": " + host);
+        if (NetUtils.isValidLocalHost(host)) {
+            return host;
         }
-        return host;
+        throw new AssertionError("Invalid bound server host configured " + from + ": " + host);
     }
 
 }

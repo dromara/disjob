@@ -280,7 +280,7 @@ public final class Files {
         String prefix = "";
         if (prefixIndex != -1) {
             prefix = pathToUse.substring(0, prefixIndex + 1);
-            if (prefix.contains("/")) {
+            if (prefix.contains(UNIX_FOLDER_SEPARATOR)) {
                 prefix = "";
             } else {
                 pathToUse = pathToUse.substring(prefixIndex + 1);

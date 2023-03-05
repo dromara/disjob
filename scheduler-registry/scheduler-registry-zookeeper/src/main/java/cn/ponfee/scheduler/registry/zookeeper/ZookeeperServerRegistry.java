@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.registry.zookeeper;
 
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
@@ -33,7 +34,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     private final CuratorFrameworkClient client;
 
     protected ZookeeperServerRegistry(ZookeeperRegistryProperties config) {
-        super(config.getNamespace(), '/');
+        super(config.getNamespace(), Char.SLASH);
         // zookeeper parent path must start with "/"
         String registryRootPath0 = separator + registryRootPath;
         String discoveryRootPath0 = separator + discoveryRootPath;

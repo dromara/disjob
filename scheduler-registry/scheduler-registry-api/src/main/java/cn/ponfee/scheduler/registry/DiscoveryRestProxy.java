@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.registry;
 
+import cn.ponfee.scheduler.common.base.Symbol.Str;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.ExtendMethodHandles;
 import cn.ponfee.scheduler.common.util.Files;
@@ -54,11 +55,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DiscoveryRestProxy {
 
-    private static final ThreadLocal<String> IMPLANTED_GROUP_THREADLOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<String> GROUPED_SERVER_THREADLOCAL = new ThreadLocal<>();
 
     public interface GroupedServer {
         default void group(String groupName) {
-            IMPLANTED_GROUP_THREADLOCAL.set(groupName);
+            GROUPED_SERVER_THREADLOCAL.set(groupName);
         }
     }
 
@@ -93,11 +94,11 @@ public class DiscoveryRestProxy {
                     );
                     return methodHandle.invokeWithArguments(args);
                 } else {
-                    String group = IMPLANTED_GROUP_THREADLOCAL.get();
+                    String group = GROUPED_SERVER_THREADLOCAL.get();
                     try {
                         return discoveryRestTemplate.execute(group, request.path, request.httpMethod, method.getGenericReturnType(), args);
                     } finally {
-                        IMPLANTED_GROUP_THREADLOCAL.remove();
+                        GROUPED_SERVER_THREADLOCAL.remove();
                     }
                 }
             } else {
@@ -153,10 +154,10 @@ public class DiscoveryRestProxy {
         if (mapping == null || StringUtils.isEmpty(path = Collects.get(mapping.path(), 0))) {
             return "";
         }
-        if (path.startsWith(Files.UNIX_FOLDER_SEPARATOR)) {
+        if (path.startsWith(Str.SLASH)) {
             path = path.substring(1);
         }
-        if (path.endsWith(Files.UNIX_FOLDER_SEPARATOR)) {
+        if (path.endsWith(Str.SLASH)) {
             path = path.substring(0, path.length() - 1);
         }
         return path;

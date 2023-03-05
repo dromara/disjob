@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.registry.etcd;
 
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
@@ -68,7 +69,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     protected EtcdServerRegistry(EtcdRegistryProperties config) {
         // etcd separator must be '/'
-        super(config.getNamespace(), '/');
+        super(config.getNamespace(), Char.SLASH);
         this.ttl = config.getSessionTimeoutMs() / 2000;
 
         CountDownLatch latch = new CountDownLatch(1);
