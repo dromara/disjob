@@ -13,6 +13,7 @@ import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Local priority execution router.
@@ -21,12 +22,23 @@ import java.util.List;
  */
 public class LocalPriorityExecutionRouter extends ExecutionRouter {
 
+    private final ExecutionRouter otherExecutionRouter;
+
+    public LocalPriorityExecutionRouter(ExecutionRouter otherExecutionRouter) {
+        this.otherExecutionRouter = Objects.requireNonNull(otherExecutionRouter);
+    }
+
+    @Override
+    public RouteStrategy routeStrategy() {
+        return RouteStrategy.LOCAL_PRIORITY;
+    }
+
     @Override
     protected Worker doRoute(ExecuteParam param, List<Worker> workers) {
         if (Worker.current() != null) {
             return Worker.current();
         }
-        return RouteStrategy.ROUND_ROBIN.route(param, workers);
+        return otherExecutionRouter.route(param, workers);
     }
 
 }

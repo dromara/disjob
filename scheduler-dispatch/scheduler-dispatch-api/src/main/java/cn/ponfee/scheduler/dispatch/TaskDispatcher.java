@@ -18,6 +18,7 @@ import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.route.ExecutionRouterRegistry;
 import cn.ponfee.scheduler.registry.Discovery;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
@@ -175,7 +176,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
         }
 
         List<Worker> workers = discoveryWorker.getDiscoveredServers(dispatchParam.group());
-        Worker worker = dispatchParam.routeStrategy().route(executeParam, workers);
+        Worker worker = ExecutionRouterRegistry.get(dispatchParam.routeStrategy()).route(executeParam, workers);
         executeParam.setWorker(worker);
     }
 

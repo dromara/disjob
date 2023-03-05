@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
 import java.util.List;
@@ -19,6 +20,13 @@ import java.util.List;
  * @author Ponfee
  */
 public abstract class ExecutionRouter {
+
+    /**
+     * Route strategy
+     *
+     * @return RouteStrategy
+     */
+    public abstract RouteStrategy routeStrategy();
 
     /**
      * Routes one worker

@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
 import java.util.List;
@@ -29,6 +30,11 @@ public class SimplyHashExecutionRouter extends ExecutionRouter {
 
     public SimplyHashExecutionRouter(ToLongFunction<ExecuteParam> mapper) {
         this.mapper = mapper;
+    }
+
+    @Override
+    public RouteStrategy routeStrategy() {
+        return RouteStrategy.SIMPLY_HASH;
     }
 
     @Override

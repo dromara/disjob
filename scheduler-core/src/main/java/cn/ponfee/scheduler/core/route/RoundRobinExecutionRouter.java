@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 import cn.ponfee.scheduler.core.route.count.AtomicCounter;
 import cn.ponfee.scheduler.core.route.count.JdkAtomicCounter;
@@ -30,6 +31,11 @@ public class RoundRobinExecutionRouter extends ExecutionRouter {
 
     public RoundRobinExecutionRouter(AtomicCounter counter) {
         this.counter = counter;
+    }
+
+    @Override
+    public RouteStrategy routeStrategy() {
+        return RouteStrategy.ROUND_ROBIN;
     }
 
     @Override

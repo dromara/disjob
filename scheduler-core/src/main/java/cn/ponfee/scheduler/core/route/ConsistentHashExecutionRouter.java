@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.common.util.ConsistentHash;
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
 import java.util.List;
@@ -32,6 +33,11 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
                                          ConsistentHash.HashFunction hashFunction) {
         this.virtualCount = virtualCount;
         this.hashFunction = hashFunction;
+    }
+
+    @Override
+    public RouteStrategy routeStrategy() {
+        return RouteStrategy.CONSISTENT_HASH;
     }
 
     @Override

@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
 
 import java.util.List;
@@ -29,6 +30,11 @@ public class RandomExecutionRouter extends ExecutionRouter {
 
     public RandomExecutionRouter(Random random) {
         this.random = random;
+    }
+
+    @Override
+    public RouteStrategy routeStrategy() {
+        return RouteStrategy.RANDOM;
     }
 
     @Override
