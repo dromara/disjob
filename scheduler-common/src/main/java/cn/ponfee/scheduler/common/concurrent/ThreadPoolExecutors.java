@@ -122,9 +122,9 @@ public final class ThreadPoolExecutors {
             : new SynchronousQueue<>();
 
         // thread factory, Executors.defaultThreadFactory()
-        ThreadFactory threadFactory = new NamedThreadFactory(threadName);
+        ThreadFactory threadFactory = NamedThreadFactory.builder().prefix(threadName).build();
 
-        // rejected Handler Strategy 
+        // rejected Handler Strategy
         if (rejectedHandler == null) {
             rejectedHandler = CALLER_RUNS;
         }

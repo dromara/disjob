@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.supervisor.base;
+package cn.ponfee.scheduler.supervisor;
 
 import org.springframework.context.ApplicationContext;
 
@@ -16,11 +16,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 /**
- * Spring test collector
+ * Collect spring boot test info
  *
  * @author Ponfee
  */
-public class SpringTestCollector {
+public class SpringBootTestCollector {
 
     private static final ConcurrentMap<ApplicationContext, Set<Class<?>>> TEST_CLASSES_MAP = new ConcurrentHashMap<>();
 

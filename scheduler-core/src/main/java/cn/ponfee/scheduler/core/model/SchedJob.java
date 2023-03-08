@@ -174,7 +174,7 @@ public class SchedJob extends BaseEntity implements Serializable {
      */
     private String createdBy;
 
-    public void verifyPreAdd() {
+    public void verifyBeforeAdd() {
         Assert.notNull(triggerType, "triggerType cannot be null.");
         Assert.notNull(triggerValue, "triggerValue cannot be null.");
         Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
@@ -186,10 +186,10 @@ public class SchedJob extends BaseEntity implements Serializable {
         Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
     }
 
-    public void verifyPreUpdate() {
+    public void verifyBeforeUpdate() {
         Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
         Assert.isTrue(getVersion() != null && getVersion() > 0, () -> "Invalid version: " + getVersion());
-        verifyPreAdd();
+        verifyBeforeAdd();
     }
 
     public void checkAndDefaultSetting() {

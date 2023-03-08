@@ -31,6 +31,7 @@ CREATE TABLE `sched_job` (
     `job_name`             varchar(60)             NOT NULL                                                       COMMENT 'Job名称',
     `job_handler`          text                    NOT NULL                                                       COMMENT 'Job处理器(实现处理器接口的全限定类名或源代码)',
     `job_state`            tinyint(1)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT 'Job状态：0-已禁用；1-已启用；',
+    `job_type`             tinyint(3)    unsigned  NOT NULL DEFAULT '1'                                           COMMENT 'Job类型：1-常规(Normal)；2-广播(Broadcast)；3-工作流(Workflow)；4-分布式计算(MapReduce)；',
     `job_param`            text                    DEFAULT NULL                                                   COMMENT 'Job参数',
     `retry_type`           tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试类型：0-不重试；1-重试所有的Task；2-只重试失败的Task；',
     `retry_count`          tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败可重试的最大次数',
@@ -57,7 +58,7 @@ CREATE TABLE `sched_job` (
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_jobid` (`job_id`),
-    KEY `ix_jobgroup_jobname_isdeleted` (`job_group`, `job_name`, `is_deleted`),
+    UNIQUE KEY `uk_jobgroup_jobname_isdeleted` (`job_group`, `job_name`, `is_deleted`),
     KEY `ix_jobstate_nexttriggertime` (`job_state`, `next_trigger_time`) COMMENT '用于扫表',
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)

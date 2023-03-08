@@ -6,8 +6,49 @@
 ## deploy maven central repository
 
 ### deploy mode
-```bash
-mvn -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U
+- versions-maven-plugin
+```xml
+<!-- mvn -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U -->
+<plugin>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>versions-maven-plugin</artifactId>
+  <version>2.13.0</version>
+  <configuration>
+    <generateBackupPoms>false</generateBackupPoms>
+  </configuration>
+</plugin>
+```
+
+- flatten-maven-plugin
+```xml
+<!-- https://www.mojohaus.org/flatten-maven-plugin/usage.html -->
+<!-- mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U -->
+<plugin>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>flatten-maven-plugin</artifactId>
+  <version>1.3.0</version>
+  <configuration>
+    <updatePomFile>true</updatePomFile>
+    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+    <outputDirectory>target</outputDirectory>
+  </configuration>
+  <executions>
+    <execution>
+      <id>flatten</id>
+      <phase>process-resources</phase>
+      <goals>
+        <goal>flatten</goal>
+      </goals>
+    </execution>
+    <execution>
+      <id>flatten.clean</id>
+      <phase>clean</phase>
+      <goals>
+        <goal>clean</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
 ```
 
 ### release interactive mode

@@ -62,10 +62,23 @@ public final class CheckedThrowing {
     // -------------------------------------------------------------------------------caught
 
     public static void caught(ThrowingRunnable runnable) {
+        caught(runnable, "");
+    }
+
+    public static void caught(ThrowingRunnable runnable, String message) {
         try {
             runnable.run();
         } catch (Throwable t) {
-            LOG.error(t.getMessage(), t);
+            LOG.error(message == null ? "" : message, t);
+            Threads.interruptIfNecessary(t);
+        }
+    }
+
+    public static void caught(ThrowingRunnable runnable, Supplier<String> message) {
+        try {
+            runnable.run();
+        } catch (Throwable t) {
+            LOG.error(message.get(), t);
             Threads.interruptIfNecessary(t);
         }
     }

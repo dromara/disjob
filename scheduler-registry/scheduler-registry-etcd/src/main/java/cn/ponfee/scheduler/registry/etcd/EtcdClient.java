@@ -76,7 +76,9 @@ public class EtcdClient implements AutoCloseable {
      */
     private final Client client;
 
-    private final ScheduledExecutorService healthCheckScheduler = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("health_check_scheduler", true));
+    private final ScheduledExecutorService healthCheckScheduler = new ScheduledThreadPoolExecutor(
+        1, NamedThreadFactory.builder().prefix("health_check_scheduler").daemon(true).build()
+    );
 
     private final Map<String, Pair<Watch.Watcher, ChildChangedListener>> childWatchers = new HashMap<>();
 

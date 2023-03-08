@@ -211,21 +211,11 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         return taskMapper.updateWorker(taskIds, worker) >= AFFECTED_ONE_ROW;
     }
 
-    @Override
-    public boolean updateTaskErrorMsg(long taskId, String errorMsg) {
-        try {
-            return taskMapper.updateErrorMsg(taskId, errorMsg) == AFFECTED_ONE_ROW;
-        } catch (Exception e) {
-            log.error("Update sched task error msg failed: " + taskId, e);
-            return false;
-        }
-    }
-
     // ------------------------------------------------------------------operation within @Transactional annotation
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) {
-        job.verifyPreAdd();
+        job.verifyBeforeAdd();
 
         super.verifyJobHandler(job);
         job.checkAndDefaultSetting();
@@ -243,7 +233,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) {
-        job.verifyPreUpdate();
+        job.verifyBeforeUpdate();
 
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.isTrue(StringUtils.isEmpty(job.getJobParam()), "Job param must be null if not set job handler.");
@@ -690,12 +680,11 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                               .orElseThrow(IllegalStateException::new);
             runState = taskStateList.stream().allMatch(ExecuteState.FINISHED::equals) ? RunState.FINISHED : RunState.CANCELED;
         } else {
-            if (force) {
-                runEndTime = new Date();
-                runState = RunState.CANCELED;
-            } else {
+            if (!force) {
                 return false;
             }
+            runEndTime = new Date();
+            runState = RunState.CANCELED;
         }
 
         int row = instanceMapper.terminate(instanceId, runState.value(), CANCELABLE_RUN_STATE_LIST, runEndTime);
@@ -751,7 +740,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         retriedCount++;
         long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
         SchedInstance retryInstance = SchedInstance.create(generateId(), schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
-        retryInstance.setParentInstanceId(RunType.RETRY.equals(prevInstance.getRunType()) ? prevInstance.getParentInstanceId() : prevInstance.getInstanceId());
+        retryInstance.setParentInstanceId(prevInstance.obtainParentInstanceId());
 
         // 2、build sched tasks
         List<SchedTask> tasks;
@@ -809,7 +798,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             try {
                 Date now = new Date();
                 SchedInstance instance = SchedInstance.create(generateId(), childJob.getJobId(), RunType.DEPEND, parentInstance.getTriggerTime(), 0, now);
-                instance.setParentInstanceId(parentInstance.getInstanceId());
+                instance.setParentInstanceId(parentInstance.obtainParentInstanceId());
                 List<SchedTask> tasks = splitTasks(childJob, instance.getInstanceId(), now);
 
                 // save to db

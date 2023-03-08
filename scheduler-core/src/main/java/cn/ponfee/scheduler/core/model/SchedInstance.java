@@ -84,6 +84,17 @@ public class SchedInstance extends BaseEntity implements Serializable {
      */
     private Integer retriedCount;
 
+    /**
+     * Creates sched instance
+     *
+     * @param instanceId   the instance id
+     * @param jobId        the job id
+     * @param runType      the run type
+     * @param triggerTime  the trigger time
+     * @param retriedCount the retried count
+     * @param date         the creates date
+     * @return SchedInstance
+     */
     public static SchedInstance create(long instanceId, long jobId, RunType runType,
                                        long triggerTime, int retriedCount, Date date) {
         SchedInstance instance = new SchedInstance();
@@ -96,6 +107,15 @@ public class SchedInstance extends BaseEntity implements Serializable {
         instance.setUpdatedAt(date);
         instance.setCreatedAt(date);
         return instance;
+    }
+
+    /**
+     * Obtain parent instance id
+     *
+     * @return parent instance id
+     */
+    public Long obtainParentInstanceId() {
+        return parentInstanceId != null ? parentInstanceId : instanceId;
     }
 
 }

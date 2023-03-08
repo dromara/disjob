@@ -21,39 +21,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NamedThreadFactory implements ThreadFactory {
 
     private static final AtomicInteger POOL_SEQ = new AtomicInteger(1);
-
     private final AtomicInteger threadNo = new AtomicInteger(1);
+
     private final String prefix;
-    private final boolean daemon;
+    private final Boolean daemon;
+    private final Integer priority;
+    private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
     private final ThreadGroup group;
 
-    public NamedThreadFactory() {
-        this(null, Thread.currentThread().isDaemon());
-    }
-
-    public NamedThreadFactory(String prefix) {
-        this(prefix, Thread.currentThread().isDaemon());
-    }
-
-    public NamedThreadFactory(String prefix, boolean daemon) {
+    public NamedThreadFactory(String prefix, Boolean daemon, Integer priority,
+                              Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
         if (StringUtils.isBlank(prefix)) {
             prefix = "pool-" + POOL_SEQ.getAndIncrement();
         }
-        SecurityManager securityManager = System.getSecurityManager();
+        SecurityManager sm = System.getSecurityManager();
         this.prefix = prefix + "-thread-";
         this.daemon = daemon;
-        this.group = (securityManager == null)
-            ? Thread.currentThread().getThreadGroup()
-            : securityManager.getThreadGroup();
+        this.priority = priority;
+        this.uncaughtExceptionHandler = uncaughtExceptionHandler;
+        this.group = sm != null ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
     }
 
     @Override
     public Thread newThread(Runnable runnable) {
-        String name = prefix + threadNo.getAndIncrement();
-        Thread thread = new Thread(group, runnable, name, 0);
-        thread.setDaemon(daemon);
-        if (thread.getPriority() != Thread.NORM_PRIORITY) {
-            thread.setPriority(Thread.NORM_PRIORITY);
+        Thread thread = new Thread(group, runnable, prefix + threadNo.getAndIncrement(), 0);
+        thread.setDaemon(daemon != null ? daemon : Thread.currentThread().isDaemon());
+        if (priority != null) {
+            thread.setPriority(priority);
+        }
+        if (uncaughtExceptionHandler != null) {
+            thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
         }
         return thread;
     }
@@ -61,4 +58,42 @@ public class NamedThreadFactory implements ThreadFactory {
     public ThreadGroup getThreadGroup() {
         return group;
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String prefix;
+        private Boolean daemon;
+        private Integer priority;
+        private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+
+        private Builder() { }
+
+        public Builder prefix(String prefix) {
+            this.prefix = prefix;
+            return this;
+        }
+
+        public Builder daemon(boolean daemon) {
+            this.daemon = daemon;
+            return this;
+        }
+
+        public Builder priority(Integer priority) {
+            this.priority = priority;
+            return this;
+        }
+
+        public Builder prefix(Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+            this.uncaughtExceptionHandler = uncaughtExceptionHandler;
+            return this;
+        }
+
+        public NamedThreadFactory build() {
+            return new NamedThreadFactory(prefix, daemon, priority, uncaughtExceptionHandler);
+        }
+    }
+
 }

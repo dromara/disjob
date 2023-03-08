@@ -70,7 +70,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
-        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("redis_server_registry", true));
+        this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(
+            1, NamedThreadFactory.builder().prefix("redis_server_registry").daemon(true).build()
+        );
 
         registryScheduledExecutor.scheduleWithFixedDelay(() -> {
             if (closed.get()) {

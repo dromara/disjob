@@ -13,7 +13,6 @@ import cn.ponfee.scheduler.common.spring.RestTemplateUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -92,7 +91,9 @@ public class DiscoveryRestTemplate<D extends Server> {
 
         int serverNumber = servers.size();
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
-        for (int i = 0, n = Math.min(serverNumber, maxRetryTimes) + 1; i < n; i++) {
+        // minimum retry two times
+        Exception ex = null;
+        for (int i = 0, n = Math.min(serverNumber, maxRetryTimes); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
             String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
             try {
@@ -114,18 +115,21 @@ public class DiscoveryRestTemplate<D extends Server> {
                 ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
                 return restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor).getBody();
             } catch (Exception e) {
+                ex = e;
                 if (e instanceof ResourceAccessException || is5xxServerError(e)) {
-                    // round-robin retry
-                    LOG.error("Invoked http fail, url: " + url + ", req: " + Jsons.toJson(arguments), e);
-                    Thread.sleep(300L * IntMath.pow(i + 1, 2));
+                    LOG.error("Invoke discovered server rpc fail: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
                 } else {
-                    LOG.error("Invoked http error, url: " + url + ", req: " + Jsons.toJson(arguments), e);
-                    throw e;
+                    LOG.error("Invoke discovered server rpc error: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
+                }
+
+                if (i < n) {
+                    // round-robin retry, 100L * IntMath.pow(i + 1, 2)
+                    Thread.sleep(serverNumber == 1 ? 500 : 100L * (i + 1));
                 }
             }
         }
 
-        throw new IllegalStateException("Invoke http retried failed: " + path + ", " + Jsons.toJson(arguments));
+        throw new IllegalStateException("Invoke http retried failed: " + path + ", " + Jsons.toJson(arguments), ex);
     }
 
     public Discovery<D> getDiscoveryServer() {

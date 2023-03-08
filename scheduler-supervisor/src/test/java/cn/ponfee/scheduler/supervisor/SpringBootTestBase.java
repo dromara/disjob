@@ -11,7 +11,6 @@ package cn.ponfee.scheduler.supervisor;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.core.base.WorkerService;
-import cn.ponfee.scheduler.supervisor.base.SpringTestCollector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.*;
@@ -126,7 +125,7 @@ public abstract class SpringBootTestBase<T> {
                 ? applicationContext.getBean(type)
                 : applicationContext.getBean(beanName, type);
         }
-        SpringTestCollector.collect(applicationContext, getClass());
+        SpringBootTestCollector.collect(applicationContext, getClass());
 
         initMock();
         beforeEach();

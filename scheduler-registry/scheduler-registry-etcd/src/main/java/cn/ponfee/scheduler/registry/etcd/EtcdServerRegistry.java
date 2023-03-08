@@ -75,7 +75,9 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         CountDownLatch latch = new CountDownLatch(1);
         try {
             this.client = new EtcdClient(config);
-            this.keepAliveCheckScheduler = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("keep_alive_check_scheduler", true));
+            this.keepAliveCheckScheduler = new ScheduledThreadPoolExecutor(
+                1, NamedThreadFactory.builder().prefix("keep_alive_check_scheduler").daemon(true).build()
+            );
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
             createLeaseIdAndKeepAlive();

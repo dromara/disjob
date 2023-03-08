@@ -47,7 +47,8 @@ public class DBUtils {
     }
 
     public static void testNativeConnection(String driver, String url, String user, String password) throws Exception {
-        Class.forName(driver); // 非必需：DriverManager.getConnection(url, user, password)会根据url自动识别
+        // 非必须：DriverManager.getConnection(url, user, password)时会根据url自动识别来加载Driver实现类
+        Class.forName(driver);
         Connection conn = DriverManager.getConnection(url, user, password);
 
         System.out.println("Testing Database, URL=" + url);

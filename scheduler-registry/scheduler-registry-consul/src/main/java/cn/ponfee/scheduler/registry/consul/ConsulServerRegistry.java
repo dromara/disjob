@@ -67,7 +67,9 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();
 
         int period = Math.max(CHECK_PASS_INTERVAL_SECONDS, 1);
-        this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("consul_server_registry", true));
+        this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(
+            1, NamedThreadFactory.builder().prefix("consul_server_registry").daemon(true).build()
+        );
         consulTtlCheckExecutor.scheduleWithFixedDelay(this::checkPass, period, period, TimeUnit.SECONDS);
 
         this.consulSubscriberThread = new ConsulSubscriberThread(-1);

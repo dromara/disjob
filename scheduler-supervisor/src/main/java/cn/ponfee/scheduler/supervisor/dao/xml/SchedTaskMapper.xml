@@ -97,7 +97,7 @@
           error_msg = #{errorMsg,jdbcType=VARCHAR},
         </if>
         version = version+1
-    WHERE task_id = #{taskId,jdbcType=BIGINT} 
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = #{fromState,jdbcType=TINYINT}
       <if test="version!=null">AND version = #{version,jdbcType=INTEGER}</if>
   </update>
@@ -128,13 +128,6 @@
         version = version+1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = 20
-  </update>
-
-  <update id="updateErrorMsg">
-    UPDATE <include refid="Table_Name" />
-    SET error_msg = #{errorMsg,jdbcType=VARCHAR},
-        version = version+1
-    WHERE task_id = #{taskId,jdbcType=BIGINT}
   </update>
 
   <delete id="deleteByInstanceId" parameterType="_long">

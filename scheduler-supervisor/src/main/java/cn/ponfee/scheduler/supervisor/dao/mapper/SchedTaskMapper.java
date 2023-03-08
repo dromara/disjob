@@ -56,9 +56,6 @@ public interface SchedTaskMapper {
     int checkpoint(@Param("taskId") long taskId,
                    @Param("executeSnapshot") String executeSnapshot);
 
-    int updateErrorMsg(@Param("taskId") long taskId,
-                       @Param("errorMsg") String errorMsg);
-
     /**
      * Delete the sched task.
      *

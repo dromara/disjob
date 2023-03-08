@@ -18,6 +18,7 @@ package cn.ponfee.scheduler.common.util;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
@@ -72,7 +73,7 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isValidLocalHost("128.0.0.1"));
     }
 
-    @Test
+    @Test @Disabled
     void testIsConnectable() {
         assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 100));
         assertFalse(NetUtils.isConnectableHostPort("www.unknownhostname.com", 80, 100));
