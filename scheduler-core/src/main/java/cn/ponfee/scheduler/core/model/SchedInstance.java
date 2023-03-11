@@ -110,11 +110,11 @@ public class SchedInstance extends BaseEntity implements Serializable {
     }
 
     /**
-     * Obtain parent instance id
+     * Obtain root instance id
      *
-     * @return parent instance id
+     * @return root instance id
      */
-    public Long obtainParentInstanceId() {
+    public Long obtainRootInstanceId() {
         return parentInstanceId != null ? parentInstanceId : instanceId;
     }
 

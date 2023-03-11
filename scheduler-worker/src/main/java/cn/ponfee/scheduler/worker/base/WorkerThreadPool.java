@@ -23,6 +23,7 @@ import cn.ponfee.scheduler.core.handle.TaskExecutor;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.TaskWorker;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,9 +144,9 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         long taskId = stopParam.getTaskId();
         Pair<WorkerThread, ExecuteParam> pair = activePool.stopTask(taskId, ops);
         if (pair == null) {
-            LOG.warn("Not found stoppable task {} | {}", taskId, ops);
+            LOG.info("Not found stoppable task {} | {}", taskId, ops);
             try {
-                terminateTask(supervisorClient, stopParam, ops, ops.targetState(), null);
+                terminateTask0(supervisorClient, stopParam, ops, ops.targetState(), null);
             } catch (Exception e) {
                 LOG.error("Abort stopped task occur error: {} | {}", taskId, ops);
             }
@@ -389,6 +390,11 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             return;
         }
 
+        terminateTask0(supervisorClient, param, ops, toState, errorMsg);
+    }
+
+    private static void terminateTask0(SupervisorService supervisorClient, ExecuteParam param,
+                                       Operations ops, ExecuteState toState, String errorMsg) throws Exception {
         boolean success;
         switch (ops) {
             case TRIGGER:
@@ -481,9 +487,13 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 return null;
             }
 
-            thread.updateExecuteParam(param, null);
+            if (!thread.updateExecuteParam(param, null)) {
+                // cannot happen
+                LOG.error("Stop task clear execute param failed: {}", param);
+                return null;
+            }
             pool.remove(taskId);
-            LOG.info("Removed active pool worker thread: {} | {}", taskId, thread.getName());
+            LOG.info("Removed active pool worker thread: {} | {}", thread.getName(), param);
             return Pair.of(thread, param);
         }
 
@@ -493,7 +503,11 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 return null;
             }
 
-            workerThread.updateExecuteParam(param, null);
+            if (!workerThread.updateExecuteParam(param, null)) {
+                // cannot happen
+                LOG.error("Remove thread clear execute param failed: {}", param);
+                return null;
+            }
             WorkerThread removed = pool.remove(param.getTaskId());
 
             // cannot happen
@@ -747,7 +761,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 LOG.warn("Start task fail: " + param, e);
                 try {
                     // reset sched_task.worker
-                    supervisorClient.updateTaskWorker(Collections.singletonList(param.getTaskId()), "");
+                    supervisorClient.updateTaskWorker(Collections.singletonList(new TaskWorker(param.getTaskId(), "")));
                 } catch (Exception ex) {
                     // here need to manual handle
                     LOG.error("Reset task worker occur error: " + param, ex);

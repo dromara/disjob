@@ -15,6 +15,7 @@ import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.TaskWorker;
 import cn.ponfee.scheduler.registry.Discovery;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
 import com.google.common.collect.Lists;
@@ -82,7 +83,7 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
 
         List<ExecuteParam> matchedTriggers = ringTriggers.stream()
             .filter(e -> {
-                if (currentWorker.equals(e.getWorker())) {
+                if (currentWorker.equalsGroup(e.getWorker())) {
                     return true;
                 } else {
                     log.error("The current worker '{}' cannot match expect worker '{}'", currentWorker, e.getWorker());
@@ -95,14 +96,16 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
         }
 
         for (List<ExecuteParam> batchTriggers : Lists.partition(matchedTriggers, PROCESS_BATCH_SIZE)) {
-            List<Long> batchTaskIds = batchTriggers.stream().map(ExecuteParam::getTaskId).collect(Collectors.toList());
+            List<TaskWorker> list = batchTriggers.stream()
+                .map(e -> new TaskWorker(e.getTaskId(), e.getWorker().serialize()))
+                .collect(Collectors.toList());
             boolean status;
             try {
-                status = supervisorServiceClient.updateTaskWorker(batchTaskIds, currentWorker.serialize());
+                status = supervisorServiceClient.updateTaskWorker(list);
             } catch (Exception e) {
                 // must do submit if occur exception
                 status = true;
-                log.error("Update waiting sched_task.worker column failed: " + Jsons.toJson(batchTaskIds), e);
+                log.error("Update waiting sched_task.worker column failed: " + Jsons.toJson(list), e);
             }
             if (status) {
                 batchTriggers.forEach(workerThreadPool::submit);

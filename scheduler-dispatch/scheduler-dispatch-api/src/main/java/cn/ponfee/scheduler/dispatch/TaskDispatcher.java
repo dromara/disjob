@@ -18,6 +18,7 @@ import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.route.ExecutionRouter;
 import cn.ponfee.scheduler.core.route.ExecutionRouterRegistrar;
 import cn.ponfee.scheduler.registry.Discovery;
 import com.google.common.math.IntMath;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +51,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
                           @Nullable TimingWheel<ExecuteParam> timingWheel) {
-        this(discoveryWorker, timingWheel, 5);
+        this(discoveryWorker, timingWheel, 3);
     }
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
@@ -148,10 +150,9 @@ public abstract class TaskDispatcher implements AutoCloseable {
                 continue;
             }
             try {
-                boolean status = (timingWheel != null && executeParam.getWorker().equals(current))
-                               ? timingWheel.offer(executeParam) // push to local worker
-                               : dispatch(executeParam);         // push to remote worker
-                if (!status) {
+                boolean toLocal = timingWheel != null && current != null && current.equalsGroup(executeParam.getWorker());
+                boolean success = toLocal ? timingWheel.offer(executeParam) : dispatch(executeParam);
+                if (!success) {
                     // dispatch failed, delay retry
                     retry(dispatchParam);
                     log.error("Dispatch task failed: " + dispatchParam);
@@ -171,12 +172,14 @@ public abstract class TaskDispatcher implements AutoCloseable {
     private void assignWorker(DispatchParam dispatchParam) {
         ExecuteParam executeParam = dispatchParam.executeParam();
         if (executeParam.operation() != Operations.TRIGGER) {
-            // if pause or cancel, cannot assign worker
+            Objects.requireNonNull(executeParam.getWorker(), "Suspend execution worker cannot be null.");
+            // if pause or cancel task operation, cannot assign worker
             return;
         }
 
         List<Worker> workers = discoveryWorker.getDiscoveredServers(dispatchParam.group());
-        Worker worker = ExecutionRouterRegistrar.get(dispatchParam.routeStrategy()).route(executeParam, workers);
+        ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(dispatchParam.routeStrategy());
+        Worker worker = executionRouter.route(executeParam, workers);
         executeParam.setWorker(worker);
     }
 

@@ -199,6 +199,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
                 this.groupedWorkers = Collections.emptyMap();
             } else {
                 this.groupedWorkers = discoveredWorkers.stream()
+                    .flatMap(e -> e.splitGroup().stream())
                     .collect(Collectors.groupingBy(Worker::getGroup))
                     .entrySet()
                     .stream()

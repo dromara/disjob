@@ -25,7 +25,7 @@ public class SimplyHashExecutionRouter extends ExecutionRouter {
     private final ToLongFunction<ExecuteParam> mapper;
 
     public SimplyHashExecutionRouter() {
-        this(param -> Math.abs(param.getJobId()));
+        this(param -> Math.abs(param.getInstanceId()));
     }
 
     public SimplyHashExecutionRouter(ToLongFunction<ExecuteParam> mapper) {

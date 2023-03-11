@@ -45,7 +45,7 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
         ConsistentHash<Worker> consistentHashRouter = new ConsistentHash<>(
             workers, virtualCount, Worker::toString, hashFunction
         );
-        return consistentHashRouter.routeNode(Long.toString(param.getJobId()));
+        return consistentHashRouter.routeNode(Long.toString(param.getInstanceId()));
     }
 
 }

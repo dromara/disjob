@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-1.9-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
+[![Maven Central](https://img.shields.io/badge/maven--central-1.10-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
 
 **`English`** | [简体中文](README.md)
 
@@ -67,14 +67,14 @@ distributed-scheduler                                        # Main project
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>scheduler-{xxx}</artifactId>
-  <version>1.9</version>
+  <version>1.10</version>
 </dependency>
 ```
 
 ## Build From Source
 
 ```bash
-./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean install -DskipTests -Dcheckstyle.skip=true -U
+./mvnw -Drevision=_ versions:set -DnewVersion=1.11-SNAPSHOT && mvn clean install -DskipTests -Dcheckstyle.skip=true -U
 ```
 
 ## Quick Start

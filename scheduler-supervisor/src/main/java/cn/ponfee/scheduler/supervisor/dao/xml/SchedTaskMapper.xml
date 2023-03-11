@@ -32,7 +32,7 @@
     <include refid="Base_Column_List" />, task_param, execute_snapshot, error_msg
   </sql>
 
-  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       task_id, instance_id,
       task_param, execute_state,
@@ -135,12 +135,13 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state > 30
   </delete>
 
-  <update id="updateWorker">
-    UPDATE <include refid="Table_Name" />
-    SET worker = #{worker,jdbcType=VARCHAR},
-        version = version+1
-    WHERE task_id IN (<foreach collection="taskIds" separator="," item="id">#{id,jdbcType=BIGINT}</foreach>)
-      AND execute_state = 10
+  <!-- allowMultiQueries=true -->
+  <update id="batchUpdateWorker">
+    <foreach collection="collection" item="item" separator=";">
+      UPDATE <include refid="Table_Name" />
+      SET worker=#{item.worker,jdbcType=VARCHAR}, version=version+1
+      WHERE task_id=#{item.taskId,jdbcType=BIGINT} AND execute_state=10
+    </foreach>
   </update>
 
 </mapper>

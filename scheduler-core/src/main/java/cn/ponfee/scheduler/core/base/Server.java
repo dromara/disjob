@@ -13,7 +13,6 @@ import lombok.Getter;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * The abstract server class definition.
@@ -51,8 +50,8 @@ public abstract class Server implements Serializable {
         }
 
         Server other = (Server) o;
-        return Objects.equals(host, other.host)
-            && port == other.port;
+        return this.host.equals(other.host)
+            && this.port == other.port;
     }
 
     /**

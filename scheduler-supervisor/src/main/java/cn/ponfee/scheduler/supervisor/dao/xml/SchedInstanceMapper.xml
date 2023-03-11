@@ -66,8 +66,10 @@
   <update id="terminate">
     UPDATE <include refid="Table_Name" />
     SET run_state = #{toState,jdbcType=TINYINT},
+      <if test="runEndTime != null">
         run_end_time = IF(run_start_time IS NULL, NULL, #{runEndTime,jdbcType=TIMESTAMP}),
         run_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, run_start_time, #{runEndTime,jdbcType=TIMESTAMP}) / 1000),
+      </if>
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND run_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
@@ -93,7 +95,7 @@
   <select id="findExpireState" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE run_state = #{runState,jdbcType=TINYINT} 
+    WHERE run_state = #{runState,jdbcType=TINYINT}
       AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
       AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
     ORDER BY trigger_time

@@ -77,8 +77,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
             .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            boolean isUpdateSuccess = schedulerJobManager.renewUpdateTime(instance, now);
-            if (isUpdateSuccess) {
+            if (schedulerJobManager.renewUpdateTime(instance, now)) {
                 // sieve the un-dispatch waiting tasks to do re-dispatch
                 List<SchedTask> dispatchingTasks = schedulerJobManager.filterDispatchingTask(waitingTasks);
                 if (CollectionUtils.isNotEmpty(dispatchingTasks)) {
@@ -98,7 +97,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
         // all workers are dead
         log.info("Scan instance, all worker dead, terminate the sched instance: {}", instance.getInstanceId());
-        schedulerJobManager.terminate(instance.getInstanceId());
+        schedulerJobManager.terminateDeadInstance(instance.getInstanceId());
     }
 
 }

@@ -20,6 +20,7 @@ import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Collections;
@@ -39,6 +40,7 @@ import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
 public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private static final int SCAN_COLLISION_INTERVAL_SECONDS = 60;
+    private static final int REMARK_MAX_LENGTH = 255;
 
     private final DoInLocked doInLocked;
     private final SchedulerJobManager schedulerJobManager;
@@ -124,7 +126,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             }
         } catch (JobException | IllegalArgumentException e) {
             log.error(e.getMessage() + ": " + job, e);
-            job.setRemark("Stop reason: " + e.getMessage());
+            job.setRemark(StringUtils.truncate("Stop reason: " + e.getMessage(), REMARK_MAX_LENGTH));
             job.setNextTriggerTime(null);
             schedulerJobManager.stopJob(job);
         } catch (Exception e) {

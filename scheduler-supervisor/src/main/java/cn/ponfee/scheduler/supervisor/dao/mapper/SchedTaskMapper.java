@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.supervisor.dao.mapper;
 
 import cn.ponfee.scheduler.core.model.SchedTask;
+import cn.ponfee.scheduler.core.param.TaskWorker;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -21,7 +22,7 @@ import java.util.List;
  */
 public interface SchedTaskMapper {
 
-    int insertBatch(List<SchedTask> records);
+    int batchInsert(List<SchedTask> records);
 
     SchedTask getByTaskId(long taskId);
 
@@ -65,13 +66,11 @@ public interface SchedTaskMapper {
     int deleteByInstanceId(long instanceId);
 
     /**
-     * Update sched_task.worker value when worker received the task
+     * Update or clear the task worker
      *
-     * @param taskIds the list of task id
-     * @param worker  the worker
+     * @param list the data
      * @return update sql affected rows
      */
-    int updateWorker(@Param("taskIds") List<Long> taskIds,
-                     @Param("worker") String worker);
+    int batchUpdateWorker(List<TaskWorker> list);
 
 }

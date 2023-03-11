@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.TaskWorker;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +41,7 @@ public interface SupervisorService extends Checkpoint {
     boolean startTask(ExecuteParam param) throws Exception;
 
     @PostMapping(PREFIX_PATH + "task_worker/update")
-    boolean updateTaskWorker(List<Long> taskIds, String worker);
+    boolean updateTaskWorker(List<TaskWorker> list);
 
     @PostMapping(PREFIX_PATH + "instance/pause")
     boolean pauseInstance(long instanceId) throws Exception;

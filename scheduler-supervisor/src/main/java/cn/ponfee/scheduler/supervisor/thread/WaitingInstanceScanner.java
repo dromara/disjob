@@ -77,7 +77,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             // if all the tasks are terminal, then terminate sched instance record
             if (schedulerJobManager.renewUpdateTime(instance, now)) {
                 log.info("All task terminal, terminate the sched instance: {}", instance.getInstanceId());
-                schedulerJobManager.terminate(instance.getInstanceId());
+                schedulerJobManager.terminateDeadInstance(instance.getInstanceId());
             }
             return;
         }
@@ -101,7 +101,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         SchedJob job = schedulerJobManager.getJob(instance.getJobId());
         if (job == null) {
             log.error("Job not exists: {}, {}", instance, tasks);
-            schedulerJobManager.updateState(ExecuteState.DATA_INCONSISTENT, tasks, instance);
+            schedulerJobManager.updateInstanceState(ExecuteState.DATA_INCONSISTENT, tasks, instance);
             return;
         }
 

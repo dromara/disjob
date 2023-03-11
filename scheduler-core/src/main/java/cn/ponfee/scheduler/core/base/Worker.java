@@ -19,13 +19,15 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.common.base.Symbol.Str.COLON;
 import static cn.ponfee.scheduler.common.util.Collects.get;
@@ -52,7 +54,15 @@ public final class Worker extends Server {
      */
     private final String workerId;
 
+    /**
+     * Serialized value
+     */
     private transient final String serializedValue;
+
+    /**
+     * Worker supports multiple group
+     */
+    private transient final Set<String> groups;
 
     public Worker(String group, String workerId, String host, int port) {
         super(host, port);
@@ -63,13 +73,17 @@ public final class Worker extends Server {
         this.workerId = workerId;
 
         this.serializedValue = group + COLON + workerId + COLON + host + COLON + port;
+        this.groups = split(group, JobConstants.WORKER_GROUP_SEPARATOR);
     }
 
     @Override
     public boolean equals(Object o) {
-        return super.equals(o)
-            && Objects.equals(group, ((Worker) o).group)
-            && Objects.equals(workerId, ((Worker) o).workerId);
+        if (!super.equals(o)) {
+            return false;
+        }
+        Worker other = (Worker) o;
+        return this.group.equals(other.group)
+            && this.workerId.equals(other.workerId);
     }
 
     @Override
@@ -106,18 +120,30 @@ public final class Worker extends Server {
         return new Worker(group, workerId, host, port);
     }
 
-    public boolean matches(String taskGroup) {
-        // Strings.matches(taskGroup, group);
-        // new org.springframework.util.AntPathMatcher();
-        return group.equals(taskGroup);
-    }
-
     public String getGroup() {
         return group;
     }
 
     public String getWorkerId() {
         return workerId;
+    }
+
+    public List<Worker> splitGroup() {
+        return (groups.size() == 1)
+            ? Collections.singletonList(this)
+            : groups.stream().map(e -> new Worker(e, workerId, host, port)).collect(Collectors.toList());
+    }
+
+    public boolean matchesGroup(String taskGroup) {
+        // Strings.matches(taskGroup, group);
+        // new org.springframework.util.AntPathMatcher();
+        return groups.contains(taskGroup);
+    }
+
+    public boolean equalsGroup(Worker other) {
+        return super.equals(other)
+            && Objects.equals(workerId, other.workerId)
+            && matchesGroup(other.group);
     }
 
     // --------------------------------------------------------current worker
@@ -168,6 +194,16 @@ public final class Worker extends Server {
         String host = MapUtils.getString(map, "host");
         int port = MapUtils.getIntValue(map, "port");
         return new Worker(group, workerId, host, port);
+    }
+
+    private static Set<String> split(String str, String separator) {
+        ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+        Arrays.stream(str.split(separator))
+            .filter(StringUtils::isNotBlank)
+            .map(String::trim)
+            .distinct()
+            .forEach(builder::add);
+        return builder.build();
     }
 
     /**

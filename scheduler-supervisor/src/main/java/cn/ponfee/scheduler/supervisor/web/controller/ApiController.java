@@ -88,7 +88,7 @@ public class ApiController extends BaseController {
     @PostMapping("job/trigger")
     public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
         log.info("Do manual trigger the sched job {}", jobId);
-        schedulerJobManager.trigger(jobId);
+        schedulerJobManager.triggerJob(jobId);
         return Result.success();
     }
 
@@ -109,13 +109,13 @@ public class ApiController extends BaseController {
     @PostMapping("instance/resume")
     public Result<Boolean> resumeInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do resuming sched instance {}", instanceId);
-        return Result.success(schedulerJobManager.resume(instanceId));
+        return Result.success(schedulerJobManager.resumeInstance(instanceId));
     }
 
     @PostMapping("instance/fresume")
     public Result<Void> forceResumeInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do force resuming sched instance {}", instanceId);
-        schedulerJobManager.forceUpdateState(instanceId, RunState.WAITING.value(), ExecuteState.WAITING.value());
+        schedulerJobManager.forceUpdateInstanceState(instanceId, RunState.WAITING.value(), ExecuteState.WAITING.value());
         return Result.success();
     }
 
@@ -128,7 +128,7 @@ public class ApiController extends BaseController {
         ExecuteState.of(taskTargetState);
 
         log.info("Do force update sched instance state {} | {} | {}", instanceId, instanceTargetState, taskTargetState);
-        schedulerJobManager.forceUpdateState(instanceId, instanceTargetState, taskTargetState);
+        schedulerJobManager.forceUpdateInstanceState(instanceId, instanceTargetState, taskTargetState);
         return Result.success();
     }
 

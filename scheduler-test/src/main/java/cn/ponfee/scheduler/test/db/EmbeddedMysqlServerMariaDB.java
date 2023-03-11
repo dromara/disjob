@@ -45,8 +45,6 @@ public class EmbeddedMysqlServerMariaDB {
     }
 
     public static DB start(int port) throws Exception {
-        String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
-
         DBConfiguration configuration = DBConfigurationBuilder.newBuilder()
             .setPort(port) // OR, default: setPort(0); => autom. detect free port
             .setBaseDir(createDirectory("base"))
@@ -60,6 +58,8 @@ public class EmbeddedMysqlServerMariaDB {
         System.out.println("Embedded maria db started!");
 
         db.source(IOUtils.toInputStream(loadScript(), StandardCharsets.UTF_8));
+
+        String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
         JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate(jdbcUrl, DB_NAME, DB_NAME);
 
         System.out.println("\n--------------------------------------------------------testDatabase");

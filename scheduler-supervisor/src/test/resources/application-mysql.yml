@@ -1,7 +1,7 @@
 # database configuration
 spring.datasource.distributed-scheduler:
   driver-class-name: com.mysql.cj.jdbc.Driver
-  jdbc-url: jdbc:mysql://localhost:3306/distributed_scheduler?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&&autoReconnect=true&failOverReadOnly=false&connectTimeout=2000&socketTimeout=5000
+  jdbc-url: jdbc:mysql://localhost:3306/distributed_scheduler?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
   username: root
   password:
   minimum-idle: 10
