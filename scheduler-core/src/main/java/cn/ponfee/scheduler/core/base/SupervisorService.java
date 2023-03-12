@@ -41,22 +41,22 @@ public interface SupervisorService extends Checkpoint {
     boolean startTask(ExecuteParam param) throws Exception;
 
     @PostMapping(PREFIX_PATH + "task_worker/update")
-    boolean updateTaskWorker(List<TaskWorker> list);
+    void updateTaskWorker(List<TaskWorker> list);
+
+    @PostMapping(PREFIX_PATH + "executing_task/terminate")
+    boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) throws Exception;
 
     @PostMapping(PREFIX_PATH + "instance/pause")
     boolean pauseInstance(long instanceId) throws Exception;
 
-    @PostMapping(PREFIX_PATH + "instance/cancel")
-    boolean cancelInstance(long instanceId, Operations operation) throws Exception;
-
     @PostMapping(PREFIX_PATH + "executing_task/pause")
     boolean pauseExecutingTask(ExecuteParam param, String errorMsg) throws Exception;
 
+    @PostMapping(PREFIX_PATH + "instance/cancel")
+    boolean cancelInstance(long instanceId, Operations operation) throws Exception;
+
     @PostMapping(PREFIX_PATH + "executing_task/cancel")
     boolean cancelExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) throws Exception;
-
-    @PostMapping(PREFIX_PATH + "executing_task/terminate")
-    boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) throws Exception;
 
     // ---------------------------------------------------------------------------checkpoint
 

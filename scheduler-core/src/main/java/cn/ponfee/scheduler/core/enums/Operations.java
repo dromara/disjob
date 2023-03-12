@@ -12,7 +12,7 @@ import static cn.ponfee.scheduler.core.enums.ExecuteState.*;
 
 /**
  * Task operate type
- * 
+ *
  * @author Ponfee
  */
 public enum Operations {
@@ -44,20 +44,20 @@ public enum Operations {
 
     ;
 
-    private final ExecuteState sourceState;
-    private final ExecuteState targetState;
+    private final ExecuteState fromState;
+    private final ExecuteState toState;
 
-    Operations(ExecuteState sourceState, ExecuteState targetState) {
-        this.sourceState = sourceState;
-        this.targetState = targetState;
+    Operations(ExecuteState fromState, ExecuteState toState) {
+        this.fromState = fromState;
+        this.toState = toState;
     }
 
-    public ExecuteState sourceState() {
-        return sourceState;
+    public ExecuteState fromState() {
+        return fromState;
     }
 
-    public ExecuteState targetState() {
-        return targetState;
+    public ExecuteState toState() {
+        return toState;
     }
 
     public static Operations of(int ordinal) {

@@ -14,6 +14,8 @@ import org.springframework.util.Assert;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Collection utilities
@@ -111,6 +113,16 @@ public class Collects {
             result.add(Arrays.copyOfRange(array, pos, pos = pos + number));
         }
         return result;
+    }
+
+    public static <T> List<T> filter(List<T> list, Predicate<T> predicate) {
+        if (list == null) {
+            return null;
+        }
+        if (list.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return list.stream().filter(predicate::test).collect(Collectors.toList());
     }
 
     public static <S, T> List<T> convert(List<S> source, Function<S, T> mapper) {

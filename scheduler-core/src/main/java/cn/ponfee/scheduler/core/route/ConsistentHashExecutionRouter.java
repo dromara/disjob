@@ -12,8 +12,11 @@ import cn.ponfee.scheduler.common.util.ConsistentHash;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteParam;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Consistent hash algorithm for execution router
@@ -21,6 +24,8 @@ import java.util.List;
  * @author Ponfee
  */
 public class ConsistentHashExecutionRouter extends ExecutionRouter {
+
+    private final Map<String, Pair<List<Worker>, ConsistentHash<Worker>>> cache = new HashMap<>();
 
     private final int virtualCount;
     private final ConsistentHash.HashFunction hashFunction;
@@ -41,11 +46,26 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(ExecuteParam param, List<Worker> workers) {
-        ConsistentHash<Worker> consistentHashRouter = new ConsistentHash<>(
-            workers, virtualCount, Worker::toString, hashFunction
-        );
+    protected Worker doRoute(String group, ExecuteParam param, List<Worker> workers) {
+        ConsistentHash<Worker> consistentHashRouter = getConsistentHash(group, workers);
         return consistentHashRouter.routeNode(Long.toString(param.getInstanceId()));
+    }
+
+    private ConsistentHash<Worker> getConsistentHash(String group, List<Worker> workers) {
+        Pair<List<Worker>, ConsistentHash<Worker>> pair = cache.get(group);
+        if (pair != null && pair.getLeft() == workers) {
+            return pair.getRight();
+        }
+
+        synchronized (this) {
+            if ((pair = cache.get(group)) != null && pair.getLeft() == workers) {
+                return pair.getRight();
+            }
+            int vc = workers.size() == 1 ? 1 : virtualCount;
+            ConsistentHash<Worker> router = new ConsistentHash<>(workers, vc, Worker::serialize, hashFunction);
+            cache.put(group, Pair.of(workers, router));
+            return router;
+        }
     }
 
 }

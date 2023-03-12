@@ -63,11 +63,6 @@ public enum RunState implements IntValue<RunState> {
      */
     public static final List<RunState> PAUSABLE_LIST = ImmutableList.of(WAITING, RUNNING);
 
-    /**
-     * State list of can transit to EXECUTING
-     */
-    public static final List<RunState> EXECUTABLE_LIST = ImmutableList.of(WAITING, PAUSED);
-
     private static final Map<Integer, RunState> MAPPING = Enums.toMap(RunState.class, RunState::value);
 
     /**

@@ -2,10 +2,12 @@ logging.config: classpath:log4j2.xml
 
 # actuator monitor configuration
 management:
-  endpoints.web.exposure.include: "*"
+  endpoints:
+    web.exposure.include: "*"
   endpoint:
-    gateway.enabled: true
-    health.show-details: always
+    health:
+      enabled: true
+      show-details: always
 
 # “swagger-ui” and “/api-docs endpoint” custom path
 springdoc:
@@ -15,7 +17,13 @@ springdoc:
   api-docs.path: /docs
 
 # tomcat server configuration
-server.tomcat.mbeanregistry.enabled: true
+server.tomcat:
+  threads:
+    max: 500
+    min-spare: 20
+  accept-count: 200
+  max-connections: 20000
+  mbeanregistry.enabled: true
 
 # scheduler supervisor configuration
 distributed.scheduler.http:

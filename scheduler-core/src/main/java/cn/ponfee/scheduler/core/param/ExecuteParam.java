@@ -89,7 +89,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      * @param triggerTime the trigger time
      * @param worker      the worker
      */
-    private ExecuteParam(Operations operation, long taskId, long instanceId, long jobId, long triggerTime, Worker worker) {
+    public ExecuteParam(Operations operation, long taskId, long instanceId, long jobId, long triggerTime, Worker worker) {
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
         this.instanceId = instanceId;

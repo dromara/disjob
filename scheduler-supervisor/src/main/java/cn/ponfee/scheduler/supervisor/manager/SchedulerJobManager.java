@@ -11,10 +11,12 @@ package cn.ponfee.scheduler.supervisor.manager;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.base.Symbol.Str;
+import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.base.tuple.Tuple3;
 import cn.ponfee.scheduler.common.spring.RpcController;
 import cn.ponfee.scheduler.common.spring.TransactionUtils;
 import cn.ponfee.scheduler.common.util.Collects;
+import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
@@ -96,9 +98,13 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
     private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_SUFFIX;
     private static final int AFFECTED_ONE_ROW = 1;
-    private static final String DEFAULT_USER = "0";
-    private static final List<Integer> CANCELABLE_RUN_STATE_LIST = Collects.convert(RunState.CANCELABLE_LIST, RunState::value);
-    private static final List<Integer> EXECUTABLE_EXECUTE_STATE_LIST = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::value);
+
+    private static final List<Integer> RUN_STATE_CANCELABLE = Collects.convert(RunState.CANCELABLE_LIST, RunState::value);
+
+    private static final List<Integer> EXECUTE_STATE_EXECUTABLE = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::value);
+    private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
+    private static final List<Integer> EXECUTE_STATE_WAITING = Collections.singletonList(ExecuteState.WAITING.value());
+    private static final List<Integer> EXECUTE_STATE_PAUSABLE = Collects.convert(ExecuteState.PAUSABLE_LIST, ExecuteState::value);
 
     private final TransactionTemplate transactionTemplate;
     private final SchedJobMapper jobMapper;
@@ -174,7 +180,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         return instanceMapper.findUnterminatedRetry(instanceId);
     }
 
-    // ------------------------------------------------------------------database single operation without @Transactional annotation
+    // ------------------------------------------------------------------database single operation without transactional
 
     @Override
     public boolean checkpoint(long taskId, String executeSnapshot) {
@@ -207,7 +213,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         return jobMapper.updateNextScanTime(jobId, nextScanTime, version) == AFFECTED_ONE_ROW;
     }
 
-    // ------------------------------------------------------------------operation within @Transactional annotation
+    // ------------------------------------------------------------------operation within transactional
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) {
@@ -222,8 +228,6 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
         job.setCreatedAt(now);
         job.setUpdatedAt(now);
-        job.setCreatedBy(DEFAULT_USER);
-        job.setUpdatedBy(DEFAULT_USER);
         jobMapper.insert(job);
     }
 
@@ -254,7 +258,6 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         }
 
         job.setUpdatedAt(now);
-        job.setUpdatedBy(DEFAULT_USER);
         Assert.state(jobMapper.updateByJobId(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
     }
 
@@ -280,22 +283,21 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         });
     }
 
-    public void forceUpdateInstanceState(long instanceId, int instanceTargetState, int taskTargetState) {
-        ExecuteState taskTargetState0 = ExecuteState.of(taskTargetState);
-        Assert.isTrue(
-            taskTargetState0.runState() == RunState.of(instanceTargetState),
-            () -> "Inconsistent state: " + instanceTargetState + ", " + taskTargetState
-        );
+    public void forceChangeState(long instanceId, int targetExecuteState) {
+        ExecuteState toExecuteState = ExecuteState.of(targetExecuteState);
+        RunState toRunState = toExecuteState.runState();
+        Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, "Cannot force update state to EXECUTING");
         doTransactionInSynchronized(instanceId, () -> {
             Long id = instanceMapper.lockAndGetId(instanceId);
             Assert.notNull(id, () -> "Sched instance not found: " + instanceId);
-            int row = instanceMapper.forceUpdateState(instanceId, instanceTargetState);
-            Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Sched instance state update failed " + instanceId);
 
-            row = taskMapper.forceUpdateState(instanceId, taskTargetState);
-            Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Sched task state update failed, instance_id=" + instanceId);
+            int row = instanceMapper.forceChangeState(instanceId, toRunState.value());
+            Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Force update instance state failed: " + instanceId);
 
-            if (taskTargetState0 == ExecuteState.WAITING) {
+            row = taskMapper.forceChangeState(instanceId, toExecuteState.value());
+            Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Force update task state failed: " + instanceId);
+
+            if (toExecuteState == ExecuteState.WAITING) {
                 Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, row);
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
             }
@@ -354,17 +356,19 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     /**
      * Set or clear task worker
      *
-     * @param list the list
-     * @return {@code true} if updated at least one row
+     * @param list the list data
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
-    public boolean updateTaskWorker(List<TaskWorker> list) {
-        List<List<TaskWorker>> partition = list.size() <= JobConstants.PROCESS_BATCH_SIZE
-            ? Collections.singletonList(list)
-            : Lists.partition(list, JobConstants.PROCESS_BATCH_SIZE);
-
-        return partition.stream().mapToInt(taskMapper::batchUpdateWorker).sum() >= AFFECTED_ONE_ROW;
+    public void updateTaskWorker(List<TaskWorker> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
+        if (list.size() <= JobConstants.PROCESS_BATCH_SIZE) {
+            taskMapper.batchUpdateWorker(list);
+        } else {
+            Lists.partition(list, JobConstants.PROCESS_BATCH_SIZE).forEach(taskMapper::batchUpdateWorker);
+        }
     }
 
     /**
@@ -398,44 +402,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         }
     }
 
-    /**
-     * Terminate the executing task.
-     *
-     * @param param    the taskParam
-     * @param toState  the toState
-     * @param errorMsg the errorMsg
-     * @return {@code true} if terminated task successful
-     */
-    @Override
-    public boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
-        return doTransactionInSynchronized(param.getInstanceId(), () -> {
-            Integer state = instanceMapper.lockAndGetState(param.getInstanceId());
-            Assert.notNull(state, () -> "Terminate failed, instance_id not found: " + param.getInstanceId());
-            if (RunState.of(state).isTerminal()) {
-                // already terminated
-                return false;
-            }
-            if (taskMapper.terminate(param.getTaskId(), toState.value(), ExecuteState.EXECUTING.value(), new Date(), errorMsg) == 0) {
-                log.warn("Conflict terminate executing task {}, {}", param.getTaskId(), toState);
-                return false;
-            }
-
-            List<SchedTask> tasks = taskMapper.findMediumByInstanceId(param.getInstanceId());
-            List<ExecuteState> taskStateList = tasks.stream().map(e -> ExecuteState.of(e.getExecuteState())).collect(Collectors.toList());
-            if (!taskStateList.stream().allMatch(ExecuteState::isTerminal)) {
-                return true;
-            }
-
-            // the last executing task of this sched instance
-            Date runEndTime = tasks.stream().map(SchedTask::getExecuteEndTime).filter(Objects::nonNull).max(Comparator.naturalOrder()).orElseGet(Date::new);
-            RunState runState = taskStateList.stream().allMatch(ExecuteState.FINISHED::equals) ? RunState.FINISHED : RunState.CANCELED;
-            if (instanceMapper.terminate(param.getInstanceId(), runState.value(), CANCELABLE_RUN_STATE_LIST, runEndTime) == AFFECTED_ONE_ROW) {
-                terminatePostProcess(param.getInstanceId(), runState);
-            }
-
-            return true;
-        });
-    }
+    // ------------------------------------------------------------------terminate
 
     /**
      * Terminate the dead instance.
@@ -446,50 +413,55 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     public boolean terminateDeadInstance(long instanceId) {
         return doTransactionInSynchronized(instanceId, () -> {
             Integer state = instanceMapper.lockAndGetState(instanceId);
-            Assert.notNull(state, () -> "Terminate failed, instance_id not found: " + instanceId);
-            if (RunState.of(state).isTerminal()) {
-                // already terminated
+            Assert.notNull(state, () -> "Terminate dead instance not found: " + instanceId);
+            if (!RunState.PAUSABLE_LIST.contains(RunState.of(state))) {
+                // Not in (10, 20)
                 return false;
             }
 
             List<SchedTask> tasks = taskMapper.findMediumByInstanceId(instanceId);
-            if (CollectionUtils.isEmpty(tasks)) {
-                log.error("Not found sched instance task data {}", instanceId);
+            if (tasks.stream().anyMatch(e -> ExecuteState.WAITING.equals(e.getExecuteState()))) {
+                log.warn("Terminate dead instance failed, has waiting task: {}", tasks);
                 return false;
             }
 
-            Date runEndTime;
-            RunState runState;
-            List<ExecuteState> taskStateList = tasks.stream().map(e -> ExecuteState.of(e.getExecuteState())).collect(Collectors.toList());
-            if (taskStateList.stream().allMatch(ExecuteState::isTerminal)) {
-                // executeEndTime is null: canceled task maybe not started
-                runEndTime = tasks.stream().map(SchedTask::getExecuteEndTime).filter(Objects::nonNull).max(Comparator.naturalOrder()).orElseGet(Date::new);
-                runState = taskStateList.stream().allMatch(ExecuteState.FINISHED::equals) ? RunState.FINISHED : RunState.CANCELED;
-            } else if (taskStateList.stream().allMatch(e -> e == ExecuteState.PAUSED || e.isTerminal())) {
-                runEndTime = null;
-                runState = RunState.PAUSED;
-            } else {
-                runEndTime = new Date();
-                runState = RunState.CANCELED;
+            List<SchedTask> executingTasks = Collects.filter(tasks, e -> ExecuteState.EXECUTING.equals(e.getExecuteState()));
+            if (CollectionUtils.isNotEmpty(executingTasks) && hasAliveExecuting(executingTasks)) {
+                log.warn("Terminate dead instance failed, has executing task: {}", tasks);
+                return false;
             }
-            if (instanceMapper.terminate(instanceId, runState.value(), CANCELABLE_RUN_STATE_LIST, runEndTime) != AFFECTED_ONE_ROW) {
+
+            Tuple2<RunState, Date> tuple = ObjectUtils.defaultIfNull(obtainToRunState(tasks), () -> Tuple2.of(RunState.CANCELED, new Date()));
+            if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_CANCELABLE, tuple.b) != AFFECTED_ONE_ROW) {
                 return false;
             }
 
             tasks.stream()
-                .filter(e -> !ExecuteState.of(e.getExecuteState()).isTerminal())
+                .filter(e -> EXECUTE_STATE_PAUSABLE.contains(e.getExecuteState()))
                 .forEach(e -> taskMapper.terminate(e.getTaskId(), ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null));
 
-            terminatePostProcess(instanceId, runState);
-
+            terminatePostProcess(instanceId, tuple.a);
             return true;
         });
+    }
+
+    /**
+     * Terminate the executing task.
+     *
+     * @param param    the param
+     * @param toState  the toState
+     * @param errorMsg the errorMsg
+     * @return {@code true} if terminated task successful
+     */
+    @Override
+    public boolean terminateExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
+        return stopExecutingTask(param, toState, errorMsg, true);
     }
 
     // ------------------------------------------------------------------manual pause
 
     /**
-     * Pause task by sched instance id
+     * Pause instance
      *
      * @param instanceId the instance id
      * @return {@code true} if paused successfully
@@ -498,43 +470,29 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     public boolean pauseInstance(long instanceId) {
         return doTransactionInSynchronized(instanceId, () -> {
             Integer state = instanceMapper.lockAndGetState(instanceId);
-            Assert.notNull(state, () -> "Pause failed, instance_id not found: " + instanceId);
-
+            Assert.notNull(state, () -> "Pause instance not found: " + instanceId);
             RunState runState = RunState.of(state);
             if (!RunState.PAUSABLE_LIST.contains(runState)) {
                 return false;
             }
 
+            Operations ops = Operations.PAUSE;
+
             // update waiting task
-            List<Integer> fromStateList = Collections.singletonList(ExecuteState.WAITING.value());
-            taskMapper.updateStateByInstanceId(instanceId, ExecuteState.PAUSED.value(), fromStateList, null);
+            taskMapper.updateStateByInstanceId(instanceId, ops.toState().value(), EXECUTE_STATE_WAITING, null);
 
             // load the alive executing tasks
-            List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, Operations.PAUSE);
-
+            List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, ops);
             if (executingTasks.isEmpty()) {
-                // has non executing execute_state, update sched instance state
-                List<ExecuteState> stateList = taskMapper.findMediumByInstanceId(instanceId)
-                    .stream()
-                    .map(e -> ExecuteState.of(e.getExecuteState()))
-                    .collect(Collectors.toList());
-                RunState toRunState;
-                if (stateList.stream().anyMatch(ExecuteState.PAUSED::equals)) {
-                    toRunState = RunState.PAUSED;
-                } else if (stateList.stream().anyMatch(ExecuteState::isFailure)) {
-                    toRunState = RunState.CANCELED;
-                } else {
-                    toRunState = RunState.FINISHED;
+                // has non executing task, update sched instance state
+                Tuple2<RunState, Date> tuple = obtainToRunState(taskMapper.findMediumByInstanceId(instanceId));
+                if (tuple == null) {
+                    // cannot happen
+                    log.error("Pause instance failed: {}", instanceId);
+                    return false;
                 }
-
-                int row;
-                if (toRunState.isTerminal()) {
-                    row = instanceMapper.terminate(instanceId, toRunState.value(), Collections.singletonList(runState.value()), new Date());
-                } else {
-                    row = instanceMapper.updateState(instanceId, toRunState.value(), runState.value(), null);
-                }
-                if (row != AFFECTED_ONE_ROW) {
-                    log.warn("Pause instance from {} to {} conflict", runState, toRunState);
+                if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_CANCELABLE, tuple.b) != AFFECTED_ONE_ROW) {
+                    log.warn("Pause instance from {} to {} conflict", runState, tuple.a);
                 }
             } else {
                 // dispatch and pause executing tasks
@@ -548,72 +506,52 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
      * Pause executing task
      *
      * @param param    the execution param
-     * @param errorMsg the execution error message
+     * @param errorMsg the error message
      * @return {@code true} if paused successfully
      */
     @Override
     public boolean pauseExecutingTask(ExecuteParam param, String errorMsg) {
-        return doTransactionInSynchronized(param.getInstanceId(), () -> {
-            Integer state = instanceMapper.lockAndGetState(param.getInstanceId());
-            if (!RunState.RUNNING.equals(state)) {
-                log.warn("Pause executing task failed: {} | {}", param, state);
-                return false;
-            }
-
-            int row = taskMapper.updateState(param.getTaskId(), ExecuteState.PAUSED.value(), ExecuteState.EXECUTING.value(), errorMsg, null);
-            if (row != AFFECTED_ONE_ROW) {
-                log.warn("Paused task unsuccessful.");
-                return false;
-            }
-
-            boolean allPaused = taskMapper.findMediumByInstanceId(param.getInstanceId())
-                .stream()
-                .map(e -> ExecuteState.of(e.getExecuteState()))
-                .noneMatch(ExecuteState.PAUSABLE_LIST::contains);
-            if (allPaused) {
-                row = instanceMapper.updateState(param.getInstanceId(), RunState.PAUSED.value(), RunState.RUNNING.value(), null);
-                if (row != AFFECTED_ONE_ROW) {
-                    log.error("Update sched instance to paused state conflict: {} | {}", param.getInstanceId(), param.getTaskId());
-                }
-            }
-            return true;
-        });
+        return stopExecutingTask(param, ExecuteState.PAUSED, errorMsg, false);
     }
 
     // ------------------------------------------------------------------manual cancel
 
     /**
-     * Cancel task by sched instance id
+     * Cancel instance
      *
      * @param instanceId the instance id
-     * @param operation  the operation
+     * @param ops        the operation
      * @return {@code true} if canceled successfully
      */
     @Override
-    public boolean cancelInstance(long instanceId, Operations operation) {
-        Assert.isTrue(operation.targetState().isFailure(), () -> "Expect cancel ops, but actual: " + operation);
+    public boolean cancelInstance(long instanceId, Operations ops) {
+        Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         return doTransactionInSynchronized(instanceId, () -> {
             Integer state = instanceMapper.lockAndGetState(instanceId);
-            Assert.notNull(state, () -> "Cancel failed, instance_id not found: " + instanceId);
-
+            Assert.notNull(state, () -> "Cancel instance not found: " + instanceId);
             RunState runState = RunState.of(state);
             if (runState.isTerminal()) {
                 return false;
             }
 
             // update waiting & paused state task
-            taskMapper.updateStateByInstanceId(instanceId, operation.targetState().value(), EXECUTABLE_EXECUTE_STATE_LIST, new Date());
+            taskMapper.updateStateByInstanceId(instanceId, ops.toState().value(), EXECUTE_STATE_EXECUTABLE, new Date());
 
             // load the alive executing tasks
-            List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, operation);
-
+            List<ExecuteParam> executingTasks = loadExecutingTasks(instanceId, ops);
             if (executingTasks.isEmpty()) {
                 // has non executing execute_state
-                boolean failure = taskMapper.findMediumByInstanceId(instanceId).stream().anyMatch(e -> ExecuteState.of(e.getExecuteState()).isFailure());
-                RunState toRunState = failure ? RunState.CANCELED : RunState.FINISHED;
-                int row = instanceMapper.terminate(instanceId, toRunState.value(), Collections.singletonList(runState.value()), new Date());
-                if (row != AFFECTED_ONE_ROW) {
-                    log.warn("Pause instance from {} to {} conflict", runState, toRunState);
+                Tuple2<RunState, Date> tuple = obtainToRunState(taskMapper.findMediumByInstanceId(instanceId));
+                if (tuple == null) {
+                    // cannot happen
+                    log.error("Cancel instance failed: {}", instanceId);
+                    return false;
+                }
+                // if all task paused, should update to canceled state
+                RunState toRunState = tuple.a == RunState.PAUSED ? RunState.CANCELED : tuple.a;
+                Date runEndTime = tuple.b == null ? new Date() : tuple.b;
+                if (instanceMapper.terminate(instanceId, toRunState.value(), RUN_STATE_CANCELABLE, runEndTime) != AFFECTED_ONE_ROW) {
+                    log.warn("Cancel instance from {} to {} conflict", runState, toRunState);
                 }
             } else {
                 // dispatch and cancel executing tasks
@@ -627,37 +565,13 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
      * Cancel executing task
      *
      * @param param    the execution param
-     * @param toState  the target state
+     * @param toState  the to execute state
      * @param errorMsg the executed error message
      * @return {@code true} if canceled successfully
      */
     @Override
     public boolean cancelExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg) {
-        Assert.isTrue(toState.isFailure(), () -> "Target state expect failure state, but actual: " + toState);
-        return doTransactionInSynchronized(param.getInstanceId(), () -> {
-            Integer state = instanceMapper.lockAndGetState(param.getInstanceId());
-            if (!RunState.RUNNING.equals(state)) {
-                return false;
-            }
-
-            int row = taskMapper.terminate(param.getTaskId(), toState.value(), ExecuteState.EXECUTING.value(), new Date(), errorMsg);
-            if (row != AFFECTED_ONE_ROW) {
-                log.warn("Canceled task unsuccessful.");
-                return false;
-            }
-
-            boolean allTerminated = taskMapper.findMediumByInstanceId(param.getInstanceId())
-                .stream()
-                .map(e -> ExecuteState.of(e.getExecuteState()))
-                .allMatch(ExecuteState::isTerminal);
-            if (allTerminated) {
-                row = instanceMapper.terminate(param.getInstanceId(), RunState.CANCELED.value(), Collections.singletonList(RunState.RUNNING.value()), new Date());
-                if (row != AFFECTED_ONE_ROW) {
-                    log.error("Update sched instance to canceled state conflict: {} | {}", param.getInstanceId(), param.getTaskId());
-                }
-            }
-            return true;
-        });
+        return stopExecutingTask(param, toState, errorMsg, false);
     }
 
     /**
@@ -677,7 +591,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             int row = instanceMapper.updateState(instanceId, RunState.WAITING.value(), RunState.PAUSED.value(), null);
             Assert.state(row == AFFECTED_ONE_ROW, "Resume sched instance failed.");
 
-            row = taskMapper.updateStateByInstanceId(instanceId, ExecuteState.WAITING.value(), Collections.singletonList(ExecuteState.PAUSED.value()), null);
+            row = taskMapper.updateStateByInstanceId(instanceId, ExecuteState.WAITING.value(), EXECUTE_STATE_PAUSED, null);
             Assert.state(row >= AFFECTED_ONE_ROW, "Resume sched task failed.");
 
             // dispatch task
@@ -700,7 +614,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
             row = 0;
             for (SchedTask task : tasks) {
-                row += taskMapper.updateState(task.getTaskId(), toState.value(), task.getExecuteState(), null, task.getVersion());
+                row += taskMapper.updateState(task.getTaskId(), toState.value(), task.getExecuteState(), task.getVersion());
             }
             Assert.state(row >= AFFECTED_ONE_ROW, () -> "Conflict update state: " + toState + ", " + tasks + ", " + instance);
 
@@ -724,6 +638,52 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         synchronized (Long.toString(lockKey).intern()) {
             transactionTemplate.executeWithoutResult(status -> action.run());
         }
+    }
+
+    private Tuple2<RunState, Date> obtainToRunState(List<SchedTask> tasks) {
+        List<ExecuteState> states = tasks.stream().map(e -> ExecuteState.of(e.getExecuteState())).collect(Collectors.toList());
+        if (states.stream().allMatch(ExecuteState::isTerminal)) {
+            // executeEndTime is null: canceled task maybe never not started
+            return Tuple2.of(
+                states.stream().anyMatch(ExecuteState::isFailure) ? RunState.CANCELED : RunState.FINISHED,
+                tasks.stream().map(SchedTask::getExecuteEndTime).filter(Objects::nonNull).max(Comparator.naturalOrder()).orElseGet(Date::new)
+            );
+        }
+        return states.stream().anyMatch(ExecuteState.PAUSABLE_LIST::contains) ? null : Tuple2.of(RunState.PAUSED, null);
+    }
+
+    private boolean stopExecutingTask(ExecuteParam param, ExecuteState toState, String errorMsg, boolean needDoPostProcess) {
+        Assert.isTrue(!ExecuteState.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
+        return doTransactionInSynchronized(param.getInstanceId(), () -> {
+            Integer state = instanceMapper.lockAndGetState(param.getInstanceId());
+            Assert.notNull(state, () -> "Terminate executing task failed, instance not found: " + param.getInstanceId());
+            if (RunState.of(state).isTerminal()) {
+                // already terminated
+                return false;
+            }
+
+            Date executeEndTime = toState.isTerminal() ? new Date() : null;
+            int row = taskMapper.terminate(param.getTaskId(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, errorMsg);
+            if (row != AFFECTED_ONE_ROW) {
+                // usual is worker invoke http timeout, then retry
+                log.warn("Conflict terminate executing task: {}, {}", param.getTaskId(), toState);
+                return false;
+            }
+
+            Tuple2<RunState, Date> tuple = obtainToRunState(taskMapper.findMediumByInstanceId(param.getInstanceId()));
+            if (tuple == null) {
+                // has waiting or executing task, cannot stop
+                return true;
+            }
+
+            // the last executing task of this sched instance
+            row = instanceMapper.terminate(param.getInstanceId(), tuple.a.value(), RUN_STATE_CANCELABLE, tuple.b);
+            if (row == AFFECTED_ONE_ROW && needDoPostProcess) {
+                terminatePostProcess(param.getInstanceId(), tuple.a);
+            }
+
+            return true;
+        });
     }
 
     private void terminatePostProcess(long instanceId, RunState runState) {
@@ -857,14 +817,17 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             .forEach(task -> {
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (super.isAliveWorker(worker)) {
-                    ExecuteParam param = new ExecuteParam(ops, task.getTaskId(), instanceId, schedInstanceProxy.getJobId(), 0L);
-                    param.setWorker(worker);
-                    executingTasks.add(param);
+                    executingTasks.add(new ExecuteParam(ops, task.getTaskId(), instanceId, schedInstanceProxy.getJobId(), 0L, worker));
                 } else {
                     // update dead task
-                    log.info("Cancel the dead task {}", task);
-                    // ExecuteState.EXECUTE_TIMEOUT.value()
-                    taskMapper.updateState(task.getTaskId(), ops.targetState().value(), ExecuteState.EXECUTING.value(), null, null);
+                    Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
+                    int row = taskMapper.terminate(task.getTaskId(), ops.toState().value(), ExecuteState.EXECUTING.value(), executeEndTime, null);
+                    if (row != AFFECTED_ONE_ROW) {
+                        log.warn("Cancel the dead task failed: {}", task);
+                        executingTasks.add(new ExecuteParam(ops, task.getTaskId(), instanceId, schedInstanceProxy.getJobId(), 0L, worker));
+                    } else {
+                        log.info("Cancel the dead task success: {}", task);
+                    }
                 }
             });
         return executingTasks;

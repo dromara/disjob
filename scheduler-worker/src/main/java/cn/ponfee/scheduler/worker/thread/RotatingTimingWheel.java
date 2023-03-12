@@ -9,6 +9,8 @@
 package cn.ponfee.scheduler.worker.thread;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.base.Supervisor;
@@ -21,6 +23,7 @@ import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
 import com.google.common.collect.Lists;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
@@ -33,6 +36,10 @@ import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
 public class RotatingTimingWheel extends AbstractHeartbeatThread {
 
     private static final int LOG_ROUND_COUNT = 1000;
+
+    private final ExecutorService updateTaskWorkerThreadPool = ThreadPoolExecutors.create(
+        10, 10, 300, Integer.MAX_VALUE, "update-task-worker"
+    );
 
     private final Worker currentWorker;
     private final SupervisorService supervisorServiceClient;
@@ -67,6 +74,12 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
         return true;
     }
 
+    @Override
+    public void close() {
+        super.close();
+        Throwables.caught(() -> ThreadPoolExecutors.shutdown(updateTaskWorkerThreadPool, 1));
+    }
+
     private void process() {
         // check has available supervisors
         if (!discoverySupervisor.hasDiscoveredServers()) {
@@ -95,22 +108,20 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
             return;
         }
 
-        for (List<ExecuteParam> batchTriggers : Lists.partition(matchedTriggers, PROCESS_BATCH_SIZE)) {
-            List<TaskWorker> list = batchTriggers.stream()
-                .map(e -> new TaskWorker(e.getTaskId(), e.getWorker().serialize()))
-                .collect(Collectors.toList());
-            boolean status;
-            try {
-                status = supervisorServiceClient.updateTaskWorker(list);
-            } catch (Exception e) {
-                // must do submit if occur exception
-                status = true;
-                log.error("Update waiting sched_task.worker column failed: " + Jsons.toJson(list), e);
-            }
-            if (status) {
+        updateTaskWorkerThreadPool.execute(() -> {
+            for (List<ExecuteParam> batchTriggers : Lists.partition(matchedTriggers, PROCESS_BATCH_SIZE)) {
+                List<TaskWorker> list = batchTriggers.stream()
+                    .map(e -> new TaskWorker(e.getTaskId(), e.getWorker().serialize()))
+                    .collect(Collectors.toList());
+                try {
+                    supervisorServiceClient.updateTaskWorker(list);
+                } catch (Exception e) {
+                    // must do submit if occur exception
+                    log.error("Update task worker error: " + Jsons.toJson(list), e);
+                }
                 batchTriggers.forEach(workerThreadPool::submit);
             }
-        }
+        });
     }
 
 }

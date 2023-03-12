@@ -13,7 +13,6 @@ import cn.ponfee.scheduler.common.spring.BaseController;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
 import cn.ponfee.scheduler.core.enums.JobState;
 import cn.ponfee.scheduler.core.enums.Operations;
-import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
@@ -38,6 +37,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api")
 public class ApiController extends BaseController {
+    private static final String DEFAULT_USER = "0";
 
     private final SchedulerJobManager schedulerJobManager;
 
@@ -49,14 +49,19 @@ public class ApiController extends BaseController {
 
     @PostMapping("job/add")
     public Result<Void> addJob(@RequestBody AddSchedJobRequest req) {
-        schedulerJobManager.addJob(req.tosSchedJob());
+        SchedJob schedJob = req.tosSchedJob();
+        schedJob.setCreatedBy(DEFAULT_USER);
+        schedJob.setUpdatedBy(DEFAULT_USER);
+        schedulerJobManager.addJob(schedJob);
         return Result.success();
     }
 
     @PutMapping("job/update")
     public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) {
         log.info("Do updating sched job {}", req.getJobId());
-        schedulerJobManager.updateJob(req.tosSchedJob());
+        SchedJob schedJob = req.tosSchedJob();
+        schedJob.setUpdatedBy(DEFAULT_USER);
+        schedulerJobManager.updateJob(schedJob);
         return Result.success();
     }
 
@@ -94,16 +99,16 @@ public class ApiController extends BaseController {
 
     // ------------------------------------------------------------------ sched instance
 
-    @PostMapping("instance/cancel")
-    public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
-        log.info("Do canceling sched instance {}", instanceId);
-        return Result.success(schedulerJobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL));
-    }
-
     @PostMapping("instance/pause")
     public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do pausing sched instance {}", instanceId);
         return Result.success(schedulerJobManager.pauseInstance(instanceId));
+    }
+
+    @PostMapping("instance/cancel")
+    public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
+        log.info("Do canceling sched instance {}", instanceId);
+        return Result.success(schedulerJobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL));
     }
 
     @PostMapping("instance/resume")
@@ -112,23 +117,14 @@ public class ApiController extends BaseController {
         return Result.success(schedulerJobManager.resumeInstance(instanceId));
     }
 
-    @PostMapping("instance/fresume")
-    public Result<Void> forceResumeInstance(@RequestParam("instanceId") long instanceId) {
-        log.info("Do force resuming sched instance {}", instanceId);
-        schedulerJobManager.forceUpdateInstanceState(instanceId, RunState.WAITING.value(), ExecuteState.WAITING.value());
-        return Result.success();
-    }
-
-    @PutMapping("instance/fupdate_state")
-    public Result<Void> forceUpdateInstanceState(@RequestParam("instanceId") long instanceId,
-                                                 @RequestParam("instanceTargetState") int instanceTargetState,
-                                                 @RequestParam("taskTargetState") int taskTargetState) {
+    @PutMapping("instance/force_change_state")
+    public Result<Void> forceChangeState(@RequestParam("instanceId") long instanceId,
+                                         @RequestParam("targetExecuteState") int targetExecuteState) {
         // verify the state
-        RunState.of(instanceTargetState);
-        ExecuteState.of(taskTargetState);
+        ExecuteState.of(targetExecuteState);
 
-        log.info("Do force update sched instance state {} | {} | {}", instanceId, instanceTargetState, taskTargetState);
-        schedulerJobManager.forceUpdateInstanceState(instanceId, instanceTargetState, taskTargetState);
+        log.info("Do force change state {} | {}", instanceId, targetExecuteState);
+        schedulerJobManager.forceChangeState(instanceId, targetExecuteState);
         return Result.success();
     }
 

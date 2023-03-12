@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.supervisor.thread;
 
 import cn.ponfee.scheduler.common.lock.DoInLocked;
-import cn.ponfee.scheduler.common.util.Jsons;
+import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
 import cn.ponfee.scheduler.core.model.SchedInstance;
@@ -20,7 +20,6 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
@@ -41,7 +40,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         super(heartbeatPeriodMilliseconds);
         this.doInLocked = doInLocked;
         this.schedulerJobManager = schedulerJobManager;
-        this.beforeMilliseconds = (heartbeatPeriodMs << 2); // 30s * 4 = 120s
+        this.beforeMilliseconds = (heartbeatPeriodMs << 3); // 30s * 8 = 240s
     }
 
     @Override
@@ -73,31 +72,38 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instance.getInstanceId());
 
         // sieve the waiting tasks
-        List<SchedTask> waitingTasks = tasks.stream()
-            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
-            .collect(Collectors.toList());
+        List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            if (schedulerJobManager.renewUpdateTime(instance, now)) {
-                // sieve the un-dispatch waiting tasks to do re-dispatch
-                List<SchedTask> dispatchingTasks = schedulerJobManager.filterDispatchingTask(waitingTasks);
-                if (CollectionUtils.isNotEmpty(dispatchingTasks)) {
-                    log.info("Redispatch sched instance: {} | {}", instance, Jsons.toJson(dispatchingTasks));
-                    SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
-                    schedulerJobManager.dispatch(schedJob, instance, dispatchingTasks);
-                }
+            if (!schedulerJobManager.renewUpdateTime(instance, now)) {
+                return;
             }
+            // sieve the un-dispatch waiting tasks to do re-dispatch
+            List<SchedTask> dispatchingTasks = schedulerJobManager.filterDispatchingTask(waitingTasks);
+            if (CollectionUtils.isEmpty(dispatchingTasks)) {
+                return;
+            }
+            SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
+            if (schedJob == null) {
+                log.error("Running instance scanner sched job not found: {}", instance.getJobId());
+                schedulerJobManager.updateInstanceState(ExecuteState.DATA_INVALID, tasks, instance);
+                return;
+            }
+            log.info("Running scanner redispatch sched instance: {}", instance);
+            schedulerJobManager.dispatch(schedJob, instance, dispatchingTasks);
             return;
         }
 
         // check has executing task
-        if (schedulerJobManager.hasAliveExecuting(tasks)) {
+        List<SchedTask> executingTasks = Collects.filter(tasks, e -> ExecuteState.EXECUTING.equals(e.getExecuteState()));
+        if (CollectionUtils.isNotEmpty(executingTasks) && schedulerJobManager.hasAliveExecuting(executingTasks)) {
             schedulerJobManager.renewUpdateTime(instance, now);
             return;
         }
-
         // all workers are dead
-        log.info("Scan instance, all worker dead, terminate the sched instance: {}", instance.getInstanceId());
-        schedulerJobManager.terminateDeadInstance(instance.getInstanceId());
+        if (schedulerJobManager.renewUpdateTime(instance, now)) {
+            log.info("Scan instance, all worker dead, terminate the sched instance: {}", instance.getInstanceId());
+            schedulerJobManager.terminateDeadInstance(instance.getInstanceId());
+        }
     }
 
 }

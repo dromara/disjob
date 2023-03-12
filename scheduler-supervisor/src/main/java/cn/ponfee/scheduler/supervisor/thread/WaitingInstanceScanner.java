@@ -8,7 +8,6 @@
 
 package cn.ponfee.scheduler.supervisor.thread;
 
-import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
@@ -41,7 +40,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         super(heartbeatPeriodMilliseconds);
         this.doInLocked = doInLocked;
         this.schedulerJobManager = schedulerJobManager;
-        this.beforeMilliseconds = (heartbeatPeriodMs << 3); // 5s * 8 = 40s
+        this.beforeMilliseconds = (heartbeatPeriodMs << 3); // 15s * 8 = 120s
     }
 
     @Override
@@ -98,25 +97,23 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             return;
         }
 
-        SchedJob job = schedulerJobManager.getJob(instance.getJobId());
-        if (job == null) {
-            log.error("Job not exists: {}, {}", instance, tasks);
-            schedulerJobManager.updateInstanceState(ExecuteState.DATA_INCONSISTENT, tasks, instance);
+        SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
+        if (schedJob == null) {
+            log.error("Waiting instance scanner sched job not found: {}", instance.getJobId());
+            schedulerJobManager.updateInstanceState(ExecuteState.DATA_INVALID, tasks, instance);
             return;
         }
 
         // check not found worker
-        if (schedulerJobManager.hasNotDiscoveredWorkers(job.getJobGroup())) {
+        if (schedulerJobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
             schedulerJobManager.renewUpdateTime(instance, now);
-            log.warn("Scan instance not found available group '{}' workers.", job.getJobGroup());
+            log.warn("Scan instance not found available group '{}' workers.", schedJob.getJobGroup());
             return;
         }
 
         if (schedulerJobManager.renewUpdateTime(instance, now)) {
-            if (log.isInfoEnabled()) {
-                log.info("Redispatch sched instance: {} | {}", instance, Dates.format(now));
-            }
-            schedulerJobManager.dispatch(job, instance, dispatchingTasks);
+            log.info("Waiting scanner redispatch sched instance: {}", instance);
+            schedulerJobManager.dispatch(schedJob, instance, dispatchingTasks);
         }
     }
 

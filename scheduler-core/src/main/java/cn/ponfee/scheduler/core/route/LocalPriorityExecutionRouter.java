@@ -34,10 +34,10 @@ public class LocalPriorityExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(ExecuteParam param, List<Worker> workers) {
+    protected Worker doRoute(String group, ExecuteParam param, List<Worker> workers) {
         // 查找workers列表中是否有当前的jvm worker
         Worker worker = find(workers, Worker.current());
-        return worker != null ? worker : otherExecutionRouter.route(param, workers);
+        return worker != null ? worker : otherExecutionRouter.route(group, param, workers);
     }
 
     private static Worker find(List<Worker> workers, Worker current) {

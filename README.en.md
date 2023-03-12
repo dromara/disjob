@@ -165,7 +165,7 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 ## Todo List
 
-- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks [WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)
+- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks([WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)])
 - [x] Extended registry: Zookeeper, Etcd, Nacos
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB

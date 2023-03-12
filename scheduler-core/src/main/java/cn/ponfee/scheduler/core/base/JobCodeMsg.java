@@ -24,7 +24,8 @@ public enum JobCodeMsg implements CodeMsg {
     SPLIT_JOB_FAILED(1002, "Split job failed."),
 
     JOB_EXECUTE_FAILED(2001, "Job execute failed."),
-    PAUSE_TASK_INTERRUPTED(2002, "Task interrupted."),
+    PAUSE_TASK_EXCEPTION(2002, "Pause task exception."),
+    CANCEL_TASK_EXCEPTION(2003, "Cancel task exception."),
 
     ;
 

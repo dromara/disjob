@@ -178,8 +178,13 @@ public abstract class TaskDispatcher implements AutoCloseable {
         }
 
         List<Worker> workers = discoveryWorker.getDiscoveredServers(dispatchParam.group());
+        if (CollectionUtils.isEmpty(workers)) {
+            log.warn("Assign worker not found available worker");
+            return;
+        }
+
         ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(dispatchParam.routeStrategy());
-        Worker worker = executionRouter.route(executeParam, workers);
+        Worker worker = executionRouter.route(dispatchParam.group(), executeParam, workers);
         executeParam.setWorker(worker);
     }
 

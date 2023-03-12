@@ -39,7 +39,7 @@ public class RoundRobinExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(ExecuteParam param, List<Worker> workers) {
+    protected Worker doRoute(String group, ExecuteParam param, List<Worker> workers) {
         return workers.get((int) (counter.getAndIncrement() % workers.size()));
     }
 

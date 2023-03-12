@@ -48,7 +48,7 @@ public interface SchedJobMapper {
      * @param size               the size
      * @return jobs
      */
-    List<SchedJob> findBeTriggering(@Param("maxNextTriggerTime") long maxNextTriggerTime, 
+    List<SchedJob> findBeTriggering(@Param("maxNextTriggerTime") long maxNextTriggerTime,
                                     @Param("size") int size);
 
     int updateNextScanTime(@Param("jobId") long jobId,
@@ -74,7 +74,7 @@ public interface SchedJobMapper {
     /**
      * Updates job state
      *
-     * @param jobId      the job id
+     * @param jobId     the job id
      * @param toState   the target state
      * @param fromState the source state
      * @return update sql affected rows
@@ -85,7 +85,7 @@ public interface SchedJobMapper {
 
     /**
      * Delete the job.
-     * 
+     *
      * @param jobId the job id
      * @return delete sql affected rows
      */

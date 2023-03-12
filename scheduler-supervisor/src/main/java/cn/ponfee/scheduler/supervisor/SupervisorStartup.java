@@ -87,9 +87,9 @@ public class SupervisorStartup implements AutoCloseable {
         Throwables.caught(waitingInstanceScanner::toStop);
         Throwables.caught(triggeringJobScanner::toStop);
         Throwables.caught(taskDispatcher::close);
-        Throwables.caught(() -> runningInstanceScanner.doStop(1000));
-        Throwables.caught(() -> waitingInstanceScanner.doStop(1000));
-        Throwables.caught(() -> triggeringJobScanner.doStop(1000));
+        Throwables.caught(runningInstanceScanner::close);
+        Throwables.caught(waitingInstanceScanner::close);
+        Throwables.caught(triggeringJobScanner::close);
     }
 
     // ----------------------------------------------------------------------------------------builder

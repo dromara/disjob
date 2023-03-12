@@ -60,7 +60,7 @@ public class SchedTask extends BaseEntity implements Serializable {
     private Long executeDuration;
 
     /**
-     * 执行状态：10-等待执行；20-正在执行；30-暂停执行；40-正常完成；50-实例化失败取消；51-校验失败取消；52-初始化异常取消；53-执行失败取消；54-执行异常取消；55-执行超时取消；56-数据不一致取消；57-执行冲突取消(sched_job.collision_strategy=3)；58-手动取消；
+     * 执行状态：10-等待执行；20-正在执行；30-暂停执行；40-正常完成；50-实例化失败取消；51-校验失败取消；52-初始化异常取消；53-执行失败取消；54-执行异常取消；55-执行超时取消；56-数据无效取消；57-执行冲突取消(sched_job.collision_strategy=3)；58-手动取消；
      *
      * @see ExecuteState
      */

@@ -75,21 +75,25 @@
       AND run_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
   </update>
 
-  <update id="forceUpdateState">
-    UPDATE <include refid="Table_Name" />
-    SET run_state = #{targetState,jdbcType=TINYINT},
-        version = version+1
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-      AND run_state!=20 AND #{targetState,jdbcType=TINYINT}!=20 AND run_state!=#{targetState,jdbcType=TINYINT}
-  </update>
-
   <update id="updateState">
     UPDATE <include refid="Table_Name" />
     SET run_state = #{toState,jdbcType=TINYINT},
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND run_state = #{fromState,jdbcType=TINYINT}
-    <if test="version!=null">AND version = #{version,jdbcType=INTEGER}</if>
+    <if test="version != null">
+      AND version = #{version,jdbcType=INTEGER}
+    </if>
+  </update>
+
+  <update id="forceChangeState">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = #{toState,jdbcType=TINYINT},
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND run_state != #{toState,jdbcType=TINYINT}
+      AND run_state != 20
+      AND #{toState,jdbcType=TINYINT} != 20
   </update>
 
   <select id="findExpireState" resultMap="BaseResultMap">

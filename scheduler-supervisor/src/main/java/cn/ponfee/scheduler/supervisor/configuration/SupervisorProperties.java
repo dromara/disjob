@@ -36,7 +36,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     /**
      * Scan waiting instance period milliseconds
      */
-    private long scanWaitingInstancePeriodMs = 5000;
+    private long scanWaitingInstancePeriodMs = 15000;
 
     /**
      * Scan running instance period milliseconds

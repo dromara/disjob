@@ -71,7 +71,7 @@ public class WorkerStartup implements AutoCloseable {
     public void close() {
         Throwables.caught(workerRegistry::close);
         Throwables.caught(taskReceiver::close);
-        Throwables.caught(() -> rotatingTimingWheel.doStop(1000));
+        Throwables.caught(rotatingTimingWheel::close);
         Throwables.caught(workerThreadPool::close);
     }
 

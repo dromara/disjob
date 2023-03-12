@@ -7,29 +7,30 @@
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedTask">
     <result column="task_id" jdbcType="BIGINT" property="taskId" />
     <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
-    <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
-    <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
-    <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
     <result column="execute_state" jdbcType="TINYINT" property="executeState" />
     <result column="worker" jdbcType="VARCHAR" property="worker" />
     <result column="version" jdbcType="INTEGER" property="version" />
+  </resultMap>
+
+  <resultMap id="LargeResultMap" type="cn.ponfee.scheduler.core.model.SchedTask" extends="BaseResultMap" >
+    <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
+    <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
+    <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
+    <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
+    <result column="execute_snapshot" jdbcType="VARCHAR" property="executeSnapshot" />
+    <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
     <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
     <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
   </resultMap>
 
-  <resultMap id="LargeResultMap" type="cn.ponfee.scheduler.core.model.SchedTask" extends="BaseResultMap" >
-    <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
-    <result column="execute_snapshot" jdbcType="VARCHAR" property="executeSnapshot" />
-    <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
-  </resultMap>
-
-  <sql id="Base_Column_List">
-    task_id, instance_id, execute_start_time, execute_end_time, execute_duration,
-    execute_state, worker, version, updated_at, created_at
+  <sql id="Medium_Column_List">
+    task_id, instance_id, execute_state, worker, version
   </sql>
 
   <sql id="Large_Column_List">
-    <include refid="Base_Column_List" />, task_param, execute_snapshot, error_msg
+    <include refid="Medium_Column_List" />,
+    execute_start_time, execute_end_time, execute_duration,
+    task_param, execute_snapshot, error_msg, updated_at, created_at
   </sql>
 
   <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
@@ -54,7 +55,7 @@
   </select>
 
   <select id="findMediumByInstanceId" parameterType="_long" resultMap="BaseResultMap">
-    SELECT <include refid="Base_Column_List" />
+    SELECT <include refid="Medium_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
@@ -79,35 +80,28 @@
   <update id="terminate">
     UPDATE <include refid="Table_Name" />
     SET execute_state    = #{toState,jdbcType=TINYINT},
+      <if test="executeEndTime != null">
         execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
         execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
-        <if test="errorMsg!=null and errorMsg.length()>0">
-          error_msg = #{errorMsg,jdbcType=VARCHAR},
-        </if>
-        version     = version + 1
+      </if>
+      <if test="errorMsg!=null and errorMsg.length()>0">
+        error_msg = #{errorMsg,jdbcType=VARCHAR},
+      </if>
+        version = version + 1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
-      AND execute_state IN (10, 20, 30)
       AND execute_state = #{fromState,jdbcType=TINYINT}
+      AND execute_state != #{toState,jdbcType=TINYINT}
+      AND execute_state IN (10, 20, 30)
   </update>
 
   <update id="updateState">
     UPDATE <include refid="Table_Name" />
     SET execute_state = #{toState,jdbcType=TINYINT},
-        <if test="errorMsg!=null and errorMsg.length()>0">
-          error_msg = #{errorMsg,jdbcType=VARCHAR},
-        </if>
         version = version+1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = #{fromState,jdbcType=TINYINT}
-      <if test="version!=null">AND version = #{version,jdbcType=INTEGER}</if>
-  </update>
-
-  <update id="forceUpdateState">
-    UPDATE <include refid="Table_Name" />
-    SET execute_state = #{targetState,jdbcType=TINYINT},
-        version = version+1
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-      AND execute_state!=20 AND #{targetState,jdbcType=TINYINT}!=20 AND execute_state!=#{targetState,jdbcType=TINYINT}
+      AND execute_state != #{toState,jdbcType=TINYINT}
+      AND version = #{version,jdbcType=INTEGER}
   </update>
 
   <update id="updateStateByInstanceId">
@@ -119,7 +113,18 @@
         </if>
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND execute_state != #{toState,jdbcType=TINYINT}
       AND execute_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+  </update>
+
+  <update id="forceChangeState">
+    UPDATE <include refid="Table_Name" />
+    SET execute_state = #{toState,jdbcType=TINYINT},
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND execute_state != #{toState,jdbcType=TINYINT}
+      AND execute_state != 20
+      AND #{toState,jdbcType=TINYINT} != 20
   </update>
 
   <update id="checkpoint">

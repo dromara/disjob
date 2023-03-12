@@ -38,7 +38,7 @@ public class RandomExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(ExecuteParam param, List<Worker> workers) {
+    protected Worker doRoute(String group, ExecuteParam param, List<Worker> workers) {
         return workers.get(random.nextInt(workers.size()));
     }
 

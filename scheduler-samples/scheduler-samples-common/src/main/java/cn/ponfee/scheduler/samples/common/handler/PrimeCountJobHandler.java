@@ -99,7 +99,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
         while (next <= n) {
             if (super.isInterrupted() || Thread.currentThread().isInterrupted()) {
                 checkpoint.checkpoint(task().getTaskId(), Jsons.toJson(execution));
-                throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_INTERRUPTED);
+                throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_EXCEPTION);
             }
 
             long count = Prime.MillerRabin.countPrimes(next, Math.min(next + blockStep, n));

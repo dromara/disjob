@@ -5,7 +5,7 @@ spring.datasource.distributed-scheduler:
   username: root
   password:
   minimum-idle: 10
-  maximum-pool-size: 100
+  maximum-pool-size: 200
   connection-timeout: 2000
   pool-name: distributed_scheduler
   #connection-test-query: SELECT 1    # jdbc4不建议配置connectionTestQuery

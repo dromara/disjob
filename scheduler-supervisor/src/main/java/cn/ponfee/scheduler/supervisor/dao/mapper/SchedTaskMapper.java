@@ -43,16 +43,15 @@ public interface SchedTaskMapper {
     int updateState(@Param("taskId") long taskId,
                     @Param("toState") int toState,
                     @Param("fromState") int fromState,
-                    @Param("errorMsg") String errorMsg,
                     @Param("version") Integer version);
 
-    int forceUpdateState(@Param("instanceId") long instanceId,
-                         @Param("targetState") int targetState);
-
     int updateStateByInstanceId(@Param("instanceId") long instanceId,
-                             @Param("toState") int toState,
-                             @Param("fromStateList") List<Integer> fromStateList,
-                             @Param("executeEndTime") Date executeEndTime);
+                                @Param("toState") int toState,
+                                @Param("fromStateList") List<Integer> fromStateList,
+                                @Param("executeEndTime") Date executeEndTime);
+
+    int forceChangeState(@Param("instanceId") long instanceId,
+                         @Param("toState") int toState);
 
     int checkpoint(@Param("taskId") long taskId,
                    @Param("executeSnapshot") String executeSnapshot);

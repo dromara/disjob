@@ -75,9 +75,9 @@ public enum ExecuteState implements IntValue<ExecuteState> {
     EXECUTE_TIMEOUT(55, RunState.CANCELED),
 
     /**
-     * 数据不一致取消
+     * 数据无效取消
      */
-    DATA_INCONSISTENT(56, RunState.CANCELED),
+    DATA_INVALID(56, RunState.CANCELED),
 
     /**
      * 执行冲突取消(sched_job.collision_strategy=3)
@@ -89,13 +89,6 @@ public enum ExecuteState implements IntValue<ExecuteState> {
      */
     MANUAL_CANCELED(58, RunState.CANCELED),
     ;
-
-    /**
-     * State list of can transit to CANCELED
-     *
-     * @see #isTerminal()
-     */
-    public static final List<ExecuteState> CANCELABLE_LIST = ImmutableList.of(WAITING, EXECUTING, PAUSED);
 
     /**
      * State list of can transit to PAUSED
