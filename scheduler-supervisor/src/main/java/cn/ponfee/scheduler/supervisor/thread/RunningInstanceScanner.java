@@ -99,10 +99,11 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             schedulerJobManager.renewUpdateTime(instance, now);
             return;
         }
+
         // all workers are dead
         if (schedulerJobManager.renewUpdateTime(instance, now)) {
-            log.info("Scan instance, all worker dead, terminate the sched instance: {}", instance.getInstanceId());
-            schedulerJobManager.terminateDeadInstance(instance.getInstanceId());
+            log.info("Scanned the running state instance death, because all task was terminal: {}", instance.getInstanceId());
+            schedulerJobManager.deathInstance(instance.getInstanceId());
         }
     }
 

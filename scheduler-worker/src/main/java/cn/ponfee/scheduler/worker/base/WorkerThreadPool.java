@@ -59,7 +59,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     /**
      * Supervisor client
      */
-    private final SupervisorService supervisorClient;
+    private final SupervisorService client;
 
     /**
      * Maximum pool size
@@ -98,12 +98,12 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
-                            SupervisorService supervisorClient) {
+                            SupervisorService client) {
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
-        this.supervisorClient = supervisorClient;
+        this.client = client;
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
@@ -156,12 +156,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             // stop the work thread
             stopWorkerThread(workerThread, true);
         } finally {
-            try {
-                terminateTask(supervisorClient, param, ops, ops.toState(), null);
-            } catch (Exception e) {
-                LOG.error("Normal stop task occur error: {} | {} | {}", taskId, ops, workerThread.getName());
-                Threads.interruptIfNecessary(e);
-            }
+            terminateTask(client, param, ops, ops.toState(), null);
         }
     }
 
@@ -249,12 +244,9 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     idlePool.putFirst(workerThread);
                 } catch (DuplicateTaskException e) {
                     LOG.error(e.getMessage());
-                    try {
-                        // cancel this execution param
-                        terminateTask(supervisorClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
-                    } catch (Exception ex) {
-                        LOG.error("Cancel duplicate task occur error: " + param, ex);
-                    }
+                    // cancel this execution param
+                    terminateTask(client, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
+
                     // return this worker thread
                     idlePool.putFirst(workerThread);
                 }
@@ -350,7 +342,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     private WorkerThread createWorkerThreadIfNecessary() {
         for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
             if (workerThreadCounter.compareAndSet(count, count + 1)) {
-                WorkerThread thread = new WorkerThread(this, supervisorClient, keepAliveTimeSeconds);
+                WorkerThread thread = new WorkerThread(this, client, keepAliveTimeSeconds);
                 LOG.info("Created worker thread, current size: {}", count + 1);
                 return thread;
             }
@@ -371,60 +363,52 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         return errorMsg;
     }
 
-    private static void terminateTask(SupervisorService supervisorClient, ExecuteParam param,
-                                      Operations ops, ExecuteState toState, String errorMsg) throws Exception {
-        Assert.notNull(ops, "Terminate task current operation cannot null.");
+    private static void terminateTask(SupervisorService client, ExecuteParam param, Operations ops, ExecuteState toState, String errorMsg) {
+        Assert.notNull(ops, "Terminate task operation cannot be null.");
         if (!param.updateOperation(ops, null)) {
             // already terminated
-            LOG.warn("Clear execution param operation conflict: {} | {} | {}", param.getTaskId(), ops, toState);
+            LOG.warn("Terminate task conflict: {} | {} | {}", param.getTaskId(), ops, toState);
             return;
         }
 
-        boolean success;
-        switch (ops) {
-            case TRIGGER:
-                success = supervisorClient.terminateExecutingTask(param, toState, errorMsg);
-                break;
-            case PAUSE:
-                success = supervisorClient.pauseExecutingTask(param, errorMsg);
-                break;
-            default:
-                success = supervisorClient.cancelExecutingTask(param, toState, errorMsg);
-                break;
-        }
-        if (!success) {
-            LOG.warn("Terminate executing task failed: {} | {} | {}", param.getTaskId(), ops, toState);
+        try {
+            if (!client.terminateTask(param, ops, toState, errorMsg)) {
+                LOG.warn("Terminate task failed: {} | {} | {}", param.getTaskId(), ops, toState);
+            }
+        } catch (Exception e) {
+            LOG.error("Terminate task error: " + param.getTaskId() + " | " + ops + " | " + toState);
+            Threads.interruptIfNecessary(e);
         }
     }
 
-    private static void terminateInstance(SupervisorService supervisorClient, ExecuteParam param,
-                                          Operations ops, String errorMsg) throws Exception {
+    private static void stopInstance(SupervisorService client, ExecuteParam param, Operations ops, String errorMsg) {
         if (!param.updateOperation(Operations.TRIGGER, ops)) {
-            LOG.error("Terminate sched instance conflicted: {} | {} | {}", param, ops, errorMsg);
+            LOG.error("Stop instance conflict: {} | {}", param, ops);
             return;
         }
 
-        LOG.info("Terminate the sched instance {}", param);
+        LOG.info("Stop instance task: {} | {}", param.getTaskId(), ops);
+        terminateTask(client, param, ops, ops.toState(), errorMsg);
 
         try {
-            terminateTask(supervisorClient, param, ops, ops.toState(), errorMsg);
+            boolean success = true;
+            switch (ops) {
+                case PAUSE:
+                    success = client.pauseInstance(param.getInstanceId());
+                    break;
+                case EXCEPTION_CANCEL:
+                    success = client.cancelInstance(param.getInstanceId(), ops);
+                    break;
+                default:
+                    LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
+                    break;
+            }
+            if (!success) {
+                LOG.error("Stop instance failed: {} | {}", param.getTaskId(), ops);
+            }
         } catch (Exception e) {
-            LOG.error("Terminate sched instance task error: " + param, e);
-        }
-
-        boolean success;
-        switch (ops) {
-            case PAUSE:
-                success = supervisorClient.pauseInstance(param.getInstanceId());
-                break;
-            case EXCEPTION_CANCEL:
-                success = supervisorClient.cancelInstance(param.getInstanceId(), ops);
-                break;
-            default:
-                throw new UnsupportedOperationException("Terminate sched instance unsupported operation: " + ops);
-        }
-        if (!success) {
-            LOG.error("Terminate sched instance failed: {} | {} | {}", param, ops, errorMsg);
+            LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, e);
+            Threads.interruptIfNecessary(e);
         }
     }
 
@@ -478,7 +462,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 return null;
             }
             pool.remove(taskId);
-            LOG.info("Removed active pool worker thread: {} | {}", thread.getName(), param);
+            LOG.info("Removed active pool worker thread: {} | {}", thread.getName(), param.getTaskId());
             return Pair.of(thread, param);
         }
 
@@ -530,11 +514,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
                     // 3、finally update the sched task state
                     if (success) {
-                        try {
-                            terminateTask(supervisorClient, param, ops, ops.toState(), null);
-                        } catch (Exception e) {
-                            LOG.error("Terminate task failed on thread pool close: " + param, e);
-                        }
+                        terminateTask(client, param, ops, ops.toState(), null);
                     } else {
                         LOG.error("Change execution param ops failed on thread pool close: {} | {}", param, ops);
                     }
@@ -691,11 +671,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                     runTask(executeParam);
                     // Thread#stop() will occur "java.lang.ThreadDeath: null" if wrapped in Throwable
                 } catch (Exception e) {
-                    try {
-                        terminateTask(supervisorClient, executeParam, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(e));
-                    } catch (Exception ex) {
-                        LOG.error("Worker thread terminate failed: " + executeParam, ex);
-                    }
+                    terminateTask(supervisorClient, executeParam, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(e));
 
                     if (e instanceof InterruptedException) {
                         LOG.error("Worker thread execute interrupted: " + executeParam, e);
@@ -716,7 +692,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             threadPool.removeWorkerThread(this);
         }
 
-        private void runTask(ExecuteParam param) throws Exception {
+        private void runTask(ExecuteParam param) {
             SchedTask task;
             SchedJob schedJob;
             try {
@@ -778,7 +754,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
             // 2、init
             try {
                 taskExecutor.init();
-                LOG.info("Initiated sched task {}", param);
+                LOG.info("Initiated sched task {}", param.getTaskId());
             } catch (Exception e) {
                 LOG.error("Task init error: " + param, e);
                 terminateTask(supervisorClient, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(e));
@@ -802,11 +778,11 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 } else {
                     result = taskExecutor.execute(supervisorClient);
                 }
-                LOG.info("Executed sched task {}", param);
+                LOG.info("Executed sched task {}", param.getTaskId());
 
                 // 4、execute end
                 if (result.isSuccess()) {
-                    LOG.info("Task executed finished {}", param);
+                    LOG.info("Task executed finished {}", param.getTaskId());
                     terminateTask(supervisorClient, param, Operations.TRIGGER, FINISHED, null);
                 } else {
                     LOG.error("Task executed failed {} | {}", param, result);
@@ -816,11 +792,11 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 LOG.error("Task execute timeout: " + param, e);
                 terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
-                LOG.error("PauseTaskException, do pause: " + param, e);
-                terminateInstance(supervisorClient, param, Operations.PAUSE, toErrorMsg(e));
+                LOG.error("Task exception do pause: " + param, e);
+                stopInstance(supervisorClient, param, Operations.PAUSE, toErrorMsg(e));
             } catch (CancelTaskException e) {
-                LOG.error("CancelTaskException, do manual cancel: " + param, e);
-                terminateInstance(supervisorClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
+                LOG.error("Task exception do cancel: " + param, e);
+                stopInstance(supervisorClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Exception e) {
                 LOG.error("Task execute occur error: " + param, e);
                 terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(e));
@@ -828,7 +804,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
                 // 5、destroy
                 try {
                     taskExecutor.destroy();
-                    LOG.info("Destroyed sched task: {}", param);
+                    LOG.info("Destroyed sched task: {}", param.getTaskId());
                 } catch (Exception e) {
                     LOG.error("Task destroy error: " + param, e);
                 }

@@ -75,8 +75,8 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         if (tasks.stream().allMatch(t -> ExecuteState.of(t.getExecuteState()).isTerminal())) {
             // if all the tasks are terminal, then terminate sched instance record
             if (schedulerJobManager.renewUpdateTime(instance, now)) {
-                log.info("All task terminal, terminate the sched instance: {}", instance.getInstanceId());
-                schedulerJobManager.terminateDeadInstance(instance.getInstanceId());
+                log.info("Scanned the waiting state instance death, because all task was terminal: {}", instance.getInstanceId());
+                schedulerJobManager.deathInstance(instance.getInstanceId());
             }
             return;
         }
