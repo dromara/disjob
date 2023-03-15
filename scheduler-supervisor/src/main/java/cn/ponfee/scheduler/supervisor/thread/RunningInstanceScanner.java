@@ -12,6 +12,7 @@ import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
+import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
@@ -69,41 +70,59 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
     }
 
     private void processEach(SchedInstance instance, Date now) {
-        List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instance.getInstanceId());
+        if (!schedulerJobManager.renewUpdateTime(instance, now)) {
+            return;
+        }
 
-        // sieve the waiting tasks
+        List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instance.getInstanceId());
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
+
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            if (!schedulerJobManager.renewUpdateTime(instance, now)) {
-                return;
-            }
-            // sieve the un-dispatch waiting tasks to do re-dispatch
-            List<SchedTask> dispatchingTasks = schedulerJobManager.filterDispatchingTask(waitingTasks);
-            if (CollectionUtils.isEmpty(dispatchingTasks)) {
+            // 1、has waiting task
+
+            // sieve the (un-dispatch) or (assigned worker death) waiting tasks to do re-dispatch
+            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> schedulerJobManager.isDeathWorker(e.getWorker()));
+            if (CollectionUtils.isEmpty(redispatchingTasks)) {
                 return;
             }
             SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
             if (schedJob == null) {
-                log.error("Running instance scanner sched job not found: {}", instance.getJobId());
-                schedulerJobManager.updateInstanceState(ExecuteState.DATA_INVALID, tasks, instance);
+                log.error("Scanned running state instance not found job: {}", instance.getJobId());
                 return;
             }
-            log.info("Running scanner redispatch sched instance: {}", instance);
-            schedulerJobManager.dispatch(schedJob, instance, dispatchingTasks);
-            return;
-        }
+            // check is whether not discovered worker
+            if (schedulerJobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
+                log.error("Scanned running state instance not available worker: {} | {}", instance.getInstanceId(), schedJob.getJobGroup());
+                return;
+            }
+            log.info("Scanned running state instance re-dispatch task: {}", instance.getInstanceId());
+            schedulerJobManager.dispatch(schedJob, instance, redispatchingTasks);
 
-        // check has executing task
-        List<SchedTask> executingTasks = Collects.filter(tasks, e -> ExecuteState.EXECUTING.equals(e.getExecuteState()));
-        if (CollectionUtils.isNotEmpty(executingTasks) && schedulerJobManager.hasAliveExecuting(executingTasks)) {
-            schedulerJobManager.renewUpdateTime(instance, now);
-            return;
-        }
+        } else if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
+            // 2、all task was terminated
 
-        // all workers are dead
-        if (schedulerJobManager.renewUpdateTime(instance, now)) {
-            log.info("Scanned the running state instance death, because all task was terminal: {}", instance.getInstanceId());
+            // double check instance run state
+            SchedInstance reloadInstance = schedulerJobManager.getInstance(instance.getInstanceId());
+            if (reloadInstance == null) {
+                log.error("Scanned running state instance not exists: {}", instance.getInstanceId());
+                return;
+            }
+            if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
+                return;
+            }
+            log.info("Scanned running state instance task all terminated: {}", instance.getInstanceId());
             schedulerJobManager.deathInstance(instance.getInstanceId());
+
+        } else {
+            // 3、has executing state task
+
+            // check has alive executing state task
+            if (schedulerJobManager.hasAliveExecuting(tasks)) {
+                return;
+            }
+            log.info("Scanned running state instance was death: {}", instance.getInstanceId());
+            schedulerJobManager.deathInstance(instance.getInstanceId());
+
         }
     }
 

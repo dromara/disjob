@@ -50,7 +50,7 @@ public interface SupervisorService extends Checkpoint {
     boolean pauseInstance(long instanceId) throws Exception;
 
     @PostMapping(PREFIX_PATH + "instance/cancel")
-    boolean cancelInstance(long instanceId, Operations operation) throws Exception;
+    boolean cancelInstance(long instanceId, Operations ops) throws Exception;
 
     // ---------------------------------------------------------------------------checkpoint
 

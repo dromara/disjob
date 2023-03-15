@@ -40,11 +40,6 @@ public interface SchedTaskMapper {
                   @Param("executeEndTime") Date executeEndTime,
                   @Param("errorMsg") String errorMsg);
 
-    int updateState(@Param("taskId") long taskId,
-                    @Param("toState") int toState,
-                    @Param("fromState") int fromState,
-                    @Param("version") Integer version);
-
     int updateStateByInstanceId(@Param("instanceId") long instanceId,
                                 @Param("toState") int toState,
                                 @Param("fromStateList") List<Integer> fromStateList,

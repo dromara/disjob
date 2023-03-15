@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,39 +52,26 @@ public abstract class AbstractJobManager {
         return idGenerator.generateId();
     }
 
-    public void verifyJobHandler(SchedJob job) {
+    public void verifyJob(SchedJob job) {
         Assert.isTrue(StringUtils.isNotEmpty(job.getJobHandler()), "Job handler cannot be empty.");
-        Assert.isTrue(
-            workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam()),
-            () -> "Invalid job handler: " + job.getJobHandler()
-        );
+        boolean result = workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
+        Assert.isTrue(result, () -> "Invalid job: " + job.getJobHandler());
     }
 
     public List<SchedTask> splitTasks(SchedJob job, long instanceId, Date date) throws JobException {
         List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
         Assert.notEmpty(split, () -> "Not split any task: " + job);
-        Assert.isTrue(
-            split.size() <= MAX_SPLIT_TASK_SIZE,
-            () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job
-        );
+        Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job);
 
         return split.stream()
             .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, date))
             .collect(Collectors.toList());
     }
 
-    public List<SchedTask> filterDispatchingTask(List<SchedTask> tasks) {
-        if (CollectionUtils.isEmpty(tasks)) {
-            return Collections.emptyList();
-        }
-        return tasks.stream()
-            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
-            .filter(e -> !isAliveWorker(e.getWorker()))
-            .collect(Collectors.toList());
-    }
-
     public boolean hasAliveExecuting(List<SchedTask> tasks) {
-        Assert.notEmpty(tasks, "Task list cannot be empty.");
+        if (CollectionUtils.isEmpty(tasks)) {
+            return false;
+        }
         return tasks.stream()
             .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
             .map(SchedTask::getWorker)
@@ -97,9 +83,17 @@ public abstract class AbstractJobManager {
             && isAliveWorker(Worker.deserialize(text));
     }
 
+    public boolean isDeathWorker(String text) {
+        return !isAliveWorker(text);
+    }
+
     public boolean isAliveWorker(Worker worker) {
         return worker != null
             && discoveryWorker.isDiscoveredServer(worker);
+    }
+
+    public boolean isDeathWorker(Worker worker) {
+        return !isAliveWorker(worker);
     }
 
     public boolean hasNotDiscoveredWorkers(String group) {

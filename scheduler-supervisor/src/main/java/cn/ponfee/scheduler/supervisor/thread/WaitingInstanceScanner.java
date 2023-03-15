@@ -9,8 +9,10 @@
 package cn.ponfee.scheduler.supervisor.thread;
 
 import cn.ponfee.scheduler.common.lock.DoInLocked;
+import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
+import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
@@ -19,7 +21,6 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
@@ -70,50 +71,50 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
     }
 
     private void processEach(SchedInstance instance, Date now) {
+        if (!schedulerJobManager.renewUpdateTime(instance, now)) {
+            return;
+        }
+
         List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instance.getInstanceId());
+        List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
 
-        if (tasks.stream().allMatch(t -> ExecuteState.of(t.getExecuteState()).isTerminal())) {
-            // if all the tasks are terminal, then terminate sched instance record
-            if (schedulerJobManager.renewUpdateTime(instance, now)) {
-                log.info("Scanned the waiting state instance death, because all task was terminal: {}", instance.getInstanceId());
-                schedulerJobManager.deathInstance(instance.getInstanceId());
-            }
-            return;
-        }
-
-        // sieve the waiting tasks
-        List<SchedTask> waitingTasks = tasks.stream()
-            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
-            .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(waitingTasks)) {
-            return;
-        }
+            // 1、not has waiting task
 
-        // filter dispatching task
-        List<SchedTask> dispatchingTasks = schedulerJobManager.filterDispatchingTask(waitingTasks);
-        if (CollectionUtils.isEmpty(dispatchingTasks)) {
-            // none un-dispatched task
-            schedulerJobManager.renewUpdateTime(instance, now);
-            return;
-        }
+            if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
+                // double check instance run state
+                SchedInstance reloadInstance = schedulerJobManager.getInstance(instance.getInstanceId());
+                if (reloadInstance == null) {
+                    log.error("Scanned waiting state instance not exists: {}", instance.getInstanceId());
+                    return;
+                }
+                if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
+                    return;
+                }
+            }
+            log.info("Scanned waiting state instance was death: {}", instance.getInstanceId());
+            schedulerJobManager.deathInstance(instance.getInstanceId());
 
-        SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
-        if (schedJob == null) {
-            log.error("Waiting instance scanner sched job not found: {}", instance.getJobId());
-            schedulerJobManager.updateInstanceState(ExecuteState.DATA_INVALID, tasks, instance);
-            return;
-        }
+        } else {
+            // 2、sieve the (un-dispatch) or (assigned worker death) waiting tasks to do re-dispatch
 
-        // check not found worker
-        if (schedulerJobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
-            schedulerJobManager.renewUpdateTime(instance, now);
-            log.warn("Scan instance not found available group '{}' workers.", schedJob.getJobGroup());
-            return;
-        }
+            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> schedulerJobManager.isDeathWorker(e.getWorker()));
+            if (CollectionUtils.isEmpty(redispatchingTasks)) {
+                return;
+            }
+            SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
+            if (schedJob == null) {
+                log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
+                return;
+            }
+            // check not found worker
+            if (schedulerJobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
+                log.error("Scanned waiting state instance not available worker: {} | {}", instance.getInstanceId(), schedJob.getJobGroup());
+                return;
+            }
+            log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
+            schedulerJobManager.dispatch(schedJob, instance, redispatchingTasks);
 
-        if (schedulerJobManager.renewUpdateTime(instance, now)) {
-            log.info("Waiting scanner redispatch sched instance: {}", instance);
-            schedulerJobManager.dispatch(schedJob, instance, dispatchingTasks);
         }
     }
 

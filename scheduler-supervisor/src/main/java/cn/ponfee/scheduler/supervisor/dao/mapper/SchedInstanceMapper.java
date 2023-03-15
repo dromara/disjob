@@ -43,8 +43,7 @@ public interface SchedInstanceMapper {
 
     int updateState(@Param("instanceId") long instanceId,
                     @Param("toState") int toState,
-                    @Param("fromState") int fromState,
-                    @Param("version") Integer version);
+                    @Param("fromState") int fromState);
 
     int forceChangeState(@Param("instanceId") long instanceId,
                          @Param("toState") int toState);

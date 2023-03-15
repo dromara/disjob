@@ -94,16 +94,6 @@
       AND execute_state IN (10, 20, 30)
   </update>
 
-  <update id="updateState">
-    UPDATE <include refid="Table_Name" />
-    SET execute_state = #{toState,jdbcType=TINYINT},
-        version = version+1
-    WHERE task_id = #{taskId,jdbcType=BIGINT}
-      AND execute_state = #{fromState,jdbcType=TINYINT}
-      AND execute_state != #{toState,jdbcType=TINYINT}
-      AND version = #{version,jdbcType=INTEGER}
-  </update>
-
   <update id="updateStateByInstanceId">
     UPDATE <include refid="Table_Name" />
     SET execute_state = #{toState,jdbcType=TINYINT},

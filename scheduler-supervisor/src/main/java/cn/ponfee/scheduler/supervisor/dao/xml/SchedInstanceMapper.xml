@@ -81,9 +81,6 @@
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND run_state = #{fromState,jdbcType=TINYINT}
-    <if test="version != null">
-      AND version = #{version,jdbcType=INTEGER}
-    </if>
   </update>
 
   <update id="forceChangeState">
