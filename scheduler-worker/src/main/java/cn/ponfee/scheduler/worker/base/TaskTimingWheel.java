@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.worker.base;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import org.springframework.util.Assert;
 
 /**
@@ -17,7 +17,7 @@ import org.springframework.util.Assert;
  *
  * @author Ponfee
  */
-public class TaskTimingWheel extends TimingWheel<ExecuteParam> {
+public class TaskTimingWheel extends TimingWheel<ExecuteTaskParam> {
     private static final long serialVersionUID = 5234431161365689615L;
 
     public TaskTimingWheel(long tickMs, int ringSize) {
@@ -25,7 +25,7 @@ public class TaskTimingWheel extends TimingWheel<ExecuteParam> {
     }
 
     @Override
-    protected boolean verify(ExecuteParam param) {
+    protected boolean verify(ExecuteTaskParam param) {
         Assert.notNull(param.getWorker(), "Worker cannot be null.");
         return true;
     }

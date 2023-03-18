@@ -17,8 +17,9 @@ import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
-import cn.ponfee.scheduler.core.param.TaskWorker;
+import cn.ponfee.scheduler.core.enums.JobType;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
+import cn.ponfee.scheduler.core.param.TaskWorkerParam;
 import cn.ponfee.scheduler.registry.Discovery;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
 import com.google.common.collect.Lists;
@@ -42,7 +43,7 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
     private final Worker currentWorker;
     private final SupervisorService supervisorServiceClient;
     private final Discovery<Supervisor> discoverySupervisor;
-    private final TimingWheel<ExecuteParam> timingWheel;
+    private final TimingWheel<ExecuteTaskParam> timingWheel;
     private final WorkerThreadPool workerThreadPool;
     private final ExecutorService updateTaskWorkerExecutor;
 
@@ -51,7 +52,7 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
     public RotatingTimingWheel(Worker currentWorker,
                                SupervisorService supervisorServiceClient,
                                Discovery<Supervisor> discoverySupervisor,
-                               TimingWheel<ExecuteParam> timingWheel,
+                               TimingWheel<ExecuteTaskParam> timingWheel,
                                WorkerThreadPool threadPool,
                                int updateTaskWorkerThreadPoolSize) {
         super(timingWheel.getTickMs());
@@ -99,12 +100,12 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
             return;
         }
 
-        List<ExecuteParam> ringTriggers = timingWheel.poll();
+        List<ExecuteTaskParam> ringTriggers = timingWheel.poll();
         if (ringTriggers.isEmpty()) {
             return;
         }
 
-        List<ExecuteParam> matchedTriggers = ringTriggers.stream()
+        List<ExecuteTaskParam> matchedTriggers = ringTriggers.stream()
             .filter(e -> {
                 if (currentWorker.equalsGroup(e.getWorker())) {
                     return true;
@@ -119,10 +120,11 @@ public class RotatingTimingWheel extends AbstractHeartbeatThread {
         }
 
         updateTaskWorkerExecutor.execute(() -> {
-            List<List<ExecuteParam>> partition = Lists.partition(matchedTriggers, PROCESS_BATCH_SIZE);
-            for (List<ExecuteParam> batchTriggers : partition) {
-                List<TaskWorker> list = batchTriggers.stream()
-                    .map(e -> new TaskWorker(e.getTaskId(), e.getWorker().serialize()))
+            List<List<ExecuteTaskParam>> partition = Lists.partition(matchedTriggers, PROCESS_BATCH_SIZE);
+            for (List<ExecuteTaskParam> batchTriggers : partition) {
+                List<TaskWorkerParam> list = batchTriggers.stream()
+                    .filter(e -> e.getJobType() != JobType.BROADCAST)
+                    .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
                     .collect(Collectors.toList());
                 try {
                     supervisorServiceClient.updateTaskWorker(list);

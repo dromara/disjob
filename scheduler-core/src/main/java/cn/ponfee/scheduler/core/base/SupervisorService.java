@@ -8,13 +8,13 @@
 
 package cn.ponfee.scheduler.core.base;
 
-import cn.ponfee.scheduler.core.enums.ExecuteState;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
-import cn.ponfee.scheduler.core.param.TaskWorker;
+import cn.ponfee.scheduler.core.param.StartTaskParam;
+import cn.ponfee.scheduler.core.param.TaskWorkerParam;
+import cn.ponfee.scheduler.core.param.TerminateTaskParam;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,13 +38,13 @@ public interface SupervisorService extends Checkpoint {
     SchedTask getTask(long taskId) throws Exception;
 
     @PostMapping(PREFIX_PATH + "task/start")
-    boolean startTask(ExecuteParam param) throws Exception;
+    boolean startTask(StartTaskParam param) throws Exception;
 
     @PostMapping(PREFIX_PATH + "task_worker/update")
-    void updateTaskWorker(List<TaskWorker> list);
+    void updateTaskWorker(List<TaskWorkerParam> params);
 
     @PostMapping(PREFIX_PATH + "task/terminate")
-    boolean terminateTask(ExecuteParam param, Operations ops, ExecuteState toState, String errorMsg) throws Exception;
+    boolean terminateTask(TerminateTaskParam param) throws Exception;
 
     @PostMapping(PREFIX_PATH + "instance/pause")
     boolean pauseInstance(long instanceId) throws Exception;

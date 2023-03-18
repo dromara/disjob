@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public abstract class ExecutionRouter {
      * @param workers the list of worker
      * @return routed worker
      */
-    public final Worker route(String group, ExecuteParam param, List<Worker> workers) {
+    public final Worker route(String group, ExecuteTaskParam param, List<Worker> workers) {
         if (workers == null || workers.isEmpty()) {
             return null;
         }
@@ -51,5 +51,5 @@ public abstract class ExecutionRouter {
      * @param workers the list of worker
      * @return routed worker
      */
-    protected abstract Worker doRoute(String group, ExecuteParam param, List<Worker> workers);
+    protected abstract Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers);
 }

@@ -37,13 +37,15 @@
     INSERT INTO <include refid="Table_Name" /> (
       task_id, instance_id,
       task_param, execute_state,
-      version, updated_at, created_at
+      worker, version,
+      updated_at, created_at
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
-      #{item.taskId,jdbcType=BIGINT}, #{item.instanceId,jdbcType=BIGINT},
+      #{item.taskId,jdbcType=BIGINT},#{item.instanceId,jdbcType=BIGINT},
       #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
-      1, #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
+      #{item.worker,jdbcType=VARCHAR}, 1,
+      #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
     )
     </foreach>
   </insert>

@@ -8,25 +8,31 @@
 
 package cn.ponfee.scheduler.core.param;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import cn.ponfee.scheduler.common.base.ToJsonString;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 
 /**
- * Task worker
+ * Task worker parameter
  *
  * @author Ponfee
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class TaskWorker implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+@Getter
+@Setter
+public class TaskWorkerParam extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -6622646278492874535L;
 
     private Long taskId;
     private String worker;
+
+    public TaskWorkerParam() {
+    }
+
+    public TaskWorkerParam(Long taskId, String worker) {
+        this.taskId = taskId;
+        this.worker = worker;
+    }
 
 }

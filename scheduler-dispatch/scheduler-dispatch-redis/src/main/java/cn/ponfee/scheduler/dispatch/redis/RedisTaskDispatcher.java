@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.dispatch.redis;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.spring.RedisKeyRenewal;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.Discovery;
 import org.springframework.data.redis.core.RedisCallback;
@@ -40,20 +40,20 @@ public class RedisTaskDispatcher extends TaskDispatcher {
     private final RedisTemplate<String, String> redisTemplate;
 
     public RedisTaskDispatcher(Discovery<Worker> discoveryWorker,
-                               @Nullable TimingWheel<ExecuteParam> timingWheel,
+                               @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                RedisTemplate<String, String> redisTemplate) {
         super(discoveryWorker, timingWheel);
         this.redisTemplate = redisTemplate;
     }
 
     @Override
-    protected final boolean dispatch(ExecuteParam executeParam) {
-        Worker worker = executeParam.getWorker();
+    protected final boolean dispatch(ExecuteTaskParam param) {
+        Worker worker = param.getWorker();
         // push to remote worker
         String key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker);
         // ret: return list length after call redis rpush command
         Long ret = redisTemplate.execute(
-            (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), executeParam.serialize())
+            (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), param.serialize())
         );
 
         RedisKeyRenewal renewal = workerRenewMap.computeIfAbsent(key, k -> new RedisKeyRenewal(redisTemplate, key));

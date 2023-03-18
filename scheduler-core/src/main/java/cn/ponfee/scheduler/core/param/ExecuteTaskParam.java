@@ -13,6 +13,7 @@ import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.handle.TaskExecutor;
 import com.alibaba.fastjson.annotation.JSONType;
@@ -26,6 +27,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -39,16 +42,16 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Ponfee
  */
-@JSONType(deserializer = ExecuteParam.FastjsonDeserializer.class) // fastjson
-@JsonDeserialize(using = ExecuteParam.JacksonDeserializer.class)  // jackson
-public final class ExecuteParam extends ToJsonString implements TimingWheel.Timing<ExecuteParam>, Serializable {
-
+@JSONType(deserializer = ExecuteTaskParam.FastjsonDeserializer.class) // fastjson
+@JsonDeserialize(using = ExecuteTaskParam.JacksonDeserializer.class)  // jackson
+public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing<ExecuteTaskParam>, Serializable {
     private static final long serialVersionUID = -6493747747321536680L;
 
     private final AtomicReference<Operations> operation;
     private final long taskId;
     private final long instanceId;
     private final long jobId;
+    private final JobType jobType;
     private final long triggerTime;
 
     /**
@@ -64,36 +67,28 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     /**
      * Constructor
      *
-     * @param operation   the operation
-     * @param taskId      the task id
-     * @param instanceId  the instance id
-     * @param jobId       the job id
-     * @param triggerTime the trigger time
-     */
-    public ExecuteParam(Operations operation, long taskId, long instanceId, long jobId, long triggerTime) {
-        Assert.notNull(operation, "Operation cannot null.");
-        this.operation = new AtomicReference<>(operation);
-        this.taskId = taskId;
-        this.instanceId = instanceId;
-        this.jobId = jobId;
-        this.triggerTime = triggerTime;
-    }
-
-    /**
-     * The constructor for deserialization.
-     *
      * @param operation   the operation(if terminate task, this is null value)
      * @param taskId      the task id
      * @param instanceId  the instance id
      * @param jobId       the job id
+     * @param jobType     the job type
      * @param triggerTime the trigger time
      * @param worker      the worker
      */
-    public ExecuteParam(Operations operation, long taskId, long instanceId, long jobId, long triggerTime, Worker worker) {
+    public ExecuteTaskParam(@NotNull Operations operation,
+                            long taskId,
+                            long instanceId,
+                            long jobId,
+                            @NotNull JobType jobType,
+                            long triggerTime,
+                            @Nullable Worker worker) {
+        Assert.notNull(operation, "Operation cannot null.");
+        Assert.notNull(jobType, "Job type cannot null.");
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
         this.instanceId = instanceId;
         this.jobId = jobId;
+        this.jobType = jobType;
         this.triggerTime = triggerTime;
         this.worker = worker;
     }
@@ -109,6 +104,10 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
 
     public long getJobId() {
         return jobId;
+    }
+
+    public JobType getJobType() {
+        return jobType;
     }
 
     public long getTriggerTime() {
@@ -165,11 +164,12 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ExecuteParam other = (ExecuteParam) o;
+        ExecuteTaskParam other = (ExecuteTaskParam) o;
         return this.operation.get() == other.operation.get()
             && this.taskId          == other.taskId
             && this.instanceId      == other.instanceId
             && this.jobId           == other.jobId
+            && this.jobType         == other.jobType
             && this.triggerTime     == other.triggerTime;
     }
 
@@ -179,7 +179,7 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      * @param other the other task
      * @return {@code true} if same trigger task
      */
-    public boolean same(ExecuteParam other) {
+    public boolean same(ExecuteTaskParam other) {
         if (this == other) {
             return true;
         }
@@ -189,12 +189,13 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         return this.taskId      == other.taskId
             && this.instanceId  == other.instanceId
             && this.jobId       == other.jobId
+            && this.jobType     == other.jobType
             && this.triggerTime == other.triggerTime;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(operation.get().ordinal(), taskId, instanceId, jobId, triggerTime);
+        return Objects.hash(operation.get().ordinal(), taskId, instanceId, jobId, jobType, triggerTime);
     }
 
     /**
@@ -204,11 +205,12 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      */
     public byte[] serialize() {
         // unnecessary do flip
-        return ByteBuffer.allocate(33)
+        return ByteBuffer.allocate(34)
             .put((byte) operation.get().ordinal())
             .putLong(taskId)
             .putLong(instanceId)
             .putLong(jobId)
+            .put((byte) jobType.ordinal())
             .putLong(triggerTime)
             .array();
     }
@@ -219,14 +221,16 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      * @param bytes the serialized byte array
      * @return TaskParam of deserialized result
      */
-    public static ExecuteParam deserialize(byte[] bytes) {
+    public static ExecuteTaskParam deserialize(byte[] bytes) {
         ByteBuffer buf = ByteBuffer.wrap(bytes);
-        return new ExecuteParam(
-            Operations.of(buf.get()),
+        return new ExecuteTaskParam(
+            Operations.values()[buf.get()],
             buf.getLong(),
             buf.getLong(),
             buf.getLong(),
-            buf.getLong()
+            JobType.values()[buf.get()],
+            buf.getLong(),
+            null
         );
     }
 
@@ -238,8 +242,8 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
      */
     public static class FastjsonDeserializer implements ObjectDeserializer {
         @Override
-        public ExecuteParam deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-            if (GenericUtils.getRawType(type) != ExecuteParam.class) {
+        public ExecuteTaskParam deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+            if (GenericUtils.getRawType(type) != ExecuteTaskParam.class) {
                 throw new UnsupportedOperationException("Cannot supported deserialize type: " + type);
             }
             return of(parser.parseObject());
@@ -256,14 +260,14 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
     /**
      * Custom deserialize ExecuteParam based jackson.
      */
-    public static class JacksonDeserializer extends JsonDeserializer<ExecuteParam> {
+    public static class JacksonDeserializer extends JsonDeserializer<ExecuteTaskParam> {
         @Override
-        public ExecuteParam deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+        public ExecuteTaskParam deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             return of(p.readValueAs(Jsons.MAP_NORMAL));
         }
     }
 
-    private static ExecuteParam of(Map<String, ?> map) {
+    private static ExecuteTaskParam of(Map<String, ?> map) {
         if (map == null) {
             return null;
         }
@@ -272,11 +276,12 @@ public final class ExecuteParam extends ToJsonString implements TimingWheel.Timi
         long taskId = MapUtils.getLongValue(map, "taskId");
         long instanceId = MapUtils.getLongValue(map, "instanceId");
         long jobId = MapUtils.getLongValue(map, "jobId");
+        JobType jobType = EnumUtils.getEnumIgnoreCase(JobType.class, MapUtils.getString(map, "jobType"));
         long triggerTime = MapUtils.getLongValue(map, "triggerTime");
         Worker worker = Worker.of((Map<String, ?>) map.get("worker"));
 
         // operation is null if terminate task
-        return new ExecuteParam(operation, taskId, instanceId, jobId, triggerTime, worker);
+        return new ExecuteTaskParam(operation, taskId, instanceId, jobId, jobType, triggerTime, worker);
     }
 
 }

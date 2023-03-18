@@ -14,7 +14,7 @@ import cn.ponfee.scheduler.common.spring.RedisKeyRenewal;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -77,7 +77,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
     public RedisTaskReceiver(Worker currentWorker,
-                             TimingWheel<ExecuteParam> timingWheel,
+                             TimingWheel<ExecuteTaskParam> timingWheel,
                              RedisTemplate<String, String> redisTemplate) {
         super(timingWheel);
 
@@ -129,9 +129,9 @@ public class RedisTaskReceiver extends TaskReceiver {
         }
 
         for (byte[] bytes : result) {
-            ExecuteParam executeParam = ExecuteParam.deserialize(bytes);
-            executeParam.setWorker(currentWorker);
-            super.receive(executeParam);
+            ExecuteTaskParam param = ExecuteTaskParam.deserialize(bytes);
+            param.setWorker(currentWorker);
+            super.receive(param);
         }
 
         return result.size() < JobConstants.PROCESS_BATCH_SIZE;

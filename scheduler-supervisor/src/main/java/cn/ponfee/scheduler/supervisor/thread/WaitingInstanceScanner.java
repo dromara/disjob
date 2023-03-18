@@ -47,7 +47,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
     @Override
     protected boolean heartbeat() {
         if (schedulerJobManager.hasNotDiscoveredWorkers()) {
-            log.warn("Not found available worker.");
+            log.warn("Not discovered worker.");
             return true;
         }
 
@@ -81,8 +81,8 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
             // 1、has waiting state task
 
-            // sieve the (un-dispatch) or (assigned worker death) waiting tasks to do re-dispatch
-            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> schedulerJobManager.isDeathWorker(e.getWorker()));
+            // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
+            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> schedulerJobManager.isDeadWorker(e.getWorker()));
             if (CollectionUtils.isEmpty(redispatchingTasks)) {
                 return;
             }
@@ -93,7 +93,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             }
             // check is whether not discovered worker
             if (schedulerJobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
-                log.error("Scanned waiting state instance not available worker: {} | {}", instance.getInstanceId(), schedJob.getJobGroup());
+                log.error("Scanned waiting state instance not discovered worker: {} | {}", instance.getInstanceId(), schedJob.getJobGroup());
                 return;
             }
             log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
@@ -113,8 +113,8 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
                     return;
                 }
             }
-            log.info("Scanned waiting state instance was death: {}", instance.getInstanceId());
-            schedulerJobManager.deathInstance(instance.getInstanceId());
+            log.info("Scanned waiting state instance was dead: {}", instance.getInstanceId());
+            schedulerJobManager.purgeInstance(instance.getInstanceId());
 
         }
     }

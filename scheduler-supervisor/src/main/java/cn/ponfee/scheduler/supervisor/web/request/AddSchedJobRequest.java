@@ -31,6 +31,7 @@ public class AddSchedJobRequest extends ToJsonString implements Serializable {
     private String jobName;
     private String jobHandler;
     private Integer jobState;
+    private Integer jobType;
     private String jobParam;
     private Integer retryType;
     private Integer retryCount;

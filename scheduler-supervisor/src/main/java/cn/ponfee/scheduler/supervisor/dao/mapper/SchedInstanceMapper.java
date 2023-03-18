@@ -59,6 +59,8 @@ public interface SchedInstanceMapper {
                         @Param("updateTime") Date updateTime,
                         @Param("version") int version);
 
+    SchedInstance lockAndGet(long instanceId);
+
     Long lockAndGetId(long instanceId);
 
     Integer lockAndGetState(long instanceId);

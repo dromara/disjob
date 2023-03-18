@@ -13,7 +13,7 @@ import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.SplitTask;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.worker.rpc.WorkerServiceProvider;
 import io.vertx.core.AbstractVerticle;
@@ -112,7 +112,7 @@ public class VertxWebServer extends AbstractVerticle {
                 String body = ctx.body().asString();
                 // remove start char “[” and end char “]”
                 String data = body.substring(1, body.length() - 1);
-                ExecuteParam param = Jsons.fromJson(data, ExecuteParam.class);
+                ExecuteTaskParam param = Jsons.fromJson(data, ExecuteTaskParam.class);
                 boolean result = httpTaskReceiver.receive(param);
                 response(ctx, OK.code(), result);
             });

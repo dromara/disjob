@@ -12,8 +12,9 @@ import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.Fields;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
+import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -161,15 +162,16 @@ public class TimingWheelTest {
 
     @Test
     public void testTimingQueue() {
-        TimingWheel.TimingQueue<ExecuteParam> timingQueue = new TimingWheel.TimingQueue<>();
+        TimingWheel.TimingQueue<ExecuteTaskParam> timingQueue = new TimingWheel.TimingQueue<>();
         for (int i = 0; i < 100; i++) {
-            timingQueue.offer(new ExecuteParam(Operations.TRIGGER, 0L, 0L, 0L, ThreadLocalRandom.current().nextLong(100)));
+            long triggerTime = ThreadLocalRandom.current().nextLong(100);
+            timingQueue.offer(new ExecuteTaskParam(Operations.TRIGGER, 0L, 0L, 0L, JobType.NORMAL, triggerTime, null));
         }
 
         System.out.println("-------------\n");
         Assertions.assertEquals(100, timingQueue.size());
-        ExecuteParam first = timingQueue.peek();
-        for (ExecuteParam e; (e = timingQueue.poll()) != null; ) {
+        ExecuteTaskParam first = timingQueue.peek();
+        for (ExecuteTaskParam e; (e = timingQueue.poll()) != null; ) {
             System.out.print(e.timing() + ", ");
             Assertions.assertEquals(first, e);
             first = timingQueue.peek();
@@ -183,20 +185,21 @@ public class TimingWheelTest {
         long tickMs = 100;
         int ringSize = 60;
         long msPerRound = tickMs * ringSize;
-        TimingWheel<ExecuteParam> timingWheel = new TimingWheel<ExecuteParam>(tickMs, ringSize) {};
+        TimingWheel<ExecuteTaskParam> timingWheel = new TimingWheel<ExecuteTaskParam>(tickMs, ringSize) {};
         long hour = TimeUnit.HOURS.toMillis(10);
         System.out.println("hour=" + hour);
 
         for (int i = 0; i < 100000; i++) {
-            timingWheel.offer(new ExecuteParam(Operations.TRIGGER, 0L, 0L, 0L, System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour)));
+            long triggerTime = System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour);
+            timingWheel.offer(new ExecuteTaskParam(Operations.TRIGGER, 0L, 0L, 0L, JobType.NORMAL, triggerTime, null));
         }
 
-        TimingWheel.TimingQueue<ExecuteParam>[] array = (TimingWheel.TimingQueue<ExecuteParam>[]) Fields.get(timingWheel, "wheel");
+        TimingWheel.TimingQueue<ExecuteTaskParam>[] array = (TimingWheel.TimingQueue<ExecuteTaskParam>[]) Fields.get(timingWheel, "wheel");
         for (int tick = 0; tick < array.length; tick++) {
             System.out.print(tick + ", ");
-            TimingWheel.TimingQueue<ExecuteParam> queue = array[tick];
+            TimingWheel.TimingQueue<ExecuteTaskParam> queue = array[tick];
             long prev = 0;
-            for (ExecuteParam e; (e = queue.poll()) != null; ) {
+            for (ExecuteTaskParam e; (e = queue.poll()) != null; ) {
                 Assertions.assertEquals(tick, (int) (((e.timing()) % msPerRound) / tickMs));
                 Assertions.assertTrue(prev <= e.timing());
             }

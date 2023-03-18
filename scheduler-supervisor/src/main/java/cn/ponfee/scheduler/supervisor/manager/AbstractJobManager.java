@@ -9,14 +9,16 @@
 package cn.ponfee.scheduler.supervisor.manager;
 
 import cn.ponfee.scheduler.common.base.IdGenerator;
+import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
+import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.SplitTask;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
@@ -59,13 +61,27 @@ public abstract class AbstractJobManager {
     }
 
     public List<SchedTask> splitTasks(SchedJob job, long instanceId, Date date) throws JobException {
-        List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-        Assert.notEmpty(split, () -> "Not split any task: " + job);
-        Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job);
-
-        return split.stream()
-            .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, date))
-            .collect(Collectors.toList());
+        if (job.getJobType() == JobType.BROADCAST.value()) {
+            List<Worker> discoveredServers = discoveryWorker.getDiscoveredServers(job.getJobGroup());
+            if (discoveredServers.isEmpty()) {
+                throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
+            }
+            return discoveredServers.stream()
+                .map(e -> {
+                    SchedTask schedTask = SchedTask.create(job.getJobParam(), generateId(), instanceId, date);
+                    // pre-assign worker
+                    schedTask.setWorker(e.serialize());
+                    return schedTask;
+                })
+                .collect(Collectors.toList());
+        } else {
+            List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
+            Assert.notEmpty(split, () -> "Not split any task: " + job);
+            Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job);
+            return split.stream()
+                .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, date))
+                .collect(Collectors.toList());
+        }
     }
 
     public boolean hasAliveExecuting(List<SchedTask> tasks) {
@@ -83,7 +99,7 @@ public abstract class AbstractJobManager {
             && isAliveWorker(Worker.deserialize(text));
     }
 
-    public boolean isDeathWorker(String text) {
+    public boolean isDeadWorker(String text) {
         return !isAliveWorker(text);
     }
 
@@ -92,7 +108,7 @@ public abstract class AbstractJobManager {
             && discoveryWorker.isDiscoveredServer(worker);
     }
 
-    public boolean isDeathWorker(Worker worker) {
+    public boolean isDeadWorker(Worker worker) {
         return !isAliveWorker(worker);
     }
 
@@ -105,11 +121,43 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
+        if (JobType.BROADCAST.equals(job.getJobType())) {
+            tasks = tasks.stream()
+                .filter(e -> {
+                    Assert.hasText(e.getWorker(), () -> "Broadcast task must be pre-assign worker: " + e.getTaskId());
+                    if (isDeadWorker(e.getWorker())) {
+                        cancelWaitingTask(e.getTaskId());
+                        return false;
+                    } else {
+                        return true;
+                    }
+                })
+                .collect(Collectors.toList());
+        }
+
         return taskDispatcher.dispatch(job, instance, tasks);
     }
 
-    public boolean dispatch(List<ExecuteParam> tasks) {
-        return taskDispatcher.dispatch(tasks);
+    public boolean dispatch(List<ExecuteTaskParam> params) {
+        params = params.stream()
+            .filter(e -> {
+                if (JobType.BROADCAST == e.getJobType() && isDeadWorker(e.getWorker())) {
+                    cancelWaitingTask(e.getTaskId());
+                    return false;
+                } else {
+                    return true;
+                }
+            })
+            .collect(Collectors.toList());
+        return taskDispatcher.dispatch(params);
     }
 
+    /**
+     * Broadcast task after assigned worker, and then the worker is dead,
+     * the task always waiting state until canceled.
+     *
+     * @param taskId the task id
+     * @return {@code true} if cancel successful
+     */
+    protected abstract boolean cancelWaitingTask(long taskId);
 }

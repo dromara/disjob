@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.dispatch.redis.configuration;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.dispatch.configuration.BaseTaskDispatchingAutoConfiguration;
@@ -38,7 +38,7 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
     @ConditionalOnMissingBean
     @Bean
     public TaskDispatcher taskDispatcher(SupervisorRegistry discoveryWorker,
-                                         @Nullable TimingWheel<ExecuteParam> timingWheel,
+                                         @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          StringRedisTemplate stringRedisTemplate) {
         return new RedisTaskDispatcher(discoveryWorker, timingWheel, stringRedisTemplate);
     }
@@ -50,7 +50,7 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
     @ConditionalOnMissingBean
     @Bean
     public TaskReceiver taskReceiver(Worker currentWorker,
-                                     TimingWheel<ExecuteParam> timingWheel,
+                                     TimingWheel<ExecuteTaskParam> timingWheel,
                                      StringRedisTemplate stringRedisTemplate) {
         return new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
     }

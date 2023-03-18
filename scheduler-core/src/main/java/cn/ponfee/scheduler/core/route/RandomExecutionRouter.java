@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 
 import java.util.List;
 import java.util.Random;
@@ -38,7 +38,7 @@ public class RandomExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteParam param, List<Worker> workers) {
+    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
         return workers.get(random.nextInt(workers.size()));
     }
 

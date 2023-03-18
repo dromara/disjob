@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.core.route.count.AtomicCounter;
 import cn.ponfee.scheduler.core.route.count.JdkAtomicCounter;
 
@@ -39,7 +39,7 @@ public class RoundRobinExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteParam param, List<Worker> workers) {
+    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
         return workers.get((int) (counter.getAndIncrement() % workers.size()));
     }
 

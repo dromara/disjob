@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.core.route;
 import cn.ponfee.scheduler.common.util.ConsistentHash;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteParam param, List<Worker> workers) {
+    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
         ConsistentHash<Worker> consistentHashRouter = getConsistentHash(group, workers);
         return consistentHashRouter.routeNode(Long.toString(param.getInstanceId()));
     }

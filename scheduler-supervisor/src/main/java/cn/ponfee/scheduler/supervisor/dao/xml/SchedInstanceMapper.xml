@@ -119,12 +119,19 @@
       AND version = #{version,jdbcType=INTEGER}
   </update>
 
+  <select id="lockAndGet" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" /> FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
+  </select>
+
   <select id="lockAndGetId" parameterType="_long" resultType="long">
-    SELECT id FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
+    SELECT id FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
   </select>
 
   <select id="lockAndGetState" parameterType="_long" resultType="int">
-    SELECT run_state FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
+    SELECT run_state FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
   </select>
 
   <delete id="deleteByInstanceId" parameterType="_long">

@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.supervisor.config;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.Snowflake;
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.dispatch.redis.RedisTaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
@@ -51,7 +51,7 @@ public class TestConfiguration {
 
     @Bean
     public TaskDispatcher taskDispatcher(SupervisorRegistry supervisorRegistry,
-                                         @Nullable TimingWheel<ExecuteParam> timingWheel,
+                                         @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          RedisTemplate<String, String> redisTemplate) {
         return new RedisTaskDispatcher(supervisorRegistry, timingWheel, redisTemplate);
     }

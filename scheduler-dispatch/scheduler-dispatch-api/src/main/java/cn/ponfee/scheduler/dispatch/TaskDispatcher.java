@@ -12,12 +12,13 @@ import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.concurrent.AsyncDelayedExecutor;
 import cn.ponfee.scheduler.common.concurrent.DelayedData;
 import cn.ponfee.scheduler.core.base.Worker;
+import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.core.route.ExecutionRouter;
 import cn.ponfee.scheduler.core.route.ExecutionRouterRegistrar;
 import cn.ponfee.scheduler.registry.Discovery;
@@ -44,47 +45,47 @@ public abstract class TaskDispatcher implements AutoCloseable {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Discovery<Worker> discoveryWorker;
-    private final TimingWheel<ExecuteParam> timingWheel;
+    private final TimingWheel<ExecuteTaskParam> timingWheel;
 
     private final int maxRetryTimes;
     private final AsyncDelayedExecutor<DispatchParam> asyncDelayedExecutor;
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
-                          @Nullable TimingWheel<ExecuteParam> timingWheel) {
+                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel) {
         this(discoveryWorker, timingWheel, 3);
     }
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
-                          @Nullable TimingWheel<ExecuteParam> timingWheel,
+                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                           int maxRetryTimes) {
         this.discoveryWorker = discoveryWorker;
         this.timingWheel = timingWheel;
 
         this.maxRetryTimes = maxRetryTimes;
-        this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(this::doDispatch);
+        this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(3, e -> doDispatch(Collections.singletonList(e)));
     }
 
     /**
      * Dispatch the tasks to remote worker
      *
-     * @param executeParam the execution param
+     * @param param the execution task param
      * @return {@code true} if dispatched successful
      * @throws Exception if dispatch occur error
      */
-    protected abstract boolean dispatch(ExecuteParam executeParam) throws Exception;
+    protected abstract boolean dispatch(ExecuteTaskParam param) throws Exception;
 
     /**
      * Dispatch the task to specified worker, which the worker is executing this task
      * <p>this method is used to terminate(pause or cancel) the executing task
      *
-     * @param executeParams the list of execution param
+     * @param param the list of execution task param
      * @return {@code true} if the first dispatch successful
      */
-    public final boolean dispatch(List<ExecuteParam> executeParams) {
-        if (CollectionUtils.isEmpty(executeParams)) {
+    public final boolean dispatch(List<ExecuteTaskParam> param) {
+        if (CollectionUtils.isEmpty(param)) {
             return false;
         }
-        List<DispatchParam> list = executeParams.stream()
+        List<DispatchParam> list = param.stream()
             .peek(e -> Assert.notNull(e.getWorker(), "Directional dispatching execute param worker cannot be null."))
             .peek(e -> Assert.isTrue(e.operation() != Operations.TRIGGER, "Directional dispatching execute param operation cannot be TRIGGER."))
             .map(e -> new DispatchParam(e, null, null))
@@ -104,21 +105,27 @@ public abstract class TaskDispatcher implements AutoCloseable {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }
+        JobType jobType = JobType.of(job.getJobType());
+        RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
+
         List<DispatchParam> dispatchParams = new ArrayList<>(tasks.size());
         for (SchedTask task : tasks) {
-            ExecuteParam executeParam = new ExecuteParam(
+            Worker worker = null;
+            if (jobType == JobType.BROADCAST) {
+                Assert.hasText(task.getWorker(), () -> "Broadcast job must be pre-assign worker: " + instance.getInstanceId());
+                worker = Worker.deserialize(task.getWorker());
+            }
+            ExecuteTaskParam param = new ExecuteTaskParam(
                 Operations.TRIGGER,
                 task.getTaskId(),
                 instance.getInstanceId(),
                 job.getJobId(),
-                instance.getTriggerTime()
+                jobType,
+                instance.getTriggerTime(),
+                worker
             );
-            DispatchParam dispatchParam = new DispatchParam(
-                executeParam,
-                job.getJobGroup(),
-                RouteStrategy.of(job.getRouteStrategy())
-            );
-            dispatchParams.add(dispatchParam);
+
+            dispatchParams.add(new DispatchParam(param, job.getJobGroup(), routeStrategy));
         }
 
         return doDispatch(dispatchParams);
@@ -132,26 +139,22 @@ public abstract class TaskDispatcher implements AutoCloseable {
         // No-op
     }
 
-    private boolean doDispatch(DispatchParam dispatchParam) {
-        return doDispatch(Collections.singletonList(dispatchParam));
-    }
-
     private boolean doDispatch(List<DispatchParam> dispatchParams) {
         Worker current = Worker.current();
         boolean result = true;
         for (DispatchParam dispatchParam : dispatchParams) {
             assignWorker(dispatchParam);
 
-            ExecuteParam executeParam = dispatchParam.executeParam();
-            if (executeParam.getWorker() == null) {
+            ExecuteTaskParam param = dispatchParam.executeTaskParam();
+            if (param.getWorker() == null) {
                 // not found worker, delay retry
                 retry(dispatchParam);
                 result = false;
                 continue;
             }
             try {
-                boolean toLocal = timingWheel != null && current != null && current.equalsGroup(executeParam.getWorker());
-                boolean success = toLocal ? timingWheel.offer(executeParam) : dispatch(executeParam);
+                boolean toLocal = timingWheel != null && current != null && current.equalsGroup(param.getWorker());
+                boolean success = toLocal ? timingWheel.offer(param) : dispatch(param);
                 if (!success) {
                     // dispatch failed, delay retry
                     retry(dispatchParam);
@@ -170,10 +173,15 @@ public abstract class TaskDispatcher implements AutoCloseable {
     }
 
     private void assignWorker(DispatchParam dispatchParam) {
-        ExecuteParam executeParam = dispatchParam.executeParam();
-        if (executeParam.operation() != Operations.TRIGGER) {
-            Objects.requireNonNull(executeParam.getWorker(), "Suspend execution worker cannot be null.");
+        ExecuteTaskParam param = dispatchParam.executeTaskParam();
+        if (param.operation() != Operations.TRIGGER) {
             // if pause or cancel task operation, cannot assign worker
+            Objects.requireNonNull(param.getWorker(), () -> param.operation() + " execution worker cannot be null: " + param.getTaskId());
+            return;
+        }
+
+        if (param.getJobType() == JobType.BROADCAST) {
+            Objects.requireNonNull(param.getWorker(), "Broadcast execution worker cannot be null: " + param.getTaskId());
             return;
         }
 
@@ -184,17 +192,17 @@ public abstract class TaskDispatcher implements AutoCloseable {
         }
 
         ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(dispatchParam.routeStrategy());
-        Worker worker = executionRouter.route(dispatchParam.group(), executeParam, workers);
+        Worker worker = executionRouter.route(dispatchParam.group(), param, workers);
         if (worker == null) {
-            log.error("Assign worker to task failed: {} | {}", executeParam.getInstanceId(), executeParam.getTaskId());
+            log.error("Assign worker to task failed: {} | {}", param.getInstanceId(), param.getTaskId());
         }
-        executeParam.setWorker(worker);
+        param.setWorker(worker);
     }
 
     private void retry(DispatchParam dispatchParam) {
         if (dispatchParam.retried() >= maxRetryTimes) {
             // discard
-            log.error("Dispatched task retried max times still failed: " + dispatchParam.executeParam());
+            log.error("Dispatched task retried max times still failed: " + dispatchParam.executeTaskParam());
             return;
         }
 

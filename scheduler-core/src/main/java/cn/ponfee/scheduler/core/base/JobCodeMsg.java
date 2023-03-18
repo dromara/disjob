@@ -22,6 +22,7 @@ public enum JobCodeMsg implements CodeMsg {
 
     LOAD_HANDLER_ERROR(1001, "Load job handler error."),
     SPLIT_JOB_FAILED(1002, "Split job failed."),
+    NOT_DISCOVERED_WORKER(1003, "Not Discovered worker."),
 
     JOB_EXECUTE_FAILED(2001, "Job execute failed."),
     PAUSE_TASK_EXCEPTION(2002, "Pause task exception."),

@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.dispatch;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 
 import java.util.Objects;
 
@@ -20,19 +20,19 @@ import java.util.Objects;
  */
 public abstract class TaskReceiver implements AutoCloseable {
 
-    private final TimingWheel<ExecuteParam> timingWheel;
+    private final TimingWheel<ExecuteTaskParam> timingWheel;
 
-    public TaskReceiver(TimingWheel<ExecuteParam> timingWheel) {
+    public TaskReceiver(TimingWheel<ExecuteTaskParam> timingWheel) {
         this.timingWheel = Objects.requireNonNull(timingWheel, "Timing wheel cannot be null.");
     }
 
     /**
      * Receives the supervisor dispatched tasks.
      *
-     * @param executeParam the executeParam
+     * @param param the execution task param
      */
-    public boolean receive(ExecuteParam executeParam) {
-        return executeParam != null && timingWheel.offer(executeParam);
+    public boolean receive(ExecuteTaskParam param) {
+        return param != null && timingWheel.offer(param);
     }
 
     /**
@@ -50,7 +50,7 @@ public abstract class TaskReceiver implements AutoCloseable {
         // No-op
     }
 
-    public final TimingWheel<ExecuteParam> getTimingWheel() {
+    public final TimingWheel<ExecuteTaskParam> getTimingWheel() {
         return timingWheel;
     }
 

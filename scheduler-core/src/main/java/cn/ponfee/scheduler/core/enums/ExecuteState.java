@@ -75,19 +75,19 @@ public enum ExecuteState implements IntValue<ExecuteState> {
     EXECUTE_TIMEOUT(55, RunState.CANCELED),
 
     /**
-     * 数据无效取消
-     */
-    DATA_INVALID(56, RunState.CANCELED),
-
-    /**
      * 执行冲突取消(sched_job.collision_strategy=3)
      */
-    EXECUTE_COLLISION(57, RunState.CANCELED),
+    EXECUTE_COLLISION(56, RunState.CANCELED),
 
     /**
      * 手动取消
      */
-    MANUAL_CANCELED(58, RunState.CANCELED),
+    MANUAL_CANCELED(57, RunState.CANCELED),
+
+    /**
+     * 广播任务分配worker后因死亡导致未执行取消
+     */
+    WAITING_CANCELED(58, RunState.CANCELED),
     ;
 
     /**

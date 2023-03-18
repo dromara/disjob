@@ -60,6 +60,13 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer jobState;
 
     /**
+     * Job类型：1-普通(Normal)；2-广播(Broadcast)；3-工作流(Workflow)；4-分布式计算(MapReduce)；
+     *
+     * @see JobType
+     */
+    private Integer jobType;
+
+    /**
      * Job参数
      */
     private String jobParam;
@@ -196,6 +203,9 @@ public class SchedJob extends BaseEntity implements Serializable {
         if (jobState == null) {
             this.jobState = JobState.DISABLE.value();
         }
+        if (jobType == null) {
+            this.jobType = JobType.NORMAL.value();
+        }
         if (weightScore == null) {
             this.weightScore = 1;
         }
@@ -213,8 +223,8 @@ public class SchedJob extends BaseEntity implements Serializable {
             Assert.isTrue(retryCount == 0, "Retry count cannot set if none retry.");
             Assert.isTrue(retryInterval == 0, "Retry interval cannot set if none retry.");
         } else {
-            Assert.isTrue(retryCount != null || retryCount > 0, "Retry count must set if retry.");
-            Assert.isTrue(retryInterval != null || retryInterval > 0, "Retry interval must set if retry.");
+            Assert.isTrue(retryCount != null && retryCount > 0, "Retry count must set if retry.");
+            Assert.isTrue(retryInterval != null && retryInterval > 0, "Retry interval must set if retry.");
         }
 
         if (executeTimeout == null) {
@@ -232,6 +242,7 @@ public class SchedJob extends BaseEntity implements Serializable {
 
         // verify
         JobState.of(jobState);
+        JobType.of(jobType);
         Assert.isTrue(weightScore > 0, () -> "Invalid weight score: " + weightScore);
         Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
         CollisionStrategy.of(collisionStrategy);

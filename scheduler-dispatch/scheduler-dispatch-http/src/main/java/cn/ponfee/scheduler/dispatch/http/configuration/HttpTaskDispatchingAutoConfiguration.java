@@ -14,7 +14,7 @@ import cn.ponfee.scheduler.core.base.HttpProperties;
 import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.dispatch.configuration.BaseTaskDispatchingAutoConfiguration;
@@ -48,7 +48,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     @Bean
     public TaskDispatcher taskDispatcher(HttpProperties properties,
                                          SupervisorRegistry discoveryWorker,
-                                         @Nullable TimingWheel<ExecuteParam> timingWheel,
+                                         @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
         DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
             .connectTimeout(properties.getConnectTimeout())
@@ -67,7 +67,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     @ConditionalOnBean(Worker.class)
     @ConditionalOnMissingBean
     @Bean
-    public TaskReceiver taskReceiver(TimingWheel<ExecuteParam> timingWheel) {
+    public TaskReceiver taskReceiver(TimingWheel<ExecuteTaskParam> timingWheel) {
         return new HttpTaskReceiver(timingWheel);
     }
 

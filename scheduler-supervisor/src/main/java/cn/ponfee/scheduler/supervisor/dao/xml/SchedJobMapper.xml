@@ -10,6 +10,7 @@
     <result column="job_name" jdbcType="VARCHAR" property="jobName" />
     <result column="job_handler" jdbcType="LONGVARCHAR" property="jobHandler" />
     <result column="job_state" jdbcType="TINYINT" property="jobState" />
+    <result column="job_type" jdbcType="TINYINT" property="jobType" />
     <result column="job_param" jdbcType="LONGVARCHAR" property="jobParam" />
     <result column="retry_type" jdbcType="TINYINT" property="retryType" />
     <result column="retry_count" jdbcType="TINYINT" property="retryCount" />
@@ -37,7 +38,7 @@
   </resultMap>
 
   <sql id="Base_Column_List">
-    job_id, job_group, job_name, job_handler, job_state, job_param, retry_type,
+    job_id, job_group, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value, execute_timeout,
     collision_strategy, misfire_strategy, route_strategy, weight_score, remark, last_trigger_time,
     next_trigger_time, next_scan_time, alarm_subscribers, version, IFNULL(is_deleted, 1) is_deleted,
@@ -70,7 +71,7 @@
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.scheduler.core.model.SchedJob" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       job_id, job_group, job_name,
-      job_handler, job_state, job_param,
+      job_handler, job_state, job_type, job_param,
       retry_type, retry_count, retry_interval,
       start_time, end_time, trigger_type,
       trigger_value, execute_timeout, collision_strategy,
@@ -79,7 +80,7 @@
       version, updated_by, created_by, updated_at, created_at
     ) VALUES (
       #{jobId,jdbcType=BIGINT}, #{jobGroup,jdbcType=VARCHAR}, #{jobName,jdbcType=VARCHAR},
-      #{jobHandler,jdbcType=LONGVARCHAR}, #{jobState,jdbcType=TINYINT}, #{jobParam,jdbcType=LONGVARCHAR},
+      #{jobHandler,jdbcType=LONGVARCHAR}, #{jobState,jdbcType=TINYINT}, #{jobType,jdbcType=TINYINT}, #{jobParam,jdbcType=LONGVARCHAR},
       #{retryType,jdbcType=TINYINT}, #{retryCount,jdbcType=TINYINT}, #{retryInterval,jdbcType=INTEGER},
       #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{triggerType,jdbcType=TINYINT},
       #{triggerValue,jdbcType=VARCHAR}, #{executeTimeout,jdbcType=INTEGER}, #{collisionStrategy,jdbcType=TINYINT},
@@ -99,6 +100,7 @@
           job_param = #{jobParam,jdbcType=LONGVARCHAR},
         </if>
         job_state = #{jobState,jdbcType=TINYINT},
+        job_type = #{jobType,jdbcType=TINYINT},
         retry_type = #{retryType,jdbcType=TINYINT},
         retry_count = #{retryCount,jdbcType=TINYINT},
         retry_interval = #{retryInterval,jdbcType=INTEGER},

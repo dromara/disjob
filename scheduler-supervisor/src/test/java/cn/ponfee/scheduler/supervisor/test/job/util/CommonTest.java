@@ -12,8 +12,9 @@ import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.common.util.URLCodes;
+import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -38,15 +39,17 @@ public class CommonTest {
 
     @Test
     public void testTaskParam() {
-        ExecuteParam param1 = new ExecuteParam(
+        ExecuteTaskParam param1 = new ExecuteTaskParam(
             Operations.TRIGGER,
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
-            ThreadLocalRandom.current().nextLong()
+            JobType.NORMAL,
+            ThreadLocalRandom.current().nextLong(),
+            null
         );
         System.out.println(param1);
-        ExecuteParam param2 = ExecuteParam.deserialize(param1.serialize());
+        ExecuteTaskParam param2 = ExecuteTaskParam.deserialize(param1.serialize());
         Assertions.assertFalse(param1 == param2);
         Assertions.assertEquals(param1, param2);
     }

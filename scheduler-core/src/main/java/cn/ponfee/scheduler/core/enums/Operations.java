@@ -60,8 +60,4 @@ public enum Operations {
         return toState;
     }
 
-    public static Operations of(int ordinal) {
-        // Operations.class.getEnumConstants()[ordinal];
-        return Operations.values()[ordinal];
-    }
 }

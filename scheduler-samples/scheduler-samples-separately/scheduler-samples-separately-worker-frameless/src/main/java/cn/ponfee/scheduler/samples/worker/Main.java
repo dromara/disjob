@@ -17,7 +17,7 @@ import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.core.util.JobUtils;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.dispatch.http.HttpTaskReceiver;
@@ -85,7 +85,7 @@ public class Main {
         // inject current worker
         ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
 
-        TimingWheel<ExecuteParam> timingWheel = new TaskTimingWheel(
+        TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(
             props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),
             props.getInt(WORKER_KEY_PREFIX + ".timing-wheel-ring-size", 60)
         );

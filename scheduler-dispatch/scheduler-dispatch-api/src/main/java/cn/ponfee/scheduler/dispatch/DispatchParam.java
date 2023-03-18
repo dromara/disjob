@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.dispatch;
 
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
-import cn.ponfee.scheduler.core.param.ExecuteParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 
 import java.util.StringJoiner;
 
@@ -20,19 +20,19 @@ import java.util.StringJoiner;
  */
 class DispatchParam {
 
-    private final ExecuteParam executeParam;
+    private final ExecuteTaskParam executeTaskParam;
     private final String group;
     private final RouteStrategy routeStrategy;
     private int retried = 0;
 
-    public DispatchParam(ExecuteParam executeParam, String group, RouteStrategy routeStrategy) {
-        this.executeParam = executeParam;
+    public DispatchParam(ExecuteTaskParam executeTaskParam, String group, RouteStrategy routeStrategy) {
+        this.executeTaskParam = executeTaskParam;
         this.group = group;
         this.routeStrategy = routeStrategy;
     }
 
-    public ExecuteParam executeParam() {
-        return executeParam;
+    public ExecuteTaskParam executeTaskParam() {
+        return executeTaskParam;
     }
 
     public String group() {
@@ -54,7 +54,7 @@ class DispatchParam {
     @Override
     public String toString() {
         return new StringJoiner(", ", DispatchParam.class.getSimpleName() + "[", "]")
-            .add("executeParam=" + executeParam)
+            .add("executeTaskParam=" + executeTaskParam)
             .add(group == null ? "group=null" : "group='" + group + "'")
             .add("routeStrategy=" + routeStrategy)
             .add("retried=" + retried)
