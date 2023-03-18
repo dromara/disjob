@@ -29,7 +29,9 @@ public class NamedThreadFactory implements ThreadFactory {
     private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
     private final ThreadGroup group;
 
-    public NamedThreadFactory(String prefix, Boolean daemon, Integer priority,
+    public NamedThreadFactory(String prefix,
+                              Boolean daemon,
+                              Integer priority,
                               Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
         if (StringUtils.isBlank(prefix)) {
             prefix = "pool-" + POOL_SEQ.getAndIncrement();
@@ -86,7 +88,7 @@ public class NamedThreadFactory implements ThreadFactory {
             return this;
         }
 
-        public Builder prefix(Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        public Builder uncaughtExceptionHandler(Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
             this.uncaughtExceptionHandler = uncaughtExceptionHandler;
             return this;
         }

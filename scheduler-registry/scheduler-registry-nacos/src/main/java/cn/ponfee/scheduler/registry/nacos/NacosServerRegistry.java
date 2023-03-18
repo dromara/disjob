@@ -56,7 +56,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             this.namingService = NacosFactory.createNamingService(config.toProperties());
             this.eventListener = event -> {
-                CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable) latch::await);
+                CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable<?>) latch::await);
                 if (event instanceof NamingEvent) {
                     doRefreshDiscoveryServers(((NamingEvent) event).getInstances());
                 }

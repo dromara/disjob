@@ -8,7 +8,9 @@
 
 package cn.ponfee.scheduler.supervisor.thread;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
+import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
@@ -26,6 +28,9 @@ import org.springframework.dao.DuplicateKeyException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
@@ -45,14 +50,25 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private final DoInLocked doInLocked;
     private final SchedulerJobManager schedulerJobManager;
     private final long afterMilliseconds;
+    private final ExecutorService processJobExecutor;
 
     public TriggeringJobScanner(long heartbeatPeriodMilliseconds,
+                                int processJobMaximumPoolSize,
                                 DoInLocked doInLocked,
                                 SchedulerJobManager schedulerJobManager) {
         super(heartbeatPeriodMilliseconds);
         this.doInLocked = doInLocked;
         this.schedulerJobManager = schedulerJobManager;
         this.afterMilliseconds = (heartbeatPeriodMs * 3); // 3s * 3 = 9s
+        this.processJobExecutor = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(Math.max(1, processJobMaximumPoolSize))
+            .workQueue(new SynchronousQueue<>())
+            .keepAliveTimeSeconds(300)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
+            .threadFactory(NamedThreadFactory.builder().prefix("triggering_job_scanner").priority(Thread.MAX_PRIORITY).build())
+            .prestartCoreThreadType(ThreadPoolExecutors.PrestartCoreThreadType.ONE)
+            .build();
     }
 
     @Override
@@ -61,20 +77,29 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             log.warn("Not found available worker.");
             return true;
         }
-        Boolean result = doInLocked.apply(() -> {
+        Boolean result = doInLocked.action(() -> {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterMilliseconds;
             List<SchedJob> jobs = schedulerJobManager.findBeTriggering(maxNextTriggerTime, PROCESS_BATCH_SIZE);
             if (jobs == null || jobs.isEmpty()) {
                 return true;
             }
-            for (SchedJob job : jobs) {
-                processJob(job, now, maxNextTriggerTime);
-            }
+
+            jobs.stream()
+                .map(job -> CompletableFuture.runAsync(() -> processJob(job, now, maxNextTriggerTime), processJobExecutor))
+                .collect(Collectors.toList())
+                .forEach(CompletableFuture::join);
+
             return false;
         });
 
-        return result == null || result;
+        return result != null && result;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        Throwables.caught(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 3));
     }
 
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {
@@ -129,8 +154,6 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             job.setRemark(StringUtils.truncate("Stop reason: " + e.getMessage(), REMARK_MAX_LENGTH));
             job.setNextTriggerTime(null);
             schedulerJobManager.stopJob(job);
-        } catch (Exception e) {
-            log.error("Process handle job occur error: " + job, e);
         }
     }
 
@@ -226,7 +249,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                instanceIds.forEach(instanceId -> CheckedThrowing.supplier(() -> schedulerJobManager.cancelInstance(instanceId, Operations.COLLISION_CANCEL)));
+                instanceIds.forEach(e -> schedulerJobManager.cancelInstance(e, Operations.COLLISION_CANCEL));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collision strategy: " + collisionStrategy.name());

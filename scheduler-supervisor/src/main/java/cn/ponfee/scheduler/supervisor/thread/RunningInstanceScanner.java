@@ -51,8 +51,8 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             return true;
         }
 
-        Boolean result = doInLocked.apply(this::process);
-        return result == null || result;
+        Boolean result = doInLocked.action(this::process);
+        return result != null && result;
     }
 
     private boolean process() {
@@ -78,7 +78,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            // 1、has waiting task
+            // 1、has waiting state task
 
             // sieve the (un-dispatch) or (assigned worker death) waiting tasks to do re-dispatch
             List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> schedulerJobManager.isDeathWorker(e.getWorker()));

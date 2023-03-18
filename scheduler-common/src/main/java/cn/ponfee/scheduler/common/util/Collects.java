@@ -122,7 +122,7 @@ public class Collects {
         if (list.isEmpty()) {
             return Collections.emptyList();
         }
-        return list.stream().filter(predicate::test).collect(Collectors.toList());
+        return list.stream().filter(predicate).collect(Collectors.toList());
     }
 
     public static <S, T> List<T> convert(List<S> source, Function<S, T> mapper) {

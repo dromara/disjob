@@ -8,11 +8,17 @@
 
 package cn.ponfee.scheduler.common.spring;
 
+import cn.ponfee.scheduler.common.base.Symbol.Char;
 import cn.ponfee.scheduler.common.base.TypedMap;
+import cn.ponfee.scheduler.common.util.ClassUtils;
+import cn.ponfee.scheduler.common.util.Fields;
+import cn.ponfee.scheduler.common.util.ObjectUtils;
+import cn.ponfee.scheduler.common.util.Strings;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
@@ -36,6 +42,21 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
 
     public YamlProperties(String content) {
         loadYaml(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public <T> T extract(Class<T> beanType, String prefix) {
+        T bean = ClassUtils.newInstance(beanType);
+        char[] separators = {Char.HYPHEN, Char.DOT};
+        for (Field field : ClassUtils.listFields(beanType)) {
+            for (char separator : separators) {
+                String name = prefix + Strings.toSeparatedName(field.getName(), separator);
+                if (super.containsKey(name)) {
+                    Fields.put(bean, field, ObjectUtils.cast(get(name), field.getType()));
+                    break;
+                }
+            }
+        }
+        return bean;
     }
 
     private void loadYaml(InputStream inputStream) {

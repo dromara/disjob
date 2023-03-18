@@ -256,9 +256,13 @@ public class EtcdClient implements AutoCloseable {
         private final CountDownLatch latch;
         private final Consumer<List<String>> processor;
 
-        private final ThreadPoolExecutor asyncExecutor = ThreadPoolExecutors.create(
-            1, 1, 600, 2, ThreadPoolExecutors.DISCARD
-        );
+        private final ThreadPoolExecutor asyncExecutor = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(1)
+            .workQueue(new LinkedBlockingQueue<>(2))
+            .keepAliveTimeSeconds(600)
+            .rejectedHandler(ThreadPoolExecutors.DISCARD)
+            .build();
 
         public ChildChangedListener(String parentKey, CountDownLatch latch, Consumer<List<String>> processor) {
             this.parentKey = parentKey;
@@ -273,7 +277,7 @@ public class EtcdClient implements AutoCloseable {
 
         @Override
         public void accept(WatchResponse response) {
-            CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable) latch::await);
+            CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable<?>) latch::await);
 
             List<WatchEvent> events = response.getEvents();
             if (events.stream().noneMatch(e -> CHANGED_EVENT_TYPES.contains(e.getEventType()))) {

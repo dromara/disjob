@@ -43,7 +43,7 @@ import javax.sql.DataSource;
 @Configuration
 @MapperScan(
     basePackages = SupervisorDataSourceConfig.BASE_PACKAGE + ".mapper",
-    sqlSessionTemplateRef = SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_SUFFIX
+    sqlSessionTemplateRef = SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_NAME_SUFFIX
 )
 public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
 
@@ -59,7 +59,7 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
      */
     public static final String DB_NAME = "scheduler";
 
-    @Bean(name = DB_NAME + DATA_SOURCE_SUFFIX)
+    @Bean(name = DB_NAME + DATA_SOURCE_NAME_SUFFIX)
     @ConfigurationProperties(prefix = "spring.datasource.distributed-scheduler")
     @Override
     public DataSource dataSource() {
@@ -67,27 +67,27 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = DB_NAME + SQL_SESSION_FACTORY_SUFFIX)
+    @Bean(name = DB_NAME + SQL_SESSION_FACTORY_NAME_SUFFIX)
     public SqlSessionFactory sqlSessionFactory() throws Exception {
         return super.createSqlSessionFactory();
     }
 
-    @Bean(name = DB_NAME + SQL_SESSION_TEMPLATE_SUFFIX)
+    @Bean(name = DB_NAME + SQL_SESSION_TEMPLATE_NAME_SUFFIX)
     public SqlSessionTemplate sqlSessionTemplate() throws Exception {
         return new SqlSessionTemplate(sqlSessionFactory());
     }
 
-    @Bean(name = DB_NAME + TX_MANAGER_SUFFIX)
+    @Bean(name = DB_NAME + TX_MANAGER_NAME_SUFFIX)
     public DataSourceTransactionManager transactionManager() {
         return new DataSourceTransactionManager(dataSource());
     }
 
-    @Bean(name = DB_NAME + TX_TEMPLATE_SUFFIX)
+    @Bean(name = DB_NAME + TX_TEMPLATE_NAME_SUFFIX)
     public TransactionTemplate transactionTemplate() {
         return new TransactionTemplate(transactionManager());
     }
 
-    @Bean(name = DB_NAME + JDBC_TEMPLATE_SUFFIX)
+    @Bean(name = DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX)
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }

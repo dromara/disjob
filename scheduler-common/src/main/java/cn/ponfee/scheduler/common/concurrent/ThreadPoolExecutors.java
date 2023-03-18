@@ -8,9 +8,9 @@
 
 package cn.ponfee.scheduler.common.concurrent;
 
-import cn.ponfee.scheduler.common.util.Numbers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.util.concurrent.*;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
@@ -69,81 +69,94 @@ public final class ThreadPoolExecutors {
      */
     public static final RejectedExecutionHandler ALWAYS_CALLER_RUNS = (task, executor) -> task.run();
 
-    // ----------------------------------------------------------
-    public static ThreadPoolExecutor create(int corePoolSize,
-                                            int maximumPoolSize,
-                                            long keepAliveTimeSeconds) {
-        return create(corePoolSize, maximumPoolSize, keepAliveTimeSeconds, 0, null, null);
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public static ThreadPoolExecutor create(int corePoolSize,
-                                            int maximumPoolSize,
-                                            long keepAliveTimeSeconds,
-                                            int queueCapacity) {
-        return create(corePoolSize, maximumPoolSize, keepAliveTimeSeconds, queueCapacity, null, null);
-    }
+    public enum PrestartCoreThreadType { NONE, ONE, ALL }
 
-    public static ThreadPoolExecutor create(int corePoolSize,
-                                            int maximumPoolSize,
-                                            long keepAliveTimeSeconds,
-                                            int queueCapacity,
-                                            RejectedExecutionHandler rejectedHandler) {
-        return create(corePoolSize, maximumPoolSize, keepAliveTimeSeconds, queueCapacity, null, rejectedHandler);
-    }
+    public static class Builder {
+        private int corePoolSize;
+        private int maximumPoolSize;
+        private BlockingQueue<Runnable> workQueue;
+        private long keepAliveTimeSeconds;
+        private RejectedExecutionHandler rejectedHandler;
+        private ThreadFactory threadFactory;
+        private boolean allowCoreThreadTimeOut = true;
+        private PrestartCoreThreadType prestartCoreThreadType = PrestartCoreThreadType.NONE;
 
-    public static ThreadPoolExecutor create(int corePoolSize,
-                                            int maximumPoolSize,
-                                            long keepAliveTimeSeconds,
-                                            int queueCapacity,
-                                            String threadName) {
-        return create(corePoolSize, maximumPoolSize, keepAliveTimeSeconds, queueCapacity, threadName, null);
-    }
-
-    /**
-     * Creates a new ThreadPoolExecutor
-     *
-     * @param corePoolSize         核心线程数
-     * @param maximumPoolSize      最大线程数
-     * @param keepAliveTimeSeconds 线程存活时间(秒)
-     * @param queueCapacity        队列长度
-     * @param threadName           线程名称
-     * @param rejectedHandler      拒绝策略
-     * @return ThreadPoolExecutor instance
-     */
-    public static ThreadPoolExecutor create(int corePoolSize,
-                                            int maximumPoolSize,
-                                            long keepAliveTimeSeconds,
-                                            int queueCapacity,
-                                            String threadName,
-                                            RejectedExecutionHandler rejectedHandler) {
-        // work queue
-        BlockingQueue<Runnable> workQueue = queueCapacity > 0
-            ? new LinkedBlockingQueue<>(queueCapacity)
-            : new SynchronousQueue<>();
-
-        // thread factory, Executors.defaultThreadFactory()
-        ThreadFactory threadFactory = NamedThreadFactory.builder().prefix(threadName).build();
-
-        // rejected Handler Strategy
-        if (rejectedHandler == null) {
-            rejectedHandler = CALLER_RUNS;
+        private Builder() {
         }
 
-        maximumPoolSize = Numbers.bound(maximumPoolSize, 1, MAX_CAP);
-        corePoolSize = Numbers.bound(corePoolSize, 1, maximumPoolSize);
+        public Builder corePoolSize(int corePoolSize) {
+            this.corePoolSize = corePoolSize;
+            return this;
+        }
 
-        // create ThreadPoolExecutor instance
-        ThreadPoolExecutor pool = new ThreadPoolExecutor(
-            corePoolSize, maximumPoolSize, keepAliveTimeSeconds, TimeUnit.SECONDS,
-            workQueue, threadFactory, rejectedHandler
-        );
+        public Builder maximumPoolSize(int maximumPoolSize) {
+            this.maximumPoolSize = maximumPoolSize;
+            return this;
+        }
 
-        // pool.prestartCoreThread(): 预先创建1条核心线程
-        // pool.prestartAllCoreThreads(): 可预先创建corePoolSize数量的核心线程
-        pool.allowCoreThreadTimeOut(true); // 设置允许核心线程超时关闭
+        public Builder workQueue(BlockingQueue<Runnable> workQueue) {
+            this.workQueue = workQueue;
+            return this;
+        }
 
-        return pool;
+        public Builder keepAliveTimeSeconds(long keepAliveTimeSeconds) {
+            this.keepAliveTimeSeconds = keepAliveTimeSeconds;
+            return this;
+        }
+
+        public Builder rejectedHandler(RejectedExecutionHandler rejectedHandler) {
+            this.rejectedHandler = rejectedHandler;
+            return this;
+        }
+
+        public Builder threadFactory(ThreadFactory threadFactory) {
+            this.threadFactory = threadFactory;
+            return this;
+        }
+
+        public Builder allowCoreThreadTimeOut(boolean allowCoreThreadTimeOut) {
+            this.allowCoreThreadTimeOut = allowCoreThreadTimeOut;
+            return this;
+        }
+
+        public Builder prestartCoreThreadType(PrestartCoreThreadType prestartCoreThreadType) {
+            this.prestartCoreThreadType = prestartCoreThreadType;
+            return this;
+        }
+
+        public ThreadPoolExecutor build() {
+            Assert.isTrue(maximumPoolSize > 0, () -> String.format("Maximum pool size %d must greater than 0.", maximumPoolSize));
+            Assert.isTrue(maximumPoolSize <= MAX_CAP, () -> String.format("Maximum pool size %d cannot greater than %d.", maximumPoolSize, MAX_CAP));
+            Assert.isTrue(corePoolSize > 0, () -> String.format("Core pool size %d must greater than 0.", corePoolSize));
+            Assert.isTrue(corePoolSize <= maximumPoolSize, () -> String.format("Core pool size %d cannot greater than maximum pool size %d.", corePoolSize, maximumPoolSize));
+            Assert.notNull(workQueue, "Worker queue cannot be null.");
+
+            // create ThreadPoolExecutor instance
+            ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTimeSeconds,
+                TimeUnit.SECONDS,
+                workQueue,
+                threadFactory != null ? threadFactory : Executors.defaultThreadFactory(),
+                rejectedHandler != null ? rejectedHandler : CALLER_RUNS
+            );
+
+            threadPoolExecutor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
+            if (prestartCoreThreadType == PrestartCoreThreadType.ONE) {
+                threadPoolExecutor.prestartCoreThread();
+            } else if (prestartCoreThreadType == PrestartCoreThreadType.ALL) {
+                threadPoolExecutor.prestartAllCoreThreads();
+            }
+            return threadPoolExecutor;
+        }
     }
+
+    // ----------------------------------------------------------
 
     /**
      * Shutdown the ExecutorService safe
@@ -153,23 +166,15 @@ public final class ThreadPoolExecutors {
      */
     public static boolean shutdown(ExecutorService executorService) {
         executorService.shutdown();
-        /*
-        while (!executorService.isTerminated()) {
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (Exception e) {
-                Throwables.console(e);
-            }
-        }
-        */
         try {
             while (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
-                // noop loop
+                // do nothing
             }
             return true;
         } catch (Exception e) {
             LOG.error("Shutdown ExecutorService occur error.", e);
             executorService.shutdownNow();
+            Threads.interruptIfNecessary(e);
             return false;
         }
     }
@@ -195,6 +200,7 @@ public final class ThreadPoolExecutors {
             if (!hasCallShutdownNow) {
                 executorService.shutdownNow();
             }
+            Threads.interruptIfNecessary(e);
         }
         return isSafeTerminated;
     }

@@ -31,6 +31,7 @@ import cn.ponfee.scheduler.samples.worker.redis.AbstractRedisTemplateCreator;
 import cn.ponfee.scheduler.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.scheduler.worker.WorkerStartup;
 import cn.ponfee.scheduler.worker.base.TaskTimingWheel;
+import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -132,10 +133,10 @@ public class Main {
             .build();
         SupervisorService SupervisorServiceClient = DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
 
+        WorkerProperties workerConfig = props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + ".");
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
-            .maximumPoolSize(props.getInt(WORKER_KEY_PREFIX + ".maximum-pool-size"))
-            .keepAliveTimeSeconds(props.getInt(WORKER_KEY_PREFIX + ".keep-alive-time-seconds"))
+            .workerConfig(workerConfig)
             .supervisorServiceClient(SupervisorServiceClient)
             .taskReceiver(taskReceiver)
             .workerRegistry(workerRegistry)

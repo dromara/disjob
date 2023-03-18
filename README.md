@@ -33,10 +33,11 @@ distributed-scheduler                                        # 主项目
 ├── scheduler-registry                                       # Server(Supervisor & Worker)注册模块
 │   ├── scheduler-registry-api                               # Server注册的抽象接口层
 │   ├── scheduler-registry-consul                            # Server注册的Consul实现
+│   ├── scheduler-registry-etcd                              # Server注册的Etcd实现
 │   ├── scheduler-registry-nacos                             # Server注册的Nacos实现
 │   ├── scheduler-registry-redis                             # Server注册的Redis实现
-│   ├── scheduler-registry-etcd                              # Server注册的Etcd实现
 │   └── scheduler-registry-zookeeper                         # Server注册的Zookeeper实现
+├── scheduler-reports                                        # 聚合各个模块的测试覆盖率报告
 ├── scheduler-samples                                        # Samples项目
 │   ├── scheduler-samples-common                             # 存放使用范例中用到的公共代码，包括使用到的一些公共配置文件等
 │   ├── scheduler-samples-merged                             # Supervisor与Worker合并部署的范例（Spring boot应用）
@@ -45,6 +46,7 @@ distributed-scheduler                                        # 主项目
 │       ├── scheduler-samples-separately-worker-frameless    # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
 │       └── scheduler-samples-separately-worker-springboot   # Worker单独部署的范例（Spring boot应用）
 ├── scheduler-supervisor                                     # Supervisor代码（Spring-boot应用，需要引导Spring扫描该包目录）
+├── scheduler-test                                           # 用于辅助测试
 └── scheduler-worker                                         # Worker代码
 ```
 
@@ -79,11 +81,11 @@ distributed-scheduler                                        # 主项目
 
 ## Quick Start
 
-0. IDE导入项目(分为两个独立的项目，共用一个Git仓库)：
+0. IDE分别导入项目(分为两个独立的项目，共用一个Git仓库)：
   - [主项目](pom.xml)
   - [samples项目](scheduler-samples/pom.xml)
 
-1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
+1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-samples/scheduler-samples-common/src/test/java/cn/ponfee/scheduler/samples/MysqlAndRedisServerStarter.java)，启动时会自动初始化SQL脚本)
 
 2. 修改[Mysql](scheduler-samples/conf-supervisor/application-mysql.yml)、[Redis](scheduler-samples/scheduler-samples-common/src/main/resources/application-redis.yml)、[Consul](scheduler-samples/scheduler-samples-common/src/main/resources/application-consul.yml)等配置文件
   - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件(包括Nacos、Zookeeper、Etcd等)

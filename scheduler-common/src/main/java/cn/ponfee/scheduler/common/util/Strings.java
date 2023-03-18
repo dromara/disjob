@@ -8,6 +8,9 @@
 
 package cn.ponfee.scheduler.common.util;
 
+import com.google.common.base.CaseFormat;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * String utilities
  *
@@ -79,6 +82,65 @@ public final class Strings {
             count++;
         }
         return count;
+    }
+
+
+    /**
+     * 驼峰转为带分隔符名字，如驼峰转换为下划线：CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, camelCaseName);
+     *
+     * @param camelcaseName the camelcase name
+     * @param separator     the separator
+     * @return with separator name
+     * @see CaseFormat#to(CaseFormat, String)
+     */
+    public static String toSeparatedName(String camelcaseName, char separator) {
+        if (StringUtils.isEmpty(camelcaseName)) {
+            return camelcaseName;
+        }
+
+        StringBuilder result = new StringBuilder(camelcaseName.length() << 1);
+        result.append(Character.toLowerCase(camelcaseName.charAt(0)));
+        for (int i = 1, len = camelcaseName.length(); i < len; i++) {
+            char ch = camelcaseName.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                result.append(separator).append(Character.toLowerCase(ch));
+            } else {
+                result.append(ch);
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * 带分隔符名字转驼峰，如下划线转换为驼峰：aseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, underscoreName);
+     * 1  LOWER_HYPHEN       连字符的变量命名规范如lower-hyphen
+     * 2  LOWER_UNDERSCORE   c++变量命名规范如lower_underscore
+     * 3  LOWER_CAMEL        java变量命名规范如lowerCamel
+     * 4  UPPER_CAMEL        java和c++类的命名规范如UpperCamel
+     * 5  UPPER_UNDERSCORE   java和c++常量的命名规范如UPPER_UNDERSCORE
+     *
+     * @param separatedName the separated name
+     * @param separator     the separator
+     * @return camelcase name
+     * @see CaseFormat#to(CaseFormat, String)
+     */
+    public static String toCamelcaseName(String separatedName, char separator) {
+        if (StringUtils.isEmpty(separatedName)) {
+            return separatedName;
+        }
+
+        StringBuilder result = new StringBuilder(separatedName.length());
+        for (int i = 0, len = separatedName.length(); i < len; i++) {
+            char ch = separatedName.charAt(i);
+            if (separator == ch) {
+                if (++i < len) {
+                    result.append(Character.toUpperCase(separatedName.charAt(i)));
+                }
+            } else {
+                result.append(ch);
+            }
+        }
+        return result.toString();
     }
 
 }

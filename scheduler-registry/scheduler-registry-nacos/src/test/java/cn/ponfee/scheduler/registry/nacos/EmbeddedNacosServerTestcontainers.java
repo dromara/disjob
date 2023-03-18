@@ -67,7 +67,7 @@ public final class EmbeddedNacosServerTestcontainers {
         // -p: setPortBindings
         // -v: withFileSystemBind
         // -e: withEnv
-        GenericContainer dockerNacosContainer = new GenericContainer(consulImage)
+        GenericContainer<?> dockerNacosContainer = new GenericContainer<>(consulImage)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedNacosServerTestcontainers.class)))
             // 挂载映射文件非必需
             //.withFileSystemBind("/opt/docker/nacos/init.d/custom.properties", "/home/nacos/init.d/custom.properties", BindMode.READ_ONLY)

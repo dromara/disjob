@@ -3,3 +3,4 @@ distributed.scheduler.supervisor:
   scan-triggering-job-period-ms: 3000
   scan-waiting-instance-period-ms: 15000
   scan-running-instance-period-ms: 30000
+  process-job-maximum-pool-size: 6

@@ -33,10 +33,11 @@ distributed-scheduler                                        # Main project
 ├── scheduler-registry                                       # Server(supervisor & worker) registry module
 │   ├── scheduler-registry-api                               # Server registry abstract interface layer
 │   ├── scheduler-registry-consul                            # Server registry implementation based consul
+│   ├── scheduler-registry-etcd                              # Server registry implementation based etcd
 │   ├── scheduler-registry-nacos                             # Server registry implementation based nacos
 │   ├── scheduler-registry-redis                             # Server registry implementation based redis
-│   ├── scheduler-registry-etcd                              # Server registry implementation based etcd
 │   └── scheduler-registry-zookeeper                         # Server registry implementation based zookeeper
+├── scheduler-reports                                        # aggregate code coverage report
 ├── scheduler-samples                                        # Samples project
 │   ├── scheduler-samples-common                             # Common configuration and codes of samples
 │   ├── scheduler-samples-merged                             # Sample of merged deployment supervisor and worker(spring boot application)
@@ -45,6 +46,7 @@ distributed-scheduler                                        # Main project
 │       ├── scheduler-samples-separately-worker-frameless    # Sample of only deployment worker(start by java main class)
 │       └── scheduler-samples-separately-worker-springboot   # Sample of only deployment worker(spring boot application)
 ├── scheduler-supervisor                                     # Supervisor code(run in spring container environment)
+├── scheduler-test                                           # use for testing
 └── scheduler-worker                                         # Worker code
 ```
 
@@ -83,7 +85,7 @@ distributed-scheduler                                        # Main project
   - [main project](pom.xml)
   - [samples project](scheduler-samples/pom.xml)
 
-1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
+1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-samples/scheduler-samples-common/src/test/java/cn/ponfee/scheduler/samples/MysqlAndRedisServerStarter.java), auto init sql script on startup)
 
 2. Modify configuration files such as [Mysql](scheduler-samples/conf-supervisor/application-mysql.yml), [Redis](scheduler-samples/scheduler-samples-common/src/main/resources/application-redis.yml), [Consul](scheduler-samples/scheduler-samples-common/src/main/resources/application-consul.yml) and so on.
 - if use default localhost configuration([e.g consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file(same as Nacos/Zookeeper/Etcd)
@@ -104,11 +106,11 @@ distributed-scheduler                                        # Main project
 - You can run the startup class in the development tool, or directly run the built jar package
 - select registry center and dispatch mode [use by pom](scheduler-samples/scheduler-samples-common/pom.xml) import
 - Embedded same servers can direct startup on local
-    - [embedded redis server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java)
-    - [embedded consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)
-    - [embedded nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)
-    - [embedded etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
-    - [embedded zookeeper server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)
+  - [embedded redis server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java)
+  - [embedded consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)
+  - [embedded nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)
+  - [embedded etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
+  - [embedded zookeeper server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)
 
 ```java
 @EnableSupervisor

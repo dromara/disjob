@@ -29,7 +29,7 @@ public class DoInRedisLocked implements DoInLocked {
     }
 
     @Override
-    public <T> T apply(Callable<T> caller) {
+    public <T> T action(Callable<T> caller) {
         if (!redisLock.tryLock()) {
             return null;
         }

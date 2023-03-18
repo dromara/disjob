@@ -44,6 +44,11 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private long scanRunningInstancePeriodMs = 30000;
 
     /**
+     * Process job maximum thread pool size, default 5
+     */
+    private int processJobMaximumPoolSize = 5;
+
+    /**
      * Force use local worker service client.
      *
      * @see cn.ponfee.scheduler.core.base.WorkerService#verify(String, String)
@@ -55,6 +60,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
         Assert.isTrue(scanTriggeringJobPeriodMs > 0, "Scan triggering job period ms must be greater than 0.");
         Assert.isTrue(scanWaitingInstancePeriodMs > 0, "Scan waiting instance period ms must be greater than 0.");
         Assert.isTrue(scanRunningInstancePeriodMs > 0, "Scan running instance period ms must be greater than 0.");
+        Assert.isTrue(processJobMaximumPoolSize > 0, "Process job maximum pool size must be greater than 0.");
     }
 
 }

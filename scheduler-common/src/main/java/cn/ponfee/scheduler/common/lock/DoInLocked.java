@@ -24,5 +24,5 @@ public interface DoInLocked {
      * @param caller the callback
      * @return exec callback result
      */
-    <T> T apply(Callable<T> caller);
+    <T> T action(Callable<T> caller);
 }

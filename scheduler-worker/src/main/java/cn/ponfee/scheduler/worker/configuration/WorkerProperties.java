@@ -13,6 +13,7 @@ import cn.ponfee.scheduler.core.base.JobConstants;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
@@ -51,5 +52,19 @@ public class WorkerProperties extends ToJsonString implements Serializable {
      * Worker maximum pool size, default 300 seconds.
      */
     private int keepAliveTimeSeconds = 300;
+
+    /**
+     * Update task worker thread pool size, default 5.
+     */
+    private int updateTaskWorkerThreadPoolSize = 5;
+
+    public void check() {
+        Assert.hasText(group, "Group cannot be blank.");
+        Assert.isTrue(timingWheelTickMs > 0, "Timing wheel tick ms must be greater than 0.");
+        Assert.isTrue(timingWheelRingSize > 0, "Timing wheel ring size must be greater than 0.");
+        Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be greater 0.");
+        Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be greater 0.");
+        Assert.isTrue(updateTaskWorkerThreadPoolSize > 0, "Update task worker thread pool size must be greater than 0.");
+    }
 
 }

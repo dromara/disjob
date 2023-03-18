@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.worker.base;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.concurrent.Threads;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
@@ -52,9 +53,14 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
     /**
      * This jdk thread pool for asynchronous to stop(pause or cancel) task
      */
-    private final ThreadPoolExecutor stopTaskPool = ThreadPoolExecutors.create(
-        1, 10, 300, 50, ThreadPoolExecutors.ALWAYS_CALLER_RUNS
-    );
+    private final ThreadPoolExecutor stopTaskExecutor = ThreadPoolExecutors.builder()
+        .corePoolSize(1)
+        .maximumPoolSize(10)
+        .workQueue(new LinkedBlockingQueue<>(50))
+        .keepAliveTimeSeconds(300)
+        .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
+        .threadFactory(NamedThreadFactory.builder().prefix("stop_task_operation").priority(Thread.MAX_PRIORITY).build())
+        .build();
 
     /**
      * Supervisor client
@@ -123,7 +129,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         if (param.operation() == Operations.TRIGGER) {
             return taskQueue.offerLast(param);
         } else {
-            stopTaskPool.execute(() -> stop(param));
+            stopTaskExecutor.execute(() -> stop(param));
             return true;
         }
     }
@@ -192,7 +198,7 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
         workerThreadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        Throwables.caught(() -> ThreadPoolExecutors.shutdown(stopTaskPool, 1));
+        Throwables.caught(() -> ThreadPoolExecutors.shutdown(stopTaskExecutor, 1));
 
         LOG.info("Close worker thread pool end.");
     }

@@ -18,7 +18,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,6 +45,9 @@ public final class NetUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(NetUtils.class);
 
+    public static final String IGNORED_NETWORK_INTERFACE   = "distributed.scheduler.network.interface.ignored";
+    public static final String PREFERRED_NETWORK_INTERFACE = "distributed.scheduler.network.interface.preferred";
+
     // returned port range is [30000, 39999]
     private static final int RND_PORT_START = 30000;
     private static final int RND_PORT_RANGE = 10000;
@@ -58,9 +60,6 @@ public final class NetUtils {
     private static final String LOCAL_IP_ADDRESS = "127.0.0.1";
     private static final String ANY_IP_ADDRESS   = "0.0.0.0";
     private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
-
-    private static final String IGNORED_NETWORK_INTERFACE   = "distributed.scheduler.network.interface.ignored";
-    private static final String PREFERRED_NETWORK_INTERFACE = "distributed.scheduler.network.interface.preferred";
 
     /**
      * store the used port.
@@ -423,16 +422,14 @@ public final class NetUtils {
         }
 
         for (String ignoredNameRegex : ignoredInterfaceNameRegex.split(",")) {
-            String ignoredRegex = ignoredNameRegex.trim();
-            boolean matched = false;
+            String regex = ignoredNameRegex.trim();
             try {
-                matched = networkNames.stream().anyMatch(e -> e.equals(ignoredRegex) || e.matches(ignoredRegex));
-            } catch (PatternSyntaxException e) {
-                // if trimIgnoredInterface is invalid regular expression, a PatternSyntaxException will be thrown out
-                LOG.warn("exception occurred: " + networkNames + " matches " + ignoredRegex, e);
-            }
-            if (matched) {
-                return true;
+                if (networkNames.stream().anyMatch(e -> e.equals(regex) || e.matches(regex))) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // if regex is invalid regular expression, will be thrown PatternSyntaxException
+                LOG.warn("exception occurred: " + networkNames + " matches " + regex, e);
             }
         }
         return false;

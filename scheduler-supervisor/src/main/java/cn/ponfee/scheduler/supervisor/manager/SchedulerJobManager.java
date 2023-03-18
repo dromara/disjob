@@ -51,8 +51,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_SUFFIX;
-import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_TEMPLATE_SUFFIX;
+import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_NAME_SUFFIX;
+import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_TEMPLATE_NAME_SUFFIX;
 import static cn.ponfee.scheduler.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
@@ -96,7 +96,7 @@ import static cn.ponfee.scheduler.supervisor.dao.SupervisorDataSourceConfig.DB_N
 @Component
 public class SchedulerJobManager extends AbstractJobManager implements SupervisorService, RpcController {
 
-    private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_SUFFIX;
+    private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
     private static final int AFFECTED_ONE_ROW = 1;
 
     private static final List<Integer> RUN_STATE_CANCELABLE = Collects.convert(RunState.CANCELABLE_LIST, RunState::value);
@@ -116,7 +116,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                                SupervisorRegistry discoveryWorker,
                                TaskDispatcher taskDispatcher,
                                WorkerServiceClient workerServiceClient,
-                               @Qualifier(DB_NAME + TX_TEMPLATE_SUFFIX) TransactionTemplate transactionTemplate,
+                               @Qualifier(DB_NAME + TX_TEMPLATE_NAME_SUFFIX) TransactionTemplate transactionTemplate,
                                SchedJobMapper jobMapper,
                                SchedInstanceMapper instanceMapper,
                                SchedTaskMapper taskMapper,
@@ -343,6 +343,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, row2);
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
             }
+
+            log.info("Force change state success {} | {}", instanceId, toExecuteState);
         });
     }
 
@@ -358,7 +360,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             return;
         }
         // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
-        Collections.sort(list, Comparator.comparing(TaskWorker::getTaskId));
+        list.sort(Comparator.comparing(TaskWorker::getTaskId));
         if (list.size() <= JobConstants.PROCESS_BATCH_SIZE) {
             taskMapper.batchUpdateWorker(list);
         } else {
@@ -476,6 +478,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 .forEach(e -> taskMapper.terminate(e.getTaskId(), ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null));
 
             afterTerminateTask(instanceId, tuple.a);
+
+            log.warn("Death instance {} to state {}", instanceId, tuple.a);
             return true;
         });
     }
@@ -734,7 +738,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             int row = taskMapper.batchInsert(tasks);
             Assert.state(row == tasks.size(), () -> "Insert sched task fail: " + tasks);
         } else {
-            for (List<SchedTask> list : Lists.partition(tasks, JobConstants.PROCESS_BATCH_SIZE)) {
+            List<List<SchedTask>> partition = Lists.partition(tasks, JobConstants.PROCESS_BATCH_SIZE);
+            for (List<SchedTask> list : partition) {
                 int row = taskMapper.batchInsert(list);
                 Assert.state(row == list.size(), () -> "Insert sched task fail: " + tasks);
             }

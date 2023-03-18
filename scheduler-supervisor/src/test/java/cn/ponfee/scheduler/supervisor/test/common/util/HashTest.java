@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -181,14 +182,13 @@ public class HashTest {
 
     @Test
     public void testThreadPool() throws InterruptedException {
-        ThreadPoolExecutor pool = ThreadPoolExecutors.create(
-            1,
-            10,
-            300,
-            100,
-            "test",
-            ThreadPoolExecutors.DISCARD
-        );
+        ThreadPoolExecutor pool = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(10)
+            .workQueue(new LinkedBlockingQueue<>(100))
+            .keepAliveTimeSeconds(300)
+            .rejectedHandler(ThreadPoolExecutors.DISCARD)
+            .build();
         ThreadPoolExecutors.shutdown(pool, 1);
         pool.shutdownNow();
         pool.submit(() -> {

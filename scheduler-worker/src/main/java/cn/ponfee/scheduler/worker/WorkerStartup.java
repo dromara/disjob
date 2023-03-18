@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
+import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
 import cn.ponfee.scheduler.worker.thread.RotatingTimingWheel;
 import org.springframework.util.Assert;
 
@@ -35,25 +36,30 @@ public class WorkerStartup implements AutoCloseable {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private WorkerStartup(Worker currentWorker,
-                          int maximumPoolSize,
-                          int keepAliveTimeSeconds,
+                          WorkerProperties workerConfig,
                           SupervisorService supervisorServiceClient,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver) {
         Assert.notNull(currentWorker, "Current worker cannot null.");
-        Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be greater zero.");
-        Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be greater zero.");
+        workerConfig.check();
         Assert.notNull(supervisorServiceClient, "Supervisor service client cannot null.");
         Assert.notNull(workerRegistry, "Server registry cannot null.");
         Assert.notNull(taskReceiver, "Task receiver cannot null.");
 
         this.currentWorker = currentWorker;
-        this.workerThreadPool = new WorkerThreadPool(maximumPoolSize, keepAliveTimeSeconds, supervisorServiceClient);
+        this.workerThreadPool = new WorkerThreadPool(
+            workerConfig.getMaximumPoolSize(),
+            workerConfig.getKeepAliveTimeSeconds(),
+            supervisorServiceClient);
         this.workerRegistry = workerRegistry;
         this.taskReceiver = taskReceiver;
         this.rotatingTimingWheel = new RotatingTimingWheel(
-            currentWorker, supervisorServiceClient, workerRegistry,
-            taskReceiver.getTimingWheel(), workerThreadPool
+            currentWorker,
+            supervisorServiceClient,
+            workerRegistry,
+            taskReceiver.getTimingWheel(),
+            workerThreadPool,
+            workerConfig.getUpdateTaskWorkerThreadPoolSize()
         );
     }
 
@@ -83,8 +89,7 @@ public class WorkerStartup implements AutoCloseable {
 
     public static class Builder {
         private Worker currentWorker;
-        private int maximumPoolSize;
-        private int keepAliveTimeSeconds;
+        private WorkerProperties workerConfig;
         private SupervisorService supervisorServiceClient;
         private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
@@ -97,13 +102,8 @@ public class WorkerStartup implements AutoCloseable {
             return this;
         }
 
-        public Builder maximumPoolSize(int maximumPoolSize) {
-            this.maximumPoolSize = maximumPoolSize;
-            return this;
-        }
-
-        public Builder keepAliveTimeSeconds(int keepAliveTimeSeconds) {
-            this.keepAliveTimeSeconds = keepAliveTimeSeconds;
+        public Builder workerConfig(WorkerProperties workerConfig) {
+            this.workerConfig = workerConfig;
             return this;
         }
 
@@ -124,8 +124,11 @@ public class WorkerStartup implements AutoCloseable {
 
         public WorkerStartup build() {
             return new WorkerStartup(
-                currentWorker, maximumPoolSize, keepAliveTimeSeconds,
-                supervisorServiceClient, workerRegistry, taskReceiver
+                currentWorker,
+                workerConfig,
+                supervisorServiceClient,
+                workerRegistry,
+                taskReceiver
             );
         }
     }

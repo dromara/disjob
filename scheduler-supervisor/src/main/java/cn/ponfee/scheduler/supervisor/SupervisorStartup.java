@@ -59,13 +59,20 @@ public class SupervisorStartup implements AutoCloseable {
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
         this.triggeringJobScanner = new TriggeringJobScanner(
-            supervisorConfig.getScanTriggeringJobPeriodMs(), scanTriggeringJobLocker, schedulerJobManager
+            supervisorConfig.getScanTriggeringJobPeriodMs(),
+            supervisorConfig.getProcessJobMaximumPoolSize(),
+            scanTriggeringJobLocker,
+            schedulerJobManager
         );
         this.waitingInstanceScanner = new WaitingInstanceScanner(
-            supervisorConfig.getScanWaitingInstancePeriodMs(), scanWaitingInstanceLocker, schedulerJobManager
+            supervisorConfig.getScanWaitingInstancePeriodMs(),
+            scanWaitingInstanceLocker,
+            schedulerJobManager
         );
         this.runningInstanceScanner = new RunningInstanceScanner(
-            supervisorConfig.getScanRunningInstancePeriodMs(), scanRunningInstanceLocker, schedulerJobManager
+            supervisorConfig.getScanRunningInstancePeriodMs(),
+            scanRunningInstanceLocker,
+            schedulerJobManager
         );
         this.taskDispatcher = taskDispatcher;
     }
@@ -74,9 +81,9 @@ public class SupervisorStartup implements AutoCloseable {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        triggeringJobScanner.start();
-        waitingInstanceScanner.start();
         runningInstanceScanner.start();
+        waitingInstanceScanner.start();
+        triggeringJobScanner.start();
         supervisorRegistry.register(currentSupervisor);
     }
 
@@ -87,9 +94,9 @@ public class SupervisorStartup implements AutoCloseable {
         Throwables.caught(waitingInstanceScanner::toStop);
         Throwables.caught(triggeringJobScanner::toStop);
         Throwables.caught(taskDispatcher::close);
-        Throwables.caught(runningInstanceScanner::close);
-        Throwables.caught(waitingInstanceScanner::close);
         Throwables.caught(triggeringJobScanner::close);
+        Throwables.caught(waitingInstanceScanner::close);
+        Throwables.caught(runningInstanceScanner::close);
     }
 
     // ----------------------------------------------------------------------------------------builder
@@ -153,8 +160,14 @@ public class SupervisorStartup implements AutoCloseable {
 
         public SupervisorStartup build() {
             return new SupervisorStartup(
-                currentSupervisor, supervisorConfig, supervisorRegistry, schedulerJobManager,
-                scanTriggeringJobLocker, scanWaitingInstanceLocker, scanRunningInstanceLocker, taskDispatcher
+                currentSupervisor,
+                supervisorConfig,
+                supervisorRegistry,
+                schedulerJobManager,
+                scanTriggeringJobLocker,
+                scanWaitingInstanceLocker,
+                scanRunningInstanceLocker,
+                taskDispatcher
             );
         }
     }

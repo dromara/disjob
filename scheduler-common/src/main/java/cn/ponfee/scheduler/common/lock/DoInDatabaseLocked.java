@@ -42,11 +42,10 @@ public final class DoInDatabaseLocked implements DoInLocked {
     }
 
     @Override
-    public <T> T apply(Callable<T> caller) {
+    public <T> T action(Callable<T> caller) {
         return jdbcTemplate.execute((ConnectionCallback<T>) connection -> {
             Boolean autoCommit = null;
             PreparedStatement ps = null;
-            T result = null;
             try {
                 // getting the lock until hold
                 autoCommit = connection.getAutoCommit();
@@ -55,9 +54,10 @@ public final class DoInDatabaseLocked implements DoInLocked {
                 ps.execute();
 
                 // got the lock, then do callable
-                result = caller.call();
+                return caller.call();
             } catch (Exception e) {
                 LOG.error("Do in db lock occur error.", e);
+                return null;
             } finally {
                 try {
                     // release the lock
@@ -81,8 +81,6 @@ public final class DoInDatabaseLocked implements DoInLocked {
                     }
                 }
             }
-
-            return result;
         });
     }
 

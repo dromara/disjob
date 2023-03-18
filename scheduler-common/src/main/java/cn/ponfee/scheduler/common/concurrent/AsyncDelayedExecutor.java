@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.DelayQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,11 +48,14 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
         ThreadPoolExecutor executor = null;
         if (maximumPoolSize > 1) {
-            executor = ThreadPoolExecutors.create(
-                1, maximumPoolSize, 300, 0,
-                "async_delayed_worker",
-                ThreadPoolExecutors.ALWAYS_CALLER_RUNS
-            );
+            executor = ThreadPoolExecutors.builder()
+                .corePoolSize(1)
+                .maximumPoolSize(maximumPoolSize)
+                .workQueue(new SynchronousQueue<>())
+                .keepAliveTimeSeconds(300)
+                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_worker").build())
+                .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
+                .build();
         }
         this.asyncExecutor = executor;
 

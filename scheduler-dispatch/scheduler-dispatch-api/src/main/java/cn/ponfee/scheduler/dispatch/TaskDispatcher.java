@@ -185,6 +185,9 @@ public abstract class TaskDispatcher implements AutoCloseable {
 
         ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(dispatchParam.routeStrategy());
         Worker worker = executionRouter.route(dispatchParam.group(), executeParam, workers);
+        if (worker == null) {
+            log.error("Assign worker to task failed: {} | {}", executeParam.getInstanceId(), executeParam.getTaskId());
+        }
         executeParam.setWorker(worker);
     }
 

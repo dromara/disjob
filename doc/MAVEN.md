@@ -6,6 +6,8 @@
 ## deploy maven central repository
 
 ### deploy mode
+> maven phase: `clean > validate > compile > test > package > integration > verify > install > deploy`
+
 - versions-maven-plugin
 ```xml
 <!-- mvn -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && mvn clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U -->

@@ -51,8 +51,8 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             return true;
         }
 
-        Boolean result = doInLocked.apply(this::process);
-        return result == null || result;
+        Boolean result = doInLocked.action(this::process);
+        return result != null && result;
     }
 
     // -------------------------------------------------------------process expire waiting sched instance
@@ -78,8 +78,29 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instance.getInstanceId());
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
 
-        if (CollectionUtils.isEmpty(waitingTasks)) {
-            // 1、not has waiting task
+        if (CollectionUtils.isNotEmpty(waitingTasks)) {
+            // 1、has waiting state task
+
+            // sieve the (un-dispatch) or (assigned worker death) waiting tasks to do re-dispatch
+            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> schedulerJobManager.isDeathWorker(e.getWorker()));
+            if (CollectionUtils.isEmpty(redispatchingTasks)) {
+                return;
+            }
+            SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
+            if (schedJob == null) {
+                log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
+                return;
+            }
+            // check is whether not discovered worker
+            if (schedulerJobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
+                log.error("Scanned waiting state instance not available worker: {} | {}", instance.getInstanceId(), schedJob.getJobGroup());
+                return;
+            }
+            log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
+            schedulerJobManager.dispatch(schedJob, instance, redispatchingTasks);
+
+        } else {
+            // 2、waiting state instance unsupported other state task
 
             if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
                 // double check instance run state
@@ -94,26 +115,6 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             }
             log.info("Scanned waiting state instance was death: {}", instance.getInstanceId());
             schedulerJobManager.deathInstance(instance.getInstanceId());
-
-        } else {
-            // 2、sieve the (un-dispatch) or (assigned worker death) waiting tasks to do re-dispatch
-
-            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> schedulerJobManager.isDeathWorker(e.getWorker()));
-            if (CollectionUtils.isEmpty(redispatchingTasks)) {
-                return;
-            }
-            SchedJob schedJob = schedulerJobManager.getJob(instance.getJobId());
-            if (schedJob == null) {
-                log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
-                return;
-            }
-            // check not found worker
-            if (schedulerJobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
-                log.error("Scanned waiting state instance not available worker: {} | {}", instance.getInstanceId(), schedJob.getJobGroup());
-                return;
-            }
-            log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
-            schedulerJobManager.dispatch(schedJob, instance, redispatchingTasks);
 
         }
     }

@@ -119,17 +119,17 @@ public @interface EnableSupervisor {
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public DoInLocked scanTriggeringJobLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanTriggeringJobLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_INSTANCE);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public DoInLocked scanRunningInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanRunningInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
         }
 
