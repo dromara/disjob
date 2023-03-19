@@ -33,12 +33,12 @@ public enum JobType implements IntValue<JobType> {
     BROADCAST(2),
 
     /**
-     * 工作流
+     * 工作流(DAG)
      */
     WORKFLOW(3),
 
     /**
-     * MapReduce(分布式计算)
+     * 分布式计算(MapReduce)
      */
     MAP_REDUCE(4);
 

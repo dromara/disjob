@@ -55,7 +55,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     private final long triggerTime;
 
     /**
-     * 工作进程(JVM进程)
+     * 任务执行器(JVM进程)
      */
     private Worker worker;
 
@@ -94,6 +94,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     }
 
     // ------------------------------------------------getter/setter
+
     public long getTaskId() {
         return taskId;
     }
@@ -132,6 +133,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     }
 
     // ------------------------------------------------other methods
+
     public boolean updateOperation(Operations expect, Operations update) {
         return this.operation.compareAndSet(expect, update);
     }
@@ -171,26 +173,6 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
             && this.jobId           == other.jobId
             && this.jobType         == other.jobType
             && this.triggerTime     == other.triggerTime;
-    }
-
-    /**
-     * Returns is whether same trigger task.
-     *
-     * @param other the other task
-     * @return {@code true} if same trigger task
-     */
-    public boolean same(ExecuteTaskParam other) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null) {
-            return false;
-        }
-        return this.taskId      == other.taskId
-            && this.instanceId  == other.instanceId
-            && this.jobId       == other.jobId
-            && this.jobType     == other.jobType
-            && this.triggerTime == other.triggerTime;
     }
 
     @Override

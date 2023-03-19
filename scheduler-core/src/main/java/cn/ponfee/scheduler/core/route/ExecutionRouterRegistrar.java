@@ -16,28 +16,29 @@ import java.util.Objects;
  * Execution router registrar, also can use SPI implementation.
  *
  * @author Ponfee
+ * @see java.util.ServiceLoader
  */
 public class ExecutionRouterRegistrar {
 
-    private static final ExecutionRouter[] ROUTE_REGISTRIES = new ExecutionRouter[RouteStrategy.values().length];
+    private static final ExecutionRouter[] REGISTERED_ROUTES = new ExecutionRouter[RouteStrategy.values().length];
 
     static {
         // register default execution router
         register(new RoundRobinExecutionRouter());
         register(new RandomExecutionRouter());
-        register(new SimplyHashExecutionRouter());
+        register(new SimpleHashExecutionRouter());
         register(new ConsistentHashExecutionRouter());
         register(new LocalPriorityExecutionRouter(new RoundRobinExecutionRouter()));
     }
 
     public static synchronized void register(ExecutionRouter executionRouter) {
         Objects.requireNonNull(executionRouter, "Execution router cannot be null.");
-        ROUTE_REGISTRIES[executionRouter.routeStrategy().ordinal()] = executionRouter;
+        REGISTERED_ROUTES[executionRouter.routeStrategy().ordinal()] = executionRouter;
     }
 
     public static ExecutionRouter get(RouteStrategy routeStrategy) {
         Objects.requireNonNull(routeStrategy, "Route strategy cannot be null.");
-        return ROUTE_REGISTRIES[routeStrategy.ordinal()];
+        return REGISTERED_ROUTES[routeStrategy.ordinal()];
     }
 
 }

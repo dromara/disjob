@@ -31,9 +31,10 @@ import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.common.base.Symbol.Str.COLON;
 import static cn.ponfee.scheduler.common.util.Collects.get;
+import static cn.ponfee.scheduler.core.base.JobConstants.WORKER_MULTIPLE_GROUP_SEPARATOR;
 
 /**
- * Worker(JVM instance)
+ * Worker for execute task(JVM instance)
  *
  * @author Ponfee
  */
@@ -69,11 +70,12 @@ public final class Worker extends Server {
 
         Assert.isTrue(!workerId.contains(COLON), "Worker id cannot contains symbol ':'");
         Assert.isTrue(!group.contains(COLON), "Group name cannot contains symbol ':'");
+        Assert.isTrue(!group.contains(WORKER_MULTIPLE_GROUP_SEPARATOR), "Group name cannot contains symbol ','");
         this.group = group;
         this.workerId = workerId;
 
         this.serializedValue = group + COLON + workerId + COLON + host + COLON + port;
-        this.groups = split(group, JobConstants.WORKER_GROUP_SEPARATOR);
+        this.groups = split(group, WORKER_MULTIPLE_GROUP_SEPARATOR);
     }
 
     @Override
@@ -201,7 +203,6 @@ public final class Worker extends Server {
         Arrays.stream(str.split(separator))
             .filter(StringUtils::isNotBlank)
             .map(String::trim)
-            .distinct()
             .forEach(builder::add);
         return builder.build();
     }

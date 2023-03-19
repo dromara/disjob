@@ -35,7 +35,7 @@ public enum RouteStrategy implements IntValue<RouteStrategy> {
     /**
      * 简单的哈希
      */
-    SIMPLY_HASH(3),
+    SIMPLE_HASH(3),
 
     /**
      * 一致性哈希

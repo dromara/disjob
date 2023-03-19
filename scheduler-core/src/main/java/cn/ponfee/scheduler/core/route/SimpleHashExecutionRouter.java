@@ -20,26 +20,26 @@ import java.util.function.ToLongFunction;
  *
  * @author Ponfee
  */
-public class SimplyHashExecutionRouter extends ExecutionRouter {
+public class SimpleHashExecutionRouter extends ExecutionRouter {
 
-    private final ToLongFunction<ExecuteTaskParam> mapper;
+    private final ToLongFunction<ExecuteTaskParam> hashFunction;
 
-    public SimplyHashExecutionRouter() {
+    public SimpleHashExecutionRouter() {
         this(param -> Math.abs(param.getInstanceId()));
     }
 
-    public SimplyHashExecutionRouter(ToLongFunction<ExecuteTaskParam> mapper) {
-        this.mapper = mapper;
+    public SimpleHashExecutionRouter(ToLongFunction<ExecuteTaskParam> hashFunction) {
+        this.hashFunction = hashFunction;
     }
 
     @Override
     public RouteStrategy routeStrategy() {
-        return RouteStrategy.SIMPLY_HASH;
+        return RouteStrategy.SIMPLE_HASH;
     }
 
     @Override
     protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
-        return workers.get((int) (mapper.applyAsLong(param) % workers.size()));
+        return workers.get((int) (hashFunction.applyAsLong(param) % workers.size()));
     }
 
 }

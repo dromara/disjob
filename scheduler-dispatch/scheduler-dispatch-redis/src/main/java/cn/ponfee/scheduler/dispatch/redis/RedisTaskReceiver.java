@@ -102,6 +102,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
     private boolean doReceive() {
         boolean isBusyLoop = true;
+
         for (GroupedWorker gropedWorker : gropedWorkers) {
             if (gropedWorker.skipNext) {
                 gropedWorker.skipNext = false;
@@ -144,7 +145,9 @@ public class RedisTaskReceiver extends TaskReceiver {
                 isBusyLoop = false;
             }
         }
+
         if (isBusyLoop) {
+            // if busy loop, will be sleep heartbeat period milliseconds, so can't skip next task fetch
             gropedWorkers.forEach(e -> e.skipNext = false);
         }
         return isBusyLoop;

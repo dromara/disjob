@@ -21,9 +21,10 @@ public class JobConstants {
     public static final int PROCESS_BATCH_SIZE = 200;
 
     /**
-     * Worker group separator, the group configured "distributed.scheduler.worker.group"
+     * Worker multiple group separator, such as "default,test1-group,test2-group"
+     * configured "distributed.scheduler.worker.group"
      */
-    public static final String WORKER_GROUP_SEPARATOR = ",";
+    public static final String WORKER_MULTIPLE_GROUP_SEPARATOR = ",";
 
     /**
      * Spring web server port

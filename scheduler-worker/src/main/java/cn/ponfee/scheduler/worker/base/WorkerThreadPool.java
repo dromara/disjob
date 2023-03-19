@@ -439,13 +439,17 @@ public class WorkerThreadPool extends Thread implements AutoCloseable {
 
             WorkerThread exists = pool.get(param.getTaskId());
             if (exists != null) {
-                throw param.same(exists.executingParam())
-                    ? new IllegalTaskException("Task repeat execute: " + param)
-                    : new DuplicateTaskException("Task id duplicate: " + param + ", " + exists.executingParam());
+                if (param.equals(exists.executingParam())) {
+                    // 同一个task re-dispatch，导致重复
+                    throw new IllegalTaskException("Repeat execute task: " + param);
+                } else {
+                    // 不同的task，task-id生成有重复
+                    throw new DuplicateTaskException("Duplicate task id: " + param + " | " + exists.executingParam());
+                }
             }
 
             if (!workerThread.updateExecuteParam(null, param)) {
-                throw new BrokenThreadException("Execute worker thread conflict: " + workerThread.getName() + ", " + workerThread.executingParam());
+                throw new BrokenThreadException("Execute worker thread conflict: " + workerThread.getName() + " | " + workerThread.executingParam());
             }
 
             try {
