@@ -16,6 +16,7 @@ import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -69,10 +71,8 @@ public class RedisTaskReceiver extends TaskReceiver {
      */
     private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(JobConstants.PROCESS_BATCH_SIZE).getBytes(UTF_8);
 
-    private final Worker currentWorker;
     private final RedisTemplate<String, String> redisTemplate;
-    private final RedisKeyRenewal redisKeyRenewal;
-    private final byte[][] keysAndArgs;
+    private final List<GroupedWorker> gropedWorkers;
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
@@ -81,11 +81,8 @@ public class RedisTaskReceiver extends TaskReceiver {
                              RedisTemplate<String, String> redisTemplate) {
         super(timingWheel);
 
-        this.currentWorker = currentWorker;
         this.redisTemplate = redisTemplate;
-        byte[] currentWorkerRedisKey = RedisTaskDispatchingUtils.buildDispatchTasksKey(currentWorker).getBytes();
-        this.keysAndArgs = new byte[][]{currentWorkerRedisKey, LIST_POP_BATCH_SIZE_BYTES};
-        this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, currentWorkerRedisKey);
+        this.gropedWorkers = currentWorker.splitGroup().stream().map(GroupedWorker::new).collect(Collectors.toList());
         this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000);
     }
 
@@ -104,37 +101,53 @@ public class RedisTaskReceiver extends TaskReceiver {
     }
 
     private boolean doReceive() {
-        List<byte[]> result = redisTemplate.execute((RedisCallback<List<byte[]>>) conn -> {
-            if (conn.isPipelined() || conn.isQueueing()) {
-                throw new UnsupportedOperationException("Unsupported pipelined or queueing redis operations.");
+        boolean isBusyLoop = true;
+        for (GroupedWorker gropedWorker : gropedWorkers) {
+            if (gropedWorker.skipNext) {
+                gropedWorker.skipNext = false;
+                continue;
             }
-
-            try {
-                return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, keysAndArgs);
-            } catch (Exception e) {
-                if (RedisLock.exceptionContainsNoScriptError(e)) {
-                    LOG.info(e.getMessage());
-                    return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, keysAndArgs);
-                } else {
-                    LOG.error("Call redis eval sha occur error.", e);
-                    return ExceptionUtils.rethrow(e);
+            List<byte[]> received = redisTemplate.execute((RedisCallback<List<byte[]>>) conn -> {
+                if (conn.isPipelined() || conn.isQueueing()) {
+                    throw new UnsupportedOperationException("Unsupported pipelined or queueing redis operations.");
                 }
+
+                try {
+                    return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, gropedWorker.keyAndArgs);
+                } catch (Exception e) {
+                    if (RedisLock.exceptionContainsNoScriptError(e)) {
+                        LOG.info(e.getMessage());
+                        return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, gropedWorker.keyAndArgs);
+                    } else {
+                        LOG.error("Call redis eval sha occur error.", e);
+                        return ExceptionUtils.rethrow(e);
+                    }
+                }
+            });
+
+            gropedWorker.redisKeyRenewal.renewIfNecessary();
+
+            if (CollectionUtils.isEmpty(received)) {
+                gropedWorker.skipNext = true;
+                continue;
             }
-        });
 
-        redisKeyRenewal.renewIfNecessary();
+            for (byte[] bytes : received) {
+                ExecuteTaskParam param = ExecuteTaskParam.deserialize(bytes);
+                param.setWorker(gropedWorker.worker);
+                super.receive(param);
+            }
 
-        if (result == null || result.isEmpty()) {
-            return true;
+            if (received.size() < JobConstants.PROCESS_BATCH_SIZE) {
+                gropedWorker.skipNext = true;
+            } else {
+                isBusyLoop = false;
+            }
         }
-
-        for (byte[] bytes : result) {
-            ExecuteTaskParam param = ExecuteTaskParam.deserialize(bytes);
-            param.setWorker(currentWorker);
-            super.receive(param);
+        if (isBusyLoop) {
+            gropedWorkers.forEach(e -> e.skipNext = false);
         }
-
-        return result.size() < JobConstants.PROCESS_BATCH_SIZE;
+        return isBusyLoop;
     }
 
     private class ReceiveHeartbeatThread extends AbstractHeartbeatThread {
@@ -145,6 +158,20 @@ public class RedisTaskReceiver extends TaskReceiver {
         @Override
         protected boolean heartbeat() {
             return doReceive();
+        }
+    }
+
+    private class GroupedWorker {
+        private final Worker worker;
+        private final byte[][] keyAndArgs;
+        private final RedisKeyRenewal redisKeyRenewal;
+        private volatile boolean skipNext = false;
+
+        public GroupedWorker(Worker worker) {
+            byte[] key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker).getBytes();
+            this.worker = worker;
+            this.keyAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
+            this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, key);
         }
     }
 

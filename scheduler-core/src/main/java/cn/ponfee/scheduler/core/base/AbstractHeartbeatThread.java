@@ -73,7 +73,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements AutoClos
                 log.debug("Heartbeat processed time: {}", end - begin);
             }
 
-            // if busyLoop, need sleep a moment
+            // if busy loop, need sleep a moment
             if (isBusyLoop) {
                 // gap period milliseconds(with fixed delay)
                 long sleepTimeMillis = heartbeatPeriodMs - (end % heartbeatPeriodMs);

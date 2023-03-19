@@ -113,7 +113,7 @@ public class Main {
         {
             // redis dispatching
             //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
-            //vertxWebServer = new VertxWebServer(props.getRequiredInt("server.port"), null);
+            //vertxWebServer = new VertxWebServer(port, null);
 
             // http dispatching
             taskReceiver = new HttpTaskReceiver(timingWheel);
