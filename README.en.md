@@ -10,7 +10,7 @@
 
 ## Introduction
 
-A distributed job scheduler framework, in addition to the conventional distributed task scheduling function, it also provides splitting of custom subtasks, customized control of long tasks in execution, task dependency, supervisor and worker separate deployment, and so on.
+A distributed job scheduler framework, in addition to the conventional distributed task scheduling function, it also provides splitting subtasks, control of tasks in execution, task dependency, broadcast task, workflow task(DAG), supervisor and worker separate deployment, and so on.
 
 Lightweight, easy to use, especially suitable for the execution of long tasks. Scalability, extensibility, and stability, and has been runed in production.
 
@@ -169,5 +169,6 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 - [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks([WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)])
 - [x] Extended registry: Zookeeper, Etcd, Nacos
+- [ ] Workflow task(DAG), MapReduce task
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB

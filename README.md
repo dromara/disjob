@@ -10,9 +10,11 @@
 
 ## Introduction
 
-一个分布式的任务调度框架，除了具备常规的分布式任务调度功能外，还提供自定义子任务的拆分、可对执行中的长任务自由控制、任务依赖、管理器与执行器分离部署等能力。
+一个分布式的任务调度框架，除了具备常规的分布式任务调度功能外，还提供子任务的拆分、运行中的任务控制、任务依赖、广播任务、工作流任务(DAG)、管理器与执行器分离部署等能力。
 
 轻量级，简单易用，特别适合长任务的执行。有较好的伸缩性，扩展性，稳定性，历经生产检验。
+
+**`始于为长任务场景而设计，终于为全能的分布式任务调度框架而努力!!!`**
 
 ## Architecture
 
@@ -169,5 +171,6 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 
 - [x] Worker提供任务校验及拆分的Http接口供Supervisor调用（[WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)）
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
+- [ ] 工作流任务(DAG)、分布式计算任务(MapReduce)
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB
