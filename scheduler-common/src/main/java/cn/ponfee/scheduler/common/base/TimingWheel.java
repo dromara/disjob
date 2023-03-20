@@ -98,9 +98,9 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
     private final long tickMs;
 
     /**
-     * Milliseconds duration per round
+     * A round duration milliseconds
      */
-    private final long msPerRound;
+    private final long roundMs;
 
     /**
      * Ring buffer of wheel
@@ -111,14 +111,14 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         Assert.isTrue(tickMs > 0, "Tick milliseconds must be greater than 0");
         Assert.isTrue(ringSize > 0, "Ring size must be greater than 0");
         this.tickMs = tickMs;
-        this.msPerRound = tickMs * ringSize;
+        this.roundMs = tickMs * ringSize;
 
-        TimingQueue[] array = new TimingQueue[ringSize];
+        TimingQueue<T>[] ring = new TimingQueue[ringSize];
         // initialize 0 ~ ringSize slots
-        for (int i = 0; i < array.length; i++) {
-            array[i] = new TimingQueue<>();
+        for (int i = 0; i < ring.length; i++) {
+            ring[i] = new TimingQueue<>();
         }
-        this.wheel = array;
+        this.wheel = ring;
     }
 
     public final long getTickMs() {
@@ -199,7 +199,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
     }
 
     private int calculateIndex(long timeMillis) {
-        return (int) ((timeMillis % msPerRound) / tickMs);
+        return (int) ((timeMillis % roundMs) / tickMs);
     }
 
     /**
@@ -225,55 +225,22 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         }
     }
 
-    /*
-    public static final class TimingQueue<T extends Timing<T>> extends PriorityBlockingQueue<T> {
-        public TimingQueue() {
-            super();
-        }
-
-        public TimingQueue(int initialCapacity) {
-            super(initialCapacity);
-        }
-    }
-    */
-
     /**
      * Timing queue
      *
      * @param <T> element type
      */
-    public static final class TimingQueue<T extends Timing<T>> {
-        private final PriorityQueue<T> queue;
+    private static final class TimingQueue<T extends Timing<T>> extends PriorityQueue<T> /*PriorityBlockingQueue<T>*/ {
+        private static final long serialVersionUID = -1728596471728230208L;
 
-        public TimingQueue() {
-            this.queue = new PriorityQueue<>();
-        }
-
+        @Override
         public synchronized T poll() {
-            return queue.poll();
+            return super.poll();
         }
 
+        @Override
         public synchronized boolean offer(T timing) {
-            return queue.offer(timing);
-        }
-
-        // -------------------------------------------Unnecessary use synchronized
-
-        /**
-         * Returns the top element of heap data structure.
-         *
-         * @return Timing data
-         */
-        public T peek() {
-            return queue.peek();
-        }
-
-        public int size() {
-            return queue.size();
-        }
-
-        public boolean isEmpty() {
-            return queue.isEmpty();
+            return super.offer(timing);
         }
     }
 

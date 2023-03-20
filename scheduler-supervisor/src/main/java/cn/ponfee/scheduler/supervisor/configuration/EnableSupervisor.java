@@ -98,24 +98,19 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerServiceClient workerServiceClient(SupervisorProperties supervisorConfig,
-                                                       HttpProperties properties,
+        public WorkerServiceClient workerServiceClient(HttpProperties properties,
                                                        SupervisorRegistry supervisorRegistry,
                                                        @Nullable Worker currentWorker,
                                                        @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
-            if (supervisorConfig.isForceLocalWorkerService()) {
-                return new WorkerServiceClient(null, null);
-            } else {
-                DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-                    .connectTimeout(properties.getConnectTimeout())
-                    .readTimeout(properties.getReadTimeout())
-                    .maxRetryTimes(properties.getMaxRetryTimes())
-                    .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
-                    .discoveryServer(supervisorRegistry)
-                    .build();
-                WorkerService remoteWorkerService = DiscoveryRestProxy.create(true, WorkerService.class, discoveryRestTemplate);
-                return new WorkerServiceClient(remoteWorkerService, currentWorker);
-            }
+            DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
+                .connectTimeout(properties.getConnectTimeout())
+                .readTimeout(properties.getReadTimeout())
+                .maxRetryTimes(properties.getMaxRetryTimes())
+                .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
+                .discoveryServer(supervisorRegistry)
+                .build();
+            WorkerService remoteWorkerService = DiscoveryRestProxy.create(true, WorkerService.class, discoveryRestTemplate);
+            return new WorkerServiceClient(remoteWorkerService, currentWorker);
         }
 
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)

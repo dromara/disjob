@@ -70,7 +70,6 @@ public final class Worker extends Server {
 
         Assert.isTrue(!workerId.contains(COLON), "Worker id cannot contains symbol ':'");
         Assert.isTrue(!group.contains(COLON), "Group name cannot contains symbol ':'");
-        Assert.isTrue(!group.contains(WORKER_MULTIPLE_GROUP_SEPARATOR), "Group name cannot contains symbol ','");
         this.group = group;
         this.workerId = workerId;
 

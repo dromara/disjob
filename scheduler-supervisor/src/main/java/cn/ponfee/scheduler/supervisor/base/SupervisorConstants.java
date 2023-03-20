@@ -20,19 +20,19 @@ public class SupervisorConstants {
     /**
      * Scan triggering job lock sql
      */
-    public static final String LOCK_SQL_SCAN_TRIGGERING_JOB = "SELECT `name` FROM sched_lock WHERE name='scan_triggering_job' FOR UPDATE";
+    public static final String LOCK_SQL_SCAN_TRIGGERING_JOB = "SELECT name FROM sched_lock WHERE name='scan_triggering_job' FOR UPDATE";
 
     /**
      * Scan waiting instance lock sql
      */
-    public static final String LOCK_SQL_SCAN_WAITING_INSTANCE = "SELECT `name` FROM sched_lock WHERE name='scan_waiting_instance' FOR UPDATE";
+    public static final String LOCK_SQL_SCAN_WAITING_INSTANCE = "SELECT name FROM sched_lock WHERE name='scan_waiting_instance' FOR UPDATE";
 
     /**
      * Scan running instance lock sql
      */
-    public static final String LOCK_SQL_SCAN_RUNNING_INSTANCE = "SELECT `name` FROM sched_lock WHERE name='scan_running_instance' FOR UPDATE";
+    public static final String LOCK_SQL_SCAN_RUNNING_INSTANCE = "SELECT name FROM sched_lock WHERE name='scan_running_instance' FOR UPDATE";
 
-    // ----------------------------------------------------------------scan locker name
+    // ----------------------------------------------------------------scan locker spring bean name
 
     /**
      * Spring bean name of scan triggering job locker

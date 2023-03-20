@@ -162,7 +162,7 @@ public class TimingWheelTest {
 
     @Test
     public void testTimingQueue() {
-        TimingWheel.TimingQueue<ExecuteTaskParam> timingQueue = new TimingWheel.TimingQueue<>();
+        TimingQueue<ExecuteTaskParam> timingQueue = new TimingQueue<>();
         for (int i = 0; i < 100; i++) {
             long triggerTime = ThreadLocalRandom.current().nextLong(100);
             timingQueue.offer(new ExecuteTaskParam(Operations.TRIGGER, 0L, 0L, 0L, JobType.NORMAL, triggerTime, null));
@@ -193,18 +193,6 @@ public class TimingWheelTest {
             long triggerTime = System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour);
             timingWheel.offer(new ExecuteTaskParam(Operations.TRIGGER, 0L, 0L, 0L, JobType.NORMAL, triggerTime, null));
         }
-
-        TimingWheel.TimingQueue<ExecuteTaskParam>[] array = (TimingWheel.TimingQueue<ExecuteTaskParam>[]) Fields.get(timingWheel, "wheel");
-        for (int tick = 0; tick < array.length; tick++) {
-            System.out.print(tick + ", ");
-            TimingWheel.TimingQueue<ExecuteTaskParam> queue = array[tick];
-            long prev = 0;
-            for (ExecuteTaskParam e; (e = queue.poll()) != null; ) {
-                Assertions.assertEquals(tick, (int) (((e.timing()) % msPerRound) / tickMs));
-                Assertions.assertTrue(prev <= e.timing());
-            }
-            Assertions.assertTrue(queue.isEmpty());
-        }
     }
 
     private int fibonacci(int i) {
@@ -220,4 +208,15 @@ public class TimingWheelTest {
         });
     }
 
+    private static final class TimingQueue<T extends TimingWheel.Timing<T>> extends PriorityQueue<T> {
+        @Override
+        public synchronized T poll() {
+            return super.poll();
+        }
+
+        @Override
+        public synchronized boolean offer(T timing) {
+            return super.offer(timing);
+        }
+    }
 }

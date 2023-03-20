@@ -50,7 +50,8 @@ public class WorkerStartup implements AutoCloseable {
         this.workerThreadPool = new WorkerThreadPool(
             workerConfig.getMaximumPoolSize(),
             workerConfig.getKeepAliveTimeSeconds(),
-            supervisorServiceClient);
+            supervisorServiceClient
+        );
         this.workerRegistry = workerRegistry;
         this.taskReceiver = taskReceiver;
         this.rotatingTimingWheel = new RotatingTimingWheel(
