@@ -24,6 +24,17 @@ import java.util.stream.Collectors;
  */
 public class Collects {
 
+    public static <E> LinkedList<E> newLinkedList(E element) {
+        LinkedList<E> list = new LinkedList<>();
+        list.add(element);
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T[] toArray(T... args) {
+        return args;
+    }
+
     /**
      * Gets the first element for values
      *

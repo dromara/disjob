@@ -18,7 +18,9 @@ import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
@@ -27,6 +29,44 @@ import java.util.stream.IntStream;
  * @author Ponfee
  */
 public class CommonTest {
+
+    @Test
+    public void testPath() {
+        List<String> list = Collections.emptyList();
+        Assertions.assertEquals("classpath*:xml/*.xml", path(list, 0));
+
+        list = Arrays.asList("a");
+        Assertions.assertEquals("classpath*:a/xml/*.xml", path(list, -1));
+        Assertions.assertEquals("classpath*:a/**/xml/*.xml", path(list, 0));
+        Assertions.assertEquals("classpath*:/**/a/xml/*.xml", path(list, 1));
+
+
+        list = Arrays.asList("a","b","c");
+        Assertions.assertEquals("classpath*:a/b/c/xml/*.xml", path(list, -1));
+        Assertions.assertEquals("classpath*:a/b/c/**/xml/*.xml", path(list, 0));
+        Assertions.assertEquals("classpath*:a/b/**/c/xml/*.xml", path(list, 1));
+        Assertions.assertEquals("classpath*:a/**/b/c/xml/*.xml", path(list, 2));
+        Assertions.assertEquals("classpath*:/**/a/b/c/xml/*.xml", path(list, 3));
+        Assertions.assertEquals("classpath*:/**/a/b/c/xml/*.xml", path(list, 4));
+    }
+
+
+    private static String path(List<String> list, int lastIndex) {
+        String path;
+        if (list.size() == 0) {
+            path = "";
+        } else if (lastIndex == 0) {
+            path = String.join("/", list) + "/**/";
+        } else if (lastIndex < 0) {
+            path = String.join("/", list) + "/";
+        } else if (list.size() <= lastIndex) {
+            path = "/**/" + String.join("/", list) + "/";
+        } else {
+            int pos = list.size() - lastIndex;
+            path = String.join("/", list.subList(0, pos)) + "/**/" + String.join("/", list.subList(pos, list.size())) + "/";
+        }
+        return MessageFormat.format("classpath*:{0}xml/*.xml", path);
+    }
 
     @Test
     public void testURLString() {

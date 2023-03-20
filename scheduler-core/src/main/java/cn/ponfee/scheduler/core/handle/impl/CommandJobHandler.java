@@ -24,7 +24,11 @@ import java.nio.charset.Charset;
  * <pre>
  *  The job handler for executes system operation command.
  *
+ *  /bin/bash -c "echo $(date +%Y/%m/%d)"
  *  Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
+ *
+ *  bin/bash -c 后面接 命令
+ *  /bin/bash 后面接 执行的脚本
  * </pre>
  *
  * @author Ponfee

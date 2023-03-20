@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.configuration;
 
+import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
@@ -30,10 +31,11 @@ import static cn.ponfee.scheduler.supervisor.base.SupervisorConstants.*;
  *
  * @author Ponfee
  */
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-public class SupervisorStartupRunner implements ApplicationRunner, DisposableBean {
+@AutoConfigureOrder(SupervisorStartupRunner.ORDERED)
+public class SupervisorStartupRunner implements ApplicationRunner, DisposableBean, Ordered {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartupRunner.class);
+    static final int ORDERED = Ordered.LOWEST_PRECEDENCE;
 
     private final SupervisorStartup supervisorStartup;
 
@@ -60,6 +62,8 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
     @Override
     public void run(ApplicationArguments args) {
         LOG.info("Scheduler supervisor launch begin...");
+        // if the server also a worker, wait the worker registered
+        CheckedThrowing.checked(() -> Thread.sleep(3000));
         supervisorStartup.start();
         LOG.info("Scheduler supervisor launch end.");
     }
@@ -71,4 +75,8 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
         LOG.info("Scheduler supervisor stop end.");
     }
 
+    @Override
+    public int getOrder() {
+        return ORDERED;
+    }
 }

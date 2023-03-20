@@ -8,7 +8,8 @@
 
 package cn.ponfee.scheduler.supervisor.base;
 
-import cn.ponfee.scheduler.common.util.ClassUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.core.io.ClassPathResource;
@@ -16,6 +17,9 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Abstract Datasource Configuration.
@@ -34,9 +38,27 @@ public abstract class AbstractDataSourceConfig {
     private final String mapperFileLocation;
 
     public AbstractDataSourceConfig() {
-        String basePackage = ClassUtils.getPackagePath(getClass());
-        // cn/ponfee/scheduler/supervisor/dao/xml/*.xml
-        this.mapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", basePackage);
+        this(-1);
+    }
+
+    public AbstractDataSourceConfig(int wildcardLastIndex) {
+        List<String> list = Arrays.stream(ClassUtils.getPackageName(getClass()).split("\\."))
+            .filter(StringUtils::isNotEmpty)
+            .collect(Collectors.toList());
+        String path;
+        if (list.size() == 0) {
+            path = "";
+        } else if (wildcardLastIndex == 0) {
+            path = String.join("/", list) + "/**/";
+        } else if (wildcardLastIndex < 0) {
+            path = String.join("/", list) + "/";
+        } else if (list.size() <= wildcardLastIndex) {
+            path = "/**/" + String.join("/", list) + "/";
+        } else {
+            int pos = list.size() - wildcardLastIndex;
+            path = String.join("/", list.subList(0, pos)) + "/**/" + String.join("/", list.subList(pos, list.size())) + "/";
+        }
+        this.mapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", path);
     }
 
     public AbstractDataSourceConfig(String mapperFileLocation) {

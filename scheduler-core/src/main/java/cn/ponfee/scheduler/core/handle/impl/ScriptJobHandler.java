@@ -17,6 +17,7 @@ import cn.ponfee.scheduler.core.util.ProcessUtils;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -37,7 +38,7 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
 public class ScriptJobHandler extends JobHandler<String> {
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http", "https", "ftp"};
-    private static final String WORKER_DIR = System.getProperty("user.home") + "/scheduler/worker/scripts/";
+    private static final String WORKER_DIR = SystemUtils.USER_HOME + "/scheduler/worker/scripts/";
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) throws Exception {

@@ -52,7 +52,7 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
      *
      * @see ClassUtils#getPackagePath(Class)
      */
-    public static final String BASE_PACKAGE = "cn.ponfee.scheduler.supervisor.dao";
+    static final String BASE_PACKAGE = "cn.ponfee.scheduler.supervisor.dao";
 
     /**
      * database name

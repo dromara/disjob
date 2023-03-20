@@ -233,6 +233,8 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
     private static final class TimingQueue<T extends Timing<T>> extends PriorityQueue<T> /*PriorityBlockingQueue<T>*/ {
         private static final long serialVersionUID = -1728596471728230208L;
 
+        private TimingQueue() { }
+
         @Override
         public synchronized T poll() {
             return super.poll();

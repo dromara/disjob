@@ -209,7 +209,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
         @Override
         List<Worker> getServers(String group) {
-            Assert.hasText(group, "Discovery worker must be grouping.");
+            Assert.isTrue(StringUtils.isNotEmpty(group), "Discovery worker must be grouping.");
             ImmutableHashList<String, Worker> workers = groupedWorkers.get(group);
             return workers == null ? Collections.emptyList() : workers.values();
         }

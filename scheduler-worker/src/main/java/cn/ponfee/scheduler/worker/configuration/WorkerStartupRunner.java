@@ -26,10 +26,11 @@ import org.springframework.core.Ordered;
  *
  * @author Ponfee
  */
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
+@AutoConfigureOrder(WorkerStartupRunner.ORDERED)
+public class WorkerStartupRunner implements ApplicationRunner, DisposableBean, Ordered {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartupRunner.class);
+    static final int ORDERED = Ordered.LOWEST_PRECEDENCE - 1;
 
     private final WorkerStartup workerStartup;
 
@@ -62,4 +63,8 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean {
         LOG.info("Scheduler worker stop end.");
     }
 
+    @Override
+    public int getOrder() {
+        return WorkerStartupRunner.ORDERED;
+    }
 }
