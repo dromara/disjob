@@ -8,14 +8,29 @@
 
 package cn.ponfee.scheduler.common.util;
 
+import java.util.Comparator;
+
 /**
- * Utility for Compare
+ * For collection order
  *
  * @author Ponfee
  */
-public class Comparators {
+public final class Comparators {
 
     public static final int EQ =  0;
     public static final int GT =  1;
     public static final int LT = -1;
+
+    public static <T extends Comparable<? super T>> Comparator<T> asc() {
+        return Comparator.naturalOrder();
+    }
+
+    public static <T extends Comparable<? super T>> Comparator<T> desc() {
+        return Comparator.reverseOrder();
+    }
+
+    public static <T extends Comparable<? super T>> Comparator<T> order(boolean asc) {
+        return asc ? asc() : desc();
+    }
+
 }

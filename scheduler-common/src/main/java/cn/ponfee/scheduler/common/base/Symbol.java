@@ -90,6 +90,16 @@ public final class Symbol {
          * Ampersand symbol
          */
         String AMPERSAND = "&";
+
+        /**
+         * Open symbol
+         */
+        String OPEN = "(";
+
+        /**
+         * Close symbol
+         */
+        String CLOSE = ")";
     }
 
     public interface Char {
@@ -167,6 +177,16 @@ public final class Symbol {
          * Ampersand symbol
          */
         char AMPERSAND = '&';
+
+        /**
+         * Open symbol
+         */
+        char OPEN = '(';
+
+        /**
+         * Close symbol
+         */
+        char CLOSE = ')';
     }
 
 }

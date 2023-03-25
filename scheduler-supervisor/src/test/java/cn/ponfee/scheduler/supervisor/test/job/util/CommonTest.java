@@ -40,7 +40,6 @@ public class CommonTest {
         Assertions.assertEquals("classpath*:a/**/xml/*.xml", path(list, 0));
         Assertions.assertEquals("classpath*:/**/a/xml/*.xml", path(list, 1));
 
-
         list = Arrays.asList("a","b","c");
         Assertions.assertEquals("classpath*:a/b/c/xml/*.xml", path(list, -1));
         Assertions.assertEquals("classpath*:a/b/c/**/xml/*.xml", path(list, 0));
@@ -50,19 +49,18 @@ public class CommonTest {
         Assertions.assertEquals("classpath*:/**/a/b/c/xml/*.xml", path(list, 4));
     }
 
-
-    private static String path(List<String> list, int lastIndex) {
+    private static String path(List<String> list, int wildcardLastIndex) {
         String path;
         if (list.size() == 0) {
             path = "";
-        } else if (lastIndex == 0) {
+        } else if (wildcardLastIndex == 0) {
             path = String.join("/", list) + "/**/";
-        } else if (lastIndex < 0) {
+        } else if (wildcardLastIndex < 0) {
             path = String.join("/", list) + "/";
-        } else if (list.size() <= lastIndex) {
+        } else if (list.size() <= wildcardLastIndex) {
             path = "/**/" + String.join("/", list) + "/";
         } else {
-            int pos = list.size() - lastIndex;
+            int pos = list.size() - wildcardLastIndex;
             path = String.join("/", list.subList(0, pos)) + "/**/" + String.join("/", list.subList(pos, list.size())) + "/";
         }
         return MessageFormat.format("classpath*:{0}xml/*.xml", path);

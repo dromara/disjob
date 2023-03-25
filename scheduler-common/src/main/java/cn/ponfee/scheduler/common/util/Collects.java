@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.common.util;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Array;
@@ -33,6 +34,31 @@ public class Collects {
     @SuppressWarnings("unchecked")
     public static <T> T[] toArray(T... args) {
         return args;
+    }
+
+    public static <T> List<T> duplicate(Collection<T> list) {
+        return duplicate(list, Function.identity());
+    }
+
+    /**
+     * Returns the duplicates elements for list
+     *
+     * @param list the list
+     * @return a set of duplicates elements for list
+     */
+    public static <T, R> List<R> duplicate(Collection<T> list, Function<T, R> mapper) {
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+
+        return list.stream()
+            .map(mapper)
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+            .entrySet()
+            .stream()
+            .filter(e -> e.getValue() > 1)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
     }
 
     /**

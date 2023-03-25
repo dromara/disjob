@@ -17,7 +17,9 @@ import java.util.Map.Entry;
 
 /**
  * 泛型工具类
- * 
+ *
+ * https://segmentfault.com/a/1190000018319217
+ *
  * @author Ponfee
  */
 public final class GenericUtils {
@@ -44,11 +46,11 @@ public final class GenericUtils {
     public static Map<String, String> covariant(Properties properties) {
         return (Map) properties;
     }
-    
+
     // ----------------------------------------------------------------------------class actual type argument
     /**
      * 获取泛型的实际类型参数
-     * 
+     *
      * @param clazz
      * @return
      */
@@ -58,7 +60,7 @@ public final class GenericUtils {
 
     /**
      * public class GenericClass extends GenericSuperClass<Long,Integer,...,String> implements GenericInterface<String,Short,..,Long> {}
-     * 
+     *
      * @param clazz
      * @param genericArgsIndex
      * @return
@@ -87,7 +89,7 @@ public final class GenericUtils {
 
     /**
      * public void genericMethod(List<Long> list, Map<String, String> map){}
-     * 
+     *
      * @param method            方法对象
      * @param methodArgsIndex 方法参数索引号
      * @param genericArgsIndex  泛型参数索引号
@@ -104,7 +106,7 @@ public final class GenericUtils {
 
     /**
      * public List<String> genericMethod(){}
-     * 
+     *
      * @param method the method
      * @param genericArgsIndex the generic argument index
      * @return
@@ -120,7 +122,7 @@ public final class GenericUtils {
 
     /**
      * private List<Long> list; -> Long
-     * 
+     *
      * @param field            the class field
      * @param genericArgsIndex the genericArgsIndex
      * @return
@@ -133,7 +135,7 @@ public final class GenericUtils {
     public static <T> Class<T> getFieldActualType(Class<?> clazz, String fieldName) {
         Field field = ClassUtils.getField(clazz, fieldName);
         if (field == null) {
-            throw new IllegalArgumentException("Type " + ClassUtils.getName(clazz) + " not exists field '" + fieldName + "'");
+            throw new IllegalArgumentException("Type " + clazz + " not exists field '" + fieldName + "'");
         }
         return getFieldActualType(clazz, field);
     }
@@ -149,7 +151,7 @@ public final class GenericUtils {
      * public class BeanClass extends BaseEntity<String> {}
      * }</pre>
      *
-     * @param clazz the subclass
+     * @param clazz the sub class
      * @param field the super class defined field
      * @return a Class of field actual type
      */
@@ -169,8 +171,8 @@ public final class GenericUtils {
      * <pre>{@code
      * public class ClassB extends classA<String>{}
      * }</pre>
-     * 
-     * @param clazz            the subclass
+     *
+     * @param clazz            the sub class
      * @param method           the super class defined method
      * @param methodArgsIndex  the method arg index
      * @return a Class of method arg actual type
@@ -190,7 +192,7 @@ public final class GenericUtils {
      * public class ClassB extends classA<String>{}
      * }</pre>
      *
-     * @param clazz  the subclass
+     * @param clazz  the sub class
      * @param method the super class defined method
      * @return a Class of method return actual type
      */
@@ -212,7 +214,7 @@ public final class GenericUtils {
     }
 
     public static Map<String, Class<?>> getActualTypeVariableMapping(Class<?> clazz) {
-        Map<String, Class<?>> result = new HashMap<>(8);
+        Map<String, Class<?>> result = new HashMap<>();
         for (Type type : getGenericTypes(clazz)) {
             resolveMapping(result, type);
         }
@@ -223,26 +225,27 @@ public final class GenericUtils {
         if (type instanceof Class<?>) {
             return (Class<?>) type;
         } else if (type instanceof ParameterizedType) {
-            // code.ponfee.commons.tree.NodePath<java.lang.Integer>
+            // cn.ponfee.commons.tree.NodePath<java.lang.Integer>
             return (Class<?>) ((ParameterizedType) type).getRawType();
         } else {
             throw new UnsupportedOperationException("Unsupported type: " + type);
         }
     }
 
-    // -------------------------------------------------------------------private methods
     @SuppressWarnings("unchecked")
-    private static <T> Class<T> getActualTypeArgument(Type type, int genericArgsIndex) {
+    public static <T> Class<T> getActualTypeArgument(Type type, int genericArgsIndex) {
         Preconditions.checkArgument(genericArgsIndex >= 0, "Generic args index cannot be negative.");
         if (!(type instanceof ParameterizedType)) {
             return (Class<T>) Object.class;
         }
 
         Type[] types = ((ParameterizedType) type).getActualTypeArguments();
-        return genericArgsIndex >= types.length 
-             ? (Class<T>) Object.class 
+        return genericArgsIndex >= types.length
+             ? (Class<T>) Object.class
              : getActualType(null, types[genericArgsIndex]);
     }
+
+    // -------------------------------------------------------------------private methods
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getActualType(Class<?> clazz, Type type) {
