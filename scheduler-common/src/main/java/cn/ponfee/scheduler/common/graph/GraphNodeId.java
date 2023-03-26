@@ -23,36 +23,44 @@ public class GraphNodeId {
     public static final GraphNodeId TAIL = new GraphNodeId(0, 0, "TAIL");
 
     /**
-     * Block id
+     * Flow id
      */
-    public final int a;
+    public final int flowId;
 
     /**
-     * name id
+     * Name id
      */
-    public final int b;
+    public final int nameId;
 
     /**
-     * name
+     * Name content
      */
-    public final String c;
+    public final String name;
 
-    private GraphNodeId(int a, int b, String c) {
-        Assert.isTrue(a >= 0, "Invalid graph node block id: " + a);
-        Assert.isTrue(b >= 0, "Invalid graph node name id: " + a);
-        Assert.hasText(c, "Invalid graph node name: " + a);
-        this.a = a;
-        this.b = b;
-        this.c = c;
+    private GraphNodeId(int flowId, int nameId, String name) {
+        this.flowId = flowId;
+        this.nameId = nameId;
+        this.name = name;
     }
 
-    public static GraphNodeId of(int a, int b, String c) {
-        return new GraphNodeId(a, b, c);
+    public static GraphNodeId of(int flowId, int nameId, String name) {
+        Assert.isTrue(flowId > 0, "Invalid graph node flow id: " + flowId);
+        Assert.isTrue(nameId > 0, "Invalid graph node name id: " + nameId);
+        Assert.hasText(name, "Invalid graph node name content: " + name);
+        return new GraphNodeId(flowId, nameId, name);
+    }
+
+    public boolean isHead() {
+        return this.equals(HEAD);
+    }
+
+    public boolean isTail() {
+        return this.equals(TAIL);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(a, b, c);
+        return Objects.hash(flowId, nameId, name);
     }
 
     @Override
@@ -62,14 +70,14 @@ public class GraphNodeId {
         }
 
         GraphNodeId other = (GraphNodeId) obj;
-        return this.a == other.a
-            && this.b == other.b
-            && this.c.equals(other.c);
+        return this.flowId == other.flowId
+            && this.nameId == other.nameId
+            && this.name.equals(other.name);
     }
 
     @Override
     public String toString() {
-        return a + DAGParser.SEP_NAMING + b + DAGParser.SEP_NAMING + c;
+        return flowId + DAGParser.SEP_NAMING + nameId + DAGParser.SEP_NAMING + name;
     }
 
 }

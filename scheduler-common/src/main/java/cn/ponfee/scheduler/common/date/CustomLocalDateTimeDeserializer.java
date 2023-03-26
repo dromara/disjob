@@ -16,7 +16,8 @@ import java.time.format.DateTimeFormatter;
 /**
  * Deserializer for Java 8 temporal {@link LocalDateTime}s.
  *
- * @author Nick Williams, Ponfee
+ * @author Nick Williams
+ * @author Ponfee
  * @see com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
  * @since 2.2.0
  */
