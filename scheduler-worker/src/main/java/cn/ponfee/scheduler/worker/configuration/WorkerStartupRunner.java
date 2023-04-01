@@ -59,7 +59,7 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean, O
     @Override
     public void destroy() {
         LOG.info("Scheduler worker stop begin...");
-        workerStartup.close();
+        workerStartup.stop();
         LOG.info("Scheduler worker stop end.");
     }
 

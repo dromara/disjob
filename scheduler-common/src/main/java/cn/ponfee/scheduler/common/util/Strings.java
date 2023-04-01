@@ -9,7 +9,10 @@
 package cn.ponfee.scheduler.common.util;
 
 import com.google.common.base.CaseFormat;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 /**
  * String utilities
@@ -141,6 +144,18 @@ public final class Strings {
             }
         }
         return result.toString();
+    }
+
+    public static boolean containsAny(String str, List<String> searches) {
+        if (StringUtils.isEmpty(str) || CollectionUtils.isEmpty(searches)) {
+            return false;
+        }
+        for (String search : searches) {
+            if (StringUtils.contains(str, search)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

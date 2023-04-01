@@ -102,17 +102,17 @@ public class Collects {
     }
 
     public static <T> T get(T[] array, int index) {
-        if (array == null) {
+        if (array == null || index < 0 || index >= array.length) {
             return null;
         }
         return index < array.length ? array[index] : null;
     }
 
     public static <T> T get(List<T> list, int index) {
-        if (list == null) {
+        if (list == null || index < 0 || index >= list.size()) {
             return null;
         }
-        return index < list.size() ? list.get(index) : null;
+        return list.get(index);
     }
 
     /**

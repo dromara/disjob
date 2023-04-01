@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.dispatch;
 
+import cn.ponfee.scheduler.common.base.Startable;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 
@@ -18,7 +19,7 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
-public abstract class TaskReceiver implements AutoCloseable {
+public abstract class TaskReceiver implements Startable {
 
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
@@ -38,6 +39,7 @@ public abstract class TaskReceiver implements AutoCloseable {
     /**
      * Start do receive
      */
+    @Override
     public void start() {
         // No-op
     }
@@ -46,7 +48,7 @@ public abstract class TaskReceiver implements AutoCloseable {
      * Close resources if necessary.
      */
     @Override
-    public void close() {
+    public void stop() {
         // No-op
     }
 

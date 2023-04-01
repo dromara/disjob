@@ -8,13 +8,13 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.util.Enums;
 import com.google.common.collect.ImmutableList;
-import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The task executed state enum definition.
@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum ExecuteState implements IntValue<ExecuteState> {
+public enum ExecuteState implements IntValueEnum<ExecuteState> {
 
     /**
      * 等待执行
@@ -132,9 +132,7 @@ public enum ExecuteState implements IntValue<ExecuteState> {
     }
 
     public static ExecuteState of(Integer value) {
-        ExecuteState executeState = MAPPING.get(value);
-        Assert.notNull(executeState, () -> "Invalid execute state value: " + value);
-        return executeState;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid execute state value: " + value);
     }
 
 }

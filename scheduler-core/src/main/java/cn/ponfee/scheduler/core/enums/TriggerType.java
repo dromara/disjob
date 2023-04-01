@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.base.Symbol.Str;
 import cn.ponfee.scheduler.common.date.CronExpression;
 import cn.ponfee.scheduler.common.date.DatePeriods;
@@ -43,7 +43,7 @@ import java.util.*;
  * @see org.springframework.scheduling.support.CronTrigger
  * @see org.springframework.scheduling.support.CronExpression
  */
-public enum TriggerType implements IntValue<TriggerType> {
+public enum TriggerType implements IntValueEnum<TriggerType> {
 
     /**
      * Cron expression<br/>
@@ -223,9 +223,7 @@ public enum TriggerType implements IntValue<TriggerType> {
     public abstract List<Date> computeNextFireTimes(String triggerValue, Date startTime, int count);
 
     public static TriggerType of(Integer value) {
-        TriggerType triggerType = MAPPING.get(value);
-        Assert.notNull(triggerType, () -> "Invalid trigger type value: " + value);
-        return triggerType;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid trigger type value: " + value);
     }
 
     private static <T> T getOne(List<T> list) {

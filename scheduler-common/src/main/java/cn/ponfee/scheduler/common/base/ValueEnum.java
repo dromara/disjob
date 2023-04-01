@@ -9,28 +9,17 @@
 package cn.ponfee.scheduler.common.base;
 
 /**
- * Represents an int value type structure.
+ * Represents value enum type structure.
  *
+ * @param <V> value type
+ * @param <T> enum type
  * @author Ponfee
  */
-public interface IntValue<T extends Enum<T> & IntValue<T>> {
+public interface ValueEnum<V, T extends Enum<T> & ValueEnum<V, T>> {
 
-    int value();
+    V value();
 
-    default boolean equals(Integer value) {
-        return value != null && value() == value;
-    }
-
-    default boolean equals(T other) {
-        if (this == other) {
-            return true;
-        }
-        return other != null
-            && getClass() == other.getClass()
-            && value() == other.value();
-    }
-
-    static <T extends Enum<T> & IntValue<T>> T of(Class<T> type, Integer value) {
+    static <V, T extends Enum<T> & ValueEnum<V, T>> T of(Class<T> type, V value) {
         if (type == null || !type.isEnum()) {
             throw new IllegalArgumentException("Not enum type: " + type);
         }
@@ -38,7 +27,7 @@ public interface IntValue<T extends Enum<T> & IntValue<T>> {
             throw new IllegalArgumentException("Value cannot be null.");
         }
         for (T e : type.getEnumConstants()) {
-            if (e.value() == value) {
+            if (value.equals(e.value())) {
                 return e;
             }
         }

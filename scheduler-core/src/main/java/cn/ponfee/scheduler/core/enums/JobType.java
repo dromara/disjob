@@ -8,11 +8,11 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.util.Enums;
-import org.springframework.util.Assert;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The job type enum definition.
@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum JobType implements IntValue<JobType> {
+public enum JobType implements IntValueEnum<JobType> {
 
     /**
      * 普通
@@ -56,9 +56,7 @@ public enum JobType implements IntValue<JobType> {
     }
 
     public static JobType of(Integer value) {
-        JobType runType = MAPPING.get(value);
-        Assert.notNull(runType, () -> "Invalid job type value: " + value);
-        return runType;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid job type value: " + value);
     }
 
 }

@@ -8,13 +8,13 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.util.Enums;
 import com.google.common.collect.ImmutableList;
-import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The run state enum definition.
@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum RunState implements IntValue<RunState> {
+public enum RunState implements IntValueEnum<RunState> {
 
     /**
      * 待运行
@@ -98,9 +98,7 @@ public enum RunState implements IntValue<RunState> {
     }
 
     public static RunState of(Integer value) {
-        RunState runState = MAPPING.get(value);
-        Assert.notNull(runState, () -> "Invalid run state value: " + value);
-        return runState;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid run state value: " + value);
     }
 
 }

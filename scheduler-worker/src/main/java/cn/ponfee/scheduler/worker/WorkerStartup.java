@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.worker;
 
+import cn.ponfee.scheduler.common.base.Startable;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
@@ -15,7 +16,7 @@ import cn.ponfee.scheduler.dispatch.TaskReceiver;
 import cn.ponfee.scheduler.registry.WorkerRegistry;
 import cn.ponfee.scheduler.worker.base.WorkerThreadPool;
 import cn.ponfee.scheduler.worker.configuration.WorkerProperties;
-import cn.ponfee.scheduler.worker.thread.RotatingTimingWheel;
+import cn.ponfee.scheduler.worker.base.RotatingTimingWheel;
 import org.springframework.util.Assert;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Ponfee
  */
-public class WorkerStartup implements AutoCloseable {
+public class WorkerStartup implements Startable {
 
     private final WorkerThreadPool workerThreadPool;
     private final Worker currentWorker;
@@ -64,6 +65,7 @@ public class WorkerStartup implements AutoCloseable {
         );
     }
 
+    @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
             return;
@@ -75,7 +77,7 @@ public class WorkerStartup implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public void stop() {
         Throwables.caught(workerRegistry::close);
         Throwables.caught(taskReceiver::close);
         Throwables.caught(rotatingTimingWheel::close);

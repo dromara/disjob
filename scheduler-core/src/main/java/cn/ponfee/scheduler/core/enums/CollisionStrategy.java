@@ -8,11 +8,11 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.util.Enums;
-import org.springframework.util.Assert;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The collision strategy enum definition.
@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum CollisionStrategy implements IntValue<CollisionStrategy> {
+public enum CollisionStrategy implements IntValueEnum<CollisionStrategy> {
 
     /**
      * 并行
@@ -58,9 +58,7 @@ public enum CollisionStrategy implements IntValue<CollisionStrategy> {
     }
 
     public static CollisionStrategy of(Integer value) {
-        CollisionStrategy collisionStrategy = MAPPING.get(value);
-        Assert.notNull(collisionStrategy, () -> "Invalid collision strategy value: " + value);
-        return collisionStrategy;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid collision strategy value: " + value);
     }
 
 }

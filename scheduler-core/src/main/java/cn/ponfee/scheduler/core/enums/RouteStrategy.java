@@ -8,11 +8,11 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.util.Enums;
-import org.springframework.util.Assert;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The route strategy enum definition.
@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum RouteStrategy implements IntValue<RouteStrategy> {
+public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
 
     /**
      * 轮询
@@ -62,9 +62,7 @@ public enum RouteStrategy implements IntValue<RouteStrategy> {
     }
 
     public static RouteStrategy of(Integer value) {
-        RouteStrategy routeStrategy = MAPPING.get(value);
-        Assert.notNull(routeStrategy, () -> "Invalid route strategy value: " + value);
-        return routeStrategy;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid route strategy value: " + value);
     }
 
 }

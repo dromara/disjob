@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.core.base;
 
+import cn.ponfee.scheduler.common.base.Startable;
 import cn.ponfee.scheduler.common.concurrent.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Ponfee
  */
-public abstract class AbstractHeartbeatThread extends Thread implements AutoCloseable {
+public abstract class AbstractHeartbeatThread extends Thread implements Startable {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

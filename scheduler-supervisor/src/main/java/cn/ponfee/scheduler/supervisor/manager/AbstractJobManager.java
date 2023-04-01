@@ -61,26 +61,33 @@ public abstract class AbstractJobManager {
     }
 
     public List<SchedTask> splitTasks(SchedJob job, long instanceId, Date date) throws JobException {
-        if (job.getJobType() == JobType.BROADCAST.value()) {
-            List<Worker> discoveredServers = discoveryWorker.getDiscoveredServers(job.getJobGroup());
-            if (discoveredServers.isEmpty()) {
-                throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
-            }
-            return discoveredServers.stream()
-                .map(e -> {
-                    SchedTask schedTask = SchedTask.create(job.getJobParam(), generateId(), instanceId, date);
-                    // pre-assign worker
-                    schedTask.setWorker(e.serialize());
-                    return schedTask;
-                })
-                .collect(Collectors.toList());
-        } else {
-            List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-            Assert.notEmpty(split, () -> "Not split any task: " + job);
-            Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job);
-            return split.stream()
-                .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, date))
-                .collect(Collectors.toList());
+        JobType jobType = JobType.of(job.getJobType());
+        switch (jobType) {
+            case NORMAL:
+                List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
+                Assert.notEmpty(split, () -> "Not split any task: " + job);
+                Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job);
+                return split.stream()
+                    .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, date))
+                    .collect(Collectors.toList());
+            case BROADCAST:
+                List<Worker> discoveredServers = discoveryWorker.getDiscoveredServers(job.getJobGroup());
+                if (discoveredServers.isEmpty()) {
+                    throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
+                }
+                return discoveredServers.stream()
+                    .map(e -> {
+                        SchedTask schedTask = SchedTask.create(job.getJobParam(), generateId(), instanceId, date);
+                        // pre-assign worker
+                        schedTask.setWorker(e.serialize());
+                        return schedTask;
+                    })
+                    .collect(Collectors.toList());
+            case WORKFLOW:
+                // TODO
+                return null;
+            default:
+                throw new UnsupportedOperationException("Unsupported job type: " + jobType);
         }
     }
 

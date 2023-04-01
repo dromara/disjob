@@ -8,11 +8,11 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.util.Enums;
-import org.springframework.util.Assert;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The retry type enum definition.
@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum RetryType implements IntValue<RetryType> {
+public enum RetryType implements IntValueEnum<RetryType> {
 
     /**
      * 不重试
@@ -53,9 +53,7 @@ public enum RetryType implements IntValue<RetryType> {
     }
 
     public static RetryType of(Integer value) {
-        RetryType runType = MAPPING.get(value);
-        Assert.notNull(runType, () -> "Invalid retry type value: " + value);
-        return runType;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid retry type value: " + value);
     }
 
 }

@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import org.springframework.util.Assert;
 
 /**
@@ -17,7 +17,7 @@ import org.springframework.util.Assert;
  *
  * @author Ponfee
  */
-public enum JobState implements IntValue<JobState> {
+public enum JobState implements IntValueEnum<JobState> {
 
     /**
      * 已禁用

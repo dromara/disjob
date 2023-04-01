@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor;
 
+import cn.ponfee.scheduler.common.base.Startable;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
@@ -27,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Ponfee
  */
-public class SupervisorStartup implements AutoCloseable {
+public class SupervisorStartup implements Startable {
 
     private final Supervisor currentSupervisor;
     private final TriggeringJobScanner triggeringJobScanner;
@@ -77,6 +78,7 @@ public class SupervisorStartup implements AutoCloseable {
         this.taskDispatcher = taskDispatcher;
     }
 
+    @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
             return;
@@ -88,7 +90,7 @@ public class SupervisorStartup implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public void stop() {
         Throwables.caught(supervisorRegistry::close);
         Throwables.caught(runningInstanceScanner::toStop);
         Throwables.caught(waitingInstanceScanner::toStop);

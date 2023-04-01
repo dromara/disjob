@@ -8,8 +8,10 @@
 
 package cn.ponfee.scheduler.common.graph;
 
+import cn.ponfee.scheduler.common.base.Symbol.Str;
 import org.springframework.util.Assert;
 
+import java.beans.Transient;
 import java.util.Objects;
 
 /**
@@ -23,44 +25,58 @@ public class GraphNodeId {
     public static final GraphNodeId TAIL = new GraphNodeId(0, 0, "TAIL");
 
     /**
-     * Flow id
+     * Flow
      */
-    public final int flowId;
+    public final int section;
 
     /**
-     * Name id
+     * Serial
      */
-    public final int nameId;
+    public final int serial;
 
     /**
-     * Name content
+     * Name
      */
     public final String name;
 
-    private GraphNodeId(int flowId, int nameId, String name) {
-        this.flowId = flowId;
-        this.nameId = nameId;
+    private GraphNodeId(int section, int serial, String name) {
+        this.section = section;
+        this.serial = serial;
         this.name = name;
     }
 
-    public static GraphNodeId of(int flowId, int nameId, String name) {
-        Assert.isTrue(flowId > 0, "Invalid graph node flow id: " + flowId);
-        Assert.isTrue(nameId > 0, "Invalid graph node name id: " + nameId);
-        Assert.hasText(name, "Invalid graph node name content: " + name);
-        return new GraphNodeId(flowId, nameId, name);
+    public static GraphNodeId of(int section, int serial, String name) {
+        Assert.isTrue(section > 0, "Invalid graph node section: " + section);
+        Assert.isTrue(serial > 0, "Invalid graph node serial: " + serial);
+        Assert.hasText(name, "Invalid graph node name: " + name);
+        return new GraphNodeId(section, serial, name);
     }
 
+    public int getSection() {
+        return section;
+    }
+
+    public int getSerial() {
+        return serial;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Transient
     public boolean isHead() {
         return this.equals(HEAD);
     }
 
+    @Transient
     public boolean isTail() {
         return this.equals(TAIL);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(flowId, nameId, name);
+        return Objects.hash(section, serial, name);
     }
 
     @Override
@@ -70,14 +86,14 @@ public class GraphNodeId {
         }
 
         GraphNodeId other = (GraphNodeId) obj;
-        return this.flowId == other.flowId
-            && this.nameId == other.nameId
+        return this.section == other.section
+            && this.serial == other.serial
             && this.name.equals(other.name);
     }
 
     @Override
     public String toString() {
-        return flowId + DAGParser.SEP_NAMING + nameId + DAGParser.SEP_NAMING + name;
+        return section + Str.COLON + serial + Str.COLON + name;
     }
 
 }

@@ -33,7 +33,7 @@ public class ProcessUtils {
 
     public static Result<String> complete(Process process, Charset charset, SchedTask task, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
-            // 一欠性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
+            // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
             String verbose = IOUtils.toString(is, charset);
             String error = IOUtils.toString(es, charset);
             int code = process.waitFor();

@@ -8,11 +8,11 @@
 
 package cn.ponfee.scheduler.core.enums;
 
-import cn.ponfee.scheduler.common.base.IntValue;
+import cn.ponfee.scheduler.common.base.IntValueEnum;
 import cn.ponfee.scheduler.common.util.Enums;
-import org.springframework.util.Assert;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The misfire strategy enum definition.
@@ -20,7 +20,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public enum MisfireStrategy implements IntValue<MisfireStrategy> {
+public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
 
     /**
      * 触发最近一次misfire
@@ -53,9 +53,7 @@ public enum MisfireStrategy implements IntValue<MisfireStrategy> {
     }
 
     public static MisfireStrategy of(Integer value) {
-        MisfireStrategy misfireStrategy = MAPPING.get(value);
-        Assert.notNull(misfireStrategy, () -> "Invalid misfire strategy value: " + value);
-        return misfireStrategy;
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid misfire strategy value: " + value);
     }
 
 }

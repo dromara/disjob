@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.worker.base;
 
+import cn.ponfee.scheduler.common.base.Startable;
 import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.base.model.Result;
@@ -50,7 +51,7 @@ import static cn.ponfee.scheduler.core.enums.ExecuteState.*;
  *
  * @author Ponfee
  */
-public class WorkerThreadPool extends Thread implements AutoCloseable {
+public class WorkerThreadPool extends Thread implements Startable {
 
     private final static Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
     private final static int ERROR_MSG_MAX_LENGTH = 2048;

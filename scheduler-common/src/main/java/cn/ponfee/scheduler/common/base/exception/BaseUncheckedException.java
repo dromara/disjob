@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.common.base.exception;
 import cn.ponfee.scheduler.common.base.model.CodeMsg;
 
 /**
- * Base unchecked exception definition
+ * Base unchecked exception definition(运行时异常)
  *
  * @author Ponfee
  */

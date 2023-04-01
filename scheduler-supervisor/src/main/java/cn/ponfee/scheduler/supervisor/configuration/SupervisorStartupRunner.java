@@ -71,7 +71,7 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
     @Override
     public void destroy() {
         LOG.info("Scheduler supervisor stop begin...");
-        supervisorStartup.close();
+        supervisorStartup.stop();
         LOG.info("Scheduler supervisor stop end.");
     }
 
