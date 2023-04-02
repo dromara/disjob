@@ -74,7 +74,7 @@ public final class MultiwayTreePrinter<T> {
 
             List<T> children = nodeChildren.apply(tuple.d);
             if (children != null && !children.isEmpty()) {
-                String a = tuple.b.length() > 0 ? tuple.a + tuple.b : tuple.a;
+                String a = tuple.b.isEmpty() ? tuple.a : tuple.a + tuple.b;
                 int index = 0;
                 for (T child : Lists.reverse(children)) {
                     if (index++ == 0) {

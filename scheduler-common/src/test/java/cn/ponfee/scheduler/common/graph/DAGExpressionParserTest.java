@@ -32,15 +32,6 @@ public class DAGExpressionParserTest {
         new MultiwayTreePrinter<>(System.out, e -> e.getNid().toString(), TreeNode::getChildren);
 
     @Test
-    public void testSplit() {
-        Assertions.assertTrue(isEqualCollection(asList("->", "->", "->"), DAGExpressionParser.split("->->->", "->")));
-        Assertions.assertTrue(isEqualCollection(asList("a", "->", "->", "->"), DAGExpressionParser.split("a->->->", "->")));
-        Assertions.assertTrue(isEqualCollection(asList("->", "->", "->", "b"), DAGExpressionParser.split("->->->b", "->")));
-        Assertions.assertTrue(isEqualCollection(asList("a", "->", "b", "->", "c", "->", "d"), DAGExpressionParser.split("a->b->c->d", "->")));
-        Assertions.assertTrue(isEqualCollection(asList("abcd"), DAGExpressionParser.split("abcd", "->")));
-    }
-
-    @Test
     public void testProcess() {
         Assertions.assertEquals("((A)->(((B)->(C)->(D)),((A)->(F)))->((G),(H),(X))->(J))", DAGExpressionParser.process("(A->((B->C->D),(A->F))->(G,H,X)->J)"));
         Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpressionParser.process("A,B->(C->D),(E)->F"));
@@ -49,11 +40,11 @@ public class DAGExpressionParserTest {
 
     @Test
     public void testPartition() {
-        Assertions.assertTrue(isEqualCollection(asList(Tuple2.of(0, 1), Tuple2.of(7, 1)), DAGExpressionParser.group("(A -> B)")));
+        Assertions.assertTrue(isEqualCollection(asList(Tuple2.of(0, 1), Tuple2.of(7, 1)), DAGExpressionParser.subgroup("(A -> B)")));
 
         Assertions.assertTrue(isEqualCollection(
             asList(Tuple2.of(0, 1), Tuple2.of(4, 2), Tuple2.of(12, 2), Tuple2.of(14, 2), Tuple2.of(19, 2), Tuple2.of(22, 2), Tuple2.of(26, 2), Tuple2.of(30, 1)),
-            DAGExpressionParser.group("(A->(B->C->D),(E->F)->(G,H)->J)")
+            DAGExpressionParser.subgroup("(A->(B->C->D),(E->F)->(G,H)->J)")
         ));
     }
 
@@ -72,19 +63,19 @@ public class DAGExpressionParserTest {
 
     @Test
     public void testBuildTree() throws IOException {
-        List<Tuple2<Integer, Integer>> partitions = DAGExpressionParser.group("(A->(B->C->D),(A->F)->(G,H,X)->J)");
+        List<Tuple2<Integer, Integer>> partitions = DAGExpressionParser.subgroup("(A->(B->C->D),(A->F)->(G,H,X)->J)");
         TreeNode<DAGExpressionParser.TreeNodeId, Object> root = DAGExpressionParser.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 3);
         System.out.println("------------------");
         TREE_PRINTER.print(root);
 
-        partitions = DAGExpressionParser.group("((A->((B->C->D),(E->F))->(G,H)->J))");
+        partitions = DAGExpressionParser.subgroup("((A->((B->C->D),(E->F))->(G,H)->J))");
         root = DAGExpressionParser.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 1);
         System.out.println("\n------------------");
         TREE_PRINTER.print(root);
 
-        partitions = DAGExpressionParser.group("(A->((B->C->D),(E->F))->(G,H)->J)");
+        partitions = DAGExpressionParser.subgroup("(A->((B->C->D),(E->F))->(G,H)->J)");
         root = DAGExpressionParser.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 2);
         System.out.println("\n------------------");

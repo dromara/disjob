@@ -30,34 +30,34 @@ public class GraphNodeId {
     public final int section;
 
     /**
-     * Serial
+     * Ordinal
      */
-    public final int serial;
+    public final int ordinal;
 
     /**
      * Name
      */
     public final String name;
 
-    private GraphNodeId(int section, int serial, String name) {
+    private GraphNodeId(int section, int ordinal, String name) {
         this.section = section;
-        this.serial = serial;
+        this.ordinal = ordinal;
         this.name = name;
     }
 
-    public static GraphNodeId of(int section, int serial, String name) {
-        Assert.isTrue(section > 0, "Invalid graph node section: " + section);
-        Assert.isTrue(serial > 0, "Invalid graph node serial: " + serial);
-        Assert.hasText(name, "Invalid graph node name: " + name);
-        return new GraphNodeId(section, serial, name);
+    public static GraphNodeId of(int section, int ordinal, String name) {
+        Assert.isTrue(section > 0, "Graph node section must be greater than 0: " + section);
+        Assert.isTrue(ordinal > 0, "Graph node ordinal must be greater than 0: " + ordinal);
+        Assert.hasText(name, "Graph node name cannot be blank: " + name);
+        return new GraphNodeId(section, ordinal, name);
     }
 
     public int getSection() {
         return section;
     }
 
-    public int getSerial() {
-        return serial;
+    public int getOrdinal() {
+        return ordinal;
     }
 
     public String getName() {
@@ -76,7 +76,7 @@ public class GraphNodeId {
 
     @Override
     public int hashCode() {
-        return Objects.hash(section, serial, name);
+        return Objects.hash(section, ordinal, name);
     }
 
     @Override
@@ -87,13 +87,13 @@ public class GraphNodeId {
 
         GraphNodeId other = (GraphNodeId) obj;
         return this.section == other.section
-            && this.serial == other.serial
+            && this.ordinal == other.ordinal
             && this.name.equals(other.name);
     }
 
     @Override
     public String toString() {
-        return section + Str.COLON + serial + Str.COLON + name;
+        return section + Str.COLON + ordinal + Str.COLON + name;
     }
 
 }

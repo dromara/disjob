@@ -79,12 +79,12 @@ public class DAGExpressionParser {
     private final Map<String, String> wrappedCache = new IdentityHashMap<>();
 
     /**
-     * Identity cache of split key
+     * Identity cache of partition key
      */
-    private final Map<SplitIdentityKey, String> splitCache = new HashMap<>();
+    private final Map<PartitionIdentityKey, String> partitionCache = new HashMap<>();
 
     /**
-     * Map<name, List<Tuple2<name, serial>>>
+     * Map<name, List<Tuple2<name, ordinal>>>
      */
     private final Map<String, List<Tuple2<String, Integer>>> incrementer = new HashMap<>();
 
@@ -99,8 +99,10 @@ public class DAGExpressionParser {
         Assert.notEmpty(sections, () -> "Invalid split with ';' expression: " + expression);
 
         ImmutableGraph.Builder<GraphNodeId> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
-        for (int i = 0; i < sections.size(); i++) {
-            String expr = process(sections.get(i));
+        for (int i = 0, n = sections.size(); i < n; i++) {
+            String section = sections.get(i);
+            Assert.isTrue(checkParenthesis(section), () -> "Invalid expression parenthesis: " + section);
+            String expr = process(section);
             buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, GraphNodeId.HEAD, GraphNodeId.TAIL);
         }
 
@@ -141,19 +143,19 @@ public class DAGExpressionParser {
 
     private List<String> resolve(String text) {
         String expr = text.trim();
-        if (SYMBOL_LIST.stream().noneMatch(text::contains)) {
+        if (SYMBOL_LIST.stream().noneMatch(expr::contains)) {
             // unnecessary resolve
-            return Collections.singletonList(text);
+            return Collections.singletonList(expr);
         }
 
         if (!expr.startsWith(Str.OPEN) || !expr.endsWith(Str.CLOSE)) {
             return resolve(wrappedCache.computeIfAbsent(expr, DAGExpressionParser::wrap));
         }
 
-        List<Tuple2<Integer, Integer>> groups = group(expr);
+        List<Tuple2<Integer, Integer>> subgroups = subgroup(expr);
 
         // 取被"()"包裹的最外层表达式
-        List<Tuple2<Integer, Integer>> outermost = groups.stream().filter(e -> e.b == 1).collect(Collectors.toList());
+        List<Tuple2<Integer, Integer>> outermost = subgroups.stream().filter(e -> e.b == 1).collect(Collectors.toList());
         if (outermost.size() == 2) {
             // 首尾括号，如：(A,B -> C,D)
             Assert.isTrue(outermost.get(0).a == 0 && outermost.get(1).a == expr.length() - 1, () -> "Invalid expression: " + text);
@@ -166,8 +168,8 @@ public class DAGExpressionParser {
             throw new IllegalArgumentException("Invalid expression: " + expr);
         }
 
-        TreeNode<TreeNodeId, Object> root = buildTree(groups);
-        List<Integer> list = new ArrayList<>();
+        TreeNode<TreeNodeId, Object> root = buildTree(subgroups);
+        List<Integer> list = new ArrayList<>(root.getChildrenCount() * 2 + 2);
         list.add(root.getNid().open);
         root.forEachChild(child -> {
             list.add(child.getNid().open);
@@ -177,28 +179,27 @@ public class DAGExpressionParser {
         return partition(expr, list);
     }
 
-    private int increment(String name) {
-        List<Tuple2<String, Integer>> list = incrementer.computeIfAbsent(name, k -> new LinkedList<>());
-        Tuple2<String, Integer> tuple = list.stream().filter(e -> name == e.a).findAny().orElse(null);
-        if (tuple == null) {
-            // increment name id
-            tuple = Tuple2.of(name, list.size() + 1);
-            list.add(tuple);
-        }
-        return tuple.b;
-    }
-
-    private List<String> partition(String expression, List<Integer> groups) {
+    private List<String> partition(String expr, List<Integer> groups) {
         List<String> result = new ArrayList<>(groups.size());
         for (int i = 0, n = groups.size() - 1; i < n; i++) {
-            SplitIdentityKey key = new SplitIdentityKey(expression, groups.get(i) + 1, groups.get(i + 1));
+            PartitionIdentityKey key = new PartitionIdentityKey(expr, groups.get(i) + 1, groups.get(i + 1));
             // if such as continuous of open “((”，then str is empty content
-            String str = splitCache.computeIfAbsent(key, k -> expression.substring(k.open, k.close).trim());
+            String str = partitionCache.computeIfAbsent(key, PartitionIdentityKey::partition);
             if (StringUtils.isNotBlank(str)) {
                 result.add(str);
             }
         }
         return result;
+    }
+
+    private int increment(String name) {
+        List<Tuple2<String, Integer>> list = incrementer.computeIfAbsent(name, k -> new LinkedList<>());
+        Tuple2<String, Integer> tuple = list.stream().filter(e -> name == e.a).findAny().orElse(null);
+        if (tuple == null) {
+            // increment name id
+            list.add(tuple = Tuple2.of(name, list.size() + 1));
+        }
+        return tuple.b;
     }
 
     // ------------------------------------------------------------------------------------static methods
@@ -221,20 +222,21 @@ public class DAGExpressionParser {
             if (i > n) {
                 return Tuple2.of(head, null);
             }
-            String str = list.get(i++);
-            if (SEP_STAGE.equals(str)) {
-                return Tuple2.of(head, list.subList(i, list.size()));
-            } else if (SEP_UNION.equals(str)) {
-                // skip ","
-            } else {
-                throw new IllegalArgumentException("Invalid expression: " + String.join("", list));
+            switch (list.get(i++)) {
+                case SEP_STAGE:
+                    return Tuple2.of(head, list.subList(i, list.size()));
+                case SEP_UNION:
+                    // skip “,”
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid expression: " + String.join("", list));
             }
         }
         return Tuple2.of(head, null);
     }
 
     static TreeNode<TreeNodeId, Object> buildTree(List<Tuple2<Integer, Integer>> groups) {
-        List<BaseNode<TreeNodeId, Object>> nodes = new ArrayList<>();
+        List<BaseNode<TreeNodeId, Object>> nodes = new ArrayList<>(groups.size() + 1);
         buildTree(groups, TreeNodeId.ROOT_ID, 1, 0, nodes);
 
         // create a dummy root node
@@ -252,7 +254,7 @@ public class DAGExpressionParser {
                                   TreeNodeId pid, int level, int start,
                                   List<BaseNode<TreeNodeId, Object>> nodes) {
         int open = -1;
-        for (int i = start; i < groups.size(); i++) {
+        for (int i = start, n = groups.size(); i < n; i++) {
             if (groups.get(i).b < level) {
                 return;
             }
@@ -282,25 +284,16 @@ public class DAGExpressionParser {
         return result;
     }
 
-    static List<String> split(String str, String separator) {
-        List<String> result = new ArrayList<>();
-        int a = 0, b = 0;
-        for (; (b = str.indexOf(separator, b)) != -1; a = b) {
-            if (a != b) {
-                result.add(str.substring(a, b).trim());
-            }
-            result.add(str.substring(b, b = b + separator.length()).trim());
-        }
-        if (a < str.length()) {
-            result.add(str.substring(a).trim());
-        }
-        return result;
-    }
-
-    static boolean checkParenthesis(String str) {
+    /**
+     * Checks the text is wrapped '()' is valid.
+     *
+     * @param text the text string
+     * @return {@code true} if valid
+     */
+    static boolean checkParenthesis(String text) {
         int openCount = 0;
-        for (int i = 0, n = str.length(); i < n; i++) {
-            char c = str.charAt(i);
+        for (int i = 0, n = text.length(); i < n; i++) {
+            char c = text.charAt(i);
             if (c == Char.OPEN) {
                 openCount++;
             } else if (c == Char.CLOSE) {
@@ -314,6 +307,11 @@ public class DAGExpressionParser {
         return openCount == 0;
     }
 
+    /**
+     * Process the text wrapped '()'
+     * @param text the text string
+     * @return wrapped text string
+     */
     static String process(String text) {
         List<String> list = new ArrayList<>();
         int mark = 0, position = 0;
@@ -355,34 +353,39 @@ public class DAGExpressionParser {
     /**
      * Group expression by "()"
      *
-     * @param expression the expression
+     * @param expr the expression
      * @return groups of "()"
      */
-    static List<Tuple2<Integer, Integer>> group(String expression) {
-        Assert.isTrue(checkParenthesis(expression), () -> "Invalid expression parenthesis: " + expression);
+    static List<Tuple2<Integer, Integer>> subgroup(String expr) {
+        Assert.isTrue(checkParenthesis(expr), () -> "Invalid expression parenthesis: " + expr);
         int depth = 0;
         // Tuple2<position, level>
         List<Tuple2<Integer, Integer>> list = new ArrayList<>();
-        for (int i = 0; i < expression.length(); i++) {
-            if (expression.charAt(i) == Char.OPEN) {
+        for (int i = 0, n = expr.length(); i < n; i++) {
+            if (expr.charAt(i) == Char.OPEN) {
                 ++depth;
-                list.add(Tuple2.of(i, depth));
-            } else if (expression.charAt(i) == Char.CLOSE) {
-                list.add(Tuple2.of(i, depth));
+                if (depth <= 2) {
+                    // 只取两层
+                    list.add(Tuple2.of(i, depth));
+                }
+            } else if (expr.charAt(i) == Char.CLOSE) {
+                if (depth <= 2) {
+                    list.add(Tuple2.of(i, depth));
+                }
                 --depth;
             }
         }
-        Assert.isTrue(list.size() % 2 == 0, () -> "Expression not pair with '()': " + expression);
+        Assert.isTrue((list.size() & 0x01) == 0, () -> "Expression not pair with '()': " + expr);
         return list;
     }
 
-    private static String wrap(String string) {
-        return Str.OPEN + string + Str.CLOSE;
+    private static String wrap(String text) {
+        return Str.OPEN + text + Str.CLOSE;
     }
 
     static final class TreeNodeId implements Serializable, Comparable<TreeNodeId> {
         private static final long serialVersionUID = -468548698179536500L;
-        private static final TreeNodeId ROOT_ID = TreeNodeId.of(-1, -1);
+        private static final TreeNodeId ROOT_ID = new TreeNodeId(-1, -1);
 
         /**
          * position of "("
@@ -400,6 +403,8 @@ public class DAGExpressionParser {
         }
 
         private static TreeNodeId of(int open, int close) {
+            Assert.isTrue(open > -1, "Tree node id open must be greater than -1: " + open);
+            Assert.isTrue(close > 0, "Tree node id close must be greater than 0: " + close);
             return new TreeNodeId(open, close);
         }
 
@@ -430,32 +435,39 @@ public class DAGExpressionParser {
         }
     }
 
-    private final static class SplitIdentityKey {
-        private final String str;
+    private final static class PartitionIdentityKey {
+        private final String expr;
         private final int open;
         private final int close;
 
-        public SplitIdentityKey(String str, int open, int close) {
-            this.str = str;
+        private PartitionIdentityKey(String expr, int open, int close) {
+            Assert.hasText(expr, "Partition expression cannot be blank: " + expr);
+            Assert.isTrue(open > -1, "Partition key open must be greater than -1: " + open);
+            Assert.isTrue(close > 0, "Partition key close must be greater than 0: " + close);
+            this.expr = expr;
             this.open = open;
             this.close = close;
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof SplitIdentityKey)) {
+            if (!(obj instanceof PartitionIdentityKey)) {
                 return false;
             }
-            SplitIdentityKey other = (SplitIdentityKey) obj;
+            PartitionIdentityKey other = (PartitionIdentityKey) obj;
             // 比较对象地址
-            return this.str == other.str
+            return this.expr == other.expr
                 && this.open == other.open
                 && this.close == other.close;
         }
 
         @Override
         public int hashCode() {
-            return System.identityHashCode(str) + open + close;
+            return System.identityHashCode(expr) + open + close;
+        }
+
+        private String partition() {
+            return expr.substring(open, close).trim();
         }
     }
 
