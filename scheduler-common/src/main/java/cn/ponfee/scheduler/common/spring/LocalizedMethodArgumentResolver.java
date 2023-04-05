@@ -130,7 +130,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
     }
 
     private Object[] parseRequestBody(Method method, String body) throws IOException {
-        // 不推荐使用，因为需要额外依赖fastjson
+        // 不推荐使用fastjson，项目中尽量统一使用一种JSON序列化方式
         //return com.alibaba.fastjson.JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
 
         Type[] genericArgumentTypes = method.getGenericParameterTypes();

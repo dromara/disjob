@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.registry.redis;
 
+import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
@@ -89,7 +90,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(stringRedisTemplate.getConnectionFactory());
         container.setTaskExecutor(registryScheduledExecutor);
-        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, "subscribe");
+        // validate “handleMessage” method is valid
+        String listenerMethod = CheckedThrowing.checked(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
+        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, listenerMethod);
         listenerAdapter.afterPropertiesSet();
         container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryRootPath + separator + CHANNEL));
         container.afterPropertiesSet();
@@ -171,7 +174,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      * @param message the message
      * @param pattern the pattern
      */
-    public void subscribe(String message, String pattern) {
+    public void handleMessage(String message, String pattern) {
         try {
             int pos = -1;
             String s0 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));

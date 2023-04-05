@@ -114,6 +114,13 @@
       <artifactId>spring-boot-starter-data-redis</artifactId>
       <optional>true</optional>
     </dependency>
+
+    <dependency>
+      <groupId>guru.nidi</groupId>
+      <artifactId>graphviz-java</artifactId>
+      <version>0.18.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

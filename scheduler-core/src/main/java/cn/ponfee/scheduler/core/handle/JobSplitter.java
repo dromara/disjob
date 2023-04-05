@@ -21,7 +21,7 @@ import java.util.List;
 public interface JobSplitter {
 
     /**
-     * Provides default tasks split.
+     * Provides default split single task.
      * <p>Subclass can override this method to customize implementation.
      *
      * @param jobParam the job param

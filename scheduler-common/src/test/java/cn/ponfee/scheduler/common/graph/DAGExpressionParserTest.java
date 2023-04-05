@@ -40,11 +40,11 @@ public class DAGExpressionParserTest {
 
     @Test
     public void testPartition() {
-        Assertions.assertTrue(isEqualCollection(asList(Tuple2.of(0, 1), Tuple2.of(7, 1)), DAGExpressionParser.subgroup("(A -> B)")));
+        Assertions.assertTrue(isEqualCollection(asList(Tuple2.of(0, 1), Tuple2.of(7, 1)), DAGExpressionParser.group("(A -> B)")));
 
         Assertions.assertTrue(isEqualCollection(
             asList(Tuple2.of(0, 1), Tuple2.of(4, 2), Tuple2.of(12, 2), Tuple2.of(14, 2), Tuple2.of(19, 2), Tuple2.of(22, 2), Tuple2.of(26, 2), Tuple2.of(30, 1)),
-            DAGExpressionParser.subgroup("(A->(B->C->D),(E->F)->(G,H)->J)")
+            DAGExpressionParser.group("(A->(B->C->D),(E->F)->(G,H)->J)")
         ));
     }
 
@@ -63,19 +63,19 @@ public class DAGExpressionParserTest {
 
     @Test
     public void testBuildTree() throws IOException {
-        List<Tuple2<Integer, Integer>> partitions = DAGExpressionParser.subgroup("(A->(B->C->D),(A->F)->(G,H,X)->J)");
+        List<Tuple2<Integer, Integer>> partitions = DAGExpressionParser.group("(A->(B->C->D),(A->F)->(G,H,X)->J)");
         TreeNode<DAGExpressionParser.TreeNodeId, Object> root = DAGExpressionParser.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 3);
         System.out.println("------------------");
         TREE_PRINTER.print(root);
 
-        partitions = DAGExpressionParser.subgroup("((A->((B->C->D),(E->F))->(G,H)->J))");
+        partitions = DAGExpressionParser.group("((A->((B->C->D),(E->F))->(G,H)->J))");
         root = DAGExpressionParser.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 1);
         System.out.println("\n------------------");
         TREE_PRINTER.print(root);
 
-        partitions = DAGExpressionParser.subgroup("(A->((B->C->D),(E->F))->(G,H)->J)");
+        partitions = DAGExpressionParser.group("(A->((B->C->D),(E->F))->(G,H)->J)");
         root = DAGExpressionParser.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 2);
         System.out.println("\n------------------");
@@ -96,31 +96,31 @@ public class DAGExpressionParserTest {
     public void testEdgesEquals() {
         assertEdgesEquals(
             "(A)->((B),(C))->(E),(F->G)->(H)",
-            "[<0:0:HEAD -> 1:1:A>, <1:1:A -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:B -> 1:1:E>, <1:1:B -> 1:1:F>, <1:1:E -> 1:1:H>, <1:1:H -> 0:0:TAIL>, <1:1:F -> 1:1:G>, <1:1:G -> 1:1:H>, <1:1:C -> 1:1:E>, <1:1:C -> 1:1:F>]"
+            "[<0:0:Start -> 1:1:A>, <1:1:A -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:B -> 1:1:E>, <1:1:B -> 1:1:F>, <1:1:E -> 1:1:H>, <1:1:H -> 0:0:End>, <1:1:F -> 1:1:G>, <1:1:G -> 1:1:H>, <1:1:C -> 1:1:E>, <1:1:C -> 1:1:F>]"
         );
         assertEdgesEquals(
             "(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)",
-            "[<0:0:HEAD -> 1:1:A>, <0:0:HEAD -> 2:3:A>, <1:1:A -> 1:1:B>, <1:1:A -> 1:2:A>, <1:1:B -> 1:1:C>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:G>, <1:1:D -> 1:1:H>, <1:1:D -> 1:1:X>, <1:1:G -> 1:1:J>, <1:1:J -> 0:0:TAIL>, <1:1:H -> 1:1:J>, <1:1:X -> 1:1:J>, <1:2:A -> 1:1:F>, <1:1:F -> 1:1:G>, <1:1:F -> 1:1:H>, <1:1:F -> 1:1:X>, <2:3:A -> 2:1:Y>, <2:1:Y -> 0:0:TAIL>]"
+            "[<0:0:Start -> 1:1:A>, <0:0:Start -> 2:3:A>, <1:1:A -> 1:1:B>, <1:1:A -> 1:2:A>, <1:1:B -> 1:1:C>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:G>, <1:1:D -> 1:1:H>, <1:1:D -> 1:1:X>, <1:1:G -> 1:1:J>, <1:1:J -> 0:0:End>, <1:1:H -> 1:1:J>, <1:1:X -> 1:1:J>, <1:2:A -> 1:1:F>, <1:1:F -> 1:1:G>, <1:1:F -> 1:1:H>, <1:1:F -> 1:1:X>, <2:3:A -> 2:1:Y>, <2:1:Y -> 0:0:End>]"
         );
         assertEdgesEquals(
             "(A,B)->(C->D),(A->E),(B->F)->G",
-            "[<0:0:HEAD -> 1:1:A>, <0:0:HEAD -> 1:2:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:2:A>, <1:1:A -> 1:1:B>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:G>, <1:1:G -> 0:0:TAIL>, <1:2:A -> 1:1:E>, <1:1:E -> 1:1:G>, <1:1:B -> 1:1:F>, <1:1:F -> 1:1:G>, <1:2:B -> 1:1:C>, <1:2:B -> 1:2:A>, <1:2:B -> 1:1:B>]"
+            "[<0:0:Start -> 1:1:A>, <0:0:Start -> 1:2:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:2:A>, <1:1:A -> 1:1:B>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:G>, <1:1:G -> 0:0:End>, <1:2:A -> 1:1:E>, <1:1:E -> 1:1:G>, <1:1:B -> 1:1:F>, <1:1:F -> 1:1:G>, <1:2:B -> 1:1:C>, <1:2:B -> 1:2:A>, <1:2:B -> 1:1:B>]"
         );
         assertEdgesEquals(
             "A,B->C,D,C",
-            "[<0:0:HEAD -> 1:1:A>, <0:0:HEAD -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:1:D>, <1:1:A -> 1:2:C>, <1:1:C -> 0:0:TAIL>, <1:1:D -> 0:0:TAIL>, <1:2:C -> 0:0:TAIL>, <1:1:B -> 1:1:C>, <1:1:B -> 1:1:D>, <1:1:B -> 1:2:C>]"
+            "[<0:0:Start -> 1:1:A>, <0:0:Start -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:1:D>, <1:1:A -> 1:2:C>, <1:1:C -> 0:0:End>, <1:1:D -> 0:0:End>, <1:2:C -> 0:0:End>, <1:1:B -> 1:1:C>, <1:1:B -> 1:1:D>, <1:1:B -> 1:2:C>]"
         );
         assertEdgesEquals(
             "A,B->(C->D),E->F",
-            "[<0:0:HEAD -> 1:1:A>, <0:0:HEAD -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:1:E>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:F>, <1:1:F -> 0:0:TAIL>, <1:1:E -> 1:1:F>, <1:1:B -> 1:1:C>, <1:1:B -> 1:1:E>]"
+            "[<0:0:Start -> 1:1:A>, <0:0:Start -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:1:E>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:F>, <1:1:F -> 0:0:End>, <1:1:E -> 1:1:F>, <1:1:B -> 1:1:C>, <1:1:B -> 1:1:E>]"
         );
         assertEdgesEquals(
             "A,B->(C->D),(E)->F",
-            "[<0:0:HEAD -> 1:1:A>, <0:0:HEAD -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:1:E>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:F>, <1:1:F -> 0:0:TAIL>, <1:1:E -> 1:1:F>, <1:1:B -> 1:1:C>, <1:1:B -> 1:1:E>]"
+            "[<0:0:Start -> 1:1:A>, <0:0:Start -> 1:1:B>, <1:1:A -> 1:1:C>, <1:1:A -> 1:1:E>, <1:1:C -> 1:1:D>, <1:1:D -> 1:1:F>, <1:1:F -> 0:0:End>, <1:1:E -> 1:1:F>, <1:1:B -> 1:1:C>, <1:1:B -> 1:1:E>]"
         );
         assertEdgesEquals(
             "A->B;A->B",
-            "[<0:0:HEAD -> 1:1:A>, <0:0:HEAD -> 2:2:A>, <1:1:A -> 1:1:B>, <1:1:B -> 0:0:TAIL>, <2:2:A -> 2:2:B>, <2:2:B -> 0:0:TAIL>]"
+            "[<0:0:Start -> 1:1:A>, <0:0:Start -> 2:2:A>, <1:1:A -> 1:1:B>, <1:1:B -> 0:0:End>, <2:2:A -> 2:2:B>, <2:2:B -> 0:0:End>]"
         );
     }
 
@@ -128,16 +128,26 @@ public class DAGExpressionParserTest {
     public void testGraph() {
         String expression = "(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)";
         Graph<GraphNodeId> graph = new DAGExpressionParser(expression).parse();
-        Assertions.assertEquals("[1:1:A, 2:3:A]", graph.successors(GraphNodeId.HEAD).toString());
-        Assertions.assertTrue(graph.predecessors(GraphNodeId.HEAD).isEmpty());
+        Assertions.assertEquals("[1:1:A, 2:3:A]", graph.successors(GraphNodeId.START).toString());
+        Assertions.assertTrue(graph.predecessors(GraphNodeId.START).isEmpty());
 
-        Assertions.assertEquals("[1:1:J, 2:1:Y]", graph.predecessors(GraphNodeId.TAIL).toString());
-        Assertions.assertTrue(graph.successors(GraphNodeId.TAIL).isEmpty());
+        Assertions.assertEquals("[1:1:J, 2:1:Y]", graph.predecessors(GraphNodeId.END).toString());
+        Assertions.assertTrue(graph.successors(GraphNodeId.END).isEmpty());
 
         Assertions.assertEquals("[1:1:B, 1:2:A]", graph.successors(GraphNodeId.of(1, 1, "A")).toString());
 
         //graph.adjacentNodes();
         //graph.incidentEdges();
+    }
+
+    @Test
+    public void testGraphNodeId() {
+        Assertions.assertTrue(GraphNodeId.fromString(GraphNodeId.START.toString()) == GraphNodeId.START);
+        Assertions.assertTrue(GraphNodeId.fromString(GraphNodeId.END.toString()) == GraphNodeId.END);
+        Assertions.assertEquals(GraphNodeId.fromString("1:1:test").toString(), "1:1:test");
+        Assertions.assertEquals(GraphNodeId.fromString("1:1:test:ANY").getName(), "test:ANY");
+        Assertions.assertEquals(GraphNodeId.fromString("1:1:test:ALL").getName(), "test:ALL");
+        Assertions.assertEquals(GraphNodeId.fromString("1:1:test:ALL").toString(), "1:1:test:ALL");
     }
 
     // ------------------------------------------------------------------------

@@ -38,7 +38,7 @@ import java.util.stream.Stream;
  * new DAGParser("(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)").parse();
  *
  * (A->((B->C->D),(A->F))->(G,H,X)->J)
- *   <0:0:HEAD -> 1:1:A>
+ *   <0:0:Start -> 1:1:A>
  *   <1:1:A -> 1:1:B>
  *   <1:1:A -> 1:2:A>
  *   <1:1:B -> 1:1:C>
@@ -53,12 +53,12 @@ import java.util.stream.Stream;
  *   <1:1:G -> 1:1:J>
  *   <1:1:H -> 1:1:J>
  *   <1:1:X -> 1:1:J>
- *   <1:1:J -> 0:0:TAIL>
+ *   <1:1:J -> 0:0:End>
  *
  * (A->Y)
- *   <0:0:HEAD -> 2:3:A>
+ *   <0:0:Start -> 2:3:A>
  *   <2:3:A -> 2:1:Y>
- *   <2:1:Y -> 0:0:TAIL>
+ *   <2:1:Y -> 0:0:End>
  * </pre>
  *
  * @author Ponfee
@@ -66,10 +66,10 @@ import java.util.stream.Stream;
 public class DAGExpressionParser {
 
     private static final String SEP_STAGE = "->";
-    private static final String SEP_UNION = ",";
+    private static final String SEP_UNION = Str.COMMA;
     private static final List<String> SEP_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION);
-    private static final List<String> SYMBOL_LIST = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.CLOSE, Str.OPEN);
-    private static final char[] SINGLE_SYMBOLS = {Char.OPEN, Char.CLOSE, ','};
+    private static final List<String> ALL_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.CLOSE, Str.OPEN);
+    private static final char[] SINGLE_SYMBOLS = {Char.OPEN, Char.CLOSE, Char.COMMA};
 
     private final String expression;
 
@@ -103,13 +103,13 @@ public class DAGExpressionParser {
             String section = sections.get(i);
             Assert.isTrue(checkParenthesis(section), () -> "Invalid expression parenthesis: " + section);
             String expr = process(section);
-            buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, GraphNodeId.HEAD, GraphNodeId.TAIL);
+            buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, GraphNodeId.START, GraphNodeId.END);
         }
 
         ImmutableGraph<GraphNodeId> graph = graphBuilder.build();
         Assert.state(graph.nodes().size() > 2, () -> "Expression not any name: " + expression);
-        Assert.state(graph.successors(GraphNodeId.HEAD).stream().noneMatch(GraphNodeId::isTail), () -> "Expression name cannot direct tail: " + expression);
-        Assert.state(graph.predecessors(GraphNodeId.TAIL).stream().noneMatch(GraphNodeId::isHead), () -> "Expression name cannot direct head: " + expression);
+        Assert.state(graph.successors(GraphNodeId.START).stream().noneMatch(GraphNodeId::isEnd), () -> "Expression name cannot direct end: " + expression);
+        Assert.state(graph.predecessors(GraphNodeId.END).stream().noneMatch(GraphNodeId::isStart), () -> "Expression name cannot direct start: " + expression);
         Assert.state(!Graphs.hasCycle(graph), () -> "Expression name section has cycle: " + expression);
         return graph;
     }
@@ -143,7 +143,7 @@ public class DAGExpressionParser {
 
     private List<String> resolve(String text) {
         String expr = text.trim();
-        if (SYMBOL_LIST.stream().noneMatch(expr::contains)) {
+        if (ALL_SYMBOLS.stream().noneMatch(expr::contains)) {
             // unnecessary resolve
             return Collections.singletonList(expr);
         }
@@ -152,10 +152,10 @@ public class DAGExpressionParser {
             return resolve(wrappedCache.computeIfAbsent(expr, DAGExpressionParser::wrap));
         }
 
-        List<Tuple2<Integer, Integer>> subgroups = subgroup(expr);
+        List<Tuple2<Integer, Integer>> groups = group(expr);
 
         // 取被"()"包裹的最外层表达式
-        List<Tuple2<Integer, Integer>> outermost = subgroups.stream().filter(e -> e.b == 1).collect(Collectors.toList());
+        List<Tuple2<Integer, Integer>> outermost = groups.stream().filter(e -> e.b == 1).collect(Collectors.toList());
         if (outermost.size() == 2) {
             // 首尾括号，如：(A,B -> C,D)
             Assert.isTrue(outermost.get(0).a == 0 && outermost.get(1).a == expr.length() - 1, () -> "Invalid expression: " + text);
@@ -168,7 +168,7 @@ public class DAGExpressionParser {
             throw new IllegalArgumentException("Invalid expression: " + expr);
         }
 
-        TreeNode<TreeNodeId, Object> root = buildTree(subgroups);
+        TreeNode<TreeNodeId, Object> root = buildTree(groups);
         List<Integer> list = new ArrayList<>(root.getChildrenCount() * 2 + 2);
         list.add(root.getNid().open);
         root.forEachChild(child -> {
@@ -196,7 +196,7 @@ public class DAGExpressionParser {
         List<Tuple2<String, Integer>> list = incrementer.computeIfAbsent(name, k -> new LinkedList<>());
         Tuple2<String, Integer> tuple = list.stream().filter(e -> name == e.a).findAny().orElse(null);
         if (tuple == null) {
-            // increment name id
+            // increment name ordinal
             list.add(tuple = Tuple2.of(name, list.size() + 1));
         }
         return tuple.b;
@@ -272,15 +272,15 @@ public class DAGExpressionParser {
         }
     }
 
-    private static List<String> concat(List<String> head, List<String> tail) {
-        if (CollectionUtils.isEmpty(tail)) {
-            return head;
+    private static List<String> concat(List<String> left, List<String> right) {
+        if (CollectionUtils.isEmpty(right)) {
+            return left;
         }
 
-        List<String> result = new ArrayList<>(head.size() + 1 + tail.size());
-        result.addAll(head);
+        List<String> result = new ArrayList<>(left.size() + 1 + right.size());
+        result.addAll(left);
         result.add(SEP_STAGE);
-        result.addAll(tail);
+        result.addAll(right);
         return result;
     }
 
@@ -339,7 +339,7 @@ public class DAGExpressionParser {
             String item = list.get(i);
             if (StringUtils.isBlank(item)) {
                 // skip empty string
-            } else if (SYMBOL_LIST.contains(item)) {
+            } else if (ALL_SYMBOLS.contains(item)) {
                 builder.append(item);
             } else if (Str.OPEN.equals(Collects.get(list, i - 1)) && Str.CLOSE.equals(Collects.get(list, i + 1))) {
                 builder.append(item);
@@ -356,7 +356,7 @@ public class DAGExpressionParser {
      * @param expr the expression
      * @return groups of "()"
      */
-    static List<Tuple2<Integer, Integer>> subgroup(String expr) {
+    static List<Tuple2<Integer, Integer>> group(String expr) {
         Assert.isTrue(checkParenthesis(expr), () -> "Invalid expression parenthesis: " + expr);
         int depth = 0;
         // Tuple2<position, level>
