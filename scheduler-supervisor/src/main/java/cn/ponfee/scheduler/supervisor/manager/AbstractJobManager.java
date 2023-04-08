@@ -55,7 +55,7 @@ public abstract class AbstractJobManager {
     }
 
     public void verifyJob(SchedJob job) {
-        Assert.isTrue(StringUtils.isNotEmpty(job.getJobHandler()), "Job handler cannot be empty.");
+        Assert.hasText(job.getJobHandler(), "Job handler cannot be empty.");
         boolean result = workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
         Assert.isTrue(result, () -> "Invalid job: " + job.getJobHandler());
     }

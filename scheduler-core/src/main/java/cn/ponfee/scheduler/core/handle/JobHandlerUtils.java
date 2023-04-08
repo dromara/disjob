@@ -8,12 +8,14 @@
 
 package cn.ponfee.scheduler.core.handle;
 
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.exception.JobException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -49,7 +51,7 @@ public class JobHandlerUtils {
      */
     public static List<SplitTask> split(String jobHandler, String jobParams) throws JobException {
         try {
-            JobSplitter jobSplitter = JobHandlerUtils.newInstance(jobHandler);
+            JobSplitter jobSplitter = JobHandlerUtils.load(jobHandler);
             List<SplitTask> splitTasks = jobSplitter.split(jobParams);
             if (CollectionUtils.isEmpty(splitTasks)) {
                 throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
@@ -63,37 +65,49 @@ public class JobHandlerUtils {
     }
 
     /**
-     * New jobHandler instance, <br/>
-     * String parameter can be qualified class name or source code
+     * Load jobHandler instance, String parameter can be qualified class name or source code
      *
      * @param text qualified class name or source code
      * @return JobHandler instance object
      * @throws JobException if new instance failed
      */
-    public static JobHandler<?> newInstance(String text) throws JobException {
+    public static JobHandler<?> load(String text) throws JobException {
+        if (SpringContextHolder.isInitialized()) {
+            JobHandler<?> bean = Throwables.ignored(() -> SpringContextHolder.getBean(text, JobHandler.class));
+            if (bean != null) {
+                Assert.isTrue(SpringContextHolder.isPrototype(text), () -> "Job handler spring bean name must be prototype: " + text);
+                return bean;
+            }
+        }
+
         Class<JobHandler<?>> type = ClassUtils.getClass(text);
         if (type == null) {
             throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal class text: " + text);
         }
 
-        // interface type: Modifier.isAbstract(type.getModifiers())==true
+        // interface type: Modifier.isAbstract(type.getModifiers()) -> true
         if (!JobHandler.class.isAssignableFrom(type) || Modifier.isAbstract(type.getModifiers())) {
             throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid class type: " + ClassUtils.getName(type) + ", " + text);
         }
-        return newInstance(type);
+
+        return load(type);
     }
 
-    private static <T> T newInstance(Class<T> type) {
+    // ------------------------------------------------------------private methods
+
+    private static <T> T load(Class<T> type) {
         if (!SpringContextHolder.isInitialized()) {
             return ClassUtils.newInstance(type);
         }
-        try {
+
+        T bean = Throwables.ignored(() -> SpringContextHolder.getBean(type));
+        if (bean != null) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-            T object = SpringContextHolder.getBean(type);
-            return object != null ? object : create(type);
-        } catch (Exception e) {
-            return create(type);
+            Assert.isTrue(SpringContextHolder.isPrototype(type), () -> "Job handler spring bean type must be prototype: " + type);
+            return bean;
         }
+
+        return create(type);
     }
 
     private static <T> T create(Class<T> type) {

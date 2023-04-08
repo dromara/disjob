@@ -131,7 +131,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "jobGroup": "default",
-    "jobName": "prime counter",
+    "jobName": "prime-counter",
     "jobHandler": "cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler",
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
@@ -151,7 +151,7 @@ SELECT * from sched_instance;
 SELECT * from sched_task;
 
 -- The following SQL can be executed to trigger the execution of the JOB again
-UPDATE sched_job SET job_state=1, misfire_strategy=3, last_trigger_time=NULL, next_trigger_time=1664944641000 WHERE job_name='PrimeCountJobHandler';
+UPDATE sched_job SET job_state=1, last_trigger_time=NULL, next_trigger_time=(unix_timestamp()*1000+2000) WHERE job_name='prime-counter';
 ```
 
 - You can also execute the following CURL command to manually trigger execution (select a supervisor to replace `localhost:8081`)
@@ -169,6 +169,6 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 - [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks([WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)])
 - [x] Extended registry: Zookeeper, Etcd, Nacos
-- [ ] Workflow task(DAG), MapReduce task
+- [ ] Workflow task(Workflow DAG), MapReduce task
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB

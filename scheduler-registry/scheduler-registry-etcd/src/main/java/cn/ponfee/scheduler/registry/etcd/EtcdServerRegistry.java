@@ -9,7 +9,6 @@
 package cn.ponfee.scheduler.registry.etcd;
 
 import cn.ponfee.scheduler.common.base.Symbol.Char;
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
@@ -145,11 +144,11 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         }
 
         Throwables.caught(keepAliveCheckScheduler::shutdownNow);
-        CheckedThrowing.caught(() -> keepAliveCheckScheduler.awaitTermination(1, TimeUnit.SECONDS));
+        Throwables.caught(() -> keepAliveCheckScheduler.awaitTermination(1, TimeUnit.SECONDS));
         Throwables.caught(keepAlive::close);
         registered.forEach(this::deregister);
         registered.clear();
-        CheckedThrowing.caught(() -> client.revokeLease(leaseId));
+        Throwables.caught(() -> client.revokeLease(leaseId));
         Throwables.caught(client::close);
         Throwables.caught(super::close);
     }

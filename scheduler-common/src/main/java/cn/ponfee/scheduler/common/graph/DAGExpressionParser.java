@@ -102,7 +102,7 @@ public class DAGExpressionParser {
         for (int i = 0, n = sections.size(); i < n; i++) {
             String section = sections.get(i);
             Assert.isTrue(checkParenthesis(section), () -> "Invalid expression parenthesis: " + section);
-            String expr = process(section);
+            String expr = completeParenthesis(section);
             buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, GraphNodeId.START, GraphNodeId.END);
         }
 
@@ -300,7 +300,7 @@ public class DAGExpressionParser {
                 openCount--;
             }
             if (openCount < 0) {
-                // Such as "())("
+                // For example "())("
                 return false;
             }
         }
@@ -308,11 +308,12 @@ public class DAGExpressionParser {
     }
 
     /**
-     * Process the text wrapped '()'
+     * Complete the text wrapped with '()'
+     *
      * @param text the text string
      * @return wrapped text string
      */
-    static String process(String text) {
+    static String completeParenthesis(String text) {
         List<String> list = new ArrayList<>();
         int mark = 0, position = 0;
         for (int len = text.length() - 1; position <= len; ) {

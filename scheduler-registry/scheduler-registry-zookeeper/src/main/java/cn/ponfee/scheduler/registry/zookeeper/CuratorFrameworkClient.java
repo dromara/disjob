@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.registry.zookeeper;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -232,7 +232,7 @@ public class CuratorFrameworkClient implements AutoCloseable {
 
         @Override
         public void process(WatchedEvent event) throws Exception {
-            CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable<?>) latch::await);
+            Throwables.caught((Throwables.ThrowingRunnable<?>) latch::await);
             LOG.info("Watched event type: {}", event.getType());
 
             final Consumer<List<String>> action = processor;

@@ -9,7 +9,6 @@
 package cn.ponfee.scheduler.worker.base;
 
 import cn.ponfee.scheduler.common.base.Startable;
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.base.model.Result;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
@@ -740,7 +739,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 if (param.getJobType() != JobType.BROADCAST) {
                     // reset task worker
                     List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
-                    CheckedThrowing.caught(() -> supervisorClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
+                    Throwables.caught(() -> supervisorClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 // discard task
                 return;
@@ -749,7 +748,7 @@ public class WorkerThreadPool extends Thread implements Startable {
             // 1、prepare
             TaskExecutor<?> taskExecutor;
             try {
-                taskExecutor = JobHandlerUtils.newInstance(schedJob.getJobHandler());
+                taskExecutor = JobHandlerUtils.load(schedJob.getJobHandler());
             } catch (Exception e) {
                 LOG.error("Load job handler error: " + param, e);
                 terminateTask(supervisorClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(e));

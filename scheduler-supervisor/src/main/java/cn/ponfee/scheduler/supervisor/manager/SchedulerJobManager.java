@@ -237,7 +237,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         job.verifyBeforeUpdate();
 
         if (StringUtils.isEmpty(job.getJobHandler())) {
-            Assert.isTrue(StringUtils.isEmpty(job.getJobParam()), "Job param must be null if not set job handler.");
+            Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
         } else {
             super.verifyJob(job);
         }
@@ -706,7 +706,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     }
 
     /**
-     * Crates dependency jbo task.
+     * Crates dependency job task.
      *
      * @param instanceId the parent trace id
      */

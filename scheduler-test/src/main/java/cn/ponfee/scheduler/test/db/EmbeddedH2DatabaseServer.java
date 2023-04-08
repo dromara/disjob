@@ -31,11 +31,16 @@ import java.util.concurrent.CountDownLatch;
 /**
  * H2 database server
  *
+ * 内存中（私有）      -> jdbc:h2:mem:;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+ * 内存中（命名）      -> jdbc:h2:mem:<databaseName>;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+ * 嵌入式（本地）连接   -> jdbc:h2:[file:][<data-dir-path>]<databaseName>
+ *
  * @author Ponfee
  */
 public class EmbeddedH2DatabaseServer {
 
     public static void main(String[] args) throws Exception {
+        // jdbc:h2:/Users/ponfee/scm/gitee/distributed-scheduler/scheduler-test/target/h2/test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
         String jdbcUrl = buildJdbcUrl("test");
         String username = "sa", password = "";
 
@@ -69,7 +74,7 @@ public class EmbeddedH2DatabaseServer {
             PathUtils.deleteDirectory(file.toPath());
         }
         Files.mkdir(file);
-        return "jdbc:h2:" + dataDir + dbName;
+        return "jdbc:h2:" + dataDir + dbName + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL";
     }
 
     private static void testScript(JdbcTemplate jdbcTemplate) {

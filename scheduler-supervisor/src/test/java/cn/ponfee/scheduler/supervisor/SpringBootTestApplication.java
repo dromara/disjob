@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.test.EmbeddedMysqlAndRedisServer;
 import org.springframework.boot.SpringApplication;
@@ -26,7 +26,7 @@ public class SpringBootTestApplication {
 
     static {
         EmbeddedMysqlAndRedisServer.starter().start();
-        CheckedThrowing.caught(() -> Thread.sleep(5000));
+        Throwables.caught(() -> Thread.sleep(5000));
     }
 
     public static void main(String[] args) {

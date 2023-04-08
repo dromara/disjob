@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.configuration;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
@@ -63,7 +63,7 @@ public class SupervisorStartupRunner implements ApplicationRunner, DisposableBea
     public void run(ApplicationArguments args) {
         LOG.info("Scheduler supervisor launch begin...");
         // if the server also a worker, wait the worker registered
-        CheckedThrowing.checked(() -> Thread.sleep(3000));
+        Throwables.checked(() -> Thread.sleep(3000));
         supervisorStartup.start();
         LOG.info("Scheduler supervisor launch end.");
     }

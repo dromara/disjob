@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.registry.zookeeper;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.util.MavenProjects;
 import org.apache.curator.test.TestingServer;
 
@@ -26,7 +26,7 @@ public final class EmbeddedZookeeperServer {
         TestingServer testingServer = new TestingServer(2181, createTempDir());
         System.out.println("Embedded zookeeper server started!");
 
-        Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(testingServer::stop)));
+        Runtime.getRuntime().addShutdownHook(new Thread(Throwables.runnable(testingServer::stop)));
     }
 
     private static File createTempDir() {

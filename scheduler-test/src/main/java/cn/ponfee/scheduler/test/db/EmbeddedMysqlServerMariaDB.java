@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.test.db;
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfiguration;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
@@ -41,7 +41,7 @@ public class EmbeddedMysqlServerMariaDB {
 
     public static void main(String[] args) throws Exception {
         DB db = start(3306);
-        Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(db::stop)));
+        Runtime.getRuntime().addShutdownHook(new Thread(Throwables.runnable(db::stop)));
     }
 
     public static DB start(int port) throws Exception {

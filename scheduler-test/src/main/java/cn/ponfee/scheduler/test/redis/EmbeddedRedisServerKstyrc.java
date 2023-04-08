@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.test.redis;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import redis.embedded.RedisServer;
 
 /**
@@ -26,7 +26,7 @@ public final class EmbeddedRedisServerKstyrc {
 
     public static void main(String[] args) {
         RedisServer redisServer = start(6379, 6380);
-        Runtime.getRuntime().addShutdownHook(new Thread(CheckedThrowing.runnable(redisServer::stop)));
+        Runtime.getRuntime().addShutdownHook(new Thread(Throwables.runnable(redisServer::stop)));
     }
 
     public static RedisServer start(int masterPort, int slavePort) {

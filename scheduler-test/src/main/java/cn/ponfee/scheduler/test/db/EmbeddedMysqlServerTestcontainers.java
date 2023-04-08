@@ -48,7 +48,7 @@ public class EmbeddedMysqlServerTestcontainers {
             .withPassword("")
             .withDatabaseName("test")
             .withEnv("MYSQL_ROOT_HOST", "%")
-            .withInitScript(DBUtils.DB_SCRIPT_PATH) // IOUtils.resourceToString(script-path, UTF_8, DBTools.class.getClassLoader())
+            .withInitScript(DBUtils.DB_SCRIPT_PATH) // IOUtils.resourceToString(script-path, UTF_8, DBUtils.class.getClassLoader())
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
         ) {
             mySQLContainer.setPortBindings(PORT_BINDINGS);
@@ -63,7 +63,7 @@ public class EmbeddedMysqlServerTestcontainers {
             // the script-path only use for log, so here can set to an empty string value
             String scriptPath = "";
             String jdbcUrlParameter = "?useSSL=false&connectTimeout=2000&socketTimeout=5000";
-            String scriptContent = DBTools.loadScript();
+            String scriptContent = DBUtils.loadScript();
             ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, scriptContent);
             */
 

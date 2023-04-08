@@ -8,7 +8,6 @@
 
 package cn.ponfee.scheduler.registry.redis;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
 import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
@@ -91,7 +90,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         container.setConnectionFactory(stringRedisTemplate.getConnectionFactory());
         container.setTaskExecutor(registryScheduledExecutor);
         // validate “handleMessage” method is valid
-        String listenerMethod = CheckedThrowing.checked(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
+        String listenerMethod = Throwables.checked(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
         MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, listenerMethod);
         listenerAdapter.afterPropertiesSet();
         container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryRootPath + separator + CHANNEL));
@@ -159,7 +158,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        Throwables.caught((Runnable) redisMessageListenerContainer::stop);
+        Throwables.caught((Throwables.ThrowingRunnable<Throwable>) redisMessageListenerContainer::stop);
         Throwables.caught(registryScheduledExecutor::shutdownNow);
         registered.forEach(this::deregister);
         registered.clear();

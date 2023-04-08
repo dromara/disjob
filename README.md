@@ -131,7 +131,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "jobGroup": "default",
-    "jobName": "prime counter",
+    "jobName": "prime-counter",
     "jobHandler": "cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler",
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
@@ -151,7 +151,7 @@ SELECT * from sched_instance;
 SELECT * from sched_task;
 
 -- 可执行以下SQL让该JOB再次触发执行
-UPDATE sched_job SET job_state=1, misfire_strategy=3, last_trigger_time=NULL, next_trigger_time=1664944641000 WHERE job_name='PrimeCountJobHandler';
+UPDATE sched_job SET job_state=1, last_trigger_time=NULL, next_trigger_time=(unix_timestamp()*1000+2000) WHERE job_name='prime-counter';
 ```
 
 - 也可执行以下CURL命令手动触发执行一次(任选一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
@@ -169,6 +169,6 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 
 - [x] Worker提供任务校验及拆分的Http接口供Supervisor调用（[WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)）
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
-- [ ] 工作流任务(DAG)、分布式计算任务(MapReduce)
+- [ ] 工作流任务(Workflow DAG)、分布式计算任务(MapReduce)
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB

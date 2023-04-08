@@ -8,22 +8,16 @@
 
 package cn.ponfee.scheduler.common.spring;
 
-import cn.ponfee.scheduler.common.util.ClassUtils;
-import cn.ponfee.scheduler.common.util.Fields;
-import cn.ponfee.scheduler.common.util.GenericUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 
-import javax.annotation.Resource;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,7 +45,7 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
             if (!HOLDER.contains(cxt)) {
                 HOLDER.add(cxt);
             }
-            INITIALIZED.set(true);
+            INITIALIZED.compareAndSet(false, true);
         }
     }
 
@@ -128,6 +122,35 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
             throw ex;
         }
     }
+    public static boolean isPrototype(String name) {
+        BeansException ex = null;
+        for (ApplicationContext c : HOLDER) {
+            try {
+                if (c.isPrototype(name)) {
+                    return true;
+                }
+            } catch (BeansException e) {
+                if (ex == null) {
+                    ex = e;
+                }
+            }
+        }
+        if (ex == null) {
+            return false;
+        } else {
+            throw ex;
+        }
+    }
+
+    public static boolean isPrototype(Class<?> type) {
+        for (ApplicationContext c : HOLDER) {
+            String[] beanNames = c.getBeanNamesForType(type);
+            if (ArrayUtils.isNotEmpty(beanNames)) {
+                return Arrays.stream(beanNames).allMatch(c::isPrototype);
+            }
+        }
+        return false;
+    }
 
     /**
      * 获取Bean的类型
@@ -159,47 +182,10 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
         return get(c -> c.getBeansWithAnnotation(annotationType));
     }
 
-    // -----------------------------------------------------------------------
-    /**
-     * Injects the field from spring container for object
-     *
-     * @param object the object
-     *
-     * @see #autowire(Object)
-     */
-    public static void inject(Object object) {
-        Assert.state(HOLDER.size() > 0, "Must be defined SpringContextHolder within spring config file.");
-
-        for (Field field : ClassUtils.listFields(object.getClass())) {
-            Object fieldValue = null;
-            Class<?> fieldType = GenericUtils.getFieldActualType(object.getClass(), field);
-            Resource resource = field.getAnnotation(Resource.class);
-            if (resource != null) {
-                fieldValue = getBean(StringUtils.isNotBlank(resource.name()) ? resource.name() : field.getName(), fieldType);
-                if (fieldValue == null) {
-                    fieldValue = getBean(fieldType);
-                }
-            } else if (field.isAnnotationPresent(Autowired.class)) {
-                Qualifier qualifier = field.getAnnotation(Qualifier.class);
-                if (qualifier != null && StringUtils.isNotBlank(qualifier.value())) {
-                    fieldValue = getBean(qualifier.value(), fieldType);
-                } else {
-                    fieldValue = getBean(fieldType);
-                }
-            }
-
-            if (fieldType.isInstance(fieldValue)) {
-                Fields.put(object, field, fieldValue);
-            }
-        }
-    }
-
     /**
      * Autowire annotated from spring container for object
      *
      * @param object the object
-     *
-     * @see #inject(Object)
      */
     public static void autowire(Object object) {
         Assert.state(HOLDER.size() > 0, "Must be defined SpringContextHolder within spring config file.");
@@ -211,15 +197,12 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 
     @Override
     public void destroy() {
-        /*
-        synchronized (SpringContextHolder.class) {
-            HOLDER.clear();
-        }
-        */
+        // no-op
     }
 
+    // -----------------------------------------------------------------------
+
     private static <T> T get(Function<ApplicationContext, T> finder) throws BeansException {
-        //Assert.state(HOLDER.size() > 0, "must be defined SpringContextHolder within spring config file.");
         BeansException ex = null;
         T result;
         for (ApplicationContext c : HOLDER) {

@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.registry.nacos;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;
@@ -56,7 +56,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             this.namingService = NacosFactory.createNamingService(config.toProperties());
             this.eventListener = event -> {
-                CheckedThrowing.caught((CheckedThrowing.ThrowingRunnable<?>) latch::await);
+                Throwables.caught((Throwables.ThrowingRunnable<?>) latch::await);
                 if (event instanceof NamingEvent) {
                     doRefreshDiscoveryServers(((NamingEvent) event).getInstances());
                 }
@@ -114,10 +114,10 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        CheckedThrowing.caught(() -> namingService.unsubscribe(discoveryRootPath, groupName, eventListener));
+        Throwables.caught(() -> namingService.unsubscribe(discoveryRootPath, groupName, eventListener));
         registered.forEach(this::deregister);
         registered.clear();
-        CheckedThrowing.caught(namingService::shutDown);
+        Throwables.caught(namingService::shutDown);
         super.close();
     }
 

@@ -450,7 +450,7 @@ public final class ClassUtils {
     }
 
     private static Class<?>[] parseParameterTypes(Object[] args) {
-        Assert.isTrue(ArrayUtils.isNotEmpty(args), "Should be always non empty.");
+        Assert.notEmpty(args, "Should be always non empty.");
         Class<?>[] parameterTypes = new Class<?>[args.length];
         for (int i = 0, n = args.length; i < n; i++) {
             parameterTypes[i] = (args[i] == null) ? null : args[i].getClass();
@@ -485,7 +485,7 @@ public final class ClassUtils {
     }
 
     private static <T> Constructor<T> obtainConstructor(Class<T> type, Class<?>[] actualTypes) {
-        Assert.isTrue(ArrayUtils.isNotEmpty(actualTypes), "Should be always non empty.");
+        Assert.notEmpty(actualTypes, "Should be always non empty.");
         Constructor<T> constructor = obtainConstructor((Constructor<T>[]) type.getConstructors(), actualTypes);
         if (constructor != null) {
             return constructor;
@@ -506,7 +506,7 @@ public final class ClassUtils {
     }
 
     private static Method obtainMethod(Object caller, String methodName, Class<?>[] actualTypes) {
-        Assert.isTrue(ArrayUtils.isNotEmpty(actualTypes), "Should be always non empty.");
+        Assert.notEmpty(actualTypes, "Should be always non empty.");
         Tuple2<Class<?>, Predicates> tuple = obtainClass(caller);
         Method method = obtainMethod(tuple.a.getMethods(), methodName, tuple.b, actualTypes);
         if (method != null) {
@@ -515,7 +515,7 @@ public final class ClassUtils {
         return obtainMethod(tuple.a.getDeclaredMethods(), methodName, tuple.b, actualTypes);
     }
 
-    private static Method obtainMethod(Method[] methods, String methodName, 
+    private static Method obtainMethod(Method[] methods, String methodName,
                                        Predicates flag, Class<?>[] actualTypes) {
         if (ArrayUtils.isEmpty(methods)) {
             return null;
@@ -561,8 +561,8 @@ public final class ClassUtils {
     }
 
     private static String toString(Class<?>[] parameterTypes) {
-        return ArrayUtils.isEmpty(parameterTypes) 
-            ? "()" 
+        return ArrayUtils.isEmpty(parameterTypes)
+            ? "()"
             : "(" + Joiner.on(", ").join(parameterTypes) + ")";
     }
 }

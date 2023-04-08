@@ -33,9 +33,9 @@ public class DAGExpressionParserTest {
 
     @Test
     public void testProcess() {
-        Assertions.assertEquals("((A)->(((B)->(C)->(D)),((A)->(F)))->((G),(H),(X))->(J))", DAGExpressionParser.process("(A->((B->C->D),(A->F))->(G,H,X)->J)"));
-        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpressionParser.process("A,B->(C->D),(E)->F"));
-        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpressionParser.process("A,B->(C->D),E->F"));
+        Assertions.assertEquals("((A)->(((B)->(C)->(D)),((A)->(F)))->((G),(H),(X))->(J))", DAGExpressionParser.completeParenthesis("(A->((B->C->D),(A->F))->(G,H,X)->J)"));
+        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpressionParser.completeParenthesis("A,B->(C->D),(E)->F"));
+        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpressionParser.completeParenthesis("A,B->(C->D),E->F"));
     }
 
     @Test

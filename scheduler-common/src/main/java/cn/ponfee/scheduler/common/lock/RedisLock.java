@@ -10,7 +10,6 @@ package cn.ponfee.scheduler.common.lock;
 
 import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -193,7 +192,7 @@ public class RedisLock implements Lock, java.io.Serializable {
      */
     public RedisLock(RedisTemplate<?, ?> redisTemplate, String lockKey, int timeoutMillis, int sleepMillis) {
         Assert.notNull(redisTemplate, "Redis template cannot be null.");
-        Assert.isTrue(StringUtils.isNotEmpty(lockKey), "Lock key cannot be empty.");
+        Assert.hasText(lockKey, "Lock key cannot be empty.");
 
         this.redisTemplate = redisTemplate;
         // add key prefix "lock:"

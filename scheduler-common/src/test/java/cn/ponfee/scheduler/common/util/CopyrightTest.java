@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.common.util;
 
-import cn.ponfee.scheduler.common.base.exception.CheckedThrowing;
+import cn.ponfee.scheduler.common.base.exception.Throwables;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -32,14 +32,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class CopyrightTest {
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir();
-    private static final String COPYRIGHT = CheckedThrowing.checked(
+    private static final String COPYRIGHT = Throwables.checked(
         () -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightTest.class.getClassLoader())
     );
 
     @Test
     public void upsertCopyright() {
         handleFile(file -> {
-            String text = CheckedThrowing.checked(() -> IOUtils.toString(file.toURI(), UTF_8));
+            String text = Throwables.checked(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (!isOwnerCode(text)) {
                 return;
             }
@@ -70,7 +70,7 @@ public class CopyrightTest {
     @Test
     public void checkCopyright() {
         handleFile(file -> {
-            String text = CheckedThrowing.checked(() -> IOUtils.toString(file.toURI(), UTF_8));
+            String text = Throwables.checked(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (Strings.count(text, " @author ") == 0) {
                 System.out.println(file.getName());
             } else if (isOwnerCode(text)) {
@@ -90,7 +90,7 @@ public class CopyrightTest {
     private static void handleFile(Consumer<File> consumer) {
         FileUtils
             .listFiles(new File(BASE_DIR).getParentFile(), new String[]{"java"}, true)
-            .forEach(e -> CheckedThrowing.checked(() -> consumer.accept(e)));
+            .forEach(e -> Throwables.checked(() -> consumer.accept(e)));
     }
 
     private boolean isOwnerCode(String sourceCode) {
