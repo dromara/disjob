@@ -8,38 +8,43 @@
 
 package cn.ponfee.scheduler.core.param;
 
-import cn.ponfee.scheduler.common.base.ToJsonString;
+import cn.ponfee.scheduler.common.graph.GraphNodeId;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
 /**
- * Start task parameter.
+ * Workflow attach data structure
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class StartTaskParam extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 7700836087189718161L;
+public class WorkflowAttach implements Serializable {
 
-    private long instanceId;
-    private long taskId;
-    private String worker;
+    private static final long serialVersionUID = -7365475674760089839L;
 
-    public StartTaskParam(long instanceId, long taskId, String worker) {
-        Assert.hasText(worker, "Start task worker param cannot be null.");
-        this.instanceId = instanceId;
-        this.taskId = taskId;
-        this.worker = worker;
+    /**
+     * previous node id
+     */
+    private String preNodeId;
+
+    /**
+     * current node id
+     */
+    private String curNodeId;
+
+    public WorkflowAttach(String preNodeId, String curNodeId) {
+        this.preNodeId = preNodeId;
+        this.curNodeId = curNodeId;
     }
 
-    public static StartTaskParam from(ExecuteTaskParam param) {
-        return new StartTaskParam(param.getInstanceId(), param.getTaskId(), param.getWorker().serialize());
+    public static WorkflowAttach of(GraphNodeId preNodeId, GraphNodeId curNodeId) {
+        return new WorkflowAttach(preNodeId.toString(), curNodeId.toString());
     }
 
 }

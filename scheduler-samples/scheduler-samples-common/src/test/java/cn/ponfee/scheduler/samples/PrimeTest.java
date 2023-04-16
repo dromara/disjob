@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.samples;
 
-import cn.ponfee.scheduler.samples.common.handler.Prime;
+import cn.ponfee.scheduler.samples.common.util.Prime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

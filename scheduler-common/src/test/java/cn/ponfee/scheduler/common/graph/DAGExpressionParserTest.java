@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.common.graph;
 import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.tree.TreeNode;
 import cn.ponfee.scheduler.common.tree.print.MultiwayTreePrinter;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -138,6 +139,15 @@ public class DAGExpressionParserTest {
 
         //graph.adjacentNodes();
         //graph.incidentEdges();
+    }
+
+    @Test
+    public void testGraphSequence() {
+        String expression = "A -> B,C -> E,(F->G) -> H";
+        Graph<GraphNodeId> graph = new DAGExpressionParser(expression).parse();
+        for (EndpointPair<GraphNodeId> edge : graph.edges()) {
+            System.out.println(edge.nodeU() + " -> " + edge.nodeV());
+        }
     }
 
     @Test

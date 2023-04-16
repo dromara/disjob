@@ -46,6 +46,12 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
      * 本地优先(当supervisor同时也是worker角色时生效)
      */
     LOCAL_PRIORITY(5),
+
+    /**
+     * 广播
+     */
+    BROADCAST(6),
+
     ;
 
     private static final Map<Integer, RouteStrategy> MAPPING = Enums.toMap(RouteStrategy.class, RouteStrategy::value);

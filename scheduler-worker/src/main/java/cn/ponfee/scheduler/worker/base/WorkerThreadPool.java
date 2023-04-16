@@ -19,6 +19,7 @@ import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
 import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.exception.CancelTaskException;
 import cn.ponfee.scheduler.core.exception.PauseTaskException;
 import cn.ponfee.scheduler.core.handle.JobHandlerUtils;
@@ -710,7 +711,6 @@ public class WorkerThreadPool extends Thread implements Startable {
 
         private void runTask(ExecuteTaskParam param) {
             SchedTask task;
-            SchedJob schedJob;
             try {
                 if ((task = supervisorClient.getTask(param.getTaskId())) == null) {
                     LOG.error("Sched task not found {}", param);
@@ -723,11 +723,6 @@ public class WorkerThreadPool extends Thread implements Startable {
                     return;
                 }
 
-                if ((schedJob = supervisorClient.getJob(param.getJobId())) == null) {
-                    LOG.error("Sched job not found {}", param);
-                    return;
-                }
-
                 // update database records start state(sched_instance, sched_task)
                 boolean status = supervisorClient.startTask(StartTaskParam.from(param));
                 if (!status) {
@@ -736,7 +731,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 }
             } catch (Exception e) {
                 LOG.warn("Start task fail: " + param, e);
-                if (param.getJobType() != JobType.BROADCAST) {
+                if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
                     Throwables.caught(() -> supervisorClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
@@ -748,7 +743,7 @@ public class WorkerThreadPool extends Thread implements Startable {
             // 1、prepare
             TaskExecutor<?> taskExecutor;
             try {
-                taskExecutor = JobHandlerUtils.load(schedJob.getJobHandler());
+                taskExecutor = JobHandlerUtils.load(param.getJobHandler());
             } catch (Exception e) {
                 LOG.error("Load job handler error: " + param, e);
                 terminateTask(supervisorClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(e));
@@ -779,14 +774,14 @@ public class WorkerThreadPool extends Thread implements Startable {
             // 3、execute
             try {
                 Result<?> result;
-                if (schedJob.getExecuteTimeout() > 0) {
+                if (param.getExecuteTimeout() > 0) {
                     FutureTask<Result<?>> futureTask = new FutureTask<>(() -> taskExecutor.execute(supervisorClient));
                     Thread futureTaskThread = new Thread(futureTask);
                     futureTaskThread.setDaemon(true);
                     futureTaskThread.setName(getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement());
                     futureTaskThread.start();
                     try {
-                        result = futureTask.get(schedJob.getExecuteTimeout(), TimeUnit.MILLISECONDS);
+                        result = futureTask.get(param.getExecuteTimeout(), TimeUnit.MILLISECONDS);
                     } finally {
                         Threads.stopThread(futureTaskThread, 0, 0, 0);
                     }

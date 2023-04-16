@@ -12,12 +12,8 @@ import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.concurrent.AsyncDelayedExecutor;
 import cn.ponfee.scheduler.common.concurrent.DelayedData;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
-import cn.ponfee.scheduler.core.model.SchedInstance;
-import cn.ponfee.scheduler.core.model.SchedJob;
-import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.core.route.ExecutionRouter;
 import cn.ponfee.scheduler.core.route.ExecutionRouterRegistrar;
@@ -29,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -88,7 +83,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
         List<DispatchParam> list = param.stream()
             .peek(e -> Assert.notNull(e.getWorker(), "Directional dispatching execute param worker cannot be null."))
             .peek(e -> Assert.isTrue(e.operation() != Operations.TRIGGER, "Directional dispatching execute param operation cannot be TRIGGER."))
-            .map(e -> new DispatchParam(e, null, null))
+            .map(e -> new DispatchParam(e, null))
             .collect(Collectors.toList());
         return doDispatch(list);
     }
@@ -96,39 +91,19 @@ public abstract class TaskDispatcher implements AutoCloseable {
     /**
      * Assign a worker and dispatch to the assigned worker.
      *
-     * @param job      the job
-     * @param instance the instance
-     * @param tasks    the list of task
+     * @param param    the list of execution task param
+     * @param jobGroup the job group
      * @return {@code true} if the first dispatch successful
      */
-    public final boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        if (CollectionUtils.isEmpty(tasks)) {
+    public final boolean dispatch(List<ExecuteTaskParam> param, String jobGroup) {
+        if (CollectionUtils.isEmpty(param)) {
             return false;
         }
-        JobType jobType = JobType.of(job.getJobType());
-        RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
-
-        List<DispatchParam> dispatchParams = new ArrayList<>(tasks.size());
-        for (SchedTask task : tasks) {
-            Worker worker = null;
-            if (jobType == JobType.BROADCAST) {
-                Assert.hasText(task.getWorker(), () -> "Broadcast job must be pre-assign worker: " + instance.getInstanceId());
-                worker = Worker.deserialize(task.getWorker());
-            }
-            ExecuteTaskParam param = new ExecuteTaskParam(
-                Operations.TRIGGER,
-                task.getTaskId(),
-                instance.getInstanceId(),
-                job.getJobId(),
-                jobType,
-                instance.getTriggerTime(),
-                worker
-            );
-
-            dispatchParams.add(new DispatchParam(param, job.getJobGroup(), routeStrategy));
-        }
-
-        return doDispatch(dispatchParams);
+        List<DispatchParam> list = param.stream()
+            .peek(e -> Assert.isTrue(e.operation() == Operations.TRIGGER, "Dispatching execute param operation must be TRIGGER."))
+            .map(e -> new DispatchParam(e, jobGroup))
+            .collect(Collectors.toList());
+        return doDispatch(list);
     }
 
     /**
@@ -180,8 +155,8 @@ public abstract class TaskDispatcher implements AutoCloseable {
             return;
         }
 
-        if (param.getJobType() == JobType.BROADCAST) {
-            Objects.requireNonNull(param.getWorker(), "Broadcast execution worker cannot be null: " + param.getTaskId());
+        if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
+            Objects.requireNonNull(param.getWorker(), () -> "Broadcast strategy worker cannot be null: " + param.getTaskId());
             return;
         }
 
@@ -191,7 +166,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
             return;
         }
 
-        ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(dispatchParam.routeStrategy());
+        ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(param.getRouteStrategy());
         Worker worker = executionRouter.route(dispatchParam.group(), param, workers);
         if (worker == null) {
             log.error("Assign worker to task failed: {} | {}", param.getInstanceId(), param.getTaskId());

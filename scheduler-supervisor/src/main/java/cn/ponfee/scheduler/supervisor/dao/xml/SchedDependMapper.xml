@@ -7,12 +7,10 @@
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedDepend">
     <result column="parent_job_id" jdbcType="BIGINT" property="parentJobId" />
     <result column="child_job_id" jdbcType="BIGINT" property="childJobId" />
-    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
-    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
   </resultMap>
 
   <sql id="Base_Column_List">
-    parent_job_id, child_job_id, updated_at, created_at
+    parent_job_id, child_job_id
   </sql>
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">

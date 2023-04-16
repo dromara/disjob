@@ -53,7 +53,7 @@ public interface SchedInstanceMapper {
                                         @Param("updateTime") Date updateTime,
                                         @Param("size") int size);
 
-    List<SchedInstance> findUnterminatedRetry(long parentInstanceId);
+    List<SchedInstance> findUnterminatedRetry(long rootInstanceId);
 
     int renewUpdateTime(@Param("instanceId") long instanceId,
                         @Param("updateTime") Date updateTime,

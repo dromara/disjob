@@ -34,9 +34,19 @@ public class SchedInstance extends BaseEntity implements Serializable {
     private Long instanceId;
 
     /**
-     * run_type IN (DEPEND, RETRY)时的父ID
+     * root instance_id(Retry、Depend、Workflow)
+     */
+    private Long rootInstanceId;
+
+    /**
+     * parent instance_id(Retry、Depend、Workflow)
      */
     private Long parentInstanceId;
+
+    /**
+     * job_type为Workflow生成的instance_id
+     */
+    private Long workflowInstanceId;
 
     /**
      * sched_job.job_id
@@ -85,6 +95,16 @@ public class SchedInstance extends BaseEntity implements Serializable {
     private Integer retriedCount;
 
     /**
+     * 附加信息
+     */
+    private String attach;
+
+    /**
+     * 行记录版本号
+     */
+    private Integer version;
+
+    /**
      * Creates sched instance
      *
      * @param instanceId   the instance id
@@ -102,10 +122,10 @@ public class SchedInstance extends BaseEntity implements Serializable {
         instance.setJobId(jobId);
         instance.setRunType(runType.value());
         instance.setTriggerTime(triggerTime);
-        instance.setRunState(RunState.WAITING.value());
         instance.setRetriedCount(retriedCount);
         instance.setUpdatedAt(date);
         instance.setCreatedAt(date);
+        instance.setRunState(RunState.WAITING.value());
         return instance;
     }
 
@@ -115,7 +135,13 @@ public class SchedInstance extends BaseEntity implements Serializable {
      * @return root instance id
      */
     public Long obtainRootInstanceId() {
-        return parentInstanceId != null ? parentInstanceId : instanceId;
+        if (rootInstanceId != null) {
+            return rootInstanceId;
+        }
+        if (parentInstanceId != null) {
+            return parentInstanceId;
+        }
+        return instanceId;
     }
 
 }

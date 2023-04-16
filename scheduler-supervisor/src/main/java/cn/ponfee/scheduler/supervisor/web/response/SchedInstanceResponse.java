@@ -31,7 +31,9 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
     private static final long serialVersionUID = -6772222626245934369L;
 
     private Long instanceId;
+    private Long rootInstanceId;
     private Long parentInstanceId;
+    private Long workflowInstanceId;
     private Long jobId;
     private Long triggerTime;
     private Integer runType;

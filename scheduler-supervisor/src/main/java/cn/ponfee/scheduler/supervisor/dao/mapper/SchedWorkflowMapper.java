@@ -6,32 +6,21 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.core.param;
+package cn.ponfee.scheduler.supervisor.dao.mapper;
 
-import cn.ponfee.scheduler.common.base.ToJsonString;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import cn.ponfee.scheduler.core.model.SchedWorkflow;
 
-import java.io.Serializable;
+import java.util.List;
 
 /**
- * Task worker parameter
+ * Mybatis mapper of sched_workflow database table.
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-@NoArgsConstructor
-public class TaskWorkerParam extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = -6622646278492874535L;
+public interface SchedWorkflowMapper {
 
-    private Long taskId;
-    private String worker;
+    int insertBatch(List<SchedWorkflow> records);
 
-    public TaskWorkerParam(Long taskId, String worker) {
-        this.taskId = taskId;
-        this.worker = worker;
-    }
+    List<SchedWorkflow> findByWorkflowInstanceId(long workflowInstanceId);
 
 }

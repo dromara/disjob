@@ -15,6 +15,7 @@ import cn.ponfee.scheduler.core.exception.PauseTaskException;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
 import cn.ponfee.scheduler.core.handle.SplitTask;
+import cn.ponfee.scheduler.samples.common.util.Prime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

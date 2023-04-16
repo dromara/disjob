@@ -10,10 +10,7 @@ package cn.ponfee.scheduler.supervisor.test.job.util;
 
 import cn.ponfee.scheduler.common.date.Dates;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.enums.JobType;
-import cn.ponfee.scheduler.core.enums.MisfireStrategy;
-import cn.ponfee.scheduler.core.enums.Operations;
-import cn.ponfee.scheduler.core.enums.TriggerType;
+import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.model.PeriodTriggerValue;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
@@ -224,7 +221,7 @@ public class TriggerTimeUtilsTest {
 
     @Test
     public void testTaskParam() {
-        ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 0, JobType.NORMAL, 0, null);
+        ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 0, 0, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
         Operations old = param.operation();
         Assertions.assertTrue(param.updateOperation(old, null));
         Assertions.assertNull(param.operation());

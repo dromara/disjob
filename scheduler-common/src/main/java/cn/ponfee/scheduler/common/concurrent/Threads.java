@@ -34,7 +34,7 @@ public final class Threads {
     }
 
     /**
-     * Stop the thread, and return boolean result of has called java.lang.Thread#stop()
+     * Stops the thread, and returns boolean value whether it was called java.lang.Thread#stop()
      *
      * @param thread      the thread
      * @param sleepCount  the sleepCount
@@ -53,6 +53,7 @@ public final class Threads {
             return stopThread(thread);
         }
 
+        // sleep for wait the tread run method block code execute finish
         LOG.info("Thread stopping: {}", thread.getName());
         while (sleepCount-- > 0 && sleepMillis > 0 && !isStopped(thread)) {
             try {
@@ -65,17 +66,19 @@ public final class Threads {
             }
         }
 
-        if (!isStopped(thread)) {
-            // interrupt and wait joined
-            thread.interrupt();
-            if (joinMillis > 0) {
-                try {
-                    thread.join(joinMillis);
-                } catch (InterruptedException e) {
-                    LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
-                    thread.interrupt();
-                    Thread.currentThread().interrupt();
-                }
+        if (isStopped(thread)) {
+            return false;
+        }
+
+        // interrupt and wait joined
+        thread.interrupt();
+        if (joinMillis > 0) {
+            try {
+                thread.join(joinMillis);
+            } catch (InterruptedException e) {
+                LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
+                thread.interrupt();
+                Thread.currentThread().interrupt();
             }
         }
 

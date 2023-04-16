@@ -28,17 +28,17 @@ public final class GraphNodeId {
     /**
      * Section
      */
-    public final int section;
+    private final int section;
 
     /**
      * Ordinal
      */
-    public final int ordinal;
+    private final int ordinal;
 
     /**
      * Name
      */
-    public final String name;
+    private final String name;
 
     private GraphNodeId(int section, int ordinal, String name) {
         this.section = section;
@@ -47,9 +47,9 @@ public final class GraphNodeId {
     }
 
     public static GraphNodeId of(int section, int ordinal, String name) {
-        Assert.isTrue(section > 0, "Graph node section must be greater than 0: " + section);
-        Assert.isTrue(ordinal > 0, "Graph node ordinal must be greater than 0: " + ordinal);
-        Assert.hasText(name, "Graph node name cannot be blank: " + name);
+        Assert.isTrue(section > 0, () -> "Graph node section must be greater than 0: " + section);
+        Assert.isTrue(ordinal > 0, () -> "Graph node ordinal must be greater than 0: " + ordinal);
+        Assert.hasText(name, () -> "Graph node name cannot be blank: " + name);
         return new GraphNodeId(section, ordinal, name);
     }
 

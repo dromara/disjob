@@ -6,7 +6,9 @@
 
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedInstance">
     <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
+    <result column="root_instance_id" jdbcType="BIGINT" property="rootInstanceId" />
     <result column="parent_instance_id" jdbcType="BIGINT" property="parentInstanceId" />
+    <result column="workflow_instance_id" jdbcType="BIGINT" property="workflowInstanceId" />
     <result column="job_id" jdbcType="BIGINT" property="jobId" />
     <result column="trigger_time" jdbcType="BIGINT" property="triggerTime" />
     <result column="run_type" jdbcType="TINYINT" property="runType" />
@@ -15,25 +17,48 @@
     <result column="run_end_time" jdbcType="TIMESTAMP" property="runEndTime" />
     <result column="run_duration" jdbcType="BIGINT" property="runDuration" />
     <result column="retried_count" jdbcType="TINYINT" property="retriedCount" />
+    <result column="attach" jdbcType="VARCHAR" property="attach" />
     <result column="version" jdbcType="INTEGER" property="version" />
     <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
     <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
   </resultMap>
 
   <sql id="Base_Column_List">
-    instance_id, parent_instance_id, job_id, trigger_time, run_type, run_state, run_start_time,
-    run_end_time, run_duration, retried_count, version, updated_at, created_at
+    instance_id, root_instance_id, parent_instance_id, workflow_instance_id,
+    job_id, trigger_time, run_type, run_state, run_start_time,
+    run_end_time, run_duration, retried_count,
+    attach, version, updated_at, created_at
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.scheduler.core.model.SchedInstance" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
-      instance_id, parent_instance_id, job_id,
-      trigger_time, run_type, run_state, retried_count,
-      version, updated_at, created_at
+      instance_id,
+      root_instance_id,
+      parent_instance_id,
+      workflow_instance_id,
+      job_id,
+      trigger_time,
+      run_type,
+      run_state,
+      retried_count,
+      attach,
+      version,
+      updated_at,
+      created_at
     ) VALUES (
-      #{instanceId,jdbcType=BIGINT}, #{parentInstanceId,jdbcType=BIGINT}, #{jobId,jdbcType=BIGINT},
-      #{triggerTime,jdbcType=BIGINT}, #{runType,jdbcType=TINYINT}, #{runState,jdbcType=TINYINT}, #{retriedCount,jdbcType=TINYINT},
-      1, #{updatedAt,jdbcType=TIMESTAMP}, #{createdAt,jdbcType=TIMESTAMP}
+      #{instanceId,jdbcType=BIGINT},
+      #{rootInstanceId,jdbcType=BIGINT},
+      #{parentInstanceId,jdbcType=BIGINT},
+      #{workflowInstanceId,jdbcType=BIGINT},
+      #{jobId,jdbcType=BIGINT},
+      #{triggerTime,jdbcType=BIGINT},
+      #{runType,jdbcType=TINYINT},
+      #{runState,jdbcType=TINYINT},
+      #{retriedCount,jdbcType=TINYINT},
+      #{attach,jdbcType=VARCHAR},
+      1,
+      #{updatedAt,jdbcType=TIMESTAMP},
+      #{createdAt,jdbcType=TIMESTAMP}
     )
   </insert>
 
@@ -106,7 +131,7 @@
   <select id="findUnterminatedRetry" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE parent_instance_id = #{parentInstanceId,jdbcType=BIGINT}
+    WHERE root_instance_id = #{rootInstanceId,jdbcType=BIGINT}
       AND run_type = 3
       AND run_state NOT IN (40, 50)
   </select>

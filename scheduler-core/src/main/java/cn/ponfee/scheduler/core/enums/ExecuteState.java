@@ -85,7 +85,7 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     MANUAL_CANCELED(57, RunState.CANCELED),
 
     /**
-     * 广播任务分配worker后因死亡导致未执行取消
+     * 广播未执行取消(分配的worker机器消亡)
      */
     WAITING_CANCELED(58, RunState.CANCELED),
     ;

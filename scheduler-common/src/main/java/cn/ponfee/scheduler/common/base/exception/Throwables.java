@@ -23,7 +23,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Checked exception for use in lambda
+ * Throwable utilities.
  *
  * @author Ponfee
  */
@@ -65,7 +65,7 @@ public final class Throwables {
     }
 
     /**
-     * eg: new Thread(CheckedThrowing.runnable(printer::print))
+     * eg: new Thread(Throwables.runnable(printer::print))
      *
      * @param runnable the ThrowingRunnable
      * @param <T>      the type of Throwable
@@ -251,6 +251,7 @@ public final class Throwables {
      * @param <E> the type of the input to the operation
      * @param <T> the type of the call accept method possible occur exception
      */
+    @FunctionalInterface
     public interface ThrowingConsumer<E, T extends Throwable> {
         void accept(E e) throws T;
 

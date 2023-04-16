@@ -22,7 +22,7 @@ import java.util.List;
 public abstract class ExecutionRouter {
 
     /**
-     * Route strategy
+     * Bind a route strategy
      *
      * @return RouteStrategy
      */

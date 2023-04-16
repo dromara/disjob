@@ -10,7 +10,7 @@
 
 ## Introduction
 
-一个分布式的任务调度框架，除了具备常规的分布式任务调度功能外，还提供子任务的拆分、运行中的任务控制、任务依赖、广播任务、工作流任务(DAG)、管理器与执行器分离部署等能力。
+一个分布式的任务调度框架，除了具备常规的分布式任务调度功能外，还提供子任务的拆分、运行中的任务控制、任务依赖、广播路由、工作流任务(DAG)、管理器与执行器分离部署等能力。
 
 轻量级，简单易用，特别适合长任务的执行。有较好的伸缩性，扩展性，稳定性，历经生产检验。
 
@@ -124,7 +124,7 @@ public class MergedApplication extends AbstractSamplesApplication {
 
 5. 执行以下curl命令添加任务(任选一台运行中的Supervisor应用替换`localhost:8081`)
   - `triggerValue`修改为大于当前时间的日期值以便即将触发(如当前时间点的下一分钟)
-  - `jobHandler`为刚编写的任务处理器类的全限定名（也支持直接贴源代码）
+  - `jobHandler`支持：类的全限定名、Spring bean name、源码
 
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/add' \
@@ -169,6 +169,6 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 
 - [x] Worker提供任务校验及拆分的Http接口供Supervisor调用（[WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)）
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
-- [ ] 工作流任务(Workflow DAG)、分布式计算任务(MapReduce)
+- [ ] 工作流任务(Workflow DAG)
 - [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
 - [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.scheduler.supervisor.dao.mapper.SchedWorkflowMapper">
+
+  <sql id="Table_Name">sched_workflow</sql>
+
+  <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedWorkflow">
+    <result column="workflow_instance_id" jdbcType="BIGINT" property="workflowInstanceId" />
+    <result column="pre_node_id" jdbcType="VARCHAR" property="preNodeId" />
+    <result column="cur_node_id" jdbcType="VARCHAR" property="curNodeId" />
+    <result column="sequence" jdbcType="INTEGER" property="sequence" />
+    <result column="run_state" jdbcType="TINYINT" property="runState" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    workflow_instance_id, pre_node_id, cur_node_id, sequence, run_state
+  </sql>
+
+  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO <include refid="Table_Name" /> (
+      workflow_instance_id,
+      pre_node_id,
+      cur_node_id,
+      sequence,
+      run_state
+    ) VALUES
+    <foreach collection="collection" item="item" separator=",">
+    (
+      #{item.workflowInstanceId,jdbcType=BIGINT},
+      #{item.preNodeId,jdbcType=VARCHAR},
+      #{item.curNodeId,jdbcType=VARCHAR},
+      #{item.sequence,jdbcType=INTEGER},
+      #{item.runState,jdbcType=TINYINT}
+    )
+    </foreach>
+  </insert>
+
+  <select id="findByWorkflowInstanceId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
+  </select>
+
+</mapper>

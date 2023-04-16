@@ -9,7 +9,6 @@
 package cn.ponfee.scheduler.supervisor.manager;
 
 import cn.ponfee.scheduler.common.base.IdGenerator;
-import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.base.Symbol.Str;
 import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.base.tuple.Tuple3;
@@ -22,21 +21,13 @@ import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.exception.JobException;
-import cn.ponfee.scheduler.core.model.SchedDepend;
-import cn.ponfee.scheduler.core.model.SchedInstance;
-import cn.ponfee.scheduler.core.model.SchedJob;
-import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
-import cn.ponfee.scheduler.core.param.StartTaskParam;
-import cn.ponfee.scheduler.core.param.TaskWorkerParam;
-import cn.ponfee.scheduler.core.param.TerminateTaskParam;
+import cn.ponfee.scheduler.core.model.*;
+import cn.ponfee.scheduler.core.param.*;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
-import cn.ponfee.scheduler.supervisor.dao.mapper.SchedDependMapper;
-import cn.ponfee.scheduler.supervisor.dao.mapper.SchedInstanceMapper;
-import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
-import cn.ponfee.scheduler.supervisor.dao.mapper.SchedTaskMapper;
+import cn.ponfee.scheduler.supervisor.dao.mapper.*;
+import cn.ponfee.scheduler.supervisor.param.SplitJobParam;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
@@ -113,6 +104,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     private final SchedInstanceMapper instanceMapper;
     private final SchedTaskMapper taskMapper;
     private final SchedDependMapper dependMapper;
+    private final SchedWorkflowMapper workflowMapper;
 
     public SchedulerJobManager(IdGenerator idGenerator,
                                SupervisorRegistry discoveryWorker,
@@ -122,13 +114,15 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                                SchedJobMapper jobMapper,
                                SchedInstanceMapper instanceMapper,
                                SchedTaskMapper taskMapper,
-                               SchedDependMapper dependMapper) {
+                               SchedDependMapper dependMapper,
+                               SchedWorkflowMapper workflowMapper) {
         super(idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
         this.transactionTemplate = transactionTemplate;
         this.jobMapper = jobMapper;
         this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;
         this.dependMapper = dependMapper;
+        this.workflowMapper = workflowMapper;
     }
 
     // ------------------------------------------------------------------database query
@@ -178,8 +172,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         return instanceMapper.getByTriggerTime(jobId, triggerTime, runType);
     }
 
-    public List<SchedInstance> findUnterminatedRetry(long instanceId) {
-        return instanceMapper.findUnterminatedRetry(instanceId);
+    public List<SchedInstance> findUnterminatedRetry(long rootInstanceId) {
+        return instanceMapper.findUnterminatedRetry(rootInstanceId);
     }
 
     // ------------------------------------------------------------------database single operation without transactional
@@ -283,13 +277,13 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         // 1、build sched instance and sched task list
         Date now = new Date();
         SchedInstance instance = SchedInstance.create(generateId(), job.getJobId(), RunType.MANUAL, now.getTime(), 0, now);
-        List<SchedTask> tasks = splitTasks(job, instance.getInstanceId(), now);
+        List<SchedTask> tasks = splitTasks(SplitJobParam.from(job), instance.getInstanceId(), now);
 
         // 2、save sched trace and sched task to database
         int row = instanceMapper.insert(instance);
         Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched instance fail: " + instance);
 
-        batchInsertTask(tasks);
+        insertBatchTask(tasks);
 
         // 3、dispatch job task
         TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, instance, tasks));
@@ -304,7 +298,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
      * @return if {@code true} operated success
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean updateAndSave(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
+    public boolean createNormalInstance(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
         int row = jobMapper.updateNextTriggerTime(job);
         if (row == 0) {
             // conflict operation, need not process
@@ -314,7 +308,31 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         row = instanceMapper.insert(instance);
         Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched instance fail: " + instance);
 
-        batchInsertTask(tasks);
+        insertBatchTask(tasks);
+        return true;
+    }
+
+    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    public boolean createWorkflowInstance(SchedJob job, SchedInstance rootInstance,
+                                          List<SchedWorkflow> workflows,
+                                          List<Tuple2<SchedInstance, List<SchedTask>>> subInstances) {
+        int row = jobMapper.updateNextTriggerTime(job);
+        if (row == 0) {
+            // conflict operation, need not process
+            return false;
+        }
+
+        row = instanceMapper.insert(rootInstance);
+        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched instance fail: " + rootInstance);
+
+        insertBatchWorkflow(workflows);
+
+        for (Tuple2<SchedInstance, List<SchedTask>> each : subInstances) {
+            row = instanceMapper.insert(each.a);
+            Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sub sched instance fail: " + rootInstance);
+            insertBatchTask(each.b);
+        }
+
         return true;
     }
 
@@ -515,7 +533,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             // 2、load the alive executing tasks
             List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
             if (executingTasks.isEmpty()) {
-                // 2.1、has non executing task, update sched instance state
+                // has non executing task, update sched instance state
                 Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findMediumByInstanceId(instanceId));
                 // must be paused or terminate
                 Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
@@ -523,7 +541,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                     log.warn("Pause instance from {} to {} conflict", runState, tuple.a);
                 }
             } else {
-                // 2.2、has alive executing tasks: dispatch and pause executing tasks
+                // has alive executing tasks: dispatch and pause executing tasks
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(executingTasks));
             }
 
@@ -555,7 +573,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             // 2、load the alive executing tasks
             List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
             if (executingTasks.isEmpty()) {
-                // 2.1、has non executing execute_state
+                // has non executing execute_state
                 Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findMediumByInstanceId(instanceId));
                 Assert.notNull(tuple, () -> "Cancel instance failed: " + instanceId);
                 // if all task paused, should update to canceled state
@@ -566,7 +584,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                     log.warn("Cancel instance from {} to {} conflict", runState, tuple.a);
                 }
             } else {
-                // 2.2、dispatch and cancel executing tasks
+                // dispatch and cancel executing tasks
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(executingTasks));
             }
 
@@ -667,7 +685,10 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         retriedCount++;
         long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
         SchedInstance retryInstance = SchedInstance.create(generateId(), schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
-        retryInstance.setParentInstanceId(prevInstance.obtainRootInstanceId());
+        retryInstance.setRootInstanceId(prevInstance.obtainRootInstanceId());
+        retryInstance.setParentInstanceId(prevInstance.getInstanceId());
+        retryInstance.setWorkflowInstanceId(prevInstance.getWorkflowInstanceId());
+        retryInstance.setAttach(prevInstance.getAttach());
 
         // 2、build sched tasks
         List<SchedTask> tasks;
@@ -675,7 +696,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             case ALL:
                 try {
                     // re-split tasks
-                    tasks = splitTasks(schedJob, retryInstance.getInstanceId(), now);
+                    tasks = splitTasks(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
                 } catch (Exception e) {
                     log.error("Split job error: " + schedJob + ", " + prevInstance, e);
                     return;
@@ -684,12 +705,9 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             case FAILED:
                 tasks = prevTasks.stream()
                     .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
-                    .filter(e -> !JobType.BROADCAST.equals(schedJob.getJobType()) || super.isAliveWorker(e.getWorker()))
-                    .map(e -> {
-                        SchedTask task = SchedTask.create(e.getTaskParam(), generateId(), retryInstance.getInstanceId(), now);
-                        task.setWorker(e.getWorker());
-                        return task;
-                    })
+                    // broadcast task cannot support partial retry
+                    .filter(e -> !RouteStrategy.BROADCAST.equals(schedJob.getRouteStrategy()) || super.isAliveWorker(e.getWorker()))
+                    .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstance.getInstanceId(), e.getTaskNo(), e.getTaskCount(), now, e.getWorker()))
                     .collect(Collectors.toList());
                 break;
             default:
@@ -700,7 +718,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         // 3、save to db
         Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         instanceMapper.insert(retryInstance);
-        batchInsertTask(tasks);
+        insertBatchTask(tasks);
 
         TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(schedJob, retryInstance, tasks));
     }
@@ -730,12 +748,15 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             try {
                 Date now = new Date();
                 SchedInstance instance = SchedInstance.create(generateId(), childJob.getJobId(), RunType.DEPEND, parentInstance.getTriggerTime(), 0, now);
-                instance.setParentInstanceId(parentInstance.obtainRootInstanceId());
-                List<SchedTask> tasks = splitTasks(childJob, instance.getInstanceId(), now);
+                instance.setRootInstanceId(parentInstance.obtainRootInstanceId());
+                instance.setParentInstanceId(parentInstance.getInstanceId());
+                instance.setWorkflowInstanceId(parentInstance.getWorkflowInstanceId());
+                instance.setAttach(parentInstance.getAttach());
+                List<SchedTask> tasks = splitTasks(SplitJobParam.from(childJob), instance.getInstanceId(), now);
 
                 // save to db
                 instanceMapper.insert(instance);
-                batchInsertTask(tasks);
+                insertBatchTask(tasks);
 
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(childJob, instance, tasks));
             } catch (Exception e) {
@@ -744,37 +765,53 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         }
     }
 
-    private void batchInsertTask(List<SchedTask> tasks) {
+    private void insertBatchTask(List<SchedTask> tasks) {
         Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         if (tasks.size() <= JobConstants.PROCESS_BATCH_SIZE) {
-            int row = taskMapper.batchInsert(tasks);
+            int row = taskMapper.insertBatch(tasks);
             Assert.state(row == tasks.size(), () -> "Insert sched task fail: " + tasks);
         } else {
             List<List<SchedTask>> partition = Lists.partition(tasks, JobConstants.PROCESS_BATCH_SIZE);
             for (List<SchedTask> list : partition) {
-                int row = taskMapper.batchInsert(list);
+                int row = taskMapper.insertBatch(list);
                 Assert.state(row == list.size(), () -> "Insert sched task fail: " + tasks);
+            }
+        }
+    }
+
+    private void insertBatchWorkflow(List<SchedWorkflow> workflows) {
+        Assert.notEmpty(workflows, "Insert list of workflow cannot be empty.");
+        if (workflows.size() <= JobConstants.PROCESS_BATCH_SIZE) {
+            int row = workflowMapper.insertBatch(workflows);
+            Assert.state(row == workflows.size(), () -> "Insert sched workflow fail: " + workflows.get(0).getWorkflowInstanceId());
+        } else {
+            List<List<SchedWorkflow>> partition = Lists.partition(workflows, JobConstants.PROCESS_BATCH_SIZE);
+            for (List<SchedWorkflow> list : partition) {
+                int row = workflowMapper.insertBatch(list);
+                Assert.state(row == list.size(), () -> "Insert sched task fail: " + workflows.get(0).getWorkflowInstanceId());
             }
         }
     }
 
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operations ops) {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
-        SchedJob jobProxy = LazyLoader.of(SchedJob.class, jobMapper::getByJobId, instance.getJobId());
+        ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, jobMapper::getByJobId);
+        // immediate trigger
+        long triggerTime = 0L;
         taskMapper.findMediumByInstanceId(instance.getInstanceId())
             .stream()
             .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
             .forEach(task -> {
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (super.isAliveWorker(worker)) {
-                    executingTasks.add(new ExecuteTaskParam(ops, task.getTaskId(), instance.getInstanceId(), instance.getJobId(), JobType.of(jobProxy.getJobType()), 0L, worker));
+                    executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));
                 } else {
                     // update dead task
                     Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
                     int row = taskMapper.terminate(task.getTaskId(), ops.toState().value(), ExecuteState.EXECUTING.value(), executeEndTime, null);
                     if (row != AFFECTED_ONE_ROW) {
                         log.warn("Cancel the dead task failed: {}", task);
-                        executingTasks.add(new ExecuteTaskParam(ops, task.getTaskId(), instance.getInstanceId(), instance.getJobId(), JobType.of(jobProxy.getJobType()), 0L, worker));
+                        executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));
                     } else {
                         log.info("Cancel the dead task success: {}", task);
                     }

@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.core.param;
 
+import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.common.util.GenericUtils;
@@ -15,7 +16,10 @@ import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.handle.TaskExecutor;
+import cn.ponfee.scheduler.core.model.SchedInstance;
+import cn.ponfee.scheduler.core.model.SchedJob;
 import com.alibaba.fastjson.annotation.JSONType;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
@@ -27,8 +31,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -36,6 +38,9 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Task execution parameter.
@@ -50,9 +55,13 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     private final AtomicReference<Operations> operation;
     private final long taskId;
     private final long instanceId;
+    private final long triggerTime;
+
     private final long jobId;
     private final JobType jobType;
-    private final long triggerTime;
+    private final RouteStrategy routeStrategy;
+    private final int executeTimeout;
+    private final String jobHandler;
 
     /**
      * 任务执行器(JVM进程)
@@ -67,33 +76,56 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     /**
      * Constructor
      *
-     * @param operation   the operation(if terminate task, this is null value)
-     * @param taskId      the task id
-     * @param instanceId  the instance id
-     * @param jobId       the job id
-     * @param jobType     the job type
-     * @param triggerTime the trigger time
-     * @param worker      the worker
+     * @param operation      the operation(if terminate task, this is null value)
+     * @param taskId         the task id
+     * @param instanceId     the instance id
+     * @param triggerTime    the trigger time
+     * @param jobId          the job id
+     * @param jobType        the job type
+     * @param routeStrategy  the route strategy
+     * @param executeTimeout the execution timeout
+     * @param jobHandler     the job handler
      */
-    public ExecuteTaskParam(@NotNull Operations operation,
+    public ExecuteTaskParam(Operations operation,
                             long taskId,
                             long instanceId,
-                            long jobId,
-                            @NotNull JobType jobType,
                             long triggerTime,
-                            @Nullable Worker worker) {
+                            long jobId,
+                            JobType jobType,
+                            RouteStrategy routeStrategy,
+                            int executeTimeout,
+                            String jobHandler) {
         Assert.notNull(operation, "Operation cannot null.");
-        Assert.notNull(jobType, "Job type cannot null.");
+        Assert.notNull(routeStrategy, "Route strategy cannot null.");
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
         this.instanceId = instanceId;
+        this.triggerTime = triggerTime;
         this.jobId = jobId;
         this.jobType = jobType;
-        this.triggerTime = triggerTime;
-        this.worker = worker;
+        this.routeStrategy = routeStrategy;
+        this.executeTimeout = executeTimeout;
+        this.jobHandler = jobHandler;
+    }
+
+    public static ExecuteTaskParamBuilder builder(SchedInstance instance,
+                                                  Function<Long, SchedJob> jobLoader) {
+        return builder(instance, LazyLoader.of(SchedJob.class, jobLoader, instance.getJobId()));
+    }
+
+    public static ExecuteTaskParamBuilder builder(SchedInstance instance, SchedJob schedJob) {
+        return new ExecuteTaskParamBuilder(instance, schedJob);
     }
 
     // ------------------------------------------------getter/setter
+    /**
+     * For help to deserialization
+     *
+     * @return AtomicReference
+     */
+    public AtomicReference<Operations> getOperation() {
+        return operation;
+    }
 
     public long getTaskId() {
         return taskId;
@@ -101,6 +133,10 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
 
     public long getInstanceId() {
         return instanceId;
+    }
+
+    public long getTriggerTime() {
+        return triggerTime;
     }
 
     public long getJobId() {
@@ -111,18 +147,19 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         return jobType;
     }
 
-    public long getTriggerTime() {
-        return triggerTime;
+    public RouteStrategy getRouteStrategy() {
+        return routeStrategy;
     }
 
-    /**
-     * For help to deserialization
-     *
-     * @return AtomicReference
-     */
-    public AtomicReference<Operations> getOperation() {
-        return operation;
+    public int getExecuteTimeout() {
+        return executeTimeout;
     }
+
+    public String getJobHandler() {
+        return jobHandler;
+    }
+
+    // ------------------------------------------------worker
 
     public Worker getWorker() {
         return worker;
@@ -171,13 +208,15 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
             && this.taskId          == other.taskId
             && this.instanceId      == other.instanceId
             && this.jobId           == other.jobId
-            && this.jobType         == other.jobType
-            && this.triggerTime     == other.triggerTime;
+            && this.routeStrategy   == other.routeStrategy
+            && this.triggerTime     == other.triggerTime
+            && this.executeTimeout  == other.executeTimeout
+            && this.jobHandler.equals(other.jobHandler);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(operation.get().ordinal(), taskId, instanceId, jobId, jobType, triggerTime);
+        return Objects.hash(operation.get().ordinal(), taskId, instanceId, jobId, routeStrategy, triggerTime, executeTimeout, jobHandler);
     }
 
     /**
@@ -187,13 +226,17 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
      */
     public byte[] serialize() {
         // unnecessary do flip
-        return ByteBuffer.allocate(34)
-            .put((byte) operation.get().ordinal())
-            .putLong(taskId)
-            .putLong(instanceId)
-            .putLong(jobId)
-            .put((byte) jobType.ordinal())
-            .putLong(triggerTime)
+        byte[] jobHandlerBytes = jobHandler.getBytes(UTF_8);
+        return ByteBuffer.allocate(39 + jobHandlerBytes.length)
+            .put((byte) operation.get().ordinal()) // 1: operation
+            .putLong(taskId)                       // 8: taskId
+            .putLong(instanceId)                   // 8: instanceId
+            .putLong(triggerTime)                  // 8: triggerTime
+            .putLong(jobId)                        // 8: jobId
+            .put((byte) jobType.ordinal())         // 1: jobType
+            .put((byte) routeStrategy.ordinal())   // 1: routeStrategy
+            .putInt(executeTimeout)                // 4: executeTimeout
+            .put(jobHandlerBytes)                  // x: jobHandlerBytes
             .array();
     }
 
@@ -206,16 +249,17 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     public static ExecuteTaskParam deserialize(byte[] bytes) {
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         return new ExecuteTaskParam(
-            Operations.values()[buf.get()],
-            buf.getLong(),
-            buf.getLong(),
-            buf.getLong(),
-            JobType.values()[buf.get()],
-            buf.getLong(),
-            null
+            Operations.values()[buf.get()],          // operation
+            buf.getLong(),                           // taskId
+            buf.getLong(),                           // instanceId
+            buf.getLong(),                           // triggerTime
+            buf.getLong(),                           // jobId
+            JobType.values()[buf.get()],             // jobType
+            RouteStrategy.values()[buf.get()],       // routeStrategy
+            buf.getInt(),                            // executeTimeout
+            new String(getRemaining(buf, 39), UTF_8) // jobHandler
         );
     }
-
 
     // -----------------------------------------------------custom fastjson deserialize
 
@@ -249,6 +293,12 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         }
     }
 
+    private static byte[] getRemaining(ByteBuffer buf, int offset) {
+        byte[] bytes = new byte[buf.limit() - offset];
+        buf.get(bytes);
+        return bytes;
+    }
+
     private static ExecuteTaskParam of(Map<String, ?> map) {
         if (map == null) {
             return null;
@@ -257,13 +307,21 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         Operations operation = EnumUtils.getEnumIgnoreCase(Operations.class, MapUtils.getString(map, "operation"));
         long taskId = MapUtils.getLongValue(map, "taskId");
         long instanceId = MapUtils.getLongValue(map, "instanceId");
+        long triggerTime = MapUtils.getLongValue(map, "triggerTime");
         long jobId = MapUtils.getLongValue(map, "jobId");
         JobType jobType = EnumUtils.getEnumIgnoreCase(JobType.class, MapUtils.getString(map, "jobType"));
-        long triggerTime = MapUtils.getLongValue(map, "triggerTime");
+        RouteStrategy routeStrategy = EnumUtils.getEnumIgnoreCase(RouteStrategy.class, MapUtils.getString(map, "routeStrategy"));
+        int executeTimeout = MapUtils.getInteger(map, "executeTimeout");
+        String jobHandler = MapUtils.getString(map, "jobHandler");
         Worker worker = Worker.of((Map<String, ?>) map.get("worker"));
 
         // operation is null if terminate task
-        return new ExecuteTaskParam(operation, taskId, instanceId, jobId, jobType, triggerTime, worker);
+        ExecuteTaskParam param = new ExecuteTaskParam(
+            operation, taskId, instanceId, triggerTime, jobId,
+            jobType, routeStrategy, executeTimeout, jobHandler
+        );
+        param.setWorker(worker);
+        return param;
     }
 
 }

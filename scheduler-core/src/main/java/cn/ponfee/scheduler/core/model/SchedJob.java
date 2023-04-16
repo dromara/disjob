@@ -60,7 +60,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer jobState;
 
     /**
-     * Job类型：1-普通(Normal)；2-广播(Broadcast)；3-工作流(Workflow)；4-分布式计算(MapReduce)；
+     * Job类型：1-普通(Normal)；2-工作流(Workflow)；
      *
      * @see JobType
      */
@@ -130,7 +130,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer misfireStrategy;
 
     /**
-     * 任务分配给哪一个worker的路由策：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；
+     * 任务分配给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；
      *
      * @see RouteStrategy
      */
@@ -170,6 +170,11 @@ public class SchedJob extends BaseEntity implements Serializable {
      * 是否已删除：0-否；NULL-是(用NULL来解决因软删引起的唯一索引冲突问题)；
      */
     private Boolean deleted;
+
+    /**
+     * 行记录版本号
+     */
+    private Integer version;
 
     /**
      * 更新人

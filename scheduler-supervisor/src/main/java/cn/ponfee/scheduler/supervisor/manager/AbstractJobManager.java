@@ -12,16 +12,19 @@ import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
-import cn.ponfee.scheduler.core.enums.JobType;
+import cn.ponfee.scheduler.core.enums.Operations;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.handle.SplitTask;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
+import cn.ponfee.scheduler.core.param.ExecuteTaskParamBuilder;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
 import cn.ponfee.scheduler.registry.SupervisorRegistry;
 import cn.ponfee.scheduler.supervisor.base.WorkerServiceClient;
+import cn.ponfee.scheduler.supervisor.param.SplitJobParam;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,9 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * The base job manager
@@ -60,34 +65,25 @@ public abstract class AbstractJobManager {
         Assert.isTrue(result, () -> "Invalid job: " + job.getJobHandler());
     }
 
-    public List<SchedTask> splitTasks(SchedJob job, long instanceId, Date date) throws JobException {
-        JobType jobType = JobType.of(job.getJobType());
-        switch (jobType) {
-            case NORMAL:
-                List<SplitTask> split = workerServiceClient.split(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-                Assert.notEmpty(split, () -> "Not split any task: " + job);
-                Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + job);
-                return split.stream()
-                    .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, date))
-                    .collect(Collectors.toList());
-            case BROADCAST:
-                List<Worker> discoveredServers = discoveryWorker.getDiscoveredServers(job.getJobGroup());
-                if (discoveredServers.isEmpty()) {
-                    throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
-                }
-                return discoveredServers.stream()
-                    .map(e -> {
-                        SchedTask schedTask = SchedTask.create(job.getJobParam(), generateId(), instanceId, date);
-                        // pre-assign worker
-                        schedTask.setWorker(e.serialize());
-                        return schedTask;
-                    })
-                    .collect(Collectors.toList());
-            case WORKFLOW:
-                // TODO
-                return null;
-            default:
-                throw new UnsupportedOperationException("Unsupported job type: " + jobType);
+    public List<SchedTask> splitTasks(SplitJobParam param, long instanceId, Date date) throws JobException {
+
+        if (RouteStrategy.BROADCAST.equals(param.getRouteStrategy())) {
+            List<Worker> discoveredServers = discoveryWorker.getDiscoveredServers(param.getJobGroup());
+            if (discoveredServers.isEmpty()) {
+                throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
+            }
+            int count = discoveredServers.size();
+            return IntStream.range(0, count)
+                .mapToObj(i -> SchedTask.create(param.getJobParam(), generateId(), instanceId, i + 1, count, date, discoveredServers.get(i).serialize()))
+                .collect(Collectors.toList());
+        } else {
+            List<SplitTask> split = workerServiceClient.split(param.getJobGroup(), param.getJobHandler(), param.getJobParam());
+            Assert.notEmpty(split, () -> "Not split any task: " + param);
+            Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + param);
+            int count = split.size();
+            return IntStream.range(0, count)
+                .mapToObj(i -> SchedTask.create(split.get(i).getTaskParam(), generateId(), instanceId, i + 1, count, date, null))
+                .collect(Collectors.toList());
         }
     }
 
@@ -128,39 +124,40 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        if (JobType.BROADCAST.equals(job.getJobType())) {
-            tasks = tasks.stream()
-                .filter(e -> {
-                    Assert.hasText(e.getWorker(), () -> "Broadcast task must be pre-assign worker: " + e.getTaskId());
-                    if (isDeadWorker(e.getWorker())) {
-                        cancelWaitingTask(e.getTaskId());
-                        return false;
-                    } else {
-                        return true;
-                    }
-                })
-                .collect(Collectors.toList());
+        boolean isBroadcast = RouteStrategy.BROADCAST.equals(job.getRouteStrategy());
+        ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, job);
+        List<ExecuteTaskParam> list = new ArrayList<>(tasks.size());
+        for (SchedTask task : tasks) {
+            if (isBroadcast) {
+                Assert.hasText(task.getWorker(), () -> "Broadcast route strategy worker must pre assign: " + task.getTaskId());
+                Worker worker = Worker.deserialize(task.getWorker());
+                if (isDeadWorker(worker)) {
+                    cancelWaitingTask(task.getTaskId());
+                } else {
+                    list.add(builder.build(Operations.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
+                }
+            } else {
+                Assert.isTrue(StringUtils.isBlank(task.getWorker()), () -> job.getRouteStrategy() + " route strategy worker must be null: " + task.getTaskId());
+                list.add(builder.build(Operations.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
+            }
         }
-
-        return taskDispatcher.dispatch(job, instance, tasks);
+        return taskDispatcher.dispatch(list, job.getJobGroup());
     }
 
     public boolean dispatch(List<ExecuteTaskParam> params) {
-        params = params.stream()
-            .filter(e -> {
-                if (JobType.BROADCAST == e.getJobType() && isDeadWorker(e.getWorker())) {
-                    cancelWaitingTask(e.getTaskId());
-                    return false;
-                } else {
-                    return true;
-                }
-            })
-            .collect(Collectors.toList());
-        return taskDispatcher.dispatch(params);
+        List<ExecuteTaskParam> list = new ArrayList<>(params.size());
+        for (ExecuteTaskParam param : params) {
+            if (RouteStrategy.BROADCAST == param.getRouteStrategy() && isDeadWorker(param.getWorker())) {
+                cancelWaitingTask(param.getTaskId());
+            } else {
+                list.add(param);
+            }
+        }
+        return taskDispatcher.dispatch(list);
     }
 
     /**
-     * Broadcast task after assigned worker, and then the worker is dead,
+     * Broadcast strategy after assigned worker, and then the worker is dead,
      * the task always waiting state until canceled.
      *
      * @param taskId the task id

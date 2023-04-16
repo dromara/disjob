@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.samples.common.handler;
+package cn.ponfee.scheduler.samples.common.util;
 
 import com.google.common.math.LongMath;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * Counts prime
- * 
+ *
  * @author Ponfee
  */
 public class Prime {

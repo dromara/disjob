@@ -7,6 +7,8 @@
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedTask">
     <result column="task_id" jdbcType="BIGINT" property="taskId" />
     <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
+    <result column="task_no" jdbcType="INTEGER" property="taskNo" />
+    <result column="task_count" jdbcType="INTEGER" property="taskCount" />
     <result column="execute_state" jdbcType="TINYINT" property="executeState" />
     <result column="worker" jdbcType="VARCHAR" property="worker" />
     <result column="version" jdbcType="INTEGER" property="version" />
@@ -17,14 +19,14 @@
     <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
     <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
     <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
-    <result column="execute_snapshot" jdbcType="VARCHAR" property="executeSnapshot" />
+    <result column="execute_snapshot" jdbcType="LONGVARCHAR" property="executeSnapshot" />
     <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
     <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
     <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
   </resultMap>
 
   <sql id="Medium_Column_List">
-    task_id, instance_id, execute_state, worker, version
+    task_id, instance_id, task_no, task_count, execute_state, worker, version
   </sql>
 
   <sql id="Large_Column_List">
@@ -33,9 +35,10 @@
     task_param, execute_snapshot, error_msg, updated_at, created_at
   </sql>
 
-  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       task_id, instance_id,
+      task_no, task_count,
       task_param, execute_state,
       worker, version,
       updated_at, created_at
@@ -43,6 +46,7 @@
     <foreach collection="collection" item="item" separator=",">
     (
       #{item.taskId,jdbcType=BIGINT},#{item.instanceId,jdbcType=BIGINT},
+      #{item.taskNo,jdbcType=INTEGER},#{item.taskCount,jdbcType=INTEGER},
       #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
       #{item.worker,jdbcType=VARCHAR}, 1,
       #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
@@ -121,7 +125,7 @@
 
   <update id="checkpoint">
     UPDATE <include refid="Table_Name" />
-    SET execute_snapshot = #{executeSnapshot,jdbcType=VARCHAR},
+    SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR},
         version = version+1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = 20

@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.common.util.Fields;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -165,7 +166,7 @@ public class TimingWheelTest {
         TimingQueue<ExecuteTaskParam> timingQueue = new TimingQueue<>();
         for (int i = 0; i < 100; i++) {
             long triggerTime = ThreadLocalRandom.current().nextLong(100);
-            timingQueue.offer(new ExecuteTaskParam(Operations.TRIGGER, 0L, 0L, 0L, JobType.NORMAL, triggerTime, null));
+            timingQueue.offer(new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 0, triggerTime, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
         }
 
         System.out.println("-------------\n");
@@ -191,7 +192,7 @@ public class TimingWheelTest {
 
         for (int i = 0; i < 100000; i++) {
             long triggerTime = System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour);
-            timingWheel.offer(new ExecuteTaskParam(Operations.TRIGGER, 0L, 0L, 0L, JobType.NORMAL, triggerTime, null));
+            timingWheel.offer(new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 0, triggerTime, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
         }
     }
 

@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.core.route;
 
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
+import org.springframework.util.Assert;
 
 import java.util.Objects;
 
@@ -23,17 +24,24 @@ public class ExecutionRouterRegistrar {
     private static final ExecutionRouter[] REGISTERED_ROUTES = new ExecutionRouter[RouteStrategy.values().length];
 
     static {
-        // register default execution router
-        register(new RoundRobinExecutionRouter());
-        register(new RandomExecutionRouter());
-        register(new SimpleHashExecutionRouter());
-        register(new ConsistentHashExecutionRouter());
-        register(new LocalPriorityExecutionRouter(new RoundRobinExecutionRouter()));
+        // register built-in execution router
+        register0(new RoundRobinExecutionRouter());
+        register0(new RandomExecutionRouter());
+        register0(new SimpleHashExecutionRouter());
+        register0(new ConsistentHashExecutionRouter());
+        register0(new LocalPriorityExecutionRouter(new RoundRobinExecutionRouter()));
+        register0(BroadcastExecutionRouter.INSTANCE);
+    }
+
+    private static synchronized void register0(ExecutionRouter executionRouter) {
+        REGISTERED_ROUTES[executionRouter.routeStrategy().ordinal()] = executionRouter;
     }
 
     public static synchronized void register(ExecutionRouter executionRouter) {
-        Objects.requireNonNull(executionRouter, "Execution router cannot be null.");
-        REGISTERED_ROUTES[executionRouter.routeStrategy().ordinal()] = executionRouter;
+        Assert.isTrue(executionRouter != null, "Register execution router cannot be null.");
+        Assert.isTrue(executionRouter.routeStrategy() != null, "Register execution router strategy cannot be null.");
+        Assert.isTrue(executionRouter.routeStrategy() != RouteStrategy.BROADCAST, "Cannot register broadcast strategy.");
+        register0(executionRouter);
     }
 
     public static ExecutionRouter get(RouteStrategy routeStrategy) {

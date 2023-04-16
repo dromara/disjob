@@ -16,7 +16,7 @@ import java.util.Date;
 
 /**
  * Base entity.
- * 
+ *
  * @author Ponfee
  */
 @Getter
@@ -28,21 +28,16 @@ public abstract class BaseEntity extends ToJsonString implements java.io.Seriali
     /**
      * 自增主键ID
      */
-    private Long         id;
-
-    /**
-     * 行记录版本号
-     */
-    private Integer version;
+    private Long id;
 
     /**
      * 更新时间
      */
-    private Date  updatedAt;
+    private Date updatedAt;
 
     /**
      * 创建时间
      */
-    private Date  createdAt;
+    private Date createdAt;
 
 }

@@ -18,6 +18,7 @@ import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.JobType;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.core.param.TaskWorkerParam;
 import cn.ponfee.scheduler.registry.Discovery;
@@ -137,7 +138,7 @@ public class RotatingTimingWheel implements Startable {
             List<List<ExecuteTaskParam>> partition = Lists.partition(matchedTriggers, PROCESS_BATCH_SIZE);
             for (List<ExecuteTaskParam> batchTriggers : partition) {
                 List<TaskWorkerParam> list = batchTriggers.stream()
-                    .filter(e -> e.getJobType() != JobType.BROADCAST)
+                    .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
                     .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
                     .collect(Collectors.toList());
                 try {

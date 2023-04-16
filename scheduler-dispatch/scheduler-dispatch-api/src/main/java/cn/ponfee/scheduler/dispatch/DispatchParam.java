@@ -8,7 +8,6 @@
 
 package cn.ponfee.scheduler.dispatch;
 
-import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 
 import java.util.StringJoiner;
@@ -22,13 +21,11 @@ class DispatchParam {
 
     private final ExecuteTaskParam executeTaskParam;
     private final String group;
-    private final RouteStrategy routeStrategy;
     private int retried = 0;
 
-    public DispatchParam(ExecuteTaskParam executeTaskParam, String group, RouteStrategy routeStrategy) {
+    public DispatchParam(ExecuteTaskParam executeTaskParam, String group) {
         this.executeTaskParam = executeTaskParam;
         this.group = group;
-        this.routeStrategy = routeStrategy;
     }
 
     public ExecuteTaskParam executeTaskParam() {
@@ -37,10 +34,6 @@ class DispatchParam {
 
     public String group() {
         return group;
-    }
-
-    public RouteStrategy routeStrategy() {
-        return routeStrategy;
     }
 
     public void retrying() {
@@ -56,7 +49,6 @@ class DispatchParam {
         return new StringJoiner(", ", DispatchParam.class.getSimpleName() + "[", "]")
             .add("executeTaskParam=" + executeTaskParam)
             .add(group == null ? "group=null" : "group='" + group + "'")
-            .add("routeStrategy=" + routeStrategy)
             .add("retried=" + retried)
             .toString();
     }

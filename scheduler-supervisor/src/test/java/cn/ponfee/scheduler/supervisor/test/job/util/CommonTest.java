@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.common.util.URLCodes;
 import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
+import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -82,14 +83,17 @@ public class CommonTest {
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
-            JobType.NORMAL,
             ThreadLocalRandom.current().nextLong(),
-            null
+            JobType.NORMAL,
+            RouteStrategy.ROUND_ROBIN,
+            1,
+            "JobHandler测试中文乱码。"
         );
         System.out.println(param1);
         ExecuteTaskParam param2 = ExecuteTaskParam.deserialize(param1.serialize());
         Assertions.assertFalse(param1 == param2);
         Assertions.assertEquals(param1, param2);
+        Assertions.assertEquals(param1.getJobHandler(), param2.getJobHandler());
     }
 
     @Test

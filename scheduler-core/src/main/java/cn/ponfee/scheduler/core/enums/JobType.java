@@ -28,19 +28,11 @@ public enum JobType implements IntValueEnum<JobType> {
     NORMAL(1),
 
     /**
-     * 广播
+     * 工作流(DAG)
      */
-    BROADCAST(2),
+    WORKFLOW(2),
 
-    /**
-     * 工作流(DAG), Unimplemented
-     */
-    WORKFLOW(3),
-
-    /**
-     * 分布式计算(MapReduce), Unimplemented
-     */
-    MAP_REDUCE(4);
+    ;
 
     private static final Map<Integer, JobType> MAPPING = Enums.toMap(JobType.class, JobType::value);
 

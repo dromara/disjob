@@ -12,6 +12,7 @@ import cn.ponfee.scheduler.common.base.ToJsonString;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
 import cn.ponfee.scheduler.core.enums.Operations;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.util.Assert;
 
@@ -24,6 +25,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 public class TerminateTaskParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7700836087189718161L;
 
@@ -32,9 +34,6 @@ public class TerminateTaskParam extends ToJsonString implements Serializable {
     private Operations operation;
     private ExecuteState toState;
     private String errorMsg;
-
-    public TerminateTaskParam() {
-    }
 
     public TerminateTaskParam(long instanceId, long taskId, Operations operation,
                               ExecuteState toState, String errorMsg) {
