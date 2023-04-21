@@ -40,6 +40,7 @@
       trigger_time,
       run_type,
       run_state,
+      run_start_time,
       retried_count,
       attach,
       version,
@@ -54,6 +55,7 @@
       #{triggerTime,jdbcType=BIGINT},
       #{runType,jdbcType=TINYINT},
       #{runState,jdbcType=TINYINT},
+      #{runStartTime,jdbcType=TIMESTAMP},
       #{retriedCount,jdbcType=TINYINT},
       #{attach,jdbcType=VARCHAR},
       1,
@@ -64,12 +66,6 @@
 
   <select id="getByInstanceId" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List" />
-    FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-  </select>
-
-  <select id="getStateByInstanceId" parameterType="_long" resultType="int">
-    SELECT run_state
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
@@ -124,6 +120,7 @@
     WHERE run_state = #{runState,jdbcType=TINYINT}
       AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
       AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
+      AND (workflow_instance_id IS NULL OR instance_id!=workflow_instance_id)
     ORDER BY trigger_time
     LIMIT #{size}
   </select>
@@ -144,19 +141,11 @@
       AND version = #{version,jdbcType=INTEGER}
   </update>
 
-  <select id="lockAndGet" parameterType="_long" resultMap="BaseResultMap">
-    SELECT <include refid="Base_Column_List" /> FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
-  </select>
-
-  <select id="lockAndGetId" parameterType="_long" resultType="long">
-    SELECT id FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
-  </select>
-
-  <select id="lockAndGetState" parameterType="_long" resultType="int">
-    SELECT run_state FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT} FOR UPDATE
+  <select id="lock" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+    FOR UPDATE
   </select>
 
   <delete id="deleteByInstanceId" parameterType="_long">

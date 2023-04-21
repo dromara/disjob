@@ -42,6 +42,7 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
     private Date runEndTime;
     private Long runDuration;
     private Integer retriedCount;
+    private String attach;
 
     private List<SchedTaskResponse> tasks;
 

@@ -17,7 +17,6 @@ import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
-import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;
 import cn.ponfee.scheduler.core.param.TaskWorkerParam;

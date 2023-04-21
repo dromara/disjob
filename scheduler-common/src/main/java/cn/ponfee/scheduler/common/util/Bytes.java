@@ -89,7 +89,7 @@ public final class Bytes {
     // -----------------------------------------------------------------char array
     /**
      * Converts byte array to char array
-     * 
+     *
      * @param bytes the byte array
      * @return a char array
      */
@@ -99,7 +99,7 @@ public final class Bytes {
 
     /**
      * Converts byte array to char array
-     * 
+     *
      * @param bytes the byte array
      * @param charset the charset
      * @return a char array
@@ -114,7 +114,7 @@ public final class Bytes {
 
     /**
      * Converts char array to byte array
-     * 
+     *
      * @param chars the char array
      * @return a byte array
      */
@@ -124,7 +124,7 @@ public final class Bytes {
 
     /**
      * Converts char array to byte array
-     * 
+     *
      * @param chars the char array
      * @param charset the charset
      * @return a byte array
@@ -296,7 +296,7 @@ public final class Bytes {
     // ---------------------------------------------------------BigInteger
     /**
      * Converts byte array to positive BigInteger
-     * 
+     *
      * @param bytes the byte array
      * @return a positive BigInteger number
      */
@@ -336,6 +336,16 @@ public final class Bytes {
             }
         }
         return result;
+    }
+
+    public static byte[] remaining(ByteBuffer buf) {
+        int count = buf.limit() - buf.position();
+        if (count <= 0) {
+            return null;
+        }
+        byte[] bytes = new byte[count];
+        buf.get(bytes);
+        return bytes;
     }
 
 }

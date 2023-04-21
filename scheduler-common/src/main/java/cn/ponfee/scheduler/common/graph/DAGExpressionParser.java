@@ -94,28 +94,28 @@ public class DAGExpressionParser {
         this.expression = text.trim();
     }
 
-    public Graph<GraphNodeId> parse() {
+    public Graph<DAGNode> parse() {
         List<String> sections = Stream.of(expression.split(";")).filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
         Assert.notEmpty(sections, () -> "Invalid split with ';' expression: " + expression);
 
-        ImmutableGraph.Builder<GraphNodeId> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
+        ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
         for (int i = 0, n = sections.size(); i < n; i++) {
             String section = sections.get(i);
             Assert.isTrue(checkParenthesis(section), () -> "Invalid expression parenthesis: " + section);
             String expr = completeParenthesis(section);
-            buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, GraphNodeId.START, GraphNodeId.END);
+            buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, DAGNode.START, DAGNode.END);
         }
 
-        ImmutableGraph<GraphNodeId> graph = graphBuilder.build();
+        ImmutableGraph<DAGNode> graph = graphBuilder.build();
         Assert.state(graph.nodes().size() > 2, () -> "Expression not any name: " + expression);
-        Assert.state(graph.successors(GraphNodeId.START).stream().noneMatch(GraphNodeId::isEnd), () -> "Expression name cannot direct end: " + expression);
-        Assert.state(graph.predecessors(GraphNodeId.END).stream().noneMatch(GraphNodeId::isStart), () -> "Expression name cannot direct start: " + expression);
+        Assert.state(graph.successors(DAGNode.START).stream().noneMatch(DAGNode::isEnd), () -> "Expression name cannot direct end: " + expression);
+        Assert.state(graph.predecessors(DAGNode.END).stream().noneMatch(DAGNode::isStart), () -> "Expression name cannot direct start: " + expression);
         Assert.state(!Graphs.hasCycle(graph), () -> "Expression name section has cycle: " + expression);
         return graph;
     }
 
     private void buildGraph(int section, List<String> expressions,
-                            ImmutableGraph.Builder<GraphNodeId> graphBuilder, GraphNodeId prev, GraphNodeId next) {
+                            ImmutableGraph.Builder<DAGNode> graphBuilder, DAGNode prev, DAGNode next) {
         // 划分第一个stage
         Tuple2<List<String>, List<String>> tuple = divideFirstStage(expressions);
         if (tuple == null) {
@@ -128,7 +128,7 @@ public class DAGExpressionParser {
             Assert.notEmpty(list, () -> "Invalid expression: " + String.join("", expressions));
             if (list.size() == 1) {
                 String name = list.get(0);
-                GraphNodeId node = GraphNodeId.of(section, increment(name), name);
+                DAGNode node = DAGNode.of(section, increment(name), name);
                 graphBuilder.putEdge(prev, node);
                 if (remains == null) {
                     graphBuilder.putEdge(node, next);

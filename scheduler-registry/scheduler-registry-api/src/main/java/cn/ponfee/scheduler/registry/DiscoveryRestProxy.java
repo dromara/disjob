@@ -102,7 +102,7 @@ public class DiscoveryRestProxy {
                     }
                 }
             } else {
-                Assert.state(request != null, () -> "Invalid http request method: " + method.toGenericString());
+                Assert.notNull(request, () -> "Invalid http request method: " + method.toGenericString());
                 return discoveryRestTemplate.execute(null, request.path, request.httpMethod, method.getGenericReturnType(), args);
             }
         }

@@ -11,6 +11,7 @@ package cn.ponfee.scheduler.core.param;
 import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.base.ToJsonString;
+import cn.ponfee.scheduler.common.util.Bytes;
 import cn.ponfee.scheduler.common.util.GenericUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Worker;
@@ -257,7 +258,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
             JobType.values()[buf.get()],             // jobType
             RouteStrategy.values()[buf.get()],       // routeStrategy
             buf.getInt(),                            // executeTimeout
-            new String(getRemaining(buf, 39), UTF_8) // jobHandler
+            new String(Bytes.remaining(buf), UTF_8)  // jobHandler
         );
     }
 
@@ -291,12 +292,6 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         public ExecuteTaskParam deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             return of(p.readValueAs(Jsons.MAP_NORMAL));
         }
-    }
-
-    private static byte[] getRemaining(ByteBuffer buf, int offset) {
-        byte[] bytes = new byte[buf.limit() - offset];
-        buf.get(bytes);
-        return bytes;
     }
 
     private static ExecuteTaskParam of(Map<String, ?> map) {

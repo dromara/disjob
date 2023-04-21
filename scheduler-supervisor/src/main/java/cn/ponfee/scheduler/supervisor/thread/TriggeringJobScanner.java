@@ -9,35 +9,29 @@
 package cn.ponfee.scheduler.supervisor.thread;
 
 import cn.ponfee.scheduler.common.base.exception.Throwables;
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.date.Dates;
-import cn.ponfee.scheduler.common.graph.DAGExpressionParser;
-import cn.ponfee.scheduler.common.graph.GraphNodeId;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
-import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.*;
 import cn.ponfee.scheduler.core.exception.JobException;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
-import cn.ponfee.scheduler.core.model.SchedWorkflow;
-import cn.ponfee.scheduler.core.param.WorkflowAttach;
+import cn.ponfee.scheduler.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
-import cn.ponfee.scheduler.supervisor.param.SplitJobParam;
 import cn.ponfee.scheduler.supervisor.util.TriggerTimeUtils;
-import com.google.common.graph.Graph;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
@@ -136,51 +130,13 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return;
             }
 
-            // 1、build sched instance and sched task list
-            SchedInstance instance = SchedInstance.create(schedulerJobManager.generateId(), job.getJobId(), RunType.SCHEDULE, job.getNextTriggerTime(), 0, now);
+            long triggerTime = job.getNextTriggerTime();
+            refreshNextTriggerTime(job, triggerTime, now);
 
-            // 2、refresh next trigger time
-            refreshNextTriggerTime(job, job.getNextTriggerTime(), now);
+            TriggerInstanceCreator<?> creator = TriggerInstanceCreator.of(job.getJobType(), schedulerJobManager);
+            creator.createAndDispatch(job, RunType.SCHEDULE, triggerTime);
 
-            // 3、save to database
-            if (JobType.WORKFLOW.equals(job.getJobType())) {
-                instance.setRunState(RunState.RUNNING.value());
-
-                AtomicInteger sequence = new AtomicInteger(1);
-                Graph<GraphNodeId> dag = new DAGExpressionParser(job.getJobHandler()).parse();
-                Map<Tuple2<GraphNodeId, GraphNodeId>, SchedWorkflow> workflowMap = dag.edges()
-                    .stream()
-                    .collect(Collectors.toMap(e -> Tuple2.of(e.nodeU(), e.nodeV()), e -> new SchedWorkflow(instance.getInstanceId(), e.nodeU().toString(), e.nodeV().toString(), sequence.getAndIncrement(), RunState.WAITING)));
-
-                List<Tuple2<SchedInstance, List<SchedTask>>> startSubInstances = new ArrayList<>();
-                for (GraphNodeId successor : dag.successors(GraphNodeId.START)) {
-                    SchedWorkflow workflow = workflowMap.get(Tuple2.of(GraphNodeId.START, successor));
-                    // 解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
-                    long triggerTime = instance.getTriggerTime() + workflow.getSequence();
-                    SchedInstance subInstance = SchedInstance.create(schedulerJobManager.generateId(), job.getJobId(), RunType.SCHEDULE, triggerTime, 0, now);
-                    subInstance.setRootInstanceId(instance.obtainRootInstanceId());
-                    subInstance.setParentInstanceId(instance.getInstanceId());
-                    subInstance.setWorkflowInstanceId(instance.getInstanceId());
-                    subInstance.setAttach(Jsons.toJson(WorkflowAttach.of(GraphNodeId.START, successor)));
-
-                    SplitJobParam param = SplitJobParam.from(job, successor.getName());
-                    List<SchedTask> subTasks = schedulerJobManager.splitTasks(param, subInstance.getInstanceId(), now);
-
-                    startSubInstances.add(Tuple2.of(subInstance, subTasks));
-                }
-                if (schedulerJobManager.createWorkflowInstance(job, instance, new ArrayList<>(workflowMap.values()), startSubInstances)) {
-                    for (Tuple2<SchedInstance, List<SchedTask>> subInstance : startSubInstances) {
-                        schedulerJobManager.dispatch(job, subInstance.a, subInstance.b);
-                    }
-                }
-            } else {
-                SplitJobParam param = SplitJobParam.from(job);
-                List<SchedTask> tasks = schedulerJobManager.splitTasks(param, instance.getInstanceId(), now);
-                if (schedulerJobManager.createNormalInstance(job, instance, tasks)) {
-                    schedulerJobManager.dispatch(job, instance, tasks);
-                }
-            }
-        } catch (DuplicateKeyException e){
+        } catch (DuplicateKeyException e) {
             if (schedulerJobManager.updateNextTriggerTime(job)) {
                 log.info("Conflict trigger time: {} | {}", job, e.getMessage());
             } else {

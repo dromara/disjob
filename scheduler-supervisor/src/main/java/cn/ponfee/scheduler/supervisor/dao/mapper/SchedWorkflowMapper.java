@@ -9,6 +9,7 @@
 package cn.ponfee.scheduler.supervisor.dao.mapper;
 
 import cn.ponfee.scheduler.core.model.SchedWorkflow;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -23,4 +24,10 @@ public interface SchedWorkflowMapper {
 
     List<SchedWorkflow> findByWorkflowInstanceId(long workflowInstanceId);
 
+    int updateState(@Param("workflowInstanceId") long workflowInstanceId,
+                    @Param("curNode") String curNode,
+                    @Param("toState") int toState,
+                    @Param("fromStateList") List<Integer> fromStateList);
+
+    int cancelWorkflow(@Param("workflowInstanceId") long workflowInstanceId);
 }

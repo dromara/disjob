@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
@@ -128,14 +129,14 @@ public class DAGExpressionParserTest {
     @Test
     public void testGraph() {
         String expression = "(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)";
-        Graph<GraphNodeId> graph = new DAGExpressionParser(expression).parse();
-        Assertions.assertEquals("[1:1:A, 2:3:A]", graph.successors(GraphNodeId.START).toString());
-        Assertions.assertTrue(graph.predecessors(GraphNodeId.START).isEmpty());
+        Graph<DAGNode> graph = new DAGExpressionParser(expression).parse();
+        Assertions.assertEquals("[1:1:A, 2:3:A]", graph.successors(DAGNode.START).toString());
+        Assertions.assertTrue(graph.predecessors(DAGNode.START).isEmpty());
 
-        Assertions.assertEquals("[1:1:J, 2:1:Y]", graph.predecessors(GraphNodeId.END).toString());
-        Assertions.assertTrue(graph.successors(GraphNodeId.END).isEmpty());
+        Assertions.assertEquals("[1:1:J, 2:1:Y]", graph.predecessors(DAGNode.END).toString());
+        Assertions.assertTrue(graph.successors(DAGNode.END).isEmpty());
 
-        Assertions.assertEquals("[1:1:B, 1:2:A]", graph.successors(GraphNodeId.of(1, 1, "A")).toString());
+        Assertions.assertEquals("[1:1:B, 1:2:A]", graph.successors(DAGNode.of(1, 1, "A")).toString());
 
         //graph.adjacentNodes();
         //graph.incidentEdges();
@@ -144,20 +145,28 @@ public class DAGExpressionParserTest {
     @Test
     public void testGraphSequence() {
         String expression = "A -> B,C -> E,(F->G) -> H";
-        Graph<GraphNodeId> graph = new DAGExpressionParser(expression).parse();
-        for (EndpointPair<GraphNodeId> edge : graph.edges()) {
-            System.out.println(edge.nodeU() + " -> " + edge.nodeV());
+        Graph<DAGNode> graph = new DAGExpressionParser(expression).parse();
+        for (EndpointPair<DAGNode> edge : graph.edges()) {
+            System.out.println(edge.source() + " -> " + edge.target());
         }
+
+        Set<DAGNode> predecessors = graph.predecessors(DAGNode.START);
+        Assertions.assertTrue(predecessors instanceof Set);
+        Assertions.assertTrue(predecessors.isEmpty());
+
+        Set<DAGNode> successors = graph.successors(DAGNode.END);
+        Assertions.assertTrue(successors instanceof Set);
+        Assertions.assertTrue(successors.isEmpty());
     }
 
     @Test
-    public void testGraphNodeId() {
-        Assertions.assertTrue(GraphNodeId.fromString(GraphNodeId.START.toString()) == GraphNodeId.START);
-        Assertions.assertTrue(GraphNodeId.fromString(GraphNodeId.END.toString()) == GraphNodeId.END);
-        Assertions.assertEquals(GraphNodeId.fromString("1:1:test").toString(), "1:1:test");
-        Assertions.assertEquals(GraphNodeId.fromString("1:1:test:ANY").getName(), "test:ANY");
-        Assertions.assertEquals(GraphNodeId.fromString("1:1:test:ALL").getName(), "test:ALL");
-        Assertions.assertEquals(GraphNodeId.fromString("1:1:test:ALL").toString(), "1:1:test:ALL");
+    public void testDAGNode() {
+        Assertions.assertTrue(DAGNode.fromString(DAGNode.START.toString()) == DAGNode.START);
+        Assertions.assertTrue(DAGNode.fromString(DAGNode.END.toString()) == DAGNode.END);
+        Assertions.assertEquals(DAGNode.fromString("1:1:test").toString(), "1:1:test");
+        Assertions.assertEquals(DAGNode.fromString("1:1:test:ANY").getName(), "test:ANY");
+        Assertions.assertEquals(DAGNode.fromString("1:1:test:ALL").getName(), "test:ALL");
+        Assertions.assertEquals(DAGNode.fromString("1:1:test:ALL").toString(), "1:1:test:ALL");
     }
 
     // ------------------------------------------------------------------------
@@ -170,7 +179,7 @@ public class DAGExpressionParserTest {
     private static void assertEdgesEquals(String expression, String edges) {
         System.out.println("\n\n------\n\n");
         System.out.println(expression);
-        Graph<GraphNodeId> graph = new DAGExpressionParser(expression).parse();
+        Graph<DAGNode> graph = new DAGExpressionParser(expression).parse();
         Assertions.assertEquals(edges, graph.edges().toString());
         System.out.println(expression + " graph result: " + graph);
     }

@@ -9,28 +9,17 @@
 package cn.ponfee.scheduler.samples.common.handler;
 
 import cn.ponfee.scheduler.common.base.model.Result;
-import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.core.base.JobCodeMsg;
-import cn.ponfee.scheduler.core.exception.PauseTaskException;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
 import cn.ponfee.scheduler.core.handle.SplitTask;
-import cn.ponfee.scheduler.samples.common.util.Prime;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import cn.ponfee.scheduler.samples.common.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -48,7 +37,7 @@ public class AJobHandler extends JobHandler<Void> {
 
     @Override
     public List<SplitTask> split(String jobParamString) {
-        return IntStream.range(0, 20).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
+        return IntStream.range(0, Constants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
     }
 
     @Override

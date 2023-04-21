@@ -31,8 +31,6 @@ public interface SchedInstanceMapper {
      */
     SchedInstance getByInstanceId(long instanceId);
 
-    Integer getStateByInstanceId(long instanceId);
-
     int start(@Param("instanceId") long instanceId,
               @Param("runStartTime") Date runStartTime);
 
@@ -59,11 +57,7 @@ public interface SchedInstanceMapper {
                         @Param("updateTime") Date updateTime,
                         @Param("version") int version);
 
-    SchedInstance lockAndGet(long instanceId);
-
-    Long lockAndGetId(long instanceId);
-
-    Integer lockAndGetState(long instanceId);
+    SchedInstance lock(long instanceId);
 
     /**
      * Delete the sched instance.

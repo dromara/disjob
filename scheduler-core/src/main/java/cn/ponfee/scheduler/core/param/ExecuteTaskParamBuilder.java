@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.param;
 
-import cn.ponfee.scheduler.common.graph.GraphNodeId;
+import cn.ponfee.scheduler.common.graph.DAGNode;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.JobType;
@@ -16,6 +16,7 @@ import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
+import cn.ponfee.scheduler.core.model.WorkflowAttach;
 import org.springframework.util.Assert;
 
 /**
@@ -38,7 +39,7 @@ public class ExecuteTaskParamBuilder {
         if (instance.getWorkflowInstanceId() != null) {
             Assert.hasText(instance.getAttach(), () -> "Workflow instance attach cannot be null: " + instance.getInstanceId());
             WorkflowAttach attach = Jsons.fromJson(instance.getAttach(), WorkflowAttach.class);
-            jobHandler = GraphNodeId.fromString(attach.getCurNodeId()).getName();
+            jobHandler = DAGNode.fromString(attach.getCurNode()).getName();
         } else {
             jobHandler = job.getJobHandler();
         }

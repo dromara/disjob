@@ -142,14 +142,14 @@ CREATE TABLE `sched_depend` (
 CREATE TABLE `sched_workflow` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
     `workflow_instance_id` bigint(20)    unsigned  NOT NULL                                                       COMMENT 'sched_instance.workflow_instance_id',
-    `pre_node_id`          varchar(255)            NOT NULL                                                       COMMENT '前置任务节点(section:ordinal:name)',
-    `cur_node_id`          varchar(255)            NOT NULL                                                       COMMENT '当前任务节点(section:ordinal:name)',
+    `cur_node`             varchar(255)            NOT NULL                                                       COMMENT '当前任务节点(section:ordinal:name)',
+    `pre_node`             varchar(255)            NOT NULL                                                       COMMENT '前置任务节点(section:ordinal:name)',
     `sequence`             int(11)       unsigned  NOT NULL                                                       COMMENT '序号(从1开始)',
     `run_state`            tinyint(3)    unsigned  NOT NULL                                                       COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_workflowinstanceid_prenodeid_curnodeid` (`workflow_instance_id`, `pre_node_id`, `cur_node_id`),
+    UNIQUE KEY `uk_workflowinstanceid_curnode_prenode` (`workflow_instance_id`, `cur_node`, `pre_node`),
     UNIQUE KEY `uk_workflowinstanceid_sequence` (`workflow_instance_id`, `sequence`),
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)

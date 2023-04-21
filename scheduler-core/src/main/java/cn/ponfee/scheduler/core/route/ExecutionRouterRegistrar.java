@@ -38,8 +38,8 @@ public class ExecutionRouterRegistrar {
     }
 
     public static synchronized void register(ExecutionRouter executionRouter) {
-        Assert.isTrue(executionRouter != null, "Register execution router cannot be null.");
-        Assert.isTrue(executionRouter.routeStrategy() != null, "Register execution router strategy cannot be null.");
+        Assert.notNull(executionRouter, "Register execution router cannot be null.");
+        Assert.notNull(executionRouter.routeStrategy(), "Register execution router strategy cannot be null.");
         Assert.isTrue(executionRouter.routeStrategy() != RouteStrategy.BROADCAST, "Cannot register broadcast strategy.");
         register0(executionRouter);
     }

@@ -6,29 +6,29 @@
 
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedWorkflow">
     <result column="workflow_instance_id" jdbcType="BIGINT" property="workflowInstanceId" />
-    <result column="pre_node_id" jdbcType="VARCHAR" property="preNodeId" />
-    <result column="cur_node_id" jdbcType="VARCHAR" property="curNodeId" />
+    <result column="cur_node" jdbcType="VARCHAR" property="curNode" />
+    <result column="pre_node" jdbcType="VARCHAR" property="preNode" />
     <result column="sequence" jdbcType="INTEGER" property="sequence" />
     <result column="run_state" jdbcType="TINYINT" property="runState" />
   </resultMap>
 
   <sql id="Base_Column_List">
-    workflow_instance_id, pre_node_id, cur_node_id, sequence, run_state
+    workflow_instance_id, cur_node, pre_node, sequence, run_state
   </sql>
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       workflow_instance_id,
-      pre_node_id,
-      cur_node_id,
+      cur_node,
+      pre_node,
       sequence,
       run_state
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
       #{item.workflowInstanceId,jdbcType=BIGINT},
-      #{item.preNodeId,jdbcType=VARCHAR},
-      #{item.curNodeId,jdbcType=VARCHAR},
+      #{item.curNode,jdbcType=VARCHAR},
+      #{item.preNode,jdbcType=VARCHAR},
       #{item.sequence,jdbcType=INTEGER},
       #{item.runState,jdbcType=TINYINT}
     )
@@ -40,5 +40,20 @@
     FROM <include refid="Table_Name" />
     WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
   </select>
+
+  <update id="updateState">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = #{toState,jdbcType=TINYINT}
+    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
+      AND cur_node = #{curNode,jdbcType=VARCHAR}
+      AND run_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+  </update>
+
+  <update id="cancelWorkflow">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = 50
+    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
+      AND run_state IN (10, 30)
+  </update>
 
 </mapper>

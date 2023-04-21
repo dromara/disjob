@@ -9,11 +9,13 @@
 package cn.ponfee.scheduler.core.model;
 
 import cn.ponfee.scheduler.common.base.model.BaseEntity;
+import cn.ponfee.scheduler.common.graph.DAGEdge;
 import cn.ponfee.scheduler.core.enums.RunState;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.beans.Transient;
 import java.io.Serializable;
 
 /**
@@ -33,14 +35,14 @@ public class SchedWorkflow extends BaseEntity implements Serializable {
     private Long workflowInstanceId;
 
     /**
-     * 前置任务节点(section:ordinal:name)
-     */
-    private String preNodeId;
-
-    /**
      * 当前任务节点(section:ordinal:name)
      */
-    private String curNodeId;
+    private String curNode;
+
+    /**
+     * 前置任务节点(section:ordinal:name)
+     */
+    private String preNode;
 
     /**
      * 序号(从1开始)
@@ -54,12 +56,26 @@ public class SchedWorkflow extends BaseEntity implements Serializable {
      */
     private Integer runState;
 
-    public SchedWorkflow(Long workflowInstanceId, String preNodeId, String curNodeId, int sequence, RunState runState) {
+    public SchedWorkflow(Long workflowInstanceId, String curNode, String preNode, int sequence) {
         this.workflowInstanceId = workflowInstanceId;
-        this.preNodeId = preNodeId;
-        this.curNodeId = curNodeId;
+        this.curNode = curNode;
+        this.preNode = preNode;
         this.sequence = sequence;
-        this.runState = runState.value();
+        this.runState = RunState.WAITING.value();
+    }
+
+    public DAGEdge toEdge() {
+        return DAGEdge.of(preNode, curNode);
+    }
+
+    @Transient
+    public boolean isTerminal() {
+        return RunState.of(runState).isTerminal();
+    }
+
+    @Transient
+    public boolean isFailure() {
+        return RunState.of(runState).isFailure();
     }
 
 }

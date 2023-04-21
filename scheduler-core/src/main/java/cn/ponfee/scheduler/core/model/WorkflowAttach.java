@@ -6,10 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.core.param;
+package cn.ponfee.scheduler.core.model;
 
-import cn.ponfee.scheduler.common.graph.GraphNodeId;
-import lombok.AllArgsConstructor;
+import cn.ponfee.scheduler.common.graph.DAGNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,22 +28,16 @@ public class WorkflowAttach implements Serializable {
     private static final long serialVersionUID = -7365475674760089839L;
 
     /**
-     * previous node id
-     */
-    private String preNodeId;
-
-    /**
      * current node id
      */
-    private String curNodeId;
+    private String curNode;
 
-    public WorkflowAttach(String preNodeId, String curNodeId) {
-        this.preNodeId = preNodeId;
-        this.curNodeId = curNodeId;
+    public WorkflowAttach(String curNode) {
+        this.curNode = curNode;
     }
 
-    public static WorkflowAttach of(GraphNodeId preNodeId, GraphNodeId curNodeId) {
-        return new WorkflowAttach(preNodeId.toString(), curNodeId.toString());
+    public static WorkflowAttach of(DAGNode curNode) {
+        return new WorkflowAttach(curNode.toString());
     }
 
 }
