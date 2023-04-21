@@ -8,10 +8,10 @@
 
 package cn.ponfee.scheduler.supervisor.instance;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.graph.DAGEdge;
 import cn.ponfee.scheduler.common.graph.DAGExpressionParser;
 import cn.ponfee.scheduler.common.graph.DAGNode;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.enums.RunType;
@@ -21,12 +21,12 @@ import cn.ponfee.scheduler.core.model.*;
 import cn.ponfee.scheduler.supervisor.manager.SchedulerJobManager;
 import cn.ponfee.scheduler.supervisor.param.SplitJobParam;
 import lombok.Getter;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -43,35 +43,37 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
     @Override
     public WorkflowInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
         Date now = new Date();
-        long instanceId = manager.generateId();
-        SchedInstance instance = SchedInstance.create(instanceId, job.getJobId(), runType, triggerTime, 0, now);
-        instance.setRunState(RunState.RUNNING.value());
-        instance.setRunStartTime(now);
-        instance.setWorkflowInstanceId(instanceId);
+        long workflowInstanceId = manager.generateId();
+        SchedInstance workflowInstance = SchedInstance.create(workflowInstanceId, job.getJobId(), runType, triggerTime, 0, now);
+        workflowInstance.setRunState(RunState.RUNNING.value());
+        workflowInstance.setRunStartTime(now);
+        workflowInstance.setWorkflowInstanceId(workflowInstanceId);
 
-        AtomicInteger sequence = new AtomicInteger(1);
+        MutableInt sequence = new MutableInt(1);
         List<SchedWorkflow> workflows = new DAGExpressionParser(job.getJobHandler())
             .parse()
             .edges()
             .stream()
-            .map(e -> new SchedWorkflow(instanceId, e.target().toString(), e.source().toString(), sequence.getAndIncrement()))
+            .map(e -> new SchedWorkflow(workflowInstanceId, e.target().toString(), e.source().toString(), sequence.getAndIncrement()))
             .collect(Collectors.toList());
 
         List<Tuple2<SchedInstance, List<SchedTask>>> subInstances = new ArrayList<>();
         for (Map.Entry<DAGEdge, SchedWorkflow> each : new WorkflowGraph(workflows).successors(DAGNode.START).entrySet()) {
-            // 解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
+            // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
             long subTriggerTime = triggerTime + each.getValue().getSequence();
-            SchedInstance subInstance = SchedInstance.create(manager.generateId(), job.getJobId(), runType, subTriggerTime, 0, now);
-            subInstance.setRootInstanceId(instanceId);
-            subInstance.setParentInstanceId(instanceId);
-            subInstance.setWorkflowInstanceId(instanceId);
+            long subInstanceId = manager.generateId();
+            each.getValue().setInstanceId(subInstanceId);
+            SchedInstance subInstance = SchedInstance.create(subInstanceId, job.getJobId(), runType, subTriggerTime, 0, now);
+            subInstance.setRootInstanceId(workflowInstanceId);
+            subInstance.setParentInstanceId(workflowInstanceId);
+            subInstance.setWorkflowInstanceId(workflowInstanceId);
             subInstance.setAttach(Jsons.toJson(WorkflowAttach.of(each.getKey().getTarget())));
             SplitJobParam param = SplitJobParam.from(job, each.getKey().getTarget().getName());
             List<SchedTask> tasks = manager.splitTasks(param, subInstance.getInstanceId(), now);
             subInstances.add(Tuple2.of(subInstance, tasks));
         }
 
-        return new WorkflowInstance(instance, workflows, subInstances);
+        return new WorkflowInstance(workflowInstance, workflows, subInstances);
     }
 
     @Override

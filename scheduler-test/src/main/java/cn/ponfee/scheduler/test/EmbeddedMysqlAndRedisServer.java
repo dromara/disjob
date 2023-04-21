@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.test;
 
 import ch.vorburger.mariadb4j.DB;
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.test.db.EmbeddedMysqlServerMariaDB;
 import cn.ponfee.scheduler.test.redis.EmbeddedRedisServerKstyrc;
 import redis.embedded.RedisServer;

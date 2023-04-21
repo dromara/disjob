@@ -8,8 +8,8 @@
 
 package cn.ponfee.scheduler.core.exception;
 
-import cn.ponfee.scheduler.common.base.exception.BaseCheckedException;
-import cn.ponfee.scheduler.common.base.model.CodeMsg;
+import cn.ponfee.scheduler.common.exception.BaseCheckedException;
+import cn.ponfee.scheduler.common.model.CodeMsg;
 
 /**
  * Job exception definition.

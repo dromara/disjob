@@ -10,10 +10,11 @@
     <result column="pre_node" jdbcType="VARCHAR" property="preNode" />
     <result column="sequence" jdbcType="INTEGER" property="sequence" />
     <result column="run_state" jdbcType="TINYINT" property="runState" />
+    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
   </resultMap>
 
   <sql id="Base_Column_List">
-    workflow_instance_id, cur_node, pre_node, sequence, run_state
+    workflow_instance_id, cur_node, pre_node, sequence, run_state, instance_id
   </sql>
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
@@ -22,7 +23,8 @@
       cur_node,
       pre_node,
       sequence,
-      run_state
+      run_state,
+      instance_id
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
@@ -30,7 +32,8 @@
       #{item.curNode,jdbcType=VARCHAR},
       #{item.preNode,jdbcType=VARCHAR},
       #{item.sequence,jdbcType=INTEGER},
-      #{item.runState,jdbcType=TINYINT}
+      #{item.runState,jdbcType=TINYINT},
+      #{item.instanceId,jdbcType=BIGINT}
     )
     </foreach>
   </insert>
@@ -41,12 +44,20 @@
     WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
   </select>
 
-  <update id="updateState">
+  <update id="update">
     UPDATE <include refid="Table_Name" />
-    SET run_state = #{toState,jdbcType=TINYINT}
+    <set>
+      <if test="toState != null">run_state = #{toState,jdbcType=TINYINT},</if>
+      <if test="toInstanceId != null">instance_id = #{toInstanceId,jdbcType=BIGINT},</if>
+    </set>
     WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
       AND cur_node = #{curNode,jdbcType=VARCHAR}
-      AND run_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+      <if test="fromStates != null and fromStates.size() != 0">
+        AND run_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+      </if>
+      <if test="fromInstanceId != null">
+        AND instance_id = #{fromInstanceId,jdbcType=BIGINT}
+      </if>
   </update>
 
   <update id="cancelWorkflow">

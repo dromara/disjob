@@ -6,11 +6,11 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.base.exception;
+package cn.ponfee.scheduler.common.exception;
 
 /**
  * Json exception description
- * 
+ *
  * @author Ponfee
  */
 public class JsonException extends RuntimeException {

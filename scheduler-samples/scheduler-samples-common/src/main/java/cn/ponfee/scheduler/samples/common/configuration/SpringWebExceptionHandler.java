@@ -8,10 +8,10 @@
 
 package cn.ponfee.scheduler.samples.common.configuration;
 
-import cn.ponfee.scheduler.common.base.exception.BaseCheckedException;
-import cn.ponfee.scheduler.common.base.exception.BaseUncheckedException;
-import cn.ponfee.scheduler.common.base.exception.Throwables;
-import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.exception.BaseCheckedException;
+import cn.ponfee.scheduler.common.exception.BaseUncheckedException;
+import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.model.Result;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;

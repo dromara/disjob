@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.config;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
 import org.springframework.beans.factory.annotation.Qualifier;

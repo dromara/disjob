@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.test.common.transaction;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import cn.ponfee.scheduler.supervisor.config.JobTxManagerTestService;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
 import org.springframework.beans.factory.annotation.Autowired;

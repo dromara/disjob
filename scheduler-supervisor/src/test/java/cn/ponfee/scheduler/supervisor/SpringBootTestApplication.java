@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor;
 
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.scheduler.test.EmbeddedMysqlAndRedisServer;
 import org.springframework.boot.SpringApplication;

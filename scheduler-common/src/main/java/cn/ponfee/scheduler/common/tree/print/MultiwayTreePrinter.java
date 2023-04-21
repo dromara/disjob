@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.common.tree.print;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple4;
+import cn.ponfee.scheduler.common.tuple.Tuple4;
 import cn.ponfee.scheduler.common.util.Collects;
 import com.google.common.collect.Lists;
 

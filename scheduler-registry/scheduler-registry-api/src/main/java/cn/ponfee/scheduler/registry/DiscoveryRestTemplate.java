@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.registry;
 
-import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.model.Result;
 import cn.ponfee.scheduler.common.spring.RestTemplateUtils;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Server;

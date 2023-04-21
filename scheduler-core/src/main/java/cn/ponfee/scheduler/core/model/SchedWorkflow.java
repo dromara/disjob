@@ -8,8 +8,8 @@
 
 package cn.ponfee.scheduler.core.model;
 
-import cn.ponfee.scheduler.common.base.model.BaseEntity;
 import cn.ponfee.scheduler.common.graph.DAGEdge;
+import cn.ponfee.scheduler.common.model.BaseEntity;
 import cn.ponfee.scheduler.core.enums.RunState;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,6 +55,11 @@ public class SchedWorkflow extends BaseEntity implements Serializable {
      * @see RunState
      */
     private Integer runState;
+
+    /**
+     * 当前执行的instance_id(失败重试时会更新)
+     */
+    private Long instanceId;
 
     public SchedWorkflow(Long workflowInstanceId, String curNode, String preNode, int sequence) {
         this.workflowInstanceId = workflowInstanceId;

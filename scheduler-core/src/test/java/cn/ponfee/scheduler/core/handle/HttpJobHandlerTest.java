@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.handle;
 
-import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.model.Result;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.handle.impl.HttpJobHandler;
 import cn.ponfee.scheduler.core.model.SchedTask;

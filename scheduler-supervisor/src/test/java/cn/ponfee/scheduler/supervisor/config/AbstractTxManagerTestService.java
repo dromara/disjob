@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.config;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.transaction.support.TransactionTemplate;

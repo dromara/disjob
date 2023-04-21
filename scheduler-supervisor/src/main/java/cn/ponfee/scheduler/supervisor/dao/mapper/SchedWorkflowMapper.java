@@ -24,10 +24,12 @@ public interface SchedWorkflowMapper {
 
     List<SchedWorkflow> findByWorkflowInstanceId(long workflowInstanceId);
 
-    int updateState(@Param("workflowInstanceId") long workflowInstanceId,
-                    @Param("curNode") String curNode,
-                    @Param("toState") int toState,
-                    @Param("fromStateList") List<Integer> fromStateList);
+    int update(@Param("workflowInstanceId") long workflowInstanceId,
+               @Param("curNode") String curNode,
+               @Param("toState") Integer toState,
+               @Param("toInstanceId") Long toInstanceId,
+               @Param("fromStates") List<Integer> fromStates,
+               @Param("fromInstanceId") Long fromInstanceId);
 
     int cancelWorkflow(@Param("workflowInstanceId") long workflowInstanceId);
 }

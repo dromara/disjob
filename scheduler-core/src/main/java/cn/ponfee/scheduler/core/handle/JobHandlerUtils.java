@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.handle;
 
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;

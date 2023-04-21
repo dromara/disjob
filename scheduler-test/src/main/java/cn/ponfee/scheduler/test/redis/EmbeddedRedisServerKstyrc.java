@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.test.redis;
 
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import redis.embedded.RedisServer;
 
 /**

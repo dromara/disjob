@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.base.exception;
+package cn.ponfee.scheduler.common.exception;
 
 import cn.ponfee.scheduler.common.concurrent.Threads;
 import org.apache.commons.lang3.ClassUtils;

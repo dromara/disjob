@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.samples.worker;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.common.spring.YamlProperties;
 import cn.ponfee.scheduler.common.util.*;
 import cn.ponfee.scheduler.core.base.JobConstants;

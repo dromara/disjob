@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.test.job.util;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Numbers;
 import cn.ponfee.scheduler.common.util.URLCodes;

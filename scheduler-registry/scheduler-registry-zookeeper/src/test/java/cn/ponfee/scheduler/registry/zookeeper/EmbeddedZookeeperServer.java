@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.registry.zookeeper;
 
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.common.util.MavenProjects;
 import org.apache.curator.test.TestingServer;
 

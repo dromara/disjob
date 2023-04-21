@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.common.util;
 
 import cn.ponfee.scheduler.common.base.Symbol.Char;
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Chars;
 import org.apache.commons.codec.binary.Hex;

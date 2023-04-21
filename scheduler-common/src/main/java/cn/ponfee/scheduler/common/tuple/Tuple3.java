@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.base.tuple;
+package cn.ponfee.scheduler.common.tuple;
 
 import java.util.Objects;
 

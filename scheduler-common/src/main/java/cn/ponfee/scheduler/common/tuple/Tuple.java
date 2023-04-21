@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.base.tuple;
+package cn.ponfee.scheduler.common.tuple;
 
 import cn.ponfee.scheduler.common.base.DelegatedIntSpliterator;
 import cn.ponfee.scheduler.common.util.Comparators;

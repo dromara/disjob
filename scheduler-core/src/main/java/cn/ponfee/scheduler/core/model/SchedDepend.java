@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.model;
 
-import cn.ponfee.scheduler.common.base.model.BaseEntity;
+import cn.ponfee.scheduler.common.model.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

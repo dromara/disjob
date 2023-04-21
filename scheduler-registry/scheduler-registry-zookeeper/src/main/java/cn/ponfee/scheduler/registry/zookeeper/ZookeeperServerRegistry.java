@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.registry.zookeeper;
 
 import cn.ponfee.scheduler.common.base.Symbol.Char;
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;

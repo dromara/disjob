@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.test.common.transaction;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import cn.ponfee.scheduler.supervisor.config.AbstractTxManagerTestService;
 import org.junit.jupiter.api.Assertions;

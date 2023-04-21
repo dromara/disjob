@@ -8,7 +8,10 @@
 
 package cn.ponfee.scheduler.core.handle.impl;
 
-import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.model.Result;
+import cn.ponfee.scheduler.core.base.JobCodeMsg;
+import cn.ponfee.scheduler.core.exception.JobException;
+import cn.ponfee.scheduler.core.exception.PauseTaskException;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
 import cn.ponfee.scheduler.core.handle.JobHandler;
 import org.slf4j.Logger;

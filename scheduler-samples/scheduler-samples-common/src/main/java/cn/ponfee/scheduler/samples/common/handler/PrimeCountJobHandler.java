@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.samples.common.handler;
 
-import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.model.Result;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
 import cn.ponfee.scheduler.core.exception.PauseTaskException;

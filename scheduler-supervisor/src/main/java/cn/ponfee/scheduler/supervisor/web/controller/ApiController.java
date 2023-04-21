@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.supervisor.web.controller;
 
-import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.model.Result;
 import cn.ponfee.scheduler.common.spring.BaseController;
 import cn.ponfee.scheduler.core.enums.ExecuteState;
 import cn.ponfee.scheduler.core.enums.JobState;

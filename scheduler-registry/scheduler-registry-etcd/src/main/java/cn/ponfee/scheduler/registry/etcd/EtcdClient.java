@@ -8,9 +8,9 @@
 
 package cn.ponfee.scheduler.registry.etcd;
 
-import cn.ponfee.scheduler.common.base.exception.Throwables;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.common.util.Fields;
 import cn.ponfee.scheduler.registry.ConnectionStateListener;

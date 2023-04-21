@@ -15,11 +15,13 @@
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
-      parent_job_id, child_job_id
+      parent_job_id,
+      child_job_id
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
-      #{item.parentJobId,jdbcType=BIGINT}, #{item.childJobId,jdbcType=BIGINT}
+      #{item.parentJobId,jdbcType=BIGINT},
+      #{item.childJobId,jdbcType=BIGINT}
     )
     </foreach>
   </insert>

@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.common.util;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -16,7 +16,7 @@ import java.lang.reflect.Modifier;
 
 /**
  * 高效的反射工具类（基于sun.misc.Unsafe）
- * 
+ *
  * @author Ponfee
  */
 @SuppressWarnings("restriction")
@@ -30,7 +30,7 @@ public final class Fields {
         try {
             Field f = Unsafe.class.getDeclaredField("theUnsafe");
             f.setAccessible(true);
-            UNSAFE = (Unsafe) f.get(null); // If the underlying field is a static field, 
+            UNSAFE = (Unsafe) f.get(null); // If the underlying field is a static field,
                                            // the {@code obj} argument is ignored; it may be null.
                                            // Set static field's value {@code f.set(null, value)}
 

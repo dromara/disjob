@@ -37,19 +37,29 @@
 
   <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
-      task_id, instance_id,
-      task_no, task_count,
-      task_param, execute_state,
-      worker, version,
-      updated_at, created_at
+      task_id,
+      instance_id,
+      task_no,
+      task_count,
+      task_param,
+      execute_state,
+      worker,
+      version,
+      updated_at,
+      created_at
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
-      #{item.taskId,jdbcType=BIGINT},#{item.instanceId,jdbcType=BIGINT},
-      #{item.taskNo,jdbcType=INTEGER},#{item.taskCount,jdbcType=INTEGER},
-      #{item.taskParam,jdbcType=LONGVARCHAR}, #{item.executeState,jdbcType=TINYINT},
-      #{item.worker,jdbcType=VARCHAR}, 1,
-      #{item.updatedAt,jdbcType=TIMESTAMP}, #{item.createdAt,jdbcType=TIMESTAMP}
+      #{item.taskId,jdbcType=BIGINT},
+      #{item.instanceId,jdbcType=BIGINT},
+      #{item.taskNo,jdbcType=INTEGER},
+      #{item.taskCount,jdbcType=INTEGER},
+      #{item.taskParam,jdbcType=LONGVARCHAR},
+      #{item.executeState,jdbcType=TINYINT},
+      #{item.worker,jdbcType=VARCHAR},
+      1,
+      #{item.updatedAt,jdbcType=TIMESTAMP},
+      #{item.createdAt,jdbcType=TIMESTAMP}
     )
     </foreach>
   </insert>

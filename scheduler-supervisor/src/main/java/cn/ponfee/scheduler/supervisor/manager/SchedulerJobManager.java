@@ -11,12 +11,12 @@ package cn.ponfee.scheduler.supervisor.manager;
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.base.LazyLoader;
 import cn.ponfee.scheduler.common.base.Symbol.Str;
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
-import cn.ponfee.scheduler.common.base.tuple.Tuple3;
 import cn.ponfee.scheduler.common.graph.DAGEdge;
 import cn.ponfee.scheduler.common.graph.DAGNode;
 import cn.ponfee.scheduler.common.spring.RpcController;
 import cn.ponfee.scheduler.common.spring.TransactionUtils;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple3;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
@@ -105,6 +105,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     private static final List<Integer> RUN_STATE_CANCELABLE = Collects.convert(RunState.CANCELABLE_LIST, RunState::value);
     private static final List<Integer> RUN_STATE_PAUSABLE = Collects.convert(RunState.PAUSABLE_LIST, RunState::value);
     private static final List<Integer> RUN_STATE_WAITING = Collections.singletonList(RunState.WAITING.value());
+    private static final List<Integer> RUN_STATE_RUNNING = Collections.singletonList(RunState.RUNNING.value());
 
     private static final List<Integer> EXECUTE_STATE_EXECUTABLE = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::value);
     private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
@@ -661,7 +662,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         Assert.isTrue(TransactionSynchronizationManager.isActualTransactionActive(), "Workflow instance must be in transaction.");
         SchedInstance workflowInstance = instanceMapper.lock(workflowInstanceId);
 
-        int row = workflowMapper.updateState(workflowInstanceId, attach.getCurNode(), runState.value(), RUN_STATE_CANCELABLE);
+        int row = workflowMapper.update(workflowInstanceId, attach.getCurNode(), runState.value(), null, RUN_STATE_CANCELABLE, null);
         if (row < AFFECTED_ONE_ROW) {
             log.warn("Update workflow node conflict: {} | {}", subInstance, runState);
             return;
@@ -677,7 +678,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         Map<DAGEdge, SchedWorkflow> ends = graph.predecessors(DAGNode.END);
         if (ends.values().stream().allMatch(SchedWorkflow::isTerminal)) {
             RunState endState = ends.values().stream().anyMatch(SchedWorkflow::isFailure) ? RunState.CANCELED : RunState.FINISHED;
-            row = workflowMapper.updateState(workflowInstanceId, DAGNode.END.toString(), endState.value(), RUN_STATE_CANCELABLE);
+            row = workflowMapper.update(workflowInstanceId, DAGNode.END.toString(), endState.value(), null, RUN_STATE_CANCELABLE, null);
             if (row < AFFECTED_ONE_ROW) {
                 log.warn("Update workflow end conflict: {} | {}", subInstance, endState);
                 return;
@@ -699,7 +700,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             return;
         }
 
-        SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::getByJobId, workflowInstance.getJobId());
+        Long jobId = workflowInstance.getJobId();
+        SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::getByJobId, jobId);
         DAGNode curNode = DAGNode.fromString(attach.getCurNode());
         // 查找当前节点的所有后继节点
         for (Map.Entry<DAGEdge, SchedWorkflow> node : graph.successors(curNode).entrySet()) {
@@ -713,23 +715,26 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 // 判断这个后续节点的所有前驱(依赖)节点有未执行完成的，则跳过
                 continue;
             }
-            if (workflowMapper.updateState(workflowInstanceId, target.toString(), RunState.RUNNING.value(), RUN_STATE_WAITING) < AFFECTED_ONE_ROW) {
+
+            long instanceId = generateId();
+            row = workflowMapper.update(workflowInstanceId, target.toString(), RunState.RUNNING.value(), instanceId, RUN_STATE_WAITING, null);
+            if (row < AFFECTED_ONE_ROW) {
                 // 更新状态失败(冲突)，则跳过
                 continue;
             }
 
             long triggerTime = workflowInstance.getTriggerTime() + workflow.getSequence();
-            SchedInstance instance = SchedInstance.create(generateId(), workflowInstance.getJobId(), RunType.of(workflowInstance.getRunType()), triggerTime, 0, now);
-            instance.setRootInstanceId(subInstance.obtainRootInstanceId());
-            instance.setParentInstanceId(subInstance.getInstanceId());
-            instance.setWorkflowInstanceId(workflowInstanceId);
-            instance.setAttach(Jsons.toJson(new WorkflowAttach(workflow.getCurNode())));
+            SchedInstance nextInstance = SchedInstance.create(instanceId, jobId, RunType.of(workflowInstance.getRunType()), triggerTime, 0, now);
+            nextInstance.setRootInstanceId(subInstance.obtainRootInstanceId());
+            nextInstance.setParentInstanceId(subInstance.getInstanceId());
+            nextInstance.setWorkflowInstanceId(subInstance.getWorkflowInstanceId());
+            nextInstance.setAttach(Jsons.toJson(new WorkflowAttach(workflow.getCurNode())));
             try {
-                List<SchedTask> tasks = splitTasks(SplitJobParam.from(job, target.getName()), instance.getInstanceId(), new Date());
+                List<SchedTask> tasks = splitTasks(SplitJobParam.from(job, target.getName()), nextInstance.getInstanceId(), new Date());
                 // save to db
-                instanceMapper.insert(instance);
+                instanceMapper.insert(nextInstance);
                 insertBatchTask(tasks);
-                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, instance, tasks));
+                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
             } catch (Exception e) {
                 log.error("Split workflow job task error: " + subInstance, e);
             }
@@ -756,12 +761,22 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             return;
         }
 
-        Date now = new Date();
+        // 如果是workflow，则需要更新sched_workflow.instance_id
+        long prevInstanceId = prevInstance.getInstanceId(), rtyInstanceId = generateId();
+        Long workflowInstanceId = prevInstance.getWorkflowInstanceId();
+        if (workflowInstanceId != null && !workflowInstanceId.equals(prevInstanceId)) {
+            WorkflowAttach attach = Jsons.fromJson(prevInstance.getAttach(), WorkflowAttach.class);
+            int row = workflowMapper.update(workflowInstanceId, attach.getCurNode(), null, rtyInstanceId, RUN_STATE_RUNNING, prevInstanceId);
+            if (row < AFFECTED_ONE_ROW) {
+                return;
+            }
+        }
 
         // 1、build sched instance
         retriedCount++;
+        Date now = new Date();
         long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
-        SchedInstance retryInstance = SchedInstance.create(generateId(), schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
+        SchedInstance retryInstance = SchedInstance.create(rtyInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
         retryInstance.setRootInstanceId(prevInstance.obtainRootInstanceId());
         retryInstance.setParentInstanceId(prevInstance.getInstanceId());
         retryInstance.setWorkflowInstanceId(prevInstance.getWorkflowInstanceId());
@@ -822,19 +837,13 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             }
 
             try {
-                Date now = new Date();
-                SchedInstance instance = SchedInstance.create(generateId(), childJob.getJobId(), RunType.DEPEND, parentInstance.getTriggerTime(), 0, now);
-                instance.setRootInstanceId(parentInstance.obtainRootInstanceId());
-                instance.setParentInstanceId(parentInstance.getInstanceId());
-                instance.setWorkflowInstanceId(parentInstance.getWorkflowInstanceId());
-                instance.setAttach(parentInstance.getAttach());
-                List<SchedTask> tasks = splitTasks(SplitJobParam.from(childJob), instance.getInstanceId(), now);
+                TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
+                TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, parentInstance.getTriggerTime());
+                tInstance.getInstance().setRootInstanceId(parentInstance.obtainRootInstanceId());
+                tInstance.getInstance().setParentInstanceId(parentInstance.getInstanceId());
 
-                // save to db
-                instanceMapper.insert(instance);
-                insertBatchTask(tasks);
-
-                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(childJob, instance, tasks));
+                createInstance(tInstance);
+                TransactionUtils.doAfterTransactionCommit(() -> creator.dispatch(childJob, tInstance));
             } catch (Exception e) {
                 log.error("Depend job split failed: " + childJob, e);
             }

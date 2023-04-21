@@ -6,28 +6,28 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.base.exception;
+package cn.ponfee.scheduler.common.exception;
 
-import cn.ponfee.scheduler.common.base.model.CodeMsg;
+import cn.ponfee.scheduler.common.model.CodeMsg;
 
 /**
- * Base unchecked exception definition(运行时异常)
+ * Base checked exception definition(编译时异常)
  *
  * @author Ponfee
  */
-public abstract class BaseUncheckedException extends RuntimeException {
-    private static final long serialVersionUID = 5960744547215706709L;
+public abstract class BaseCheckedException extends Exception {
+    private static final long serialVersionUID = -5891689205125494699L;
 
     /**
      * Error code
      */
     private final int code;
 
-    public BaseUncheckedException(int code) {
+    public BaseCheckedException(int code) {
         this(code, null, null);
     }
 
-    public BaseUncheckedException(CodeMsg codeMsg) {
+    public BaseCheckedException(CodeMsg codeMsg) {
         this(codeMsg.getCode(), codeMsg.getMsg(), null);
     }
 
@@ -35,11 +35,11 @@ public abstract class BaseUncheckedException extends RuntimeException {
      * @param code    error code
      * @param message error message
      */
-    public BaseUncheckedException(int code, String message) {
+    public BaseCheckedException(int code, String message) {
         this(code, message, null);
     }
 
-    public BaseUncheckedException(CodeMsg codeMsg, Throwable cause) {
+    public BaseCheckedException(CodeMsg codeMsg, Throwable cause) {
         this(codeMsg.getCode(), codeMsg.getMsg(), cause);
     }
 
@@ -48,7 +48,7 @@ public abstract class BaseUncheckedException extends RuntimeException {
      * @param message error message
      * @param cause   root cause
      */
-    public BaseUncheckedException(int code, String message, Throwable cause) {
+    public BaseCheckedException(int code, String message, Throwable cause) {
         super(message, cause);
         this.code = code;
     }
@@ -60,11 +60,11 @@ public abstract class BaseUncheckedException extends RuntimeException {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace then writableStackTrace
      */
-    public BaseUncheckedException(int code,
-                                  String message,
-                                  Throwable cause,
-                                  boolean enableSuppression,
-                                  boolean writableStackTrace) {
+    public BaseCheckedException(int code,
+                                String message,
+                                Throwable cause,
+                                boolean enableSuppression,
+                                boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
     }

@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.base;
 
-import cn.ponfee.scheduler.common.base.model.CodeMsg;
+import cn.ponfee.scheduler.common.model.CodeMsg;
 
 /**
  * Scheduler code message definitions.

@@ -10,11 +10,11 @@ package cn.ponfee.scheduler.common.graph;
 
 import cn.ponfee.scheduler.common.base.Symbol.Char;
 import cn.ponfee.scheduler.common.base.Symbol.Str;
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.tree.BaseNode;
 import cn.ponfee.scheduler.common.tree.PlainNode;
 import cn.ponfee.scheduler.common.tree.TreeNode;
 import cn.ponfee.scheduler.common.tree.TreeNodeBuilder;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import cn.ponfee.scheduler.common.util.Collects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Graph;

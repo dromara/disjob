@@ -10,8 +10,8 @@ package cn.ponfee.scheduler.common.util;
 
 import cn.ponfee.scheduler.common.base.ArrayHashKey;
 import cn.ponfee.scheduler.common.base.Null;
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
-import cn.ponfee.scheduler.common.base.tuple.Tuple3;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
+import cn.ponfee.scheduler.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
 import groovy.lang.GroovyClassLoader;
 import org.apache.commons.codec.digest.DigestUtils;

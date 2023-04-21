@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.handle;
 
-import cn.ponfee.scheduler.common.base.model.Result;
+import cn.ponfee.scheduler.common.model.Result;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.scheduler.core.model.SchedTask;
@@ -29,7 +29,7 @@ public class ScriptJobHandlerTest {
         SchedTask task = new SchedTask();
         task.setTaskId(1L);
         task.setTaskParam(Jsons.toJson(scriptParam));
-        
+
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
         scriptJobHandler.task(task);
 
@@ -53,5 +53,5 @@ public class ScriptJobHandlerTest {
         Result<String> execute = scriptJobHandler.execute(Checkpoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
-    
+
 }

@@ -146,6 +146,7 @@ CREATE TABLE `sched_workflow` (
     `pre_node`             varchar(255)            NOT NULL                                                       COMMENT '前置任务节点(section:ordinal:name)',
     `sequence`             int(11)       unsigned  NOT NULL                                                       COMMENT '序号(从1开始)',
     `run_state`            tinyint(3)    unsigned  NOT NULL                                                       COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
+    `instance_id`          bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT '当前执行的instance_id(失败重试时会更新)',
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),

@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.samples.worker.vertx;
 
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.WorkerService;
 import cn.ponfee.scheduler.core.exception.JobException;

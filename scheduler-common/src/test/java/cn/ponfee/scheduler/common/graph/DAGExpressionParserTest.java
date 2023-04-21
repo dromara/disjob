@@ -8,9 +8,9 @@
 
 package cn.ponfee.scheduler.common.graph;
 
-import cn.ponfee.scheduler.common.base.tuple.Tuple2;
 import cn.ponfee.scheduler.common.tree.TreeNode;
 import cn.ponfee.scheduler.common.tree.print.MultiwayTreePrinter;
+import cn.ponfee.scheduler.common.tuple.Tuple2;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
 import org.junit.jupiter.api.Assertions;

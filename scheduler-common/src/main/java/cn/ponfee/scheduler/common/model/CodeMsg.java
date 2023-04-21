@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.base.model;
+package cn.ponfee.scheduler.common.model;
 
 /**
  * Code message

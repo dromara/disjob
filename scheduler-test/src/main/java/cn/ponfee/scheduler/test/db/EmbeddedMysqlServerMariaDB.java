@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.test.db;
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfiguration;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
-import cn.ponfee.scheduler.common.base.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables;
 import cn.ponfee.scheduler.common.util.Files;
 import cn.ponfee.scheduler.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
