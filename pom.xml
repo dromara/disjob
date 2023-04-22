@@ -55,7 +55,7 @@
   </modules>
 
   <properties>
-    <revision>1.11-SNAPSHOT</revision>
+    <revision>1.11</revision>
     <file.encoding>UTF-8</file.encoding>
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
