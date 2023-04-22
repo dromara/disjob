@@ -14,6 +14,7 @@ import cn.ponfee.scheduler.core.enums.RunType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -142,6 +143,12 @@ public class SchedInstance extends BaseEntity implements Serializable {
             return parentInstanceId;
         }
         return instanceId;
+    }
+
+    @Transient
+    public boolean isWorkflowNode() {
+        return workflowInstanceId != null
+            && !workflowInstanceId.equals(instanceId);
     }
 
 }

@@ -65,18 +65,18 @@
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
 
-    <spring-boot.version>2.7.9</spring-boot.version>
-    <mapstruct.version>1.5.3.Final</mapstruct.version>
+    <spring-boot.version>2.7.11</spring-boot.version>
+    <mapstruct.version>1.5.4.Final</mapstruct.version>
     <fastjson.version>1.2.83</fastjson.version>
     <guava.version>31.1-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <joda-time.version>2.12.2</joda-time.version>
+    <joda-time.version>2.12.5</joda-time.version>
     <mybatis-spring-boot-starter.version>2.3.0</mybatis-spring-boot-starter.version>
-    <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
+    <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
     <embedded-redis.version>1.2</embedded-redis.version>
-    <testcontainers.version>1.17.6</testcontainers.version>
+    <testcontainers.version>1.18.0</testcontainers.version>
   </properties>
 
   <dependencyManagement>

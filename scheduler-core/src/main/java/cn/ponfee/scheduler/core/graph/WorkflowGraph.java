@@ -76,11 +76,11 @@ public class WorkflowGraph {
     }
 
     private static Graph<DAGNode> buildGraph(List<SchedWorkflow> workflows) {
-        ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
+        ImmutableGraph.Builder<DAGNode> builder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
         for (SchedWorkflow edge : workflows) {
-            graphBuilder.putEdge(DAGNode.fromString(edge.getPreNode()), DAGNode.fromString(edge.getCurNode()));
+            builder.putEdge(DAGNode.fromString(edge.getPreNode()), DAGNode.fromString(edge.getCurNode()));
         }
-        return graphBuilder.build();
+        return builder.build();
     }
 
 }

@@ -433,7 +433,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 // the last executing task of this sched instance
                 row = instanceMapper.terminate(param.getInstanceId(), tuple.a.value(), RUN_STATE_CANCELABLE, tuple.b);
                 if (row == AFFECTED_ONE_ROW && param.getOperation() == Operations.TRIGGER) {
-                    afterTerminateTask(instance, tuple.a);
+                    instance.setRunState(tuple.a.value());
+                    afterTerminateTask(instance);
                 }
             }
 
@@ -478,7 +479,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 .filter(e -> EXECUTE_STATE_PAUSABLE.contains(e.getExecuteState()))
                 .forEach(e -> taskMapper.terminate(e.getTaskId(), ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null));
 
-            afterTerminateTask(instance, tuple.a);
+            instance.setRunState(tuple.a.value());
+            afterTerminateTask(instance);
 
             log.warn("Purge instance {} to state {}", instanceId, tuple.a);
             return true;
@@ -642,20 +644,27 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         return states.stream().anyMatch(ExecuteState.PAUSABLE_LIST::contains) ? null : Tuple2.of(RunState.PAUSED, null);
     }
 
-    private void afterTerminateTask(SchedInstance instance, RunState runState) {
-        Long workflowInstanceId = instance.getWorkflowInstanceId();
-        if (workflowInstanceId != null && !workflowInstanceId.equals(instance.getInstanceId())) {
-            terminateWorkflow(instance, runState);
-        } else if (runState == RunState.CANCELED) {
+    private void afterTerminateTask(SchedInstance instance) {
+        RunState runState = RunState.of(instance.getRunState());
+        if (runState == RunState.CANCELED) {
             retryJob(instance);
         } else if (runState == RunState.FINISHED) {
-            dependJob(instance);
+            if (instance.isWorkflowNode()) {
+                workflowNode(instance);
+            } else {
+                dependJob(instance);
+            }
         } else {
             log.error("Unknown terminate run state " + runState);
         }
     }
 
-    private void terminateWorkflow(SchedInstance subInstance, RunState runState) {
+    private void workflowNode(SchedInstance subInstance) {
+        if (!subInstance.isWorkflowNode()) {
+            return;
+        }
+
+        RunState runState = RunState.of(subInstance.getRunState());
         Assert.hasText(subInstance.getAttach(), () -> "Workflow instance attach cannot blank: " + subInstance);
         WorkflowAttach attach = Jsons.fromJson(subInstance.getAttach(), WorkflowAttach.class);
         Long workflowInstanceId = subInstance.getWorkflowInstanceId();
@@ -691,9 +700,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         // process workflows run state
         if (graph.allMatch(SchedWorkflow::isTerminal)) {
             RunState state = graph.anyMatch(SchedWorkflow::isFailure) ? RunState.CANCELED : RunState.FINISHED;
-            row = instanceMapper.terminate(workflowInstanceId, state.value(), RUN_STATE_CANCELABLE, now);
-            if (row == AFFECTED_ONE_ROW) {
-                afterTerminateTask(instanceMapper.getByInstanceId(workflowInstanceId), state);
+            if (instanceMapper.terminate(workflowInstanceId, state.value(), RUN_STATE_CANCELABLE, now) == AFFECTED_ONE_ROW) {
+                afterTerminateTask(instanceMapper.getByInstanceId(workflowInstanceId));
             } else {
                 log.warn("Terminate workflow instance conflict: {} | {}", subInstance, state);
             }
@@ -741,32 +749,34 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         }
     }
 
-    private void retryJob(SchedInstance prevInstance) {
-        SchedJob schedJob = jobMapper.getByJobId(prevInstance.getJobId());
+    private void retryJob(SchedInstance prev) {
+        SchedJob schedJob = jobMapper.getByJobId(prev.getJobId());
         if (schedJob == null) {
-            log.error("Sched job not found {}", prevInstance.getJobId());
+            log.error("Sched job not found {}", prev.getJobId());
+            workflowNode(prev);
             return;
         }
 
-        List<SchedTask> prevTasks = taskMapper.findLargeByInstanceId(prevInstance.getInstanceId());
+        List<SchedTask> prevTasks = taskMapper.findLargeByInstanceId(prev.getInstanceId());
         RetryType retryType = RetryType.of(schedJob.getRetryType());
         if (retryType == RetryType.NONE || schedJob.getRetryCount() < 1) {
             // not retry
+            workflowNode(prev);
             return;
         }
 
-        int retriedCount = Optional.ofNullable(prevInstance.getRetriedCount()).orElse(0);
+        int retriedCount = Optional.ofNullable(prev.getRetriedCount()).orElse(0);
         if (retriedCount >= schedJob.getRetryCount()) {
             // already retried maximum times
+            workflowNode(prev);
             return;
         }
 
         // 如果是workflow，则需要更新sched_workflow.instance_id
-        long prevInstanceId = prevInstance.getInstanceId(), rtyInstanceId = generateId();
-        Long workflowInstanceId = prevInstance.getWorkflowInstanceId();
-        if (workflowInstanceId != null && !workflowInstanceId.equals(prevInstanceId)) {
-            WorkflowAttach attach = Jsons.fromJson(prevInstance.getAttach(), WorkflowAttach.class);
-            int row = workflowMapper.update(workflowInstanceId, attach.getCurNode(), null, rtyInstanceId, RUN_STATE_RUNNING, prevInstanceId);
+        long retryInstanceId = generateId();
+        if (prev.isWorkflowNode()) {
+            String curNode = Jsons.fromJson(prev.getAttach(), WorkflowAttach.class).getCurNode();
+            int row = workflowMapper.update(prev.getWorkflowInstanceId(), curNode, null, retryInstanceId, RUN_STATE_RUNNING, prev.getInstanceId());
             if (row < AFFECTED_ONE_ROW) {
                 return;
             }
@@ -776,11 +786,11 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         retriedCount++;
         Date now = new Date();
         long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
-        SchedInstance retryInstance = SchedInstance.create(rtyInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
-        retryInstance.setRootInstanceId(prevInstance.obtainRootInstanceId());
-        retryInstance.setParentInstanceId(prevInstance.getInstanceId());
-        retryInstance.setWorkflowInstanceId(prevInstance.getWorkflowInstanceId());
-        retryInstance.setAttach(prevInstance.getAttach());
+        SchedInstance retryInstance = SchedInstance.create(retryInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
+        retryInstance.setRootInstanceId(prev.obtainRootInstanceId());
+        retryInstance.setParentInstanceId(prev.getInstanceId());
+        retryInstance.setWorkflowInstanceId(prev.getWorkflowInstanceId());
+        retryInstance.setAttach(prev.getAttach());
 
         // 2、build sched tasks
         List<SchedTask> tasks;
@@ -790,7 +800,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                     // re-split tasks
                     tasks = splitTasks(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
                 } catch (Exception e) {
-                    log.error("Split job error: " + schedJob + ", " + prevInstance, e);
+                    log.error("Split job error: " + schedJob + ", " + prev, e);
                     return;
                 }
                 break;
@@ -830,10 +840,10 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             SchedJob childJob = jobMapper.getByJobId(depend.getChildJobId());
             if (childJob == null) {
                 log.error("Child sched job not found: {} | {}", depend.getParentJobId(), depend.getChildJobId());
-                return;
+                continue;
             }
             if (JobState.DISABLE.equals(childJob.getJobState())) {
-                return;
+                continue;
             }
 
             try {

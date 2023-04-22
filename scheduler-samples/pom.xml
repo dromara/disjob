@@ -23,9 +23,9 @@
     <maven.deploy.skip>true</maven.deploy.skip>
 
     <distributed-scheduler.version>1.11-SNAPSHOT</distributed-scheduler.version>
-    <spring-boot.version>2.7.9</spring-boot.version>
-    <mapstruct.version>1.5.3.Final</mapstruct.version>
-    <testcontainers.version>1.17.6</testcontainers.version>
+    <spring-boot.version>2.7.11</spring-boot.version>
+    <mapstruct.version>1.5.4.Final</mapstruct.version>
+    <testcontainers.version>1.18.0</testcontainers.version>
     <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
   </properties>
 
