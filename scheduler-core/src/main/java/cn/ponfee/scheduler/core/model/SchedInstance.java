@@ -62,7 +62,7 @@ public class SchedInstance extends BaseEntity implements Serializable {
     private Long triggerTime;
 
     /**
-     * 运行类型：1-SCHEDULE；2-DEPEND；3-RETRY；4-MANUAL；
+     * 运行类型：1-SCHEDULE；2-DEPEND；3-RETRY；4-MANUAL(手动触发)；
      *
      * @see RunType
      */

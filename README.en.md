@@ -124,7 +124,7 @@ public class MergedApplication extends AbstractSamplesApplication {
 
 5. Execute the following curl command to add tasks (select any running Supervisor application to replace `localhost:8081`)
 - `triggerValue` modified to  next minute of the current time
-- `jobHandler` supported: the fully qualified class name, spring bean name, source code
+- `jobHandler` supported: the fully qualified class name, spring bean name, DAG Expression, source code
 
 ```bash
 curl --location --request POST 'http://localhost:8081/api/job/add' \
@@ -169,6 +169,8 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 - [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks([WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)])
 - [x] Extended registry: Zookeeper, Etcd, Nacos
-- [ ] Workflow task(Workflow DAG)
+- [x] Workflow task(Workflow DAG)
+- [ ] alarm subscribe：Email, SMS, Voice, Lark, Ding Talk, WeChat
 - [ ] Task management background Web UI, account system and authority control, visual monitoring BI
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB
+- [ ] Build a document web site

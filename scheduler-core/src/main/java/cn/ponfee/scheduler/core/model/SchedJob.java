@@ -48,7 +48,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String jobName;
 
     /**
-     * Job处理器(实现处理器接口的全限定类名或源代码)
+     * Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)
      */
     private String jobHandler;
 

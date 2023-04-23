@@ -137,7 +137,6 @@ public abstract class AbstractJobManager {
                     list.add(builder.build(Operations.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
             } else {
-                Assert.isTrue(StringUtils.isBlank(task.getWorker()), () -> job.getRouteStrategy() + " route strategy worker must be null: " + task.getTaskId());
                 list.add(builder.build(Operations.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
             }
         }
