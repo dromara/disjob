@@ -42,7 +42,7 @@ public class ScriptJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) throws Exception {
-        ScriptParam scriptParam = Jsons.fromJson(task.getTaskParam(), ScriptParam.class);
+        ScriptParam scriptParam = Jsons.fromJson(task().getTaskParam(), ScriptParam.class);
         Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
@@ -55,7 +55,7 @@ public class ScriptJobHandler extends JobHandler<String> {
         String scriptPath = prepareScriptFile(script0, scriptFileName, charset);
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
-        return ProcessUtils.complete(process, charset, task, log);
+        return ProcessUtils.complete(process, charset, task(), log);
     }
 
     public enum ScriptType {

@@ -8,6 +8,7 @@
 
 package cn.ponfee.scheduler.common.util;
 
+import cn.ponfee.scheduler.common.base.ConsistentHash;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

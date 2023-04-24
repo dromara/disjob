@@ -9,11 +9,13 @@
 package cn.ponfee.scheduler.common.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -113,6 +115,18 @@ public class Collects {
             return null;
         }
         return list.get(index);
+    }
+
+    public static <T> void batchProcess(List<T> list, Consumer<List<T>> processor, int batchSize) {
+        Assert.notEmpty(list, "Process records cannot be empty.");
+        if (list.size() <= batchSize) {
+            processor.accept(list);
+        } else {
+            List<List<T>> partition = Lists.partition(list, batchSize);
+            for (List<T> part : partition) {
+                processor.accept(part);
+            }
+        }
     }
 
     /**

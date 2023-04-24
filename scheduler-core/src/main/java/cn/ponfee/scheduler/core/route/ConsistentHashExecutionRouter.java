@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.route;
 
-import cn.ponfee.scheduler.common.util.ConsistentHash;
+import cn.ponfee.scheduler.common.base.ConsistentHash;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.param.ExecuteTaskParam;

@@ -20,7 +20,7 @@ import java.util.List;
  */
 public interface SchedWorkflowMapper {
 
-    int insertBatch(List<SchedWorkflow> records);
+    int batchInsert(List<SchedWorkflow> records);
 
     List<SchedWorkflow> findByWorkflowInstanceId(long workflowInstanceId);
 

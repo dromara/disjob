@@ -20,7 +20,6 @@ import cn.ponfee.scheduler.common.tuple.Tuple3;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
-import cn.ponfee.scheduler.core.base.JobConstants;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.*;
@@ -38,7 +37,6 @@ import cn.ponfee.scheduler.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.scheduler.supervisor.instance.WorkflowInstanceCreator;
 import cn.ponfee.scheduler.supervisor.param.SplitJobParam;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +52,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static cn.ponfee.scheduler.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_NAME_SUFFIX;
 import static cn.ponfee.scheduler.supervisor.base.AbstractDataSourceConfig.TX_TEMPLATE_NAME_SUFFIX;
 import static cn.ponfee.scheduler.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
@@ -205,7 +204,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     }
 
     public boolean stopJob(SchedJob job) {
-        return AFFECTED_ONE_ROW == jobMapper.stop(job);
+        return jobMapper.stop(job) == AFFECTED_ONE_ROW;
     }
 
     public boolean updateNextTriggerTime(SchedJob job) {
@@ -362,11 +361,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         }
         // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
         params.sort(Comparator.comparing(TaskWorkerParam::getTaskId));
-        if (params.size() <= JobConstants.PROCESS_BATCH_SIZE) {
-            taskMapper.batchUpdateWorker(params);
-        } else {
-            Lists.partition(params, JobConstants.PROCESS_BATCH_SIZE).forEach(taskMapper::batchUpdateWorker);
-        }
+        Collects.batchProcess(params, taskMapper::batchUpdateWorker, PROCESS_BATCH_SIZE);
     }
 
     /**
@@ -599,21 +594,20 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     // ------------------------------------------------------------------private methods
 
     private void createInstance(TriggerInstance tInstance) {
-        int row = instanceMapper.insert(tInstance.getInstance());
-        Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sched instance fail: " + tInstance.getInstance());
+        instanceMapper.insert(tInstance.getInstance());
 
         if (tInstance instanceof NormalInstanceCreator.NormalInstance) {
-            NormalInstanceCreator.NormalInstance normal = (NormalInstanceCreator.NormalInstance) tInstance;
-            insertBatchTask(normal.getTasks());
+            NormalInstanceCreator.NormalInstance creator = (NormalInstanceCreator.NormalInstance) tInstance;
+            Collects.batchProcess(creator.getTasks(), taskMapper::batchInsert, PROCESS_BATCH_SIZE);
         } else if (tInstance instanceof WorkflowInstanceCreator.WorkflowInstance) {
-            WorkflowInstanceCreator.WorkflowInstance wInstance = (WorkflowInstanceCreator.WorkflowInstance) tInstance;
-            insertBatchWorkflow(wInstance.getWorkflows());
-
-            for (Tuple2<SchedInstance, List<SchedTask>> sub : wInstance.getSubInstances()) {
-                row = instanceMapper.insert(sub.a);
-                Assert.state(row == AFFECTED_ONE_ROW, () -> "Insert sub sched instance fail: " + tInstance.getInstance());
-                insertBatchTask(sub.b);
+            WorkflowInstanceCreator.WorkflowInstance creator = (WorkflowInstanceCreator.WorkflowInstance) tInstance;
+            Collects.batchProcess(creator.getWorkflows(), workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
+            for (Tuple2<SchedInstance, List<SchedTask>> sub : creator.getSubInstances()) {
+                instanceMapper.insert(sub.a);
+                Collects.batchProcess(sub.b, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
             }
+        } else {
+            throw new UnsupportedOperationException("Unknown instance creator type: " + tInstance.getClass());
         }
     }
 
@@ -741,7 +735,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 List<SchedTask> tasks = splitTasks(SplitJobParam.from(job, target.getName()), nextInstance.getInstanceId(), new Date());
                 // save to db
                 instanceMapper.insert(nextInstance);
-                insertBatchTask(tasks);
+                Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
             } catch (Exception e) {
                 log.error("Split workflow job task error: " + subInstance, e);
@@ -820,7 +814,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         // 3、save to db
         Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
         instanceMapper.insert(retryInstance);
-        insertBatchTask(tasks);
+        Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
 
         TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(schedJob, retryInstance, tasks));
     }
@@ -856,34 +850,6 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 TransactionUtils.doAfterTransactionCommit(() -> creator.dispatch(childJob, tInstance));
             } catch (Exception e) {
                 log.error("Depend job split failed: " + childJob, e);
-            }
-        }
-    }
-
-    private void insertBatchTask(List<SchedTask> tasks) {
-        Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
-        if (tasks.size() <= JobConstants.PROCESS_BATCH_SIZE) {
-            int row = taskMapper.insertBatch(tasks);
-            Assert.state(row == tasks.size(), () -> "Insert sched task fail: " + tasks);
-        } else {
-            List<List<SchedTask>> partition = Lists.partition(tasks, JobConstants.PROCESS_BATCH_SIZE);
-            for (List<SchedTask> list : partition) {
-                int row = taskMapper.insertBatch(list);
-                Assert.state(row == list.size(), () -> "Insert sched task fail: " + tasks);
-            }
-        }
-    }
-
-    private void insertBatchWorkflow(List<SchedWorkflow> workflows) {
-        Assert.notEmpty(workflows, "Insert list of workflow cannot be empty.");
-        if (workflows.size() <= JobConstants.PROCESS_BATCH_SIZE) {
-            int row = workflowMapper.insertBatch(workflows);
-            Assert.state(row == workflows.size(), () -> "Insert sched workflow fail: " + workflows.get(0).getWorkflowInstanceId());
-        } else {
-            List<List<SchedWorkflow>> partition = Lists.partition(workflows, JobConstants.PROCESS_BATCH_SIZE);
-            for (List<SchedWorkflow> list : partition) {
-                int row = workflowMapper.insertBatch(list);
-                Assert.state(row == list.size(), () -> "Insert sched task fail: " + workflows.get(0).getWorkflowInstanceId());
             }
         }
     }
@@ -955,7 +921,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                     () -> "Parent job '" + parentJob.getJobId() + "' group '" + parentJob.getJobGroup() + "' different '" + job.getJobGroup() + "'"
                 );
             }
-            dependMapper.insertBatch(parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList()));
+            dependMapper.batchInsert(parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList()));
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {

@@ -6,8 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.scheduler.common.util;
+package cn.ponfee.scheduler.common.base;
 
+import cn.ponfee.scheduler.common.util.CRC16;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.nio.charset.StandardCharsets;

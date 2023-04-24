@@ -17,7 +17,7 @@
     workflow_instance_id, cur_node, pre_node, sequence, run_state, instance_id
   </sql>
 
-  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       workflow_instance_id,
       cur_node,

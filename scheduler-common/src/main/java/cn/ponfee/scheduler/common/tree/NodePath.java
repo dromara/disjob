@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.common.tree;
 
 import cn.ponfee.scheduler.common.util.GenericUtils;
-import cn.ponfee.scheduler.common.util.ImmutableArrayList;
+import cn.ponfee.scheduler.common.base.ImmutableArrayList;
 import com.alibaba.fastjson.annotation.JSONType;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;

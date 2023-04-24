@@ -22,7 +22,7 @@ import java.util.List;
  */
 public interface SchedTaskMapper {
 
-    int insertBatch(List<SchedTask> records);
+    int batchInsert(List<SchedTask> records);
 
     SchedTask getByTaskId(long taskId);
 

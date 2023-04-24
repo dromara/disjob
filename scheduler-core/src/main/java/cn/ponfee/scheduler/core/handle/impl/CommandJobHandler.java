@@ -37,13 +37,13 @@ public class CommandJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) throws Exception {
-        Assert.hasText(task.getTaskParam(), "Command param cannot be empty.");
-        CommandParam commandParam = Jsons.fromJson(task.getTaskParam(), CommandParam.class);
+        Assert.hasText(task().getTaskParam(), "Command param cannot be empty.");
+        CommandParam commandParam = Jsons.fromJson(task().getTaskParam(), CommandParam.class);
         Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");
         Charset charset = Files.charset(commandParam.charset);
 
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
-        return ProcessUtils.complete(process, charset, task, log);
+        return ProcessUtils.complete(process, charset, task(), log);
     }
 
     @Data

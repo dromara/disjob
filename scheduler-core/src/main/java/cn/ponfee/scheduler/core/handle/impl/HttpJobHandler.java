@@ -51,7 +51,7 @@ public class HttpJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) {
-        HttpJobRequest req = Jsons.fromJson(task.getTaskParam(), HttpJobRequest.class);
+        HttpJobRequest req = Jsons.fromJson(task().getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");
         HttpMethod method = HttpMethod.valueOf(req.method.toUpperCase());
@@ -100,7 +100,7 @@ public class HttpJobHandler extends JobHandler<String> {
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + res.getStatusCode() + ", response: " + res.getBody());
             }
         } catch (Exception e) {
-            log.error("Http request failed: " + task, e);
+            log.error("Http request failed: " + task(), e);
             return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), Throwables.getRootCauseMessage(e));
         }
     }

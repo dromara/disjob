@@ -20,7 +20,7 @@ public abstract class TaskExecutor<T> {
 
     private volatile boolean interrupted = false;
 
-    protected SchedTask task;
+    private SchedTask task;
 
     /**
      * Setting the sched task object.

@@ -35,7 +35,7 @@
     task_param, execute_snapshot, error_msg, updated_at, created_at
   </sql>
 
-  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       task_id,
       instance_id,

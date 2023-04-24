@@ -13,7 +13,7 @@
     parent_job_id, child_job_id
   </sql>
 
-  <insert id="insertBatch" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       parent_job_id,
       child_job_id
