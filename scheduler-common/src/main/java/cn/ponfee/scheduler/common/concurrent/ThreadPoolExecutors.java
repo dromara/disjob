@@ -27,7 +27,10 @@ public final class ThreadPoolExecutors {
 
     private final static Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
 
-    public static final int MAX_CAP = 0x7FFF; // max #workers - 1
+    /**
+     * max #workers - 1
+     */
+    public static final int MAX_CAP = 0x7FFF;
 
     // ----------------------------------------------------------build-in rejected policy
     /**
@@ -68,6 +71,8 @@ public final class ThreadPoolExecutors {
      * anyway always run
      */
     public static final RejectedExecutionHandler ALWAYS_CALLER_RUNS = (task, executor) -> task.run();
+
+    // ----------------------------------------------------------builder
 
     public static Builder builder() {
         return new Builder();
@@ -156,7 +161,7 @@ public final class ThreadPoolExecutors {
         }
     }
 
-    // ----------------------------------------------------------
+    // ----------------------------------------------------------shutdown
 
     /**
      * Shutdown the ExecutorService safe

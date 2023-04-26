@@ -31,6 +31,8 @@ public interface SchedInstanceMapper {
      */
     SchedInstance getByInstanceId(long instanceId);
 
+    Long getWorkflowInstanceId(long instanceId);
+
     int start(@Param("instanceId") long instanceId,
               @Param("runStartTime") Date runStartTime);
 

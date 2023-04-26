@@ -82,6 +82,7 @@ public class CommonTest {
             Operations.TRIGGER,
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
+            1L,
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
             JobType.NORMAL,

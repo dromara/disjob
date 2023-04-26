@@ -118,7 +118,7 @@
     <dependency>
       <groupId>guru.nidi</groupId>
       <artifactId>graphviz-java</artifactId>
-      <version>0.18.1</version>
+      <version>${graphviz-java.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

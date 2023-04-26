@@ -111,7 +111,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
                 return;
             }
             log.info("Scanned running state instance task all terminated: {}", instance.getInstanceId());
-            schedulerJobManager.purgeInstance(instance.getInstanceId());
+            schedulerJobManager.purgeInstance(instance);
 
         } else {
             // 3、has executing state task
@@ -121,7 +121,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
                 return;
             }
             log.info("Scanned running state instance was dead: {}", instance.getInstanceId());
-            schedulerJobManager.purgeInstance(instance.getInstanceId());
+            schedulerJobManager.purgeInstance(instance);
 
         }
     }

@@ -31,9 +31,6 @@ public interface SupervisorService extends Checkpoint {
 
     String PREFIX_PATH = "supervisor/rpc/";
 
-    @GetMapping(PREFIX_PATH + "job/get")
-    SchedJob getJob(long jobId) throws Exception;
-
     @GetMapping(PREFIX_PATH + "task/get")
     SchedTask getTask(long taskId) throws Exception;
 
@@ -47,10 +44,10 @@ public interface SupervisorService extends Checkpoint {
     boolean terminateTask(TerminateTaskParam param) throws Exception;
 
     @PostMapping(PREFIX_PATH + "instance/pause")
-    boolean pauseInstance(long instanceId) throws Exception;
+    boolean pauseInstance(long instanceId, Long workflowInstanceId) throws Exception;
 
     @PostMapping(PREFIX_PATH + "instance/cancel")
-    boolean cancelInstance(long instanceId, Operations ops) throws Exception;
+    boolean cancelInstance(long instanceId, Long workflowInstanceId, Operations ops) throws Exception;
 
     // ---------------------------------------------------------------------------checkpoint
 

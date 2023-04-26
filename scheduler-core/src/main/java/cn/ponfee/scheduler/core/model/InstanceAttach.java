@@ -16,14 +16,14 @@ import lombok.Setter;
 import java.io.Serializable;
 
 /**
- * Workflow attach data structure
+ * Scheduler instance attach data structure
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class WorkflowAttach implements Serializable {
+public class InstanceAttach implements Serializable {
 
     private static final long serialVersionUID = -7365475674760089839L;
 
@@ -32,12 +32,12 @@ public class WorkflowAttach implements Serializable {
      */
     private String curNode;
 
-    public WorkflowAttach(String curNode) {
+    public InstanceAttach(String curNode) {
         this.curNode = curNode;
     }
 
-    public static WorkflowAttach of(DAGNode curNode) {
-        return new WorkflowAttach(curNode.toString());
+    public static InstanceAttach of(DAGNode curNode) {
+        return new InstanceAttach(curNode.toString());
     }
 
 }

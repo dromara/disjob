@@ -296,6 +296,22 @@ public final class Numbers {
                          .doubleValue();
     }
 
+    public static long nullZero(Long value) {
+        return value == null ? 0 : value;
+    }
+
+    public static Long zeroNull(long value) {
+        return value == 0 ? null : value;
+    }
+
+    public static int nullZero(Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    public static Integer zeroNull(int value) {
+        return value == 0 ? null : value;
+    }
+
     /**
      * 百分比
      *

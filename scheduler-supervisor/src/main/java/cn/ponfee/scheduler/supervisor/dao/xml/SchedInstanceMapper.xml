@@ -70,6 +70,12 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
+  <select id="getWorkflowInstanceId" parameterType="_long" resultType="long">
+    SELECT workflow_instance_id
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+  </select>
+
   <!-- use `IFNULL` function reason: possibly paused task re-execute -->
   <update id="start">
     UPDATE <include refid="Table_Name" />

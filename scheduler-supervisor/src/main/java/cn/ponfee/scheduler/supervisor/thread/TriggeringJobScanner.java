@@ -193,15 +193,15 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return false;
             case WAITING:
             case PAUSED:
-                return checkBlockCollisionTrigger(job, Collections.singletonList(instanceId), collisionStrategy, now);
+                return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
             case RUNNING:
                 List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instanceId);
                 if (schedulerJobManager.hasAliveExecuting(tasks)) {
-                    return checkBlockCollisionTrigger(job, Collections.singletonList(instanceId), collisionStrategy, now);
+                    return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
                 } else {
                     // all workers are dead
                     log.info("Collision, all worker dead, terminate the sched instance: {}", instanceId);
-                    schedulerJobManager.cancelInstance(instanceId, Operations.COLLISION_CANCEL);
+                    schedulerJobManager.cancelInstance(instanceId, lastInstance.getWorkflowInstanceId(), Operations.COLLISION_CANCEL);
                     return false;
                 }
             case CANCELED:
@@ -209,15 +209,14 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 if (CollectionUtils.isEmpty(list)) {
                     return false;
                 } else {
-                    List<Long> instanceIds = list.stream().map(SchedInstance::getInstanceId).collect(Collectors.toList());
-                    return checkBlockCollisionTrigger(job, instanceIds, collisionStrategy, now);
+                    return checkBlockCollisionTrigger(job, list, collisionStrategy, now);
                 }
             default:
                 throw new UnsupportedOperationException("Unsupported run state: " + runState.name());
         }
     }
 
-    private boolean checkBlockCollisionTrigger(SchedJob job, List<Long> instanceIds, CollisionStrategy collisionStrategy, Date now) {
+    private boolean checkBlockCollisionTrigger(SchedJob job, List<SchedInstance> instances, CollisionStrategy collisionStrategy, Date now) {
         switch (collisionStrategy) {
             case DISCARD:
                 // 丢弃执行：基于当前时间来更新下一次的执行时间
@@ -242,7 +241,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                instanceIds.forEach(e -> schedulerJobManager.cancelInstance(e, Operations.COLLISION_CANCEL));
+                instances.forEach(e -> schedulerJobManager.cancelInstance(e.getInstanceId(), e.getWorkflowInstanceId(), Operations.COLLISION_CANCEL));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collision strategy: " + collisionStrategy.name());

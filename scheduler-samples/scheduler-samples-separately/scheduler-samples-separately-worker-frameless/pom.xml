@@ -64,7 +64,7 @@
         </dependencies>
         <executions>
           <execution>
-            <!-- 与spring boot有冲突，需要显示指定ID -->
+            <!-- 与spring boot有冲突，需要显示指定id -->
             <id>shade-${project.artifactId}</id>
             <phase>package</phase>
             <goals>

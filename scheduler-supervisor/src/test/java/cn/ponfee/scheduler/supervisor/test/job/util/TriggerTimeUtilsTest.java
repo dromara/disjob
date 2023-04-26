@@ -221,7 +221,7 @@ public class TriggerTimeUtilsTest {
 
     @Test
     public void testTaskParam() {
-        ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 0, 0, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
+        ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, 0, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
         Operations old = param.operation();
         Assertions.assertTrue(param.updateOperation(old, null));
         Assertions.assertNull(param.operation());

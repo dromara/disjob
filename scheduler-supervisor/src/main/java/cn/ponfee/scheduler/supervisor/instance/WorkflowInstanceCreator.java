@@ -62,13 +62,16 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
             // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
             long subTriggerTime = triggerTime + each.getValue().getSequence();
             long subInstanceId = manager.generateId();
-            each.getValue().setInstanceId(subInstanceId);
+            DAGNode node = each.getKey().getTarget();
+            SchedWorkflow workflow = each.getValue();
+            workflow.setInstanceId(subInstanceId);
+            workflow.setRunState(RunState.RUNNING.value());
             SchedInstance subInstance = SchedInstance.create(subInstanceId, job.getJobId(), runType, subTriggerTime, 0, now);
             subInstance.setRootInstanceId(workflowInstanceId);
             subInstance.setParentInstanceId(workflowInstanceId);
             subInstance.setWorkflowInstanceId(workflowInstanceId);
-            subInstance.setAttach(Jsons.toJson(WorkflowAttach.of(each.getKey().getTarget())));
-            SplitJobParam param = SplitJobParam.from(job, each.getKey().getTarget().getName());
+            subInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
+            SplitJobParam param = SplitJobParam.from(job, node.getName());
             List<SchedTask> tasks = manager.splitTasks(param, subInstance.getInstanceId(), now);
             subInstances.add(Tuple2.of(subInstance, tasks));
         }

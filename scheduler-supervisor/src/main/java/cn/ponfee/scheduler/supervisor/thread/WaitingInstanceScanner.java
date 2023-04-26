@@ -114,7 +114,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
                 }
             }
             log.info("Scanned waiting state instance was dead: {}", instance.getInstanceId());
-            schedulerJobManager.purgeInstance(instance.getInstanceId());
+            schedulerJobManager.purgeInstance(instance);
 
         }
     }

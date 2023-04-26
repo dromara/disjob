@@ -381,7 +381,9 @@ public class WorkerThreadPool extends Thread implements Startable {
             return;
         }
 
-        TerminateTaskParam terminateTaskParam = new TerminateTaskParam(param.getInstanceId(), param.getTaskId(), ops, toState, errorMsg);
+        TerminateTaskParam terminateTaskParam = new TerminateTaskParam(
+            param.getInstanceId(), param.getWorkflowInstanceId(), param.getTaskId(), ops, toState, errorMsg
+        );
         try {
             if (!client.terminateTask(terminateTaskParam)) {
                 LOG.warn("Terminate task failed: {} | {} | {}", param.getTaskId(), ops, toState);
@@ -405,10 +407,10 @@ public class WorkerThreadPool extends Thread implements Startable {
             boolean success = true;
             switch (ops) {
                 case PAUSE:
-                    success = client.pauseInstance(param.getInstanceId());
+                    success = client.pauseInstance(param.getInstanceId(), param.getWorkflowInstanceId());
                     break;
                 case EXCEPTION_CANCEL:
-                    success = client.cancelInstance(param.getInstanceId(), ops);
+                    success = client.cancelInstance(param.getInstanceId(), param.getWorkflowInstanceId(), ops);
                     break;
                 default:
                     LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);

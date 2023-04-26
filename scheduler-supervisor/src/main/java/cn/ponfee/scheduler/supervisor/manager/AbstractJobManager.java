@@ -66,7 +66,6 @@ public abstract class AbstractJobManager {
     }
 
     public List<SchedTask> splitTasks(SplitJobParam param, long instanceId, Date date) throws JobException {
-
         if (RouteStrategy.BROADCAST.equals(param.getRouteStrategy())) {
             List<Worker> discoveredServers = discoveryWorker.getDiscoveredServers(param.getJobGroup());
             if (discoveredServers.isEmpty()) {
@@ -107,8 +106,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean isAliveWorker(Worker worker) {
-        return worker != null
-            && discoveryWorker.isDiscoveredServer(worker);
+        return worker != null && discoveryWorker.isDiscoveredServer(worker);
     }
 
     public boolean isDeadWorker(Worker worker) {
@@ -124,11 +122,11 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        boolean isBroadcast = RouteStrategy.BROADCAST.equals(job.getRouteStrategy());
         ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, job);
-        List<ExecuteTaskParam> list = new ArrayList<>(tasks.size());
-        for (SchedTask task : tasks) {
-            if (isBroadcast) {
+        List<ExecuteTaskParam> list;
+        if (RouteStrategy.BROADCAST.equals(job.getRouteStrategy())) {
+            list = new ArrayList<>(tasks.size());
+            for (SchedTask task : tasks) {
                 Assert.hasText(task.getWorker(), () -> "Broadcast route strategy worker must pre assign: " + task.getTaskId());
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (isDeadWorker(worker)) {
@@ -136,10 +134,13 @@ public abstract class AbstractJobManager {
                 } else {
                     list.add(builder.build(Operations.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
-            } else {
-                list.add(builder.build(Operations.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
             }
+        } else {
+            list = tasks.stream()
+                .map(e -> builder.build(Operations.TRIGGER, e.getTaskId(), instance.getTriggerTime(), null))
+                .collect(Collectors.toList());
         }
+
         return taskDispatcher.dispatch(list, job.getJobGroup());
     }
 
@@ -163,4 +164,5 @@ public abstract class AbstractJobManager {
      * @return {@code true} if cancel successful
      */
     protected abstract boolean cancelWaitingTask(long taskId);
+
 }

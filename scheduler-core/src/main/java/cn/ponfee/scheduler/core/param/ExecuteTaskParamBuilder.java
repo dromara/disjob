@@ -16,7 +16,7 @@ import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
-import cn.ponfee.scheduler.core.model.WorkflowAttach;
+import cn.ponfee.scheduler.core.model.InstanceAttach;
 import org.springframework.util.Assert;
 
 /**
@@ -38,7 +38,7 @@ public class ExecuteTaskParamBuilder {
         String jobHandler;
         if (instance.getWorkflowInstanceId() != null) {
             Assert.hasText(instance.getAttach(), () -> "Workflow instance attach cannot be null: " + instance.getInstanceId());
-            WorkflowAttach attach = Jsons.fromJson(instance.getAttach(), WorkflowAttach.class);
+            InstanceAttach attach = Jsons.fromJson(instance.getAttach(), InstanceAttach.class);
             jobHandler = DAGNode.fromString(attach.getCurNode()).getName();
         } else {
             jobHandler = job.getJobHandler();
@@ -48,6 +48,7 @@ public class ExecuteTaskParamBuilder {
             ops,
             taskId,
             instance.getInstanceId(),
+            instance.getWorkflowInstanceId(),
             triggerTime,
             job.getJobId(),
             JobType.of(job.getJobType()),

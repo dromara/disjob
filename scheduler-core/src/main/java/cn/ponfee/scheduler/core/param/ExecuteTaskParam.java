@@ -41,6 +41,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
+import static cn.ponfee.scheduler.common.util.Numbers.nullZero;
+import static cn.ponfee.scheduler.common.util.Numbers.zeroNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -56,6 +58,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     private final AtomicReference<Operations> operation;
     private final long taskId;
     private final long instanceId;
+    private final Long workflowInstanceId;
     private final long triggerTime;
 
     private final long jobId;
@@ -77,19 +80,21 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     /**
      * Constructor
      *
-     * @param operation      the operation(if terminate task, this is null value)
-     * @param taskId         the task id
-     * @param instanceId     the instance id
-     * @param triggerTime    the trigger time
-     * @param jobId          the job id
-     * @param jobType        the job type
-     * @param routeStrategy  the route strategy
-     * @param executeTimeout the execution timeout
-     * @param jobHandler     the job handler
+     * @param operation          the operation(if terminate task, this is null value)
+     * @param taskId             the task id
+     * @param instanceId         the instance id
+     * @param workflowInstanceId the workflow instance id
+     * @param triggerTime        the trigger time
+     * @param jobId              the job id
+     * @param jobType            the job type
+     * @param routeStrategy      the route strategy
+     * @param executeTimeout     the execution timeout
+     * @param jobHandler         the job handler
      */
     public ExecuteTaskParam(Operations operation,
                             long taskId,
                             long instanceId,
+                            Long workflowInstanceId,
                             long triggerTime,
                             long jobId,
                             JobType jobType,
@@ -98,9 +103,11 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
                             String jobHandler) {
         Assert.notNull(operation, "Operation cannot null.");
         Assert.notNull(routeStrategy, "Route strategy cannot null.");
+        Assert.isTrue(workflowInstanceId == null || workflowInstanceId > 0, "Invalid workflow instance id: " + workflowInstanceId);
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
         this.instanceId = instanceId;
+        this.workflowInstanceId = workflowInstanceId;
         this.triggerTime = triggerTime;
         this.jobId = jobId;
         this.jobType = jobType;
@@ -134,6 +141,10 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
 
     public long getInstanceId() {
         return instanceId;
+    }
+
+    public Long getWorkflowInstanceId() {
+        return workflowInstanceId;
     }
 
     public long getTriggerTime() {
@@ -208,16 +219,21 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         return this.operation.get() == other.operation.get()
             && this.taskId          == other.taskId
             && this.instanceId      == other.instanceId
-            && this.jobId           == other.jobId
-            && this.routeStrategy   == other.routeStrategy
+            && Objects.equals(this.workflowInstanceId, other.workflowInstanceId)
             && this.triggerTime     == other.triggerTime
+            && this.jobId           == other.jobId
+            && this.jobType         == other.jobType
+            && this.routeStrategy   == other.routeStrategy
             && this.executeTimeout  == other.executeTimeout
             && this.jobHandler.equals(other.jobHandler);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(operation.get().ordinal(), taskId, instanceId, jobId, routeStrategy, triggerTime, executeTimeout, jobHandler);
+        return Objects.hash(
+            operation.get(), taskId, instanceId, workflowInstanceId, triggerTime,
+            jobId, jobType, routeStrategy, executeTimeout, jobHandler
+        );
     }
 
     /**
@@ -228,10 +244,11 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     public byte[] serialize() {
         // unnecessary do flip
         byte[] jobHandlerBytes = jobHandler.getBytes(UTF_8);
-        return ByteBuffer.allocate(39 + jobHandlerBytes.length)
+        return ByteBuffer.allocate(47 + jobHandlerBytes.length)
             .put((byte) operation.get().ordinal()) // 1: operation
             .putLong(taskId)                       // 8: taskId
             .putLong(instanceId)                   // 8: instanceId
+            .putLong(nullZero(workflowInstanceId)) // 8: workflowInstanceId
             .putLong(triggerTime)                  // 8: triggerTime
             .putLong(jobId)                        // 8: jobId
             .put((byte) jobType.ordinal())         // 1: jobType
@@ -253,6 +270,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
             Operations.values()[buf.get()],          // operation
             buf.getLong(),                           // taskId
             buf.getLong(),                           // instanceId
+            zeroNull(buf.getLong()),                 // workflowInstanceId
             buf.getLong(),                           // triggerTime
             buf.getLong(),                           // jobId
             JobType.values()[buf.get()],             // jobType
@@ -302,6 +320,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         Operations operation = EnumUtils.getEnumIgnoreCase(Operations.class, MapUtils.getString(map, "operation"));
         long taskId = MapUtils.getLongValue(map, "taskId");
         long instanceId = MapUtils.getLongValue(map, "instanceId");
+        Long workflowInstanceId = MapUtils.getLong(map, "workflowInstanceId");
         long triggerTime = MapUtils.getLongValue(map, "triggerTime");
         long jobId = MapUtils.getLongValue(map, "jobId");
         JobType jobType = EnumUtils.getEnumIgnoreCase(JobType.class, MapUtils.getString(map, "jobType"));
@@ -312,8 +331,8 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
 
         // operation is null if terminate task
         ExecuteTaskParam param = new ExecuteTaskParam(
-            operation, taskId, instanceId, triggerTime, jobId,
-            jobType, routeStrategy, executeTimeout, jobHandler
+            operation, taskId, instanceId, workflowInstanceId, triggerTime,
+            jobId, jobType, routeStrategy, executeTimeout, jobHandler
         );
         param.setWorker(worker);
         return param;

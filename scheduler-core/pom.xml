@@ -17,21 +17,6 @@
   <url>https://github.com/ponfee/distributed-scheduler</url>
 
   <dependencies>
-    <!--
-    1、knife4j(Swagger)不兼容spring-context-indexer
-    2、knife4j(Swagger)不兼容spring-boot-starter-actuator
-    <dependency>
-      <groupId>com.github.xiaoymin</groupId>
-      <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
-      <version>4.0.0</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>mapstruct</artifactId>
-          <groupId>org.mapstruct</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    -->
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-ui</artifactId>

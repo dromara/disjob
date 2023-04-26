@@ -1,16 +1,23 @@
 # Maven Notes
 
-## reference articles
+## Reference articles
 [personal group id](https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid)
 
-## deploy maven central repository
-
-### deploy mode
+## Deploy to maven central
 > maven phase: `clean > validate > compile > test > package > integration > verify > install > deploy`
+
+### deploy plugin
+```xml
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-deploy-plugin</artifactId>
+  <version>3.1.1</version>
+</plugin>
+```
 
 - versions-maven-plugin
 ```xml
-<!-- ./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && ./mvnw clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U -->
+<!-- ./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && ./mvnw clean deploy -Prelease -U -->
 <plugin>
   <groupId>org.codehaus.mojo</groupId>
   <artifactId>versions-maven-plugin</artifactId>
@@ -24,7 +31,7 @@
 - flatten-maven-plugin
 ```xml
 <!-- https://www.mojohaus.org/flatten-maven-plugin/usage.html -->
-<!-- ./mvnw clean deploy -Prelease -DskipTests -Dcheckstyle.skip=true -U -->
+<!-- ./mvnw clean deploy -Prelease -U -->
 <plugin>
   <groupId>org.codehaus.mojo</groupId>
   <artifactId>flatten-maven-plugin</artifactId>
@@ -53,7 +60,29 @@
 </plugin>
 ```
 
-### release interactive mode
+### release plugin
+```xml
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-release-plugin</artifactId>
+  <version>3.0.0</version>
+  <configuration>
+    <autoVersionSubmodules>true</autoVersionSubmodules>
+    <useReleaseProfile>false</useReleaseProfile>
+    <releaseProfiles>release</releaseProfiles>
+    <generateReleasePoms>false</generateReleasePoms>
+    <tagNameFormat>v@{project.version}</tagNameFormat>
+    <arguments>-DskipTests</arguments>
+    <preparationGoals>clean verify</preparationGoals>
+    <goals>deploy</goals>
+    <checkModificationExcludes>
+      <checkModificationExclude>**/pom.xml</checkModificationExclude>
+    </checkModificationExcludes>
+  </configuration>
+</plugin>
+```
+
+- interactive
 ```bash
 mvn release:update-versions \
   -B \
@@ -65,7 +94,7 @@ mvn release:prepare release:perform \
   -Darguments="-Dcheckstyle.skip=true"
 ```
 
-### release non-interactive mode
+- non-interactive
 ```bash
 mvn release:update-versions \
   -B \
@@ -80,6 +109,6 @@ mvn release:prepare release:perform \
   -DdevelopmentVersion=1.10-SNAPSHOT
 ```
 
-## notes
+## Others
 - 使用“mvnw”命令需要确认“~/.m2”目录下是否有settings.xml文件且正确配置<server>元素
 - release版本deploy完后还需要在“s01.oss.sonatype.org”页面上手动操作：“Staging Repositories” -> “Close” -> “Release”

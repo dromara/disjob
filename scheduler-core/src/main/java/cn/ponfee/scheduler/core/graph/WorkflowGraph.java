@@ -51,12 +51,12 @@ public class WorkflowGraph {
         return map.get(DAGEdge.of(source, target));
     }
 
-    public boolean allMatch(Predicate<SchedWorkflow> predicate) {
-        return map.values().stream().allMatch(predicate);
+    public boolean allMatch(Predicate<Map.Entry<DAGEdge, SchedWorkflow>> predicate) {
+        return map.entrySet().stream().allMatch(predicate);
     }
 
-    public boolean anyMatch(Predicate<SchedWorkflow> predicate) {
-        return map.values().stream().anyMatch(predicate);
+    public boolean anyMatch(Predicate<Map.Entry<DAGEdge, SchedWorkflow>> predicate) {
+        return map.entrySet().stream().anyMatch(predicate);
     }
 
     // --------------------------------------------------------------private methods

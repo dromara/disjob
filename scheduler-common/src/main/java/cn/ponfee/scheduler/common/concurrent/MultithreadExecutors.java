@@ -118,6 +118,7 @@ public class MultithreadExecutors {
     }
 
     // -----------------------------------------------------------------join
+
     public static <T> List<T> join(CompletionService<T> service, int count) {
         List<T> result = new ArrayList<>(count);
         join(service, count, result::add);

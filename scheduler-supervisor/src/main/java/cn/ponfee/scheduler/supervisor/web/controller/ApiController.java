@@ -102,19 +102,22 @@ public class ApiController extends BaseController {
     @PostMapping("instance/pause")
     public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do pausing sched instance {}", instanceId);
-        return Result.success(schedulerJobManager.pauseInstance(instanceId));
+        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
+        return Result.success(schedulerJobManager.pauseInstance(instanceId, workflowInstanceId));
     }
 
     @PostMapping("instance/cancel")
     public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do canceling sched instance {}", instanceId);
-        return Result.success(schedulerJobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL));
+        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
+        return Result.success(schedulerJobManager.cancelInstance(instanceId, workflowInstanceId, Operations.MANUAL_CANCEL));
     }
 
     @PostMapping("instance/resume")
     public Result<Boolean> resumeInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do resuming sched instance {}", instanceId);
-        return Result.success(schedulerJobManager.resumeInstance(instanceId));
+        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
+        return Result.success(schedulerJobManager.resumeInstance(instanceId, workflowInstanceId));
     }
 
     @PutMapping("instance/force_change_state")
@@ -124,7 +127,8 @@ public class ApiController extends BaseController {
         ExecuteState.of(targetExecuteState);
 
         log.info("Do force change state {} | {}", instanceId, targetExecuteState);
-        schedulerJobManager.forceChangeState(instanceId, targetExecuteState);
+        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
+        schedulerJobManager.forceChangeState(instanceId, workflowInstanceId, targetExecuteState);
         return Result.success();
     }
 
@@ -132,7 +136,8 @@ public class ApiController extends BaseController {
     public Result<Void> deleteInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do deleting sched instance {}", instanceId);
 
-        schedulerJobManager.deleteInstance(instanceId);
+        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
+        schedulerJobManager.deleteInstance(instanceId, workflowInstanceId);
         return Result.success();
     }
 
