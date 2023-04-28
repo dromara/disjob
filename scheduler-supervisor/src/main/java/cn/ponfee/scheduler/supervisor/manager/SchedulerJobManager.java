@@ -45,7 +45,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
@@ -677,7 +676,6 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         Assert.hasText(subInstance.getAttach(), () -> "Workflow instance attach cannot blank: " + subInstance);
         InstanceAttach attach = Jsons.fromJson(subInstance.getAttach(), InstanceAttach.class);
         Long workflowInstanceId = subInstance.getWorkflowInstanceId();
-        Assert.isTrue(TransactionSynchronizationManager.isActualTransactionActive(), "Workflow instance must be in transaction.");
         SchedInstance workflowInstance = instanceMapper.getByInstanceId(workflowInstanceId);
 
         int row = workflowMapper.update(workflowInstanceId, attach.getCurNode(), runState.value(), null, RUN_STATE_CANCELABLE, null);
@@ -866,16 +864,21 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 continue;
             }
 
-            try {
-                TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
-                TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, parentInstance.getTriggerTime());
-                tInstance.getInstance().setRootInstanceId(parentInstance.obtainRootInstanceId());
-                tInstance.getInstance().setParentInstanceId(parentInstance.getInstanceId());
+            Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
+                Objects.requireNonNull(transactionTemplate.getTransactionManager()),
+                () -> {
+                    TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
+                    TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, parentInstance.getTriggerTime());
+                    tInstance.getInstance().setRootInstanceId(parentInstance.obtainRootInstanceId());
+                    tInstance.getInstance().setParentInstanceId(parentInstance.getInstanceId());
+                    createInstance(tInstance);
+                    return () -> creator.dispatch(childJob, tInstance);
+                },
+                t -> log.error("Depend job split failed: " + parentInstance + " | " + childJob, t)
+            );
 
-                createInstance(tInstance);
-                TransactionUtils.doAfterTransactionCommit(() -> creator.dispatch(childJob, tInstance));
-            } catch (Exception e) {
-                log.error("Depend job split failed: " + parentInstance + " | " + childJob, e);
+            if (dispatchAction != null) {
+                TransactionUtils.doAfterTransactionCommit(dispatchAction);
             }
         }
     }
