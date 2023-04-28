@@ -682,7 +682,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
         int row = workflowMapper.update(workflowInstanceId, attach.getCurNode(), runState.value(), null, RUN_STATE_CANCELABLE, null);
         if (row < AFFECTED_ONE_ROW) {
-            log.warn("Update workflow node conflict: {} | {}", subInstance, runState);
+            log.warn("Update workflow cur node run state conflict: {} | {}", subInstance, runState);
             return;
         }
 
@@ -699,7 +699,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 RunState endState = ends.values().stream().anyMatch(SchedWorkflow::isFailure) ? RunState.CANCELED : RunState.FINISHED;
                 row = workflowMapper.update(workflowInstanceId, DAGNode.END.toString(), endState.value(), null, RUN_STATE_CANCELABLE, null);
                 if (row < AFFECTED_ONE_ROW) {
-                    log.warn("Update workflow end conflict: {} | {}", subInstance, endState);
+                    log.warn("Update workflow end node run state conflict: {} | {}", subInstance, endState);
                     return;
                 }
                 ends.forEach((k, v) -> graph.get(k.getTarget(), DAGNode.END).setRunState(endState.value()));
@@ -714,8 +714,12 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             if (instanceMapper.terminate(workflowInstanceId, state.value(), RUN_STATE_CANCELABLE, now) == AFFECTED_ONE_ROW) {
                 afterTerminateTask(instanceMapper.getByInstanceId(workflowInstanceId));
             } else {
-                log.warn("Terminate workflow instance conflict: {} | {}", subInstance, state);
+                log.warn("Terminate workflow instance run state conflict: {} | {}", subInstance, state);
             }
+            return;
+        }
+
+        if (runState == RunState.CANCELED) {
             return;
         }
 
@@ -748,15 +752,20 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             nextInstance.setParentInstanceId(subInstance.getInstanceId());
             nextInstance.setWorkflowInstanceId(subInstance.getWorkflowInstanceId());
             nextInstance.setAttach(Jsons.toJson(new InstanceAttach(workflow.getCurNode())));
+            List<SchedTask> tasks;
             try {
-                List<SchedTask> tasks = splitTasks(SplitJobParam.from(job, target.getName()), nextInstance.getInstanceId(), new Date());
-                // save to db
-                instanceMapper.insert(nextInstance);
-                Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
-                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
+                tasks = splitTasks(SplitJobParam.from(job, target.getName()), nextInstance.getInstanceId(), new Date());
             } catch (Exception e) {
                 log.error("Split workflow job task error: " + subInstance, e);
+                subInstance.setRunState(RunState.CANCELED.value());
+                processWorkflow(subInstance);
+                return;
             }
+
+            // save to db
+            instanceMapper.insert(nextInstance);
+            Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
+            TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
         }
     }
 
@@ -789,6 +798,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             String curNode = Jsons.fromJson(prev.getAttach(), InstanceAttach.class).getCurNode();
             int row = workflowMapper.update(prev.getWorkflowInstanceId(), curNode, null, retryInstanceId, RUN_STATE_RUNNING, prev.getInstanceId());
             if (row < AFFECTED_ONE_ROW) {
+                // operate conflict
                 return;
             }
         }
@@ -805,27 +815,26 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
         // 2、build sched tasks
         List<SchedTask> tasks;
-        switch (retryType) {
-            case ALL:
-                try {
-                    // re-split tasks
-                    tasks = splitTasks(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
-                } catch (Exception e) {
-                    log.error("Split job error: " + schedJob + ", " + prev, e);
-                    return;
-                }
-                break;
-            case FAILED:
-                tasks = prevTasks.stream()
-                    .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
-                    // broadcast task cannot support partial retry
-                    .filter(e -> !RouteStrategy.BROADCAST.equals(schedJob.getRouteStrategy()) || super.isAliveWorker(e.getWorker()))
-                    .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstance.getInstanceId(), e.getTaskNo(), e.getTaskCount(), now, e.getWorker()))
-                    .collect(Collectors.toList());
-                break;
-            default:
-                log.error("Job unsupported retry type {}", schedJob);
+        if (retryType == RetryType.ALL) {
+            try {
+                // re-split tasks
+                tasks = splitTasks(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
+            } catch (Exception e) {
+                log.error("Split retry job error: " + schedJob + ", " + prev, e);
+                processWorkflow(prev);
                 return;
+            }
+        } else if (retryType == RetryType.FAILED) {
+            tasks = prevTasks.stream()
+                .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
+                // broadcast task cannot support partial retry
+                .filter(e -> !RouteStrategy.BROADCAST.equals(schedJob.getRouteStrategy()) || super.isAliveWorker(e.getWorker()))
+                .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstanceId, e.getTaskNo(), e.getTaskCount(), now, e.getWorker()))
+                .collect(Collectors.toList());
+        } else {
+            log.error("Unknown job retry type {}", schedJob);
+            processWorkflow(prev);
+            return;
         }
 
         // 3、save to db
@@ -866,7 +875,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 createInstance(tInstance);
                 TransactionUtils.doAfterTransactionCommit(() -> creator.dispatch(childJob, tInstance));
             } catch (Exception e) {
-                log.error("Depend job split failed: " + childJob, e);
+                log.error("Depend job split failed: " + parentInstance + " | " + childJob, e);
             }
         }
     }
