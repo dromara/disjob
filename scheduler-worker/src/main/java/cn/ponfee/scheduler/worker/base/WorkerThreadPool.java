@@ -13,6 +13,8 @@ import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.concurrent.Threads;
 import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.model.Result;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.SupervisorService;
@@ -181,28 +183,28 @@ public class WorkerThreadPool extends Thread implements Startable {
 
         // 1、prepare close
         // 1.1、change executing pool thread state
-        Throwables.caught(activePool::stopPool);
+        ThrowingRunnable.caught(activePool::stopPool);
 
         // 1.2、change idle pool thread state
-        idlePool.forEach(e -> Throwables.caught(e::toStop));
+        idlePool.forEach(e -> ThrowingRunnable.caught(e::toStop));
 
         // 1.3、clear task execution param queue
-        Throwables.caught(taskQueue::clear);
+        ThrowingRunnable.caught(taskQueue::clear);
 
         // 2、do close
         // 2.1、stop this boss thread
-        Throwables.caught(() -> Threads.stopThread(this, 0, 0, 200));
+        ThrowingSupplier.caught(() -> Threads.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
-        idlePool.forEach(e -> Throwables.caught(() -> stopWorkerThread(e, true)));
-        Throwables.caught(idlePool::clear);
+        idlePool.forEach(e -> ThrowingRunnable.caught(() -> stopWorkerThread(e, true)));
+        ThrowingRunnable.caught(idlePool::clear);
 
         // 2.3、stop executing pool thread
-        Throwables.caught(activePool::closePool);
+        ThrowingRunnable.caught(activePool::closePool);
         workerThreadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        Throwables.caught(() -> ThreadPoolExecutors.shutdown(stopTaskExecutor, 1));
+        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(stopTaskExecutor, 1));
 
         LOG.info("Close worker thread pool end.");
     }
@@ -734,7 +736,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
-                    Throwables.caught(() -> supervisorClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
+                    ThrowingRunnable.caught(() -> supervisorClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 // discard task
                 return;

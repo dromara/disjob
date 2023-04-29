@@ -14,9 +14,9 @@ import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.JobType;
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.enums.RouteStrategy;
+import cn.ponfee.scheduler.core.model.InstanceAttach;
 import cn.ponfee.scheduler.core.model.SchedInstance;
 import cn.ponfee.scheduler.core.model.SchedJob;
-import cn.ponfee.scheduler.core.model.InstanceAttach;
 import org.springframework.util.Assert;
 
 /**

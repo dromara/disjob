@@ -11,7 +11,7 @@ package cn.ponfee.scheduler.supervisor.thread;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.scheduler.common.date.Dates;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.AbstractHeartbeatThread;
 import cn.ponfee.scheduler.core.enums.*;
@@ -100,7 +100,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     @Override
     public void close() {
         super.close();
-        Throwables.caught(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 3));
+        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 3));
     }
 
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {

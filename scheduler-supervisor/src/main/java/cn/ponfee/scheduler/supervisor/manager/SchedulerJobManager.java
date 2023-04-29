@@ -864,7 +864,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 continue;
             }
 
-            Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
+            Runnable dispatchAction = TransactionUtils.doInTransactionNested(
                 Objects.requireNonNull(transactionTemplate.getTransactionManager()),
                 () -> {
                     TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
@@ -874,7 +874,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                     createInstance(tInstance);
                     return () -> creator.dispatch(childJob, tInstance);
                 },
-                t -> log.error("Depend job split failed: " + parentInstance + " | " + childJob, t)
+                t -> log.error("Depend job instance created fail: " + parentInstance + " | " + childJob, t)
             );
 
             if (dispatchAction != null) {

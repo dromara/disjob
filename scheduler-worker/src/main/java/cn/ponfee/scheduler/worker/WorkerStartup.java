@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.worker;
 
 import cn.ponfee.scheduler.common.base.Startable;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.dispatch.TaskReceiver;
@@ -78,10 +78,10 @@ public class WorkerStartup implements Startable {
 
     @Override
     public void stop() {
-        Throwables.caught(workerRegistry::close);
-        Throwables.caught(taskReceiver::close);
-        Throwables.caught(rotatingTimingWheel::close);
-        Throwables.caught(workerThreadPool::close);
+        ThrowingRunnable.caught(workerRegistry::close);
+        ThrowingRunnable.caught(taskReceiver::close);
+        ThrowingRunnable.caught(rotatingTimingWheel::close);
+        ThrowingRunnable.caught(workerThreadPool::close);
     }
 
     // ----------------------------------------------------------------------------------------builder

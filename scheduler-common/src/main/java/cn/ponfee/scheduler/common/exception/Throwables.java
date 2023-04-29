@@ -15,7 +15,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -64,154 +63,20 @@ public final class Throwables {
         return "error: <" + ClassUtils.getName(throwable.getClass()) + ">";
     }
 
-    /**
-     * eg: new Thread(Throwables.runnable(printer::print))
-     *
-     * @param runnable the ThrowingRunnable
-     * @param <T>      the type of Throwable
-     * @return Runnable instance
-     */
-    public static <T extends Throwable> Runnable runnable(ThrowingRunnable<T> runnable) {
-        return ThrowingRunnable.checked(runnable);
-    }
-
-    public static <R, T extends Throwable> Callable<R> callable(ThrowingCallable<R, T> callable) {
-        return ThrowingCallable.checked(callable);
-    }
-
-    public static <E, T extends Throwable> Consumer<E> consumer(ThrowingConsumer<E, T> consumer) {
-        return ThrowingConsumer.checked(consumer);
-    }
-
-    public static <E, R, T extends Throwable> Function<E, R> function(ThrowingFunction<E, R, T> function) {
-        return ThrowingFunction.checked(function);
-    }
-
-    public static <R, T extends Throwable> Supplier<R> supplier(ThrowingSupplier<R, T> supplier) {
-        return ThrowingSupplier.checked(supplier);
-    }
-
-    public static <E, T extends Throwable> Comparator<? super E> comparator(ThrowingComparator<E, T> comparator) {
-        return ThrowingComparator.checked(comparator);
-    }
-
-    // -------------------------------------------------------------------------------caught
-
-    public static void caught(ThrowingRunnable<?> runnable) {
-        caught(runnable, "");
-    }
-
-    public static void caught(ThrowingRunnable<?> runnable, String message) {
-        try {
-            runnable.run();
-        } catch (Throwable t) {
-            LOG.error(message == null ? "" : message, t);
-            Threads.interruptIfNecessary(t);
-        }
-    }
-
-    public static void caught(ThrowingRunnable<?> runnable, Supplier<String> message) {
-        try {
-            runnable.run();
-        } catch (Throwable t) {
-            LOG.error(message.get(), t);
-            Threads.interruptIfNecessary(t);
-        }
-    }
-
-    public static <R> R caught(ThrowingSupplier<R, ?> supplier) {
-        try {
-            return supplier.get();
-        } catch (Throwable t) {
-            LOG.error(t.getMessage(), t);
-            Threads.interruptIfNecessary(t);
-            return null;
-        }
-    }
-
-    public static <E> void caught(ThrowingConsumer<E, ?> consumer, E arg) {
-        try {
-            consumer.accept(arg);
-        } catch (Throwable t) {
-            LOG.error(t.getMessage(), t);
-            Threads.interruptIfNecessary(t);
-        }
-    }
-
-    public static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg) {
-        return caught(function, arg, null);
-    }
-
-    public static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg, R defaultValue) {
-        try {
-            return function.apply(arg);
-        } catch (Throwable t) {
-            LOG.error(t.getMessage(), t);
-            Threads.interruptIfNecessary(t);
-            return defaultValue;
-        }
-    }
-
-    // -------------------------------------------------------------------------------checked
-
-    public static void checked(ThrowingRunnable<?> runnable) {
-        try {
-            runnable.run();
-        } catch (Throwable t) {
-            ExceptionUtils.rethrow(t);
-        }
-    }
-
-    public static <R> R checked(ThrowingSupplier<R, ?> supplier) {
-        try {
-            return supplier.get();
-        } catch (Throwable t) {
-            return ExceptionUtils.rethrow(t);
-        }
-    }
-
-    public static <E> void checked(ThrowingConsumer<E, ?> consumer, E arg) {
-        try {
-            consumer.accept(arg);
-        } catch (Throwable t) {
-            ExceptionUtils.rethrow(t);
-        }
-    }
-
-    public static <E, R> R checked(ThrowingFunction<E, R, ?> function, E arg) {
-        return caught(function, arg, null);
-    }
-
-    public static <E, R> R checked(ThrowingFunction<E, R, ?> function, E arg, R defaultValue) {
-        try {
-            return function.apply(arg);
-        } catch (Throwable t) {
-            return ExceptionUtils.rethrow(t);
-        }
-    }
-
-    // -------------------------------------------------------------------------------ignored
-
-    public static void ignored(ThrowingRunnable<?> runnable) {
-        try {
-            runnable.run();
-        } catch (Throwable ignored) {
-        }
-    }
-
-    public static <R> R ignored(ThrowingSupplier<R, ?> supplier) {
-        try {
-            return supplier.get();
-        } catch (Throwable ignored) {
-            return null;
-        }
-    }
 
     // -------------------------------------------------------------------------------interface definitions
 
     @FunctionalInterface
     public interface ThrowingRunnable<T extends Throwable> {
         void run() throws T;
+
+        static void run(ThrowingRunnable<?> runnable) {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                ExceptionUtils.rethrow(t);
+            }
+        }
 
         static <T extends Throwable> Runnable checked(ThrowingRunnable<T> runnable) {
             return () -> {
@@ -221,6 +86,87 @@ public final class Throwables {
                     ExceptionUtils.rethrow(t);
                 }
             };
+        }
+
+        static void ignored(ThrowingRunnable<?> runnable) {
+            try {
+                runnable.run();
+            } catch (Throwable ignored) {
+                Threads.interruptIfNecessary(ignored);
+            }
+        }
+
+        static void caught(ThrowingRunnable<?> runnable) {
+            caught(runnable, "");
+        }
+
+        static void caught(ThrowingRunnable<?> runnable, String message) {
+            caught(runnable, () -> message);
+        }
+
+        static void caught(ThrowingRunnable<?> runnable, Supplier<String> message) {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+            }
+        }
+    }
+
+    /**
+     * Lambda function checked exception
+     *
+     * @param <R> the type of results supplied by this supplier
+     * @param <T> the type of the call get method possible occur exception
+     */
+    @FunctionalInterface
+    public interface ThrowingSupplier<R, T extends Throwable> {
+        R get() throws T;
+
+        static <R> R get(ThrowingSupplier<R, ?> supplier) {
+            try {
+                return supplier.get();
+            } catch (Throwable t) {
+                return ExceptionUtils.rethrow(t);
+            }
+        }
+
+        static <R, T extends Throwable> Supplier<R> checked(ThrowingSupplier<R, T> supplier) {
+            return () -> {
+                try {
+                    return supplier.get();
+                } catch (Throwable t) {
+                    return ExceptionUtils.rethrow(t);
+                }
+            };
+        }
+
+        static <R> R ignored(ThrowingSupplier<R, ?> supplier) {
+            return ignored(supplier, null);
+        }
+
+        static <R> R ignored(ThrowingSupplier<R, ?> supplier, R defaultValue) {
+            try {
+                return supplier.get();
+            } catch (Throwable ignored) {
+                Threads.interruptIfNecessary(ignored);
+                return defaultValue;
+            }
+        }
+
+        static <R> R caught(ThrowingSupplier<R, ?> supplier) {
+            return caught(supplier, null, () -> "");
+        }
+
+        static <R> R caught(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
+            try {
+                return supplier.get();
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+                return defaultValue;
+            }
         }
     }
 
@@ -234,6 +180,14 @@ public final class Throwables {
     public interface ThrowingCallable<R, T extends Throwable> {
         R call() throws T;
 
+        static <R> R call(ThrowingCallable<R, ?> callable) {
+            try {
+                return callable.call();
+            } catch (Throwable t) {
+                return ExceptionUtils.rethrow(t);
+            }
+        }
+
         static <R, T extends Throwable> Callable<R> checked(ThrowingCallable<R, T> callable) {
             return () -> {
                 try {
@@ -242,6 +196,33 @@ public final class Throwables {
                     return ExceptionUtils.rethrow(t);
                 }
             };
+        }
+
+        static <R> R ignored(ThrowingCallable<R, ?> callable) {
+            return ignored(callable, null);
+        }
+
+        static <R> R ignored(ThrowingCallable<R, ?> callable, R defaultValue) {
+            try {
+                return callable.call();
+            } catch (Throwable ignored) {
+                Threads.interruptIfNecessary(ignored);
+                return defaultValue;
+            }
+        }
+
+        static <R> R caught(ThrowingCallable<R, ?> callable, String message) {
+            return caught(callable, null, () -> message);
+        }
+
+        static <R> R caught(ThrowingCallable<R, ?> callable, R defaultValue, Supplier<String> message) {
+            try {
+                return callable.call();
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+                return defaultValue;
+            }
         }
     }
 
@@ -255,6 +236,14 @@ public final class Throwables {
     public interface ThrowingConsumer<E, T extends Throwable> {
         void accept(E e) throws T;
 
+        static <E> void accept(ThrowingConsumer<E, ?> consumer, E arg) {
+            try {
+                consumer.accept(arg);
+            } catch (Throwable t) {
+                ExceptionUtils.rethrow(t);
+            }
+        }
+
         static <E, T extends Throwable> Consumer<E> checked(ThrowingConsumer<E, T> consumer) {
             return e -> {
                 try {
@@ -263,6 +252,23 @@ public final class Throwables {
                     ExceptionUtils.rethrow(t);
                 }
             };
+        }
+
+        static <E> void ignored(ThrowingConsumer<E, ?> consumer, E arg) {
+            try {
+                consumer.accept(arg);
+            } catch (Throwable ignored) {
+                Threads.interruptIfNecessary(ignored);
+            }
+        }
+
+        static <E> void caught(ThrowingConsumer<E, ?> consumer, E arg, Supplier<String> message) {
+            try {
+                consumer.accept(arg);
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+            }
         }
     }
 
@@ -277,6 +283,14 @@ public final class Throwables {
     public interface ThrowingFunction<E, R, T extends Throwable> {
         R apply(E e) throws T;
 
+        static <E, R> R apply(ThrowingFunction<E, R, ?> function, E arg) {
+            try {
+                return function.apply(arg);
+            } catch (Throwable t) {
+                return ExceptionUtils.rethrow(t);
+            }
+        }
+
         static <E, R, T extends Throwable> Function<E, R> checked(ThrowingFunction<E, R, T> function) {
             return e -> {
                 try {
@@ -286,41 +300,32 @@ public final class Throwables {
                 }
             };
         }
-    }
 
-    /**
-     * Lambda function checked exception
-     *
-     * @param <R> the type of results supplied by this supplier
-     * @param <T> the type of the call get method possible occur exception
-     */
-    @FunctionalInterface
-    public interface ThrowingSupplier<R, T extends Throwable> {
-        R get() throws T;
-
-        static <R, T extends Throwable> Supplier<R> checked(ThrowingSupplier<R, T> supplier) {
-            return () -> {
-                try {
-                    return supplier.get();
-                } catch (Throwable t) {
-                    return ExceptionUtils.rethrow(t);
-                }
-            };
+        static <E, R> R ignored(ThrowingFunction<E, R, ?> function, E arg) {
+            return ignored(function, arg, null);
         }
-    }
 
-    @FunctionalInterface
-    public interface ThrowingComparator<E, T extends Throwable> {
-        int compare(E e1, E e2) throws T;
+        static <E, R> R ignored(ThrowingFunction<E, R, ?> function, E arg, R defaultValue) {
+            try {
+                return function.apply(arg);
+            } catch (Throwable ignored) {
+                Threads.interruptIfNecessary(ignored);
+                return defaultValue;
+            }
+        }
 
-        static <E, T extends Throwable> Comparator<? super E> checked(ThrowingComparator<E, T> comparator) {
-            return (e1, e2) -> {
-                try {
-                    return comparator.compare(e1, e2);
-                } catch (Throwable t) {
-                    return ExceptionUtils.rethrow(t);
-                }
-            };
+        static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg) {
+            return caught(function, arg, null, () -> "");
+        }
+
+        static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg, R defaultValue, Supplier<String> message) {
+            try {
+                return function.apply(arg);
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+                return defaultValue;
+            }
         }
     }
 

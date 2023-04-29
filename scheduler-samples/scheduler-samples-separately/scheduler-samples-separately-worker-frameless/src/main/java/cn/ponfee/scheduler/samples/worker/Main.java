@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.samples.worker;
 
 import cn.ponfee.scheduler.common.base.TimingWheel;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.scheduler.common.spring.YamlProperties;
 import cn.ponfee.scheduler.common.util.*;
 import cn.ponfee.scheduler.core.base.JobConstants;
@@ -143,8 +143,8 @@ public class Main {
 
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                Throwables.caught(workerStartup::close);
-                Throwables.caught(vertxWebServer::close);
+                ThrowingRunnable.caught(workerStartup::close);
+                ThrowingRunnable.caught(vertxWebServer::close);
             }));
 
             vertxWebServer.deploy();

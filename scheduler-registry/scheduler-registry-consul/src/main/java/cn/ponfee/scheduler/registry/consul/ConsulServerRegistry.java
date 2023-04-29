@@ -10,7 +10,7 @@ package cn.ponfee.scheduler.registry.consul;
 
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.Threads;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;
@@ -124,10 +124,10 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             return;
         }
 
-        Throwables.caught(consulTtlCheckExecutor::shutdownNow);
+        ThrowingSupplier.caught(consulTtlCheckExecutor::shutdownNow);
         registered.forEach(this::deregister);
         registered.clear();
-        Throwables.caught(() -> Threads.stopThread(consulSubscriberThread, 0, 0, 100));
+        ThrowingSupplier.caught(() -> Threads.stopThread(consulSubscriberThread, 0, 0, 100));
         super.close();
     }
 

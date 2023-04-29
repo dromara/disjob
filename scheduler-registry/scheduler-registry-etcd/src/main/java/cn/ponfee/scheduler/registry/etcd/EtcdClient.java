@@ -10,7 +10,8 @@ package cn.ponfee.scheduler.registry.etcd;
 
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.common.util.Fields;
 import cn.ponfee.scheduler.registry.ConnectionStateListener;
@@ -240,7 +241,7 @@ public class EtcdClient implements AutoCloseable {
     @Override
     public synchronized void close() {
         new ArrayList<>(childWatchers.keySet()).forEach(this::unwatchChildChanged);
-        Throwables.caught(healthCheckScheduler::shutdownNow);
+        ThrowingSupplier.caught(healthCheckScheduler::shutdownNow);
         client.close();
     }
 
@@ -271,12 +272,12 @@ public class EtcdClient implements AutoCloseable {
 
         @Override
         public void close() {
-            Throwables.caught(asyncExecutor::shutdownNow);
+            ThrowingSupplier.caught(asyncExecutor::shutdownNow);
         }
 
         @Override
         public void accept(WatchResponse response) {
-            Throwables.caught((Throwables.ThrowingRunnable<?>) latch::await);
+            ThrowingRunnable.caught(latch::await);
 
             List<WatchEvent> events = response.getEvents();
             if (events.stream().noneMatch(e -> CHANGED_EVENT_TYPES.contains(e.getEventType()))) {

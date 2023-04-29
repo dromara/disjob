@@ -8,7 +8,8 @@
 
 package cn.ponfee.scheduler.common.util;
 
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -32,14 +33,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class CopyrightTest {
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir();
-    private static final String COPYRIGHT = Throwables.checked(
+    private static final String COPYRIGHT = ThrowingSupplier.get(
         () -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightTest.class.getClassLoader())
     );
 
     @Test
     public void upsertCopyright() {
         handleFile(file -> {
-            String text = Throwables.checked(() -> IOUtils.toString(file.toURI(), UTF_8));
+            String text = ThrowingSupplier.get(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (!isOwnerCode(text)) {
                 return;
             }
@@ -70,7 +71,7 @@ public class CopyrightTest {
     @Test
     public void checkCopyright() {
         handleFile(file -> {
-            String text = Throwables.checked(() -> IOUtils.toString(file.toURI(), UTF_8));
+            String text = ThrowingSupplier.get(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (Strings.count(text, " @author ") == 0) {
                 System.out.println(file.getName());
             } else if (isOwnerCode(text)) {
@@ -90,7 +91,7 @@ public class CopyrightTest {
     private static void handleFile(Consumer<File> consumer) {
         FileUtils
             .listFiles(new File(BASE_DIR).getParentFile(), new String[]{"java"}, true)
-            .forEach(e -> Throwables.checked(() -> consumer.accept(e)));
+            .forEach(e -> ThrowingRunnable.run(() -> consumer.accept(e)));
     }
 
     private boolean isOwnerCode(String sourceCode) {

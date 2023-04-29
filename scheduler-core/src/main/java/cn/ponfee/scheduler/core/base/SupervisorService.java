@@ -10,7 +10,6 @@ package cn.ponfee.scheduler.core.base;
 
 import cn.ponfee.scheduler.core.enums.Operations;
 import cn.ponfee.scheduler.core.handle.Checkpoint;
-import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.core.model.SchedTask;
 import cn.ponfee.scheduler.core.param.StartTaskParam;
 import cn.ponfee.scheduler.core.param.TaskWorkerParam;

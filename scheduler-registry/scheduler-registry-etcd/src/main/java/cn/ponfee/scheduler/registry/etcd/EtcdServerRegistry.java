@@ -10,7 +10,8 @@ package cn.ponfee.scheduler.registry.etcd;
 
 import cn.ponfee.scheduler.common.base.Symbol.Char;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ConnectionStateListener;
@@ -143,14 +144,14 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             return;
         }
 
-        Throwables.caught(keepAliveCheckScheduler::shutdownNow);
-        Throwables.caught(() -> keepAliveCheckScheduler.awaitTermination(1, TimeUnit.SECONDS));
-        Throwables.caught(keepAlive::close);
+        ThrowingSupplier.caught(keepAliveCheckScheduler::shutdownNow);
+        ThrowingSupplier.caught(() -> keepAliveCheckScheduler.awaitTermination(1, TimeUnit.SECONDS));
+        ThrowingRunnable.caught(keepAlive::close);
         registered.forEach(this::deregister);
         registered.clear();
-        Throwables.caught(() -> client.revokeLease(leaseId));
-        Throwables.caught(client::close);
-        Throwables.caught(super::close);
+        ThrowingRunnable.caught(() -> client.revokeLease(leaseId));
+        ThrowingRunnable.caught(client::close);
+        ThrowingRunnable.caught(super::close);
     }
 
     // ------------------------------------------------------------------private method

@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.registry.zookeeper;
 
 import cn.ponfee.scheduler.common.base.Symbol.Char;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.ServerRegistry;
@@ -108,7 +108,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         }
 
         registered.forEach(this::deregister);
-        Throwables.caught(client::close);
+        ThrowingRunnable.caught(client::close);
         registered.clear();
         super.close();
     }

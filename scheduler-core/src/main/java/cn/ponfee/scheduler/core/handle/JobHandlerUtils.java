@@ -8,7 +8,7 @@
 
 package cn.ponfee.scheduler.core.handle;
 
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.spring.SpringContextHolder;
 import cn.ponfee.scheduler.common.util.ClassUtils;
 import cn.ponfee.scheduler.core.base.JobCodeMsg;
@@ -73,7 +73,7 @@ public class JobHandlerUtils {
      */
     public static JobHandler<?> load(String text) throws JobException {
         if (SpringContextHolder.isInitialized()) {
-            JobHandler<?> bean = Throwables.ignored(() -> SpringContextHolder.getBean(text, JobHandler.class));
+            JobHandler<?> bean = ThrowingSupplier.ignored(() -> SpringContextHolder.getBean(text, JobHandler.class));
             if (bean != null) {
                 Assert.isTrue(SpringContextHolder.isPrototype(text), () -> "Job handler spring bean name must be prototype: " + text);
                 return bean;
@@ -100,7 +100,7 @@ public class JobHandlerUtils {
             return ClassUtils.newInstance(type);
         }
 
-        T bean = Throwables.ignored(() -> SpringContextHolder.getBean(type));
+        T bean = ThrowingSupplier.ignored(() -> SpringContextHolder.getBean(type));
         if (bean != null) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
             Assert.isTrue(SpringContextHolder.isPrototype(type), () -> "Job handler spring bean type must be prototype: " + type);

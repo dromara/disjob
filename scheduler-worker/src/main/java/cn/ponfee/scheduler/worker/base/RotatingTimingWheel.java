@@ -12,7 +12,7 @@ import cn.ponfee.scheduler.common.base.Startable;
 import cn.ponfee.scheduler.common.base.TimingWheel;
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
 import cn.ponfee.scheduler.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.core.base.SupervisorService;
@@ -153,8 +153,8 @@ public class RotatingTimingWheel implements Startable {
 
     @Override
     public void stop() {
-        Throwables.caught(() -> ThreadPoolExecutors.shutdown(scheduledExecutor, 3));
-        Throwables.caught(() -> ThreadPoolExecutors.shutdown(updateTaskWorkerExecutor, 3));
+        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(scheduledExecutor, 3));
+        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(updateTaskWorkerExecutor, 3));
     }
 
 }

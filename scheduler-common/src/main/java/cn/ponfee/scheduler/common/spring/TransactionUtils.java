@@ -56,7 +56,7 @@ public class TransactionUtils {
      * @param <R>       return type
      * @return do action result
      */
-    public static <R> R doInNestedTransaction(PlatformTransactionManager txManager,
+    public static <R> R doInTransactionNested(PlatformTransactionManager txManager,
                                               ThrowingSupplier<R, Throwable> action,
                                               Consumer<Throwable> log) {
         Assert.isTrue(

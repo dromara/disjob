@@ -9,7 +9,8 @@
 package cn.ponfee.scheduler.test;
 
 import ch.vorburger.mariadb4j.DB;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.test.db.EmbeddedMysqlServerMariaDB;
 import cn.ponfee.scheduler.test.redis.EmbeddedRedisServerKstyrc;
 import redis.embedded.RedisServer;
@@ -30,7 +31,7 @@ public final class EmbeddedMysqlAndRedisServer {
 
     private EmbeddedMysqlAndRedisServer(int mysqlPort, int redisMasterPort, int redisSlavePort) {
         System.out.println("/*============================================================*\\");
-        this.mariaDBServer = Throwables.caught(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
+        this.mariaDBServer = ThrowingSupplier.caught(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
         System.out.println("\\*============================================================*/");
 
         System.out.println("\n\n\n\n\n\n");
@@ -43,13 +44,13 @@ public final class EmbeddedMysqlAndRedisServer {
     }
 
     public synchronized void stop() {
-        Throwables.caught(() -> Thread.sleep(10000));
+        ThrowingRunnable.caught(() -> Thread.sleep(10000));
         if (mariaDBServer != null) {
-            Throwables.caught(mariaDBServer::stop);
+            ThrowingRunnable.caught(mariaDBServer::stop);
             mariaDBServer = null;
         }
         if (redisServer != null) {
-            Throwables.caught(redisServer::stop);
+            ThrowingRunnable.caught(redisServer::stop);
             redisServer = null;
         }
     }

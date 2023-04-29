@@ -9,7 +9,7 @@
 package cn.ponfee.scheduler.supervisor;
 
 import cn.ponfee.scheduler.common.base.Startable;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.scheduler.common.lock.DoInLocked;
 import cn.ponfee.scheduler.core.base.Supervisor;
 import cn.ponfee.scheduler.dispatch.TaskDispatcher;
@@ -91,14 +91,14 @@ public class SupervisorStartup implements Startable {
 
     @Override
     public void stop() {
-        Throwables.caught(supervisorRegistry::close);
-        Throwables.caught(runningInstanceScanner::toStop);
-        Throwables.caught(waitingInstanceScanner::toStop);
-        Throwables.caught(triggeringJobScanner::toStop);
-        Throwables.caught(taskDispatcher::close);
-        Throwables.caught(triggeringJobScanner::close);
-        Throwables.caught(waitingInstanceScanner::close);
-        Throwables.caught(runningInstanceScanner::close);
+        ThrowingRunnable.caught(supervisorRegistry::close);
+        ThrowingRunnable.caught(runningInstanceScanner::toStop);
+        ThrowingRunnable.caught(waitingInstanceScanner::toStop);
+        ThrowingRunnable.caught(triggeringJobScanner::toStop);
+        ThrowingRunnable.caught(taskDispatcher::close);
+        ThrowingRunnable.caught(triggeringJobScanner::close);
+        ThrowingRunnable.caught(waitingInstanceScanner::close);
+        ThrowingRunnable.caught(runningInstanceScanner::close);
     }
 
     // ----------------------------------------------------------------------------------------builder

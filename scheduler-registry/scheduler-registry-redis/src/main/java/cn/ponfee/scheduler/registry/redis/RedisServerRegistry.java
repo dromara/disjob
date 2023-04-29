@@ -9,7 +9,8 @@
 package cn.ponfee.scheduler.registry.redis;
 
 import cn.ponfee.scheduler.common.concurrent.NamedThreadFactory;
-import cn.ponfee.scheduler.common.exception.Throwables;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.scheduler.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.Server;
 import cn.ponfee.scheduler.registry.EventType;
@@ -90,7 +91,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         container.setConnectionFactory(stringRedisTemplate.getConnectionFactory());
         container.setTaskExecutor(registryScheduledExecutor);
         // validate “handleMessage” method is valid
-        String listenerMethod = Throwables.checked(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
+        String listenerMethod = ThrowingSupplier.get(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
         MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, listenerMethod);
         listenerAdapter.afterPropertiesSet();
         container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryRootPath + separator + CHANNEL));
@@ -144,8 +145,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        Throwables.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        Throwables.caught(() -> publish(server, EventType.DEREGISTER));
+        ThrowingSupplier.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
+        ThrowingRunnable.caught(() -> publish(server, EventType.DEREGISTER));
         log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 
@@ -158,8 +159,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        Throwables.caught((Throwables.ThrowingRunnable<Throwable>) redisMessageListenerContainer::stop);
-        Throwables.caught(registryScheduledExecutor::shutdownNow);
+        ThrowingRunnable.caught(redisMessageListenerContainer::stop);
+        ThrowingSupplier.caught(registryScheduledExecutor::shutdownNow);
         registered.forEach(this::deregister);
         registered.clear();
         super.close();
