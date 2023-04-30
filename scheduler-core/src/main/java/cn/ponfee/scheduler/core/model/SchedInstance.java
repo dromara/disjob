@@ -39,12 +39,12 @@ public class SchedInstance extends BaseEntity implements Serializable {
     /**
      * root instance_id(Retry、Depend、Workflow)
      */
-    private Long rootInstanceId;
+    private Long rnstanceId;
 
     /**
      * parent instance_id(Retry、Depend、Workflow)
      */
-    private Long parentInstanceId;
+    private Long pnstanceId;
 
     /**
      * job_type为Workflow生成的instance_id
@@ -140,11 +140,11 @@ public class SchedInstance extends BaseEntity implements Serializable {
      * @return root instance id
      */
     public Long obtainRootInstanceId() {
-        if (rootInstanceId != null) {
-            return rootInstanceId;
+        if (rnstanceId != null) {
+            return rnstanceId;
         }
-        if (parentInstanceId != null) {
-            return parentInstanceId;
+        if (pnstanceId != null) {
+            return pnstanceId;
         }
         return instanceId;
     }

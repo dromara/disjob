@@ -30,7 +30,7 @@ public class SchedWorkflow extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 3485414559751420216L;
 
     /**
-     * sched_instance.workflow_instance_id
+     * sched_instance.wnstance_id
      */
     private Long workflowInstanceId;
 

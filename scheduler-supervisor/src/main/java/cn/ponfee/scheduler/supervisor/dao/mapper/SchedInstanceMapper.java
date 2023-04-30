@@ -53,7 +53,7 @@ public interface SchedInstanceMapper {
                                         @Param("updateTime") Date updateTime,
                                         @Param("size") int size);
 
-    List<SchedInstance> findUnterminatedRetry(long rootInstanceId);
+    List<SchedInstance> findUnterminatedRetry(long rnstanceId);
 
     List<SchedInstance> findWorkflowNode(long workflowInstanceId);
 

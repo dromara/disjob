@@ -182,8 +182,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime.getTime(), expireTime, size);
     }
 
-    public List<SchedInstance> findUnterminatedRetryInstance(long rootInstanceId) {
-        return instanceMapper.findUnterminatedRetry(rootInstanceId);
+    public List<SchedInstance> findUnterminatedRetryInstance(long rnstanceId) {
+        return instanceMapper.findUnterminatedRetry(rnstanceId);
     }
 
     public List<SchedTask> findMediumInstanceTask(long instanceId) {
@@ -837,8 +837,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
             long triggerTime = workflowInstance.getTriggerTime() + workflow.getSequence();
             SchedInstance nextInstance = SchedInstance.create(instanceId, jobId, RunType.of(workflowInstance.getRunType()), triggerTime, 0, now);
-            nextInstance.setRootInstanceId(nodeInstance.obtainRootInstanceId());
-            nextInstance.setParentInstanceId(nodeInstance.getInstanceId());
+            nextInstance.setRnstanceId(nodeInstance.obtainRootInstanceId());
+            nextInstance.setPnstanceId(nodeInstance.getInstanceId());
             nextInstance.setWorkflowInstanceId(nodeInstance.getWorkflowInstanceId());
             nextInstance.setAttach(Jsons.toJson(new InstanceAttach(workflow.getCurNode())));
             List<SchedTask> tasks;
@@ -897,8 +897,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         Date now = new Date();
         long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
         SchedInstance retryInstance = SchedInstance.create(retryInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
-        retryInstance.setRootInstanceId(prev.obtainRootInstanceId());
-        retryInstance.setParentInstanceId(prev.getInstanceId());
+        retryInstance.setRnstanceId(prev.obtainRootInstanceId());
+        retryInstance.setPnstanceId(prev.getInstanceId());
         retryInstance.setWorkflowInstanceId(prev.getWorkflowInstanceId());
         retryInstance.setAttach(prev.getAttach());
 
@@ -960,8 +960,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 () -> {
                     TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
                     TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, parentInstance.getTriggerTime());
-                    tInstance.getInstance().setRootInstanceId(parentInstance.obtainRootInstanceId());
-                    tInstance.getInstance().setParentInstanceId(parentInstance.getInstanceId());
+                    tInstance.getInstance().setRnstanceId(parentInstance.obtainRootInstanceId());
+                    tInstance.getInstance().setPnstanceId(parentInstance.getInstanceId());
                     createInstance(tInstance);
                     return () -> creator.dispatch(childJob, tInstance);
                 },

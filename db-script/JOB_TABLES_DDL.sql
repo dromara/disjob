@@ -67,9 +67,9 @@ CREATE TABLE `sched_job` (
 CREATE TABLE `sched_instance` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
     `instance_id`          bigint(20)    unsigned  NOT NULL                                                       COMMENT '全局唯一ID',
-    `root_instance_id`     bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'root instance_id(Retry、Depend、Workflow)',
-    `parent_instance_id`   bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'parent instance_id(Retry、Depend、Workflow)',
-    `workflow_instance_id` bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'job_type为Workflow生成的instance_id',
+    `rnstance_id`          bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'root instance_id(Retry、Depend、Workflow)',
+    `pnstance_id`          bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'parent instance_id(Retry、Depend、Workflow)',
+    `wnstance_id`          bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT 'job_type为Workflow生成的instance_id',
     `job_id`               bigint(20)    unsigned  NOT NULL                                                       COMMENT 'sched_job.job_id',
     `trigger_time`         bigint(20)    unsigned  NOT NULL                                                       COMMENT '触发时间(毫秒时间戳)',
     `run_type`             tinyint(3)    unsigned  NOT NULL DEFAULT '1'                                           COMMENT '运行类型：1-SCHEDULE；2-DEPEND；3-RETRY；4-MANUAL(手动触发)；',
@@ -85,8 +85,8 @@ CREATE TABLE `sched_instance` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_instanceid` (`instance_id`),
     UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`),
-    KEY `ix_rootinstanceid` (`root_instance_id`),
-    KEY `ix_workflowinstanceid` (`workflow_instance_id`),
+    KEY `ix_rnstanceid` (`rnstance_id`),
+    KEY `ix_wnstanceid` (`wnstance_id`),
     KEY `ix_runstate_triggertime` (`run_state`, `trigger_time`) COMMENT '用于扫表',
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)
@@ -142,7 +142,7 @@ CREATE TABLE `sched_depend` (
 
 CREATE TABLE `sched_workflow` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
-    `workflow_instance_id` bigint(20)    unsigned  NOT NULL                                                       COMMENT 'sched_instance.workflow_instance_id',
+    `wnstance_id`          bigint(20)    unsigned  NOT NULL                                                       COMMENT 'sched_instance.wnstance_id',
     `cur_node`             varchar(255)            NOT NULL                                                       COMMENT '当前任务节点(section:ordinal:name)',
     `pre_node`             varchar(255)            NOT NULL                                                       COMMENT '前置任务节点(section:ordinal:name)',
     `sequence`             int(11)       unsigned  NOT NULL                                                       COMMENT '序号(从1开始)',
@@ -151,8 +151,8 @@ CREATE TABLE `sched_workflow` (
     `updated_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime                NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_workflowinstanceid_curnode_prenode` (`workflow_instance_id`, `cur_node`, `pre_node`),
-    UNIQUE KEY `uk_workflowinstanceid_sequence` (`workflow_instance_id`, `sequence`),
+    UNIQUE KEY `uk_wnstanceid_curnode_prenode` (`wnstance_id`, `cur_node`, `pre_node`),
+    UNIQUE KEY `uk_wnstanceid_sequence` (`wnstance_id`, `sequence`),
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='工作流表';

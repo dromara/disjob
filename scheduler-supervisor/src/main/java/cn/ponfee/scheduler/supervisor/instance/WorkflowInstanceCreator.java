@@ -70,8 +70,8 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
 
             // 工作流的子任务实例的【root/parent/workflow】instance_id只与工作流相关联
             SchedInstance nodeInstance = SchedInstance.create(nodeInstanceId, job.getJobId(), runType, nodeTriggerTime, 0, now);
-            nodeInstance.setRootInstanceId(workflowInstanceId);
-            nodeInstance.setParentInstanceId(workflowInstanceId);
+            nodeInstance.setRnstanceId(workflowInstanceId);
+            nodeInstance.setPnstanceId(workflowInstanceId);
             nodeInstance.setWorkflowInstanceId(workflowInstanceId);
             nodeInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
 

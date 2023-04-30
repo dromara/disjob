@@ -6,9 +6,9 @@
 
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedInstance">
     <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
-    <result column="root_instance_id" jdbcType="BIGINT" property="rootInstanceId" />
-    <result column="parent_instance_id" jdbcType="BIGINT" property="parentInstanceId" />
-    <result column="workflow_instance_id" jdbcType="BIGINT" property="workflowInstanceId" />
+    <result column="rnstance_id" jdbcType="BIGINT" property="rnstanceId" />
+    <result column="pnstance_id" jdbcType="BIGINT" property="pnstanceId" />
+    <result column="wnstance_id" jdbcType="BIGINT" property="workflowInstanceId" />
     <result column="job_id" jdbcType="BIGINT" property="jobId" />
     <result column="trigger_time" jdbcType="BIGINT" property="triggerTime" />
     <result column="run_type" jdbcType="TINYINT" property="runType" />
@@ -24,7 +24,7 @@
   </resultMap>
 
   <sql id="Base_Column_List">
-    instance_id, root_instance_id, parent_instance_id, workflow_instance_id,
+    instance_id, rnstance_id, pnstance_id, wnstance_id,
     job_id, trigger_time, run_type, run_state, run_start_time,
     run_end_time, run_duration, retried_count,
     attach, version, updated_at, created_at
@@ -33,9 +33,9 @@
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.scheduler.core.model.SchedInstance" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       instance_id,
-      root_instance_id,
-      parent_instance_id,
-      workflow_instance_id,
+      rnstance_id,
+      pnstance_id,
+      wnstance_id,
       job_id,
       trigger_time,
       run_type,
@@ -48,8 +48,8 @@
       created_at
     ) VALUES (
       #{instanceId,jdbcType=BIGINT},
-      #{rootInstanceId,jdbcType=BIGINT},
-      #{parentInstanceId,jdbcType=BIGINT},
+      #{rnstanceId,jdbcType=BIGINT},
+      #{pnstanceId,jdbcType=BIGINT},
       #{workflowInstanceId,jdbcType=BIGINT},
       #{jobId,jdbcType=BIGINT},
       #{triggerTime,jdbcType=BIGINT},
@@ -79,7 +79,7 @@
   </select>
 
   <select id="getWorkflowInstanceId" parameterType="_long" resultType="long">
-    SELECT workflow_instance_id
+    SELECT wnstance_id
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
@@ -134,7 +134,7 @@
     WHERE run_state = #{runState,jdbcType=TINYINT}
       AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
       AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
-      AND (workflow_instance_id IS NULL OR instance_id!=workflow_instance_id)
+      AND (wnstance_id IS NULL OR instance_id!=wnstance_id)
     ORDER BY trigger_time
     LIMIT #{size}
   </select>
@@ -142,7 +142,7 @@
   <select id="findUnterminatedRetry" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE root_instance_id = #{rootInstanceId,jdbcType=BIGINT}
+    WHERE rnstance_id = #{rnstanceId,jdbcType=BIGINT}
       AND run_type = 3
       AND run_state NOT IN (40, 50)
   </select>
@@ -150,8 +150,8 @@
   <select id="findWorkflowNode" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
-      AND workflow_instance_id != instance_id
+    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
+      AND wnstance_id != instance_id
   </select>
 
   <update id="renewUpdateTime">
@@ -176,7 +176,7 @@
 
   <delete id="deleteByWorkflowInstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
   </delete>
 
 </mapper>

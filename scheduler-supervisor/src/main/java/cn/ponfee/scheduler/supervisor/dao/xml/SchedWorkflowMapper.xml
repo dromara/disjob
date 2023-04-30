@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_workflow</sql>
 
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedWorkflow">
-    <result column="workflow_instance_id" jdbcType="BIGINT" property="workflowInstanceId" />
+    <result column="wnstance_id" jdbcType="BIGINT" property="workflowInstanceId" />
     <result column="cur_node" jdbcType="VARCHAR" property="curNode" />
     <result column="pre_node" jdbcType="VARCHAR" property="preNode" />
     <result column="sequence" jdbcType="INTEGER" property="sequence" />
@@ -14,12 +14,12 @@
   </resultMap>
 
   <sql id="Base_Column_List">
-    workflow_instance_id, cur_node, pre_node, sequence, run_state, instance_id
+    wnstance_id, cur_node, pre_node, sequence, run_state, instance_id
   </sql>
 
   <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
-      workflow_instance_id,
+      wnstance_id,
       cur_node,
       pre_node,
       sequence,
@@ -41,7 +41,7 @@
   <select id="findByWorkflowInstanceId" parameterType="java.lang.Long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
   </select>
 
   <update id="update">
@@ -50,7 +50,7 @@
       <if test="toState != null">run_state = #{toState,jdbcType=TINYINT},</if>
       <if test="toInstanceId != null">instance_id = #{toInstanceId,jdbcType=BIGINT},</if>
     </set>
-    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
       <if test="curNode != null and curNode != ''">
         AND cur_node = #{curNode,jdbcType=VARCHAR}
       </if>
@@ -64,7 +64,7 @@
 
   <delete id="deleteByWorkflowInstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
   </delete>
 
 </mapper>
