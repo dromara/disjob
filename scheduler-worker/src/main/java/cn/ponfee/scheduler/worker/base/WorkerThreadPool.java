@@ -721,8 +721,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 }
 
                 // update database records start state(sched_instance, sched_task)
-                boolean status = supervisorClient.startTask(StartTaskParam.from(param));
-                if (!status) {
+                if (!supervisorClient.startTask(StartTaskParam.from(param))) {
                     LOG.warn("Task start conflicted {}", param);
                     return;
                 }

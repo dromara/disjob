@@ -19,7 +19,6 @@ import cn.ponfee.scheduler.common.tuple.Tuple2;
 import cn.ponfee.scheduler.common.tuple.Tuple3;
 import cn.ponfee.scheduler.common.util.Collects;
 import cn.ponfee.scheduler.common.util.Jsons;
-import cn.ponfee.scheduler.common.util.ObjectUtils;
 import cn.ponfee.scheduler.core.base.SupervisorService;
 import cn.ponfee.scheduler.core.base.Worker;
 import cn.ponfee.scheduler.core.enums.*;
@@ -197,21 +196,12 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
     // ------------------------------------------------------------------database single operation without transactional
 
-    @Override
-    public boolean checkpoint(long taskId, String executeSnapshot) {
-        return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
-    }
-
-    public boolean renewInstanceUpdateTime(SchedInstance instance, Date updateTime) {
-        return instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()) == AFFECTED_ONE_ROW;
+    public boolean stopJob(SchedJob job) {
+        return jobMapper.stop(job) == AFFECTED_ONE_ROW;
     }
 
     public boolean changeJobState(long jobId, JobState to) {
         return jobMapper.updateState(jobId, to.value(), 1 ^ to.value()) == AFFECTED_ONE_ROW;
-    }
-
-    public boolean stopJob(SchedJob job) {
-        return jobMapper.stop(job) == AFFECTED_ONE_ROW;
     }
 
     public boolean updateJobNextTriggerTime(SchedJob job) {
@@ -222,9 +212,18 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         return jobMapper.updateNextScanTime(jobId, nextScanTime, version) == AFFECTED_ONE_ROW;
     }
 
+    public boolean renewInstanceUpdateTime(SchedInstance instance, Date updateTime) {
+        return instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()) == AFFECTED_ONE_ROW;
+    }
+
     @Override
     protected boolean cancelWaitingTask(long taskId) {
         return taskMapper.terminate(taskId, ExecuteState.WAITING_CANCELED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
+    }
+
+    @Override
+    public boolean checkpoint(long taskId, String executeSnapshot) {
+        return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
     }
 
     // ------------------------------------------------------------------operation within transactional
@@ -257,9 +256,9 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
         job.checkAndDefaultSetting();
 
-        SchedJob dbSchedJob = jobMapper.getByJobId(job.getJobId());
-        Assert.notNull(dbSchedJob, () -> "Sched job id not found " + job.getJobId());
-        job.setNextTriggerTime(dbSchedJob.getNextTriggerTime());
+        SchedJob dbJob = jobMapper.getByJobId(job.getJobId());
+        Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
+        job.setNextTriggerTime(dbJob.getNextTriggerTime());
 
         Date now = new Date();
         if (job.getTriggerType() == null) {
@@ -302,20 +301,19 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     /**
      * Update sched job, save sched instance and tasks.
      *
-     * @param job       the job
-     * @param tInstance the trigger instance
+     * @param job             the job
+     * @param triggerInstance the trigger instance
      * @return {@code true} if operated success
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public boolean createInstance(SchedJob job, TriggerInstance tInstance) {
-        int row = jobMapper.updateNextTriggerTime(job);
-        if (row == 0) {
-            // conflict operation, need not process
+    public boolean createInstance(SchedJob job, TriggerInstance triggerInstance) {
+        if (jobMapper.updateNextTriggerTime(job) == 0) {
+            // operation conflicted
             return false;
+        } else {
+            createInstance(triggerInstance);
+            return true;
         }
-
-        createInstance(tInstance);
-        return true;
     }
 
     /**
@@ -326,12 +324,11 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     @Override
     public void updateTaskWorker(List<TaskWorkerParam> params) {
-        if (CollectionUtils.isEmpty(params)) {
-            return;
+        if (CollectionUtils.isNotEmpty(params)) {
+            // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
+            params.sort(Comparator.comparing(TaskWorkerParam::getTaskId));
+            Collects.batchProcess(params, taskMapper::batchUpdateWorker, PROCESS_BATCH_SIZE);
         }
-        // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
-        params.sort(Comparator.comparing(TaskWorkerParam::getTaskId));
-        Collects.batchProcess(params, taskMapper::batchUpdateWorker, PROCESS_BATCH_SIZE);
     }
 
     /**
@@ -346,23 +343,24 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         SchedInstance instance = instanceMapper.getByInstanceId(param.getInstanceId());
         Assert.notNull(instance, () -> "Sched instance not found: " + param);
         // sched_instance.run_state must in (WAITING, RUNNING)
-        Integer state = instance.getRunState();
-        Assert.state(RUN_STATE_PAUSABLE.contains(state), () -> "Start instance failed: " + param + ", " + state);
-
-        Date now = new Date();
-        // start sched instance(also possibly started by other task)
-        int instanceRow = instanceMapper.start(param.getInstanceId(), now);
-
-        // start sched task
-        int taskRow = taskMapper.start(param.getTaskId(), param.getWorker(), now);
-
-        if (instanceRow == 0 && taskRow == 0) {
-            // conflict: the task executed by other executor
+        if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
             return false;
         }
 
-        Assert.state(taskRow == AFFECTED_ONE_ROW, () -> "Start task failed: " + param);
-        return true;
+        Date now = new Date();
+        // start sched instance(also possibly started by other task)
+        int row = 0;
+        if (RunState.WAITING.equals(instance.getRunState())) {
+            row = instanceMapper.start(param.getInstanceId(), now);
+        }
+
+        // start sched task
+        if (taskMapper.start(param.getTaskId(), param.getWorker(), now) == 0) {
+            Assert.state(row == 0, () -> "Start task failed: " + param);
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public void forceChangeState(long instanceId, int targetExecuteState) {
@@ -371,16 +369,16 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, "Cannot force update state to EXECUTING");
         doTransactionLockInSynchronized(instanceId, null, instance -> {
             Assert.notNull(instance, () -> "Sched instance not found: " + instanceId);
-            Assert.isNull(instance.getWorkflowInstanceId(), () -> "Unsupported force change workflow instance state: " + instance);
+            Assert.isTrue(!instance.isWorkflow(), () -> "Unsupported force change workflow instance state: " + instance);
 
-            int row1 = instanceMapper.forceChangeState(instanceId, toRunState.value());
-            int row2 = taskMapper.forceChangeState(instanceId, toExecuteState.value());
-            if (row1 == 0 && row2 == 0) {
+            int instRow = instanceMapper.forceChangeState(instanceId, toRunState.value());
+            int taskRow = taskMapper.forceChangeState(instanceId, toExecuteState.value());
+            if (instRow == 0 && taskRow == 0) {
                 throw new IllegalStateException("Force update instance state failed: " + instanceId);
             }
 
             if (toExecuteState == ExecuteState.WAITING) {
-                Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, row2);
+                Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, taskRow);
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
             }
 
@@ -388,23 +386,22 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         });
     }
 
-
     public void deleteInstance(long instanceId) {
         doTransactionLockInSynchronized(instanceId, getWorkflowInstanceId(instanceId), instance -> {
             Assert.notNull(instance, () -> "Sched instance not found: " + instanceId);
-
             RunState runState = RunState.of(instance.getRunState());
-            Assert.isTrue(runState.isTerminal(), () -> "Cannot delete unterminated sched instance: " + instanceId + ", run state=" + runState);
+            Assert.isTrue(runState.isTerminal(), () -> "Cannot delete unterminated sched instance: " + instance);
 
-            if (instance.getWorkflowInstanceId() != null) {
+            if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowRoot(), () -> "Cannot delete workflow node instance: " + instanceId);
-                instanceMapper.findWorkflowNode(instance.getWorkflowInstanceId()).forEach(this::deleteInstance);
-                workflowMapper.deleteByWorkflowInstanceId(instance.getWorkflowInstanceId());
                 int row = instanceMapper.deleteByInstanceId(instance.getWorkflowInstanceId());
                 Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);
+                workflowMapper.deleteByWorkflowInstanceId(instance.getWorkflowInstanceId());
+                instanceMapper.findWorkflowNode(instance.getWorkflowInstanceId()).forEach(this::deleteInstance);
             } else {
                 deleteInstance(instance);
             }
+            log.info("Delete sched instance success {}", instanceId);
         });
     }
 
@@ -442,8 +439,12 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 if (param.getOperation() == Operations.TRIGGER) {
                     instance.setRunState(tuple.a.value());
                     afterTerminateTask(instance);
-                } else if (instance.isWorkflowNode() && instanceMapper.terminate(instance.getWorkflowInstanceId(), tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) > 0) {
-                    workflowMapper.update(instance.getWorkflowInstanceId(), instance.parseAttach().getCurNode(), tuple.a.value(), null, RUN_STATE_TERMINABLE, null);
+                } else if (instance.isWorkflowNode()) {
+                    Long workflowInstanceId = instance.getWorkflowInstanceId();
+                    if (instanceMapper.terminate(workflowInstanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) > 0) {
+                        String curNode = instance.parseAttach().getCurNode();
+                        workflowMapper.update(workflowInstanceId, curNode, tuple.a.value(), null, RUN_STATE_TERMINABLE, null);
+                    }
                 }
             }
 
@@ -458,8 +459,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
      * @return {@code true} if purged successfully
      */
     public boolean purgeInstance(SchedInstance inst) {
-        Long instanceId = inst.getInstanceId(), workflowInstanceId = inst.getWorkflowInstanceId();
-        return doTransactionLockInSynchronized(instanceId, workflowInstanceId, instance -> {
+        Long instanceId = inst.getInstanceId();
+        return doTransactionLockInSynchronized(instanceId, inst.getWorkflowInstanceId(), instance -> {
             Assert.notNull(instance, () -> "Purge instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflowRoot(), () -> "Cannot purge workflow root instance: " + instance);
             // instance run state must in (10, 20)
@@ -480,7 +481,10 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 return false;
             }
 
-            Tuple2<RunState, Date> tuple = ObjectUtils.defaultIfNull(obtainRunState(tasks), () -> Tuple2.of(RunState.CANCELED, new Date()));
+            Tuple2<RunState, Date> tuple = obtainRunState(tasks);
+            if (tuple == null) {
+                tuple = Tuple2.of(RunState.CANCELED, new Date());
+            }
             if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) != AFFECTED_ONE_ROW) {
                 return false;
             }
@@ -512,17 +516,14 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 return false;
             }
 
-            if (instance.getWorkflowInstanceId() != null) {
+            if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowRoot(), () -> "Cannot pause workflow node instance: " + instanceId);
                 instanceMapper.findWorkflowNode(instanceId)
                     .stream()
                     .filter(e -> RUN_STATE_PAUSABLE.contains(e.getRunState()))
                     .forEach(this::pauseInstance);
 
-                List<RunState> states = instanceMapper.findWorkflowNode(instanceId)
-                    .stream()
-                    .map(e -> RunState.of(e.getRunState()))
-                    .collect(Collectors.toList());
+                List<RunState> states = Collects.convert(instanceMapper.findWorkflowNode(instanceId), e -> RunState.of(e.getRunState()));
                 if (states.stream().allMatch(RunState::isTerminal)) {
                     RunState state = states.stream().anyMatch(RunState::isFailure) ? RunState.CANCELED : RunState.FINISHED;
                     instanceMapper.terminate(instanceId, state.value(), RUN_STATE_TERMINABLE, new Date());
@@ -554,20 +555,17 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 return false;
             }
 
-            if (instance.getWorkflowInstanceId() != null) {
+            if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowRoot(), () -> "Cannot cancel workflow node instance: " + instanceId);
                 instanceMapper.findWorkflowNode(instanceId)
                     .stream()
                     .filter(e -> !RunState.of(e.getRunState()).isTerminal())
                     .forEach(e -> cancelInstance(e, ops));
 
-                List<RunState> states = instanceMapper.findWorkflowNode(instanceId)
-                    .stream()
-                    .map(e -> RunState.of(e.getRunState()))
-                    .collect(Collectors.toList());
+                List<RunState> states = Collects.convert(instanceMapper.findWorkflowNode(instanceId), e -> RunState.of(e.getRunState()));
                 if (states.stream().allMatch(RunState::isTerminal)) {
-                    RunState workflowRootState = states.stream().anyMatch(RunState::isFailure) ? RunState.CANCELED : RunState.FINISHED;
-                    instanceMapper.terminate(instanceId, workflowRootState.value(), RUN_STATE_TERMINABLE, new Date());
+                    RunState state = states.stream().anyMatch(RunState::isFailure) ? RunState.CANCELED : RunState.FINISHED;
+                    instanceMapper.terminate(instanceId, state.value(), RUN_STATE_TERMINABLE, new Date());
                 }
             } else {
                 cancelInstance(instance, ops);
@@ -591,7 +589,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 return false;
             }
 
-            if (instance.getWorkflowInstanceId() != null) {
+            if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowRoot(), () -> "Cannot resume workflow node instance: " + instanceId);
                 int row = instanceMapper.updateState(instanceId, RunState.RUNNING.value(), RunState.PAUSED.value());
                 Assert.state(row == AFFECTED_ONE_ROW, () -> "Resume workflow root instance failed: " + instanceId);
@@ -600,7 +598,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                     .filter(e -> RunState.PAUSED.equals(e.getRunState()))
                     .forEach(e -> {
                         resumeInstance(e);
-                        workflowMapper.update(instanceId, e.parseAttach().getCurNode(), RunState.RUNNING.value(), null, RUN_STATE_PAUSED, null);
+                        String curNode = e.parseAttach().getCurNode();
+                        workflowMapper.update(instanceId, curNode, RunState.RUNNING.value(), null, RUN_STATE_PAUSED, null);
                     });
             } else {
                 resumeInstance(instance);
@@ -609,8 +608,6 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             return true;
         });
     }
-
-
 
     // ------------------------------------------------------------------private methods
 
@@ -649,7 +646,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         } else if (tInstance instanceof WorkflowInstanceCreator.WorkflowInstance) {
             WorkflowInstanceCreator.WorkflowInstance creator = (WorkflowInstanceCreator.WorkflowInstance) tInstance;
             Collects.batchProcess(creator.getWorkflows(), workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
-            for (Tuple2<SchedInstance, List<SchedTask>> sub : creator.getSubInstances()) {
+            for (Tuple2<SchedInstance, List<SchedTask>> sub : creator.getNodeInstances()) {
                 instanceMapper.insert(sub.a);
                 Collects.batchProcess(sub.b, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
             }
@@ -662,7 +659,6 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         long instanceId = instance.getInstanceId();
         int row = instanceMapper.deleteByInstanceId(instanceId);
         Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);
-
         taskMapper.deleteByInstanceId(instanceId);
     }
 
@@ -682,8 +678,9 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             // must be paused or terminate
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
             if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) == AFFECTED_ONE_ROW) {
-                if (instance.getWorkflowInstanceId() != null) {
-                    workflowMapper.update(instance.getWorkflowInstanceId(), instance.parseAttach().getCurNode(), tuple.a.value(), null, null, null);
+                if (instance.isWorkflow()) {
+                    String curNode = instance.parseAttach().getCurNode();
+                    workflowMapper.update(instance.getWorkflowInstanceId(), curNode, tuple.a.value(), null, null, null);
                 }
             } else {
                 log.warn("Pause instance from {} to {} conflict", RunState.of(instance.getRunState()), tuple.a);
@@ -711,8 +708,9 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 tuple = Tuple2.of(RunState.CANCELED, new Date());
             }
             if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) == AFFECTED_ONE_ROW) {
-                if (instance.getWorkflowInstanceId() != null) {
-                    workflowMapper.update(instance.getWorkflowInstanceId(), instance.parseAttach().getCurNode(), tuple.a.value(), null, null, null);
+                if (instance.isWorkflow()) {
+                    String curNode = instance.parseAttach().getCurNode();
+                    workflowMapper.update(instance.getWorkflowInstanceId(), curNode, tuple.a.value(), null, null, null);
                 }
             } else {
                 log.warn("Cancel instance from {} to {} conflict", runState, tuple.a);
@@ -763,17 +761,17 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         }
     }
 
-    private void processWorkflow(SchedInstance subInstance) {
-        Assert.isTrue(subInstance.isWorkflowNode(), () -> "Must be process workflow node instance: " + subInstance);
+    private void processWorkflow(SchedInstance nodeInstance) {
+        Assert.isTrue(nodeInstance.isWorkflowNode(), () -> "Must be process workflow node instance: " + nodeInstance);
 
-        RunState runState = RunState.of(subInstance.getRunState());
-        InstanceAttach attach = Objects.requireNonNull(subInstance.parseAttach());
-        Long workflowInstanceId = subInstance.getWorkflowInstanceId();
+        RunState runState = RunState.of(nodeInstance.getRunState());
+        InstanceAttach attach = Objects.requireNonNull(nodeInstance.parseAttach());
+        Long workflowInstanceId = nodeInstance.getWorkflowInstanceId();
         SchedInstance workflowInstance = instanceMapper.getByInstanceId(workflowInstanceId);
 
         int row = workflowMapper.update(workflowInstanceId, attach.getCurNode(), runState.value(), null, RUN_STATE_TERMINABLE, null);
         if (row < AFFECTED_ONE_ROW) {
-            log.warn("Update workflow cur node run state conflict: {} | {}", subInstance, runState);
+            log.warn("Update workflow cur node run state conflict: {} | {}", nodeInstance, runState);
             return;
         }
 
@@ -790,7 +788,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 RunState endState = ends.values().stream().anyMatch(SchedWorkflow::isFailure) ? RunState.CANCELED : RunState.FINISHED;
                 row = workflowMapper.update(workflowInstanceId, DAGNode.END.toString(), endState.value(), null, RUN_STATE_TERMINABLE, null);
                 if (row < AFFECTED_ONE_ROW) {
-                    log.warn("Update workflow end node run state conflict: {} | {}", subInstance, endState);
+                    log.warn("Update workflow end node run state conflict: {} | {}", nodeInstance, endState);
                     return;
                 }
                 ends.forEach((k, v) -> graph.get(k.getTarget(), DAGNode.END).setRunState(endState.value()));
@@ -805,7 +803,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             if (instanceMapper.terminate(workflowInstanceId, state.value(), RUN_STATE_TERMINABLE, now) == AFFECTED_ONE_ROW) {
                 afterTerminateTask(instanceMapper.getByInstanceId(workflowInstanceId));
             } else {
-                log.warn("Terminate workflow root instance run state conflict: {} | {}", subInstance, state);
+                log.warn("Terminate workflow root instance run state conflict: {} | {}", nodeInstance, state);
             }
             return;
         }
@@ -839,17 +837,17 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
 
             long triggerTime = workflowInstance.getTriggerTime() + workflow.getSequence();
             SchedInstance nextInstance = SchedInstance.create(instanceId, jobId, RunType.of(workflowInstance.getRunType()), triggerTime, 0, now);
-            nextInstance.setRootInstanceId(subInstance.obtainRootInstanceId());
-            nextInstance.setParentInstanceId(subInstance.getInstanceId());
-            nextInstance.setWorkflowInstanceId(subInstance.getWorkflowInstanceId());
+            nextInstance.setRootInstanceId(nodeInstance.obtainRootInstanceId());
+            nextInstance.setParentInstanceId(nodeInstance.getInstanceId());
+            nextInstance.setWorkflowInstanceId(nodeInstance.getWorkflowInstanceId());
             nextInstance.setAttach(Jsons.toJson(new InstanceAttach(workflow.getCurNode())));
             List<SchedTask> tasks;
             try {
                 tasks = splitTasks(SplitJobParam.from(job, target.getName()), nextInstance.getInstanceId(), new Date());
             } catch (Exception e) {
-                log.error("Split workflow job task error: " + subInstance, e);
-                subInstance.setRunState(RunState.CANCELED.value());
-                processWorkflow(subInstance);
+                log.error("Split workflow job task error: " + nodeInstance, e);
+                nodeInstance.setRunState(RunState.CANCELED.value());
+                processWorkflow(nodeInstance);
                 return;
             }
 

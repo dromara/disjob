@@ -150,15 +150,18 @@ public class SchedInstance extends BaseEntity implements Serializable {
     }
 
     @Transient
+    public boolean isWorkflow() {
+        return workflowInstanceId != null;
+    }
+
+    @Transient
     public boolean isWorkflowNode() {
-        return workflowInstanceId != null
-            && !workflowInstanceId.equals(instanceId);
+        return isWorkflow() && !workflowInstanceId.equals(instanceId);
     }
 
     @Transient
     public boolean isWorkflowRoot() {
-        return workflowInstanceId != null
-            && workflowInstanceId.equals(instanceId);
+        return isWorkflow() && workflowInstanceId.equals(instanceId);
     }
 
     public InstanceAttach parseAttach() {

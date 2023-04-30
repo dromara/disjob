@@ -57,50 +57,50 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
             .map(e -> new SchedWorkflow(workflowInstanceId, e.target().toString(), e.source().toString(), sequence.getAndIncrement()))
             .collect(Collectors.toList());
 
-        List<Tuple2<SchedInstance, List<SchedTask>>> subInstances = new ArrayList<>();
+        List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances = new ArrayList<>();
         for (Map.Entry<DAGEdge, SchedWorkflow> firstTriggers : new WorkflowGraph(workflows).successors(DAGNode.START).entrySet()) {
             // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
-            long subInstanceId = manager.generateId();
-            long subTriggerTime = triggerTime + firstTriggers.getValue().getSequence();
+            long nodeInstanceId = manager.generateId();
+            long nodeTriggerTime = triggerTime + firstTriggers.getValue().getSequence();
             DAGNode node = firstTriggers.getKey().getTarget();
 
             SchedWorkflow workflow = firstTriggers.getValue();
-            workflow.setInstanceId(subInstanceId);
+            workflow.setInstanceId(nodeInstanceId);
             workflow.setRunState(RunState.RUNNING.value());
 
             // 工作流的子任务实例的【root/parent/workflow】instance_id只与工作流相关联
-            SchedInstance subInstance = SchedInstance.create(subInstanceId, job.getJobId(), runType, subTriggerTime, 0, now);
-            subInstance.setRootInstanceId(workflowInstanceId);
-            subInstance.setParentInstanceId(workflowInstanceId);
-            subInstance.setWorkflowInstanceId(workflowInstanceId);
-            subInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
+            SchedInstance nodeInstance = SchedInstance.create(nodeInstanceId, job.getJobId(), runType, nodeTriggerTime, 0, now);
+            nodeInstance.setRootInstanceId(workflowInstanceId);
+            nodeInstance.setParentInstanceId(workflowInstanceId);
+            nodeInstance.setWorkflowInstanceId(workflowInstanceId);
+            nodeInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
 
             SplitJobParam param = SplitJobParam.from(job, node.getName());
-            List<SchedTask> tasks = manager.splitTasks(param, subInstance.getInstanceId(), now);
-            subInstances.add(Tuple2.of(subInstance, tasks));
+            List<SchedTask> tasks = manager.splitTasks(param, nodeInstance.getInstanceId(), now);
+            nodeInstances.add(Tuple2.of(nodeInstance, tasks));
         }
 
-        return new WorkflowInstance(workflowInstance, workflows, subInstances);
+        return new WorkflowInstance(workflowInstance, workflows, nodeInstances);
     }
 
     @Override
     public void dispatch(SchedJob job, WorkflowInstance instance) {
-        for (Tuple2<SchedInstance, List<SchedTask>> subInstance : instance.getSubInstances()) {
-            manager.dispatch(job, subInstance.a, subInstance.b);
+        for (Tuple2<SchedInstance, List<SchedTask>> nodeInstance : instance.getNodeInstances()) {
+            manager.dispatch(job, nodeInstance.a, nodeInstance.b);
         }
     }
 
     @Getter
     public static class WorkflowInstance extends TriggerInstance {
         private final List<SchedWorkflow> workflows;
-        private final List<Tuple2<SchedInstance, List<SchedTask>>> subInstances;
+        private final List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances;
 
         public WorkflowInstance(SchedInstance instance,
                                 List<SchedWorkflow> workflows,
-                                List<Tuple2<SchedInstance, List<SchedTask>>> subInstances) {
+                                List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances) {
             super(instance);
             this.workflows = workflows;
-            this.subInstances = subInstances;
+            this.nodeInstances = nodeInstances;
         }
     }
 
