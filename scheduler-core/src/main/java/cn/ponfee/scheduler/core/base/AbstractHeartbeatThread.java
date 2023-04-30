@@ -54,7 +54,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Startabl
         while (!stopped.get()) {
             if (super.isInterrupted()) {
                 log.warn("Thread exit by interrupted.");
-                stopped.compareAndSet(false, true);
+                toStop();
                 return;
             }
 
@@ -92,7 +92,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Startabl
             }
         }
 
-        stopped.compareAndSet(false, true);
+        toStop();
         log.info("Heartbeat end.");
     }
 
@@ -110,8 +110,8 @@ public abstract class AbstractHeartbeatThread extends Thread implements Startabl
         doStop(1000);
     }
 
-    public void toStop() {
-        stopped.compareAndSet(false, true);
+    public boolean toStop() {
+        return stopped.compareAndSet(false, true);
     }
 
     /**
@@ -121,10 +121,6 @@ public abstract class AbstractHeartbeatThread extends Thread implements Startabl
      */
     public boolean doStop(long joinMillis) {
         toStop();
-        if (!stopped.compareAndSet(false, true)) {
-            log.warn("Repeat do stop thread: {}", this.getName());
-            return false;
-        }
 
         int count = 10;
         return Threads.stopThread(this, count, heartbeatPeriodMs / count, joinMillis);

@@ -59,7 +59,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private boolean process() {
         Date now = new Date(), expireTime = new Date(now.getTime() - beforeMilliseconds);
-        List<SchedInstance> instances = schedulerJobManager.findExpireWaiting(expireTime, PROCESS_BATCH_SIZE);
+        List<SchedInstance> instances = schedulerJobManager.findExpireWaitingInstance(expireTime, PROCESS_BATCH_SIZE);
         if (CollectionUtils.isEmpty(instances)) {
             return true;
         }
@@ -71,11 +71,11 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
     }
 
     private void processEach(SchedInstance instance, Date now) {
-        if (!schedulerJobManager.renewUpdateTime(instance, now)) {
+        if (!schedulerJobManager.renewInstanceUpdateTime(instance, now)) {
             return;
         }
 
-        List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instance.getInstanceId());
+        List<SchedTask> tasks = schedulerJobManager.findMediumInstanceTask(instance.getInstanceId());
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {

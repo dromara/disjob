@@ -31,5 +31,5 @@ public interface SchedWorkflowMapper {
                @Param("fromStates") List<Integer> fromStates,
                @Param("fromInstanceId") Long fromInstanceId);
 
-    int cancelWorkflow(@Param("workflowInstanceId") long workflowInstanceId);
+    int deleteByWorkflowInstanceId(long workflowInstanceId);
 }

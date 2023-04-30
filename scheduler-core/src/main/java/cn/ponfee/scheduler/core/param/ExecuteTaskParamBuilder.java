@@ -37,7 +37,7 @@ public class ExecuteTaskParamBuilder {
     public ExecuteTaskParam build(Operations ops, long taskId, long triggerTime, Worker worker) {
         String jobHandler;
         if (instance.getWorkflowInstanceId() != null) {
-            Assert.hasText(instance.getAttach(), () -> "Workflow instance attach cannot be null: " + instance.getInstanceId());
+            Assert.hasText(instance.getAttach(), () -> "Workflow node instance attach cannot be null: " + instance.getInstanceId());
             InstanceAttach attach = Jsons.fromJson(instance.getAttach(), InstanceAttach.class);
             jobHandler = DAGNode.fromString(attach.getCurNode()).getName();
         } else {

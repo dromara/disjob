@@ -103,7 +103,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
                             String jobHandler) {
         Assert.notNull(operation, "Operation cannot null.");
         Assert.notNull(routeStrategy, "Route strategy cannot null.");
-        Assert.isTrue(workflowInstanceId == null || workflowInstanceId > 0, "Invalid workflow instance id: " + workflowInstanceId);
+        Assert.isTrue(workflowInstanceId == null || workflowInstanceId > 0, () -> "Invalid workflow node instance id: " + workflowInstanceId);
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
         this.instanceId = instanceId;

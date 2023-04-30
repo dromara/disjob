@@ -631,17 +631,12 @@ public class WorkerThreadPool extends Thread implements Startable {
             }
         }
 
-        public final void toStop() {
-            stopped.compareAndSet(false, true);
+        public final boolean toStop() {
+            return stopped.compareAndSet(false, true);
         }
 
         public final boolean doStop(int sleepCount, long sleepMillis, long joinMillis) {
             toStop();
-            if (!stopped.compareAndSet(false, true)) {
-                LOG.error("Repeat do stop worker thread: {}", super.getName());
-                return false;
-            }
-
             return Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
         }
 

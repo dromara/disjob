@@ -52,11 +52,16 @@ public enum RunState implements IntValueEnum<RunState> {
     ;
 
     /**
-     * State list of can transit to CANCELED
+     * State list of can transit to RUNNING
+     */
+    public static final List<RunState> RUNNABLE_LIST = ImmutableList.of(WAITING, PAUSED);
+
+    /**
+     * State list of can transit to terminated
      *
      * @see #isTerminal()
      */
-    public static final List<RunState> CANCELABLE_LIST = ImmutableList.of(WAITING, RUNNING, PAUSED);
+    public static final List<RunState> TERMINABLE_LIST = ImmutableList.of(WAITING, RUNNING, PAUSED);
 
     /**
      * State list of can transit to PAUSED

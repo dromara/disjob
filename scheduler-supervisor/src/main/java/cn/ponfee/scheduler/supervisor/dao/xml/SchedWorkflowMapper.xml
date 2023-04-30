@@ -51,7 +51,9 @@
       <if test="toInstanceId != null">instance_id = #{toInstanceId,jdbcType=BIGINT},</if>
     </set>
     WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
-      AND cur_node = #{curNode,jdbcType=VARCHAR}
+      <if test="curNode != null and curNode != ''">
+        AND cur_node = #{curNode,jdbcType=VARCHAR}
+      </if>
       <if test="fromStates != null and fromStates.size() != 0">
         AND run_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
       </if>
@@ -60,11 +62,9 @@
       </if>
   </update>
 
-  <update id="cancelWorkflow">
-    UPDATE <include refid="Table_Name" />
-    SET run_state = 50
+  <delete id="deleteByWorkflowInstanceId" parameterType="_long">
+    DELETE FROM <include refid="Table_Name" />
     WHERE workflow_instance_id = #{workflowInstanceId,jdbcType=BIGINT}
-      AND run_state IN (10, 30)
-  </update>
+  </delete>
 
 </mapper>

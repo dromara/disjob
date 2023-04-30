@@ -55,6 +55,8 @@ public interface SchedInstanceMapper {
 
     List<SchedInstance> findUnterminatedRetry(long rootInstanceId);
 
+    List<SchedInstance> findWorkflowNode(long workflowInstanceId);
+
     int renewUpdateTime(@Param("instanceId") long instanceId,
                         @Param("updateTime") Date updateTime,
                         @Param("version") int version);
@@ -69,7 +71,9 @@ public interface SchedInstanceMapper {
      */
     int deleteByInstanceId(long instanceId);
 
-    SchedInstance getByTriggerTime(@Param("jobId") long jobId,
-                                   @Param("triggerTime") long triggerTime,
-                                   @Param("runType") int runType);
+    int deleteByWorkflowInstanceId(long workflowInstanceId);
+
+    SchedInstance getByJobIdAndTriggerTimeAndRunType(@Param("jobId") long jobId,
+                                                     @Param("triggerTime") long triggerTime,
+                                                     @Param("runType") int runType);
 }

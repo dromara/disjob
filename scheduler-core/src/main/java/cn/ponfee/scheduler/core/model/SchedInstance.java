@@ -9,10 +9,12 @@
 package cn.ponfee.scheduler.core.model;
 
 import cn.ponfee.scheduler.common.model.BaseEntity;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.enums.RunState;
 import cn.ponfee.scheduler.core.enums.RunType;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.beans.Transient;
 import java.io.Serializable;
@@ -97,6 +99,8 @@ public class SchedInstance extends BaseEntity implements Serializable {
 
     /**
      * 附加信息
+     *
+     * @see InstanceAttach
      */
     private String attach;
 
@@ -149,6 +153,19 @@ public class SchedInstance extends BaseEntity implements Serializable {
     public boolean isWorkflowNode() {
         return workflowInstanceId != null
             && !workflowInstanceId.equals(instanceId);
+    }
+
+    @Transient
+    public boolean isWorkflowRoot() {
+        return workflowInstanceId != null
+            && workflowInstanceId.equals(instanceId);
+    }
+
+    public InstanceAttach parseAttach() {
+        if (StringUtils.isBlank(attach)) {
+            return null;
+        }
+        return Jsons.fromJson(attach, InstanceAttach.class);
     }
 
 }

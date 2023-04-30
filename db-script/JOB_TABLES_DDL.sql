@@ -86,6 +86,7 @@ CREATE TABLE `sched_instance` (
     UNIQUE KEY `uk_instanceid` (`instance_id`),
     UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`),
     KEY `ix_rootinstanceid` (`root_instance_id`),
+    KEY `ix_workflowinstanceid` (`workflow_instance_id`),
     KEY `ix_runstate_triggertime` (`run_state`, `trigger_time`) COMMENT '用于扫表',
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)

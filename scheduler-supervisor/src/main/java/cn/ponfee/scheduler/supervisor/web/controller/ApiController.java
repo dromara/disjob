@@ -116,8 +116,7 @@ public class ApiController extends BaseController {
     @PostMapping("instance/resume")
     public Result<Boolean> resumeInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do resuming sched instance {}", instanceId);
-        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
-        return Result.success(schedulerJobManager.resumeInstance(instanceId, workflowInstanceId));
+        return Result.success(schedulerJobManager.resumeInstance(instanceId));
     }
 
     @PutMapping("instance/force_change_state")
@@ -127,8 +126,7 @@ public class ApiController extends BaseController {
         ExecuteState.of(targetExecuteState);
 
         log.info("Do force change state {} | {}", instanceId, targetExecuteState);
-        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
-        schedulerJobManager.forceChangeState(instanceId, workflowInstanceId, targetExecuteState);
+        schedulerJobManager.forceChangeState(instanceId, targetExecuteState);
         return Result.success();
     }
 
@@ -136,8 +134,7 @@ public class ApiController extends BaseController {
     public Result<Void> deleteInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do deleting sched instance {}", instanceId);
 
-        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
-        schedulerJobManager.deleteInstance(instanceId, workflowInstanceId);
+        schedulerJobManager.deleteInstance(instanceId);
         return Result.success();
     }
 
@@ -148,7 +145,7 @@ public class ApiController extends BaseController {
             return Result.success(null);
         }
 
-        List<SchedTask> tasks = schedulerJobManager.findLargeTaskByInstanceId(instanceId);
+        List<SchedTask> tasks = schedulerJobManager.findLargeInstanceTask(instanceId);
         return Result.success(SchedInstanceResponse.of(instance, tasks));
     }
 

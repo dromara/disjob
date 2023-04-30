@@ -76,10 +76,13 @@ public final class AsyncDelayedExecutor<E> extends Thread {
         return queue.offer(delayedData);
     }
 
+    public boolean toStop() {
+        return stopped.compareAndSet(false, true);
+    }
+
     public void doStop() {
-        if (stopped.compareAndSet(false, true)) {
-            Threads.stopThread(this, 0, 0, 1000);
-        }
+        toStop();
+        Threads.stopThread(this, 0, 0, 1000);
     }
 
     @Override
@@ -90,7 +93,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
                 delayed = queue.poll(3000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 LOG.error("Delayed queue pool occur interrupted.", e);
-                stopped.compareAndSet(false, true);
+                toStop();
                 Thread.currentThread().interrupt();
                 break;
             }

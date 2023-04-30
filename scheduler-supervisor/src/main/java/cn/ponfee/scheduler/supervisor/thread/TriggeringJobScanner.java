@@ -81,7 +81,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         Boolean result = doInLocked.action(() -> {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterMilliseconds;
-            List<SchedJob> jobs = schedulerJobManager.findBeTriggering(maxNextTriggerTime, PROCESS_BATCH_SIZE);
+            List<SchedJob> jobs = schedulerJobManager.findBeTriggeringJob(maxNextTriggerTime, PROCESS_BATCH_SIZE);
             if (jobs == null || jobs.isEmpty()) {
                 return true;
             }
@@ -114,7 +114,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 schedulerJobManager.stopJob(job);
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
-                schedulerJobManager.updateNextTriggerTime(job);
+                schedulerJobManager.updateJobNextTriggerTime(job);
                 return;
             }
 
@@ -137,7 +137,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             creator.createAndDispatch(job, RunType.SCHEDULE, triggerTime);
 
         } catch (DuplicateKeyException e) {
-            if (schedulerJobManager.updateNextTriggerTime(job)) {
+            if (schedulerJobManager.updateJobNextTriggerTime(job)) {
                 log.info("Conflict trigger time: {} | {}", job, e.getMessage());
             } else {
                 log.error("Conflict trigger time: {} | {}", job, e.getMessage());
@@ -181,7 +181,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         }
 
-        SchedInstance lastInstance = schedulerJobManager.getByTriggerTime(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
+        SchedInstance lastInstance = schedulerJobManager.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
         if (lastInstance == null) {
             return false;
         }
@@ -195,7 +195,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             case PAUSED:
                 return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
             case RUNNING:
-                List<SchedTask> tasks = schedulerJobManager.findMediumTaskByInstanceId(instanceId);
+                List<SchedTask> tasks = schedulerJobManager.findMediumInstanceTask(instanceId);
                 if (schedulerJobManager.hasAliveExecuting(tasks)) {
                     return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
                 } else {
@@ -205,7 +205,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                     return false;
                 }
             case CANCELED:
-                List<SchedInstance> list = schedulerJobManager.findUnterminatedRetry(instanceId);
+                List<SchedInstance> list = schedulerJobManager.findUnterminatedRetryInstance(instanceId);
                 if (CollectionUtils.isEmpty(list)) {
                     return false;
                 } else {
@@ -233,7 +233,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                     job.setRemark("Disable collision reason: has not next trigger time.");
                     job.setJobState(JobState.DISABLE.value());
                 }
-                schedulerJobManager.updateNextTriggerTime(job);
+                schedulerJobManager.updateJobNextTriggerTime(job);
                 return true;
             case SERIAL:
                 // 串行执行：更新下一次的扫描时间
@@ -250,7 +250,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private void updateNextScanTime(SchedJob job, Date now, int delayedSeconds) {
         Date nextScanTime = Dates.plusSeconds(now, delayedSeconds);
-        schedulerJobManager.updateNextScanTime(job.getJobId(), nextScanTime, job.getVersion());
+        schedulerJobManager.updateJobNextScanTime(job.getJobId(), nextScanTime, job.getVersion());
     }
 
     /**
