@@ -33,7 +33,7 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
     private Long instanceId;
     private Long rnstanceId;
     private Long pnstanceId;
-    private Long workflowInstanceId;
+    private Long wnstanceId;
     private Long jobId;
     private Long triggerTime;
     private Integer runType;

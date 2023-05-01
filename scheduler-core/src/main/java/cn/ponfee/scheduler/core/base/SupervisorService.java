@@ -43,10 +43,10 @@ public interface SupervisorService extends Checkpoint {
     boolean terminateTask(TerminateTaskParam param) throws Exception;
 
     @PostMapping(PREFIX_PATH + "instance/pause")
-    boolean pauseInstance(long instanceId, Long workflowInstanceId) throws Exception;
+    boolean pauseInstance(long instanceId, Long wnstanceId) throws Exception;
 
     @PostMapping(PREFIX_PATH + "instance/cancel")
-    boolean cancelInstance(long instanceId, Long workflowInstanceId, Operations ops) throws Exception;
+    boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) throws Exception;
 
     // ---------------------------------------------------------------------------checkpoint
 

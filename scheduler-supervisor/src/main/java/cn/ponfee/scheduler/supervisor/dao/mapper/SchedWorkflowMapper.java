@@ -22,14 +22,16 @@ public interface SchedWorkflowMapper {
 
     int batchInsert(List<SchedWorkflow> records);
 
-    List<SchedWorkflow> findByWorkflowInstanceId(long workflowInstanceId);
+    List<SchedWorkflow> findByWnstanceId(long wnstanceId);
 
-    int update(@Param("workflowInstanceId") long workflowInstanceId,
+    int update(@Param("wnstanceId") long wnstanceId,
                @Param("curNode") String curNode,
                @Param("toState") Integer toState,
                @Param("toInstanceId") Long toInstanceId,
                @Param("fromStates") List<Integer> fromStates,
                @Param("fromInstanceId") Long fromInstanceId);
 
-    int deleteByWorkflowInstanceId(long workflowInstanceId);
+    int resumeWaiting(long wnstanceId);
+
+    int deleteByWnstanceId(long wnstanceId);
 }

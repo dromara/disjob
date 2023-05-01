@@ -60,9 +60,9 @@ public class WorkerThreadPool extends Thread implements Startable {
      * This jdk thread pool for asynchronous to stop(pause or cancel) task
      */
     private final ThreadPoolExecutor stopTaskExecutor = ThreadPoolExecutors.builder()
-        .corePoolSize(1)
-        .maximumPoolSize(10)
-        .workQueue(new LinkedBlockingQueue<>(50))
+        .corePoolSize(100)
+        .maximumPoolSize(100)
+        .workQueue(new LinkedBlockingQueue<>(500))
         .keepAliveTimeSeconds(300)
         .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
         .threadFactory(NamedThreadFactory.builder().prefix("stop_task_operation").priority(Thread.MAX_PRIORITY).build())
@@ -340,7 +340,7 @@ public class WorkerThreadPool extends Thread implements Startable {
         workerThreadCounter.decrementAndGet();
         if (doStop) {
             LOG.info("Do stop the worker thread: {}", workerThread.getName());
-            workerThread.doStop(0, 0, 200);
+            workerThread.doStop(0, 0, 2000);
         } else {
             workerThread.toStop();
         }
@@ -384,7 +384,7 @@ public class WorkerThreadPool extends Thread implements Startable {
         }
 
         TerminateTaskParam terminateTaskParam = new TerminateTaskParam(
-            param.getInstanceId(), param.getWorkflowInstanceId(), param.getTaskId(), ops, toState, errorMsg
+            param.getInstanceId(), param.getWnstanceId(), param.getTaskId(), ops, toState, errorMsg
         );
         try {
             if (!client.terminateTask(terminateTaskParam)) {
@@ -409,10 +409,10 @@ public class WorkerThreadPool extends Thread implements Startable {
             boolean success = true;
             switch (ops) {
                 case PAUSE:
-                    success = client.pauseInstance(param.getInstanceId(), param.getWorkflowInstanceId());
+                    success = client.pauseInstance(param.getInstanceId(), param.getWnstanceId());
                     break;
                 case EXCEPTION_CANCEL:
-                    success = client.cancelInstance(param.getInstanceId(), param.getWorkflowInstanceId(), ops);
+                    success = client.cancelInstance(param.getInstanceId(), param.getWnstanceId(), ops);
                     break;
                 default:
                     LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);

@@ -124,7 +124,7 @@ public class DiscoveryRestTemplate<D extends Server> {
 
                 if (i < n) {
                     // round-robin retry, 100L * IntMath.pow(i + 1, 2)
-                    Thread.sleep(serverNumber == 1 ? 500 : 100L * (i + 1));
+                    Thread.sleep(serverNumber == 1 ? 2000 : 1000L * (i + 1));
                 }
             }
         }

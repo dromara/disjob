@@ -8,7 +8,7 @@
     <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
     <result column="rnstance_id" jdbcType="BIGINT" property="rnstanceId" />
     <result column="pnstance_id" jdbcType="BIGINT" property="pnstanceId" />
-    <result column="wnstance_id" jdbcType="BIGINT" property="workflowInstanceId" />
+    <result column="wnstance_id" jdbcType="BIGINT" property="wnstanceId" />
     <result column="job_id" jdbcType="BIGINT" property="jobId" />
     <result column="trigger_time" jdbcType="BIGINT" property="triggerTime" />
     <result column="run_type" jdbcType="TINYINT" property="runType" />
@@ -50,7 +50,7 @@
       #{instanceId,jdbcType=BIGINT},
       #{rnstanceId,jdbcType=BIGINT},
       #{pnstanceId,jdbcType=BIGINT},
-      #{workflowInstanceId,jdbcType=BIGINT},
+      #{wnstanceId,jdbcType=BIGINT},
       #{jobId,jdbcType=BIGINT},
       #{triggerTime,jdbcType=BIGINT},
       #{runType,jdbcType=TINYINT},
@@ -78,7 +78,7 @@
     AND run_type=#{runType,jdbcType=TINYINT}
   </select>
 
-  <select id="getWorkflowInstanceId" parameterType="_long" resultType="long">
+  <select id="getWnstanceId" parameterType="_long" resultType="long">
     SELECT wnstance_id
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -134,7 +134,7 @@
     WHERE run_state = #{runState,jdbcType=TINYINT}
       AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
       AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
-      AND (wnstance_id IS NULL OR instance_id!=wnstance_id)
+      AND (wnstance_id IS NULL OR instance_id != wnstance_id)
     ORDER BY trigger_time
     LIMIT #{size}
   </select>
@@ -150,7 +150,7 @@
   <select id="findWorkflowNode" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
       AND wnstance_id != instance_id
   </select>
 
@@ -174,9 +174,9 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND run_state IN (40,50)
   </delete>
 
-  <delete id="deleteByWorkflowInstanceId" parameterType="_long">
+  <delete id="deleteByWnstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
   </delete>
 
 </mapper>

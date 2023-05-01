@@ -32,7 +32,7 @@ public class SchedWorkflow extends BaseEntity implements Serializable {
     /**
      * sched_instance.wnstance_id
      */
-    private Long workflowInstanceId;
+    private Long wnstanceId;
 
     /**
      * 当前任务节点(section:ordinal:name)
@@ -61,8 +61,8 @@ public class SchedWorkflow extends BaseEntity implements Serializable {
      */
     private Long instanceId;
 
-    public SchedWorkflow(Long workflowInstanceId, String curNode, String preNode, int sequence) {
-        this.workflowInstanceId = workflowInstanceId;
+    public SchedWorkflow(Long wnstanceId, String curNode, String preNode, int sequence) {
+        this.wnstanceId = wnstanceId;
         this.curNode = curNode;
         this.preNode = preNode;
         this.sequence = sequence;

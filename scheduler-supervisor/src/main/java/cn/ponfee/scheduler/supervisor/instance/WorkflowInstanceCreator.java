@@ -43,18 +43,18 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
     @Override
     public WorkflowInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
         Date now = new Date();
-        long workflowInstanceId = manager.generateId();
-        SchedInstance workflowInstance = SchedInstance.create(workflowInstanceId, job.getJobId(), runType, triggerTime, 0, now);
-        workflowInstance.setRunState(RunState.RUNNING.value());
-        workflowInstance.setRunStartTime(now);
-        workflowInstance.setWorkflowInstanceId(workflowInstanceId);
+        long wnstanceId = manager.generateId();
+        SchedInstance leadInstance = SchedInstance.create(wnstanceId, job.getJobId(), runType, triggerTime, 0, now);
+        leadInstance.setRunState(RunState.RUNNING.value());
+        leadInstance.setRunStartTime(now);
+        leadInstance.setWnstanceId(wnstanceId);
 
         MutableInt sequence = new MutableInt(1);
         List<SchedWorkflow> workflows = new DAGExpressionParser(job.getJobHandler())
             .parse()
             .edges()
             .stream()
-            .map(e -> new SchedWorkflow(workflowInstanceId, e.target().toString(), e.source().toString(), sequence.getAndIncrement()))
+            .map(e -> new SchedWorkflow(wnstanceId, e.target().toString(), e.source().toString(), sequence.getAndIncrement()))
             .collect(Collectors.toList());
 
         List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances = new ArrayList<>();
@@ -70,9 +70,9 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
 
             // 工作流的子任务实例的【root/parent/workflow】instance_id只与工作流相关联
             SchedInstance nodeInstance = SchedInstance.create(nodeInstanceId, job.getJobId(), runType, nodeTriggerTime, 0, now);
-            nodeInstance.setRnstanceId(workflowInstanceId);
-            nodeInstance.setPnstanceId(workflowInstanceId);
-            nodeInstance.setWorkflowInstanceId(workflowInstanceId);
+            nodeInstance.setRnstanceId(wnstanceId);
+            nodeInstance.setPnstanceId(wnstanceId);
+            nodeInstance.setWnstanceId(wnstanceId);
             nodeInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
 
             SplitJobParam param = SplitJobParam.from(job, node.getName());
@@ -80,12 +80,12 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
             nodeInstances.add(Tuple2.of(nodeInstance, tasks));
         }
 
-        return new WorkflowInstance(workflowInstance, workflows, nodeInstances);
+        return new WorkflowInstance(leadInstance, workflows, nodeInstances);
     }
 
     @Override
-    public void dispatch(SchedJob job, WorkflowInstance instance) {
-        for (Tuple2<SchedInstance, List<SchedTask>> nodeInstance : instance.getNodeInstances()) {
+    public void dispatch(SchedJob job, WorkflowInstance wnstance) {
+        for (Tuple2<SchedInstance, List<SchedTask>> nodeInstance : wnstance.getNodeInstances()) {
             manager.dispatch(job, nodeInstance.a, nodeInstance.b);
         }
     }

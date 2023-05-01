@@ -51,7 +51,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     CRON(1, "0/10 * * * * ?") {
         @Override
-        public boolean isValid(String triggerValue) {
+        public boolean validate(String triggerValue) {
             return CronExpression.isValidExpression(triggerValue);
         }
 
@@ -87,7 +87,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     ONCE(2, "2000-01-01 00:00:00") {
         @Override
-        public boolean isValid(String triggerValue) {
+        public boolean validate(String triggerValue) {
             try {
                 Dates.toDate(triggerValue);
                 return true;
@@ -120,7 +120,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     PERIOD(3, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}") {
         @Override
-        public boolean isValid(String triggerValue) {
+        public boolean validate(String triggerValue) {
             try {
                 PeriodTriggerValue conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
                 return conf != null && conf.isValid();
@@ -167,7 +167,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     DEPEND(4, "3988904755200,3988904755201") {
         @Override
-        public boolean isValid(String triggerValue) {
+        public boolean validate(String triggerValue) {
             if (StringUtils.isBlank(triggerValue)) {
                 return false;
             }
@@ -216,7 +216,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         return example;
     }
 
-    public abstract boolean isValid(String triggerValue);
+    public abstract boolean validate(String triggerValue);
 
     public abstract Date computeNextFireTime(String triggerValue, Date startTime);
 

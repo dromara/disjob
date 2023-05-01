@@ -102,15 +102,16 @@ public class ApiController extends BaseController {
     @PostMapping("instance/pause")
     public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do pausing sched instance {}", instanceId);
-        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
-        return Result.success(schedulerJobManager.pauseInstance(instanceId, workflowInstanceId));
+        Long wnstanceId = schedulerJobManager.getWnstanceId(instanceId);
+        return Result.success(schedulerJobManager.pauseInstance(instanceId, wnstanceId));
     }
 
     @PostMapping("instance/cancel")
     public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do canceling sched instance {}", instanceId);
-        Long workflowInstanceId = schedulerJobManager.getWorkflowInstanceId(instanceId);
-        return Result.success(schedulerJobManager.cancelInstance(instanceId, workflowInstanceId, Operations.MANUAL_CANCEL));
+        Long wnstanceId = schedulerJobManager.getWnstanceId(instanceId);
+        boolean res = schedulerJobManager.cancelInstance(instanceId, wnstanceId, Operations.MANUAL_CANCEL);
+        return Result.success(res);
     }
 
     @PostMapping("instance/resume")

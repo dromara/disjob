@@ -47,6 +47,10 @@ public class WorkflowGraph {
         return find(graph.successors(node));
     }
 
+    public Map<DAGEdge, SchedWorkflow> map() {
+        return map;
+    }
+
     public SchedWorkflow get(DAGNode source, DAGNode target) {
         return map.get(DAGEdge.of(source, target));
     }
@@ -72,7 +76,9 @@ public class WorkflowGraph {
     }
 
     private static Map<DAGEdge, SchedWorkflow> buildMap(List<SchedWorkflow> workflows) {
-        return workflows.stream().collect(Collectors.toMap(SchedWorkflow::toEdge, Function.identity()));
+        return Collections.unmodifiableMap(
+            workflows.stream().collect(Collectors.toMap(SchedWorkflow::toEdge, Function.identity()))
+        );
     }
 
     private static Graph<DAGNode> buildGraph(List<SchedWorkflow> workflows) {

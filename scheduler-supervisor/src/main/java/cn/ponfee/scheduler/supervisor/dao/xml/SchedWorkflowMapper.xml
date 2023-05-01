@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_workflow</sql>
 
   <resultMap id="BaseResultMap" type="cn.ponfee.scheduler.core.model.SchedWorkflow">
-    <result column="wnstance_id" jdbcType="BIGINT" property="workflowInstanceId" />
+    <result column="wnstance_id" jdbcType="BIGINT" property="wnstanceId" />
     <result column="cur_node" jdbcType="VARCHAR" property="curNode" />
     <result column="pre_node" jdbcType="VARCHAR" property="preNode" />
     <result column="sequence" jdbcType="INTEGER" property="sequence" />
@@ -28,7 +28,7 @@
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
-      #{item.workflowInstanceId,jdbcType=BIGINT},
+      #{item.wnstanceId,jdbcType=BIGINT},
       #{item.curNode,jdbcType=VARCHAR},
       #{item.preNode,jdbcType=VARCHAR},
       #{item.sequence,jdbcType=INTEGER},
@@ -38,10 +38,10 @@
     </foreach>
   </insert>
 
-  <select id="findByWorkflowInstanceId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+  <select id="findByWnstanceId" parameterType="java.lang.Long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
   </select>
 
   <update id="update">
@@ -50,7 +50,7 @@
       <if test="toState != null">run_state = #{toState,jdbcType=TINYINT},</if>
       <if test="toInstanceId != null">instance_id = #{toInstanceId,jdbcType=BIGINT},</if>
     </set>
-    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
       <if test="curNode != null and curNode != ''">
         AND cur_node = #{curNode,jdbcType=VARCHAR}
       </if>
@@ -62,9 +62,17 @@
       </if>
   </update>
 
-  <delete id="deleteByWorkflowInstanceId" parameterType="_long">
+  <update id="resumeWaiting">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = 10
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+      AND run_state = 30
+      AND instance_id IS NULL
+  </update>
+
+  <delete id="deleteByWnstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE wnstance_id = #{workflowInstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
   </delete>
 
 </mapper>

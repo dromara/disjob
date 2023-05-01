@@ -29,10 +29,10 @@ public class CronExpressionTest {
 
     @Test
     public void testCronExp() throws ParseException {
-        Assertions.assertTrue(TriggerType.CRON.isValid("0 0 10,14,16 * * ?"));
-        Assertions.assertTrue(TriggerType.CRON.isValid("0 0 12 ? * WED"));
-        Assertions.assertFalse(TriggerType.CRON.isValid("0 0 25 ? * WED"));
-        Assertions.assertFalse(TriggerType.CRON.isValid("0 0 25 ? * WED"));
+        Assertions.assertTrue(TriggerType.CRON.validate("0 0 10,14,16 * * ?"));
+        Assertions.assertTrue(TriggerType.CRON.validate("0 0 12 ? * WED"));
+        Assertions.assertFalse(TriggerType.CRON.validate("0 0 25 ? * WED"));
+        Assertions.assertFalse(TriggerType.CRON.validate("0 0 25 ? * WED"));
 
         Assertions.assertTrue(CronExpression.isValidExpression("43 31 14 31 5 ? 2022"));
 
@@ -43,21 +43,21 @@ public class CronExpressionTest {
 
     @Test
     public void testTrigger() {
-        Assertions.assertTrue(TriggerType.CRON.isValid("0 0 10,14,16 * * ?"));
-        Assertions.assertTrue(TriggerType.ONCE.isValid("2022-05-31 14:31:43"));
+        Assertions.assertTrue(TriggerType.CRON.validate("0 0 10,14,16 * * ?"));
+        Assertions.assertTrue(TriggerType.ONCE.validate("2022-05-31 14:31:43"));
 
-        Assertions.assertFalse(TriggerType.ONCE.isValid("0 0 10,14,16 * * ?"));
-        Assertions.assertFalse(TriggerType.CRON.isValid("2022-05-31 14:31:43"));
+        Assertions.assertFalse(TriggerType.ONCE.validate("0 0 10,14,16 * * ?"));
+        Assertions.assertFalse(TriggerType.CRON.validate("2022-05-31 14:31:43"));
 
         PeriodTriggerValue value = new PeriodTriggerValue();
         value.setPeriod(DatePeriods.DAILY);
         value.setStart(new Date());
         value.setStep(2);
-        Assertions.assertTrue(TriggerType.PERIOD.isValid(Jsons.toJson(value)));
+        Assertions.assertTrue(TriggerType.PERIOD.validate(Jsons.toJson(value)));
 
-        Assertions.assertFalse(TriggerType.PERIOD.isValid("{\"period\":\"DAILYx\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}"));
-        Assertions.assertFalse(TriggerType.PERIOD.isValid("{\"period\":\"DAILY\", \"start\":\"2000-x-01 00:00:00\", \"step\":1}"));
-        Assertions.assertFalse(TriggerType.PERIOD.isValid("{\"period\":\"DAILY\", \"start\":\"2000-5-01 00:00:00\", \"step\":\"x\"}"));
+        Assertions.assertFalse(TriggerType.PERIOD.validate("{\"period\":\"DAILYx\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}"));
+        Assertions.assertFalse(TriggerType.PERIOD.validate("{\"period\":\"DAILY\", \"start\":\"2000-x-01 00:00:00\", \"step\":1}"));
+        Assertions.assertFalse(TriggerType.PERIOD.validate("{\"period\":\"DAILY\", \"start\":\"2000-5-01 00:00:00\", \"step\":\"x\"}"));
     }
 
     @Test

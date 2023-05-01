@@ -30,18 +30,18 @@ public class TerminateTaskParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7700836087189718161L;
 
     private long instanceId;
-    private Long workflowInstanceId;
+    private Long wnstanceId;
     private long taskId;
     private Operations operation;
     private ExecuteState toState;
     private String errorMsg;
 
-    public TerminateTaskParam(long instanceId, Long workflowInstanceId, long taskId,
+    public TerminateTaskParam(long instanceId, Long wnstanceId, long taskId,
                               Operations operation, ExecuteState toState, String errorMsg) {
         Assert.notNull(operation, "Terminate task operation param cannot be null.");
         Assert.notNull(toState, "Terminate task target state param cannot be null.");
         this.instanceId = instanceId;
-        this.workflowInstanceId = workflowInstanceId;
+        this.wnstanceId = wnstanceId;
         this.taskId = taskId;
         this.operation = operation;
         this.toState = toState;

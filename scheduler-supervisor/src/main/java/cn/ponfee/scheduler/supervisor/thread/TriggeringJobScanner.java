@@ -201,7 +201,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 } else {
                     // all workers are dead
                     log.info("Collision, all worker dead, terminate the sched instance: {}", instanceId);
-                    schedulerJobManager.cancelInstance(instanceId, lastInstance.getWorkflowInstanceId(), Operations.COLLISION_CANCEL);
+                    schedulerJobManager.cancelInstance(instanceId, lastInstance.getWnstanceId(), Operations.COLLISION_CANCEL);
                     return false;
                 }
             case CANCELED:
@@ -241,7 +241,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                instances.forEach(e -> schedulerJobManager.cancelInstance(e.getInstanceId(), e.getWorkflowInstanceId(), Operations.COLLISION_CANCEL));
+                instances.forEach(e -> schedulerJobManager.cancelInstance(e.getInstanceId(), e.getWnstanceId(), Operations.COLLISION_CANCEL));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collision strategy: " + collisionStrategy.name());

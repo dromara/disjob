@@ -47,9 +47,9 @@ public class SchedInstance extends BaseEntity implements Serializable {
     private Long pnstanceId;
 
     /**
-     * job_type为Workflow生成的instance_id
+     * sched_job.job_type为Workflow生成的lead instance_id
      */
-    private Long workflowInstanceId;
+    private Long wnstanceId;
 
     /**
      * sched_job.job_id
@@ -139,7 +139,7 @@ public class SchedInstance extends BaseEntity implements Serializable {
      *
      * @return root instance id
      */
-    public Long obtainRootInstanceId() {
+    public Long obtainRnstanceId() {
         if (rnstanceId != null) {
             return rnstanceId;
         }
@@ -151,17 +151,17 @@ public class SchedInstance extends BaseEntity implements Serializable {
 
     @Transient
     public boolean isWorkflow() {
-        return workflowInstanceId != null;
+        return wnstanceId != null;
     }
 
     @Transient
     public boolean isWorkflowNode() {
-        return isWorkflow() && !workflowInstanceId.equals(instanceId);
+        return isWorkflow() && !wnstanceId.equals(instanceId);
     }
 
     @Transient
-    public boolean isWorkflowRoot() {
-        return isWorkflow() && workflowInstanceId.equals(instanceId);
+    public boolean isWorkflowLead() {
+        return isWorkflow() && wnstanceId.equals(instanceId);
     }
 
     public InstanceAttach parseAttach() {
