@@ -46,7 +46,7 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public abstract class AbstractJobManager {
 
-    private static final int MAX_SPLIT_TASK_SIZE = 10000;
+    private static final int MAX_SPLIT_TASK_SIZE = 1000;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

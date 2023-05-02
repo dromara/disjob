@@ -38,7 +38,6 @@ import cn.ponfee.scheduler.supervisor.param.SplitJobParam;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -844,7 +843,10 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
     }
 
     private void processWorkflow(SchedInstance nodeInstance) {
-        Assert.isTrue(nodeInstance.isWorkflowNode(), () -> "Must be process workflow node instance: " + nodeInstance);
+        if (!nodeInstance.isWorkflowNode()) {
+            return;
+        }
+
         RunState runState = RunState.of(nodeInstance.getRunState());
         Long wnstanceId = nodeInstance.getWnstanceId();
 
@@ -917,7 +919,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         // 1、build sched instance
         retriedCount++;
         Date now = new Date();
-        long triggerTime = computeRetryTriggerTime(schedJob, retriedCount, now);
+        long triggerTime = schedJob.computeRetryTriggerTime(retriedCount, now);
         SchedInstance retryInstance = SchedInstance.create(retryInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
         retryInstance.setRnstanceId(prev.obtainRnstanceId());
         retryInstance.setPnstanceId(prev.getInstanceId());
@@ -1068,22 +1070,6 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             Assert.notNull(nextTriggerTime, () -> "Has not next trigger time " + job.getTriggerValue());
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }
-    }
-
-    /**
-     * Returns the retry trigger time
-     *
-     * @param job       the SchedJob
-     * @param failCount the failure times
-     * @param current   the current date time
-     * @return retry trigger time milliseconds
-     */
-    private static long computeRetryTriggerTime(SchedJob job, int failCount, Date current) {
-        Assert.isTrue(!RetryType.NONE.equals(job.getRetryType()), () -> "Sched job '" + job.getJobId() + "' retry type is NONE.");
-        Assert.isTrue(job.getRetryCount() > 0, () -> "Sched job '" + job.getJobId() + "' retry count must greater than 0, but actual " + job.getRetryCount());
-        Assert.isTrue(failCount <= job.getRetryCount(), () -> "Sched job '" + job.getJobId() + "' retried " + failCount + " exceed " + job.getRetryCount() + " limit.");
-        // exponential backoff
-        return current.getTime() + (long) job.getRetryInterval() * IntMath.pow(failCount, 2);
     }
 
 }

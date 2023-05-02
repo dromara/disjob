@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Base64;
 
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.commons.lang3.SystemUtils.OS_NAME;
@@ -47,12 +46,9 @@ public class ScriptJobHandler extends JobHandler<String> {
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
         Charset charset = Files.charset(scriptParam.charset);
-        String script0 = (scriptParam.encode == Encode.BASE64)
-            ? new String(Base64.getUrlDecoder().decode(scriptParam.script), charset)
-            : scriptParam.script;
 
         String scriptFileName = scriptParam.type.buildFileName(task().getTaskId());
-        String scriptPath = prepareScriptFile(script0, scriptFileName, charset);
+        String scriptPath = prepareScriptFile(scriptParam.script, scriptFileName, charset);
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
         return ProcessUtils.complete(process, charset, task(), log);
@@ -148,26 +144,21 @@ public class ScriptJobHandler extends JobHandler<String> {
         public abstract Process exec(String scriptPath, String[] envp) throws Exception;
     }
 
-    public enum Encode {
-        /**
-         * java.lang.String
-         */
-        STRING,
-        /**
-         * Base64.getUrlEncoder().withoutPadding().encodeToString(byte[] data)
-         */
-        BASE64
-    }
-
     @Data
     public static class ScriptParam implements Serializable {
         private static final long serialVersionUID = 4733248467785540711L;
 
         private ScriptType type;
         private String charset;
+        /**
+         * 脚本原文需要先做如下转换再转json
+         *
+         * StringUtils.replaceEach(script, new String[]{"\r", "\n", "\""}, new String[]{"\\r", "\\n", "\\\""})
+         *
+         * @see org.apache.commons.lang3.StringUtils#replaceEach(String, String[], String[])
+         */
         private String script;
         private String[] envp;
-        private Encode encode = Encode.STRING;
     }
 
     private static String prepareScriptFile(String script, String scriptFileName, Charset charset) throws IOException {

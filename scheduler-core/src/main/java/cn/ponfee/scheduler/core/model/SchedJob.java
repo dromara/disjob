@@ -10,6 +10,7 @@ package cn.ponfee.scheduler.core.model;
 
 import cn.ponfee.scheduler.common.model.BaseEntity;
 import cn.ponfee.scheduler.core.enums.*;
+import com.google.common.math.IntMath;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
@@ -259,6 +260,21 @@ public class SchedJob extends BaseEntity implements Serializable {
         if (jobParam == null) {
             this.jobParam = "";
         }
+    }
+
+    /**
+     * Returns the retry trigger time
+     *
+     * @param failCount the failure times
+     * @param current   the current date time
+     * @return retry trigger time milliseconds
+     */
+    public long computeRetryTriggerTime(int failCount, Date current) {
+        Assert.isTrue(!RetryType.NONE.equals(retryType), () -> "Sched job '" + jobId + "' retry type is NONE.");
+        Assert.isTrue(retryCount > 0, () -> "Sched job '" + jobId + "' retry count must greater than 0, but actual " + retryCount);
+        Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' retried " + failCount + " exceed " + retryCount + " limit.");
+        // exponential backoff
+        return current.getTime() + (long) getRetryInterval() * IntMath.pow(failCount, 2);
     }
 
 }

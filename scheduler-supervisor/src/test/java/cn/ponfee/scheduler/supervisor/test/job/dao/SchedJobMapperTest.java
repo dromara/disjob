@@ -10,7 +10,9 @@ package cn.ponfee.scheduler.supervisor.test.job.dao;
 
 import cn.ponfee.scheduler.common.base.IdGenerator;
 import cn.ponfee.scheduler.common.date.Dates;
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.core.enums.*;
+import cn.ponfee.scheduler.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.scheduler.core.model.SchedJob;
 import cn.ponfee.scheduler.supervisor.SpringBootTestBase;
 import cn.ponfee.scheduler.supervisor.dao.mapper.SchedJobMapper;
@@ -33,6 +35,9 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     private IdGenerator idGenerator;
 
     @Resource
+    private SchedJobMapper jobMapper;
+
+    @Resource
     private JdbcTemplate jdbcTemplate;
 
     @Test
@@ -40,7 +45,17 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         System.out.println(jdbcTemplate.queryForList("Select distinct job_id from sched_job limit 2"));
     }
 
-    @Test @Disabled
+    @Test
+    public void testQuerySql() {
+        String jobParam = jobMapper.getByJobId(3988904755500L).getJobParam();
+        ScriptJobHandler.ScriptParam scriptParam = Jsons.fromJson(jobParam, ScriptJobHandler.ScriptParam.class);
+        System.out.println("----------------------");
+        System.out.println(scriptParam.getScript());
+        System.out.println("----------------------");
+    }
+
+    @Test
+    @Disabled
     public void testInsert1() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
@@ -74,7 +89,8 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         Assertions.assertEquals(1, insert);
     }
 
-    @Test @Disabled
+    @Test
+    @Disabled
     public void testInsert2() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
@@ -114,7 +130,8 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         Assertions.assertEquals(1, insert);
     }
 
-    @Test @Disabled
+    @Test
+    @Disabled
     public void testInsert3() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());

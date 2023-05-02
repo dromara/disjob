@@ -8,10 +8,14 @@
 
 package cn.ponfee.scheduler.samples;
 
+import cn.ponfee.scheduler.common.util.Jsons;
 import cn.ponfee.scheduler.samples.common.util.Prime;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -61,6 +65,20 @@ public class PrimeTest {
     @Test
     public void testMillerRabin() {
         System.out.println(Prime.MillerRabin.countPrimes(2, NUMBER));
+    }
+
+    @Test
+    public void test1() {
+        String script = "#!/bin/sh\necho \"hello shell!\"";
+        System.out.println("--------------------");
+        System.out.println(script);
+        System.out.println("--------------------\n");
+        script = StringUtils.replaceEach(script, new String[]{"\r", "\n", "\""}, new String[]{"\\r", "\\n", "\\\""});
+        Map<String, String> map = ImmutableMap.of(
+            "type", "SHELL",
+            "script", script
+        );
+        System.out.println(Jsons.toJson(map));
     }
 
 }
