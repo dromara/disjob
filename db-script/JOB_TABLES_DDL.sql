@@ -27,7 +27,7 @@ FLUSH PRIVILEGES;
 CREATE TABLE `sched_job` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
     `job_id`               bigint(20)    unsigned  NOT NULL                                                       COMMENT '全局唯一ID',
-    `job_group`            varchar(30)             NOT NULL                                                       COMMENT 'Job分组(用于分配给同组下的Worker执行)',
+    `job_group`            varchar(60)             NOT NULL                                                       COMMENT 'Job分组(用于分配给同组下的Worker执行)',
     `job_name`             varchar(60)             NOT NULL                                                       COMMENT 'Job名称',
     `job_handler`          text                    NOT NULL                                                       COMMENT 'Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)',
     `job_state`            tinyint(1)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT 'Job状态：0-已禁用；1-已启用；',
@@ -147,7 +147,7 @@ CREATE TABLE `sched_workflow` (
     `pre_node`             varchar(255)            NOT NULL                                                       COMMENT '前置任务节点(section:ordinal:name)',
     `sequence`             int(11)       unsigned  NOT NULL                                                       COMMENT '序号(从1开始)',
     `run_state`            tinyint(3)    unsigned  NOT NULL                                                       COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
-    `instance_id`          bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT '当前执行的instance_id(失败重试时会更新)',
+    `instance_id`          bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT '当前执行的sched_instance.instance_id(失败重试时会更新为重试的instance_id)',
     `updated_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
@@ -155,7 +155,44 @@ CREATE TABLE `sched_workflow` (
     UNIQUE KEY `uk_wnstanceid_sequence` (`wnstance_id`, `sequence`),
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='工作流表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度工作流表';
+
+CREATE TABLE `sched_registry` (
+    `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
+    `group_name`           varchar(60)             NOT NULL                                                       COMMENT '分组名',
+    `server_address`       varchar(128)            NOT NULL                                                       COMMENT '服务器地址(hostname或ip)',
+    `updated_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `created_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_groupname_serveraddress` (`group_name`, `server_address`),
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='worker注册表(用于database作为注册中心)';
+
+CREATE TABLE `sched_group` (
+    `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
+    `group_name`           varchar(60)             NOT NULL                                                       COMMENT '分组名(同sched_job.job_group)',
+    `token`                varchar(255)            DEFAULT NULL                                                   COMMENT '密钥令牌，用于认证',
+    `updated_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `created_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_groupname` (`group_name`),
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分组表';
+
+CREATE TABLE `sched_user` (
+    `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
+    `username`             varchar(60)             NOT NULL                                                       COMMENT '用户名',
+    `password`             varchar(255)            NOT NULL                                                       COMMENT '密码',
+    `group_name`           varchar(512)            NOT NULL                                                       COMMENT '分组名(多个逗号分隔)',
+    `updated_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `created_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_username` (`username`),
+    KEY `ix_createdat` (`created_at`),
+    KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户表';
 
 -- ----------------------------
 -- INITIALIZE DATA

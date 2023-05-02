@@ -57,7 +57,7 @@ public class SchedWorkflow extends BaseEntity implements Serializable {
     private Integer runState;
 
     /**
-     * 当前执行的instance_id(失败重试时会更新)
+     * 当前执行的sched_instance.instance_id(失败重试时会更新为重试的instance_id)
      */
     private Long instanceId;
 
