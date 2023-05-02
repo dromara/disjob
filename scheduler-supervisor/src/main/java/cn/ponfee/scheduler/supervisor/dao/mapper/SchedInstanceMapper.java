@@ -45,8 +45,8 @@ public interface SchedInstanceMapper {
                     @Param("toState") int toState,
                     @Param("fromState") int fromState);
 
-    int forceChangeState(@Param("instanceId") long instanceId,
-                         @Param("toState") int toState);
+    int changeState(@Param("instanceId") long instanceId,
+                    @Param("toState") int toState);
 
     List<SchedInstance> findExpireState(@Param("runState") int runState,
                                         @Param("expireTime") long expireTime,

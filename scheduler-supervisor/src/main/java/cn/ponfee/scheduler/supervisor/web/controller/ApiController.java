@@ -120,14 +120,14 @@ public class ApiController extends BaseController {
         return Result.success(schedulerJobManager.resumeInstance(instanceId));
     }
 
-    @PutMapping("instance/force_change_state")
-    public Result<Void> forceChangeState(@RequestParam("instanceId") long instanceId,
-                                         @RequestParam("targetExecuteState") int targetExecuteState) {
+    @PutMapping("instance/change_state")
+    public Result<Void> changeState(@RequestParam("instanceId") long instanceId,
+                                    @RequestParam("targetExecuteState") int targetExecuteState) {
         // verify the state
         ExecuteState.of(targetExecuteState);
 
         log.info("Do force change state {} | {}", instanceId, targetExecuteState);
-        schedulerJobManager.forceChangeState(instanceId, targetExecuteState);
+        schedulerJobManager.changeInstanceState(instanceId, targetExecuteState);
         return Result.success();
     }
 

@@ -363,7 +363,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
         }
     }
 
-    public void forceChangeState(long instanceId, int targetExecuteState) {
+    public void changeInstanceState(long instanceId, int targetExecuteState) {
         ExecuteState toExecuteState = ExecuteState.of(targetExecuteState);
         RunState toRunState = toExecuteState.runState();
         Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, "Cannot force update state to EXECUTING");
@@ -371,8 +371,8 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
             Assert.notNull(instance, () -> "Sched instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflow(), () -> "Unsupported force change workflow instance state: " + instanceId);
 
-            int instRow = instanceMapper.forceChangeState(instanceId, toRunState.value());
-            int taskRow = taskMapper.forceChangeState(instanceId, toExecuteState.value());
+            int instRow = instanceMapper.changeState(instanceId, toRunState.value());
+            int taskRow = taskMapper.changeState(instanceId, toExecuteState.value());
             if (instRow == 0 && taskRow == 0) {
                 throw new IllegalStateException("Force update instance state failed: " + instanceId);
             }
@@ -620,8 +620,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                     instance = instanceMapper.lock(instanceId);
                 } else {
                     SchedInstance inst = instanceMapper.lock(wnstanceId);
-                    instance = (instanceId == wnstanceId
-                    ) ? inst : instanceMapper.getByInstanceId(instanceId);
+                    instance = (instanceId == wnstanceId) ? inst : instanceMapper.getByInstanceId(instanceId);
                 }
                 return action.apply(instance);
             });
@@ -806,7 +805,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 long triggerTime = leadInstance.getTriggerTime() + workflow.getSequence();
                 SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), RunType.of(leadInstance.getRunType()), triggerTime, 0, now);
                 nextInstance.setRnstanceId(wnstanceId);
-                nextInstance.setPnstanceId(graph.get(Collects.getFirst(predecessors.keySet()).getTarget(), target).getInstanceId());
+                nextInstance.setPnstanceId(predecessors.isEmpty() ? null : Collects.getFirst(predecessors.values()).getInstanceId());
                 nextInstance.setWnstanceId(wnstanceId);
                 nextInstance.setAttach(Jsons.toJson(new InstanceAttach(workflow.getCurNode())));
 

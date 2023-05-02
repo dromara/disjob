@@ -123,7 +123,7 @@
       AND execute_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
   </update>
 
-  <update id="forceChangeState">
+  <update id="changeState">
     UPDATE <include refid="Table_Name" />
     SET execute_state = #{toState,jdbcType=TINYINT},
         version = version+1

@@ -118,7 +118,7 @@
       AND run_state = #{fromState,jdbcType=TINYINT}
   </update>
 
-  <update id="forceChangeState">
+  <update id="changeState">
     UPDATE <include refid="Table_Name" />
     SET run_state = #{toState,jdbcType=TINYINT},
         version = version+1
