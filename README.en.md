@@ -81,7 +81,7 @@ disjob                                                    # Main project
 
 ## Quick Start
 
-0. Imports project to IDE (Contains two projects, shared the git repository):
+0. Imports project to IDE (Contains two projects, shared the git repository)
   - [main project](pom.xml)
   - [samples project](disjob-samples/pom.xml)
 
@@ -93,7 +93,7 @@ disjob                                                    # Main project
 
 3. Create a job handler class [PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
-4. Startup applications in [samples project](disjob-samples): 
+4. Startup applications in [samples project](disjob-samples)
 
 ```Plain Text
  1）disjob-samples-merged                        # Applicaion of merged deployment supervisor and worker
@@ -140,7 +140,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 }'
 ```
 
-6. Query the database table to verify whether the task is added successfully, and view the execution information of the task:
+6. Query the database table to verify whether the task is added successfully, and view the execution information of the task
 
 ```sql
 -- Query the sched_job data added by curl  

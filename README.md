@@ -15,7 +15,7 @@
 轻量级，简单易用，特别适合长任务的执行。有较好的伸缩性，扩展性，稳定性，历经生产检验。
 
 ## Architecture
-s
+
 - 架构图
 
 ![Architecture](docs/images/architecture.jpg)
@@ -81,7 +81,7 @@ disjob                                                    # 主项目
 
 ## Quick Start
 
-0. IDE分别导入项目(分为两个独立的项目，共用一个Git仓库)：
+0. IDE分别导入项目(分为两个独立的项目，共用一个Git仓库)
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
 
@@ -93,7 +93,7 @@ disjob                                                    # 主项目
 
 3. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
-4. 启动[samples项目](disjob-samples)下的各应用，包括：
+4. 启动[samples项目](disjob-samples)下的各应用，包括
 
 ```Plain Text
  1）disjob-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
@@ -140,7 +140,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 }'
 ```
 
-6. 查询库表验证任务是否添加成功，以及可查看任务的执行信息：
+6. 查询库表验证任务是否添加成功，以及可查看任务的执行信息
 
 ```sql
 -- 刚CURL添加的任务会落入该表中
