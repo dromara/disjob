@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedWorkflowMapper">
+
+  <sql id="Table_Name">sched_workflow</sql>
+
+  <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedWorkflow">
+    <result column="wnstance_id" jdbcType="BIGINT" property="wnstanceId" />
+    <result column="cur_node" jdbcType="VARCHAR" property="curNode" />
+    <result column="pre_node" jdbcType="VARCHAR" property="preNode" />
+    <result column="sequence" jdbcType="INTEGER" property="sequence" />
+    <result column="run_state" jdbcType="TINYINT" property="runState" />
+    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    wnstance_id, cur_node, pre_node, sequence, run_state, instance_id
+  </sql>
+
+  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO <include refid="Table_Name" /> (
+      wnstance_id,
+      cur_node,
+      pre_node,
+      sequence,
+      run_state,
+      instance_id
+    ) VALUES
+    <foreach collection="collection" item="item" separator=",">
+    (
+      #{item.wnstanceId,jdbcType=BIGINT},
+      #{item.curNode,jdbcType=VARCHAR},
+      #{item.preNode,jdbcType=VARCHAR},
+      #{item.sequence,jdbcType=INTEGER},
+      #{item.runState,jdbcType=TINYINT},
+      #{item.instanceId,jdbcType=BIGINT}
+    )
+    </foreach>
+  </insert>
+
+  <select id="findByWnstanceId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+  </select>
+
+  <update id="update">
+    UPDATE <include refid="Table_Name" />
+    <set>
+      <if test="toState != null">run_state = #{toState,jdbcType=TINYINT},</if>
+      <if test="toInstanceId != null">instance_id = #{toInstanceId,jdbcType=BIGINT},</if>
+    </set>
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+      <if test="curNode != null and curNode != ''">
+        AND cur_node = #{curNode,jdbcType=VARCHAR}
+      </if>
+      <if test="fromStates != null and fromStates.size() != 0">
+        AND run_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+      </if>
+      <if test="fromInstanceId != null">
+        AND instance_id = #{fromInstanceId,jdbcType=BIGINT}
+      </if>
+  </update>
+
+  <update id="resumeWaiting">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = 10
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+      AND run_state = 30
+      AND instance_id IS NULL
+  </update>
+
+  <delete id="deleteByWnstanceId" parameterType="_long">
+    DELETE FROM <include refid="Table_Name" />
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+  </delete>
+
+</mapper>

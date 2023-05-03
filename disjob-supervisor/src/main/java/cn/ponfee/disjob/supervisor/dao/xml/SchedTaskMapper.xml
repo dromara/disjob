@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper">
+
+  <sql id="Table_Name">sched_task</sql>
+
+  <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedTask">
+    <result column="task_id" jdbcType="BIGINT" property="taskId" />
+    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
+    <result column="task_no" jdbcType="INTEGER" property="taskNo" />
+    <result column="task_count" jdbcType="INTEGER" property="taskCount" />
+    <result column="execute_state" jdbcType="TINYINT" property="executeState" />
+    <result column="worker" jdbcType="VARCHAR" property="worker" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+  </resultMap>
+
+  <resultMap id="LargeResultMap" type="cn.ponfee.disjob.core.model.SchedTask" extends="BaseResultMap" >
+    <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
+    <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
+    <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
+    <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
+    <result column="execute_snapshot" jdbcType="LONGVARCHAR" property="executeSnapshot" />
+    <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+  </resultMap>
+
+  <sql id="Medium_Column_List">
+    task_id, instance_id, task_no, task_count, execute_state, worker, version
+  </sql>
+
+  <sql id="Large_Column_List">
+    <include refid="Medium_Column_List" />,
+    execute_start_time, execute_end_time, execute_duration,
+    task_param, execute_snapshot, error_msg, updated_at, created_at
+  </sql>
+
+  <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+    INSERT INTO <include refid="Table_Name" /> (
+      task_id,
+      instance_id,
+      task_no,
+      task_count,
+      task_param,
+      execute_state,
+      worker,
+      version,
+      updated_at,
+      created_at
+    ) VALUES
+    <foreach collection="collection" item="item" separator=",">
+    (
+      #{item.taskId,jdbcType=BIGINT},
+      #{item.instanceId,jdbcType=BIGINT},
+      #{item.taskNo,jdbcType=INTEGER},
+      #{item.taskCount,jdbcType=INTEGER},
+      #{item.taskParam,jdbcType=LONGVARCHAR},
+      #{item.executeState,jdbcType=TINYINT},
+      #{item.worker,jdbcType=VARCHAR},
+      1,
+      #{item.updatedAt,jdbcType=TIMESTAMP},
+      #{item.createdAt,jdbcType=TIMESTAMP}
+    )
+    </foreach>
+  </insert>
+
+  <select id="getByTaskId" parameterType="_long" resultMap="LargeResultMap">
+    SELECT <include refid="Large_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+  </select>
+
+  <select id="findMediumByInstanceId" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Medium_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+  </select>
+
+  <select id="findLargeByInstanceId" parameterType="_long" resultMap="LargeResultMap">
+    SELECT <include refid="Large_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+  </select>
+
+  <!-- use `IFNULL` function reason: possibly re-execute the paused task -->
+  <update id="start">
+    UPDATE <include refid="Table_Name" />
+    SET execute_state = 20,
+        execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
+        worker = #{worker,jdbcType=VARCHAR},
+        version = version+1
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+      AND execute_state = 10
+  </update>
+
+  <update id="terminate">
+    UPDATE <include refid="Table_Name" />
+    SET execute_state    = #{toState,jdbcType=TINYINT},
+      <if test="executeEndTime != null">
+        execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
+        execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
+      </if>
+      <if test="errorMsg!=null and errorMsg.length()>0">
+        error_msg = #{errorMsg,jdbcType=VARCHAR},
+      </if>
+        version = version + 1
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+      AND execute_state = #{fromState,jdbcType=TINYINT}
+      AND execute_state != #{toState,jdbcType=TINYINT}
+      AND execute_state IN (10, 20, 30)
+  </update>
+
+  <update id="updateStateByInstanceId">
+    UPDATE <include refid="Table_Name" />
+    SET execute_state = #{toState,jdbcType=TINYINT},
+        <if test="executeEndTime != null">
+          execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
+          execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
+        </if>
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND execute_state != #{toState,jdbcType=TINYINT}
+      AND execute_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+  </update>
+
+  <update id="changeState">
+    UPDATE <include refid="Table_Name" />
+    SET execute_state = #{toState,jdbcType=TINYINT},
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND execute_state != #{toState,jdbcType=TINYINT}
+      AND execute_state != 20
+      AND #{toState,jdbcType=TINYINT} != 20
+  </update>
+
+  <update id="checkpoint">
+    UPDATE <include refid="Table_Name" />
+    SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR},
+        version = version+1
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+      AND execute_state = 20
+  </update>
+
+  <delete id="deleteByInstanceId" parameterType="_long">
+    DELETE FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state > 30
+  </delete>
+
+  <!-- allowMultiQueries=true -->
+  <update id="batchUpdateWorker">
+    <foreach collection="collection" item="item" separator=";">
+      UPDATE <include refid="Table_Name" />
+      SET worker=#{item.worker,jdbcType=VARCHAR}, version=version+1
+      WHERE task_id=#{item.taskId,jdbcType=BIGINT} AND execute_state=10
+    </foreach>
+  </update>
+
+</mapper>

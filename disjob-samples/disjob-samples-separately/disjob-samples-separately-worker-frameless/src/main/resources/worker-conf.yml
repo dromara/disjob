@@ -1,0 +1,43 @@
+server.port: 8084
+
+# Disjob worker configuration
+disjob:
+  worker:
+    group: default,test1
+    timing-wheel-tick-ms: 100
+    timing-wheel-ring-size: 60
+    maximum-pool-size: 100
+    keep-alive-time-seconds: 300
+    update-task-worker-thread-pool-size: 6
+  registry:
+    redis:
+      namespace: redis_namespace
+      session-timeout-ms: 60000
+      registry-period-ms: 4000
+    consul:
+      namespace: consul_namespace
+      host: localhost
+      port: 8500
+      token:
+
+# redis configuration
+redis:
+  database: 0
+  host: localhost       # redis standalone host name
+  port: 6379            # redis standalone port
+  #username: test_redis  # redis node auth username
+  password: 123456       # redis node auth password
+  connect-timeout: 3000
+  timeout: 5000
+  #sentinel:
+  #  master: REDIS_SENTINEL
+  #  nodes: 112.74.170.75:16379,112.74.170.75:16380
+    #username: test_sentinel # redis sentinel auth username
+    #password: 654321        # redis sentinel auth password
+  lettuce:
+    pool:
+      max-active: 32
+      max-idle: 8
+      min-idle: 4
+      max-wait: 5000
+    shutdown-timeout: 5000

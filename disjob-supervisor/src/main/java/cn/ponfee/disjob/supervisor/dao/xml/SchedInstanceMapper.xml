@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper">
+
+  <sql id="Table_Name">sched_instance</sql>
+
+  <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedInstance">
+    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
+    <result column="rnstance_id" jdbcType="BIGINT" property="rnstanceId" />
+    <result column="pnstance_id" jdbcType="BIGINT" property="pnstanceId" />
+    <result column="wnstance_id" jdbcType="BIGINT" property="wnstanceId" />
+    <result column="job_id" jdbcType="BIGINT" property="jobId" />
+    <result column="trigger_time" jdbcType="BIGINT" property="triggerTime" />
+    <result column="run_type" jdbcType="TINYINT" property="runType" />
+    <result column="run_state" jdbcType="TINYINT" property="runState" />
+    <result column="run_start_time" jdbcType="TIMESTAMP" property="runStartTime" />
+    <result column="run_end_time" jdbcType="TIMESTAMP" property="runEndTime" />
+    <result column="run_duration" jdbcType="BIGINT" property="runDuration" />
+    <result column="retried_count" jdbcType="TINYINT" property="retriedCount" />
+    <result column="attach" jdbcType="VARCHAR" property="attach" />
+    <result column="version" jdbcType="INTEGER" property="version" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    instance_id, rnstance_id, pnstance_id, wnstance_id,
+    job_id, trigger_time, run_type, run_state, run_start_time,
+    run_end_time, run_duration, retried_count,
+    attach, version, updated_at, created_at
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedInstance" useGeneratedKeys="true">
+    INSERT INTO <include refid="Table_Name" /> (
+      instance_id,
+      rnstance_id,
+      pnstance_id,
+      wnstance_id,
+      job_id,
+      trigger_time,
+      run_type,
+      run_state,
+      run_start_time,
+      retried_count,
+      attach,
+      version,
+      updated_at,
+      created_at
+    ) VALUES (
+      #{instanceId,jdbcType=BIGINT},
+      #{rnstanceId,jdbcType=BIGINT},
+      #{pnstanceId,jdbcType=BIGINT},
+      #{wnstanceId,jdbcType=BIGINT},
+      #{jobId,jdbcType=BIGINT},
+      #{triggerTime,jdbcType=BIGINT},
+      #{runType,jdbcType=TINYINT},
+      #{runState,jdbcType=TINYINT},
+      #{runStartTime,jdbcType=TIMESTAMP},
+      #{retriedCount,jdbcType=TINYINT},
+      #{attach,jdbcType=VARCHAR},
+      1,
+      #{updatedAt,jdbcType=TIMESTAMP},
+      #{createdAt,jdbcType=TIMESTAMP}
+    )
+  </insert>
+
+  <select id="getByInstanceId" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+  </select>
+
+  <select id="getByJobIdAndTriggerTimeAndRunType" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE job_id=#{jobId,jdbcType=BIGINT}
+    AND trigger_time=#{triggerTime,jdbcType=BIGINT}
+    AND run_type=#{runType,jdbcType=TINYINT}
+  </select>
+
+  <select id="getWnstanceId" parameterType="_long" resultType="long">
+    SELECT wnstance_id
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+  </select>
+
+  <!-- use `IFNULL` function reason: possibly paused task re-execute -->
+  <update id="start">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = 20,
+        run_start_time = IFNULL(run_start_time, #{runStartTime,jdbcType=TIMESTAMP}),
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND run_state = 10
+  </update>
+
+  <!--
+   SELECT ROUND(TIMESTAMPDIFF(MICROSECOND, '2018-05-19 12:54:43.987', '2018-05-19 12:54:43.999') / 1000)
+   SELECT ROUND((UNIX_TIMESTAMP('2018-05-19 12:54:43.999') - UNIX_TIMESTAMP('2018-05-19 12:54:43.987')) * 1000)
+  -->
+  <update id="terminate">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = #{toState,jdbcType=TINYINT},
+      <if test="runEndTime != null">
+        run_end_time = IF(run_start_time IS NULL, NULL, #{runEndTime,jdbcType=TIMESTAMP}),
+        run_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, run_start_time, #{runEndTime,jdbcType=TIMESTAMP}) / 1000),
+      </if>
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND run_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+  </update>
+
+  <update id="updateState">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = #{toState,jdbcType=TINYINT},
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND run_state = #{fromState,jdbcType=TINYINT}
+  </update>
+
+  <update id="changeState">
+    UPDATE <include refid="Table_Name" />
+    SET run_state = #{toState,jdbcType=TINYINT},
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND run_state != #{toState,jdbcType=TINYINT}
+      AND run_state != 20
+      AND #{toState,jdbcType=TINYINT} != 20
+  </update>
+
+  <select id="findExpireState" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE run_state = #{runState,jdbcType=TINYINT}
+      AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
+      AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
+      AND (wnstance_id IS NULL OR instance_id != wnstance_id)
+    ORDER BY trigger_time
+    LIMIT #{size}
+  </select>
+
+  <select id="findUnterminatedRetry" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE rnstance_id = #{rnstanceId,jdbcType=BIGINT}
+      AND run_type = 3
+      AND run_state NOT IN (40, 50)
+  </select>
+
+  <select id="findWorkflowNode" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+      AND wnstance_id != instance_id
+  </select>
+
+  <update id="renewUpdateTime">
+    UPDATE <include refid="Table_Name" />
+    SET updated_at = #{updateTime,jdbcType=TIMESTAMP},
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND version = #{version,jdbcType=INTEGER}
+  </update>
+
+  <select id="lock" parameterType="_long" resultMap="BaseResultMap">
+    SELECT <include refid="Base_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+    FOR UPDATE
+  </select>
+
+  <delete id="deleteByInstanceId" parameterType="_long">
+    DELETE FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND run_state IN (40,50)
+  </delete>
+
+  <delete id="deleteByWnstanceId" parameterType="_long">
+    DELETE FROM <include refid="Table_Name" />
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+  </delete>
+
+</mapper>

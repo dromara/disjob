@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-cn.ponfee.scheduler.dispatch.redis.configuration.RedisTaskDispatchingAutoConfiguration

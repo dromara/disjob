@@ -1,12 +1,12 @@
 [![Blog](https://img.shields.io/badge/blog-@Ponfee-informational.svg?logo=Pelican)](http://www.ponfee.cn)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
-[![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
+[![Build status](https://github.com/ponfee/disjob/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/disjob/actions)
 [![Maven Central](https://img.shields.io/badge/maven--central-1.11-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
 
 **`简体中文`** | [English](README.en.md)
 
-# Distributed Scheduler
+# Disjob
 
 ## Introduction
 
@@ -15,39 +15,39 @@
 轻量级，简单易用，特别适合长任务的执行。有较好的伸缩性，扩展性，稳定性，历经生产检验。
 
 ## Architecture
-
+s
 - 架构图
 
-![Architecture](doc/images/architecture.jpg)
+![Architecture](docs/images/architecture.jpg)
 
 - 工程结构
 
 ```Plain Text
-distributed-scheduler                                        # 主项目
-├── scheduler-common                                         # 工具包
-├── scheduler-core                                           # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
-├── scheduler-dispatch                                       # 任务分发模块
-│   ├── scheduler-dispatch-api                               # 任务分发的抽象接口层
-│   ├── scheduler-dispatch-http                              # 任务分发的Http实现
-│   └── scheduler-dispatch-redis                             # 任务分发的Redis实现
-├── scheduler-registry                                       # Server(Supervisor & Worker)注册模块
-│   ├── scheduler-registry-api                               # Server注册的抽象接口层
-│   ├── scheduler-registry-consul                            # Server注册的Consul实现
-│   ├── scheduler-registry-etcd                              # Server注册的Etcd实现
-│   ├── scheduler-registry-nacos                             # Server注册的Nacos实现
-│   ├── scheduler-registry-redis                             # Server注册的Redis实现
-│   └── scheduler-registry-zookeeper                         # Server注册的Zookeeper实现
-├── scheduler-reports                                        # 聚合各个模块的测试覆盖率报告
-├── scheduler-samples                                        # Samples项目
-│   ├── scheduler-samples-common                             # 存放使用范例中用到的公共代码，包括使用到的一些公共配置文件等
-│   ├── scheduler-samples-merged                             # Supervisor与Worker合并部署的范例（Spring boot应用）
-│   └── scheduler-samples-separately                         # Supervisor与Worker分离部署的范例模块
-│       ├── scheduler-samples-separately-supervisor          # Supervisor单独部署的范例（Spring boot应用）
-│       ├── scheduler-samples-separately-worker-frameless    # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
-│       └── scheduler-samples-separately-worker-springboot   # Worker单独部署的范例（Spring boot应用）
-├── scheduler-supervisor                                     # Supervisor代码（Spring-boot应用，需要引导Spring扫描该包目录）
-├── scheduler-test                                           # 用于辅助测试
-└── scheduler-worker                                         # Worker代码
+disjob                                                    # 主项目
+├── disjob-common                                         # 工具包
+├── disjob-core                                           # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
+├── disjob-dispatch                                       # 任务分发模块
+│   ├── disjob-dispatch-api                               # 任务分发的抽象接口层
+│   ├── disjob-dispatch-http                              # 任务分发的Http实现
+│   └── disjob-dispatch-redis                             # 任务分发的Redis实现
+├── disjob-registry                                       # Server(Supervisor & Worker)注册模块
+│   ├── disjob-registry-api                               # Server注册的抽象接口层
+│   ├── disjob-registry-consul                            # Server注册的Consul实现
+│   ├── disjob-registry-etcd                              # Server注册的Etcd实现
+│   ├── disjob-registry-nacos                             # Server注册的Nacos实现
+│   ├── disjob-registry-redis                             # Server注册的Redis实现
+│   └── disjob-registry-zookeeper                         # Server注册的Zookeeper实现
+├── disjob-reports                                        # 聚合各个模块的测试覆盖率报告
+├── disjob-samples                                        # Samples项目
+│   ├── disjob-samples-common                             # 存放使用范例中用到的公共代码，包括使用到的一些公共配置文件等
+│   ├── disjob-samples-merged                             # Supervisor与Worker合并部署的范例（Spring boot应用）
+│   └── disjob-samples-separately                         # Supervisor与Worker分离部署的范例模块
+│       ├── disjob-samples-separately-supervisor          # Supervisor单独部署的范例（Spring boot应用）
+│       ├── disjob-samples-separately-worker-frameless    # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
+│       └── disjob-samples-separately-worker-springboot   # Worker单独部署的范例（Spring boot应用）
+├── disjob-supervisor                                     # Supervisor代码（Spring-boot应用，需要引导Spring扫描该包目录）
+├── disjob-test                                           # 用于辅助测试
+└── disjob-worker                                         # Worker代码
 ```
 
 ## Features
@@ -56,7 +56,7 @@ distributed-scheduler                                        # 主项目
 - Supervisor与Worker通过注册中心解耦，目前支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor以任务分发方式把任务给到Worker，目前支持的任务分发方式有：Redis、Http
 - 支持任务分组(job-group)，任务会分发给指定组的Worker执行
-- 自定义拆分任务，重写[JobHandler#split](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobSplitter.java)即可把一个大任务拆分为多个小任务，任务分治
+- 自定义拆分任务，重写[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可把一个大任务拆分为多个小任务，任务分治
 - 提供任务执行快照的自动保存(checkpoint)，让执行信息不丢失，保证因异常中断的任务能得到继续执行
 - 提供执行中的任务控制能力，可随时暂停/取消正在执行中的任务，亦可恢复执行被暂停的任务
 - 提供任务依赖执行的能力，多个任务构建好依赖关系后，任务便按既定的依赖顺序依次执行
@@ -68,7 +68,7 @@ distributed-scheduler                                        # 主项目
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
-  <artifactId>scheduler-{xxx}</artifactId>
+  <artifactId>disjob-{xxx}</artifactId>
   <version>1.11</version>
 </dependency>
 ```
@@ -83,34 +83,34 @@ distributed-scheduler                                        # 主项目
 
 0. IDE分别导入项目(分为两个独立的项目，共用一个Git仓库)：
   - [主项目](pom.xml)
-  - [samples项目](scheduler-samples/pom.xml)
+  - [samples项目](disjob-samples/pom.xml)
 
-1. 运行仓库代码提供的SQL脚本，创建数据库表：[db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(也可直接运行[内置mysql-server](scheduler-samples/scheduler-samples-common/src/test/java/cn/ponfee/scheduler/samples/MysqlAndRedisServerStarter.java)，启动时会自动初始化SQL脚本)
+1. 运行仓库代码提供的SQL脚本，创建数据库表：[mysql-schema.sql](mysql-schema.sql)(也可直接运行[内置mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)，启动时会自动初始化SQL脚本)
 
-2. 修改[Mysql](scheduler-samples/conf-supervisor/application-mysql.yml)、[Redis](scheduler-samples/scheduler-samples-common/src/main/resources/application-redis.yml)、[Consul](scheduler-samples/scheduler-samples-common/src/main/resources/application-consul.yml)等配置文件
-  - 如果使用默认的本地配置([如consul localhost 8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件(包括Nacos、Zookeeper、Etcd等)
-  - 非Spring-boot的Worker应用的配置文件为[worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+2. 修改[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)、[Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、[Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)等配置文件
+  - 如果使用默认的本地配置([如consul localhost 8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件(包括Nacos、Zookeeper、Etcd等)
+  - 非Spring-boot的Worker应用的配置文件为[worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
-3. 编写自己的任务处理器[PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
+3. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
-4. 启动[samples项目](scheduler-samples)下的各应用，包括：
+4. 启动[samples项目](disjob-samples)下的各应用，包括：
 
 ```Plain Text
- 1）scheduler-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
- 2）scheduler-samples-separately-supervisor         # Supervisor单独部署的Spring boot应用
- 3）scheduler-samples-separately-worker-springboot  # Worker单独部署的Spring boot应用
- 4）scheduler-samples-separately-worker-frameless   # Worker单独部署(非Spring-boot应用)，直接运行Main方法启动
+ 1）disjob-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
+ 2）disjob-samples-separately-supervisor         # Supervisor单独部署的Spring boot应用
+ 3）disjob-samples-separately-worker-springboot  # Worker单独部署的Spring boot应用
+ 4）disjob-samples-separately-worker-frameless   # Worker单独部署(非Spring-boot应用)，直接运行Main方法启动
 ```
 
 - 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
 - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
-- 注册中心及分发任务的具体实现：在[pom文件](scheduler-samples/scheduler-samples-common/pom.xml)中引入指定的依赖即可
+- 注册中心及分发任务的具体实现：在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中引入指定的依赖即可
 - 项目已内置一些本地启动的server(部分要依赖本地docker环境)
-  - [内置redis-server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java)
-  - [内置consul-server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)
-  - [内置nacos-server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)
-  - [内置etcd-server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
-  - [内置zookeeper-server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)
+  - [内置redis-server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
+  - [内置consul-server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
+  - [内置nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)
+  - [内置etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
+  - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
 
 ```java
 @EnableSupervisor
@@ -132,7 +132,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 --data-raw '{
     "jobGroup": "default",
     "jobName": "prime-counter",
-    "jobHandler": "cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler",
+    "jobHandler": "cn.ponfee.disjob.samples.common.handler.PrimeCountJobHandler",
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
     "triggerType": 2,
@@ -167,7 +167,7 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 
 ## Todo List
 
-- [x] Worker提供任务校验及拆分的Http接口供Supervisor调用（[WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java)）
+- [x] Worker提供任务校验及拆分的Http接口供Supervisor调用（[WorkerServiceProvider](disjob-worker/src/main/java/cn/ponfee/disjob/worker/rpc/WorkerServiceProvider.java)）
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [x] 工作流任务(Workflow DAG)
 - [ ] 告警订阅：邮件、短信、电话、飞书、钉钉、微信

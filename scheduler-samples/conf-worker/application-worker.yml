@@ -1,8 +1,0 @@
-# scheduler worker configuration
-distributed.scheduler.worker:
-  group: default,test
-  timing-wheel-tick-ms: 100
-  timing-wheel-ring-size: 60
-  maximum-pool-size: 100
-  keep-alive-time-seconds: 300
-  update-task-worker-thread-pool-size: 6

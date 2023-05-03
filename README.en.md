@@ -1,53 +1,53 @@
 [![Blog](https://img.shields.io/badge/blog-@ponfee-informational.svg)](http://www.ponfee.cn)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
-[![Build status](https://github.com/ponfee/distributed-scheduler/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/distributed-scheduler/actions)
+[![Build status](https://github.com/ponfee/disjob/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/disjob/actions)
 [![Maven Central](https://img.shields.io/badge/maven--central-1.11-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
 
 **`English`** | [简体中文](README.md)
 
-# Distributed Scheduler
+# Disjob
 
 ## Introduction
 
-A distributed job scheduler framework, in addition to the conventional distributed task scheduling function, it also provides splitting subtasks, control of tasks in execution, task dependency, broadcast execution, workflow task(DAG), supervisor and worker separate deployment, and so on.
+A distributed job scheduling framework, in addition to the conventional distributed task scheduling function, it also provides splitting subtasks, control of tasks in execution, task dependency, broadcast execution, workflow task(DAG), supervisor and worker separate deployment, and so on.
 
-Lightweight, easy to use, especially suitable for the execution of long tasks. Scalability, extensibility, and stability, and has been runed in production.
+Lightweight, easy to use, especially suitable for the execution of long tasks. Scalability, extensibility, and stability, and has been run in production.
 
 ## Architecture
 
 - architecture diagram
 
-![Architecture](doc/images/architecture.jpg)
+![Architecture](docs/images/architecture.jpg)
 
 - code structure
 
 ```Plain Text
-distributed-scheduler                                        # Main project
-├── scheduler-common                                         # Tools
-├── scheduler-core                                           # Core classes code of task scheduling
-├── scheduler-dispatch                                       # Task dispatch module
-│   ├── scheduler-dispatch-api                               # Abstract interface layer for task dispatch
-│   ├── scheduler-dispatch-http                              # Http implementation of task dispatch
-│   └── scheduler-dispatch-redis                             # Redis implementation of task dispatch
-├── scheduler-registry                                       # Server(supervisor & worker) registry module
-│   ├── scheduler-registry-api                               # Server registry abstract interface layer
-│   ├── scheduler-registry-consul                            # Server registry implementation based consul
-│   ├── scheduler-registry-etcd                              # Server registry implementation based etcd
-│   ├── scheduler-registry-nacos                             # Server registry implementation based nacos
-│   ├── scheduler-registry-redis                             # Server registry implementation based redis
-│   └── scheduler-registry-zookeeper                         # Server registry implementation based zookeeper
-├── scheduler-reports                                        # aggregate code coverage report
-├── scheduler-samples                                        # Samples project
-│   ├── scheduler-samples-common                             # Common configuration and codes of samples
-│   ├── scheduler-samples-merged                             # Sample of merged deployment supervisor and worker(spring boot application)
-│   └── scheduler-samples-separately                         # Sample of separated deployment supervisor and worker
-│       ├── scheduler-samples-separately-supervisor          # Sample of only deployment supervisor(spring boot application)
-│       ├── scheduler-samples-separately-worker-frameless    # Sample of only deployment worker(start by java main class)
-│       └── scheduler-samples-separately-worker-springboot   # Sample of only deployment worker(spring boot application)
-├── scheduler-supervisor                                     # Supervisor code(run in spring container environment)
-├── scheduler-test                                           # use for testing
-└── scheduler-worker                                         # Worker code
+disjob                                                    # Main project
+├── disjob-common                                         # Tools
+├── disjob-core                                           # Core classes code of task scheduling
+├── disjob-dispatch                                       # Task dispatch module
+│   ├── disjob-dispatch-api                               # Abstract interface layer for task dispatch
+│   ├── disjob-dispatch-http                              # Http implementation of task dispatch
+│   └── disjob-dispatch-redis                             # Redis implementation of task dispatch
+├── disjob-registry                                       # Server(supervisor & worker) registry module
+│   ├── disjob-registry-api                               # Server registry abstract interface layer
+│   ├── disjob-registry-consul                            # Server registry implementation based consul
+│   ├── disjob-registry-etcd                              # Server registry implementation based etcd
+│   ├── disjob-registry-nacos                             # Server registry implementation based nacos
+│   ├── disjob-registry-redis                             # Server registry implementation based redis
+│   └── disjob-registry-zookeeper                         # Server registry implementation based zookeeper
+├── disjob-reports                                        # aggregate code coverage report
+├── disjob-samples                                        # Samples project
+│   ├── disjob-samples-common                             # Common configuration and codes of samples
+│   ├── disjob-samples-merged                             # Sample of merged deployment supervisor and worker(spring boot application)
+│   └── disjob-samples-separately                         # Sample of separated deployment supervisor and worker
+│       ├── disjob-samples-separately-supervisor          # Sample of only deployment supervisor(spring boot application)
+│       ├── disjob-samples-separately-worker-frameless    # Sample of only deployment worker(start by java main class)
+│       └── disjob-samples-separately-worker-springboot   # Sample of only deployment worker(spring boot application)
+├── disjob-supervisor                                     # Supervisor code(run in spring container environment)
+├── disjob-test                                           # use for testing
+└── disjob-worker                                         # Worker code
 ```
 
 ## Features
@@ -56,7 +56,7 @@ distributed-scheduler                                        # Main project
 - Supervisor and Worker are decoupled through the registration center. The currently supported registration centers are: Redis, Consul, Nacos, Zookeeper, Etcd
 - Supervisor sends tasks to Workers in the way of task distribution. The currently supported task distribution methods are: Redis, Http
 - Support task grouping (job-group), the task will be distributed to the specified group of Workers for execution
-- Custom split tasks, override [JobHandler#split](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobSplitter.java) to split a job to many tasks
+- Custom split tasks, override [JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java) to split a job to many tasks
 - Provides automatic saving (checkpoint) of task execution snapshots, so that execution information is not lost, and tasks interrupted due to abnormalities can be continued to execute
 - Provides the ability to control tasks during execution, and can suspend/cancel the tasks in progress at any time, and can also resume the execution of suspended tasks
 - Provides the ability to execute tasks dependently. After multiple tasks build dependency relationship, the tasks will be executed sequentially according to the established dependency order
@@ -68,7 +68,7 @@ distributed-scheduler                                        # Main project
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
-  <artifactId>scheduler-{xxx}</artifactId>
+  <artifactId>disjob-{xxx}</artifactId>
   <version>1.11</version>
 </dependency>
 ```
@@ -83,34 +83,34 @@ distributed-scheduler                                        # Main project
 
 0. Imports project to IDE (Contains two projects, shared the git repository):
   - [main project](pom.xml)
-  - [samples project](scheduler-samples/pom.xml)
+  - [samples project](disjob-samples/pom.xml)
 
-1. Run the SQL script provided by the warehouse code to create the database table: [db-script/JOB_TABLES_DDL.sql](db-script/JOB_TABLES_DDL.sql)(Also can direct run [embed mysql-server](scheduler-samples/scheduler-samples-common/src/test/java/cn/ponfee/scheduler/samples/MysqlAndRedisServerStarter.java), auto init sql script on startup)
+1. Run the SQL script provided by the warehouse code to create the database table: [mysql-schema.sql](mysql-schema.sql)(Also can direct run [embed mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java), auto init sql script on startup)
 
-2. Modify configuration files such as [Mysql](scheduler-samples/conf-supervisor/application-mysql.yml), [Redis](scheduler-samples/scheduler-samples-common/src/main/resources/application-redis.yml), [Consul](scheduler-samples/scheduler-samples-common/src/main/resources/application-consul.yml) and so on.
-- if use default localhost configuration([e.g consul localhost:8500](scheduler-registry/scheduler-registry-consul/src/main/java/cn/ponfee/scheduler/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file(same as Nacos/Zookeeper/Etcd)
-- non spring-boot application of worker configuration: [worker-conf.yml](scheduler-samples/scheduler-samples-separately/scheduler-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+2. Modify configuration files such as [Mysql](disjob-samples/conf-supervisor/application-mysql.yml), [Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml), [Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml) and so on.
+- if use default localhost configuration([e.g consul localhost:8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file(same as Nacos/Zookeeper/Etcd)
+- non spring-boot application of worker configuration: [worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
-3. Create a job handler class [PrimeCountJobHandler](scheduler-samples/scheduler-samples-common/src/main/java/cn/ponfee/scheduler/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](scheduler-core/src/main/java/cn/ponfee/scheduler/core/handle/JobHandler.java)
+3. Create a job handler class [PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
-4. Startup applications in [samples project](scheduler-samples): 
+4. Startup applications in [samples project](disjob-samples): 
 
 ```Plain Text
- 1）scheduler-samples-merged                        # Applicaion of merged deployment supervisor and worker
- 2）scheduler-samples-separately-supervisor         # Spring boot application of only deployment supervisor
- 3）scheduler-samples-separately-worker-springboot  # Spring boot application of only deployment worker
- 4）scheduler-samples-separately-worker-frameless   # Non spring-boot application of only deployment worker
+ 1）disjob-samples-merged                        # Applicaion of merged deployment supervisor and worker
+ 2）disjob-samples-separately-supervisor         # Spring boot application of only deployment supervisor
+ 3）disjob-samples-separately-worker-springboot  # Spring boot application of only deployment worker
+ 4）disjob-samples-separately-worker-frameless   # Non spring-boot application of only deployment worker
 ```
 
 - Different ports have been configured and can be started at the same time
 - You can run the startup class in the development tool, or directly run the built jar package
-- select registry center and dispatch mode [use by pom](scheduler-samples/scheduler-samples-common/pom.xml) import
+- select registry center and dispatch mode [use by pom](disjob-samples/disjob-samples-common/pom.xml) import
 - Embedded same servers can direct startup on local
-  - [embedded redis server](scheduler-test/src/main/java/cn/ponfee/scheduler/test/redis/EmbeddedRedisServerKstyrc.java)
-  - [embedded consul server](scheduler-registry/scheduler-registry-consul/src/test/java/cn/ponfee/scheduler/registry/consul/EmbeddedConsulServerPszymczyk.java)
-  - [embedded nacos server](scheduler-registry/scheduler-registry-nacos/src/test/java/cn/ponfee/scheduler/registry/nacos/EmbeddedNacosServerTestcontainers.java)
-  - [embedded etcd server](scheduler-registry/scheduler-registry-etcd/src/test/java/cn/ponfee/scheduler/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
-  - [embedded zookeeper server](scheduler-registry/scheduler-registry-zookeeper/src/test/java/cn/ponfee/scheduler/registry/zookeeper/EmbeddedZookeeperServer.java)
+  - [embedded redis server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
+  - [embedded consul server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
+  - [embedded nacos server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)
+  - [embedded etcd server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
+  - [embedded zookeeper server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
 
 ```java
 @EnableSupervisor
@@ -132,7 +132,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 --data-raw '{
     "jobGroup": "default",
     "jobName": "prime-counter",
-    "jobHandler": "cn.ponfee.scheduler.samples.common.handler.PrimeCountJobHandler",
+    "jobHandler": "cn.ponfee.disjob.samples.common.handler.PrimeCountJobHandler",
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
     "triggerType": 2,
@@ -167,7 +167,7 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 
 ## Todo List
 
-- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks([WorkerServiceProvider](scheduler-worker/src/main/java/cn/ponfee/scheduler/worker/rpc/WorkerServiceProvider.java))
+- [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks([WorkerServiceProvider](disjob-worker/src/main/java/cn/ponfee/disjob/worker/rpc/WorkerServiceProvider.java))
 - [x] Extended registry: Zookeeper, Etcd, Nacos
 - [x] Workflow task(Workflow DAG)
 - [ ] alarm subscribe：Email, SMS, Voice, Lark, Ding Talk, WeChat

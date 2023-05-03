@@ -1,0 +1,18 @@
+server.port: 8080
+logging.config: classpath:log4j2.xml
+
+# actuator monitor configuration
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint:
+    gateway.enabled: true
+    health.show-details: always
+
+# tomcat server configuration
+server.tomcat.mbeanregistry.enabled: true
+
+# Disjob supervisor configuration
+disjob.http:
+  connect-timeout: 2000
+  read-timeout: 5000
+  max-retry-times: 3

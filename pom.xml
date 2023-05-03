@@ -5,13 +5,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>cn.ponfee</groupId>
-  <artifactId>scheduler-parent</artifactId>
+  <artifactId>disjob-parent</artifactId>
   <version>${revision}</version>
   <packaging>pom</packaging>
 
-  <name>Distributed Scheduler</name>
-  <description>A distributed task scheduling framework</description>
-  <url>https://github.com/ponfee/distributed-scheduler</url>
+  <name>disjob</name>
+  <description>A distributed job scheduling framework</description>
+  <url>https://github.com/ponfee/disjob</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -27,9 +27,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:https://github.com/ponfee/distributed-scheduler.git</connection>
-    <developerConnection>scm:git:https://github.com/ponfee/distributed-scheduler.git</developerConnection>
-    <url>https://github.com/ponfee/distributed-scheduler</url>
+    <connection>scm:git:https://github.com/ponfee/disjob.git</connection>
+    <developerConnection>scm:git:https://github.com/ponfee/disjob.git</developerConnection>
+    <url>https://github.com/ponfee/disjob</url>
     <tag>HEAD</tag>
   </scm>
   <distributionManagement>
@@ -44,14 +44,14 @@
   </distributionManagement>
 
   <modules>
-    <module>scheduler-common</module>
-    <module>scheduler-core</module>
-    <module>scheduler-test</module>
-    <module>scheduler-supervisor</module>
-    <module>scheduler-worker</module>
-    <module>scheduler-registry</module>
-    <module>scheduler-dispatch</module>
-    <module>scheduler-reports</module>
+    <module>disjob-common</module>
+    <module>disjob-core</module>
+    <module>disjob-test</module>
+    <module>disjob-supervisor</module>
+    <module>disjob-worker</module>
+    <module>disjob-registry</module>
+    <module>disjob-dispatch</module>
+    <module>disjob-reports</module>
   </modules>
 
   <properties>
@@ -113,37 +113,37 @@
 
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-common</artifactId>
+        <artifactId>disjob-common</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-core</artifactId>
+        <artifactId>disjob-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-test</artifactId>
+        <artifactId>disjob-test</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-registry-api</artifactId>
+        <artifactId>disjob-registry-api</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-dispatch-api</artifactId>
+        <artifactId>disjob-dispatch-api</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-supervisor</artifactId>
+        <artifactId>disjob-supervisor</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>scheduler-worker</artifactId>
+        <artifactId>disjob-worker</artifactId>
         <version>${project.version}</version>
       </dependency>
     </dependencies>
