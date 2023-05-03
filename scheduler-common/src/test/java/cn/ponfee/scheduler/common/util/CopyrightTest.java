@@ -32,6 +32,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Disabled
 public class CopyrightTest {
 
+    private static final String COPYRIGHT_KEYWORD = " Copyright (c) 2017-2023 Ponfee ";
+
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir();
     private static final String COPYRIGHT = ThrowingSupplier.get(
         () -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightTest.class.getClassLoader())
@@ -45,7 +47,7 @@ public class CopyrightTest {
                 return;
             }
             try {
-                if (!text.contains("** \\______   \\____   _____/ ____\\____   ____    Copyright (c) 2017-20")) {
+                if (!text.contains("** \\______   \\____   _____/ ____\\____   ____   " + COPYRIGHT_KEYWORD + " **")) {
                     Writer writer = new FileWriter(file.getAbsolutePath());
                     IOUtils.write(COPYRIGHT, writer);
                     IOUtils.write(text, writer);
@@ -54,7 +56,7 @@ public class CopyrightTest {
                     return;
                 }
 
-                if (!text.contains("** \\______   \\____   _____/ ____\\____   ____    Copyright (c) 2017-2023 Ponfee  **")) {
+                if (!text.contains("** \\______   \\____   _____/ ____\\____   ____   " + COPYRIGHT_KEYWORD)) {
                     Writer writer = new FileWriter(file.getAbsolutePath());
                     IOUtils.write(COPYRIGHT, writer);
                     IOUtils.write(text.substring(83 * 7 + 1), writer);
@@ -76,14 +78,24 @@ public class CopyrightTest {
                 System.out.println(file.getName());
             } else if (isOwnerCode(text)) {
                 // 自己编写的代码，添加Copyright
-                if (!text.contains(" Copyright (c) 2017-2023 Ponfee ")) {
+                if (!text.contains(COPYRIGHT_KEYWORD)) {
                     System.out.println(file.getName());
                 }
             } else {
                 // 引用他人的代码，不加Copyright
-                if (text.contains(" Copyright (c) 2017-2023 Ponfee ")) {
+                if (text.contains(COPYRIGHT_KEYWORD)) {
                     System.out.println(file.getName());
                 }
+            }
+        });
+    }
+
+    @Test
+    public void testNoCopyright() {
+        handleFile(file -> {
+            String text = ThrowingSupplier.get(() -> IOUtils.toString(file.toURI(), UTF_8));
+            if (!text.contains(COPYRIGHT_KEYWORD)) {
+                System.out.println(file.getName());
             }
         });
     }
@@ -96,6 +108,7 @@ public class CopyrightTest {
 
     private boolean isOwnerCode(String sourceCode) {
         if (sourceCode.contains("public class " + getClass().getSimpleName() + " {\n")) {
+            // is current file: CopyrightTest.java
             return true;
         }
         return sourceCode.contains(" * @author Ponfee\n") && Strings.count(sourceCode, " @author ") == 1;

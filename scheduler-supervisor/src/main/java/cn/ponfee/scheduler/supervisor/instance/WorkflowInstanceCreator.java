@@ -59,12 +59,13 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
 
         List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances = new ArrayList<>();
         for (Map.Entry<DAGEdge, SchedWorkflow> firstTriggers : new WorkflowGraph(workflows).successors(DAGNode.START).entrySet()) {
+            DAGNode node = firstTriggers.getKey().getTarget();
+            SchedWorkflow workflow = firstTriggers.getValue();
+
             // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
             long nodeInstanceId = manager.generateId();
-            long nodeTriggerTime = triggerTime + firstTriggers.getValue().getSequence();
-            DAGNode node = firstTriggers.getKey().getTarget();
+            long nodeTriggerTime = triggerTime + workflow.getSequence();
 
-            SchedWorkflow workflow = firstTriggers.getValue();
             workflow.setInstanceId(nodeInstanceId);
             workflow.setRunState(RunState.RUNNING.value());
 

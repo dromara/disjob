@@ -274,7 +274,7 @@ public class SchedJob extends BaseEntity implements Serializable {
         Assert.isTrue(retryCount > 0, () -> "Sched job '" + jobId + "' retry count must greater than 0, but actual " + retryCount);
         Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' retried " + failCount + " exceed " + retryCount + " limit.");
         // exponential backoff
-        return current.getTime() + (long) getRetryInterval() * IntMath.pow(failCount, 2);
+        return current.getTime() + (long) retryInterval * IntMath.pow(failCount, 2);
     }
 
 }

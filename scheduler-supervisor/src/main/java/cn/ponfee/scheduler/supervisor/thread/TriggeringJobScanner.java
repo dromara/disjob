@@ -134,7 +134,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             refreshNextTriggerTime(job, triggerTime, now);
 
             TriggerInstanceCreator<?> creator = TriggerInstanceCreator.of(job.getJobType(), schedulerJobManager);
-            creator.createAndDispatch(job, RunType.SCHEDULE, triggerTime);
+            creator.createThenSaveAndDispatch(job, RunType.SCHEDULE, triggerTime);
 
         } catch (DuplicateKeyException e) {
             if (schedulerJobManager.updateJobNextTriggerTime(job)) {

@@ -33,7 +33,7 @@ CREATE TABLE `sched_job` (
     `job_state`            tinyint(1)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT 'Job状态：0-已禁用；1-已启用；',
     `job_type`             tinyint(3)    unsigned  NOT NULL DEFAULT '1'                                           COMMENT 'Job类型：1-普通(Normal)；2-工作流(Workflow)；',
     `job_param`            text                    DEFAULT NULL                                                   COMMENT 'Job参数',
-    `retry_type`           tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试类型：0-不重试；1-重试所有的Task；2-只重试失败的Task；',
+    `retry_type`           tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；',
     `retry_count`          tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败可重试的最大次数',
     `retry_interval`       int(11)       unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)',
     `start_time`           datetime(3)             DEFAULT NULL                                                   COMMENT 'Job起始时间(为空不限制)',

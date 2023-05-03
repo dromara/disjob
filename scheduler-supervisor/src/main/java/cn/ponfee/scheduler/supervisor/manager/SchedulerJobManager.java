@@ -1058,7 +1058,7 @@ public class SchedulerJobManager extends AbstractJobManager implements Superviso
                 SchedJob parentJob = parentJobMap.get(parentJobId);
                 Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
                 if (!job.getJobGroup().equals(parentJob.getJobGroup())) {
-                    throw new IllegalArgumentException("Parent job '" + parentJobId + "' group '" + parentJob.getJobGroup() + "' different '" + job.getJobGroup() + "'");
+                    throw new IllegalArgumentException("Invalid group: parent=" + parentJob.getJobGroup() + ", child=" + job.getJobGroup());
                 }
             }
             dependMapper.batchInsert(parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList()));
