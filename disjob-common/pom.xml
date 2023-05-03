@@ -13,7 +13,7 @@
 
   <artifactId>disjob-common</artifactId>
   <name>${project.artifactId}</name>
-  <description>disjob common module</description>
+  <description>Distributed job common module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <dependencies>

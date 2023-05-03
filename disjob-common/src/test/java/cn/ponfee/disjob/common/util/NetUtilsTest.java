@@ -188,14 +188,14 @@ public class NetUtilsTest {
     }
 
     private String getIgnoredInterfaces() {
-        return System.getProperty("disjob.network.interface.ignored");
+        return System.getProperty(NetUtils.IGNORED_NETWORK_INTERFACE);
     }
 
     private void setIgnoredInterfaces(String ignoredInterfaces) {
         if (ignoredInterfaces != null) {
-            System.setProperty("disjob.network.interface.ignored", ignoredInterfaces);
+            System.setProperty(NetUtils.IGNORED_NETWORK_INTERFACE, ignoredInterfaces);
         } else {
-            System.setProperty("disjob.network.interface.ignored", "");
+            System.setProperty(NetUtils.IGNORED_NETWORK_INTERFACE, "");
         }
     }
 

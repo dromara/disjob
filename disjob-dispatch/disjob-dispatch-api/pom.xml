@@ -13,7 +13,7 @@
 
   <artifactId>disjob-dispatch-api</artifactId>
   <name>${project.artifactId}</name>
-  <description>disjob dispatch api module</description>
+  <description>Distributed job dispatch api module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <dependencies>

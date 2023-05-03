@@ -13,7 +13,7 @@
 
   <artifactId>disjob-worker</artifactId>
   <name>${project.artifactId}</name>
-  <description>disjob worker module</description>
+  <description>Distributed job worker module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <dependencies>

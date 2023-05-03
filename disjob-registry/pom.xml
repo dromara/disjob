@@ -14,7 +14,7 @@
   <artifactId>disjob-registry</artifactId>
   <packaging>pom</packaging>
   <name>${project.artifactId}</name>
-  <description>disjob registry parent module</description>
+  <description>Distributed job registry parent module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <modules>

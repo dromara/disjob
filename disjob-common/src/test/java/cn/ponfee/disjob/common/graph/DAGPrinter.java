@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.graph;
 
-
 import cn.ponfee.disjob.common.util.MavenProjects;
 import com.google.common.graph.EndpointPair;
 import guru.nidi.graphviz.attribute.Label;

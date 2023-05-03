@@ -81,19 +81,19 @@ disjob                                                    # Main project
 
 ## Quick Start
 
-0. Imports project to IDE (Contains two projects, shared the git repository)
+1. Imports project to IDE (Contains two projects, shared the git repository)
   - [main project](pom.xml)
   - [samples project](disjob-samples/pom.xml)
 
-1. Run the SQL script provided by the warehouse code to create the database table: [mysql-schema.sql](mysql-schema.sql)(Also can direct run [embed mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java), auto init sql script on startup)
+2. Run the SQL script provided by the warehouse code to create the database table: [mysql-schema.sql](mysql-schema.sql)(Also can direct run [embed mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java), auto init sql script on startup)
 
-2. Modify configuration files such as [Mysql](disjob-samples/conf-supervisor/application-mysql.yml), [Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml), [Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml) and so on.
+3. Modify configuration files such as [Mysql](disjob-samples/conf-supervisor/application-mysql.yml), [Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml), [Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml) and so on.
 - if use default localhost configuration([e.g consul localhost:8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file(same as Nacos/Zookeeper/Etcd)
 - non spring-boot application of worker configuration: [worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
-3. Create a job handler class [PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
+4. Create a job handler class [PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
-4. Startup applications in [samples project](disjob-samples)
+5. Startup applications in [samples project](disjob-samples)
 
 ```Plain Text
  1）disjob-samples-merged                        # Applicaion of merged deployment supervisor and worker
@@ -122,7 +122,7 @@ public class MergedApplication extends AbstractSamplesApplication {
 }
 ```
 
-5. Execute the following curl command to add tasks (select any running Supervisor application to replace `localhost:8081`)
+6. Execute the following curl command to add tasks (select any running Supervisor application to replace `localhost:8081`)
 - `triggerValue` modified to  next minute of the current time
 - `jobHandler` supported: the fully qualified class name, spring bean name, DAG Expression, source code
 
@@ -140,7 +140,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 }'
 ```
 
-6. Query the database table to verify whether the task is added successfully, and view the execution information of the task
+7. Query the database table to verify whether the task is added successfully, and view the execution information of the task
 
 ```sql
 -- Query the sched_job data added by curl  

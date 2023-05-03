@@ -13,7 +13,7 @@
 
   <artifactId>disjob-supervisor</artifactId>
   <name>${project.artifactId}</name>
-  <description>disjob supervisor module</description>
+  <description>Distributed job supervisor module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <dependencies>

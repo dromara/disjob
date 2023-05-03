@@ -10,10 +10,10 @@ package cn.ponfee.disjob.samples;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.samples.common.util.Prime;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 import java.util.Random;

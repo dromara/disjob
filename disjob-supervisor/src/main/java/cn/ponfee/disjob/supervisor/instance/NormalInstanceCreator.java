@@ -27,8 +27,8 @@ import java.util.List;
  */
 public class NormalInstanceCreator extends TriggerInstanceCreator<NormalInstanceCreator.NormalInstance> {
 
-    public NormalInstanceCreator(DistributedJobManager manager) {
-        super(manager);
+    public NormalInstanceCreator(DistributedJobManager jobManager) {
+        super(jobManager);
     }
 
     @Override

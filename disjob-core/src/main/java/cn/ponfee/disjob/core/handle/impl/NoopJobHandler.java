@@ -9,9 +9,6 @@
 package cn.ponfee.disjob.core.handle.impl;
 
 import cn.ponfee.disjob.common.model.Result;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.exception.PauseTaskException;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import org.slf4j.Logger;

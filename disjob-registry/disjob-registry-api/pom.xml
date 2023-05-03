@@ -13,7 +13,7 @@
 
   <artifactId>disjob-registry-api</artifactId>
   <name>${project.artifactId}</name>
-  <description>disjob registry api module</description>
+  <description>Distributed job registry api module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <dependencies>

@@ -13,7 +13,7 @@
 
   <artifactId>disjob-reports</artifactId>
   <name>${project.artifactId}</name>
-  <description>disjob reports module</description>
+  <description>Distributed job reports module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <dependencies>

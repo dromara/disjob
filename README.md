@@ -81,19 +81,19 @@ disjob                                                    # 主项目
 
 ## Quick Start
 
-0. IDE分别导入项目(分为两个独立的项目，共用一个Git仓库)
+1. IDE分别导入项目(分为两个独立的项目，共用一个Git仓库)
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
 
-1. 运行仓库代码提供的SQL脚本，创建数据库表：[mysql-schema.sql](mysql-schema.sql)(也可直接运行[内置mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)，启动时会自动初始化SQL脚本)
+2. 运行仓库代码提供的SQL脚本，创建数据库表：[mysql-schema.sql](mysql-schema.sql)(也可直接运行[内置mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)，启动时会自动初始化SQL脚本)
 
-2. 修改[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)、[Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、[Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)等配置文件
+3. 修改[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)、[Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、[Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)等配置文件
   - 如果使用默认的本地配置([如consul localhost 8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件(包括Nacos、Zookeeper、Etcd等)
   - 非Spring-boot的Worker应用的配置文件为[worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
-3. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
+4. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
-4. 启动[samples项目](disjob-samples)下的各应用，包括
+5. 启动[samples项目](disjob-samples)下的各应用，包括
 
 ```Plain Text
  1）disjob-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
@@ -122,7 +122,7 @@ public class MergedApplication extends AbstractSamplesApplication {
 }
 ```
 
-5. 执行以下curl命令添加任务(任选一台运行中的Supervisor应用替换`localhost:8081`)
+6. 执行以下curl命令添加任务(任选一台运行中的Supervisor应用替换`localhost:8081`)
   - `triggerValue`修改为大于当前时间的日期值以便即将触发(如当前时间点的下一分钟)
   - `jobHandler`支持：类的全限定名、Spring bean name、DAG表达式、源码
 
@@ -140,7 +140,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 }'
 ```
 
-6. 查询库表验证任务是否添加成功，以及可查看任务的执行信息
+7. 查询库表验证任务是否添加成功，以及可查看任务的执行信息
 
 ```sql
 -- 刚CURL添加的任务会落入该表中

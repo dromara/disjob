@@ -14,7 +14,7 @@
   <artifactId>disjob-dispatch</artifactId>
   <packaging>pom</packaging>
   <name>${project.artifactId}</name>
-  <description>disjob dispatch parent module</description>
+  <description>Distributed job dispatch parent module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <modules>

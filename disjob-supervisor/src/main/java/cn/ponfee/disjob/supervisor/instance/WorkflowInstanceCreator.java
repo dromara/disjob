@@ -36,8 +36,8 @@ import java.util.stream.Collectors;
  */
 public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInstanceCreator.WorkflowInstance> {
 
-    public WorkflowInstanceCreator(DistributedJobManager manager) {
-        super(manager);
+    public WorkflowInstanceCreator(DistributedJobManager jobManager) {
+        super(jobManager);
     }
 
     @Override

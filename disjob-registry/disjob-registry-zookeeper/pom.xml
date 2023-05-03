@@ -13,7 +13,7 @@
 
   <artifactId>disjob-registry-zookeeper</artifactId>
   <name>${project.artifactId}</name>
-  <description>disjob registry zookeeper module</description>
+  <description>Distributed job registry zookeeper module</description>
   <url>https://github.com/ponfee/disjob</url>
 
   <properties>
