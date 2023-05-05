@@ -11,6 +11,7 @@ package cn.ponfee.disjob.supervisor.manager;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.Symbol.Str;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.graph.DAGEdge;
 import cn.ponfee.disjob.common.graph.DAGNode;
 import cn.ponfee.disjob.common.spring.RpcController;
@@ -208,8 +209,8 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         return jobMapper.updateNextTriggerTime(job) == AFFECTED_ONE_ROW;
     }
 
-    public boolean updateJobNextScanTime(long jobId, Date nextScanTime, int version) {
-        return jobMapper.updateNextScanTime(jobId, nextScanTime, version) == AFFECTED_ONE_ROW;
+    public boolean updateJobNextScanTime(SchedJob schedJob) {
+        return jobMapper.updateNextScanTime(schedJob) == AFFECTED_ONE_ROW;
     }
 
     public boolean renewInstanceUpdateTime(SchedInstance instance, Date updateTime) {
@@ -982,7 +983,12 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                 Objects.requireNonNull(transactionTemplate.getTransactionManager()),
                 () -> {
                     TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
-                    TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, parentInstance.getTriggerTime());
+                    // ### Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '4236701615232-1683124620000-2' for key 'uk_jobid_triggertime_runtype'
+                    // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
+                    // 极端情况还是会存在唯一索引值冲突：比如依赖的任务多于1000个，但这种情况可以限制所依赖父任务的个数来解决，暂不考虑
+                    // parent1(trigger_time=1000, sequence=1001)，parent2(trigger_time=2000, sequence=1)
+                    long triggerTime = (Dates.unixTimestamp() * 1000) + depend.getSequence();
+                    TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, triggerTime);
                     tInstance.getInstance().setRnstanceId(parentInstance.obtainRnstanceId());
                     tInstance.getInstance().setPnstanceId(parentInstance.getInstanceId());
                     createInstance(tInstance);
@@ -1061,7 +1067,11 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                     throw new IllegalArgumentException("Invalid group: parent=" + parentJob.getJobGroup() + ", child=" + job.getJobGroup());
                 }
             }
-            dependMapper.batchInsert(parentJobIds.stream().map(e -> new SchedDepend(e, job.getJobId())).collect(Collectors.toList()));
+            List<SchedDepend> list = new ArrayList<>(parentJobIds.size());
+            for (int i = 0; i < parentJobIds.size(); i++) {
+                list.add(new SchedDepend(parentJobIds.get(i), job.getJobId(), i + 1));
+            }
+            dependMapper.batchInsert(list);
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {

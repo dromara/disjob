@@ -29,9 +29,9 @@ CREATE TABLE `sched_job` (
     `job_id`               bigint(20)    unsigned  NOT NULL                                                       COMMENT '全局唯一ID',
     `job_group`            varchar(60)             NOT NULL                                                       COMMENT 'Job分组(用于分配给同组下的Worker执行)',
     `job_name`             varchar(60)             NOT NULL                                                       COMMENT 'Job名称',
+    `job_type`             tinyint(3)    unsigned  NOT NULL DEFAULT '1'                                           COMMENT 'Job类型：1-普通(Normal)；2-工作流(Workflow)；',
     `job_handler`          text                    NOT NULL                                                       COMMENT 'Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)',
     `job_state`            tinyint(1)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT 'Job状态：0-已禁用；1-已启用；',
-    `job_type`             tinyint(3)    unsigned  NOT NULL DEFAULT '1'                                           COMMENT 'Job类型：1-普通(Normal)；2-工作流(Workflow)；',
     `job_param`            text                    DEFAULT NULL                                                   COMMENT 'Job参数',
     `retry_type`           tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败重试类型：0-不重试；1-只重试失败的Task；2-重试所有的Task；',
     `retry_count`          tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '调度失败可重试的最大次数',
@@ -48,6 +48,7 @@ CREATE TABLE `sched_job` (
     `last_trigger_time`    bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT '最近一次的触发时间(毫秒时间戳)',
     `next_trigger_time`    bigint(20)    unsigned  DEFAULT NULL                                                   COMMENT '下一次的触发时间(毫秒时间戳)',
     `next_scan_time`       datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP(3)                          COMMENT '下一次的扫描时间',
+    `failed_scan_count`    tinyint(3)    unsigned  NOT NULL DEFAULT '0'                                           COMMENT '连续失败的扫描次数，连续失败次数达到域值自动禁用(set job_state=0)',
     `alarm_subscribers`    varchar(512)            DEFAULT NULL                                                   COMMENT '告警订阅人员列表',
     `remark`               varchar(255)            DEFAULT NULL                                                   COMMENT '备注',
     `version`              int(11)       unsigned  NOT NULL DEFAULT '1'                                           COMMENT '行记录版本号',
@@ -131,11 +132,12 @@ CREATE TABLE `sched_depend` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
     `parent_job_id`        bigint(20)    unsigned  NOT NULL                                                       COMMENT '父job_id',
     `child_job_id`         bigint(20)    unsigned  NOT NULL                                                       COMMENT '子job_id',
+    `sequence`             int(11)       unsigned  NOT NULL                                                       COMMENT '序号(从1开始)',
     `updated_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `created_at`           datetime(3)             NOT NULL DEFAULT CURRENT_TIMESTAMP                             COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_parentjobid_childjobid` (`parent_job_id`, `child_job_id`),
-    KEY `ix_childjobid` (`child_job_id`),
+    UNIQUE KEY `uk_childjobid_sequence` (`child_job_id`, `sequence`),
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度依赖表';
@@ -167,7 +169,7 @@ CREATE TABLE `sched_registry` (
     UNIQUE KEY `uk_groupname_serveraddress` (`group_name`, `server_address`),
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='worker注册表(用于database作为注册中心)';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='worker注册表(database作为注册中心时使用)';
 
 CREATE TABLE `sched_group` (
     `id`                   bigint(20)    unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
@@ -204,14 +206,15 @@ INSERT INTO sched_lock(`name`) VALUES ('scan_running_instance');
 -- ----------------------------
 -- INITIALIZE TEST SAMPLES JOB
 -- ----------------------------
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755200, 'default', 'noop-job',    'cn.ponfee.disjob.core.handle.impl.NoopJobHandler',              1, 1, 1, '',                                                                  1, '0/5 * * * * ?',       unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755300, 'default', 'http-job',    'cn.ponfee.disjob.core.handle.impl.HttpJobHandler',              1, 1, 1, '{"method":"GET", "url":"https://www.baidu.com"}',                   1, '0/10 * * * * ?',      unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755400, 'default', 'command-job', 'cn.ponfee.disjob.core.handle.impl.CommandJobHandler',           1, 1, 1, '{"cmdarray":["/bin/sh","-c","echo $(date +%Y/%m/%d)"]}',            1, '0/15 * * * * ?',      unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755500, 'default', 'script-job',  'cn.ponfee.disjob.core.handle.impl.ScriptJobHandler',            1, 1, 1, '{"type":"SHELL","script":"#!/bin/sh\\necho \\\"hello shell!\\\""}', 1, '0/10 * * * * ?',      unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (4236701614080, 'default', 'prime-count', 'cn.ponfee.disjob.samples.common.handler.PrimeCountJobHandler',  1, 1, 1, '{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}', 2, '2022-10-06 22:53:00', unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (4236701615230, 'default', 'broadcast',   'cn.ponfee.disjob.core.handle.impl.NoopJobHandler',              1, 1, 6, '',                                                                  2, '2023-03-18 21:30:00', unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (4236701615231, 'default', 'workflow',    'AJobHandler,BJobHandler->CJobHandler->DJobHandler,EJobHandler', 1, 2, 1, '',                                                                  2, '2023-03-18 21:30:00', unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755200, 'default', 'noop-job',      'cn.ponfee.disjob.core.handle.impl.NoopJobHandler',              1, 1, 1, '',                                                                  1, '0/5 * * * * ?',               unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755300, 'default', 'http-job',      'cn.ponfee.disjob.core.handle.impl.HttpJobHandler',              1, 1, 1, '{"method":"GET", "url":"https://www.baidu.com"}',                   1, '0/10 * * * * ?',              unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755400, 'default', 'command-job',   'cn.ponfee.disjob.core.handle.impl.CommandJobHandler',           1, 1, 1, '{"cmdarray":["/bin/sh","-c","echo $(date +%Y/%m/%d)"]}',            1, '0/15 * * * * ?',              unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (3988904755500, 'default', 'script-job',    'cn.ponfee.disjob.core.handle.impl.ScriptJobHandler',            1, 1, 1, '{"type":"SHELL","script":"#!/bin/sh\\necho \\\"hello shell!\\\""}', 1, '0/30 * * * * ?',              unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (4236701614080, 'default', 'prime-count',   'cn.ponfee.disjob.samples.common.handler.PrimeCountJobHandler',  1, 1, 1, '{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}', 2, '2022-10-06 22:53:00',         unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (4236701615230, 'default', 'broadcast-job', 'cn.ponfee.disjob.core.handle.impl.NoopJobHandler',              1, 1, 6, '',                                                                  2, '2023-03-18 21:30:00',         unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (4236701615231, 'default', 'workflow-job',  'AJobHandler,BJobHandler->CJobHandler->DJobHandler,EJobHandler', 1, 2, 1, '',                                                                  2, '2023-03-18 21:30:00',         unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (4236701615232, 'default', 'depend-job',    'cn.ponfee.disjob.samples.common.handler.PrimeCountJobHandler',  1, 1, 1, '{\"m\":1,\"n\":100000000,\"blockSize\":10000000,\"parallel\":10}',  4, '3988904755400,3988904755500',                  null);
 
-
---INSERT INTO `sched_depend` (`parent_job_id`, `child_job_id`) VALUES (4236701615230, 4236701615231);
---INSERT INTO `sched_depend` (`parent_job_id`, `child_job_id`) VALUES (4236701615230, 4236701614080);
+-- depend job config
+INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (4236701615232, 3988904755400, 1);
+INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (4236701615232, 3988904755500, 2);

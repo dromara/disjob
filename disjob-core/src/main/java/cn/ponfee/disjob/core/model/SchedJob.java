@@ -49,6 +49,13 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String jobName;
 
     /**
+     * Job类型：1-普通(Normal)；2-工作流(Workflow)；
+     *
+     * @see JobType
+     */
+    private Integer jobType;
+
+    /**
      * Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)
      */
     private String jobHandler;
@@ -59,13 +66,6 @@ public class SchedJob extends BaseEntity implements Serializable {
      * @see JobState
      */
     private Integer jobState;
-
-    /**
-     * Job类型：1-普通(Normal)；2-工作流(Workflow)；
-     *
-     * @see JobType
-     */
-    private Integer jobType;
 
     /**
      * Job参数
@@ -156,6 +156,11 @@ public class SchedJob extends BaseEntity implements Serializable {
      * 下一次的扫描时间
      */
     private Date nextScanTime;
+
+    /**
+     * 连续失败的扫描次数，连续失败次数达到域值自动禁用(set job_state=0)
+     */
+    private Integer failedScanCount;
 
     /**
      * 告警订阅人员列表
@@ -260,6 +265,10 @@ public class SchedJob extends BaseEntity implements Serializable {
         if (jobParam == null) {
             this.jobParam = "";
         }
+    }
+
+    public int incrementAndGetFailedScanCount() {
+        return ++this.failedScanCount;
     }
 
     /**

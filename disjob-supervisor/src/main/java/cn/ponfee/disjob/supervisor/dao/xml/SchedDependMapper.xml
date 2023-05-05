@@ -7,21 +7,24 @@
   <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedDepend">
     <result column="parent_job_id" jdbcType="BIGINT" property="parentJobId" />
     <result column="child_job_id" jdbcType="BIGINT" property="childJobId" />
+    <result column="sequence" jdbcType="BIGINT" property="sequence" />
   </resultMap>
 
   <sql id="Base_Column_List">
-    parent_job_id, child_job_id
+    parent_job_id, child_job_id, `sequence`
   </sql>
 
   <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       parent_job_id,
-      child_job_id
+      child_job_id,
+      `sequence`
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
       #{item.parentJobId,jdbcType=BIGINT},
-      #{item.childJobId,jdbcType=BIGINT}
+      #{item.childJobId,jdbcType=BIGINT},
+      #{item.sequence,jdbcType=INTEGER}
     )
     </foreach>
   </insert>

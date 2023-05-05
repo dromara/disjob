@@ -28,6 +28,7 @@
     <result column="last_trigger_time" jdbcType="BIGINT" property="lastTriggerTime" />
     <result column="next_trigger_time" jdbcType="BIGINT" property="nextTriggerTime" />
     <result column="next_scan_time" jdbcType="TIMESTAMP" property="nextScanTime" />
+    <result column="failed_scan_count" jdbcType="INTEGER" property="failedScanCount" />
     <result column="alarm_subscribers" jdbcType="VARCHAR" property="alarmSubscribers" />
     <result column="is_deleted" jdbcType="BOOLEAN" property="deleted" />
     <result column="version" jdbcType="INTEGER" property="version" />
@@ -41,8 +42,8 @@
     job_id, job_group, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value, execute_timeout,
     collision_strategy, misfire_strategy, route_strategy, weight_score, remark, last_trigger_time,
-    next_trigger_time, next_scan_time, alarm_subscribers, version, IFNULL(is_deleted, 1) is_deleted,
-    updated_by, created_by, updated_at, created_at
+    next_trigger_time, next_scan_time, failed_scan_count, alarm_subscribers, version,
+    IFNULL(is_deleted, 1) is_deleted, updated_by, created_by, updated_at, created_at
   </sql>
 
   <!-- ********************use int test start******************** -->
@@ -186,6 +187,7 @@
   <update id="updateNextScanTime" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
+        failed_scan_count = #{failedScanCount, jdbcType=INTEGER},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}
@@ -209,6 +211,7 @@
     SET job_state = #{jobState,jdbcType=TINYINT},
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+        failed_scan_count = 0,
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_state = 1

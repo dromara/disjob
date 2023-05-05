@@ -15,13 +15,13 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.core.base.AbstractHeartbeatThread;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
+import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
@@ -47,6 +47,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private static final int SCAN_COLLISION_INTERVAL_SECONDS = 60;
     private static final int REMARK_MAX_LENGTH = 255;
+    private static final int FAILED_SCAN_COUNT_THRESHOLD = 5;
 
     private final DoInLocked doInLocked;
     private final DistributedJobManager jobManager;
@@ -108,7 +109,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // 重新再计算一次nextTriggerTime
             job.setNextTriggerTime(recomputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
-                String reason = "Stop recompute reason: has not next trigger time";
+                String reason = "Recompute has not next trigger time";
                 job.setRemark(reason);
                 log.info("{} | {}", reason, job);
                 jobManager.stopJob(job);
@@ -142,11 +143,21 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             } else {
                 log.error("Conflict trigger time: {} | {}", job, e.getMessage());
             }
-        } catch (JobException | IllegalArgumentException e) {
-            log.error(e.getMessage() + ": " + job, e);
-            job.setRemark(StringUtils.truncate("Stop reason: " + e.getMessage(), REMARK_MAX_LENGTH));
+        } catch (IllegalArgumentException e) {
+            log.error("Scan trigger job failed: " + job, e);
+            job.setRemark(StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
             job.setNextTriggerTime(null);
             jobManager.stopJob(job);
+        } catch (Exception e) {
+            log.error("Scan trigger job error: " + job, e);
+            if (job.getFailedScanCount() >= FAILED_SCAN_COUNT_THRESHOLD) {
+                job.setRemark(StringUtils.truncate("Scan over failed: " + e.getMessage(), REMARK_MAX_LENGTH));
+                job.setNextTriggerTime(null);
+                jobManager.stopJob(job);
+            } else {
+                int failedScanCount = job.incrementAndGetFailedScanCount();
+                updateNextScanTime(job, now, IntMath.pow(failedScanCount, 2) * 5);
+            }
         }
     }
 
@@ -249,8 +260,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     private void updateNextScanTime(SchedJob job, Date now, int delayedSeconds) {
-        Date nextScanTime = Dates.plusSeconds(now, delayedSeconds);
-        jobManager.updateJobNextScanTime(job.getJobId(), nextScanTime, job.getVersion());
+        job.setNextScanTime(Dates.plusSeconds(now, delayedSeconds));
+        jobManager.updateJobNextScanTime(job);
     }
 
     /**

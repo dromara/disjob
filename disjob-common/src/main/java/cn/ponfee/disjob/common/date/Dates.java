@@ -111,6 +111,10 @@ public class Dates {
         return new Date();
     }
 
+    public static long unixTimestamp() {
+        return System.currentTimeMillis() / 1000;
+    }
+
     /**
      * 获取当前日期字符串
      *

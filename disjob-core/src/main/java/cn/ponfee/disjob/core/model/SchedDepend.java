@@ -37,8 +37,14 @@ public class SchedDepend extends BaseEntity implements Serializable {
      */
     private Long childJobId;
 
-    public SchedDepend(Long parentJobId, Long childJobId) {
+    /**
+     * 序号(从1开始)
+     */
+    private Integer sequence;
+
+    public SchedDepend(Long parentJobId, Long childJobId, Integer sequence) {
         this.parentJobId = parentJobId;
         this.childJobId = childJobId;
+        this.sequence = sequence;
     }
 }

@@ -331,8 +331,8 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <!--
           jacoco覆盖率显示为0，则可能是surefire版本问题：
-            maven-surefire-plugin[2.22.2] + jacoco-maven-plugin[0.8.9] ✓
-            maven-surefire-plugin[3.0.0]  + jacoco-maven-plugin[0.8.9] ✕
+            maven-surefire-plugin[2.22.2] + jacoco-maven-plugin[0.8.10] ✓
+            maven-surefire-plugin[3.0.0]  + jacoco-maven-plugin[0.8.10] ✕
           -->
           <version>${maven-surefire-plugin.version}</version>
         </plugin>
