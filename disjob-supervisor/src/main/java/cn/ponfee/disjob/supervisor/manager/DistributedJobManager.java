@@ -621,7 +621,12 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                     instance = instanceMapper.lock(instanceId);
                 } else {
                     SchedInstance inst = instanceMapper.lock(wnstanceId);
+                    Assert.notNull(inst, "Workflow lead instance not found: " + wnstanceId);
                     instance = (instanceId == wnstanceId) ? inst : instanceMapper.getByInstanceId(instanceId);
+                }
+                Assert.notNull(instance, "Instance not found: " + instanceId);
+                if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
+                    throw new IllegalArgumentException("Invalid workflow instance id: " + wnstanceId + ", " + instance);
                 }
                 return action.apply(instance);
             });

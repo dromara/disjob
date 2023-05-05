@@ -239,9 +239,6 @@
     </profile>
     <profile>
       <id>release</id>
-      <properties>
-        <jacoco.skip>false</jacoco.skip>
-      </properties>
       <build>
         <plugins>
           <plugin>

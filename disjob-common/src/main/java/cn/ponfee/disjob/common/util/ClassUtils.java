@@ -27,6 +27,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Class utility
@@ -98,6 +99,12 @@ public final class ClassUtils {
 
         // not found
         throw new RuntimeException(firstOccurException);
+    }
+
+    public static Set<String> fieldDiff(Class<?> a, Class<?> b) {
+        Set<String> set1 = ClassUtils.listFields(a).stream().map(Field::getName).collect(Collectors.toSet());
+        Set<String> set2 = ClassUtils.listFields(b).stream().map(Field::getName).collect(Collectors.toSet());
+        return Collects.different(set1, set2);
     }
 
     /**

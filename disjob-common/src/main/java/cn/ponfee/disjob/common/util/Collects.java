@@ -38,6 +38,20 @@ public class Collects {
         return args;
     }
 
+    /**
+     * The two set different elements
+     *
+     * @param set1
+     * @param set2
+     * @return
+     */
+    public static <T> Set<T> different(Set<T> set1, Set<T> set2) {
+        Set<T> res = new HashSet<>();
+        set1.stream().filter(ObjectUtils.not(set2::contains)).forEach(res::add);
+        set2.stream().filter(ObjectUtils.not(set1::contains)).forEach(res::add);
+        return res;
+    }
+
     public static <T> List<T> duplicate(Collection<T> list) {
         return duplicate(list, Function.identity());
     }

@@ -16,6 +16,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -46,6 +47,10 @@ public final class ObjectUtils {
 
     public static <T> T defaultIfNull(T object, Supplier<T> defaultValue) {
         return object != null ? object : defaultValue.get();
+    }
+
+    public static <T> Predicate<T> not(Predicate<T> target) {
+        return target.negate();
     }
 
     /**
