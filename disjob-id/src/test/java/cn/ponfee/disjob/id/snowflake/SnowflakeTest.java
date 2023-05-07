@@ -11,6 +11,7 @@ package cn.ponfee.disjob.id.snowflake;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 /**
@@ -33,6 +34,7 @@ public class SnowflakeTest {
 
     @Test
     public void testShift() {
+        Assertions.assertEquals(24 * 60 * 60 * 1000, TimeUnit.DAYS.toMillis(1));
         Assertions.assertEquals(256, 1 << 8);
         Assertions.assertEquals(1024, 1 << 10);
 

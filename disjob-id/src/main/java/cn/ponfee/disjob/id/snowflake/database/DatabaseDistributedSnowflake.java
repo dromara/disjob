@@ -96,7 +96,11 @@ public class DatabaseDistributedSnowflake implements IdGenerator, AutoCloseable 
         this.bizTag = bizTag;
         this.serverTag = serverTag;
 
-        createTableIfNotExists();
+        try {
+            RetryTemplate.execute(this::createTableIfNotExists, 5, 1000L);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
 
         try {
             int workerId = RetryTemplate.execute(() -> registryWorkerId(workerIdBitLength), 5, 1000L);
@@ -179,17 +183,19 @@ public class DatabaseDistributedSnowflake implements IdGenerator, AutoCloseable 
         }
     }
 
-    private void createTableIfNotExists() {
+    private boolean createTableIfNotExists() {
         if (hasTable()) {
-            return;
+            return false;
         }
 
         try {
             jdbcTemplate.execute(CREATE_TABLE_SQL);
             LOG.info("Created table {} success.", TABLE_NAME);
+            return true;
         } catch (Throwable t) {
             if (hasTable()) {
                 LOG.warn("Create table {} failed {}", TABLE_NAME, t.getMessage());
+                return false;
             } else {
                 throw new Error("Create table " + TABLE_NAME + " error.", t);
             }

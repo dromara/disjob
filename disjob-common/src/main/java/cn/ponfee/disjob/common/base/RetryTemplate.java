@@ -26,7 +26,7 @@ public class RetryTemplate {
     public static <T> T execute(Supplier<T> action, int maxRetryCount, long backOffPeriodMs) throws Throwable {
         int i = 0;
         Throwable ex;
-        String trace = null;
+        String traceId = null;
         do {
             try {
                 return action.get();
@@ -34,10 +34,10 @@ public class RetryTemplate {
                 ex = e;
                 if (i < maxRetryCount) {
                     // log and sleep if not the last loop
-                    if (trace == null) {
-                        trace = ObjectUtils.uuid32();
+                    if (traceId == null) {
+                        traceId = ObjectUtils.uuid32();
                     }
-                    LOG.error("Execute failed, will retrying: " + (i + 1) + " | " + trace, e);
+                    LOG.error("Execute failed, will retrying: " + (i + 1) + " | " + traceId, e);
                     Thread.sleep(backOffPeriodMs * (i + 1));
                 }
             }

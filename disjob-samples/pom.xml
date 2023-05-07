@@ -24,7 +24,7 @@
 
     <disjob.version>1.12-SNAPSHOT</disjob.version>
     <spring-boot.version>2.7.11</spring-boot.version>
-    <mapstruct.version>1.5.4.Final</mapstruct.version>
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
     <testcontainers.version>1.18.0</testcontainers.version>
 
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
