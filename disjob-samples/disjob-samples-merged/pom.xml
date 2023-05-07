@@ -27,6 +27,10 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-samples-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-id</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

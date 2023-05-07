@@ -6,17 +6,16 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common;
-
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+package cn.ponfee.disjob.id.snowflake;
 
 /**
- * Abstract samples application
+ * DatabaseSnowflakeServerTest
  *
  * @author Ponfee
  */
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-public abstract class AbstractSamplesApplication {
+public class DatabaseSnowflakeServerTest {
 
+    public void test() {
+
+    }
 }

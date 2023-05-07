@@ -9,20 +9,29 @@
 package cn.ponfee.disjob.supervisor.config;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.Snowflake;
+import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.redis.RedisTaskDispatcher;
+import cn.ponfee.disjob.id.snowflake.database.DatabaseDistributedSnowflake;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.redis.RedisSupervisorRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
+
+import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
  * Job supervisor configuration.
@@ -57,8 +66,10 @@ public class TestConfiguration {
     }
 
     @Bean
-    public IdGenerator idGenerator() {
-        return new Snowflake(1);
+    public IdGenerator idGenerator(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate,
+                                   @Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
+                                   @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
+        return new DatabaseDistributedSnowflake(jdbcTemplate, "disjob", JobUtils.getLocalHost(boundHost) + Char.COLON + port);
     }
 
 }

@@ -95,7 +95,7 @@ CREATE TABLE `sched_instance` (
 
 CREATE TABLE `sched_task` (
     `id`                   bigint        unsigned  NOT NULL AUTO_INCREMENT                                        COMMENT '自增主键ID',
-    `task_id`              bigint                  NOT NULL                                                       COMMENT '全局唯一ID',
+    `task_id`              bigint        unsigned  NOT NULL                                                       COMMENT '全局唯一ID',
     `instance_id`          bigint        unsigned  NOT NULL                                                       COMMENT 'sched_instance.instance_id',
     `task_no`              int           unsigned  NOT NULL                                                       COMMENT '任务序号(从1开始)',
     `task_count`           int           unsigned  NOT NULL                                                       COMMENT '任务总数量',
@@ -195,6 +195,7 @@ CREATE TABLE `sched_user` (
     KEY `ix_createdat` (`created_at`),
     KEY `ix_updatedat` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户表';
+
 
 -- ----------------------------
 -- INITIALIZE DATA

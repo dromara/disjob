@@ -8,11 +8,23 @@
 
 package cn.ponfee.disjob.samples.merged;
 
+import cn.ponfee.disjob.common.base.IdGenerator;
+import cn.ponfee.disjob.common.base.Symbol.Char;
+import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.id.snowflake.database.DatabaseDistributedSnowflake;
 import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
 import cn.ponfee.disjob.samples.common.util.SampleConstants;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
  * Disjob application based spring boot
@@ -30,6 +42,13 @@ public class MergedApplication extends AbstractSamplesApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MergedApplication.class, args);
+    }
+
+    @Bean
+    public IdGenerator idGenerator(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate,
+                                   @Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
+                                   @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
+        return new DatabaseDistributedSnowflake(jdbcTemplate, "disjob", JobUtils.getLocalHost(boundHost) + Char.COLON + port);
     }
 
 }
