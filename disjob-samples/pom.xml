@@ -73,6 +73,11 @@
       </dependency>
       <dependency>
         <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-id</artifactId>
+        <version>${disjob.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
         <artifactId>disjob-supervisor</artifactId>
         <version>${disjob.version}</version>
       </dependency>

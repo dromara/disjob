@@ -12,7 +12,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.util.JobUtils;
-import cn.ponfee.disjob.id.snowflake.database.DatabaseDistributedSnowflake;
+import cn.ponfee.disjob.id.snowflake.db.DbDistributedSnowflake;
 import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
 import cn.ponfee.disjob.samples.common.util.SampleConstants;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
@@ -48,7 +48,7 @@ public class MergedApplication extends AbstractSamplesApplication {
     public IdGenerator idGenerator(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate,
                                    @Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
-        return new DatabaseDistributedSnowflake(jdbcTemplate, "disjob", JobUtils.getLocalHost(boundHost) + Char.COLON + port);
+        return new DbDistributedSnowflake(jdbcTemplate, "disjob", JobUtils.getLocalHost(boundHost) + Char.COLON + port);
     }
 
 }

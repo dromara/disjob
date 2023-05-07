@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.id.snowflake.database;
+package cn.ponfee.disjob.id.snowflake.db;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
@@ -39,9 +39,9 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
-public class DatabaseDistributedSnowflake implements IdGenerator, AutoCloseable {
+public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
 
-    private final static Logger LOG = LoggerFactory.getLogger(DatabaseDistributedSnowflake.class);
+    private final static Logger LOG = LoggerFactory.getLogger(DbDistributedSnowflake.class);
 
     private static final RowMapper<SnowflakeWorker> ROW_MAPPER = new BeanPropertyRowMapper<>(SnowflakeWorker.class);
 
@@ -83,15 +83,15 @@ public class DatabaseDistributedSnowflake implements IdGenerator, AutoCloseable 
     private final ScheduledExecutorService heartbeatScheduler;
     private final Snowflake snowflake;
 
-    public DatabaseDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
+    public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
         this(jdbcTemplate, bizTag, serverTag, 14, 8);
     }
 
-    public DatabaseDistributedSnowflake(JdbcTemplate jdbcTemplate,
-                                        String bizTag,
-                                        String serverTag,
-                                        int sequenceBitLength,
-                                        int workerIdBitLength) {
+    public DbDistributedSnowflake(JdbcTemplate jdbcTemplate,
+                                  String bizTag,
+                                  String serverTag,
+                                  int sequenceBitLength,
+                                  int workerIdBitLength) {
         this.jdbcTemplate = jdbcTemplate;
         this.bizTag = bizTag;
         this.serverTag = serverTag;

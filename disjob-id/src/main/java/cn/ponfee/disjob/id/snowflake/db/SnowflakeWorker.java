@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.id.snowflake.database;
+package cn.ponfee.disjob.id.snowflake.db;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,13 +27,6 @@ public class SnowflakeWorker {
     private String serverTag;
     private Integer workerId;
     private Long heartbeatTime;
-
-    public SnowflakeWorker(String bizTag, String serverTag, Integer workerId, Long heartbeatTime) {
-        this.bizTag = bizTag;
-        this.serverTag = serverTag;
-        this.workerId = workerId;
-        this.heartbeatTime = heartbeatTime;
-    }
 
     public boolean equals(String bizTag, String serverTag) {
         return this.bizTag.equals(bizTag)
