@@ -86,6 +86,35 @@ public final class Bytes {
         return out;
     }
 
+    /**
+     * convert the byte array to binary string
+     * byte:
+     *    -1: 11111111
+     *     0: 00000000
+     *   127: 01111111
+     *  -128: 10000000
+     *
+     * @param array
+     * @return
+     */
+    public static String toBinary(byte... array) {
+        if (array == null || array.length == 0) {
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder(array.length << 3);
+        String binary;
+        for (byte b : array) {
+            // byte & 0xFF ：byte转int保留bit位
+            // byte | 0x100：对于正数保留八位，保证未尾8位为原byte的bit位，即1xxxxxxxx
+            //               正数会有前缀0，如果不加，转binary string时前面的0会被舍去
+            // 也可以用 “byte + 0x100”或者“leftPad(binaryString, 8, '0')”
+            binary = Integer.toBinaryString((b & 0xFF) | 0x100);
+            builder.append(binary, 1, binary.length());
+        }
+        return builder.toString();
+    }
+
     // -----------------------------------------------------------------char array
     /**
      * Converts byte array to char array

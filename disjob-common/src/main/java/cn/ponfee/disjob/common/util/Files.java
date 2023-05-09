@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.util;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -75,6 +76,14 @@ public final class Files {
         out.println();
         SYSTEM_LINE_SEPARATOR = buffer.toString();
         out.close();
+    }
+
+    public static String tmpDir() {
+        String tmpDir = SystemUtils.JAVA_IO_TMPDIR;
+        if (!tmpDir.endsWith(File.separator)) {
+            tmpDir += File.separator;
+        }
+        return tmpDir;
     }
 
     /**

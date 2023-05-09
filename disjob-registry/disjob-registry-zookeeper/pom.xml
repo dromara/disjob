@@ -16,10 +16,6 @@
   <description>Distributed job registry zookeeper module</description>
   <url>https://github.com/ponfee/disjob</url>
 
-  <properties>
-    <curator5.version>5.4.0</curator5.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
@@ -28,7 +24,7 @@
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-recipes</artifactId>
-      <version>${curator5.version}</version>
+      <version>${curator-recipes.version}</version>
       <exclusions>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -43,7 +39,7 @@
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-test</artifactId>
-      <version>${curator5.version}</version>
+      <version>${curator-recipes.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--日志级别以及优先级排序： OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL -->
+<!-- Log4j 2.x 配置文件：每30秒自动检查和应用配置文件的更新；log4j-core-2.11.0.jar!/Log4j-config.xsd -->
+<Configuration status="WARN" monitorInterval="1800" strict="true" name="disjob-log">
+
+  <properties>
+    <!-- 系统属性变量：System.getProperty("log.home")，${sys:variable_name:-default_value} -->
+    <property name="LOG_HOME">${sys:log.home:-../logs}</property>
+    <property name="APP_NAME">${sys:app.name:-disjob-samples}</property>
+    <property name="PATTERN_CONSOLE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %highlight{%-5p} | %c{1} >>>> %msg%n</property>
+    <property name="PATTERN_FILE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %traceId | %-5p | ${sys:PID} | %t | %l : %msg%n</property>
+  </properties>
+
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="${PATTERN_CONSOLE}" />
+    </Console>
+
+    <!-- 输出到文件，按天或者超过100MB分割 -->
+    <RollingFile name="RollingFile" fileName="${LOG_HOME}/${APP_NAME}.log" filePattern="${LOG_HOME}/$${date:yyyy-MM}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
+      <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
+      <PatternLayout pattern="${PATTERN_FILE}" />
+      <Policies>
+        <!-- 启动时就重新滚动日志 -->
+        <!-- <OnStartupTriggeringPolicy /> -->
+
+        <!-- 如果启用此配置，则日志会按文件名生成新压缩文件，即如果filePattern配置的日期格式为 %d{yyyy-MM-dd HH}，
+             则每小时生成一个压缩文件，如果filePattern配置的日期格式为 %d{yyyy-MM-dd} ，则天生成一个压缩文件，
+             modulate=true用来调整时间，interval属性用来指定多久滚动一次，默认是1 hour，
+             比如现在是早上3am，interval=4，那么第一次滚动是在4am，接着是8am，而不是7am
+        -->
+        <!-- <TimeBasedTriggeringPolicy interval="1" modulate="true" /> -->
+        <TimeBasedTriggeringPolicy />
+
+        <SizeBasedTriggeringPolicy size="100 MB" />
+      </Policies>
+      <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件 -->
+      <DefaultRolloverStrategy max="100" />
+    </RollingFile>
+
+    <Async name="AsyncRollingFile">
+      <AppenderRef ref="RollingFile" />
+      <LinkedTransferQueue />
+    </Async>
+  </Appenders>
+
+  <Loggers>
+    <!-- additivity指定是否同时输出日志到父类的appender，缺省为true -->
+    <Logger name="cn.ponfee.disjob" level="INFO" />
+    <!--
+    <Logger name="cn.ponfee.disjob.registry" level="DEBUG" />
+    <Logger name="cn.ponfee.disjob.supervisor" level="DEBUG" />
+    <Logger name="cn.ponfee.disjob.supervisor.dao" level="DEBUG" />
+    <Logger name="cn.ponfee.disjob.worker" level="DEBUG" />
+    -->
+
+    <!-- 当根据日志名字获取不到指定的日志器时就使用Root作为默认的日志器 -->
+    <Root level="WARN">
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="AsyncRollingFile" />
+    </Root>
+  </Loggers>
+
+</Configuration>

@@ -47,7 +47,7 @@ public final class Snowflake implements IdGenerator {
     /**
      * 起始基准时间点(2023-01-01)
      */
-    private static final long TWEPOCH = 1672502400000L;
+    private static final long TWEPOCH = 1425139200000L;
 
     /**
      * 数据中心ID
@@ -134,7 +134,7 @@ public final class Snowflake implements IdGenerator {
             sequence = (sequence + 1) & sequenceMask;
             if (sequence == 0) {
                 // 当前毫秒的sequence已用完，需要循环等待获取下一毫秒
-                timestamp = untilNextMillis(lastTimestamp);
+                timestamp = tilNextMillis(lastTimestamp);
                 lastTimestamp = timestamp;
             }
         } else {
@@ -155,7 +155,9 @@ public final class Snowflake implements IdGenerator {
      * @param lastTimestamp the lastTimestamp
      * @return next timestamp
      */
-    private long untilNextMillis(long lastTimestamp) {
+    private long tilNextMillis(long lastTimestamp) {
+        LOG.warn("Snowflake til next millis.");
+
         long timestamp;
         do {
             timestamp = timeGen();

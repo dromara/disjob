@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.id.snowflake;
 
+import cn.ponfee.disjob.common.util.Bytes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -46,9 +47,11 @@ public class SnowflakeTest {
 
     @Test
     public void testGenerateId() {
-        Snowflake snowflake = new Snowflake(0, sequenceBits, workerIdBits);
-        for (int i = 0; i < 100000; i++) {
-            snowflake.nextId();
+        Snowflake snowflake = new Snowflake(16, sequenceBits, workerIdBits);
+        for (int i = 0; i < 10; i++) {
+            long num = snowflake.generateId();
+            System.out.println(num + ": " + Bytes.toBinary(Bytes.toBytes(num)));
+            System.out.println();
         }
     }
 }

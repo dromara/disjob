@@ -6,16 +6,31 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.id.snowflake;
+package cn.ponfee.disjob.id.snowflake.db;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * DatabaseSnowflakeServerTest
+ * Snowflake worker
  *
  * @author Ponfee
  */
-public class DatabaseSnowflakeServerTest {
 
-    public void test() {
+@Getter
+@Setter
+@NoArgsConstructor
+public class DbSnowflakeWorker {
 
+    private String bizTag;
+    private String serverTag;
+    private Integer workerId;
+    private Long heartbeatTime;
+
+    public boolean equals(String bizTag, String serverTag) {
+        return this.bizTag.equals(bizTag)
+            && this.serverTag.equals(serverTag);
     }
+
 }
