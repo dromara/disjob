@@ -46,9 +46,9 @@ public class TransactionUtils {
     }
 
     /**
-     * 嵌套事务，执行在外层事务内。
-     * <p>如果内层代码执行异常，则只回滚内层事务，外层事务不受影响。
-     * <p>如果内层代码执行成功，外层代码执行异常，则内层事务与外层事务都会回滚。
+     * 创建一个新事务，如果当前存在事务，将这个事务挂起
+     * <p>外层事务不会影响内部事务的提交/回滚。
+     * <p>内部事务异常并往外抛，会影响外部事务的回滚。
      *
      * @param txManager the txManager
      * @param action    the action code
@@ -56,16 +56,42 @@ public class TransactionUtils {
      * @param <R>       return type
      * @return do action result
      */
-    public static <R> R doInTransactionNested(PlatformTransactionManager txManager,
+    public static <R> R doInRequiresNewTransaction(PlatformTransactionManager txManager,
+                                                   ThrowingSupplier<R, Throwable> action,
+                                                   Consumer<Throwable> log) {
+        return doInPropagationTransaction(txManager, action, log, TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    }
+
+    /**
+     * 如果当前存在事务则开启一个嵌套事务，如果当前不存在事务则新建一个事务并运行。
+     * <p>如果内层代码执行异常catch住并回滚，则只回滚内层事务，外层事务不受影响。
+     * <p>如果内层代码执行异常并往外抛，则会影响外层事务的回滚。
+     * <p>如果内层代码执行成功并提交，外层代码执行异常，则内层事务与外层事务都会回滚。
+     *
+     * @param txManager the txManager
+     * @param action    the action code
+     * @param log       the exception log
+     * @param <R>       return type
+     * @return do action result
+     */
+    public static <R> R doInNestedTransaction(PlatformTransactionManager txManager,
                                               ThrowingSupplier<R, Throwable> action,
                                               Consumer<Throwable> log) {
         Assert.isTrue(
             TransactionSynchronizationManager.isActualTransactionActive(),
             "Do nested transaction must be in parent transaction."
         );
+        return doInPropagationTransaction(txManager, action, log, TransactionDefinition.PROPAGATION_NESTED);
+    }
 
+    // ----------------------------------------------------------------------private methods
+
+    private static <R> R doInPropagationTransaction(PlatformTransactionManager txManager,
+                                                    ThrowingSupplier<R, Throwable> action,
+                                                    Consumer<Throwable> log,
+                                                    int transactionPropagation) {
         DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
-        txDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_NESTED);
+        txDefinition.setPropagationBehavior(transactionPropagation);
         TransactionStatus status = txManager.getTransaction(txDefinition);
         try {
             R result = action.get();

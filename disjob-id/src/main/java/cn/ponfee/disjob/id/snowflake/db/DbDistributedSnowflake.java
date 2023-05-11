@@ -11,7 +11,7 @@ package cn.ponfee.disjob.id.snowflake.db;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.id.snowflake.ClockBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import java.sql.DatabaseMetaData;
@@ -132,8 +133,8 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
 
     @Override
     public void close() {
-        Throwables.ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(heartbeatScheduler, 3));
-        Throwables.ThrowingSupplier.caught(() -> delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
+        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(heartbeatScheduler, 3));
+        ThrowingSupplier.caught(() -> delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
     }
 
     // -------------------------------------------------------private methods
@@ -141,17 +142,17 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
     private int registryWorkerId(int workerIdBitLength) {
         int workerIdMaxCount = 1 << workerIdBitLength;
         List<DbSnowflakeWorker> registeredWorkers = jdbcTemplate.queryForStream(QUERY_ALL_SQL, ROW_MAPPER, bizTag).collect(Collectors.toList());
-
-        if (registeredWorkers.size() > workerIdMaxCount / 2) {
-            long oldestTimeMillis = System.currentTimeMillis() - EXPIRE_TIME_MILLIS;
-            delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
-
-            // re-query
-            registeredWorkers = jdbcTemplate.queryForStream(QUERY_ALL_SQL, ROW_MAPPER, bizTag).collect(Collectors.toList());
-        }
-
         DbSnowflakeWorker current = registeredWorkers.stream().filter(e -> e.equals(bizTag, serverTag)).findAny().orElse(null);
+
         if (current == null) {
+
+            if (registeredWorkers.size() > workerIdMaxCount / 2) {
+                long oldestTimeMillis = System.currentTimeMillis() - EXPIRE_TIME_MILLIS;
+                delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
+
+                // re-query
+                registeredWorkers = jdbcTemplate.queryForStream(QUERY_ALL_SQL, ROW_MAPPER, bizTag).collect(Collectors.toList());
+            }
 
             Set<Integer> usedWorkIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());
             List<Integer> usableWorkerIds = IntStream.range(0, workerIdMaxCount)
@@ -244,14 +245,17 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
     }
 
     private int insert(String sql, @Nullable Object... args) {
+        Assert.isTrue(sql.startsWith("INSERT "), () -> "Invalid DELETE sql: " + sql);
         return jdbcTemplate.update(sql, args);
     }
 
     private int update(String sql, @Nullable Object... args) {
+        Assert.isTrue(sql.startsWith("UPDATE "), () -> "Invalid DELETE sql: " + sql);
         return jdbcTemplate.update(sql, args);
     }
 
     private int delete(String sql, @Nullable Object... args) {
+        Assert.isTrue(sql.startsWith("DELETE "), () -> "Invalid DELETE sql: " + sql);
         return jdbcTemplate.update(sql, args);
     }
 

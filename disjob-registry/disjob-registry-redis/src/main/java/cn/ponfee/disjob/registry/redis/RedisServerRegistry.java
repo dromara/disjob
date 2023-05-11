@@ -65,8 +65,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private final RedisMessageListenerContainer redisMessageListenerContainer;
 
-    public RedisServerRegistry(StringRedisTemplate stringRedisTemplate,
-                               RedisRegistryProperties config) {
+    protected RedisServerRegistry(StringRedisTemplate stringRedisTemplate,
+                                  RedisRegistryProperties config) {
         super(config.getNamespace(), ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;

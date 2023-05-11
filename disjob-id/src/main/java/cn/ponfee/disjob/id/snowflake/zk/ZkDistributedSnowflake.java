@@ -11,10 +11,13 @@ import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.id.snowflake.ClockBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -32,15 +35,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Snowflake server based zookeeper
  *
  * <pre>
  * /snowflake/{bizTag}
  * ├── tag
- * │   ├── bizTag-a      data=workerId-1
- * │   ├── bizTag-b      data=workerId-2
- * │   └── bizTag-c      data=workerId-3
+ * │   ├── serverTag-a   data=workerId-1
+ * │   ├── serverTag-b   data=workerId-2
+ * │   └── serverTag-c   data=workerId-3
  * └── id
  *     ├── workerId-1    data=lastHeartbeatTime
  *     ├── workerId-2    data=lastHeartbeatTime
@@ -111,6 +116,8 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
             throw new Error("Zk snowflake server registry worker error.", e);
         }
 
+        curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
+
         this.heartbeatScheduler = new ScheduledThreadPoolExecutor(1, r -> {
             Thread thread = new Thread(r, "zk_snowflake_worker_heartbeat");
             thread.setDaemon(true);
@@ -134,30 +141,43 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
 
     private void createPersistent(String path) throws Exception {
         try {
-            String res = curator.create().creatingParentsIfNeeded().forPath(path);
-            LOG.info("Created zk persistent path '{}' result '{}'", path, res);
+            curator.create().creatingParentsIfNeeded().forPath(path);
+            LOG.info("Created zk persistent path: {}", path);
         } catch (KeeperException.NodeExistsException ignored) {
             // ignored
         }
     }
 
     private void createEphemeral(String path, byte[] data) throws Exception {
-        String res = curator.create()
+        curator.create()
             .creatingParentsIfNeeded()
             .withMode(CreateMode.EPHEMERAL)
             .forPath(path, data);
-        LOG.info("Created zk ephemeral path '{}' result '{}'", path, res);
+        LOG.info("Created zk ephemeral path: {}", path);
+    }
+
+    private void upsertEphemeral(String path, byte[] data) throws Exception {
+        try {
+            createEphemeral(path, data);
+        } catch (KeeperException.NodeExistsException e) {
+            updateData(path, data);
+        }
     }
 
     private void deletePath(String path) throws Exception {
         try {
-            curator.delete()/*.guaranteed()*/.deletingChildrenIfNeeded().forPath(path);
+            curator.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
+            LOG.info("Deleted zk path: {}", path);
         } catch (KeeperException.NoNodeException ignored) {
         }
     }
 
     private boolean existsPath(String path) throws Exception {
         return curator.checkExists().forPath(path) != null;
+    }
+
+    private void updateData(String path, byte[] data) throws Exception {
+        curator.setData().forPath(path, data);
     }
 
     private byte[] getData(String path) throws Exception {
@@ -168,14 +188,18 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
         }
     }
 
-    private void updateData(String path, byte[] data) throws Exception {
-        curator.setData().forPath(path, data);
-    }
-
     private void heartbeat() {
         String workerIdPath = workerIdParentPath + SEP + workerId;
         try {
-            RetryTemplate.execute(() -> updateData(workerIdPath, Bytes.toBytes(System.currentTimeMillis())), 3, 1000L);
+            RetryTemplate.execute(() -> {
+                byte[] workerIdData = getData(workerIdPath);
+                if (workerIdData != null) {
+                    WorkerIdData data = WorkerIdData.deserialize(workerIdData);
+                    Assert.state(serverTag.equals(data.server), "Inconsistent server tag: " + serverTag + " != " + data.server);
+                }
+
+                updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
+            }, 3, 1000L);
         } catch (Throwable e) {
             LOG.error("Zk snowflake server heartbeat error: " + workerIdPath, e);
         }
@@ -184,10 +208,10 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
     private int registryWorkerId(int workerIdBitLength) throws Exception {
         int workerIdMaxCount = 1 << workerIdBitLength;
         String serverTagPath = serverTagParentPath + SEP + serverTag;
-        byte[] workerIdData = getData(serverTagPath);
+        byte[] serverTagData = getData(serverTagPath);
 
         // 判断当前serverTag是否已经注册
-        if (workerIdData == null) {
+        if (serverTagData == null) {
             // 不存在
 
             // 捞取所有已注册的workerId
@@ -207,19 +231,16 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
                 throw new IllegalStateException("Not found usable zk worker id.");
             }
 
-            if (!existsPath(serverTagPath)) {
-                createEphemeral(serverTagPath, null);
-            }
-
             Collections.shuffle(usableWorkerIds);
             for (int usableWorkerId : usableWorkerIds) {
                 String workerIdPath = workerIdParentPath + SEP + usableWorkerId;
-                long currentTime = System.currentTimeMillis();
                 boolean isCreatedWorkerIdPath = false;
+                long currentTime = System.currentTimeMillis();
                 try {
-                    createEphemeral(workerIdPath, Bytes.toBytes(currentTime));
+                    WorkerIdData data = WorkerIdData.of(currentTime, serverTag);
+                    createEphemeral(workerIdPath, data.serialize());
                     isCreatedWorkerIdPath = true;
-                    updateData(serverTagPath, Bytes.toBytes(usableWorkerId));
+                    upsertEphemeral(serverTagPath, Bytes.toBytes(usableWorkerId));
                     LOG.info("Created snowflake zk worker success: {} | {} | {}", serverTag, usableWorkerId, currentTime);
                     return usableWorkerId;
                 } catch (Throwable t) {
@@ -234,32 +255,54 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
         } else {
             // 已存在
 
-            int workerId = Bytes.toInt(workerIdData);
+            int workerId = Bytes.toInt(serverTagData);
             if (workerId < 0 || workerId >= workerIdMaxCount) {
                 deletePath(serverTagPath);
                 throw new IllegalStateException("Invalid zk worker id: " + workerId);
             }
 
             String workerIdPath = workerIdParentPath + SEP + workerId;
-            byte[] heartbeatTimeData = getData(workerIdPath);
-            if (heartbeatTimeData == null) {
-                createEphemeral(workerIdPath, Bytes.toBytes(System.currentTimeMillis()));
-                if ((heartbeatTimeData = getData(workerIdPath)) == null) {
-                    throw new IllegalStateException("Not found zk worker id: " + workerId);
+            byte[] workerIdData = getData(workerIdPath);
+            if (workerIdData == null) {
+                WorkerIdData data = WorkerIdData.of(System.currentTimeMillis(), serverTag);
+                upsertEphemeral(workerIdPath, data.serialize());
+            } else {
+                WorkerIdData data = WorkerIdData.deserialize(workerIdData);
+                if (!serverTag.equals(data.server)) {
+                    throw new IllegalStateException("Inconsistent server tag, actual=" + serverTag + ", obtain=" + data.server);
                 }
+                long currentTime = System.currentTimeMillis();
+                if (currentTime < data.time) {
+                    throw new ClockBackwardsException(String.format("Clock moved backwards: %s | %s | %d", serverTagPath, currentTime, data.time));
+                }
+                updateData(workerIdPath, WorkerIdData.of(currentTime, serverTag).serialize());
             }
 
-            long currentTime = System.currentTimeMillis();
-            long lastHeartbeatTime = Bytes.toLong(heartbeatTimeData);
-            if (currentTime < lastHeartbeatTime) {
-                throw new ClockBackwardsException(String.format("Clock moved backwards: %s | %s | %d", serverTagPath, currentTime, lastHeartbeatTime));
-            }
-
-            updateData(workerIdPath, Bytes.toBytes(currentTime));
             LOG.info("Reuse zk worker id success: {} | {}", serverTag, workerId);
 
             return workerId;
 
+        }
+    }
+
+    private void onReconnected() throws Exception {
+        String serverTagPath = serverTagParentPath + SEP + serverTag;
+        byte[] serverTagData = getData(serverTagPath);
+        if (serverTagData == null) {
+            createEphemeral(serverTagPath, Bytes.toBytes(workerId));
+        } else {
+            int id = Bytes.toInt(serverTagData);
+            Assert.isTrue(id == workerId, "Reconnected worker id was changed, expect=" + workerId + ", actual=" + id);
+        }
+
+        String workerIdPath = workerIdParentPath + SEP + workerId;
+        byte[] workerIdData = getData(workerIdPath);
+        if (workerIdData == null) {
+            createEphemeral(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
+        } else {
+            WorkerIdData data = WorkerIdData.deserialize(workerIdData);
+            Assert.isTrue(serverTag.equals(data.server), "Reconnected server tag was changed, expect=" + serverTag + ", actual=" + data.server);
+            updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
         }
     }
 
@@ -289,6 +332,73 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
         boolean isConnected = curatorFramework.blockUntilConnected(5000, TimeUnit.MILLISECONDS);
         Assert.state(isConnected, () -> "Snowflake curator framework not connected: " + curatorFramework.getState());
         return curatorFramework;
+    }
+
+    private static class CuratorConnectionStateListener implements ConnectionStateListener {
+        private static final long UNKNOWN_SESSION_ID = -1L;
+
+        private final ZkDistributedSnowflake zkDistributedSnowflake;
+        private long lastSessionId;
+
+        public CuratorConnectionStateListener(ZkDistributedSnowflake zkDistributedSnowflake) {
+            this.zkDistributedSnowflake = zkDistributedSnowflake;
+        }
+
+        @Override
+        public void stateChanged(CuratorFramework client, ConnectionState state) {
+            long sessionId;
+            try {
+                sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
+            } catch (Exception e) {
+                sessionId = UNKNOWN_SESSION_ID;
+                LOG.warn("Curator snowflake client state changed, get session instance error.", e);
+            }
+            if (state == ConnectionState.CONNECTED) {
+                lastSessionId = sessionId;
+                LOG.info("Curator snowflake first connected, session={}", hex(sessionId));
+            } else if (state == ConnectionState.LOST) {
+                LOG.warn("Curator snowflake session expired, session={}", hex(lastSessionId));
+            } else if (state == ConnectionState.SUSPENDED) {
+                LOG.warn("Curator snowflake connection lost, session={}", hex(sessionId));
+            } else if (state == ConnectionState.RECONNECTED) {
+                if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
+                    LOG.warn("Curator snowflake recover connected, reuse old-session={}", hex(sessionId));
+                } else {
+                    LOG.warn("Curator snowflake recover connected, old-session={}, new-session={}", hex(lastSessionId), hex(sessionId));
+                    lastSessionId = sessionId;
+                }
+
+                ThrowingRunnable.caught(() -> RetryTemplate.execute(zkDistributedSnowflake::onReconnected, 3, 1000));
+            }
+        }
+    }
+
+    private static class WorkerIdData {
+        private final long time;
+        private final String server;
+
+        private WorkerIdData(long time, String server) {
+            this.time = time;
+            this.server = server;
+        }
+
+        private static WorkerIdData of(long time, String server) {
+            return new WorkerIdData(time, server);
+        }
+
+        private byte[] serialize() {
+            return ArrayUtils.addAll(Bytes.toBytes(time), server.getBytes(UTF_8));
+        }
+
+        private static WorkerIdData deserialize(byte[] bytes) {
+            long time = Bytes.toLong(bytes, 0);
+            String server = new String(bytes, 8, bytes.length - 8, UTF_8);
+            return WorkerIdData.of(time, server);
+        }
+    }
+
+    private static String hex(long number) {
+        return Long.toHexString(number);
     }
 
 }

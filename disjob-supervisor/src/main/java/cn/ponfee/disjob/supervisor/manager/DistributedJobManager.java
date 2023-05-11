@@ -984,7 +984,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                 continue;
             }
 
-            Runnable dispatchAction = TransactionUtils.doInTransactionNested(
+            Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
                 Objects.requireNonNull(transactionTemplate.getTransactionManager()),
                 () -> {
                     TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);

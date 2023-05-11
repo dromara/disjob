@@ -9,28 +9,27 @@
 package cn.ponfee.disjob.id.snowflake;
 
 import cn.ponfee.disjob.id.snowflake.zk.ZkDistributedSnowflake;
-import cn.ponfee.disjob.id.snowflake.zk.ZookeeperConfig;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * ZkDistributedSnowflakeTest
+ * TODO description
  *
  * @author Ponfee
  */
-@Disabled
-public class ZkDistributedSnowflakeTest {
+public class WorkerIdDataTest {
+/*
 
     @Test
     public void test() {
-        ZookeeperConfig zkConfig = new ZookeeperConfig();
-        zkConfig.setConnectString("localhost:2181");
-        ZkDistributedSnowflake snowflake = new ZkDistributedSnowflake(zkConfig, "disjob", "app1:8080");
-        new ZkDistributedSnowflake(zkConfig, "disjob", "app2:8080");
-        new ZkDistributedSnowflake(zkConfig, "disjob", "app2:8080");
-
-        for (int i = 0; i < 5; i++) {
-            System.out.println(snowflake.generateId());
-        }
+        long currentTime = System.currentTimeMillis();
+        String serverTag = "test中文";
+        ZkDistributedSnowflake.WorkerIdData data = new ZkDistributedSnowflake.WorkerIdData(currentTime, serverTag);
+        byte[] bytes = data.serialize();
+        data = ZkDistributedSnowflake.WorkerIdData.deserialize(bytes);
+        Assertions.assertEquals(currentTime, data.lastHeartbeatTime);
+        Assertions.assertEquals(serverTag, data.serverTag);
     }
+*/
+
 }

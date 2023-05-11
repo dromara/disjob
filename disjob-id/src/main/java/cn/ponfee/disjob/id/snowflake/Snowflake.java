@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.Maths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 /**
  * <pre>
@@ -73,6 +74,9 @@ public final class Snowflake implements IdGenerator {
                      int sequenceBitLength,
                      int workerIdBitLength,
                      int datacenterIdBitLength) {
+        int len = sequenceBitLength + workerIdBitLength + datacenterIdBitLength;
+        Assert.isTrue(len == 22, "Bit length(sequence + worker + datacenter) cannot greater than 22, but actual=" + len);
+
         long maxWorkerId = Maths.bitsMask(workerIdBitLength);
         if (workerId > maxWorkerId || workerId < 0) {
             throw new IllegalArgumentException("Worker id must be range [0, " + maxWorkerId + "], but was " + workerId);
