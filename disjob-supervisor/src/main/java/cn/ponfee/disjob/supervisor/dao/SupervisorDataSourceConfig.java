@@ -47,6 +47,10 @@ import javax.sql.DataSource;
 )
 public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
 
+    public SupervisorDataSourceConfig() {
+        super("disjob-mybatis-config.xml");
+    }
+
     /**
      * Package path
      *

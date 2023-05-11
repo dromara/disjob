@@ -35,13 +35,16 @@ public abstract class AbstractDataSourceConfig {
     public static final String TX_TEMPLATE_NAME_SUFFIX          = "TransactionTemplate";
     public static final String JDBC_TEMPLATE_NAME_SUFFIX        = "JdbcTemplate";
 
+    private final String configFileClasspath;
     private final String mapperFileLocation;
 
-    public AbstractDataSourceConfig() {
-        this(-1);
+    public AbstractDataSourceConfig(String configFileClasspath) {
+        this(configFileClasspath, -1);
     }
 
-    public AbstractDataSourceConfig(int wildcardLastIndex) {
+    public AbstractDataSourceConfig(String configFileClasspath, int wildcardLastIndex) {
+        this.configFileClasspath = configFileClasspath;
+
         List<String> list = Arrays.stream(ClassUtils.getPackageName(getClass()).split("\\."))
             .filter(StringUtils::isNotEmpty)
             .collect(Collectors.toList());
@@ -61,7 +64,8 @@ public abstract class AbstractDataSourceConfig {
         this.mapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", path);
     }
 
-    public AbstractDataSourceConfig(String mapperFileLocation) {
+    public AbstractDataSourceConfig(String configFileClasspath, String mapperFileLocation) {
+        this.configFileClasspath = configFileClasspath;
         this.mapperFileLocation = mapperFileLocation;
     }
 
@@ -75,7 +79,7 @@ public abstract class AbstractDataSourceConfig {
     protected final SqlSessionFactory createSqlSessionFactory() throws Exception {
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource());
-        factoryBean.setConfigLocation(new ClassPathResource("mybatis-config.xml"));
+        factoryBean.setConfigLocation(new ClassPathResource(configFileClasspath));
         factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mapperFileLocation));
         return factoryBean.getObject();
     }

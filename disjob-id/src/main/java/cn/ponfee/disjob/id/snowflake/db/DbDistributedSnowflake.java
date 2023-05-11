@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.id.snowflake.ClockBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
@@ -19,12 +20,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.Collections;
@@ -85,7 +83,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
 
     private static final String HEARTBEAT_WORKER_SQL = "UPDATE " + TABLE_NAME + " SET heartbeat_time=? WHERE biz_tag=? AND server_tag=?";
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplateWrapper jdbcTemplateWrapper;
     private final String bizTag;
     private final String serverTag;
     private final ScheduledExecutorService heartbeatScheduler;
@@ -100,7 +98,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
                                   String serverTag,
                                   int sequenceBitLength,
                                   int workerIdBitLength) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
         this.bizTag = bizTag;
         this.serverTag = serverTag;
 
@@ -134,24 +132,24 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
     @Override
     public void close() {
         ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(heartbeatScheduler, 3));
-        ThrowingSupplier.caught(() -> delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
+        ThrowingSupplier.caught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
     }
 
     // -------------------------------------------------------private methods
 
     private int registryWorkerId(int workerIdBitLength) {
         int workerIdMaxCount = 1 << workerIdBitLength;
-        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplate.queryForStream(QUERY_ALL_SQL, ROW_MAPPER, bizTag).collect(Collectors.toList());
+        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.queryForList(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
         DbSnowflakeWorker current = registeredWorkers.stream().filter(e -> e.equals(bizTag, serverTag)).findAny().orElse(null);
 
         if (current == null) {
 
             if (registeredWorkers.size() > workerIdMaxCount / 2) {
                 long oldestTimeMillis = System.currentTimeMillis() - EXPIRE_TIME_MILLIS;
-                delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
+                jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
 
                 // re-query
-                registeredWorkers = jdbcTemplate.queryForStream(QUERY_ALL_SQL, ROW_MAPPER, bizTag).collect(Collectors.toList());
+                registeredWorkers = jdbcTemplateWrapper.queryForList(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
             }
 
             Set<Integer> usedWorkIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());
@@ -167,7 +165,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
             for (Integer usableWorkerId : usableWorkerIds) {
                 Object[] args = {bizTag, serverTag, usableWorkerId, System.currentTimeMillis()};
                 try {
-                    insert(REGISTER_WORKER_SQL, args);
+                    jdbcTemplateWrapper.insert(REGISTER_WORKER_SQL, args);
                     LOG.info("Create snowflake db worker success: {} | {} | {} | {}", args);
                     return usableWorkerId;
                 } catch (Exception e) {
@@ -180,7 +178,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
 
             Integer workerId = current.getWorkerId();
             if (workerId < 0 || workerId >= workerIdMaxCount) {
-                if (delete(REMOVE_INVALID_SQL, bizTag, serverTag) != AFFECTED_ONE_ROW) {
+                if (jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizTag, serverTag) != AFFECTED_ONE_ROW) {
                     LOG.error("Deleting invalid db worker id failed.");
                 }
                 throw new IllegalStateException("Invalid db worker id: " + workerId);
@@ -192,7 +190,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
                 throw new ClockBackwardsException(String.format("Clock moved backwards: %s | %s | %d | %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
             }
             Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
-            if (update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
+            if (jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
                 LOG.info("Reuse db worker id success: {} | {} | {} | {}", args);
                 return workerId;
             }
@@ -208,7 +206,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
         }
 
         try {
-            jdbcTemplate.execute(CREATE_TABLE_SQL);
+            jdbcTemplateWrapper.execute(CREATE_TABLE_SQL);
             LOG.info("Created table {} success.", TABLE_NAME);
         } catch (Throwable t) {
             if (hasTable()) {
@@ -220,7 +218,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
     }
 
     private boolean hasTable() {
-        Boolean result = jdbcTemplate.execute((ConnectionCallback<Boolean>) conn -> {
+        Boolean result = jdbcTemplateWrapper.execute(conn -> {
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet rs = meta.getTables(null, null, TABLE_NAME, null);
             return rs.next();
@@ -233,7 +231,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
             RetryTemplate.execute(() -> {
                 long currentTimestamp = System.currentTimeMillis();
                 Object[] args = {currentTimestamp, bizTag, serverTag};
-                if (update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
+                if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
                     LOG.info("Heartbeat db worker id success: {} | {} | {}", args);
                 } else {
                     LOG.error("Heartbeat db worker id failed: {} | {} | {}", args);
@@ -242,21 +240,6 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
         } catch (Throwable e) {
             LOG.error("Db snowflake server heartbeat error: " + bizTag + " | " + serverTag, e);
         }
-    }
-
-    private int insert(String sql, @Nullable Object... args) {
-        Assert.isTrue(sql.startsWith("INSERT "), () -> "Invalid DELETE sql: " + sql);
-        return jdbcTemplate.update(sql, args);
-    }
-
-    private int update(String sql, @Nullable Object... args) {
-        Assert.isTrue(sql.startsWith("UPDATE "), () -> "Invalid DELETE sql: " + sql);
-        return jdbcTemplate.update(sql, args);
-    }
-
-    private int delete(String sql, @Nullable Object... args) {
-        Assert.isTrue(sql.startsWith("DELETE "), () -> "Invalid DELETE sql: " + sql);
-        return jdbcTemplate.update(sql, args);
     }
 
 }
