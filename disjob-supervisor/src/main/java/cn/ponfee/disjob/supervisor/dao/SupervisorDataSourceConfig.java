@@ -68,7 +68,10 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     @Override
     public DataSource dataSource() {
         // return new com.zaxxer.hikari.HikariDataSource();
-        return DataSourceBuilder.create().build();
+        return DataSourceBuilder
+            .create()
+            //.type(com.zaxxer.hikari.HikariDataSource.class)
+            .build();
     }
 
     @Bean(name = DB_NAME + SQL_SESSION_FACTORY_NAME_SUFFIX)

@@ -11,7 +11,6 @@ package cn.ponfee.disjob.supervisor.manager;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.Symbol.Str;
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.graph.DAGEdge;
 import cn.ponfee.disjob.common.graph.DAGNode;
 import cn.ponfee.disjob.common.spring.RpcController;
@@ -992,7 +991,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                     // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
                     // 极端情况还是会存在唯一索引值冲突：比如依赖的任务多于1000个，但这种情况可以限制所依赖父任务的个数来解决，暂不考虑
                     // parent1(trigger_time=1000, sequence=1001)，parent2(trigger_time=2000, sequence=1)
-                    long triggerTime = (Dates.unixTimestamp() * 1000) + depend.getSequence();
+                    long triggerTime = (parentInstance.getTriggerTime() / 1000) * 1000 + depend.getSequence();
                     TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, triggerTime);
                     tInstance.getInstance().setRnstanceId(parentInstance.obtainRnstanceId());
                     tInstance.getInstance().setPnstanceId(parentInstance.getInstanceId());

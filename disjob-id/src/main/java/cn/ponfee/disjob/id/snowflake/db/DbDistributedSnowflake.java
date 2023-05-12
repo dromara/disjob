@@ -121,7 +121,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
             thread.setPriority(Thread.MAX_PRIORITY);
             return thread;
         });
-        heartbeatScheduler.scheduleWithFixedDelay(this::heartbeat, HEARTBEAT_PERIOD_SECONDS, HEARTBEAT_PERIOD_SECONDS, TimeUnit.SECONDS);
+        heartbeatScheduler.scheduleWithFixedDelay(this::heartbeat, 1, HEARTBEAT_PERIOD_SECONDS, TimeUnit.SECONDS);
     }
 
     @Override

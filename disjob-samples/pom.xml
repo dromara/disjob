@@ -24,6 +24,7 @@
 
     <disjob.version>1.12-SNAPSHOT</disjob.version>
     <spring-boot.version>2.7.11</spring-boot.version>
+    <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
     <testcontainers.version>1.18.0</testcontainers.version>
 

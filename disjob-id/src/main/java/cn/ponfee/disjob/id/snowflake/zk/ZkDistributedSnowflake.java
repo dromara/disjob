@@ -124,7 +124,7 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
             thread.setPriority(Thread.MAX_PRIORITY);
             return thread;
         });
-        heartbeatScheduler.scheduleWithFixedDelay(this::heartbeat, 1, 3, TimeUnit.SECONDS);
+        heartbeatScheduler.scheduleWithFixedDelay(this::heartbeat, 1, 5, TimeUnit.SECONDS);
     }
 
     @Override
@@ -212,7 +212,7 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
 
         // 判断当前serverTag是否已经注册
         if (serverTagData == null) {
-            // 不存在
+            // 未注册
 
             // 捞取所有已注册的workerId
             Set<Integer> usedWorkIds = curator.getChildren()
@@ -253,7 +253,7 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
             throw new IllegalStateException("Cannot found usable zk worker id: " + serverTagParentPath);
 
         } else {
-            // 已存在
+            // 已注册
 
             int workerId = Bytes.toInt(serverTagData);
             if (workerId < 0 || workerId >= workerIdMaxCount) {

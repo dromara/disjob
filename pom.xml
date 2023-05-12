@@ -67,7 +67,6 @@
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
 
     <spring-boot.version>2.7.11</spring-boot.version>
-    <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
     <fastjson.version>1.2.83</fastjson.version>
     <guava.version>31.1-jre</guava.version>
