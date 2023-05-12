@@ -229,12 +229,15 @@ public final class Jsons {
 
     public static ObjectMapper createObjectMapper(JsonInclude.Include include) {
         ObjectMapper mapper = new ObjectMapper();
-
         // 设置序列化时的特性
         if (include != null) {
             mapper.setSerializationInclusion(include);
         }
+        configObjectMapper(mapper);
+        return mapper;
+    }
 
+    public static void configObjectMapper(ObjectMapper mapper) {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 反序列化时忽略未知属性
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);    // Date不序列化为时间戳
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);          // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
@@ -274,8 +277,6 @@ public final class Jsons {
         mapper.registerModule(javaTimeModule);
 
         //mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-
-        return mapper;
     }
 
 }

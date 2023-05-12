@@ -1,2 +1,7 @@
 server.port: 8083
 spring.profiles.include: web,worker,redis,consul
+
+spring.boot.admin.client:
+  url: http://localhost:8081
+  instance:
+    service-host-type: IP

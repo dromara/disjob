@@ -67,11 +67,6 @@ public class JobConstants {
     public static final String SPRING_BEAN_NAME_PREFIX = DISJOB_KEY_PREFIX + ".bean";
 
     /**
-     * Http serialize and deserialize object mapper spring bean name.
-     */
-    public static final String SPRING_BEAN_NAME_OBJECT_MAPPER = SPRING_BEAN_NAME_PREFIX + ".object-mapper";
-
-    /**
      * Current supervisor spring bean name
      */
     public static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = SPRING_BEAN_NAME_PREFIX + ".current-supervisor";

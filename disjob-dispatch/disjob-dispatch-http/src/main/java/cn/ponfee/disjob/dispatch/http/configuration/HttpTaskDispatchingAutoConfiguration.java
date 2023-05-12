@@ -49,7 +49,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     public TaskDispatcher taskDispatcher(HttpProperties properties,
                                          SupervisorRegistry discoveryWorker,
                                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
-                                         @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
+                                         @Nullable ObjectMapper objectMapper) {
         DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
             .connectTimeout(properties.getConnectTimeout())
             .readTimeout(properties.getReadTimeout())

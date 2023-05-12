@@ -12,7 +12,6 @@ import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentResolver;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.HttpProperties;
-import cn.ponfee.disjob.core.base.JobConstants;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -20,11 +19,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -48,16 +45,24 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpringWebConfiguration.class);
 
-    /**
-     * Object mapper
-     *
-     * @return ObjectMapper
-     */
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    @Bean({"objectMapper", JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER})
-    @Primary
-    public ObjectMapper objectMapper() {
-        return Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+    private final ObjectMapper objectMapper;
+
+    public SpringWebConfiguration(@Nullable ObjectMapper objectMapper) {
+        if (objectMapper == null) {
+            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+        } else {
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            Jsons.configObjectMapper(objectMapper);
+        }
+
+        // 解决spring-boot-admin-server客户端注册进来时反序列化报错问题
+        // Cannot construct instance of `de.codecentric.boot.admin.server.domain.values.Registration` (no Creators, like default constructor, exist): cannot deserialize from Object value (no delegate- or property-based Creator)
+        //com.fasterxml.jackson.databind.module.SimpleModule simpleModule = new com.fasterxml.jackson.databind.module.SimpleModule();
+        //simpleModule.addSerializer(de.codecentric.boot.admin.server.domain.values.Registration.class, com.fasterxml.jackson.databind.ser.std.ToStringSerializer.instance);
+        //simpleModule.addDeserializer(de.codecentric.boot.admin.server.domain.values.Registration.class, new de.codecentric.boot.admin.server.utils.jackson.RegistrationDeserializer());
+        //objectMapper.registerModule(simpleModule);
+
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -68,7 +73,7 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
     @Bean
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
-        messageConverter.setObjectMapper(objectMapper());
+        messageConverter.setObjectMapper(objectMapper);
         RestTemplateUtils.extensionSupportedMediaTypes(messageConverter);
         return messageConverter;
     }
@@ -91,7 +96,7 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new LocalizedMethodArgumentResolver(objectMapper()));
+        resolvers.add(new LocalizedMethodArgumentResolver(objectMapper));
     }
 
     @Override

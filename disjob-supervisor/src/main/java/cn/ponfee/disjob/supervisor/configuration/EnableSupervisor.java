@@ -101,7 +101,7 @@ public @interface EnableSupervisor {
         public WorkerServiceClient workerServiceClient(HttpProperties properties,
                                                        SupervisorRegistry supervisorRegistry,
                                                        @Nullable Worker currentWorker,
-                                                       @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
+                                                       @Nullable ObjectMapper objectMapper) {
             DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
                 .connectTimeout(properties.getConnectTimeout())
                 .readTimeout(properties.getReadTimeout())

@@ -17,6 +17,7 @@ import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
 import cn.ponfee.disjob.samples.common.util.SampleConstants;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
+import de.codecentric.boot.admin.server.config.EnableAdminServer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -33,6 +34,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
  */
 @EnableSupervisor
 @EnableWorker
+@EnableAdminServer
 public class MergedApplication extends AbstractSamplesApplication {
 
     static {

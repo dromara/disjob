@@ -95,7 +95,7 @@ public @interface EnableWorker {
         @Bean
         public SupervisorService supervisorServiceClient(HttpProperties httpConfig,
                                                          WorkerRegistry workerRegistry,
-                                                         @Nullable @Qualifier(JobConstants.SPRING_BEAN_NAME_OBJECT_MAPPER) ObjectMapper objectMapper) {
+                                                         @Nullable ObjectMapper objectMapper) {
             DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
                 .connectTimeout(httpConfig.getConnectTimeout())
                 .readTimeout(httpConfig.getReadTimeout())

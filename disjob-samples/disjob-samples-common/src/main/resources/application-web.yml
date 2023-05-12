@@ -2,12 +2,24 @@ logging.config: classpath:log4j2.xml
 
 # actuator monitor configuration
 management:
-  endpoints:
-    web.exposure.include: "*"
   endpoint:
     health:
       enabled: true
-      show-details: always
+      show-details: ALWAYS
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: '*'
+    enabled-by-default: true
+  info:
+    env:
+      enabled: true
+
+# disable thymeleaf configuration
+spring.thymeleaf:
+  check-template: false
+  check-template-location: false
 
 # “swagger-ui” and “/api-docs endpoint” custom path
 springdoc:

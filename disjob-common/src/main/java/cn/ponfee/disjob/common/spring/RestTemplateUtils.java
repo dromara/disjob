@@ -68,7 +68,8 @@ public class RestTemplateUtils {
             converter.getSupportedMediaTypes(),
             MediaType.TEXT_PLAIN,
             MediaType.TEXT_HTML,
-            MediaType.MULTIPART_FORM_DATA
+            MediaType.MULTIPART_FORM_DATA,
+            MediaType.ALL
         );
         converter.setSupportedMediaTypes(supportedMediaTypes);
     }
