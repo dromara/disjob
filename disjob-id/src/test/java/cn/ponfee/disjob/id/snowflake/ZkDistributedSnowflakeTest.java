@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.id.snowflake;
 
 import cn.ponfee.disjob.id.snowflake.zk.ZkDistributedSnowflake;
-import cn.ponfee.disjob.id.snowflake.zk.ZookeeperConfig;
+import cn.ponfee.disjob.id.snowflake.zk.ZkConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +23,7 @@ public class ZkDistributedSnowflakeTest {
 
     @Test
     public void test() {
-        ZookeeperConfig zkConfig = new ZookeeperConfig();
+        ZkConfig zkConfig = new ZkConfig();
         zkConfig.setConnectString("localhost:2181");
         ZkDistributedSnowflake snowflake = new ZkDistributedSnowflake(zkConfig, "disjob", "app1:8080");
         new ZkDistributedSnowflake(zkConfig, "disjob", "app2:8080");

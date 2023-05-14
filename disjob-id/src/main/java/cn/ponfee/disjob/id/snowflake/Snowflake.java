@@ -118,7 +118,7 @@ public final class Snowflake implements IdGenerator {
         if (timestamp < lastTimestamp) {
             long offset = lastTimestamp - timestamp;
             if (offset > 50) {
-                throw new ClockBackwardsException("Clock moved backwards " + offset + "ms exceed 50ms.");
+                throw new ClockMovedBackwardsException("Clock moved backwards " + offset + "ms exceed 50ms.");
             }
 
             LOG.warn("Clock moved backwards {}ms, will be wait moment.", offset);
@@ -126,11 +126,11 @@ public final class Snowflake implements IdGenerator {
                 wait(offset << 1);
                 timestamp = timeGen();
                 if (timestamp < lastTimestamp) {
-                    throw new ClockBackwardsException("Clock moved backwards " + offset + " ms, wait still backwards " + (lastTimestamp - timestamp) + " ms.");
+                    throw new ClockMovedBackwardsException("Clock moved backwards " + offset + " ms, wait still backwards " + (lastTimestamp - timestamp) + " ms.");
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new ClockBackwardsException("Clock moved backwards " + offset + " ms, wait occur error.", e);
+                throw new ClockMovedBackwardsException("Clock moved backwards " + offset + " ms, wait occur error.", e);
             }
         }
 

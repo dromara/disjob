@@ -9,33 +9,33 @@
 package cn.ponfee.disjob.id.snowflake;
 
 /**
- * Clock back exception
+ * Clock moved back exception
  *
  * @author Ponfee
  */
-public class ClockBackwardsException extends RuntimeException {
+public class ClockMovedBackwardsException extends RuntimeException {
     private static final long serialVersionUID = 8109219010796537426L;
 
-    public ClockBackwardsException() {
+    public ClockMovedBackwardsException() {
         super();
     }
 
-    public ClockBackwardsException(String message) {
+    public ClockMovedBackwardsException(String message) {
         super(message);
     }
 
-    public ClockBackwardsException(Throwable cause) {
+    public ClockMovedBackwardsException(Throwable cause) {
         super(cause);
     }
 
-    public ClockBackwardsException(String message, Throwable cause) {
+    public ClockMovedBackwardsException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    protected ClockBackwardsException(String message,
-                                      Throwable cause,
-                                      boolean enableSuppression,
-                                      boolean writableStackTrace) {
+    protected ClockMovedBackwardsException(String message,
+                                           Throwable cause,
+                                           boolean enableSuppression,
+                                           boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

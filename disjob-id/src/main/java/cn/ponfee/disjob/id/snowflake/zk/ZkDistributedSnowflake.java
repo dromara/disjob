@@ -8,7 +8,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import cn.ponfee.disjob.id.snowflake.ClockBackwardsException;
+import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -84,11 +84,11 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
 
     private final ScheduledExecutorService heartbeatScheduler;
 
-    public ZkDistributedSnowflake(ZookeeperConfig zkConfig, String bizTag, String serverTag) {
+    public ZkDistributedSnowflake(ZkConfig zkConfig, String bizTag, String serverTag) {
         this(zkConfig, bizTag, serverTag, 14, 8);
     }
 
-    public ZkDistributedSnowflake(ZookeeperConfig zkConfig,
+    public ZkDistributedSnowflake(ZkConfig zkConfig,
                                   String bizTag,
                                   String serverTag,
                                   int sequenceBitLength,
@@ -110,7 +110,7 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
         }
 
         try {
-            this.workerId = RetryTemplate.execute(() -> registryWorkerId(workerIdBitLength), 5, 2000L);
+            this.workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdBitLength), 5, 2000L);
             this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
         } catch (Throwable e) {
             throw new Error("Zk snowflake server registry worker error.", e);
@@ -205,7 +205,7 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
         }
     }
 
-    private int registryWorkerId(int workerIdBitLength) throws Exception {
+    private int registerWorkerId(int workerIdBitLength) throws Exception {
         int workerIdMaxCount = 1 << workerIdBitLength;
         String serverTagPath = serverTagParentPath + SEP + serverTag;
         byte[] serverTagData = getData(serverTagPath);
@@ -273,7 +273,7 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
                 }
                 long currentTime = System.currentTimeMillis();
                 if (currentTime < data.time) {
-                    throw new ClockBackwardsException(String.format("Clock moved backwards: %s | %s | %d", serverTagPath, currentTime, data.time));
+                    throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s | %s | %d", serverTagPath, currentTime, data.time));
                 }
                 updateData(workerIdPath, WorkerIdData.of(currentTime, serverTag).serialize());
             }
@@ -306,7 +306,7 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
         }
     }
 
-    private static CuratorFramework createCuratorFramework(ZookeeperConfig config) throws InterruptedException {
+    private static CuratorFramework createCuratorFramework(ZkConfig config) throws InterruptedException {
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(
             config.getBaseSleepTimeMs(),
             config.getMaxRetries(),

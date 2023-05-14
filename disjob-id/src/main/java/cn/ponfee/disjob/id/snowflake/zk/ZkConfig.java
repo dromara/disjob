@@ -20,7 +20,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  */
 @Getter
 @Setter
-public class ZookeeperConfig {
+public class ZkConfig {
     private static final long serialVersionUID = 1L;
 
     private String connectString = "localhost:2181";

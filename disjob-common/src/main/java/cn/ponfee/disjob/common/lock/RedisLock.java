@@ -393,11 +393,9 @@ public class RedisLock implements Lock, java.io.Serializable {
         return res != null && res;
 
         /*
-        Long result = ((RedisTemplate<String, String>) redisTemplate).execute(
-            UNLOCK_SCRIPT_OBJECT, Collections.singletonList(new String(lockKey)), new String(lockValue)
-        );
+        // key, value为String时使用这个方法
+        Long result = ((RedisTemplate<String, String>) redisTemplate).execute(UNLOCK_SCRIPT_OBJECT, List("lockKey"), "lockValue");
         LOCK_VALUE.remove();
-        //Assert.state(result == UNLOCK_SUCCESS, () -> "Fail result, except: " + UNLOCK_SUCCESS + ", actual: " + result);
         return result == UNLOCK_SUCCESS;
         */
     }

@@ -14,7 +14,7 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import cn.ponfee.disjob.id.snowflake.ClockBackwardsException;
+import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -109,7 +109,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
         }
 
         try {
-            int workerId = RetryTemplate.execute(() -> registryWorkerId(workerIdBitLength), 5, 1000L);
+            int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdBitLength), 5, 1000L);
             this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
         } catch (Throwable e) {
             throw new Error("Db snowflake server initialize error.", e);
@@ -137,7 +137,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
 
     // -------------------------------------------------------private methods
 
-    private int registryWorkerId(int workerIdBitLength) {
+    private int registerWorkerId(int workerIdBitLength) {
         int workerIdMaxCount = 1 << workerIdBitLength;
         List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.queryForList(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
         DbSnowflakeWorker current = registeredWorkers.stream().filter(e -> e.equals(bizTag, serverTag)).findAny().orElse(null);
@@ -187,7 +187,7 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
             long currentTime = System.currentTimeMillis();
             long lastHeartbeatTime = current.getHeartbeatTime();
             if (currentTime < lastHeartbeatTime) {
-                throw new ClockBackwardsException(String.format("Clock moved backwards: %s | %s | %d | %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
+                throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s | %s | %d | %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
             }
             Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
             if (jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
