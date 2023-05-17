@@ -26,7 +26,7 @@
     <spring-boot.version>2.7.11</spring-boot.version>
     <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
-    <testcontainers.version>1.18.0</testcontainers.version>
+    <testcontainers.version>1.18.1</testcontainers.version>
 
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
@@ -35,7 +35,7 @@
     <maven-deploy-plugin.version>3.1.0</maven-deploy-plugin.version>
     <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
 
-    <flatten-maven-plugin.version>1.4.1</flatten-maven-plugin.version>
+    <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
     <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
   </properties>
 

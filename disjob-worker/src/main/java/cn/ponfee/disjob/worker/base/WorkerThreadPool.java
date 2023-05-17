@@ -218,7 +218,7 @@ public class WorkerThreadPool extends Thread implements Startable {
             WorkerThread workerThread = createWorkerThreadIfNecessary();
             if (workerThread == null) {
                 LOG.info("Take worker thread with timeout from idle pool.");
-                workerThread = idlePool.pollFirst(3000, TimeUnit.MILLISECONDS);
+                workerThread = idlePool.pollFirst(1000, TimeUnit.MILLISECONDS);
             }
             if (workerThread != null) {
                 return workerThread;

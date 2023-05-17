@@ -79,7 +79,7 @@
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
     <embedded-redis.version>1.2</embedded-redis.version>
     <graphviz-java.version>0.18.1</graphviz-java.version>
-    <testcontainers.version>1.18.0</testcontainers.version>
+    <testcontainers.version>1.18.1</testcontainers.version>
 
     <!-- spring-boot-dependencies [type=pom, scope=import]方式，无法自动引入plugin依赖版本 -->
     <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
@@ -91,7 +91,7 @@
     <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
     <maven-deploy-plugin.version>3.1.0</maven-deploy-plugin.version>
 
-    <flatten-maven-plugin.version>1.4.1</flatten-maven-plugin.version>
+    <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
     <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
     <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>

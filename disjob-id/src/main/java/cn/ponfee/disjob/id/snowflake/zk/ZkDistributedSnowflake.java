@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.disjob.id.snowflake.zk;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
@@ -95,6 +103,8 @@ public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
                                   int workerIdBitLength) {
         Assert.isTrue(!bizTag.contains(SEP), "Biz tag cannot contains '/': " + bizTag);
         Assert.isTrue(!serverTag.contains(SEP), "Server tag cannot contains '/': " + serverTag);
+        int len = sequenceBitLength + workerIdBitLength;
+        Assert.isTrue(len <= 22, "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
         this.serverTag = serverTag;
         String snowflakeRootPath = "/snowflake/" + bizTag;
         this.serverTagParentPath = snowflakeRootPath + "/tag";

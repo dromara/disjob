@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.util.Assert;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -98,6 +99,9 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
                                   String serverTag,
                                   int sequenceBitLength,
                                   int workerIdBitLength) {
+        int len = sequenceBitLength + workerIdBitLength;
+        Assert.isTrue(len <= 22, "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
+
         this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
         this.bizTag = bizTag;
         this.serverTag = serverTag;

@@ -58,7 +58,7 @@ public final class Threads {
         while (sleepCount-- > 0 && sleepMillis > 0 && !isStopped(thread)) {
             try {
                 // Wait some time
-                TimeUnit.MILLISECONDS.sleep(sleepMillis);
+                Thread.sleep(sleepMillis);
             } catch (InterruptedException e) {
                 LOG.error("Waiting thread terminal interrupted: " + thread.getName(), e);
                 thread.interrupt();

@@ -206,7 +206,7 @@ public class SchedJob extends BaseEntity implements Serializable {
 
     public void verifyBeforeUpdate() {
         Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
-        Assert.isTrue(getVersion() != null && getVersion() > 0, () -> "Invalid version: " + getVersion());
+        Assert.isTrue(version != null && version > 0, () -> "Invalid version: " + version);
         verifyBeforeAdd();
     }
 

@@ -75,7 +75,7 @@ public final class Snowflake implements IdGenerator {
                      int workerIdBitLength,
                      int datacenterIdBitLength) {
         int len = sequenceBitLength + workerIdBitLength + datacenterIdBitLength;
-        Assert.isTrue(len == 22, "Bit length(sequence + worker + datacenter) cannot greater than 22, but actual=" + len);
+        Assert.isTrue(len <= 22, "Bit length(sequence + worker + datacenter) cannot greater than 22, but actual=" + len);
 
         long maxWorkerId = Maths.bitsMask(workerIdBitLength);
         if (workerId > maxWorkerId || workerId < 0) {

@@ -209,7 +209,7 @@ public class RedisLock implements Lock, java.io.Serializable {
     public void lock() {
         for (int round = 0; !acquire(); round++) {
             try {
-                TimeUnit.MILLISECONDS.sleep(computeSleepMillis(round));
+                Thread.sleep(computeSleepMillis(round));
             } catch (InterruptedException e) {
                 LOG.error("Redis lock sleep occur interrupted exception.", e);
                 Thread.currentThread().interrupt();
@@ -233,7 +233,7 @@ public class RedisLock implements Lock, java.io.Serializable {
             }
 
             // To sleep for prevent endless loop
-            TimeUnit.MILLISECONDS.sleep(computeSleepMillis(round));
+            Thread.sleep(computeSleepMillis(round));
         }
     }
 
@@ -270,7 +270,7 @@ public class RedisLock implements Lock, java.io.Serializable {
                 // 等待超时则返回
                 return false;
             }
-            TimeUnit.MILLISECONDS.sleep(sleepMillis);
+            Thread.sleep(sleepMillis);
         }
     }
 

@@ -13,7 +13,6 @@ import cn.ponfee.disjob.common.concurrent.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -22,6 +21,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Ponfee
  */
 public abstract class AbstractHeartbeatThread extends Thread implements Startable {
+
+    private static final long MILLIS_PER_SECOND = 1000;
+    private static final int MAX_BUSY_COUNT = 47;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -51,45 +53,55 @@ public abstract class AbstractHeartbeatThread extends Thread implements Startabl
     public final void run() {
         log.info("Heartbeat started.");
 
-        while (!stopped.get()) {
-            if (super.isInterrupted()) {
-                log.warn("Thread exit by interrupted.");
-                toStop();
-                return;
-            }
+        try {
+            int processedCount = 0;
+            while (!stopped.get()) {
+                if (super.isInterrupted()) {
+                    log.warn("Thread exit by interrupted.");
+                    toStop();
+                    return;
+                }
 
-            boolean isBusyLoop;
-            long begin = System.currentTimeMillis();
+                boolean isBusyLoop;
+                long begin = System.currentTimeMillis();
 
-            try {
-                // true is busy loop
-                isBusyLoop = heartbeat();
-            } catch (Exception e) {
-                isBusyLoop = true;
-                log.error("Heartbeat occur error, stopped=" + stopped, e);
-            }
-
-            long end = System.currentTimeMillis();
-            if (log.isDebugEnabled()) {
-                log.debug("Heartbeat processed time: {}", end - begin);
-            }
-
-            // if busy loop, need sleep a moment
-            if (isBusyLoop) {
-                // gap period milliseconds(with fixed delay)
-                long sleepTimeMillis = heartbeatPeriodMs - (end % heartbeatPeriodMs);
                 try {
-                    TimeUnit.MILLISECONDS.sleep(sleepTimeMillis);
-                    log.debug("Heartbeat slept time: {}", sleepTimeMillis);
-                } catch (InterruptedException e) {
-                    log.error("Sleep occur error in loop, stopped=" + stopped, e);
-                    Thread.currentThread().interrupt();
+                    // true is busy loop
+                    isBusyLoop = heartbeat();
+                } catch (Exception e) {
+                    isBusyLoop = true;
+                    log.error("Heartbeat occur error, stopped=" + stopped, e);
+                }
+
+                long end = System.currentTimeMillis();
+                if (log.isDebugEnabled()) {
+                    log.debug("Heartbeat processed time: {}", end - begin);
+                }
+
+                // if busy loop, need sleep a moment
+                if (isBusyLoop) {
+                    processedCount = 0;
+                    // gap period milliseconds(with fixed delay)
+                    doSleep(heartbeatPeriodMs - (end % heartbeatPeriodMs));
+                } else {
+                    processedCount++;
+                    if (processedCount > MAX_BUSY_COUNT) {
+                        doSleep(MILLIS_PER_SECOND - (end % MILLIS_PER_SECOND));
+                    }
                 }
             }
+        } catch (InterruptedException e) {
+            log.error("Sleep occur error in loop, stopped=" + stopped, e);
+            Thread.currentThread().interrupt();
         }
 
         toStop();
         log.info("Heartbeat end.");
+    }
+
+    private void doSleep(long sleepTimeMillis) throws InterruptedException {
+        Thread.sleep(sleepTimeMillis);
+        log.debug("Heartbeat sleep time: {}", sleepTimeMillis);
     }
 
     /**
