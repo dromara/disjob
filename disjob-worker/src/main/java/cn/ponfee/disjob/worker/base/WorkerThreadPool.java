@@ -132,6 +132,7 @@ public class WorkerThreadPool extends Thread implements Startable {
             return false;
         }
 
+        LOG.info("Submitted task {}", param.getTaskId());
         if (param.operation() == Operations.TRIGGER) {
             return taskQueue.offerLast(param);
         } else {
@@ -188,9 +189,6 @@ public class WorkerThreadPool extends Thread implements Startable {
         // 1.2、change idle pool thread state
         idlePool.forEach(e -> ThrowingRunnable.caught(e::toStop));
 
-        // 1.3、clear task execution param queue
-        ThrowingRunnable.caught(taskQueue::clear);
-
         // 2、do close
         // 2.1、stop this boss thread
         ThrowingSupplier.caught(() -> Threads.stopThread(this, 0, 0, 200));
@@ -206,7 +204,26 @@ public class WorkerThreadPool extends Thread implements Startable {
         // 2.4、shutdown jdk thread pool
         ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(stopTaskExecutor, 1));
 
+        // 2.5、clear task execution param queue
+        ThrowingRunnable.caught(taskQueue::clear);
+
         LOG.info("Close worker thread pool end.");
+    }
+
+    private WorkerThread takeWorkerThread() throws InterruptedException {
+        while (true) {
+            if (closed.get()) {
+                throw new IllegalStateException("Take worker thread fail, worker thread pool closed.");
+            }
+            WorkerThread workerThread = createWorkerThreadIfNecessary();
+            if (workerThread == null) {
+                LOG.info("Take worker thread with timeout from idle pool.");
+                workerThread = idlePool.pollFirst(3000, TimeUnit.MILLISECONDS);
+            }
+            if (workerThread != null) {
+                return workerThread;
+            }
+        }
     }
 
     @Override
@@ -218,10 +235,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 // take a worker
                 WorkerThread workerThread = idlePool.pollFirst();
                 if (workerThread == null) {
-                    workerThread = createWorkerThreadIfNecessary();
-                }
-                if (workerThread == null) {
-                    workerThread = idlePool.takeFirst();
+                    workerThread = takeWorkerThread();
                 }
 
                 if (workerThread.isStopped()) {
@@ -686,15 +700,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                     // Thread#stop() will occur "java.lang.ThreadDeath: null" if wrapped in Throwable
                 } catch (Exception e) {
                     terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(e));
-
-                    if (e instanceof InterruptedException) {
-                        LOG.error("Worker thread execute interrupted: " + param, e);
-                        threadPool.removeWorkerThread(this);
-                        Thread.currentThread().interrupt();
-                        return;
-                    } else {
-                        LOG.error("Worker thread execute failed: " + param, e);
-                    }
+                    LOG.error("Worker thread execute failed: " + param, e);
                 }
 
                 // return this to idle thread pool

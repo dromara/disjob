@@ -83,7 +83,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterMilliseconds;
             List<SchedJob> jobs = jobManager.findBeTriggeringJob(maxNextTriggerTime, PROCESS_BATCH_SIZE);
-            if (jobs == null || jobs.isEmpty()) {
+            if (CollectionUtils.isEmpty(jobs)) {
                 return true;
             }
 
@@ -92,7 +92,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 .collect(Collectors.toList())
                 .forEach(CompletableFuture::join);
 
-            return false;
+            return jobs.size() < PROCESS_BATCH_SIZE;
         });
 
         return result != null && result;

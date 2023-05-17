@@ -84,10 +84,6 @@ public abstract class AbstractHeartbeatThread extends Thread implements Startabl
                 } catch (InterruptedException e) {
                     log.error("Sleep occur error in loop, stopped=" + stopped, e);
                     Thread.currentThread().interrupt();
-                    if (stopped.get()) {
-                        log.info("Thread exit by stopped.");
-                        return;
-                    }
                 }
             }
         }

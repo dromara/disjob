@@ -130,10 +130,12 @@ public abstract class TaskDispatcher implements AutoCloseable {
             try {
                 boolean toLocal = timingWheel != null && current != null && current.equalsGroup(param.getWorker());
                 boolean success = toLocal ? timingWheel.offer(param) : dispatch(param);
-                if (!success) {
+                if (success) {
+                    log.info("Dispatched task {}", dispatchParam.executeTaskParam().getTaskId());
+                } else {
                     // dispatch failed, delay retry
                     retry(dispatchParam);
-                    log.error("Dispatch task failed: " + dispatchParam);
+                    log.error("Dispatched task failed " + dispatchParam);
                     result = false;
                 }
             } catch (Exception e) {

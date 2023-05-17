@@ -11,6 +11,8 @@ package cn.ponfee.disjob.dispatch;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -20,6 +22,8 @@ import java.util.Objects;
  * @author Ponfee
  */
 public abstract class TaskReceiver implements Startable {
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
@@ -33,7 +37,11 @@ public abstract class TaskReceiver implements Startable {
      * @param param the execution task param
      */
     public boolean receive(ExecuteTaskParam param) {
-        return param != null && timingWheel.offer(param);
+        boolean result = param != null && timingWheel.offer(param);
+        if (result) {
+            log.info("Received task {}", param.getTaskId());
+        }
+        return result;
     }
 
     /**

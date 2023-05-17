@@ -18,8 +18,6 @@ import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,8 +36,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Ponfee
  */
 public class RedisTaskReceiver extends TaskReceiver {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RedisTaskReceiver.class);
 
     /**
      * List Batch pop lua script
@@ -89,7 +85,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
-            LOG.warn("Repeat call start method.");
+            log.warn("Repeat call start method.");
             return;
         }
         this.receiveHeartbeatThread.start();
@@ -117,10 +113,10 @@ public class RedisTaskReceiver extends TaskReceiver {
                     return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, gropedWorker.keyAndArgs);
                 } catch (Exception e) {
                     if (RedisLock.exceptionContainsNoScriptError(e)) {
-                        LOG.info(e.getMessage());
+                        log.info(e.getMessage());
                         return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, gropedWorker.keyAndArgs);
                     } else {
-                        LOG.error("Call redis eval sha occur error.", e);
+                        log.error("Call redis eval sha occur error.", e);
                         return ExceptionUtils.rethrow(e);
                     }
                 }
