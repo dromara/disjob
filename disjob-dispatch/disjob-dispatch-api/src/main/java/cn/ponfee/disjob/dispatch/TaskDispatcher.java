@@ -115,7 +115,6 @@ public abstract class TaskDispatcher implements AutoCloseable {
     }
 
     private boolean doDispatch(List<DispatchParam> dispatchParams) {
-        Worker current = Worker.current();
         boolean result = true;
         for (DispatchParam dispatchParam : dispatchParams) {
             assignWorker(dispatchParam);
@@ -128,10 +127,9 @@ public abstract class TaskDispatcher implements AutoCloseable {
                 continue;
             }
             try {
-                boolean toLocal = timingWheel != null && current != null && current.equalsGroup(param.getWorker());
-                boolean success = toLocal ? timingWheel.offer(param) : dispatch(param);
-                if (success) {
-                    log.info("Dispatched task {}", dispatchParam.executeTaskParam().getTaskId());
+
+                if (doDispatch(param)) {
+                    log.info("Dispatched task {} | {}", param.getTaskId(), param.getWorker());
                 } else {
                     // dispatch failed, delay retry
                     retry(dispatchParam);
@@ -174,6 +172,17 @@ public abstract class TaskDispatcher implements AutoCloseable {
             log.error("Assign worker to task failed: {} | {}", param.getInstanceId(), param.getTaskId());
         }
         param.setWorker(worker);
+    }
+
+    private boolean doDispatch(ExecuteTaskParam param) throws Exception {
+        Worker current = Worker.current();
+        if (timingWheel != null && current != null && current.equalsGroup(param.getWorker())) {
+            // if the server both is supervisor & worker: dispatch to local worker
+            return timingWheel.offer(param);
+        } else {
+            // dispatch to remote worker
+            return dispatch(param);
+        }
     }
 
     private void retry(DispatchParam dispatchParam) {

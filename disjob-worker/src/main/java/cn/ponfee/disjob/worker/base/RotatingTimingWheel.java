@@ -22,6 +22,7 @@ import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.param.TaskWorkerParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,8 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 public class RotatingTimingWheel implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RotatingTimingWheel.class);
+
+    private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
 
     private static final int LOG_ROUND_COUNT = 1000;
 
@@ -121,6 +124,9 @@ public class RotatingTimingWheel implements Startable {
 
         List<ExecuteTaskParam> matchedTriggers = ringTriggers.stream()
             .filter(e -> {
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Took task {} | {}", e.getTaskId(), DATE_FORMAT.format(e.getTriggerTime()));
+                }
                 if (currentWorker.equalsGroup(e.getWorker())) {
                     return true;
                 } else {
