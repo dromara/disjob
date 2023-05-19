@@ -132,7 +132,7 @@ public class WorkerThreadPool extends Thread implements Startable {
             return false;
         }
 
-        LOG.info("Submitted task {} | {}", param.getTaskId(), param.getWorker());
+        LOG.info("Submitted task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         if (param.operation() == Operations.TRIGGER) {
             return taskQueue.offerLast(param);
         } else {

@@ -39,7 +39,7 @@ public abstract class TaskReceiver implements Startable {
     public boolean receive(ExecuteTaskParam param) {
         boolean result = param != null && timingWheel.offer(param);
         if (result) {
-            log.info("Received task {} | {}", param.getTaskId(), param.getWorker());
+            log.info("Received task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         }
         return result;
     }

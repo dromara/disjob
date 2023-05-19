@@ -127,9 +127,8 @@ public abstract class TaskDispatcher implements AutoCloseable {
                 continue;
             }
             try {
-
                 if (doDispatch(param)) {
-                    log.info("Dispatched task {} | {}", param.getTaskId(), param.getWorker());
+                    log.info("Dispatched task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
                 } else {
                     // dispatch failed, delay retry
                     retry(dispatchParam);

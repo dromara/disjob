@@ -125,7 +125,8 @@ public class RotatingTimingWheel implements Startable {
         List<ExecuteTaskParam> matchedTriggers = ringTriggers.stream()
             .filter(e -> {
                 if (LOG.isInfoEnabled()) {
-                    LOG.info("Took task {} | {}", e.getTaskId(), DATE_FORMAT.format(e.getTriggerTime()));
+                    String triggerTime = DATE_FORMAT.format(e.getTriggerTime());
+                    LOG.info("Took task {} | {} | {} | {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime);
                 }
                 if (currentWorker.equalsGroup(e.getWorker())) {
                     return true;
