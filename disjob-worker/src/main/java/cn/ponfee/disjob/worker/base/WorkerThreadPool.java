@@ -60,8 +60,8 @@ public class WorkerThreadPool extends Thread implements Startable {
      * This jdk thread pool for asynchronous to stop(pause or cancel) task
      */
     private final ThreadPoolExecutor stopTaskExecutor = ThreadPoolExecutors.builder()
-        .corePoolSize(100)
-        .maximumPoolSize(100)
+        .corePoolSize(50)
+        .maximumPoolSize(50)
         .workQueue(new LinkedBlockingQueue<>(500))
         .keepAliveTimeSeconds(300)
         .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)

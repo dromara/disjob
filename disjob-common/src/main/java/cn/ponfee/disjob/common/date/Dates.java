@@ -58,6 +58,11 @@ public class Dates {
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     /**
+     * Full date time format
+     */
+    public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+
+    /**
      * Zero time millis: -62170185600000L
      */
     public static final String ZERO_DATE_TIME = "0000-00-00 00:00:00";

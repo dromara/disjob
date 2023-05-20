@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -42,7 +43,7 @@ public class RotatingTimingWheel implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RotatingTimingWheel.class);
 
-    private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.FULL_DATE_FORMAT);
 
     private static final int LOG_ROUND_COUNT = 1000;
 

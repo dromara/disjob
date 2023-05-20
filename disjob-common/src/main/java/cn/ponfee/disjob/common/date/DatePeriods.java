@@ -78,12 +78,6 @@ public enum DatePeriods {
      */
     ANNUAL(PeriodType.years(), Period::getYears, LocalDateTime::plusYears, 1);
 
-    /**
-     * 2018-01-01: the first day of year, month, week
-     */
-    public static final String ORIGINAL_DATE_TIME = "2018-01-01 00:00:00.000";
-    //private static final LocalDateTime ORIGINAL = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").parseLocalDateTime(ORIGINAL_DATE_TIME);
-
     private final PeriodType type;
     private final ToIntFunction<Period> unit;
     private final PlusFunction plus;

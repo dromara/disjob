@@ -38,7 +38,7 @@ public class LocalDateTimeFormat {
     static final DateTimeFormatter PATTERN_13 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     static final DateTimeFormatter PATTERN_14 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss");
 
-    static final DateTimeFormatter PATTERN_21 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    static final DateTimeFormatter PATTERN_21 = DateTimeFormatter.ofPattern(Dates.FULL_DATE_FORMAT);
     static final DateTimeFormatter PATTERN_22 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
     static final DateTimeFormatter PATTERN_23 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     static final DateTimeFormatter PATTERN_24 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS");
