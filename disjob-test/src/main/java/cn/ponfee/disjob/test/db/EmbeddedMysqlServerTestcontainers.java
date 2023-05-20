@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static cn.ponfee.disjob.test.db.DBUtils.DB_NAME;
+import static cn.ponfee.disjob.test.db.DBUtils.USERNAME;
+import static cn.ponfee.disjob.test.db.DBUtils.PASSWORD;
 
 /**
  * <pre>
@@ -48,7 +50,7 @@ public class EmbeddedMysqlServerTestcontainers {
             .withPassword("")
             .withDatabaseName("test")
             .withEnv("MYSQL_ROOT_HOST", "%")
-            .withInitScript(DBUtils.DB_SCRIPT_PATH) // IOUtils.resourceToString(script-path, UTF_8, DBUtils.class.getClassLoader())
+            .withInitScript(DBUtils.DB_SCRIPT_PATH)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
         ) {
             mySQLContainer.setPortBindings(PORT_BINDINGS);
@@ -67,7 +69,7 @@ public class EmbeddedMysqlServerTestcontainers {
             ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, scriptContent);
             */
 
-            JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, DB_NAME, DB_NAME);
+            JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, USERNAME, PASSWORD);
 
             System.out.println("\n--------------------------------------------------------testMysql");
             DBUtils.testMysqlVersion(jdbcTemplate);

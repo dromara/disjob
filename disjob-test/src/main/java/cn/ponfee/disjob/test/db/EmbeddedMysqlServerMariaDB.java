@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.test.db.DBUtils.DB_NAME;
+import static cn.ponfee.disjob.test.db.DBUtils.USERNAME;
+import static cn.ponfee.disjob.test.db.DBUtils.PASSWORD;
 
 /**
  * MariaDB Server
@@ -60,10 +62,10 @@ public class EmbeddedMysqlServerMariaDB {
         db.source(IOUtils.toInputStream(loadScript(), StandardCharsets.UTF_8));
 
         String jdbcUrl = "jdbc:mysql://localhost:" + port + "/" + DB_NAME;
-        JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate(jdbcUrl, DB_NAME, DB_NAME);
+        JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate(jdbcUrl, USERNAME, PASSWORD);
 
         System.out.println("\n--------------------------------------------------------testDatabase");
-        DBUtils.testNativeConnection("com.mysql.cj.jdbc.Driver", jdbcUrl, DB_NAME, DB_NAME);
+        DBUtils.testNativeConnection("com.mysql.cj.jdbc.Driver", jdbcUrl, USERNAME, PASSWORD);
 
         System.out.println("\n--------------------------------------------------------testMysql");
         DBUtils.testMysqlVersion(jdbcTemplate);
@@ -79,7 +81,7 @@ public class EmbeddedMysqlServerMariaDB {
     private static String loadScript() throws Exception {
         return Arrays.stream(DBUtils.loadScript().split("\n"))
             // fix error: The MariaDB server is running with the --skip-grant-tables option so it cannot execute this statement
-            .filter(s -> !StringUtils.startsWithAny(s, "CREATE USER ", "GRANT ALL PRIVILEGES ON ", "FLUSH PRIVILEGES;"))
+            .filter(s -> !StringUtils.startsWithAny(s, "DROP USER ", "CREATE USER ", "GRANT ALL PRIVILEGES ON ", "FLUSH PRIVILEGES;"))
             .collect(Collectors.joining("\n"));
     }
 

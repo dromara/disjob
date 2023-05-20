@@ -32,12 +32,14 @@ import java.util.Map;
 public class DBUtils {
 
     public static final String DB_NAME = "disjob";
+    public static final String USERNAME = "disjob";
+    public static final String PASSWORD = "disjob123456";
     public static final String DB_SCRIPT_PATH = "mysql-schema.sql";
 
-    public static JdbcTemplate createJdbcTemplate(String url, String user, String password) {
+    public static JdbcTemplate createJdbcTemplate(String url, String username, String password) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
-        config.setUsername(user);
+        config.setUsername(username);
         config.setPassword(password);
         return new JdbcTemplate(new HikariDataSource(config));
     }
@@ -46,10 +48,10 @@ public class DBUtils {
         return IOUtils.resourceToString(DB_SCRIPT_PATH, StandardCharsets.UTF_8, DBUtils.class.getClassLoader());
     }
 
-    public static void testNativeConnection(String driver, String url, String user, String password) throws Exception {
+    public static void testNativeConnection(String driver, String url, String username, String password) throws Exception {
         // 非必须：DriverManager.getConnection(url, user, password)时会根据url自动识别来加载Driver实现类
         Class.forName(driver);
-        Connection conn = DriverManager.getConnection(url, user, password);
+        Connection conn = DriverManager.getConnection(url, username, password);
 
         System.out.println("Testing Database, URL=" + url);
         Statement stat = conn.createStatement();
