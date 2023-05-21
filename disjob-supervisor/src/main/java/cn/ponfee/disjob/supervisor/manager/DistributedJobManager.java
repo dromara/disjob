@@ -236,11 +236,8 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         job.checkAndDefaultSetting();
 
         job.setJobId(generateId());
-        Date now = new Date();
-        parseTriggerConfig(job, now);
+        parseTriggerConfig(job);
 
-        job.setCreatedAt(now);
-        job.setUpdatedAt(now);
         jobMapper.insert(job);
     }
 
@@ -260,17 +257,15 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
         job.setNextTriggerTime(dbJob.getNextTriggerTime());
 
-        Date now = new Date();
         if (job.getTriggerType() == null) {
             Assert.isNull(job.getTriggerValue(), "Trigger value must be null if not set trigger type.");
         } else {
             Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
             // update last trigger time or depends parent job id
             dependMapper.deleteByChildJobId(job.getJobId());
-            parseTriggerConfig(job, now);
+            parseTriggerConfig(job);
         }
 
-        job.setUpdatedAt(now);
         Assert.state(jobMapper.updateByJobId(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
     }
 
@@ -1047,7 +1042,8 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         return Tuple3.of(job, instance, waitingTasks);
     }
 
-    private void parseTriggerConfig(SchedJob job, Date date) {
+    private void parseTriggerConfig(SchedJob job) {
+        Date date = new Date();
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
         if (!triggerType.validate(job.getTriggerValue())) {
             throw new IllegalArgumentException("Invalid trigger value: " + job.getTriggerType() + ", " + job.getTriggerValue());

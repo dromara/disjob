@@ -92,13 +92,9 @@
       weight_score,
       remark,
       next_trigger_time,
-      next_scan_time,
       alarm_subscribers,
-      version,
       updated_by,
-      created_by,
-      updated_at,
-      created_at
+      created_by
     ) VALUES (
       #{jobId,jdbcType=BIGINT},
       #{jobGroup,jdbcType=VARCHAR},
@@ -121,13 +117,9 @@
       #{weightScore,jdbcType=TINYINT},
       #{remark,jdbcType=VARCHAR},
       #{nextTriggerTime,jdbcType=BIGINT},
-      NOW(3),
       #{alarmSubscribers,jdbcType=VARCHAR},
-      1,
       #{updatedBy,jdbcType=VARCHAR},
-      #{createdBy,jdbcType=VARCHAR},
-      #{updatedAt,jdbcType=TIMESTAMP},
-      #{createdAt,jdbcType=TIMESTAMP}
+      #{createdBy,jdbcType=VARCHAR}
     )
   </insert>
 
@@ -159,8 +151,7 @@
         remark = #{remark,jdbcType=VARCHAR},
         alarm_subscribers = #{alarmSubscribers,jdbcType=VARCHAR},
         version = version+1,
-        updated_by = #{updatedBy,jdbcType=VARCHAR},
-        updated_at = #{updatedAt,jdbcType=TIMESTAMP}
+        updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}
       AND is_deleted = 0

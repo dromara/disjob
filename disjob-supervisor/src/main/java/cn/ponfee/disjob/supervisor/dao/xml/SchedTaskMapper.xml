@@ -44,7 +44,6 @@
       task_param,
       execute_state,
       worker,
-      version,
       updated_at,
       created_at
     ) VALUES
@@ -57,7 +56,6 @@
       #{item.taskParam,jdbcType=LONGVARCHAR},
       #{item.executeState,jdbcType=TINYINT},
       #{item.worker,jdbcType=VARCHAR},
-      1,
       #{item.updatedAt,jdbcType=TIMESTAMP},
       #{item.createdAt,jdbcType=TIMESTAMP}
     )
