@@ -38,21 +38,24 @@
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-api</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-api</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
 
     <!-- test dependency -->
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-test</artifactId>
+      <artifactId>disjob-id</artifactId>
+      <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-dispatch-redis</artifactId>
+      <artifactId>disjob-test</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
@@ -64,7 +67,7 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-id</artifactId>
+      <artifactId>disjob-dispatch-redis</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>

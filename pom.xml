@@ -52,6 +52,7 @@
     <module>disjob-worker</module>
     <module>disjob-registry</module>
     <module>disjob-dispatch</module>
+    <module>disjob-bom</module>
     <module>disjob-reports</module>
   </modules>
 
@@ -112,47 +113,6 @@
         <version>${testcontainers.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-common</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-core</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-id</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-test</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-registry-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-dispatch-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-supervisor</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-worker</artifactId>
-        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

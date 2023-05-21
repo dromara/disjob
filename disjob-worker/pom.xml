@@ -20,6 +20,7 @@
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-api</artifactId>
+      <version>${project.parent.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -30,6 +31,7 @@
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-api</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 

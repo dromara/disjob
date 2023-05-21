@@ -61,78 +61,12 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
       <dependency>
         <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-common</artifactId>
+        <artifactId>disjob-bom</artifactId>
         <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-core</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-id</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-supervisor</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-worker</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-test</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-registry-redis</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-registry-consul</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-registry-nacos</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-registry-zookeeper</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-registry-etcd</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-dispatch-redis</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-dispatch-http</artifactId>
-        <version>${disjob.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-samples-common</artifactId>
-        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

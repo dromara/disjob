@@ -20,71 +20,79 @@
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-common</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-core</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-id</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-supervisor</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-api</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-redis</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-consul</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-nacos</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-zookeeper</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-etcd</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-api</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-redis</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-http</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 

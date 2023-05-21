@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>cn.ponfee</groupId>
+    <artifactId>disjob-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>disjob-bom</artifactId>
+  <packaging>pom</packaging>
+  <name>${project.artifactId}</name>
+  <description>Distributed job bom module</description>
+  <url>https://github.com/ponfee/disjob</url>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-common</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-core</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-id</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-test</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-supervisor</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-worker</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-registry-api</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-registry-redis</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-registry-consul</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-registry-nacos</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-registry-zookeeper</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-registry-etcd</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-dispatch-api</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-dispatch-redis</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-dispatch-http</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+</project>
