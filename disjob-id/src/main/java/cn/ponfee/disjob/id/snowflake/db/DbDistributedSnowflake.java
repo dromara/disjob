@@ -55,20 +55,16 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
     private static final String TABLE_NAME = "snowflake_worker";
 
     private static final String CREATE_TABLE_SQL =
-        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                                              \n" +
-        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT 'auto increment id',                                \n" +
-        "  `biz_tag`         VARCHAR(60)             NOT NULL                               COMMENT 'biz tag',                                          \n" +
-        "  `server_tag`      VARCHAR(128)            NOT NULL                               COMMENT 'server tag(ip:port)',                              \n" +
-        "  `worker_id`       INT           UNSIGNED  NOT NULL                               COMMENT 'snowflake worker-id',                              \n" +
-        "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                               COMMENT 'last heartbeat time',                              \n" +
-        "  `updated_at`      DATETIME(3)             NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'last updated time' ON UPDATE CURRENT_TIMESTAMP(3), \n" +
-        "  `created_at`      DATETIME(3)             NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'created time',                                     \n" +
-        "  PRIMARY KEY (`id`),                                                                                                                          \n" +
-        "  UNIQUE KEY `uk_biztag_servertag` (`biz_tag`, `server_tag`),                                                                                  \n" +
-        "  UNIQUE KEY `uk_biztag_workerid` (`biz_tag`, `worker_id`),                                                                                    \n" +
-        "  KEY `ix_createdat` (`created_at`),                                                                                                           \n" +
-        "  KEY `ix_updatedat` (`updated_at`)                                                                                                            \n" +
-        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Allocate snowflake worker-id';                           \n" ;
+        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                    \n" +
+        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',                   \n" +
+        "  `biz_tag`         VARCHAR(60)             NOT NULL                  COMMENT 'biz tag',                             \n" +
+        "  `server_tag`      VARCHAR(128)            NOT NULL                  COMMENT 'server tag, for example ip:port',     \n" +
+        "  `worker_id`       INT           UNSIGNED  NOT NULL                  COMMENT 'snowflake worker-id',                 \n" +
+        "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',                 \n" +
+        "  PRIMARY KEY (`id`),                                                                                                \n" +
+        "  UNIQUE KEY `uk_biztag_servertag` (`biz_tag`, `server_tag`),                                                        \n" +
+        "  UNIQUE KEY `uk_biztag_workerid` (`biz_tag`, `worker_id`)                                                           \n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Allocate snowflake worker-id'; \n" ;
 
     private static final String QUERY_ALL_SQL = "SELECT biz_tag, server_tag, worker_id, heartbeat_time FROM " + TABLE_NAME + " WHERE biz_tag=?";
 
