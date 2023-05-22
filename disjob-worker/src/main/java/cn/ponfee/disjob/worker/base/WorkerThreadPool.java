@@ -810,7 +810,11 @@ public class WorkerThreadPool extends Thread implements Startable {
                 LOG.error("Task exception do cancel: " + param, e);
                 stopInstance(supervisorClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
-                LOG.error("Task execute occur error: " + param, t);
+                if (t instanceof java.lang.ThreadDeath) {
+                    LOG.error("Task execute thread death: {} | {}", param, t.getMessage());
+                } else {
+                    LOG.error("Task execute occur error: " + param, t);
+                }
                 terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
             } finally {
                 // 5、destroy

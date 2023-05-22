@@ -101,21 +101,19 @@ public final class Threads {
         if (isStopped(thread)) {
             return false;
         }
-
         synchronized (thread) {
             if (isStopped(thread)) {
                 return false;
             }
             try {
-                // It will be throws "java.lang.ThreadDeath: null"
+                // It maybe throws "java.lang.ThreadDeath: null", but cannot catch in Throwable code block.
                 thread.stop();
+                LOG.info("Invoke java.lang.Thread#stop() method finish: {}", thread.getName());
             } catch (Throwable t) {
-                LOG.error("Invoke thread stop occur error: " + thread.getName(), t);
+                LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
             }
-            LOG.warn("Invoked java.lang.Thread#stop() method: {}", thread.getName());
+            return true;
         }
-
-        return true;
     }
 
 }

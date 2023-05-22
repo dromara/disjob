@@ -24,6 +24,7 @@
 
 ```Plain Text
 disjob                                                    # 主项目
+├── disjob-bom                                            # Maven project bom module
 ├── disjob-common                                         # 工具包
 ├── disjob-core                                           # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
 ├── disjob-dispatch                                       # 任务分发模块
@@ -167,10 +168,12 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236
 
 ## Todo List
 
-- [x] Worker提供任务校验及拆分的Http接口供Supervisor调用（[WorkerServiceProvider](disjob-worker/src/main/java/cn/ponfee/disjob/worker/rpc/WorkerServiceProvider.java)）
+- [x] Worker提供任务校验及拆分的Http接口给Supervisor调用（[WorkerServiceProvider](disjob-worker/src/main/java/cn/ponfee/disjob/worker/rpc/WorkerServiceProvider.java)）
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [x] 工作流任务(Workflow DAG)
-- [ ] 告警订阅：邮件、短信、电话、飞书、钉钉、微信
-- [ ] 任务管理后台Web UI、账户体系及权限控制、可视化监控BI
-- [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB
+- [ ] 任务管理后台Web UI、账户体系及权限控制
 - [ ] 搭建一个关于项目使用说明的文档站点
+- [ ] 在线查看任务实时运行日志
+- [ ] 告警订阅：邮件、短信、电话、飞书、钉钉、微信
+- [ ] 可视化监控BI(Dashboard)
+- [ ] 增加多种Checkpoint的支持：File System、Hadoop、RocksDB

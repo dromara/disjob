@@ -107,7 +107,7 @@ public class RotatingTimingWheel implements Startable {
     private void process() {
         if (++round == LOG_ROUND_COUNT) {
             round = 0;
-            LOG.info("worker-thread-pool: {}, jvm-active-count: {}", workerThreadPool, Thread.activeCount());
+            LOG.info("worker-thread-pool: {}, jvm-thread-count: {}", workerThreadPool, Thread.activeCount());
         }
 
         // check has available supervisors

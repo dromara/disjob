@@ -24,6 +24,7 @@ Lightweight, easy to use, especially suitable for the execution of long tasks. S
 
 ```Plain Text
 disjob                                                    # Main project
+├── disjob-bom                                            # Maven project bom module
 ├── disjob-common                                         # Tools
 ├── disjob-core                                           # Core classes code of task scheduling
 ├── disjob-dispatch                                       # Task dispatch module
@@ -170,7 +171,9 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 - [x] JobHandler decoupling: The JobHandler code is deploy in the Worker application, provides http api to verification and split tasks([WorkerServiceProvider](disjob-worker/src/main/java/cn/ponfee/disjob/worker/rpc/WorkerServiceProvider.java))
 - [x] Extended registry: Zookeeper, Etcd, Nacos
 - [x] Workflow task(Workflow DAG)
-- [ ] alarm subscribe：Email, SMS, Voice, Lark, Ding Talk, WeChat
-- [ ] Task management background Web UI, account system and authority control, visual monitoring BI
-- [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB
+- [ ] Task management background Web UI, account and authority
 - [ ] Build a project document web site
+- [ ] Monitor real-time executing logs of tasks online
+- [ ] alarm subscribe：Email, SMS, Voice, Lark, Ding Talk, WeChat
+- [ ] visual monitoring BI(Dashboard)
+- [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB
