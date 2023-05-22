@@ -48,8 +48,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                 for (R server : registered) {
                     try {
                         client0.createEphemeral(buildRegistryPath(server), CREATE_EPHEMERAL_FAIL_RETRIES);
-                    } catch (Exception e) {
-                        log.error("Re-registry server to zookeeper occur error: " + server, e);
+                    } catch (Throwable t) {
+                        log.error("Re-registry server to zookeeper occur error: " + server, t);
                     }
                 }
             });
@@ -58,7 +58,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             //client.listenChildChanged(discoveryRootPath0);
             client.watchChildChanged(discoveryRootPath0, latch, this::doRefreshDiscoveryServers);
         } catch (Exception e) {
-            throw new IllegalStateException("Connect zookeeper failed: " + config, e);
+            throw new RuntimeException("Connect zookeeper failed: " + config, e);
         } finally {
             latch.countDown();
         }

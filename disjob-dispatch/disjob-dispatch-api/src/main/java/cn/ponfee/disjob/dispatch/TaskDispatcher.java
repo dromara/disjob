@@ -135,10 +135,10 @@ public abstract class TaskDispatcher implements AutoCloseable {
                     log.error("Dispatched task failed " + dispatchParam);
                     result = false;
                 }
-            } catch (Exception e) {
+            } catch (Throwable t) {
                 // dispatch error, delay retry
                 retry(dispatchParam);
-                log.error("Dispatch task error: " + dispatchParam, e);
+                log.error("Dispatch task error: " + dispatchParam, t);
                 result = false;
             }
         }

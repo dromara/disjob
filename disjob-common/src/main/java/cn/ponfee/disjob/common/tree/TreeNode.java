@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -314,7 +315,7 @@ public final class TreeNode<T extends Serializable & Comparable<? super T>, A> e
         try {
             return print(e -> String.valueOf(e.getNid()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 

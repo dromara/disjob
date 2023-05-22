@@ -68,9 +68,9 @@ public abstract class AbstractHeartbeatThread extends Thread implements Startabl
                 try {
                     // true is busy loop
                     isBusyLoop = heartbeat();
-                } catch (Exception e) {
+                } catch (Throwable t) {
                     isBusyLoop = true;
-                    log.error("Heartbeat occur error, stopped=" + stopped, e);
+                    log.error("Heartbeat occur error, stopped=" + stopped, t);
                 }
 
                 long end = System.currentTimeMillis();

@@ -92,7 +92,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
             doRefreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            throw new RuntimeException(e);
         } finally {
             latch.countDown();
         }
@@ -126,8 +126,8 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             registered.remove(server);
             client.deleteKey(buildRegistryServerId(server));
             log.info("Etcd server deregister: {} | {}", registryRole.name(), server);
-        } catch (Exception e) {
-            log.error("Etcd server deregister error.", e);
+        } catch (Throwable t) {
+            log.error("Etcd server deregister error.", t);
         }
     }
 
@@ -176,8 +176,8 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
                 log.warn("Keep alive is null, will be create.");
                 try {
                     createLeaseIdAndKeepAlive();
-                } catch (Exception e) {
-                    log.error("keep alive check occur error.", e);
+                } catch (Throwable t) {
+                    log.error("keep alive check occur error.", t);
                 }
             }
         }
@@ -192,8 +192,8 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
                     client.revokeLease(leaseId);
                 }
                 createLeaseIdAndKeepAlive();
-            } catch (Exception e) {
-                log.error("Keep alive retry occur error.", e);
+            } catch (Throwable t) {
+                log.error("Keep alive retry occur error.", t);
             }
         }
     }

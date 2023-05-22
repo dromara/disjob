@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.tuple.Tuple2;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -37,7 +38,7 @@ public final class Fields {
             // reset accessible value
             f.setAccessible(false);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("failed to get unsafe instance", e);
+            throw new SecurityException("failed to get unsafe instance", e);
         }
     }
 
@@ -78,7 +79,7 @@ public final class Fields {
             Tuple2<?, Field> tuple = getField(target, name);
             put(tuple.a, tuple.b, value);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            ExceptionUtils.rethrow(e);
         }
     }
 
@@ -93,7 +94,7 @@ public final class Fields {
             Tuple2<?, Field> tuple = getField(target, name);
             putIfNull(tuple.a, tuple.b, value);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            ExceptionUtils.rethrow(e);
         }
     }
 
@@ -151,7 +152,7 @@ public final class Fields {
             Tuple2<?, Field> tuple = getField(target, name);
             return get(tuple.a, tuple.b);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -227,7 +228,7 @@ public final class Fields {
             Tuple2<?, Field> tuple = getField(target, name);
             return getVolatile(tuple.a, tuple.b);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 

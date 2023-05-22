@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -35,14 +36,14 @@ import static org.springframework.core.io.support.ResourcePatternResolver.CLASSP
  *   new ResourceScanner("∕**∕").scan4text("*.class");
  *   new ResourceScanner("∕").scan4text("*.xml");
  *   new ResourceScanner("∕**∕").scan4text("*.xml")
- *   
+ *
  *   new ResourceScanner("code.ponfee").scan4class();
  *   new ResourceScanner("code.ponfee").scan4class(new Class[] { Service.class });
  *   new ResourceScanner(ClassUtils.getPackagePath(XXX.class)).scan4text("abc.txt");
  * </pre>
- * 
+ *
  * 资源扫描
- * 
+ *
  * @author Ponfee
  * @see org.springframework.context.annotation.ClassPathBeanDefinitionScanner
  */
@@ -118,13 +119,13 @@ public class ResourceScanner {
             }
             return result;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
     /**
      * Scan as byte array
-     * 
+     *
      * @return Map<String, byte[]>
      */
     public Map<String, byte[]> scan4binary() {
@@ -133,7 +134,7 @@ public class ResourceScanner {
 
     /**
      * Scan as byte array
-     * 
+     *
      * @param wildcard 通配符
      * @return a result of Map<String, byte[]>
      */
@@ -160,13 +161,13 @@ public class ResourceScanner {
             }
             return result;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
     /**
      * 文本扫描
-     * 
+     *
      * @return
      */
     public Map<String, String> scan4text() {
@@ -175,7 +176,7 @@ public class ResourceScanner {
 
     /**
      * 文本扫描
-     * 
+     *
      * @param wildcard
      * @return
      */
@@ -185,7 +186,7 @@ public class ResourceScanner {
 
     /**
      * 文本扫描
-     * 
+     *
      * @param wildcard
      * @param charset
      * @return
@@ -201,7 +202,7 @@ public class ResourceScanner {
     // --------------------------------------------------------------------------private methods
     /**
      * 检查当前扫描到的Bean含有任何一个指定的注解标记
-     * 
+     *
      * @param reader the MetadataReader
      * @param typeFilters the List<TypeFilter>
      * @param factory the MetadataReaderFactory

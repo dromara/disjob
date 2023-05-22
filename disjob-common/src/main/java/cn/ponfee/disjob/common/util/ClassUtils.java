@@ -16,6 +16,9 @@ import com.google.common.base.Joiner;
 import groovy.lang.GroovyClassLoader;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.objenesis.ObjenesisHelper;
 import org.springframework.util.Assert;
 
@@ -35,6 +38,8 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 public final class ClassUtils {
+
+    private final static Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
 
     public static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 
@@ -57,13 +62,13 @@ public final class ClassUtils {
                 try {
                     return Class.forName(text);
                 } catch (Exception ignored) {
-                    ignored.printStackTrace();
+                    // ignored
                 }
             }
             try {
                 return GROOVY_CLASS_LOADER.parseClass(text);
-            } catch (Exception ignored) {
-                ignored.printStackTrace();
+            } catch (Exception e) {
+                LOG.warn("Parse source class code occur error.", e);
                 return Null.class;
             }
         });
@@ -98,7 +103,7 @@ public final class ClassUtils {
         } while (clazz != null && clazz != Object.class);
 
         // not found
-        throw new RuntimeException(firstOccurException);
+        return ExceptionUtils.rethrow(firstOccurException);
     }
 
     public static Set<String> fieldDiff(Class<?> a, Class<?> b) {
@@ -173,7 +178,7 @@ public final class ClassUtils {
         }
 
         // not found
-        throw new RuntimeException(firstOccurException);
+        return ExceptionUtils.rethrow(firstOccurException);
     }
 
     /**
@@ -192,10 +197,10 @@ public final class ClassUtils {
             if (Modifier.isStatic(field.getModifiers())) {
                 return field;
             } else {
-                throw new RuntimeException("Non-static field " + getName(clazz) + "#" + staticFieldName);
+                throw new IllegalArgumentException("Non-static field " + getName(clazz) + "#" + staticFieldName);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -251,8 +256,9 @@ public final class ClassUtils {
         Constructor<T> constructor = (Constructor<T>) SynchronizedCaches.get(key, CONSTRUCTOR_CACHE, () -> {
             try {
                 return getConstructor0(type, parameterTypes);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
                 // No such constructor, use placeholder
+                LOG.warn("Get constructor occur error.", e);
                 return Null.BROKEN_CONSTRUCTOR;
             }
         });
@@ -272,7 +278,7 @@ public final class ClassUtils {
         try {
             return ArrayUtils.isEmpty(args) ? constructor.newInstance() : constructor.newInstance(args);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -286,7 +292,7 @@ public final class ClassUtils {
 
         Constructor<T> constructor = getConstructor(type, parameterTypes);
         if (constructor == null) {
-            throw new RuntimeException("No such constructor: " + getName(type) + toString(parameterTypes));
+            throw new IllegalArgumentException("No such constructor: " + getName(type) + toString(parameterTypes));
         }
         return newInstance(constructor, args);
     }
@@ -315,7 +321,7 @@ public final class ClassUtils {
         Class<?>[] parameterTypes = parseParameterTypes(args);
         Constructor<T> constructor = obtainConstructor(type, parameterTypes);
         if (constructor == null) {
-            throw new RuntimeException("Not found constructor: " + getName(type) + toString(parameterTypes));
+            throw new IllegalArgumentException("Not found constructor: " + getName(type) + toString(parameterTypes));
         }
         return newInstance(constructor, args);
     }
@@ -330,8 +336,9 @@ public final class ClassUtils {
             try {
                 Method m = getMethod0(type, methodName, parameterTypes);
                 return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
-            } catch (Exception ignored) {
+            } catch (Exception e) {
                 // No such method, use placeholder
+                LOG.warn("Get method occur error.", e);
                 return Null.BROKEN_METHOD;
             }
         });
@@ -350,7 +357,7 @@ public final class ClassUtils {
         try {
             return (T) (ArrayUtils.isEmpty(args) ? method.invoke(caller) : method.invoke(caller, args));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -363,7 +370,7 @@ public final class ClassUtils {
         checkSameLength(parameterTypes, args);
         Method method = getMethod(caller, methodName, parameterTypes);
         if (method == null) {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                 "No such method: " + getName(caller.getClass()) + "#" + methodName + toString(parameterTypes)
             );
         }
@@ -380,7 +387,7 @@ public final class ClassUtils {
         Method method = obtainMethod(caller, methodName, parameterTypes);
         if (method == null) {
             Class<?> clazz = (caller instanceof Class<?>) ? (Class<?>) caller : caller.getClass();
-            throw new RuntimeException("Not found method: " + getName(clazz) + "#" + methodName + toString(parameterTypes));
+            throw new IllegalArgumentException("Not found method: " + getName(clazz) + "#" + methodName + toString(parameterTypes));
         }
         return invoke(caller, method, args);
     }
@@ -446,13 +453,13 @@ public final class ClassUtils {
             return;
         }
         if (a.length != b.length) {
-            throw new RuntimeException("Two array are different length: " + a.length + ", " + b.length);
+            throw new IllegalArgumentException("Two array are different length: " + a.length + ", " + b.length);
         }
     }
 
     private static void checkObjectArray(Object[] array) {
         if (array != null && array.getClass() != Object[].class) {
-            throw new RuntimeException("Args must Object[] type, but actual is " + array.getClass().getSimpleName());
+            throw new IllegalArgumentException("Args must Object[] type, but actual is " + array.getClass().getSimpleName());
         }
     }
 

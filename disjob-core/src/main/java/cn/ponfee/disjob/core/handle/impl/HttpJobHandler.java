@@ -99,9 +99,9 @@ public class HttpJobHandler extends JobHandler<String> {
             } else {
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + res.getStatusCode() + ", response: " + res.getBody());
             }
-        } catch (Exception e) {
-            log.error("Http request failed: " + task(), e);
-            return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), Throwables.getRootCauseMessage(e));
+        } catch (Throwable t) {
+            log.error("Http request failed: " + task(), t);
+            return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), Throwables.getRootCauseMessage(t));
         }
     }
 

@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -62,7 +63,7 @@ public final class ThreadPoolExecutors {
                 executor.getQueue().put(task);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Put a task to queue occur error: BLOCK_PRODUCER", e);
+                ExceptionUtils.rethrow(e);
             }
         }
     };
@@ -176,10 +177,10 @@ public final class ThreadPoolExecutors {
                 // do nothing
             }
             return true;
-        } catch (Exception e) {
-            LOG.error("Shutdown ExecutorService occur error.", e);
+        } catch (Throwable t) {
+            LOG.error("Shutdown ExecutorService occur error.", t);
             executorService.shutdownNow();
-            Threads.interruptIfNecessary(e);
+            Threads.interruptIfNecessary(t);
             return false;
         }
     }
@@ -200,12 +201,12 @@ public final class ThreadPoolExecutors {
                 hasCallShutdownNow = true;
                 executorService.shutdownNow();
             }
-        } catch (Exception e) {
-            LOG.error("Shutdown ExecutorService occur error.", e);
+        } catch (Throwable t) {
+            LOG.error("Shutdown ExecutorService occur error.", t);
             if (!hasCallShutdownNow) {
                 executorService.shutdownNow();
             }
-            Threads.interruptIfNecessary(e);
+            Threads.interruptIfNecessary(t);
         }
         return isSafeTerminated;
     }

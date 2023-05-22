@@ -253,9 +253,9 @@ public class CuratorFrameworkClient implements AutoCloseable {
             long sessionId;
             try {
                 sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
-            } catch (Exception e) {
+            } catch (Throwable t) {
                 sessionId = UNKNOWN_SESSION_ID;
-                LOG.warn("Curator client state changed, get session instance error.", e);
+                LOG.warn("Curator client state changed, get session instance error.", t);
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;

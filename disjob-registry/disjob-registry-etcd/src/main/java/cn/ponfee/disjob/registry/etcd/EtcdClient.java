@@ -106,8 +106,8 @@ public class EtcdClient implements AutoCloseable {
                     } else {
                         listener.onDisconnected(this);
                     }
-                } catch (Exception e) {
-                    LOG.error("Notify connection state changed occur error: " + currConnectState, e);
+                } catch (Throwable t) {
+                    LOG.error("Notify connection state changed occur error: " + currConnectState, t);
                 }
             }
             this.lastConnectState = currConnectState;
@@ -291,8 +291,8 @@ public class EtcdClient implements AutoCloseable {
                 try {
                     List<String> children = getKeyChildren(parentKey);
                     processor.accept(children);
-                } catch (Exception e) {
-                    LOG.error("Get key '" + parentKey + "' children occur error.", e);
+                } catch (Throwable t) {
+                    LOG.error("Get key '" + parentKey + "' children occur error.", t);
                 }
             });
         }

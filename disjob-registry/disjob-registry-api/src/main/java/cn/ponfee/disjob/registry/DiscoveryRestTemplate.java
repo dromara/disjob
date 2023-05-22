@@ -129,7 +129,7 @@ public class DiscoveryRestTemplate<D extends Server> {
             }
         }
 
-        throw new IllegalStateException("Invoke http retried failed: " + path + ", " + Jsons.toJson(arguments), ex);
+        throw new RuntimeException("Invoke http retried failed: " + path + ", " + Jsons.toJson(arguments), ex);
     }
 
     public Discovery<D> getDiscoveryServer() {

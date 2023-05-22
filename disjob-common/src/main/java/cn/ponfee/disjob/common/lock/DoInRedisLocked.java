@@ -36,8 +36,8 @@ public class DoInRedisLocked implements DoInLocked {
 
         try {
             return caller.call();
-        } catch (Exception e) {
-            LOG.error("Do in redis lock occur error.", e);
+        } catch (Throwable t) {
+            LOG.error("Do in redis lock occur error.", t);
             return null;
         } finally {
             redisLock.unlock();

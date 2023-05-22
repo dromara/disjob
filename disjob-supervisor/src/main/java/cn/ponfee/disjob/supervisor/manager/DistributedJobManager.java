@@ -931,8 +931,8 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
             try {
                 // re-split tasks
                 tasks = splitTasks(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
-            } catch (Exception e) {
-                log.error("Split retry job error: " + schedJob + ", " + prev, e);
+            } catch (Throwable t) {
+                log.error("Split retry job error: " + schedJob + ", " + prev, t);
                 processWorkflow(prev);
                 return;
             }

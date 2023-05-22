@@ -11,6 +11,7 @@ package cn.ponfee.disjob.common.util;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -193,7 +194,7 @@ public final class Files {
             ByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, channel.size());
             return charset.decode(buffer).toString();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -212,7 +213,7 @@ public final class Files {
             buffer.get(bytes, 0, bytes.length);
             return bytes;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 

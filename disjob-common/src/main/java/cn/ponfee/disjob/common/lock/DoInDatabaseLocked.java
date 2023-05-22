@@ -55,29 +55,29 @@ public final class DoInDatabaseLocked implements DoInLocked {
 
                 // got the lock, then do callable
                 return caller.call();
-            } catch (Exception e) {
-                LOG.error("Do in db lock occur error.", e);
+            } catch (Throwable t) {
+                LOG.error("Do in db lock occur error.", t);
                 return null;
             } finally {
                 try {
                     // release the lock
                     connection.commit();
-                } catch (Exception e) {
-                    LOG.error("Commit connection occur error.", e);
+                } catch (Throwable t) {
+                    LOG.error("Commit connection occur error.", t);
                 }
                 if (autoCommit != null) {
                     try {
                         // restore the auto-commit config
                         connection.setAutoCommit(autoCommit);
-                    } catch (Exception e) {
-                        LOG.error("Restore connection auto-commit occur error.", e);
+                    } catch (Throwable t) {
+                        LOG.error("Restore connection auto-commit occur error.", t);
                     }
                 }
                 if (ps != null) {
                     try {
                         ps.close();
-                    } catch (Exception e) {
-                        LOG.error("Close prepare statement occur error.", e);
+                    } catch (Throwable t) {
+                        LOG.error("Close prepare statement occur error.", t);
                     }
                 }
             }

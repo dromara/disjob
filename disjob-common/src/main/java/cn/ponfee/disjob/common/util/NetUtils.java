@@ -427,9 +427,9 @@ public final class NetUtils {
                 if (networkNames.stream().anyMatch(e -> e.equals(regex) || e.matches(regex))) {
                     return true;
                 }
-            } catch (Exception e) {
+            } catch (Throwable t) {
                 // if regex is invalid regular expression, will be thrown PatternSyntaxException
-                LOG.warn("exception occurred: " + networkNames + " matches " + regex, e);
+                LOG.warn("exception occurred: " + networkNames + " matches " + regex, t);
             }
         }
         return false;

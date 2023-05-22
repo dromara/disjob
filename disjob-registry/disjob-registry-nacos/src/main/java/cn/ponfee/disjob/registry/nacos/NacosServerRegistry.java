@@ -64,7 +64,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             namingService.subscribe(discoveryRootPath, groupName, eventListener);
             doRefreshDiscoveryServers(namingService.selectInstances(discoveryRootPath, groupName, true));
         } catch (NacosException e) {
-            throw new IllegalStateException(e);
+            throw new RuntimeException(e);
         } finally {
             latch.countDown();
         }
@@ -100,8 +100,8 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             registered.remove(server);
             namingService.deregisterInstance(registryRootPath, groupName, instance);
             log.info("Nacos server deregister: {} | {}", registryRole.name(), server);
-        } catch (Exception e) {
-            log.error("Nacos server deregister error.", e);
+        } catch (Throwable t) {
+            log.error("Nacos server deregister error.", t);
         }
     }
 

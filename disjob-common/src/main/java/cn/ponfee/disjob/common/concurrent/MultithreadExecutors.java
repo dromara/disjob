@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.concurrent;
 
 import com.google.common.base.Stopwatch;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,11 +137,9 @@ public class MultithreadExecutors {
                 Future<T> future = service.take();
                 accept.accept(future.get());
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            Threads.interruptIfNecessary(e);
+            ExceptionUtils.rethrow(e);
         }
     }
 

@@ -33,7 +33,7 @@ public class DBUtils {
 
     public static final String DB_NAME = "disjob";
     public static final String USERNAME = "disjob";
-    public static final String PASSWORD = "disjob123456";
+    public static final String PASSWORD = "disjob$123456";
     public static final String DB_SCRIPT_PATH = "mysql-schema.sql";
 
     public static JdbcTemplate createJdbcTemplate(String url, String username, String password) {

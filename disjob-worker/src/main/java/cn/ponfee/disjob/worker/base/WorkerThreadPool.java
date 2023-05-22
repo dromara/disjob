@@ -54,7 +54,7 @@ import static cn.ponfee.disjob.core.enums.ExecuteState.*;
 public class WorkerThreadPool extends Thread implements Startable {
 
     private final static Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
-    private final static int ERROR_MSG_MAX_LENGTH = 2048;
+    private final static int ERROR_MSG_MAX_LENGTH = 1024;
 
     /**
      * This jdk thread pool for asynchronous to stop(pause or cancel) task
@@ -280,8 +280,8 @@ public class WorkerThreadPool extends Thread implements Startable {
         } catch (InterruptedException e) {
             LOG.error("Thread pool running interrupted.", e);
             Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            LOG.error("Thread pool running occur error.", e);
+        } catch (Throwable t) {
+            LOG.error("Thread pool running occur error.", t);
         }
 
         close();
@@ -378,11 +378,11 @@ public class WorkerThreadPool extends Thread implements Startable {
 
     // -------------------------------------------------------------------private static definitions
 
-    private static String toErrorMsg(Exception e) {
-        if (e == null) {
+    private static String toErrorMsg(Throwable t) {
+        if (t == null) {
             return null;
         }
-        String errorMsg = Throwables.getRootCauseStackTrace(e);
+        String errorMsg = Throwables.getRootCauseStackTrace(t);
         if (errorMsg.length() > ERROR_MSG_MAX_LENGTH) {
             errorMsg = errorMsg.substring(0, ERROR_MSG_MAX_LENGTH);
         }
@@ -404,9 +404,9 @@ public class WorkerThreadPool extends Thread implements Startable {
             if (!client.terminateTask(terminateTaskParam)) {
                 LOG.warn("Terminate task failed: {} | {} | {}", param.getTaskId(), ops, toState);
             }
-        } catch (Exception e) {
+        } catch (Throwable t) {
             LOG.error("Terminate task error: " + param.getTaskId() + " | " + ops + " | " + toState);
-            Threads.interruptIfNecessary(e);
+            Threads.interruptIfNecessary(t);
         }
     }
 
@@ -435,9 +435,9 @@ public class WorkerThreadPool extends Thread implements Startable {
             if (!success) {
                 LOG.error("Stop instance failed: {} | {}", param.getTaskId(), ops);
             }
-        } catch (Exception e) {
-            LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, e);
-            Threads.interruptIfNecessary(e);
+        } catch (Throwable t) {
+            LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, t);
+            Threads.interruptIfNecessary(t);
         }
     }
 
@@ -471,9 +471,9 @@ public class WorkerThreadPool extends Thread implements Startable {
 
             try {
                 workerThread.execute(param);
-            } catch (Exception e) {
+            } catch (Throwable t) {
                 workerThread.updateExecuteParam(param, null);
-                throw e;
+                throw t;
             }
             pool.put(param.getTaskId(), workerThread);
         }
@@ -541,8 +541,8 @@ public class WorkerThreadPool extends Thread implements Startable {
                     // 2、then stop the work thread
                     try {
                         WorkerThreadPool.this.stopWorkerThread(workerThread, true);
-                    } catch (Exception e) {
-                        LOG.error("Stop worker thread occur error on thread pool close: " + param + " | " + workerThread, e);
+                    } catch (Throwable t) {
+                        LOG.error("Stop worker thread occur error on thread pool close: " + param + " | " + workerThread, t);
                     }
 
                     // 3、finally update the sched task state
@@ -698,9 +698,9 @@ public class WorkerThreadPool extends Thread implements Startable {
                 try {
                     runTask(param);
                     // Thread#stop() will occur "java.lang.ThreadDeath: null" if wrapped in Throwable
-                } catch (Exception e) {
-                    terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(e));
-                    LOG.error("Worker thread execute failed: " + param, e);
+                } catch (Throwable t) {
+                    terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                    LOG.error("Worker thread execute failed: " + param, t);
                 }
 
                 // return this to idle thread pool
@@ -731,8 +731,8 @@ public class WorkerThreadPool extends Thread implements Startable {
                     LOG.warn("Task start conflicted {}", param);
                     return;
                 }
-            } catch (Exception e) {
-                LOG.warn("Start task fail: " + param, e);
+            } catch (Throwable t) {
+                LOG.warn("Start task fail: " + param, t);
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
@@ -746,9 +746,9 @@ public class WorkerThreadPool extends Thread implements Startable {
             TaskExecutor<?> taskExecutor;
             try {
                 taskExecutor = JobHandlerUtils.load(param.getJobHandler());
-            } catch (Exception e) {
-                LOG.error("Load job handler error: " + param, e);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(e));
+            } catch (Throwable t) {
+                LOG.error("Load job handler error: " + param, t);
+                terminateTask(supervisorClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
                 return;
             }
 
@@ -757,9 +757,9 @@ public class WorkerThreadPool extends Thread implements Startable {
 
             try {
                 taskExecutor.verify();
-            } catch (Exception e) {
-                LOG.error("Task verify failed: " + param, e);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
+            } catch (Throwable t) {
+                LOG.error("Task verify failed: " + param, t);
+                terminateTask(supervisorClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(t));
                 return;
             }
 
@@ -767,9 +767,9 @@ public class WorkerThreadPool extends Thread implements Startable {
             try {
                 taskExecutor.init();
                 LOG.info("Initiated sched task {}", param.getTaskId());
-            } catch (Exception e) {
-                LOG.error("Task init error: " + param, e);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(e));
+            } catch (Throwable t) {
+                LOG.error("Task init error: " + param, t);
+                terminateTask(supervisorClient, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
                 return;
             }
 
@@ -809,16 +809,16 @@ public class WorkerThreadPool extends Thread implements Startable {
             } catch (CancelTaskException e) {
                 LOG.error("Task exception do cancel: " + param, e);
                 stopInstance(supervisorClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
-            } catch (Exception e) {
-                LOG.error("Task execute occur error: " + param, e);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(e));
+            } catch (Throwable t) {
+                LOG.error("Task execute occur error: " + param, t);
+                terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
             } finally {
                 // 5、destroy
                 try {
                     taskExecutor.destroy();
                     LOG.info("Destroyed sched task: {}", param.getTaskId());
-                } catch (Exception e) {
-                    LOG.error("Task destroy error: " + param, e);
+                } catch (Throwable t) {
+                    LOG.error("Task destroy error: " + param, t);
                 }
             } // end of try catch block
         } // end of runTask method

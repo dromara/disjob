@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -49,7 +51,7 @@ public class ExtendMethodHandles {
                 try {
                     return (Lookup) java9PrivateLookupInMethod.invoke(MethodHandles.class, callerClass, MethodHandles.lookup());
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                    return ExceptionUtils.rethrow(e);
                 }
             };
         } else {
@@ -86,7 +88,7 @@ public class ExtendMethodHandles {
         try {
             return lookup.in(declaringClass).unreflectSpecial(parentMethod, declaringClass);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 

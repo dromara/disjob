@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 
 /**
  * The {@code Null} class is representing unable instance object
- * 
+ *
  * @author Ponfee
  */
 public final class Null implements Serializable {
@@ -29,7 +29,7 @@ public final class Null implements Serializable {
             BROKEN_METHOD = Null.class.getDeclaredMethod("broken");
         } catch (Exception e) {
             // cannot happen
-            throw new RuntimeException(e);
+            throw new SecurityException(e);
         }
     }
 

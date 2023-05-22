@@ -148,10 +148,10 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             job.setRemark(StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
             job.setNextTriggerTime(null);
             jobManager.stopJob(job);
-        } catch (Exception e) {
-            log.error("Scan trigger job error: " + job, e);
+        } catch (Throwable t) {
+            log.error("Scan trigger job error: " + job, t);
             if (job.getFailedScanCount() >= FAILED_SCAN_COUNT_THRESHOLD) {
-                job.setRemark(StringUtils.truncate("Scan over failed: " + e.getMessage(), REMARK_MAX_LENGTH));
+                job.setRemark(StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
                 job.setNextTriggerTime(null);
                 jobManager.stopJob(job);
             } else {

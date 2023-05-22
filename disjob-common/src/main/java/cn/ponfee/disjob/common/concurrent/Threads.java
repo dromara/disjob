@@ -107,10 +107,10 @@ public final class Threads {
                 return false;
             }
             try {
+                // It will be throws "java.lang.ThreadDeath: null"
                 thread.stop();
-                // cannot catch Throwable, because it will occur "java.lang.ThreadDeath: null"
-            } catch (Exception e) {
-                LOG.error("Invoke thread stop occur error: " + thread.getName(), e);
+            } catch (Throwable t) {
+                LOG.error("Invoke thread stop occur error: " + thread.getName(), t);
             }
             LOG.warn("Invoked java.lang.Thread#stop() method: {}", thread.getName());
         }

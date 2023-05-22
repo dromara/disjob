@@ -168,8 +168,8 @@ public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
                     jdbcTemplateWrapper.insert(REGISTER_WORKER_SQL, args);
                     LOG.info("Create snowflake db worker success: {} | {} | {} | {}", args);
                     return usableWorkerId;
-                } catch (Exception e) {
-                    LOG.warn("Registry snowflake db worker failed: " + e.getMessage() + ", args: {} | {} | {} | {}", args);
+                } catch (Throwable t) {
+                    LOG.warn("Registry snowflake db worker failed: " + t.getMessage() + ", args: {} | {} | {} | {}", args);
                 }
             }
             throw new IllegalStateException("Cannot found usable db worker id: " + bizTag + ", " + serverTag);

@@ -172,7 +172,7 @@ public class ScriptJobHandler extends JobHandler<String> {
 
         FileUtils.forceMkdirParent(scriptFile);
         if (!scriptFile.createNewFile()) {
-            throw new RuntimeException("Create script file failed: " + scriptPath);
+            throw new IllegalStateException("Create script file failed: " + scriptPath);
         }
 
         // download script from url

@@ -73,8 +73,8 @@ public class RedisKeyRenewal {
                 redisTemplate.execute((RedisCallback<?>) conn -> conn.pExpire(byteKey, ttlMillis));
                 this.nextRenewTimeMillis = System.currentTimeMillis() + intervalMillis;
                 LOG.debug("Renewed redis key '{}' successful.", stringKey);
-            } catch (Exception e) {
-                LOG.warn("Renew redis key '" + stringKey + "' occur error.", e);
+            } catch (Throwable t) {
+                LOG.warn("Renew redis key '" + stringKey + "' occur error.", t);
             } finally {
                 lock.unlock();
             }

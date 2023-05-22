@@ -150,9 +150,9 @@ public class RotatingTimingWheel implements Startable {
                     .collect(Collectors.toList());
                 try {
                     supervisorServiceClient.updateTaskWorker(list);
-                } catch (Exception e) {
+                } catch (Throwable t) {
                     // must do submit if occur exception
-                    LOG.error("Update task worker error: " + Jsons.toJson(list), e);
+                    LOG.error("Update task worker error: " + Jsons.toJson(list), t);
                 }
                 batchTriggers.forEach(workerThreadPool::submit);
             }

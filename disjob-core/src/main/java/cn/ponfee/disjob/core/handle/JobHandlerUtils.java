@@ -36,7 +36,7 @@ public class JobHandlerUtils {
         try {
             List<SplitTask> tasks = split(jobHandler, jobParams);
             return CollectionUtils.isNotEmpty(tasks);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             return false;
         }
     }

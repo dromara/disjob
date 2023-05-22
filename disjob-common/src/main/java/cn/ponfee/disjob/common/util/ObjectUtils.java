@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.reflect.Array;
 import java.text.ParseException;
@@ -173,7 +174,7 @@ public final class ObjectUtils {
             try {
                 return (T) JavaUtilDateFormat.DEFAULT.parse(text);
             } catch (ParseException e) {
-                throw new RuntimeException(e);
+                return ExceptionUtils.rethrow(e);
             }
         }
 

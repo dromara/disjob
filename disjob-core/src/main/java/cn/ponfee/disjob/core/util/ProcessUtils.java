@@ -44,9 +44,9 @@ public class ProcessUtils {
                 log.error("Execute failed: {} | {} | {} | {}", task, code, verbose, error);
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Execute failed: code=" + code + ", error=" + error);
             }
-        } catch (Exception e) {
-            log.error("Execute error: " + task, e);
-            return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Execute error: " + Throwables.getRootCauseMessage(e));
+        } catch (Throwable t) {
+            log.error("Execute error: " + task, t);
+            return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Execute error: " + Throwables.getRootCauseMessage(t));
         }
     }
 

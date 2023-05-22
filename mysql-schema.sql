@@ -20,7 +20,7 @@ USE disjob;
 -- USER PRIVILEGES
 -- ----------------------------
 -- GRANT ALL PRIVILEGES ON disjob.* TO 'disjob'@'%' IDENTIFIED BY 'disjob';
-CREATE USER 'disjob'@'%' IDENTIFIED BY 'disjob123456';
+CREATE USER 'disjob'@'%' IDENTIFIED BY 'disjob$123456';
 GRANT ALL PRIVILEGES ON disjob.* TO 'disjob'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 
@@ -29,7 +29,7 @@ FLUSH PRIVILEGES;
 -- CREATE TABLE
 -- ----------------------------
 CREATE TABLE `sched_job` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `job_id`              BIGINT         UNSIGNED  NOT NULL                               COMMENT '全局唯一ID',
   `job_group`           VARCHAR(60)              NOT NULL                               COMMENT 'Job分组(用于分配给同组下的Worker执行)',
   `job_name`            VARCHAR(60)              NOT NULL                               COMMENT 'Job名称',
@@ -70,7 +70,7 @@ CREATE TABLE `sched_job` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度配置表';
 
 CREATE TABLE `sched_instance` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `instance_id`         BIGINT         UNSIGNED  NOT NULL                               COMMENT '全局唯一ID',
   `rnstance_id`         BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT 'root instance_id(Retry、Depend、Workflow)',
   `pnstance_id`         BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT 'parent instance_id(Retry、Depend、Workflow)',
@@ -98,7 +98,7 @@ CREATE TABLE `sched_instance` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度实例表';
 
 CREATE TABLE `sched_task` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `task_id`             BIGINT         UNSIGNED  NOT NULL                               COMMENT '全局唯一ID',
   `instance_id`         BIGINT         UNSIGNED  NOT NULL                               COMMENT 'sched_instance.instance_id',
   `task_no`             INT            UNSIGNED  NOT NULL                               COMMENT '任务序号(从1开始)',
@@ -110,7 +110,7 @@ CREATE TABLE `sched_task` (
   `execute_state`       TINYINT        UNSIGNED  NOT NULL                               COMMENT '执行状态：10-等待执行；20-正在执行；30-暂停执行；40-正常完成；50-实例化失败取消；51-校验失败取消；52-初始化异常取消；53-执行失败取消；54-执行异常取消；55-执行超时取消；56-执行冲突取消(sched_job.collision_strategy=3)；57-手动取消；58-广播未执行取消；',
   `execute_snapshot`    TEXT                               DEFAULT NULL                 COMMENT '保存的执行快照数据',
   `worker`              VARCHAR(255)                       DEFAULT NULL                 COMMENT '工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)',
-  `error_msg`           VARCHAR(2048)                      DEFAULT NULL                 COMMENT '执行错误信息',
+  `error_msg`           VARCHAR(1024)                      DEFAULT NULL                 COMMENT '执行错误信息',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -122,7 +122,7 @@ CREATE TABLE `sched_task` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度任务表';
 
 CREATE TABLE `sched_lock` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `name`                VARCHAR(50)              NOT NULL                               COMMENT '锁名称',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -133,7 +133,7 @@ CREATE TABLE `sched_lock` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='数据库锁';
 
 CREATE TABLE `sched_depend` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `parent_job_id`       BIGINT         UNSIGNED  NOT NULL                               COMMENT '父job_id',
   `child_job_id`        BIGINT         UNSIGNED  NOT NULL                               COMMENT '子job_id',
   `sequence`            INT            UNSIGNED  NOT NULL                               COMMENT '序号(从1开始)',
@@ -147,7 +147,7 @@ CREATE TABLE `sched_depend` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度依赖表';
 
 CREATE TABLE `sched_workflow` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `wnstance_id`         BIGINT         UNSIGNED  NOT NULL                               COMMENT 'sched_instance.wnstance_id',
   `cur_node`            VARCHAR(255)             NOT NULL                               COMMENT '当前任务节点(section:ordinal:name)',
   `pre_node`            VARCHAR(255)             NOT NULL                               COMMENT '前置任务节点(section:ordinal:name)',
@@ -164,7 +164,7 @@ CREATE TABLE `sched_workflow` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度工作流表';
 
 CREATE TABLE `sched_registry` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `group_name`          VARCHAR(60)              NOT NULL                               COMMENT '分组名',
   `server_address`      VARCHAR(128)             NOT NULL                               COMMENT '服务器地址(hostname或ip)',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
@@ -176,7 +176,7 @@ CREATE TABLE `sched_registry` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='worker注册表(database作为注册中心时使用)';
 
 CREATE TABLE `sched_group` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `group_name`          VARCHAR(60)              NOT NULL                               COMMENT '分组名(同sched_job.job_group)',
   `token`               VARCHAR(255)                       DEFAULT NULL                 COMMENT '密钥令牌，用于认证',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
@@ -188,7 +188,7 @@ CREATE TABLE `sched_group` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分组表';
 
 CREATE TABLE `sched_user` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL                               COMMENT '自增主键ID' AUTO_INCREMENT,
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `username`            VARCHAR(60)              NOT NULL                               COMMENT '用户名',
   `password`            VARCHAR(255)             NOT NULL                               COMMENT '密码',
   `group_name`          VARCHAR(512)             NOT NULL                               COMMENT '分组名(多个逗号分隔)',
