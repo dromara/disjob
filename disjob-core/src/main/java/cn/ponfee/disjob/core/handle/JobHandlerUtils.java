@@ -8,14 +8,12 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.JobException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.Assert;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -72,12 +70,10 @@ public class JobHandlerUtils {
      * @throws JobException if new instance failed
      */
     public static JobHandler<?> load(String text) throws JobException {
-        if (SpringContextHolder.isInitialized()) {
-            JobHandler<?> bean = ThrowingSupplier.ignored(() -> SpringContextHolder.getBean(text, JobHandler.class));
-            if (bean != null) {
-                Assert.isTrue(SpringContextHolder.isPrototype(text), () -> "Job handler spring bean name must be prototype: " + text);
-                return bean;
-            }
+        JobHandler<?> handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);
+        if (handler != null) {
+            // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+            return handler;
         }
 
         Class<JobHandler<?>> type = ClassUtils.getClass(text);
@@ -90,30 +86,15 @@ public class JobHandlerUtils {
             throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid class type: " + ClassUtils.getName(type) + ", " + text);
         }
 
-        return load(type);
-    }
-
-    // ------------------------------------------------------------private methods
-
-    private static <T> T load(Class<T> type) {
-        if (!SpringContextHolder.isInitialized()) {
-            return ClassUtils.newInstance(type);
-        }
-
-        T bean = ThrowingSupplier.ignored(() -> SpringContextHolder.getBean(type));
-        if (bean != null) {
+        handler = SpringContextHolder.getPrototypeBean(type);
+        if (handler != null) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-            Assert.isTrue(SpringContextHolder.isPrototype(type), () -> "Job handler spring bean type must be prototype: " + type);
-            return bean;
+            return handler;
         }
 
-        return create(type);
-    }
-
-    private static <T> T create(Class<T> type) {
-        T object = ClassUtils.newInstance(type);
-        SpringContextHolder.autowire(object);
-        return object;
+        handler = ClassUtils.newInstance(type);
+        SpringContextHolder.autowire(handler);
+        return handler;
     }
 
 }

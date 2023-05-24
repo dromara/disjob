@@ -8,220 +8,172 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.Assert;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 /**
- * <pre>
- * ContextLoaderListener的bean factory是DispatcherServlet的parent
- * spring上下文无法访问spring mvc上下文，但spring mvc上下文却能访问spring上下文，使用List<ApplicationContext>解决
- * </pre>
- *
- * spring上下文持有类
+ * Spring container context holder
  *
  * @author Ponfee
  */
-public class SpringContextHolder implements ApplicationContextAware, DisposableBean {
+public class SpringContextHolder implements ApplicationContextAware {
 
-    private static final List<ApplicationContext> HOLDER = new ArrayList<>();
-
-    private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
+    private static ApplicationContext applicationContext;
 
     @Override
-    public void setApplicationContext(ApplicationContext cxt) throws BeansException {
+    public void setApplicationContext(ApplicationContext cxt) {
         synchronized (SpringContextHolder.class) {
-            if (!HOLDER.contains(cxt)) {
-                HOLDER.add(cxt);
+            if (applicationContext != null) {
+                throw new IllegalStateException("Spring context holder already initialized.");
             }
-            INITIALIZED.compareAndSet(false, true);
+            applicationContext = cxt;
         }
     }
 
-    public static boolean isInitialized() {
-        return INITIALIZED.get();
-    }
-
     /**
-     * 通过名称获取bean
+     * Gets spring bean by bean name.
      *
-     * @param name
-     * @return
+     * @param beanName then bean name
+     * @return spring bean
      */
-    public static Object getBean(String name) {
-        return get(c -> c.getBean(name));
-    }
-
-    /**
-     * 通过类获取bean
-     *
-     * @param clazz
-     * @return
-     */
-    public static <T> T getBean(Class<T> clazz) {
-        return get(c -> c.getBean(clazz));
-    }
-
-    /**
-     * @param name
-     * @param clazz
-     * @return
-     */
-    public static <T> T getBean(String name, Class<T> clazz) {
-        return get(c -> c.getBean(name, clazz));
-    }
-
-    /**
-     * 判断是否含有该名称的Bean
-     *
-     * @param name
-     * @return
-     */
-    public static boolean containsBean(String name) {
-        for (ApplicationContext c : HOLDER) {
-            if (c.containsBean(name)) {
-                return true;
-            }
+    public static Object getBean(String beanName) throws BeansException {
+        if (applicationContext == null) {
+            return null;
         }
-        return false;
+        return applicationContext.getBean(beanName);
     }
 
     /**
-     * 判断Bean是否单例
+     * Gets spring bean by bean type.
      *
-     * @param name
-     * @return
+     * @param beanType the bean type
+     * @return spring bean
      */
-    public static boolean isSingleton(String name) {
-        BeansException ex = null;
-        for (ApplicationContext c : HOLDER) {
-            try {
-                if (c.isSingleton(name)) {
-                    return true;
-                }
-            } catch (BeansException e) {
-                if (ex == null) {
-                    ex = e;
-                }
-            }
+    public static <T> T getBean(Class<T> beanType) {
+        if (applicationContext == null) {
+            return null;
         }
-        if (ex == null) {
+        return applicationContext.getBean(beanType);
+    }
+
+    /**
+     * Gets spring bean by bean name and type.
+     *
+     * @param beanName the bean name
+     * @param beanType the bean type
+     * @return spring bean
+     */
+    public static <T> T getBean(String beanName, Class<T> beanType) {
+        if (applicationContext == null) {
+            return null;
+        }
+        return applicationContext.getBean(beanName, beanType);
+    }
+
+    /**
+     * Gets spring bean by bean name and type, if not defined bean then return null
+     *
+     * @param beanName the bean name
+     * @param beanType the bean type
+     * @return spring bean
+     * @throws IllegalStateException if not prototype bean
+     */
+    public static <T> T getPrototypeBean(String beanName, Class<T> beanType) throws IllegalStateException {
+        if (applicationContext == null) {
+            return null;
+        }
+
+        T bean;
+        try {
+            bean = applicationContext.getBean(beanName, beanType);
+        } catch (BeansException ignored) {
+            return null;
+        }
+
+        if (applicationContext.isPrototype(beanName)) {
+            return bean;
+        }
+        throw new IllegalStateException("Bean name is not a prototype bean: " + beanName + ", " + beanType);
+    }
+
+    /**
+     * Gets spring bean by bean type, if not defined bean then return null
+     *
+     * @param beanType the bean type
+     * @return spring bean
+     * @throws IllegalStateException if not prototype bean
+     */
+    public static <T> T getPrototypeBean(Class<T> beanType) throws IllegalStateException {
+        if (applicationContext == null) {
+            return null;
+        }
+
+        T bean;
+        try {
+            bean = applicationContext.getBean(beanType);
+        } catch (BeansException ignored) {
+            return null;
+        }
+
+        String[] beanNames = applicationContext.getBeanNamesForType(beanType);
+        if (Arrays.stream(beanNames).allMatch(applicationContext::isPrototype)) {
+            return bean;
+        }
+        throw new IllegalStateException("Bean type is not a prototype bean: " + beanType);
+    }
+
+    /**
+     * Returns spring container contains specified bean name.
+     *
+     * @param beanName the bean name
+     * @return {@code true} if contains bean
+     */
+    public static boolean containsBean(String beanName) {
+        if (applicationContext == null) {
             return false;
-        } else {
-            throw ex;
         }
-    }
-    public static boolean isPrototype(String name) {
-        BeansException ex = null;
-        for (ApplicationContext c : HOLDER) {
-            try {
-                if (c.isPrototype(name)) {
-                    return true;
-                }
-            } catch (BeansException e) {
-                if (ex == null) {
-                    ex = e;
-                }
-            }
-        }
-        if (ex == null) {
-            return false;
-        } else {
-            throw ex;
-        }
-    }
-
-    public static boolean isPrototype(Class<?> type) {
-        for (ApplicationContext c : HOLDER) {
-            String[] beanNames = c.getBeanNamesForType(type);
-            if (ArrayUtils.isNotEmpty(beanNames)) {
-                return Arrays.stream(beanNames).allMatch(c::isPrototype);
-            }
-        }
-        return false;
+        return applicationContext.containsBean(beanName);
     }
 
     /**
-     * 获取Bean的类型
+     * Returns spring bean name type.
      *
-     * @param name
-     * @return
+     * @param beanName then bean name
+     * @return bean name type
      */
-    public static Class<?> getType(String name) {
-        return get(c -> c.getType(name));
+    public static Class<?> getType(String beanName) {
+        if (applicationContext == null) {
+            return null;
+        }
+        return applicationContext.getType(beanName);
     }
 
     /**
-     * 获取bean的别名
+     * Returns spring bean name other alias name.
      *
-     * @param name
-     * @return
+     * @param beanName then bean name
+     * @return other alias name
      */
-    public static String[] getAliases(String name) {
-        return get(c -> c.getAliases(name)); // 不抛异常
-    }
-
-    /**
-     * Returns a map that conatain spec annotation beans
-     *
-     * @param annotationType the Annotation type
-     * @return a map
-     */
-    public static Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) {
-        return get(c -> c.getBeansWithAnnotation(annotationType));
+    public static String[] getAliases(String beanName) {
+        if (applicationContext == null) {
+            return null;
+        }
+        return applicationContext.getAliases(beanName);
     }
 
     /**
      * Autowire annotated from spring container for object
      *
-     * @param object the object
+     * @param bean the spring bean
      */
-    public static void autowire(Object object) {
-        Assert.state(HOLDER.size() > 0, "Must be defined SpringContextHolder within spring config file.");
-
-        for (ApplicationContext context : HOLDER) {
-            context.getAutowireCapableBeanFactory().autowireBean(object);
+    public static void autowire(Object bean) {
+        if (applicationContext == null) {
+            return;
         }
-    }
-
-    @Override
-    public void destroy() {
-        // no-op
-    }
-
-    // -----------------------------------------------------------------------
-
-    private static <T> T get(Function<ApplicationContext, T> finder) throws BeansException {
-        BeansException ex = null;
-        T result;
-        for (ApplicationContext c : HOLDER) {
-            try {
-                if ((result = finder.apply(c)) != null) {
-                    return result;
-                }
-            } catch (BeansException e) {
-                if (ex == null) {
-                    ex = e;
-                }
-            }
-        }
-
-        if (ex == null) {
-            return null;
-        } else {
-            throw ex;
-        }
+        applicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
     }
 
 }
