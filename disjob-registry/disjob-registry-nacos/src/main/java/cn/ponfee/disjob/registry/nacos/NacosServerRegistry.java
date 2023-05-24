@@ -11,6 +11,7 @@ package cn.ponfee.disjob.registry.nacos;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
 import com.alibaba.nacos.api.NacosFactory;
@@ -64,7 +65,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             namingService.subscribe(discoveryRootPath, groupName, eventListener);
             doRefreshDiscoveryServers(namingService.selectInstances(discoveryRootPath, groupName, true));
         } catch (NacosException e) {
-            throw new RuntimeException(e);
+            throw new RegistryException("Nacos registry init error: " + config, e);
         } finally {
             latch.countDown();
         }
@@ -89,7 +90,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             registered.add(server);
             log.info("Nacos server registered: {} | {}", registryRole.name(), server);
         } catch (Throwable e) {
-            throw new RuntimeException("Nacos server registered failed: " + server, e);
+            throw new RegistryException("Nacos server register failed: " + server, e);
         }
     }
 

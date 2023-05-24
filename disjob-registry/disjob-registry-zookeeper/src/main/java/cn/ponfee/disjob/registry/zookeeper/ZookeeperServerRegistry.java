@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,7 +59,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             //client.listenChildChanged(discoveryRootPath0);
             client.watchChildChanged(discoveryRootPath0, latch, this::doRefreshDiscoveryServers);
         } catch (Exception e) {
-            throw new RuntimeException("Connect zookeeper failed: " + config, e);
+            throw new RegistryException("Zookeeper registry init error: " + config, e);
         } finally {
             latch.countDown();
         }
@@ -82,7 +83,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             registered.add(server);
             log.info("Server registered: {} | {}", registryRole.name(), server);
         } catch (Throwable e) {
-            throw new RuntimeException("Register to zookeeper failed: " + server, e);
+            throw new RegistryException("Zookeeper server register failed: " + server, e);
         }
     }
 

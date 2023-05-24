@@ -605,6 +605,14 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         );
     }
 
+    /**
+     * 尽量避免对数据库锁的等待及数据连接超时
+     *
+     * @param instanceId the instance id
+     * @param wnstanceId the workflow instance id
+     * @param action the action
+     * @return boolean value of action result
+     */
     private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Function<SchedInstance, Boolean> action) {
         // Long.toString(lockKey).intern()
         Long lockKey = wnstanceId == null ? instanceId : wnstanceId;

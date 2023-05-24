@@ -98,7 +98,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
         long blockStep = blockSize - 1, next = execution.getNext();
         long lastTime = System.currentTimeMillis(), currTime;
         while (next <= n) {
-            if (super.isInterrupted() || Thread.currentThread().isInterrupted()) {
+            if (super.isStopped() || Thread.currentThread().isInterrupted()) {
                 checkpoint.checkpoint(task().getTaskId(), Jsons.toJson(execution));
                 throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_EXCEPTION);
             }

@@ -195,10 +195,10 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         this.taskExecutor = taskExecutor;
     }
 
-    public void interrupt() {
+    public void stop() {
         final TaskExecutor<?> executor = this.taskExecutor;
         if (executor != null) {
-            executor.interrupt();
+            executor.stop();
         }
     }
 

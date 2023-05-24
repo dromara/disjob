@@ -165,7 +165,7 @@ public class WorkerThreadPool extends Thread implements Startable {
         ExecuteTaskParam param = pair.getRight();
         LOG.info("Stop task: {} | {} | {}", taskId, ops, workerThread.getName());
         try {
-            param.interrupt();
+            param.stop();
             // stop the work thread
             stopWorkerThread(workerThread, true);
         } finally {
@@ -523,7 +523,7 @@ public class WorkerThreadPool extends Thread implements Startable {
         synchronized void stopPool() {
             pool.forEach((id, workerThread) -> {
                 workerThread.toStop();
-                workerThread.executingParam().interrupt();
+                workerThread.executingParam().stop();
             });
         }
 
@@ -697,7 +697,6 @@ public class WorkerThreadPool extends Thread implements Startable {
 
                 try {
                     runTask(param);
-                    // Thread#stop() will occur "java.lang.ThreadDeath: null" if wrapped in Throwable
                 } catch (Throwable t) {
                     terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                     LOG.error("Worker thread execute failed: " + param, t);

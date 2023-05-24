@@ -15,6 +15,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ConnectionStateListener;
+import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.etcd.configuration.EtcdRegistryProperties;
 import io.etcd.jetcd.common.exception.ErrorCode;
@@ -92,7 +93,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
             doRefreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RegistryException("Etcd registry init error: " + config, e);
         } finally {
             latch.countDown();
         }
@@ -116,7 +117,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             registered.add(server);
             log.info("Etcd server registered: {} | {}", registryRole.name(), server);
         } catch (Throwable e) {
-            throw new RuntimeException("Etcd server registered failed: " + server, e);
+            throw new RegistryException("Etcd server register failed: " + server, e);
         }
     }
 

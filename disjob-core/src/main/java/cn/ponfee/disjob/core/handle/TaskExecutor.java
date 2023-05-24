@@ -18,7 +18,7 @@ import cn.ponfee.disjob.core.model.SchedTask;
  */
 public abstract class TaskExecutor<T> {
 
-    private volatile boolean interrupted = false;
+    private volatile boolean stopped = false;
 
     private SchedTask task;
 
@@ -41,19 +41,19 @@ public abstract class TaskExecutor<T> {
     }
 
     /**
-     * Interrupts execute.
+     * Stop execute.
      */
-    public final void interrupt() {
-        this.interrupted = true;
+    public final void stop() {
+        this.stopped = true;
     }
 
     /**
-     * Returns execute is whether interrupt.
+     * Returns execute is whether stopped.
      *
-     * @return {@code true} if interrupted
+     * @return {@code true} if stopped
      */
-    public final boolean isInterrupted() {
-        return interrupted;
+    public final boolean isStopped() {
+        return stopped;
     }
 
     /**

@@ -258,7 +258,7 @@ public final class ClassUtils {
                 return getConstructor0(type, parameterTypes);
             } catch (Exception e) {
                 // No such constructor, use placeholder
-                LOG.warn("Get constructor occur error.", e);
+                LOG.warn("Get constructor occur error: {}", e.getMessage());
                 return Null.BROKEN_CONSTRUCTOR;
             }
         });
@@ -338,7 +338,7 @@ public final class ClassUtils {
                 return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
             } catch (Exception e) {
                 // No such method, use placeholder
-                LOG.warn("Get method occur error.", e);
+                LOG.warn("Get method occur error: {}", e.getMessage());
                 return Null.BROKEN_METHOD;
             }
         });
