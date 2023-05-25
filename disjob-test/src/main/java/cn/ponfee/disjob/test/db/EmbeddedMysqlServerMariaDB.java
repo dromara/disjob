@@ -25,9 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.disjob.test.db.DBUtils.DB_NAME;
-import static cn.ponfee.disjob.test.db.DBUtils.USERNAME;
-import static cn.ponfee.disjob.test.db.DBUtils.PASSWORD;
+import static cn.ponfee.disjob.test.db.DBUtils.*;
 
 /**
  * MariaDB Server

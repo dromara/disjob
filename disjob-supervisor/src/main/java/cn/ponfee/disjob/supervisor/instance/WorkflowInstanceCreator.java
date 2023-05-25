@@ -18,8 +18,8 @@ import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.graph.WorkflowGraph;
 import cn.ponfee.disjob.core.model.*;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.param.SplitJobParam;
 import lombok.Getter;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -76,7 +76,7 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
             nodeInstance.setWnstanceId(wnstanceId);
             nodeInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
 
-            SplitJobParam param = SplitJobParam.from(job, node.getName());
+            JobHandlerParam param = JobHandlerParam.from(job, node.getName());
             List<SchedTask> tasks = jobManager.splitTasks(param, nodeInstance.getInstanceId(), now);
             nodeInstances.add(Tuple2.of(nodeInstance, tasks));
         }

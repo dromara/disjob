@@ -21,10 +21,10 @@ import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.param.ExecuteTaskParamBuilder;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
-import cn.ponfee.disjob.supervisor.param.SplitJobParam;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +51,7 @@ public abstract class AbstractJobManager {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final IdGenerator idGenerator;
-    private final SupervisorRegistry discoveryWorker;
+    private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
     private final WorkerServiceClient workerServiceClient;
 
@@ -59,15 +59,14 @@ public abstract class AbstractJobManager {
         return idGenerator.generateId();
     }
 
-    public void verifyJob(SchedJob job) {
+    public void verifyJob(SchedJob job) throws JobException {
         Assert.hasText(job.getJobHandler(), "Job handler cannot be empty.");
-        boolean result = workerServiceClient.verify(job.getJobGroup(), job.getJobHandler(), job.getJobParam());
-        Assert.isTrue(result, () -> "Invalid job: " + job.getJobHandler());
+        workerServiceClient.verify(JobHandlerParam.from(job));
     }
 
-    public List<SchedTask> splitTasks(SplitJobParam param, long instanceId, Date date) throws JobException {
-        if (RouteStrategy.BROADCAST.equals(param.getRouteStrategy())) {
-            List<Worker> discoveredServers = discoveryWorker.getDiscoveredServers(param.getJobGroup());
+    public List<SchedTask> splitTasks(JobHandlerParam param, long instanceId, Date date) throws JobException {
+        if (RouteStrategy.BROADCAST == param.getRouteStrategy()) {
+            List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getJobGroup());
             if (discoveredServers.isEmpty()) {
                 throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
             }
@@ -76,7 +75,7 @@ public abstract class AbstractJobManager {
                 .mapToObj(i -> SchedTask.create(param.getJobParam(), generateId(), instanceId, i + 1, count, date, discoveredServers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
-            List<SplitTask> split = workerServiceClient.split(param.getJobGroup(), param.getJobHandler(), param.getJobParam());
+            List<SplitTask> split = workerServiceClient.split(param);
             Assert.notEmpty(split, () -> "Not split any task: " + param);
             Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + param);
             int count = split.size();
@@ -106,7 +105,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean isAliveWorker(Worker worker) {
-        return worker != null && discoveryWorker.isDiscoveredServer(worker);
+        return worker != null && workerDiscover.isDiscoveredServer(worker);
     }
 
     public boolean isDeadWorker(Worker worker) {
@@ -114,11 +113,11 @@ public abstract class AbstractJobManager {
     }
 
     public boolean hasNotDiscoveredWorkers(String group) {
-        return CollectionUtils.isEmpty(discoveryWorker.getDiscoveredServers(group));
+        return CollectionUtils.isEmpty(workerDiscover.getDiscoveredServers(group));
     }
 
     public boolean hasNotDiscoveredWorkers() {
-        return !discoveryWorker.hasDiscoveredServers();
+        return !workerDiscover.hasDiscoveredServers();
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {

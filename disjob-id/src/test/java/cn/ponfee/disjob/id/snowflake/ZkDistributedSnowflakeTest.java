@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.id.snowflake;
 
-import cn.ponfee.disjob.id.snowflake.zk.ZkDistributedSnowflake;
 import cn.ponfee.disjob.id.snowflake.zk.ZkConfig;
+import cn.ponfee.disjob.id.snowflake.zk.ZkDistributedSnowflake;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

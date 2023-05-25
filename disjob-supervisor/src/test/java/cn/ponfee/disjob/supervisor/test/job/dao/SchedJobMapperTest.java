@@ -61,7 +61,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
         job.setJobName("test");
-        job.setJobHandler("cn.ponfee.disjob.core.handle.impl.NoopJobHandler");
+        job.setJobHandler("cn.ponfee.disjob.samples.common.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
         job.setJobParam("test param");
         job.setRetryType(RetryType.NONE.value());
@@ -96,7 +96,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
-        job.setJobHandler("cn.ponfee.disjob.core.handle.impl.NoopJobHandler");
+        job.setJobHandler("cn.ponfee.disjob.samples.common.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
 
 
@@ -137,7 +137,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
-        job.setJobHandler("cn.ponfee.disjob.core.handle.impl.NoopJobHandler");
+        job.setJobHandler("cn.ponfee.disjob.samples.common.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
 
         job.setJobParam("est");

@@ -21,8 +21,10 @@ public enum JobCodeMsg implements CodeMsg {
     SERVER_ERROR(500, "Server error."),
 
     LOAD_HANDLER_ERROR(1001, "Load job handler error."),
-    SPLIT_JOB_FAILED(1002, "Split job failed."),
-    NOT_DISCOVERED_WORKER(1003, "Not Discovered worker."),
+    BROADCAST_UNSUPPORTED_SPLIT(1002, "Broadcast job handler unsupported custom split."),
+    INVALID_JOB_HANDLER(1003, "Invalid job handler."),
+    SPLIT_JOB_FAILED(1004, "Split job failed."),
+    NOT_DISCOVERED_WORKER(1005, "Not Discovered worker."),
 
     JOB_EXECUTE_FAILED(2001, "Job execute failed."),
     PAUSE_TASK_EXCEPTION(2002, "Pause task exception."),

@@ -206,7 +206,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             case PAUSED:
                 return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
             case RUNNING:
-                List<SchedTask> tasks = jobManager.findMediumInstanceTask(instanceId);
+                List<SchedTask> tasks = jobManager.findBaseInstanceTask(instanceId);
                 if (jobManager.hasAliveExecuting(tasks)) {
                     return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
                 } else {

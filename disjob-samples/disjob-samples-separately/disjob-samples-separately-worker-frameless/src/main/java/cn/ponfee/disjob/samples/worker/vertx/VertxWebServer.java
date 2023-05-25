@@ -9,30 +9,29 @@
 package cn.ponfee.disjob.samples.worker.vertx;
 
 import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerService;
-import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.worker.rpc.WorkerServiceProvider;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 /**
  * Web server based vertx-web.
@@ -90,32 +89,23 @@ public class VertxWebServer extends AbstractVerticle {
         Router router = Router.router(super.vertx);
         router.route().handler(BodyHandler.create());
 
-        router.post(RPC_PATH_PREFIX + "job/verify").handler(ctx -> {
-            String[] params = ctx.body().asPojo(String[].class);
-            boolean result = WORKER_SERVICE_PROVIDER.verify(params[0], params[1]);
-            response(ctx, OK.code(), result);
-        });
+        //String[] args = ctx.body().asPojo(String[].class);
+        router.post(RPC_PATH_PREFIX + "job/verify").handler(ctx -> invoke(() -> {
+            JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
+            WORKER_SERVICE_PROVIDER.verify(param);
+            return null;
+        }, ctx, BAD_REQUEST));
 
-        router.post(RPC_PATH_PREFIX + "job/split").handler(ctx -> {
-            String[] params = ctx.body().asPojo(String[].class);
-            try {
-                List<SplitTask> result = WORKER_SERVICE_PROVIDER.split(params[0], params[1]);
-                response(ctx, OK.code(), result);
-            } catch (JobException e) {
-                LOG.error("Split job failed: " + Arrays.toString(params), e);
-                response(ctx, INTERNAL_SERVER_ERROR.code(), Throwables.getRootCauseMessage(e));
-            }
-        });
+        router.post(RPC_PATH_PREFIX + "job/split").handler(ctx -> invoke(() -> {
+            JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
+            return WORKER_SERVICE_PROVIDER.split(param);
+        }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {
-            router.post(RPC_PATH_PREFIX + "task/receive").handler(ctx -> {
-                String body = ctx.body().asString();
-                // remove start char “[” and end char “]”
-                String data = body.substring(1, body.length() - 1);
-                ExecuteTaskParam param = Jsons.fromJson(data, ExecuteTaskParam.class);
-                boolean result = httpTaskReceiver.receive(param);
-                response(ctx, OK.code(), result);
-            });
+            router.post(RPC_PATH_PREFIX + "task/receive").handler(ctx -> invoke(() -> {
+                ExecuteTaskParam param = parseArg(ctx, ExecuteTaskParam.class);
+                return httpTaskReceiver.receive(param);
+            }, ctx, INTERNAL_SERVER_ERROR));
         }
 
         HttpServerOptions options = new HttpServerOptions()
@@ -128,11 +118,21 @@ public class VertxWebServer extends AbstractVerticle {
             .listen(port);
     }
 
-    private static void response(RoutingContext ctx, int statusCode, Object result) {
-        ctx.response()
-           .putHeader("Content-Type", "application/json; charset=utf-8")
-           .setStatusCode(statusCode)
-           .end(Jsons.toJson(result));
+    private static void invoke(ThrowingSupplier<?, ?> action, RoutingContext ctx, HttpResponseStatus failStatus) {
+        HttpServerResponse resp = ctx.response().putHeader("Content-Type", "application/json; charset=utf-8");
+        try {
+            Object result = action.get();
+            resp.setStatusCode(OK.code())
+                .end(result == null ? null : Jsons.toJson(result));
+        } catch (Throwable e) {
+            resp.setStatusCode(failStatus.code())
+                .end(Throwables.getRootCauseMessage(e));
+        }
+    }
+
+    private static <T> T parseArg(RoutingContext ctx, Class<T> type) {
+        Object[] args = Jsons.parseArray(ctx.body().asString(), type);
+        return args == null ? null : (T) args[0];
     }
 
 }

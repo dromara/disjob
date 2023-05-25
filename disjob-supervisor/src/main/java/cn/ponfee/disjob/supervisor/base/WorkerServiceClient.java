@@ -13,6 +13,7 @@ import cn.ponfee.disjob.core.base.WorkerService;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 
 import java.util.List;
@@ -26,13 +27,13 @@ public class WorkerServiceClient {
 
     private static final WorkerService LOCAL_WORKER_SERVICE = new WorkerService() {
         @Override
-        public boolean verify(String jobHandler, String jobParam) {
-            return JobHandlerUtils.verify(jobHandler, jobParam);
+        public void verify(JobHandlerParam param) throws JobException {
+            JobHandlerUtils.verify(param);
         }
 
         @Override
-        public List<SplitTask> split(String jobHandler, String jobParam) throws JobException {
-            return JobHandlerUtils.split(jobHandler, jobParam);
+        public List<SplitTask> split(JobHandlerParam param) throws JobException {
+            return JobHandlerUtils.split(param);
         }
     };
 
@@ -44,12 +45,12 @@ public class WorkerServiceClient {
         this.currentGroup = currentWorker == null ? null : currentWorker.getGroup();
     }
 
-    public boolean verify(String group, String jobHandler, String jobParam) {
-        return workerService(group).verify(jobHandler, jobParam);
+    public void verify(JobHandlerParam param) throws JobException {
+        workerService(param.getJobGroup()).verify(param);
     }
 
-    public List<SplitTask> split(String group, String jobHandler, String jobParam) throws JobException {
-        return workerService(group).split(jobHandler, jobParam);
+    public List<SplitTask> split(JobHandlerParam param) throws JobException {
+        return workerService(param.getJobGroup()).split(param);
     }
 
     // ------------------------------------------------------------private methods

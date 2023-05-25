@@ -74,7 +74,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             return;
         }
 
-        List<SchedTask> tasks = jobManager.findMediumInstanceTask(instance.getInstanceId());
+        List<SchedTask> tasks = jobManager.findBaseInstanceTask(instance.getInstanceId());
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {

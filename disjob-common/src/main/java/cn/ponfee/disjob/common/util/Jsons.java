@@ -14,15 +14,12 @@ import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateTimeFormat;
 import cn.ponfee.disjob.common.exception.JsonException;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
@@ -30,10 +27,12 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -195,6 +194,73 @@ public final class Jsons {
         return NORMAL.bytes(target);
     }
 
+    public static Object[] parseArray(String body, Class<?>... types) throws JsonException {
+        if (body == null) {
+            return null;
+        }
+
+        ObjectMapper mapper = NORMAL.mapper;
+        JsonNode rootNode = readTree(mapper, body);
+        Assert.isTrue(rootNode.isArray(), "Not array json data.");
+        ArrayNode arrayNode = (ArrayNode) rootNode;
+
+        if (types.length == 1 && arrayNode.size() > 1) {
+            return new Object[]{parse(mapper, arrayNode, types[0])};
+        }
+
+        Object[] result = new Object[types.length];
+        for (int i = 0; i < types.length; i++) {
+            result[i] = parse(mapper, arrayNode.get(i), types[i]);
+        }
+        return result;
+    }
+
+    public static Object[] parseMethodArgs(String body, Method method) throws JsonException {
+        if (body == null) {
+            return null;
+        }
+
+        // 不推荐使用fastjson，项目中尽量统一使用一种JSON序列化方式
+        //return com.alibaba.fastjson.JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
+
+        Type[] genericArgumentTypes = method.getGenericParameterTypes();
+        int argumentCount = genericArgumentTypes.length;
+        if (/*method.getParameterCount()*/argumentCount == 0) {
+            return null;
+        }
+
+        ObjectMapper mapper = NORMAL.mapper;
+        JsonNode rootNode = readTree(mapper, body);
+        if (rootNode.isArray()) {
+            ArrayNode arrayNode = (ArrayNode) rootNode;
+
+            // 方法只有一个参数，但请求参数长度大于1
+            // ["a", "b"]     -> method(Object[] arg) -> arg=["a", "b"]
+            // [["a"], ["b"]] -> method(Object[] arg) -> arg=[["a"], ["b"]]
+            if (argumentCount == 1 && arrayNode.size() > 1) {
+                return new Object[]{parse(mapper, arrayNode, genericArgumentTypes[0])};
+            }
+
+            // 其它情况，在调用方将参数(requestParameters)用数组包一层：new Object[]{ arg-1, arg-2, ..., arg-n }
+            // [["a", "b"]]   -> method(Object[] arg)                 -> arg =["a", "b"]
+            // [["a"], ["b"]] -> method(Object[] arg1, Object[] arg2) -> arg1=["a"], arg2=["b"]
+            // ["a", "b"]     -> method(Object[] arg1, Object[] arg2) -> arg1=["a"], arg2=["b"]  # ACCEPT_SINGLE_VALUE_AS_ARRAY作用：将字符串“a”转为数组arg1[]
+            Assert.isTrue(
+                argumentCount == arrayNode.size(),
+                () -> "Method arguments size: " + argumentCount + ", but actual size: " + arrayNode.size()
+            );
+
+            Object[] methodArguments = new Object[argumentCount];
+            for (int i = 0; i < argumentCount; i++) {
+                methodArguments[i] = parse(mapper, arrayNode.get(i), genericArgumentTypes[i]);
+            }
+            return methodArguments;
+        } else {
+            Assert.isTrue(argumentCount == 1, "Single object request parameter not support multiple arguments method.");
+            return new Object[]{parse(mapper, rootNode, genericArgumentTypes[0])};
+        }
+    }
+
     public static <T> T fromJson(String json, JavaType javaType) {
         return NORMAL.parse(json, javaType);
     }
@@ -228,7 +294,10 @@ public final class Jsons {
     }
 
     public static ObjectMapper createObjectMapper(JsonInclude.Include include) {
-        ObjectMapper mapper = new ObjectMapper();
+        JsonFactory jsonFactory = new JsonFactoryBuilder()
+            .disable(JsonFactory.Feature.INTERN_FIELD_NAMES)
+            .build();
+        ObjectMapper mapper = new ObjectMapper(jsonFactory);
         // 设置序列化时的特性
         if (include != null) {
             mapper.setSerializationInclusion(include);
@@ -245,7 +314,6 @@ public final class Jsons {
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, false);     // 禁止无双引号字段
         mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, false);            // 禁止单引号字段
         mapper.configure(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature(), true); // 字段加双引号
-        //objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);  // 禁止反序列化时，如果目标对象为空对象的报错问题
 
         // java.util.Date：registerModule > JsonFormat(会使用setTimeZone) > setDateFormat(会使用setTimeZone)
         //   1）如果同时配置了setDateFormat和registerModule，则使用registerModule
@@ -277,6 +345,25 @@ public final class Jsons {
         mapper.registerModule(javaTimeModule);
 
         //mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    }
+
+    private static JsonNode readTree(ObjectMapper mapper, String body) {
+        try {
+            return mapper.readTree(body);
+        } catch (JsonProcessingException e) {
+            throw new JsonException(e);
+        }
+    }
+
+    private static Object parse(ObjectMapper mapper, JsonNode jsonNode, Type type) {
+        try {
+            return mapper
+                .readerFor(mapper.getTypeFactory().constructType(type))
+                .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+                .readValue(mapper.treeAsTokens(jsonNode));
+        } catch (IOException e) {
+            throw new JsonException(e);
+        }
     }
 
 }

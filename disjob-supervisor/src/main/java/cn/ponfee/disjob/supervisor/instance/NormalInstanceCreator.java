@@ -13,8 +13,8 @@ import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.param.SplitJobParam;
 import lombok.Getter;
 
 import java.util.Date;
@@ -36,7 +36,7 @@ public class NormalInstanceCreator extends TriggerInstanceCreator<NormalInstance
         Date now = new Date();
         long instanceId = jobManager.generateId();
         SchedInstance instance = SchedInstance.create(instanceId, job.getJobId(), runType, triggerTime, 0, now);
-        List<SchedTask> tasks = jobManager.splitTasks(SplitJobParam.from(job), instanceId, now);
+        List<SchedTask> tasks = jobManager.splitTasks(JobHandlerParam.from(job), instanceId, now);
         return new NormalInstance(instance, tasks);
     }
 

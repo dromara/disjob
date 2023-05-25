@@ -38,7 +38,7 @@
     </foreach>
   </insert>
 
-  <select id="findByWnstanceId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+  <select id="findByWnstanceId" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
@@ -54,9 +54,7 @@
       <if test="curNode != null and curNode != ''">
         AND cur_node = #{curNode,jdbcType=VARCHAR}
       </if>
-      <if test="fromStates != null and fromStates.size() != 0">
-        AND run_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
-      </if>
+      AND run_state IN (<foreach collection="fromStates" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
       <if test="fromInstanceId != null">
         AND instance_id = #{fromInstanceId,jdbcType=BIGINT}
       </if>
@@ -72,7 +70,8 @@
 
   <delete id="deleteByWnstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+    WHERE wnstance_id = #{wnstanceId}
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId} AND run_state NOT IN (40, 50)) t)=0
   </delete>
 
 </mapper>

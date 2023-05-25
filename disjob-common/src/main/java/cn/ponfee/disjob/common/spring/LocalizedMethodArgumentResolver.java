@@ -11,10 +11,6 @@ package cn.ponfee.disjob.common.spring;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,12 +49,6 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
     );
     private static final String CACHE_ATTRIBUTE_KEY = "LOCALIZED_METHOD_ARGUMENTS";
     private static final Class<? extends Annotation> MARKED_ANNOTATION_TYPE = LocalizedMethodArguments.class;
-
-    private final ObjectMapper objectMapper;
-
-    public LocalizedMethodArgumentResolver(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -101,7 +91,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
                 if (StringUtils.isEmpty(body)) {
                     return parseQueryString(method, request.getParameterMap());
                 } else {
-                    return parseRequestBody(method, body);
+                    return Jsons.parseMethodArgs(body, method);
                 }
             }
         }
@@ -127,54 +117,6 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
             }
         }
         return arguments;
-    }
-
-    private Object[] parseRequestBody(Method method, String body) throws IOException {
-        // 不推荐使用fastjson，项目中尽量统一使用一种JSON序列化方式
-        //return com.alibaba.fastjson.JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
-
-        Type[] genericArgumentTypes = method.getGenericParameterTypes();
-        int argumentCount = genericArgumentTypes.length;
-        if (/*method.getParameterCount()*/argumentCount == 0) {
-            return null;
-        }
-
-        JsonNode rootNode = objectMapper.readTree(body);
-        if (rootNode.isArray()) {
-            ArrayNode requestParameters = (ArrayNode) rootNode;
-
-            // 方法只有一个参数，但请求参数长度大于1
-            // ["a", "b"]     -> method(Object[] arg) -> arg=["a", "b"]
-            // [["a"], ["b"]] -> method(Object[] arg) -> arg=[["a"], ["b"]]
-            if (argumentCount == 1 && requestParameters.size() > 1) {
-                return new Object[]{parse(rootNode, genericArgumentTypes[0])};
-            }
-
-            // 其它情况，在调用方将参数(requestParameters)用数组包一层：new Object[]{ arg-1, arg-2, ..., arg-n }
-            // [["a", "b"]]   -> method(Object[] arg)                 -> arg =["a", "b"]
-            // [["a"], ["b"]] -> method(Object[] arg1, Object[] arg2) -> arg1=["a"], arg2=["b"]
-            // ["a", "b"]     -> method(Object[] arg1, Object[] arg2) -> arg1=["a"], arg2=["b"]  # ACCEPT_SINGLE_VALUE_AS_ARRAY作用：将字符串“a”转为数组arg1[]
-            Assert.isTrue(
-                argumentCount == requestParameters.size(),
-                () -> "Method arguments size: " + argumentCount + ", but actual size: " + requestParameters.size()
-            );
-
-            Object[] methodArguments = new Object[argumentCount];
-            for (int i = 0; i < argumentCount; i++) {
-                methodArguments[i] = parse(requestParameters.get(i), genericArgumentTypes[i]);
-            }
-            return methodArguments;
-        } else {
-            Assert.isTrue(argumentCount == 1, "Single object request parameter not support multiple arguments method.");
-            return new Object[]{parse(rootNode, genericArgumentTypes[0])};
-        }
-    }
-
-    private Object parse(JsonNode jsonNode, Type type) throws IOException {
-        return objectMapper
-            .readerFor(objectMapper.getTypeFactory().constructType(type))
-            .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-            .readValue(objectMapper.treeAsTokens(jsonNode));
     }
 
     private static boolean isAnnotationPresent(Method method, Class<? extends Annotation> annotationType) {

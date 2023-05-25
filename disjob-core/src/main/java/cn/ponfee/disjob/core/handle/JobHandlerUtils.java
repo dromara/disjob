@@ -11,13 +11,16 @@ package cn.ponfee.disjob.core.handle;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import static cn.ponfee.disjob.core.base.JobCodeMsg.INVALID_JOB_HANDLER;
 import static cn.ponfee.disjob.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
 
 /**
@@ -27,30 +30,43 @@ import static cn.ponfee.disjob.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
  */
 public class JobHandlerUtils {
 
-    public static boolean verify(String jobHandler, String jobParams) {
-        if (StringUtils.isBlank(jobHandler)) {
-            return false;
-        }
-        try {
-            List<SplitTask> tasks = split(jobHandler, jobParams);
-            return CollectionUtils.isNotEmpty(tasks);
-        } catch (Throwable t) {
-            return false;
+    public static void verify(JobHandlerParam param) throws JobException {
+        String jobHandler = param.getJobHandler();
+        Assert.hasText(jobHandler, "Job handler cannot be blank.");
+        if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
+            JobHandler<?> handler;
+            try {
+                handler = JobHandlerUtils.load(jobHandler);
+            } catch (Throwable e) {
+                throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
+            }
+            if (!(handler instanceof BroadcastJobHandler)) {
+                throw new JobException(INVALID_JOB_HANDLER, "Not a broadcast job handler.");
+            }
+        } else {
+            List<SplitTask> tasks;
+            try {
+                tasks = split(param);
+            } catch (Throwable e) {
+                throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
+            }
+            if (CollectionUtils.isEmpty(tasks)) {
+                throw new JobException(INVALID_JOB_HANDLER, "Not split any task.");
+            }
         }
     }
 
     /**
      * Splits job to many sched task.
      *
-     * @param jobHandler the job handler
-     * @param jobParams  the job param
+     * @param param the job handler parameter
      * @return list of SplitTask
      * @throws JobException if split failed
      */
-    public static List<SplitTask> split(String jobHandler, String jobParams) throws JobException {
+    public static List<SplitTask> split(JobHandlerParam param) throws JobException {
         try {
-            JobSplitter jobSplitter = JobHandlerUtils.load(jobHandler);
-            List<SplitTask> splitTasks = jobSplitter.split(jobParams);
+            JobSplitter jobSplitter = JobHandlerUtils.load(param.getJobHandler());
+            List<SplitTask> splitTasks = jobSplitter.split(param.getJobParam());
             if (CollectionUtils.isEmpty(splitTasks)) {
                 throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
             }

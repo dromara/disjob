@@ -29,7 +29,7 @@
     </foreach>
   </insert>
 
-  <select id="findByParentJobId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+  <select id="findByParentJobId" parameterType="_long" resultMap="BaseResultMap">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE parent_job_id = #{parentJobId,jdbcType=BIGINT}

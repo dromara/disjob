@@ -34,7 +34,6 @@ import cn.ponfee.disjob.supervisor.instance.NormalInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
-import cn.ponfee.disjob.supervisor.param.SplitJobParam;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -186,8 +185,8 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         return instanceMapper.findUnterminatedRetry(rnstanceId);
     }
 
-    public List<SchedTask> findMediumInstanceTask(long instanceId) {
-        return taskMapper.findMediumByInstanceId(instanceId);
+    public List<SchedTask> findBaseInstanceTask(long instanceId) {
+        return taskMapper.findBaseByInstanceId(instanceId);
     }
 
     public List<SchedTask> findLargeInstanceTask(long instanceId) {
@@ -229,11 +228,12 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
     // ------------------------------------------------------------------operation within transactional
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void addJob(SchedJob job) {
+    public void addJob(SchedJob job) throws JobException {
         job.verifyBeforeAdd();
 
-        super.verifyJob(job);
         job.checkAndDefaultSetting();
+
+        super.verifyJob(job);
 
         job.setJobId(generateId());
         parseTriggerConfig(job);
@@ -242,16 +242,16 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
     }
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void updateJob(SchedJob job) {
+    public void updateJob(SchedJob job) throws JobException {
         job.verifyBeforeUpdate();
+
+        job.checkAndDefaultSetting();
 
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
         } else {
             super.verifyJob(job);
         }
-
-        job.checkAndDefaultSetting();
 
         SchedJob dbJob = jobMapper.getByJobId(job.getJobId());
         Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
@@ -388,12 +388,24 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
 
             if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot delete workflow node instance: " + instanceId);
-                int row = instanceMapper.deleteByInstanceId(instance.getWnstanceId());
-                Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);
-                workflowMapper.deleteByWnstanceId(instance.getWnstanceId());
-                instanceMapper.findWorkflowNode(instance.getWnstanceId()).forEach(this::deleteInstance);
+
+                int row = instanceMapper.deleteByInstanceId(instanceId);
+                Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete workflow lead instance conflict: " + instanceId);
+
+                row = instanceMapper.deleteByWnstanceId(instanceId);
+                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete workflow node instance conflict: " + instanceId);
+
+                row = workflowMapper.deleteByWnstanceId(instanceId);
+                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched workflow conflict: " + instanceId);
+
+                row = taskMapper.deleteByInstanceId(instanceId);
+                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched task conflict: " + instanceId);
             } else {
-                deleteInstance(instance);
+                int row = instanceMapper.deleteByInstanceId(instanceId);
+                Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);
+
+                row = taskMapper.deleteByInstanceId(instanceId);
+                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched task conflict: " + instanceId);
             }
             log.info("Delete sched instance success {}", instanceId);
         });
@@ -428,7 +440,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                 return false;
             }
 
-            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findMediumByInstanceId(instanceId));
+            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
             if (tuple != null && instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) > 0) {
                 // the last executing task of this sched instance
                 if (param.getOperation() == Operations.TRIGGER) {
@@ -461,7 +473,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
             }
 
             // task execute state must not 10
-            List<SchedTask> tasks = taskMapper.findMediumByInstanceId(instanceId);
+            List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId);
             if (tasks.stream().anyMatch(e -> ExecuteState.WAITING.equals(e.getExecuteState()))) {
                 log.warn("Purge instance failed, has waiting task: {}", tasks);
                 return false;
@@ -615,18 +627,13 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
      */
     private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Function<SchedInstance, Boolean> action) {
         // Long.toString(lockKey).intern()
-        Long lockKey = wnstanceId == null ? instanceId : wnstanceId;
-        synchronized (INTERNER_POOL.intern(lockKey)) {
+        Long lockInstanceId = wnstanceId == null ? instanceId : wnstanceId;
+        synchronized (INTERNER_POOL.intern(lockInstanceId)) {
             Boolean result = transactionTemplate.execute(status -> {
-                final SchedInstance instance;
-                if (wnstanceId == null) {
-                    instance = instanceMapper.lock(instanceId);
-                } else {
-                    SchedInstance inst = instanceMapper.lock(wnstanceId);
-                    Assert.notNull(inst, "Workflow lead instance not found: " + wnstanceId);
-                    instance = (instanceId == wnstanceId) ? inst : instanceMapper.getByInstanceId(instanceId);
-                }
-                Assert.notNull(instance, "Instance not found: " + instanceId);
+                SchedInstance lockInstance = instanceMapper.lock(lockInstanceId);
+                Assert.notNull(lockInstance, () -> "Lock instance not found: " + lockInstanceId);
+                SchedInstance instance = (instanceId == lockInstanceId) ? lockInstance : instanceMapper.getByInstanceId(instanceId);
+                Assert.notNull(instance, () -> "Instance not found: " + instance);
                 if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
                     throw new IllegalArgumentException("Invalid workflow instance id: " + wnstanceId + ", " + instance);
                 }
@@ -667,14 +674,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         }
     }
 
-    private void deleteInstance(SchedInstance instance) {
-        Assert.isTrue(RunState.of(instance.getRunState()).isTerminal(), () -> "Deleting instance must be terminal: " + instance);
-        long instanceId = instance.getInstanceId();
-        int row = instanceMapper.deleteByInstanceId(instanceId);
-        Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);
-        taskMapper.deleteByInstanceId(instanceId);
-    }
-
     private void pauseInstance(SchedInstance instance) {
         Assert.isTrue(RUN_STATE_PAUSABLE.contains(instance.getRunState()), () -> "Invalid pause instance state: " + instance);
         long instanceId = instance.getInstanceId();
@@ -687,7 +686,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
         if (executingTasks.isEmpty()) {
             // has non executing task, update sched instance state
-            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findMediumByInstanceId(instanceId));
+            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
             // must be paused or terminate
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
             int row = instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_PAUSABLE, tuple.b);
@@ -710,7 +709,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
         if (executingTasks.isEmpty()) {
             // has non executing execute_state
-            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findMediumByInstanceId(instanceId));
+            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
             Assert.notNull(tuple, () -> "Cancel instance failed: " + instanceId);
             // if all task paused, should update to canceled state
             if (tuple.a == RunState.PAUSED) {
@@ -809,7 +808,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
 
             try {
                 long nextInstanceId = generateId();
-                List<SchedTask> tasks = splitTasks(SplitJobParam.from(job, target.getName()), nextInstanceId, new Date());
+                List<SchedTask> tasks = splitTasks(JobHandlerParam.from(job, target.getName()), nextInstanceId, new Date());
                 long triggerTime = leadInstance.getTriggerTime() + workflow.getSequence();
                 SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), RunType.of(leadInstance.getRunType()), triggerTime, 0, now);
                 nextInstance.setRnstanceId(wnstanceId);
@@ -938,7 +937,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         if (retryType == RetryType.ALL) {
             try {
                 // re-split tasks
-                tasks = splitTasks(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
+                tasks = splitTasks(JobHandlerParam.from(schedJob), retryInstance.getInstanceId(), now);
             } catch (Throwable t) {
                 log.error("Split retry job error: " + schedJob + ", " + prev, t);
                 processWorkflow(prev);
@@ -1015,7 +1014,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, jobMapper::getByJobId);
         // immediate trigger
         long triggerTime = 0L;
-        for (SchedTask task : taskMapper.findMediumByInstanceId(instance.getInstanceId())) {
+        for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId())) {
             if (!ExecuteState.EXECUTING.equals(task.getExecuteState())) {
                 continue;
             }

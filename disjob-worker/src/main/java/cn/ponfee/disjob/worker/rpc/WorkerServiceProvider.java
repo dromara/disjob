@@ -13,6 +13,7 @@ import cn.ponfee.disjob.core.base.WorkerService;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 
 import java.util.List;
 
@@ -24,13 +25,13 @@ import java.util.List;
 public class WorkerServiceProvider implements WorkerService, RpcController {
 
     @Override
-    public boolean verify(String jobHandler, String jobParam) {
-        return JobHandlerUtils.verify(jobHandler, jobParam);
+    public void verify(JobHandlerParam param) throws JobException {
+        JobHandlerUtils.verify(param);
     }
 
     @Override
-    public List<SplitTask> split(String jobHandler, String jobParam) throws JobException {
-        return JobHandlerUtils.split(jobHandler, jobParam);
+    public List<SplitTask> split(JobHandlerParam param) throws JobException {
+        return JobHandlerUtils.split(param);
     }
 
 }

@@ -18,9 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static cn.ponfee.disjob.test.db.DBUtils.DB_NAME;
-import static cn.ponfee.disjob.test.db.DBUtils.USERNAME;
-import static cn.ponfee.disjob.test.db.DBUtils.PASSWORD;
+import static cn.ponfee.disjob.test.db.DBUtils.*;
 
 /**
  * <pre>

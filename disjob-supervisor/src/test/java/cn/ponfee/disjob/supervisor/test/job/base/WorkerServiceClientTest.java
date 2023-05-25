@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.test.job.base;
 
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
 import org.junit.jupiter.api.Assertions;
@@ -36,10 +37,10 @@ public class WorkerServiceClientTest extends SpringBootTestBase<Object> {
     @Test
     public void testSplit() throws JobException {
         String taskParam = "taskParam";
-        doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerService).split(any(), any());
+        doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerService).split(any());
 
         WorkerServiceClient client = new WorkerServiceClient(workerService, null);
-        List<SplitTask> result = client.split("group", null, null);
+        List<SplitTask> result = client.split(new JobHandlerParam(null, null, "group", null, null));
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals(taskParam, result.get(0).getTaskParam());

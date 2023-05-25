@@ -26,7 +26,7 @@ public interface SchedTaskMapper {
 
     SchedTask getByTaskId(long taskId);
 
-    List<SchedTask> findMediumByInstanceId(long instanceId);
+    List<SchedTask> findBaseByInstanceId(long instanceId);
 
     List<SchedTask> findLargeByInstanceId(long instanceId);
 

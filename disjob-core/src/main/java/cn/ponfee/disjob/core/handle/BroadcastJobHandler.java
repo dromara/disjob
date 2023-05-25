@@ -6,30 +6,23 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.base;
+package cn.ponfee.disjob.core.handle;
 
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.param.JobHandlerParam;
-import io.swagger.v3.oas.annotations.Hidden;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
 /**
- * Worker provides api, for the supervisor communication.
+ * Broadcast job handler
  *
  * @author Ponfee
  */
-@Hidden
-public interface WorkerService {
+public abstract class BroadcastJobHandler<T> extends JobHandler<T> {
 
-    String PREFIX_PATH = "worker/rpc/";
-
-    @PostMapping(PREFIX_PATH + "job/verify")
-    void verify(JobHandlerParam param) throws JobException;
-
-    @PostMapping(PREFIX_PATH + "job/split")
-    List<SplitTask> split(JobHandlerParam param) throws JobException;
+    @Override
+    public final List<SplitTask> split(String jobParam) throws JobException {
+        throw new JobException(JobCodeMsg.BROADCAST_UNSUPPORTED_SPLIT);
+    }
 
 }

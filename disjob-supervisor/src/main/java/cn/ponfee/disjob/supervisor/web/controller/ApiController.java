@@ -48,7 +48,7 @@ public class ApiController extends BaseController {
     // ------------------------------------------------------------------ sched job
 
     @PostMapping("job/add")
-    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) {
+    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) throws JobException {
         SchedJob schedJob = req.tosSchedJob();
         schedJob.setCreatedBy(DEFAULT_USER);
         schedJob.setUpdatedBy(DEFAULT_USER);
@@ -57,7 +57,7 @@ public class ApiController extends BaseController {
     }
 
     @PutMapping("job/update")
-    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) {
+    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) throws JobException {
         log.info("Do updating sched job {}", req.getJobId());
         SchedJob schedJob = req.tosSchedJob();
         schedJob.setUpdatedBy(DEFAULT_USER);
