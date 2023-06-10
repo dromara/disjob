@@ -139,7 +139,7 @@ public final class Symbol {
         char SPACE = ' ';
 
         /**
-         * Tab symbol
+         * Tab symbol(the same as '\t')
          */
         char TAB = '	';
 

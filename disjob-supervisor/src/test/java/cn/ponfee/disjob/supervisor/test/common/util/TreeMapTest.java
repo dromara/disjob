@@ -10,7 +10,6 @@ package cn.ponfee.disjob.supervisor.test.common.util;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -24,7 +23,6 @@ import java.util.stream.IntStream;
 public class TreeMapTest {
 
     @Test
-    @Disabled
     public void testTreeMap() {
         Map<String, String> executing = new TreeMap<>(); // TreeMap HashMap
         IntStream.range(0, 256)
@@ -43,12 +41,14 @@ public class TreeMapTest {
                 Map.Entry<String, String> shard = iter.next();
                 String value = shard.getValue();
                 if (ThreadLocalRandom.current().nextInt(9) < 3) {
-                    String s1 = shard.getKey();
+                    String k1 = shard.getKey();
                     iter.remove();
-                    finished.put(shard.getKey(), value);
-                    //finished.put(s1, value);
-                    String s2 = shard.getKey();
-                    System.out.println("remove_before_and_after: " + s1 + " -> " + s2);
+
+                    //finished.put(shard.getKey(), value); // wrong
+                    finished.put(k1, value);             // right
+
+                    String k2 = shard.getKey();
+                    System.out.println("remove_before_and_after: " + k1 + " -> " + k2);
                 }
             }
         }

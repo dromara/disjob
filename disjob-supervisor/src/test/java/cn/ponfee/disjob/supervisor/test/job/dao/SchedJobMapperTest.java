@@ -19,7 +19,6 @@ import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -55,7 +54,6 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     }
 
     @Test
-    @Disabled
     public void testInsert1() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
@@ -63,6 +61,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobName("test");
         job.setJobHandler("cn.ponfee.disjob.samples.common.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
+        job.setJobType(JobType.NORMAL.value());
         job.setJobParam("test param");
         job.setRetryType(RetryType.NONE.value());
         job.setRetryCount(0);
@@ -90,7 +89,6 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     }
 
     @Test
-    @Disabled
     public void testInsert2() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
@@ -99,8 +97,8 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobHandler("cn.ponfee.disjob.samples.common.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
 
-
         job.setJobParam("");
+        job.setJobType(JobType.NORMAL.value());
 
         job.setRetryType(RetryType.NONE.value());
         job.setRetryCount(0);
@@ -131,7 +129,6 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     }
 
     @Test
-    @Disabled
     public void testInsert3() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
@@ -140,7 +137,8 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setJobHandler("cn.ponfee.disjob.samples.common.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
 
-        job.setJobParam("est");
+        job.setJobParam("test");
+        job.setJobType(JobType.NORMAL.value());
 
         job.setRetryType(RetryType.NONE.value());
         job.setRetryCount(0);

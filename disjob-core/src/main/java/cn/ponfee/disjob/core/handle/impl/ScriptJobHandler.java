@@ -151,7 +151,7 @@ public class ScriptJobHandler extends JobHandler<String> {
         private ScriptType type;
         private String charset;
         /**
-         * 脚本原文需要先做如下转换再转json
+         * 脚本原文需要先做如下转换后，再转为json
          *
          * StringUtils.replaceEach(script, new String[]{"\r", "\n", "\""}, new String[]{"\\r", "\\n", "\\\""})
          *

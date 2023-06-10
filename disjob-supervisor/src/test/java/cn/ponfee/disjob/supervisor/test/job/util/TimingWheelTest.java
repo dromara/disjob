@@ -17,7 +17,6 @@ import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Array;
@@ -37,21 +36,21 @@ public class TimingWheelTest {
 
     private final Map<Integer, Integer> concurrentMap = new ConcurrentHashMap<>();
 
-    @Test
-    @Disabled // 该方法阻塞(死锁)了
+    /*
+    @Test // 该方法阻塞(死锁)了
     public void testComputeIfAbsent1() {
         System.out.println("Test concurrent hash map in fibonacci recurse: " + fibonacci(20));
     }
 
-    @Test
-    @Disabled // 该方法阻塞(死锁)了：https://bugs.openjdk.org/secure/attachment/23985/Main.java
+    @Test // 该方法阻塞(死锁)了：https://bugs.openjdk.org/secure/attachment/23985/Main.java
     public void testComputeIfAbsent2() {
         Map<String, Integer> map = new ConcurrentHashMap<>(16);
         map.computeIfAbsent(
             "AaAa",
-            key -> map.computeIfAbsent("BBBB", key2 -> 42)
+            key -> map.computeIfAbsent("BBBB", k -> 42)
         );
     }
+    */
 
     @Test
     public void testConcurrentHashMapCapt() {

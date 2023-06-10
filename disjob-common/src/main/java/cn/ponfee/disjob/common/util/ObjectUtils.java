@@ -137,10 +137,11 @@ public final class ObjectUtils {
     /**
      * Returns target type value from origin value cast
      *
+     * See com.alibaba.fastjson.util.TypeUtils#castToInt(Object)
+     *
      * @param value source object
      * @param type  target object type
      * @return target type object
-     * @see com.alibaba.fastjson.util.TypeUtils#castToInt(Object)
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> T cast(Object value, Class<T> type) {

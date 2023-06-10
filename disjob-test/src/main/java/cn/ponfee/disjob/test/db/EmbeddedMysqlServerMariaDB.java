@@ -28,12 +28,25 @@ import java.util.stream.Collectors;
 import static cn.ponfee.disjob.test.db.DBUtils.*;
 
 /**
+ * <pre>
  * MariaDB Server
- * <p>SELECT VERSION()  ->  10.2.11-MariaDB
- * <p>如果启动失败报未找到openssl错误，参考安装步骤(MacOSX)：“/disjob-test/src/main/DB/MariaDB/MariaDB.md”
+ * SELECT VERSION()  ->  10.2.11-MariaDB
+ * 如果启动失败报未找到openssl错误，参考安装步骤(MacOSX)：“/disjob-test/src/main/DB/MariaDB/MariaDB.md”
  *
- * <p>username: root
- * <p>password: 无需密码
+ * username: root
+ * password: 无需密码
+ *
+ *
+ * mysql:
+ *  Maven GAV    -> com.mysql:mysql-connector-j:8.0.33
+ *  jdbc-url     -> jdbc:mysql://localhost:3306/disjob
+ *  driver-class -> com.mysql.cj.jdbc.Driver
+ *
+ * MariaDB:
+ *  Maven GAV    -> org.mariadb.jdbc:mariadb-java-client:3.1.4
+ *  jdbc-url     -> jdbc:mariadb://localhost:3306/disjob
+ *  driver-class -> org.mariadb.jdbc.Driver
+ * </pre>
  *
  * @author Ponfee
  */

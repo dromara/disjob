@@ -69,7 +69,6 @@
 
     <spring-boot.version>2.7.12</spring-boot.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
-    <fastjson.version>1.2.83</fastjson.version>
     <guava.version>32.0.0-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.12.0</commons-io.version>

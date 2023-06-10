@@ -47,7 +47,7 @@ public final class URLCodes {
             } else {
                 try {
                     b = Character.toString(c).getBytes(charset);
-                } catch (Exception ex) {
+                } catch (Exception ignored) {
                     b = new byte[0];
                 }
                 for (int k, j = 0; j < b.length; j++) {

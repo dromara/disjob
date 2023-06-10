@@ -8,13 +8,9 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.model.SchedJob;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -25,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,12 +28,20 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 import static cn.ponfee.disjob.common.util.Collects.get;
 import static cn.ponfee.disjob.core.base.JobConstants.WORKER_MULTIPLE_GROUP_SEPARATOR;
 
+/*
+import cn.ponfee.disjob.common.util.GenericUtils;
+import com.alibaba.fastjson.annotation.JSONType;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
+import java.lang.reflect.Type;
+*/
+
 /**
  * Worker for execute task(JVM instance)
  *
  * @author Ponfee
  */
-@JSONType(deserializer = Worker.FastjsonDeserializer.class) // fastjson
+//@JSONType(deserializer = Worker.FastjsonDeserializer.class) // fastjson
 @JsonDeserialize(using = Worker.JacksonDeserializer.class)  // jackson
 public final class Worker extends Server {
     private static final long serialVersionUID = 8981019172872301692L;
@@ -158,6 +161,7 @@ public final class Worker extends Server {
     /**
      * Custom deserialize Worker based fastjson.
      */
+    /*
     public static class FastjsonDeserializer implements ObjectDeserializer {
         @Override
         public Worker deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
@@ -169,9 +173,10 @@ public final class Worker extends Server {
 
         @Override
         public int getFastMatchToken() {
-            return 0 /*JSONToken.RBRACKET*/;
+            return 0;
         }
     }
+    */
 
     // -----------------------------------------------------custom jackson deserialize
 

@@ -9,10 +9,6 @@
 package cn.ponfee.disjob.common.tree;
 
 import cn.ponfee.disjob.common.base.ImmutableArrayList;
-import cn.ponfee.disjob.common.util.GenericUtils;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -22,10 +18,17 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+
+/*
+import cn.ponfee.disjob.common.util.GenericUtils;
+import com.alibaba.fastjson.annotation.JSONType;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
+import java.lang.reflect.Type;
+*/
 
 /**
  * Representing immutable node path array
@@ -36,7 +39,7 @@ import java.util.Objects;
 // NodePath is extends ArrayList, so must be use mappingTo in fastjson
 // if not do it then deserialized json as a collection type(java.util.ArrayList)
 // hashCode()/equals() extends ImmutableArrayList
-@JSONType(mappingTo = NodePath.FastjsonDeserializeMarker.class) // fastjson
+//@JSONType(mappingTo = NodePath.FastjsonDeserializeMarker.class) // fastjson
 @JsonDeserialize(using = NodePath.JacksonDeserializer.class)    // jackson
 public final class NodePath<T extends Serializable & Comparable<? super T>>
     extends ImmutableArrayList<T> implements Comparable<NodePath<T>> {
@@ -95,8 +98,10 @@ public final class NodePath<T extends Serializable & Comparable<? super T>>
 
     // -----------------------------------------------------custom fastjson deserialize
 
+    /*
     @JSONType(deserializer = FastjsonDeserializer.class)
     public static class FastjsonDeserializeMarker { }
+    */
 
     /**
      * <pre> {@code
@@ -109,6 +114,7 @@ public final class NodePath<T extends Serializable & Comparable<? super T>>
      *
      * @param <T>
      */
+    /*
     public static class FastjsonDeserializer<T extends Serializable & Comparable<? super T>> implements ObjectDeserializer {
         @Override
         @SuppressWarnings("unchecked")
@@ -122,9 +128,10 @@ public final class NodePath<T extends Serializable & Comparable<? super T>>
 
         @Override
         public int getFastMatchToken() {
-            return 0 /*JSONToken.RBRACKET*/;
+            return 0;
         }
     }
+    */
 
     // -----------------------------------------------------custom jackson deserialize
 

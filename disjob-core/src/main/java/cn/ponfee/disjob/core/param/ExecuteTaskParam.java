@@ -12,7 +12,6 @@ import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.util.Bytes;
-import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -21,9 +20,6 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -34,7 +30,6 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Objects;
@@ -45,12 +40,20 @@ import static cn.ponfee.disjob.common.util.Numbers.nullZero;
 import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/*
+import cn.ponfee.disjob.common.util.GenericUtils;
+import com.alibaba.fastjson.annotation.JSONType;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
+import java.lang.reflect.Type;
+*/
+
 /**
  * Task execution parameter.
  *
  * @author Ponfee
  */
-@JSONType(deserializer = ExecuteTaskParam.FastjsonDeserializer.class) // fastjson
+//@JSONType(deserializer = ExecuteTaskParam.FastjsonDeserializer.class) // fastjson
 @JsonDeserialize(using = ExecuteTaskParam.JacksonDeserializer.class)  // jackson
 public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing<ExecuteTaskParam>, Serializable {
     private static final long serialVersionUID = -6493747747321536680L;
@@ -285,6 +288,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     /**
      * Custom deserialize ExecuteParam based fastjson.
      */
+    /*
     public static class FastjsonDeserializer implements ObjectDeserializer {
         @Override
         public ExecuteTaskParam deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
@@ -296,9 +300,10 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
 
         @Override
         public int getFastMatchToken() {
-            return 0 /*JSONToken.RBRACKET*/;
+            return 0;
         }
     }
+    */
 
     // -----------------------------------------------------custom jackson deserialize
 

@@ -17,9 +17,12 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+/*
+import com.alibaba.fastjson.JSON;
+*/
 
 /**
  *
@@ -31,7 +34,7 @@ public class ExecuteParamTest {
     public void testFastjson() {
         ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 3, 5, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
         Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"NORMAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\"}", Jsons.toJson(param));
-        Assertions.assertEquals("{\"executeTimeout\":5,\"instanceId\":2,\"jobHandler\":\"jobHandler\",\"jobId\":5,\"jobType\":\"NORMAL\",\"operation\":\"TRIGGER\",\"routeStrategy\":\"ROUND_ROBIN\",\"taskId\":1,\"triggerTime\":3,\"wnstanceId\":1}", JSON.toJSONString(param));
+        //Assertions.assertEquals("{\"executeTimeout\":5,\"instanceId\":2,\"jobHandler\":\"jobHandler\",\"jobId\":5,\"jobType\":\"NORMAL\",\"operation\":\"TRIGGER\",\"routeStrategy\":\"ROUND_ROBIN\",\"taskId\":1,\"triggerTime\":3,\"wnstanceId\":1}", JSON.toJSONString(param));
 
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
@@ -44,7 +47,7 @@ public class ExecuteParamTest {
         String json = param.toString();
         System.out.println(json);
         Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"NORMAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"workerId\":\"i\"}}");
-        Assertions.assertEquals(json, JSON.parseObject(json, ExecuteTaskParam.class).toString());
+        //Assertions.assertEquals(json, JSON.parseObject(json, ExecuteTaskParam.class).toString());
     }
 
     @Test

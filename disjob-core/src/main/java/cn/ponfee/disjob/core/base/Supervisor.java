@@ -8,12 +8,8 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -22,20 +18,26 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 import static cn.ponfee.disjob.common.util.Collects.get;
 
+/*
+import cn.ponfee.disjob.common.util.GenericUtils;
+import com.alibaba.fastjson.annotation.JSONType;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
+import java.lang.reflect.Type;
+*/
 
 /**
  * Supervisor definition
  *
  * @author Ponfee
  */
-@JSONType(deserializer = Supervisor.FastjsonDeserializer.class) // fastjson
+//@JSONType(deserializer = Supervisor.FastjsonDeserializer.class) // fastjson
 @JsonDeserialize(using = Supervisor.JacksonDeserializer.class)  // jackson
 public final class Supervisor extends Server {
     private static final long serialVersionUID = -1254559108807415145L;
@@ -86,6 +88,7 @@ public final class Supervisor extends Server {
     /**
      * Custom deserialize Supervisor based fastjson.
      */
+    /*
     public static class FastjsonDeserializer implements ObjectDeserializer {
         @Override
         public Supervisor deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
@@ -97,9 +100,10 @@ public final class Supervisor extends Server {
 
         @Override
         public int getFastMatchToken() {
-            return 0 /*JSONToken.RBRACKET*/;
+            return 0;
         }
     }
+    */
 
     // -----------------------------------------------------custom jackson deserialize
 
