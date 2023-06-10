@@ -70,8 +70,8 @@
 
   <delete id="deleteByWnstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE wnstance_id = #{wnstanceId}
-      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId} AND run_state NOT IN (40, 50)) t)=0
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_state &lt; 40) t)=0
   </delete>
 
 </mapper>

@@ -389,17 +389,23 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
             if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot delete workflow node instance: " + instanceId);
 
+                // delete workflow lead instance
                 int row = instanceMapper.deleteByInstanceId(instanceId);
                 Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete workflow lead instance conflict: " + instanceId);
 
+                // delete task
+                for (SchedInstance e : instanceMapper.findWorkflowNode(instance.getWnstanceId())) {
+                    row = taskMapper.deleteByInstanceId(e.getInstanceId());
+                    Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched task conflict: " + instanceId);
+                }
+
+                // delete workflow node instance
                 row = instanceMapper.deleteByWnstanceId(instanceId);
                 Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete workflow node instance conflict: " + instanceId);
 
+                // delete workflow config
                 row = workflowMapper.deleteByWnstanceId(instanceId);
                 Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched workflow conflict: " + instanceId);
-
-                row = taskMapper.deleteByInstanceId(instanceId);
-                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched task conflict: " + instanceId);
             } else {
                 int row = instanceMapper.deleteByInstanceId(instanceId);
                 Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);

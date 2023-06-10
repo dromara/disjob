@@ -141,7 +141,8 @@
 
   <delete id="deleteByInstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state > 30
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state &lt; 40) t)=0
   </delete>
 
   <!-- allowMultiQueries=true -->

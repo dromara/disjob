@@ -142,7 +142,7 @@
     FROM <include refid="Table_Name" />
     WHERE rnstance_id = #{rnstanceId,jdbcType=BIGINT}
       AND run_type = 3
-      AND run_state NOT IN (40, 50)
+      AND run_state &lt; 40
   </select>
 
   <select id="findWorkflowNode" parameterType="_long" resultMap="BaseResultMap">
@@ -169,13 +169,13 @@
 
   <delete id="deleteByInstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND run_state IN (40,50)
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND run_state >= 40
   </delete>
 
   <delete id="deleteByWnstanceId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
-    WHERE wnstance_id = #{wnstanceId}
-      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId} AND run_state NOT IN (40, 50)) t)=0
+    WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
+      AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_state &lt; 40) t)=0
   </delete>
 
 </mapper>

@@ -23,10 +23,10 @@
     <maven.deploy.skip>true</maven.deploy.skip>
 
     <disjob.version>1.12-SNAPSHOT</disjob.version>
-    <spring-boot.version>2.7.11</spring-boot.version>
+    <spring-boot.version>2.7.12</spring-boot.version>
     <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
-    <testcontainers.version>1.18.1</testcontainers.version>
+    <testcontainers.version>1.18.3</testcontainers.version>
 
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
