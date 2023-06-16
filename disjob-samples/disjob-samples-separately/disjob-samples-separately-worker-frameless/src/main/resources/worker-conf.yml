@@ -16,10 +16,12 @@ disjob:
     keep-alive-time-seconds: 300
     update-task-worker-thread-pool-size: 6
   registry:
+    # redis做注册中心时需要配置
     redis:
       namespace: redis_namespace
       session-timeout-ms: 60000
       registry-period-ms: 4000
+    # consul做注册中心时需要配置
     consul:
       namespace: consul_namespace
       host: localhost

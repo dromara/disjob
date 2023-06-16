@@ -45,7 +45,7 @@ public class RetryProperties extends ToJsonString implements Serializable {
     }
 
     public void check() {
-        Assert.isTrue(maxCount >= 0, "Retry max count must be greater than 0.");
+        Assert.isTrue(maxCount >= 0, "Retry max count cannot less than 0.");
         Assert.isTrue(backoffPeriod > 0, "Retry backoff period must be greater than 0.");
     }
 

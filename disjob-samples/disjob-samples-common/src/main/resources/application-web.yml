@@ -37,7 +37,7 @@ server.tomcat:
   max-connections: 20000
   mbeanregistry.enabled: true
 
-# Disjob supervisor configuration
+# Disjob configuration
 disjob:
   http:
     connect-timeout: 3000

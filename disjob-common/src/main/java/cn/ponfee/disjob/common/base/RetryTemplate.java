@@ -36,7 +36,7 @@ public class RetryTemplate {
     }
 
     public static <T> T execute(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
-        Assert.isTrue(retryMaxCount >= 0, "Retry max count must be greater than 0.");
+        Assert.isTrue(retryMaxCount >= 0, "Retry max count cannot less than 0.");
         Assert.isTrue(retryBackoffPeriod > 0, "Retry backoff period must be greater than 0.");
         int i = 0;
         Throwable ex;
