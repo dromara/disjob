@@ -2,6 +2,12 @@ server.port: 8084
 
 # Disjob worker configuration
 disjob:
+  http:
+    connect-timeout: 3000
+    read-timeout: 10000
+  retry:
+    max-count: 5
+    backoff-period: 3000
   worker:
     group: default,test1
     timing-wheel-tick-ms: 100

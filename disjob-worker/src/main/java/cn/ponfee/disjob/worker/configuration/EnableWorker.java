@@ -47,11 +47,17 @@ import java.lang.annotation.*;
 @Documented
 @EnableConfigurationProperties(WorkerProperties.class)
 @Import({
+    EnableWorker.EnableRetryProperties.class,
     EnableWorker.EnableHttpProperties.class,
     EnableWorker.EnableWorkerConfiguration.class,
     WorkerStartupRunner.class,
 })
 public @interface EnableWorker {
+
+    @ConditionalOnMissingBean(RetryProperties.class)
+    @EnableConfigurationProperties(RetryProperties.class)
+    class EnableRetryProperties {
+    }
 
     @ConditionalOnMissingBean(HttpProperties.class)
     @EnableConfigurationProperties(HttpProperties.class)
@@ -89,16 +95,20 @@ public @interface EnableWorker {
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        @ConditionalOnMissingClass("cn.ponfee.disjob.supervisor.manager.DistributedJobManager")
+        @ConditionalOnMissingClass(JobConstants.JOB_MANAGER_CLASS_NAME)
         @ConditionalOnMissingBean
         @Bean
-        public SupervisorService supervisorServiceClient(HttpProperties httpConfig,
+        public SupervisorService supervisorServiceClient(HttpProperties httpProperties,
+                                                         RetryProperties retryProperties,
                                                          WorkerRegistry workerRegistry,
                                                          @Nullable ObjectMapper objectMapper) {
+            httpProperties.check();
+            retryProperties.check();
             DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-                .connectTimeout(httpConfig.getConnectTimeout())
-                .readTimeout(httpConfig.getReadTimeout())
-                .maxRetryTimes(httpConfig.getMaxRetryTimes())
+                .httpConnectTimeout(httpProperties.getConnectTimeout())
+                .httpReadTimeout(httpProperties.getReadTimeout())
+                .retryMaxCount(retryProperties.getMaxCount())
+                .retryBackoffPeriod(retryProperties.getBackoffPeriod())
                 .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
                 .discoveryServer(workerRegistry)
                 .build();

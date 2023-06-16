@@ -12,10 +12,7 @@ import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.*;
-import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.SupervisorService;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
@@ -122,11 +119,13 @@ public class Main {
 
 
 
-
+        int retryMaxCount = props.getInt(JobConstants.RETRY_KEY_PREFIX + ".max-count", 3);
+        int retryBackoffPeriod = props.getInt(JobConstants.RETRY_KEY_PREFIX + ".backoff-period", 5000);
         DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-            .connectTimeout(props.getInt(JobConstants.DISJOB_KEY_PREFIX + ".http.connect-timeout", 2000))
-            .readTimeout(props.getInt(JobConstants.DISJOB_KEY_PREFIX + ".http.read-timeout", 5000))
-            .maxRetryTimes(props.getInt(JobConstants.DISJOB_KEY_PREFIX + ".http.max-retry-times", 3))
+            .httpConnectTimeout(props.getInt(JobConstants.HTTP_KEY_PREFIX + ".connect-timeout", 2000))
+            .httpReadTimeout(props.getInt(JobConstants.HTTP_KEY_PREFIX + ".read-timeout", 5000))
+            .retryMaxCount(retryMaxCount)
+            .retryBackoffPeriod(retryBackoffPeriod)
             .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(workerRegistry)
             .build();
@@ -135,6 +134,7 @@ public class Main {
         WorkerProperties workerConfig = props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + ".");
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
+            .retryProperties(RetryProperties.of(retryMaxCount, retryBackoffPeriod))
             .workerConfig(workerConfig)
             .supervisorServiceClient(SupervisorServiceClient)
             .taskReceiver(taskReceiver)

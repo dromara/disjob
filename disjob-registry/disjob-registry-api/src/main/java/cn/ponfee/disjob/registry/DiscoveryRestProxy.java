@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpMethod;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.lang.invoke.MethodHandle;
@@ -102,7 +101,7 @@ public class DiscoveryRestProxy {
                     }
                 }
             } else {
-                Assert.notNull(request, () -> "Invalid http request method: " + method.toGenericString());
+                Objects.requireNonNull(request, () -> "Invalid http request method: " + method.toGenericString());
                 return discoveryRestTemplate.execute(null, request.path, request.httpMethod, method.getGenericReturnType(), args);
             }
         }

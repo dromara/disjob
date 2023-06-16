@@ -10,6 +10,7 @@ package cn.ponfee.disjob.worker;
 
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
@@ -17,8 +18,8 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.RotatingTimingWheel;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
-import org.springframework.util.Assert;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -37,31 +38,35 @@ public class WorkerStartup implements Startable {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private WorkerStartup(Worker currentWorker,
-                          WorkerProperties workerConfig,
+                          RetryProperties retryProperties,
+                          WorkerProperties workerProperties,
                           SupervisorService supervisorServiceClient,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver) {
-        Assert.notNull(currentWorker, "Current worker cannot null.");
-        workerConfig.check();
-        Assert.notNull(supervisorServiceClient, "Supervisor service client cannot null.");
-        Assert.notNull(workerRegistry, "Server registry cannot null.");
-        Assert.notNull(taskReceiver, "Task receiver cannot null.");
+        Objects.requireNonNull(currentWorker, "Current worker cannot null.");
+        Objects.requireNonNull(retryProperties, "Retry config cannot be null.").check();
+        Objects.requireNonNull(workerProperties, "Worker config cannot be null.").check();
+        Objects.requireNonNull(supervisorServiceClient, "Supervisor service client cannot null.");
+        Objects.requireNonNull(workerRegistry, "Server registry cannot null.");
+        Objects.requireNonNull(taskReceiver, "Task receiver cannot null.");
 
         this.currentWorker = currentWorker;
         this.workerThreadPool = new WorkerThreadPool(
-            workerConfig.getMaximumPoolSize(),
-            workerConfig.getKeepAliveTimeSeconds(),
+            workerProperties.getMaximumPoolSize(),
+            workerProperties.getKeepAliveTimeSeconds(),
+            retryProperties,
             supervisorServiceClient
         );
         this.workerRegistry = workerRegistry;
         this.taskReceiver = taskReceiver;
         this.rotatingTimingWheel = new RotatingTimingWheel(
             currentWorker,
+            retryProperties,
             supervisorServiceClient,
             workerRegistry,
             taskReceiver.getTimingWheel(),
             workerThreadPool,
-            workerConfig.getUpdateTaskWorkerThreadPoolSize()
+            workerProperties.getUpdateTaskWorkerThreadPoolSize()
         );
     }
 
@@ -92,6 +97,7 @@ public class WorkerStartup implements Startable {
 
     public static class Builder {
         private Worker currentWorker;
+        private RetryProperties retryProperties;
         private WorkerProperties workerConfig;
         private SupervisorService supervisorServiceClient;
         private WorkerRegistry workerRegistry;
@@ -102,6 +108,11 @@ public class WorkerStartup implements Startable {
 
         public Builder currentWorker(Worker currentWorker) {
             this.currentWorker = currentWorker;
+            return this;
+        }
+
+        public Builder retryProperties(RetryProperties retryProperties) {
+            this.retryProperties = retryProperties;
             return this;
         }
 
@@ -128,6 +139,7 @@ public class WorkerStartup implements Startable {
         public WorkerStartup build() {
             return new WorkerStartup(
                 currentWorker,
+                retryProperties,
                 workerConfig,
                 supervisorServiceClient,
                 workerRegistry,

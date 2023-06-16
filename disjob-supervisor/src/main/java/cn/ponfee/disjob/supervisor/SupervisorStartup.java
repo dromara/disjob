@@ -19,8 +19,8 @@ import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.thread.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.thread.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.thread.WaitingInstanceScanner;
-import org.springframework.util.Assert;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -47,15 +47,14 @@ public class SupervisorStartup implements Startable {
                               DoInLocked scanWaitingInstanceLocker,
                               DoInLocked scanRunningInstanceLocker,
                               TaskDispatcher taskDispatcher) {
-        Assert.notNull(currentSupervisor, "Current supervisor cannot null.");
-        Assert.notNull(supervisorConfig, "Supervisor config cannot null.");
-        Assert.notNull(supervisorRegistry, "Supervisor registry cannot null.");
-        Assert.notNull(distributedJobManager, "Distributed job manager cannot null.");
-        Assert.notNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
-        Assert.notNull(scanWaitingInstanceLocker, "Scan waiting instance locker cannot null.");
-        Assert.notNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
-        Assert.notNull(taskDispatcher, "Task dispatcher cannot null.");
-        supervisorConfig.check();
+        Objects.requireNonNull(currentSupervisor, "Current supervisor cannot null.");
+        Objects.requireNonNull(supervisorConfig, "Supervisor config cannot null.").check();
+        Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
+        Objects.requireNonNull(distributedJobManager, "Distributed job manager cannot null.");
+        Objects.requireNonNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
+        Objects.requireNonNull(scanWaitingInstanceLocker, "Scan waiting instance locker cannot null.");
+        Objects.requireNonNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
+        Objects.requireNonNull(taskDispatcher, "Task dispatcher cannot null.");
 
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;

@@ -14,9 +14,9 @@ import cn.ponfee.disjob.core.enums.Operations;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.util.Assert;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Terminate task parameter.
@@ -38,13 +38,11 @@ public class TerminateTaskParam extends ToJsonString implements Serializable {
 
     public TerminateTaskParam(long instanceId, Long wnstanceId, long taskId,
                               Operations operation, ExecuteState toState, String errorMsg) {
-        Assert.notNull(operation, "Terminate task operation param cannot be null.");
-        Assert.notNull(toState, "Terminate task target state param cannot be null.");
         this.instanceId = instanceId;
         this.wnstanceId = wnstanceId;
         this.taskId = taskId;
-        this.operation = operation;
-        this.toState = toState;
+        this.operation = Objects.requireNonNull(operation, "Terminate task operation param cannot be null.");
+        this.toState = Objects.requireNonNull(toState, "Terminate task target state param cannot be null.");
         this.errorMsg = errorMsg;
     }
 

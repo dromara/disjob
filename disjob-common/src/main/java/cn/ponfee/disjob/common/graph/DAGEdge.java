@@ -10,7 +10,6 @@ package cn.ponfee.disjob.common.graph;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import com.google.common.graph.EndpointPair;
-import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -32,19 +31,19 @@ public final class DAGEdge extends ToJsonString implements Serializable {
     }
 
     public static DAGEdge of(DAGNode source, DAGNode target) {
-        Assert.notNull(source, () -> "DAG source node cannot be null.");
-        Assert.notNull(target, () -> "DAG target node cannot be null.");
+        Objects.requireNonNull(source, "DAG source node cannot be null.");
+        Objects.requireNonNull(target, "DAG target node cannot be null.");
         return new DAGEdge(source, target);
     }
 
     public static DAGEdge of(String source, String target) {
-        Assert.notNull(source, () -> "DAG source node cannot be blank.");
-        Assert.notNull(target, () -> "DAG target node cannot be blank.");
+        Objects.requireNonNull(source, "DAG source node cannot be blank.");
+        Objects.requireNonNull(target, "DAG target node cannot be blank.");
         return new DAGEdge(DAGNode.fromString(source), DAGNode.fromString(target));
     }
 
     public static DAGEdge of(EndpointPair<DAGNode> pair) {
-        Assert.notNull(pair, () -> "DAG node pair cannot be blank.");
+        Objects.requireNonNull(pair, "DAG node pair cannot be blank.");
         return new DAGEdge(pair.source(), pair.target());
     }
 

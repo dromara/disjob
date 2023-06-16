@@ -73,8 +73,8 @@ public class JobHandlerUtils {
             return splitTasks;
         } catch (JobException e) {
             throw e;
-        } catch (Exception e) {
-            throw new JobException(SPLIT_JOB_FAILED, "Split job occur error", e);
+        } catch (Throwable t) {
+            throw new JobException(SPLIT_JOB_FAILED, "Split job occur error", t);
         }
     }
 

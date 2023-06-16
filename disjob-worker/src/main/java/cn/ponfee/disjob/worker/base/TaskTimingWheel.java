@@ -10,7 +10,8 @@ package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-import org.springframework.util.Assert;
+
+import java.util.Objects;
 
 /**
  * Timing wheel for execute sched task.
@@ -26,7 +27,7 @@ public class TaskTimingWheel extends TimingWheel<ExecuteTaskParam> {
 
     @Override
     protected boolean verify(ExecuteTaskParam param) {
-        Assert.notNull(param.getWorker(), "Worker cannot be null.");
+        Objects.requireNonNull(param.getWorker(), "Worker cannot be null.");
         return true;
     }
 

@@ -22,6 +22,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.*;
@@ -50,22 +51,30 @@ public class DiscoveryRestTemplate<D extends Server> {
 
     private final RestTemplate restTemplate;
     private final Discovery<D> discoveryServer;
-    private final int maxRetryTimes;
+    private final int retryMaxCount;
+    private final long retryBackoffPeriod;
 
-    private DiscoveryRestTemplate(int connectTimeout,
-                                  int readTimeout,
+    private DiscoveryRestTemplate(int httpConnectTimeout,
+                                  int httpReadTimeout,
+                                  int retryMaxCount,
+                                  int retryBackoffPeriod,
                                   ObjectMapper objectMapper,
-                                  Discovery<D> discoveryServer,
-                                  int maxRetryTimes) {
+                                  Discovery<D> discoveryServer) {
+        Assert.isTrue(httpConnectTimeout > 0, "Http connect timeout must be greater than 0.");
+        Assert.isTrue(httpReadTimeout > 0, "Http read timeout must be greater than 0.");
+        Assert.isTrue(retryMaxCount >= 0, "Retry max count must be greater than 0.");
+        Assert.isTrue(retryBackoffPeriod > 0, "Retry backoff period must be greater than 0.");
+
         MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
         httpMessageConverter.setObjectMapper(objectMapper);
         RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);
 
         this.restTemplate = RestTemplateUtils.buildRestTemplate(
-            connectTimeout, readTimeout, StandardCharsets.UTF_8, httpMessageConverter
+            httpConnectTimeout, httpReadTimeout, StandardCharsets.UTF_8, httpMessageConverter
         );
         this.discoveryServer = discoveryServer;
-        this.maxRetryTimes = maxRetryTimes;
+        this.retryMaxCount = retryMaxCount;
+        this.retryBackoffPeriod = retryBackoffPeriod;
     }
 
     /**
@@ -92,8 +101,8 @@ public class DiscoveryRestTemplate<D extends Server> {
         int serverNumber = servers.size();
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
         // minimum retry two times
-        Exception ex = null;
-        for (int i = 0, n = Math.min(serverNumber, maxRetryTimes); i <= n; i++) {
+        Throwable ex = null;
+        for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
             String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
             try {
@@ -114,7 +123,13 @@ public class DiscoveryRestTemplate<D extends Server> {
                 RequestCallback requestCallback = restTemplate.httpEntityCallback(httpEntity, returnType);
                 ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
                 return restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor).getBody();
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                if (e instanceof InterruptedException) {
+                    LOG.error("Thread interrupted, skip rest retry.");
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+
                 ex = e;
                 if (e instanceof ResourceAccessException || is5xxServerError(e)) {
                     LOG.error("Invoke discovered server rpc fail: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
@@ -124,7 +139,7 @@ public class DiscoveryRestTemplate<D extends Server> {
 
                 if (i < n) {
                     // round-robin retry, 100L * IntMath.pow(i + 1, 2)
-                    Thread.sleep(serverNumber == 1 ? 2000 : 1000L * (i + 1));
+                    Thread.sleep((i + 1) * retryBackoffPeriod);
                 }
             }
         }
@@ -153,7 +168,7 @@ public class DiscoveryRestTemplate<D extends Server> {
         return params;
     }
 
-    private static boolean is5xxServerError(Exception e) {
+    private static boolean is5xxServerError(Throwable e) {
         if (!(e instanceof HttpStatusCodeException)) {
             return false;
         }
@@ -167,22 +182,33 @@ public class DiscoveryRestTemplate<D extends Server> {
     }
 
     public static class Builder<S extends Server> {
-        private int connectTimeout;
-        private int readTimeout;
+        private int httpConnectTimeout;
+        private int httpReadTimeout;
+        private int retryMaxCount;
+        private int retryBackoffPeriod;
         private ObjectMapper objectMapper;
         private Discovery<S> discoveryServer;
-        private int maxRetryTimes;
 
         private Builder() {
         }
 
-        public Builder<S> connectTimeout(int connectTimeout) {
-            this.connectTimeout = connectTimeout;
+        public Builder<S> httpConnectTimeout(int httpConnectTimeout) {
+            this.httpConnectTimeout = httpConnectTimeout;
             return this;
         }
 
-        public Builder<S> readTimeout(int readTimeout) {
-            this.readTimeout = readTimeout;
+        public Builder<S> httpReadTimeout(int httpReadTimeout) {
+            this.httpReadTimeout = httpReadTimeout;
+            return this;
+        }
+
+        public Builder<S> retryMaxCount(int retryMaxCount) {
+            this.retryMaxCount = retryMaxCount;
+            return this;
+        }
+
+        public Builder<S> retryBackoffPeriod(int retryBackoffPeriod) {
+            this.retryBackoffPeriod = retryBackoffPeriod;
             return this;
         }
 
@@ -196,13 +222,10 @@ public class DiscoveryRestTemplate<D extends Server> {
             return this;
         }
 
-        public Builder<S> maxRetryTimes(int maxRetryTimes) {
-            this.maxRetryTimes = maxRetryTimes;
-            return this;
-        }
-
         public DiscoveryRestTemplate<S> build() {
-            return new DiscoveryRestTemplate<>(connectTimeout, readTimeout, objectMapper, discoveryServer, maxRetryTimes);
+            return new DiscoveryRestTemplate<>(
+                httpConnectTimeout, httpReadTimeout, retryMaxCount, retryBackoffPeriod, objectMapper, discoveryServer
+            );
         }
     }
 

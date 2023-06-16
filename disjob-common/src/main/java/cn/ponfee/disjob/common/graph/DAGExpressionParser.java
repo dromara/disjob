@@ -442,9 +442,9 @@ public class DAGExpressionParser {
         private final int close;
 
         private PartitionIdentityKey(String expr, int open, int close) {
-            Assert.hasText(expr, "Partition expression cannot be blank: " + expr);
-            Assert.isTrue(open > -1, "Partition key open must be greater than -1: " + open);
-            Assert.isTrue(close > 0, "Partition key close must be greater than 0: " + close);
+            Assert.hasText(expr, () -> "Partition expression cannot be blank: " + expr);
+            Assert.isTrue(open > -1, () -> "Partition key open must be greater than -1: " + open);
+            Assert.isTrue(close > 0, () -> "Partition key close must be greater than 0: " + close);
             this.expr = expr;
             this.open = open;
             this.close = close;

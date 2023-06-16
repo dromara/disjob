@@ -42,7 +42,7 @@ public abstract class TaskDispatcher implements AutoCloseable {
     private final Discovery<Worker> discoveryWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
-    private final int maxRetryTimes;
+    private final int retryMaxCount;
     private final AsyncDelayedExecutor<DispatchParam> asyncDelayedExecutor;
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
@@ -52,11 +52,11 @@ public abstract class TaskDispatcher implements AutoCloseable {
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
                           @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
-                          int maxRetryTimes) {
+                          int retryMaxCount) {
         this.discoveryWorker = discoveryWorker;
         this.timingWheel = timingWheel;
 
-        this.maxRetryTimes = maxRetryTimes;
+        this.retryMaxCount = retryMaxCount;
         this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(3, e -> doDispatch(Collections.singletonList(e)));
     }
 
@@ -185,9 +185,9 @@ public abstract class TaskDispatcher implements AutoCloseable {
     }
 
     private void retry(DispatchParam dispatchParam) {
-        if (dispatchParam.retried() >= maxRetryTimes) {
+        if (dispatchParam.retried() >= retryMaxCount) {
             // discard
-            log.error("Dispatched task retried max times still failed: " + dispatchParam.executeTaskParam());
+            log.error("Dispatched task retried max count still failed: " + dispatchParam.executeTaskParam());
             return;
         }
 

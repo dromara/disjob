@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
@@ -35,14 +36,16 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean, O
     private final WorkerStartup workerStartup;
 
     public WorkerStartupRunner(Worker currentWorker,
-                               WorkerProperties workerConfig,
+                               RetryProperties retryProperties,
+                               WorkerProperties workerProperties,
                                // if current server also is a supervisor -> JobManager, else -> DiscoveryRestProxy.create()
                                SupervisorService supervisorServiceClient,
                                WorkerRegistry workerRegistry,
                                TaskReceiver taskReceiver) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
-            .workerConfig(workerConfig)
+            .retryProperties(retryProperties)
+            .workerConfig(workerProperties)
             .supervisorServiceClient(supervisorServiceClient)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)

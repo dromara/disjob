@@ -19,6 +19,7 @@ import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
@@ -131,6 +132,9 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                                  SchedDependMapper dependMapper,
                                  SchedWorkflowMapper workflowMapper) {
         super(idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
+        if (!JobConstants.JOB_MANAGER_CLASS_NAME.equals(getClass().getName())) {
+            throw new AssertionError("Invalid job manager class name: " + JobConstants.JOB_MANAGER_CLASS_NAME);
+        }
         this.transactionTemplate = transactionTemplate;
         this.jobMapper = jobMapper;
         this.instanceMapper = instanceMapper;

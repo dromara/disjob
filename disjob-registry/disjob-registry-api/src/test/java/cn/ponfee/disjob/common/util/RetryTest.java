@@ -20,14 +20,14 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class RetryTest {
 
-    static int maxRetryTimes = 3;
+    static int retryMaxCount = 3;
 
     @Test
     public void test1() {
         int serverNumber = 1;
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
         // minimum retry two times
-        for (int i = 0, n = Math.min(serverNumber, maxRetryTimes); i <= n; i++) {
+        for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             System.out.print(n + ": " + i + ", " + ((start + i) % serverNumber));
             if (i < n) {
                 // round-robin retry
@@ -44,7 +44,7 @@ public class RetryTest {
         int serverNumber = 10;
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
         // minimum retry two times
-        for (int i = 0, n = Math.min(serverNumber, maxRetryTimes); i <= n; i++) {
+        for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             System.out.print(n + ": " + i + ", " + ((start + i) % serverNumber));
             if (i < n) {
                 // round-robin retry

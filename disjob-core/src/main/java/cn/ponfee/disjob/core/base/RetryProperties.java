@@ -17,29 +17,36 @@ import org.springframework.util.Assert;
 import java.io.Serializable;
 
 /**
- * Worker configuration properties.
+ * Retry configuration properties.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.HTTP_KEY_PREFIX)
-public class HttpProperties extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 5956808059609905150L;
+@ConfigurationProperties(prefix = JobConstants.RETRY_KEY_PREFIX)
+public class RetryProperties extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -2300492906607942870L;
 
     /**
-     * Http rest connect timeout milliseconds, default 2000.
+     * Retry max count, default 3.
      */
-    private int connectTimeout = 2000;
+    private int maxCount = 3;
 
     /**
-     * Http rest read timeout milliseconds, default 5000.
+     * Backoff period, default 5000 ms.
      */
-    private int readTimeout = 5000;
+    private int backoffPeriod = 5000;
+
+    public static RetryProperties of(int maxCount, int backoffPeriod) {
+        RetryProperties retry = new RetryProperties();
+        retry.setMaxCount(maxCount);
+        retry.setBackoffPeriod(backoffPeriod);
+        return retry;
+    }
 
     public void check() {
-        Assert.isTrue(connectTimeout > 0, "Http connect timeout must be greater than 0.");
-        Assert.isTrue(readTimeout > 0, "Http read timeout must be greater than 0.");
+        Assert.isTrue(maxCount >= 0, "Retry max count must be greater than 0.");
+        Assert.isTrue(backoffPeriod > 0, "Retry backoff period must be greater than 0.");
     }
 
 }

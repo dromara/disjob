@@ -62,6 +62,11 @@ public class JobConstants {
     public static final String HTTP_KEY_PREFIX = DISJOB_KEY_PREFIX + ".http";
 
     /**
+     * Retry configuration key prefix.
+     */
+    public static final String RETRY_KEY_PREFIX = DISJOB_KEY_PREFIX + ".retry";
+
+    /**
      * Spring container bean name prefix.
      */
     private static final String SPRING_BEAN_NAME_PREFIX = DISJOB_KEY_PREFIX + ".bean";
@@ -80,5 +85,10 @@ public class JobConstants {
      * Current worker spring bean name
      */
     public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SPRING_BEAN_NAME_PREFIX + ".current-worker";
+
+    /**
+     * Job manager class name
+     */
+    public static final String JOB_MANAGER_CLASS_NAME = "cn.ponfee.disjob.supervisor.manager.DistributedJobManager";
 
 }

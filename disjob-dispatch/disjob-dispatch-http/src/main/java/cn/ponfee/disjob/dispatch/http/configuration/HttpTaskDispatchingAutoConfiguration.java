@@ -11,6 +11,7 @@ package cn.ponfee.disjob.dispatch.http.configuration;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.HttpProperties;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
@@ -44,14 +45,18 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     @ConditionalOnBean(Supervisor.class)
     @ConditionalOnMissingBean
     @Bean
-    public TaskDispatcher taskDispatcher(HttpProperties properties,
+    public TaskDispatcher taskDispatcher(HttpProperties httpProperties,
+                                         RetryProperties retryProperties,
                                          SupervisorRegistry discoveryWorker,
                                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          @Nullable ObjectMapper objectMapper) {
+        httpProperties.check();
+        retryProperties.check();
         DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-            .connectTimeout(properties.getConnectTimeout())
-            .readTimeout(properties.getReadTimeout())
-            .maxRetryTimes(properties.getMaxRetryTimes())
+            .httpConnectTimeout(httpProperties.getConnectTimeout())
+            .httpReadTimeout(httpProperties.getReadTimeout())
+            .retryMaxCount(retryProperties.getMaxCount())
+            .retryBackoffPeriod(retryProperties.getBackoffPeriod())
             .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(discoveryWorker)
             .build();

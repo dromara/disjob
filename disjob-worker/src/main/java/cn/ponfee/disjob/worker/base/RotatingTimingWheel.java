@@ -15,6 +15,7 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.base.Worker;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -61,13 +63,15 @@ public class RotatingTimingWheel implements Startable {
     private int round = 0;
 
     public RotatingTimingWheel(Worker currentWorker,
-                               SupervisorService supervisorServiceClient,
+                               RetryProperties retry,
+                               SupervisorService client,
                                Discovery<Supervisor> discoverySupervisor,
                                TimingWheel<ExecuteTaskParam> timingWheel,
                                WorkerThreadPool threadPool,
                                int updateTaskWorkerThreadPoolSize) {
+        Objects.requireNonNull(retry, "Retry config cannot be null.").check();
         this.currentWorker = currentWorker;
-        this.supervisorServiceClient = supervisorServiceClient;
+        this.supervisorServiceClient = LocalSupervisorServiceRetryProxy.newRetryProxyIfLocal(client, retry.getMaxCount(), retry.getBackoffPeriod());
         this.discoverySupervisor = discoverySupervisor;
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;

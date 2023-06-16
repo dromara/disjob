@@ -17,6 +17,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -35,10 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -110,12 +108,14 @@ public class WorkerThreadPool extends Thread implements Startable {
 
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
+                            RetryProperties retry,
                             SupervisorService client) {
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
+        Objects.requireNonNull(retry, "Retry config cannot be null.").check();
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
-        this.client = client;
+        this.client = LocalSupervisorServiceRetryProxy.newRetryProxyIfLocal(client, retry.getMaxCount(), retry.getBackoffPeriod());
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());

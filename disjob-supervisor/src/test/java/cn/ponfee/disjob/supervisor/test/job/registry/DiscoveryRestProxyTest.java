@@ -23,9 +23,10 @@ public class DiscoveryRestProxyTest {
     public void testGroupedServer() {
         /*
         DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-            .connectTimeout(2000)
-            .readTimeout(2000)
-            .maxRetryTimes(3)
+            .httpConnectTimeout(2000)
+            .httpReadTimeout(5000)
+            .retryMaxCount(3)
+            .retryBackoffPeriod(5000)
             .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(new ConsulSupervisorRegistry(new ConsulRegistryProperties()))
             .build();

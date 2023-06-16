@@ -59,12 +59,18 @@ import java.lang.annotation.*;
 @Documented
 @EnableConfigurationProperties(SupervisorProperties.class)
 @Import({
+    EnableSupervisor.EnableRetryProperties.class,
     EnableSupervisor.EnableHttpProperties.class,
     EnableSupervisor.EnableSupervisorConfiguration.class,
     EnableSupervisor.EnableComponentScan.class,
     SupervisorStartupRunner.class,
 })
 public @interface EnableSupervisor {
+
+    @ConditionalOnMissingBean(RetryProperties.class)
+    @EnableConfigurationProperties(RetryProperties.class)
+    class EnableRetryProperties {
+    }
 
     @ConditionalOnMissingBean(HttpProperties.class)
     @EnableConfigurationProperties(HttpProperties.class)
@@ -98,14 +104,18 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerServiceClient workerServiceClient(HttpProperties properties,
+        public WorkerServiceClient workerServiceClient(HttpProperties httpProperties,
+                                                       RetryProperties retryProperties,
                                                        SupervisorRegistry supervisorRegistry,
                                                        @Nullable Worker currentWorker,
                                                        @Nullable ObjectMapper objectMapper) {
+            httpProperties.check();
+            retryProperties.check();
             DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-                .connectTimeout(properties.getConnectTimeout())
-                .readTimeout(properties.getReadTimeout())
-                .maxRetryTimes(properties.getMaxRetryTimes())
+                .httpConnectTimeout(httpProperties.getConnectTimeout())
+                .httpReadTimeout(httpProperties.getReadTimeout())
+                .retryMaxCount(retryProperties.getMaxCount())
+                .retryBackoffPeriod(retryProperties.getBackoffPeriod())
                 .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
                 .discoveryServer(supervisorRegistry)
                 .build();

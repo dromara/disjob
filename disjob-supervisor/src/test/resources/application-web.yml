@@ -12,7 +12,10 @@ management:
 server.tomcat.mbeanregistry.enabled: true
 
 # Disjob supervisor configuration
-disjob.http:
-  connect-timeout: 2000
-  read-timeout: 5000
-  max-retry-times: 3
+disjob:
+  http:
+    connect-timeout: 3000
+    read-timeout: 10000
+  retry:
+    max-count: 5
+    backoff-period: 3000

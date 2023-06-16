@@ -9,7 +9,8 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import org.springframework.util.Assert;
+
+import java.util.Objects;
 
 /**
  * The job state enum definition.
@@ -43,7 +44,7 @@ public enum JobState implements IntValueEnum<JobState> {
     }
 
     public static JobState of(Integer value) {
-        Assert.notNull(value, "Job state value cannot be null.");
+        Objects.requireNonNull(value, "Job state value cannot be null.");
         for (JobState state : JobState.values()) {
             if (state.value == value) {
                 return state;

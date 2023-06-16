@@ -80,10 +80,11 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
 
     @ConditionalOnBean(HttpProperties.class)
     @Bean
-    public RestTemplate restTemplate(HttpProperties properties) {
+    public RestTemplate restTemplate(HttpProperties httpProperties) {
+        httpProperties.check();
         return RestTemplateUtils.buildRestTemplate(
-            properties.getConnectTimeout(),
-            properties.getReadTimeout(),
+            httpProperties.getConnectTimeout(),
+            httpProperties.getReadTimeout(),
             StandardCharsets.UTF_8,
             mappingJackson2HttpMessageConverter()
         );
