@@ -8,8 +8,6 @@
 
 package cn.ponfee.disjob.common.tuple;
 
-import java.util.Objects;
-
 /**
  * Tuple2 consisting of two elements.
  *
@@ -46,41 +44,6 @@ public final class Tuple2<A, B> extends Tuple {
             case  1: b = (B) value; break;
             default: throw new IndexOutOfBoundsException("Index: " + index);
         }
-    }
-
-    @Override
-    public Object[] toArray() {
-        return new Object[]{a, b};
-    }
-
-    @Override
-    public String toString() {
-        return "(" + a + ", " + b + ")";
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Tuple2)) {
-            return false;
-        }
-
-        Tuple2<?, ?> o = (Tuple2<?, ?>) obj;
-        return eq(o.a, o.b);
-    }
-
-    public boolean eq(Object a, Object b) {
-        return Objects.equals(this.a, a)
-            && Objects.equals(this.b, b);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = a != null ? a.hashCode() : 0;
-        result = HASH_FACTOR * result + (b != null ? b.hashCode() : 0);
-        return result;
     }
 
     @Override

@@ -8,8 +8,6 @@
 
 package cn.ponfee.disjob.common.tuple;
 
-import java.util.Objects;
-
 /**
  * Tuple4 consisting of four elements.
  *
@@ -54,45 +52,6 @@ public final class Tuple4<A, B, C, D> extends Tuple {
             case  3: d = (D) value; break;
             default: throw new IndexOutOfBoundsException("Index: " + index);
         }
-    }
-
-    @Override
-    public Object[] toArray() {
-        return new Object[]{a, b, c, d};
-    }
-
-    @Override
-    public String toString() {
-        return "(" + a + ", " + b + ", " + c + ", " + d + ")";
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Tuple4)) {
-            return false;
-        }
-
-        Tuple4<?, ?, ?, ?> o = (Tuple4<?, ?, ?, ?>) obj;
-        return eq(o.a, o.b, o.c, o.d);
-    }
-
-    public boolean eq(Object a, Object b, Object c, Object d) {
-        return Objects.equals(this.a, a)
-            && Objects.equals(this.b, b)
-            && Objects.equals(this.c, c)
-            && Objects.equals(this.d, d);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = a != null ? a.hashCode() : 0;
-        result = HASH_FACTOR * result + (b != null ? b.hashCode() : 0);
-        result = HASH_FACTOR * result + (c != null ? c.hashCode() : 0);
-        result = HASH_FACTOR * result + (d != null ? d.hashCode() : 0);
-        return result;
     }
 
     @Override

@@ -19,8 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 /**
  * <pre>
@@ -37,7 +36,8 @@ public class WorkerServiceClientTest extends SpringBootTestBase<Object> {
     @Test
     public void testSplit() throws JobException {
         String taskParam = "taskParam";
-        doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerService).split(any());
+        //doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerService).split(any());
+        when(workerService.split(any())).thenReturn(Collections.singletonList(new SplitTask(taskParam)));
 
         WorkerServiceClient client = new WorkerServiceClient(workerService, null);
         List<SplitTask> result = client.split(new JobHandlerParam(null, null, "group", null, null));

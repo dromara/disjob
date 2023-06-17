@@ -39,10 +39,23 @@ import java.util.stream.Collectors;
  *
  * 1、TestInstance：可以在非static方法上加@BeforeAll/@AfterAll注解
  *   LifeCycle.PER_METHOD(default)：每个测试方法执行前创建新的测试类实例
- *   Lifecycle.PER_CLASS：整个测试的过程中之创建一个测试类的实例
+ *   Lifecycle.PER_CLASS：整个测试的过程之中创建一个测试类的实例
  *
  * 2、@MockitoSettings(strictness = Strictness.STRICT_STUBS)
  *   等同于：@ExtendWith(MockitoExtension.class)
+ *
+ * 3、mock对象不执行具体逻辑，spy对象执行具体逻辑
+ *
+ * 4、用spy时会有区别：when().thenReturn()在返回指定值之前会调用真实方法；doReturn().when()根本不调用真实方法；
+ *
+ * 5、Mockito官方建议优先考虑使用when(...).thenReturn(...)，而不是doReturn(...).when(...)
+ *
+ * 6、Mockito语法：
+ *   When/Then: when(yourMethod()).thenReturn(5);
+ *   Given/Will: given(yourMethod()).willThrow(OutOfMemoryException.class);
+ *   Do/When: doReturn(7).when(yourMock.fizzBuzz());
+ *   Will/Given/Do: willReturn(any()).given(yourMethod()).doNothing();
+ *   Verify/Do: verify(yourMethod()).doThrow(SomeException.class);
  * </pre>
  *
  * @param <T> bean type

@@ -8,50 +8,60 @@
 
 package cn.ponfee.disjob.common.tuple;
 
+import java.util.*;
+
 /**
- * Tuple1 consisting of one element.
+ * Tuple0 consisting of empty element.
  *
  * @author Ponfee
  */
-public final class Tuple1<A> extends Tuple {
+public final class Tuple0 extends Tuple {
     private static final long serialVersionUID = -3627925720098458172L;
+    private static final Tuple0 INSTANCE = new Tuple0();
 
-    public A a;
-
-    public Tuple1(A a) {
-        this.a = a;
+    public Tuple0() {
     }
 
-    public static <A> Tuple1<A> of(A a) {
-        return new Tuple1<>(a);
+    public static Tuple0 of() {
+        return INSTANCE;
     }
 
     @Override
     public <T> T get(int index) {
-        if (index == 0) {
-            return (T) a;
-        } else {
-            throw new IndexOutOfBoundsException("Index: " + index);
-        }
+        throw new IndexOutOfBoundsException("Index: " + index);
     }
 
     @Override
     public <T> void set(T value, int index) {
-        if (index == 0) {
-            a = (A) value;
-        } else {
-            throw new IndexOutOfBoundsException("Index: " + index);
-        }
+        throw new IndexOutOfBoundsException("Index: " + index);
     }
 
     @Override
     public int length() {
-        return 1;
+        return 0;
     }
 
     @Override
-    public Tuple1<A> copy() {
-        return new Tuple1<>(a);
+    public Tuple0 copy() {
+        return INSTANCE;
     }
 
+    @Override
+    public List<Object> toList() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Iterator<Object> iterator() {
+        return Collections.emptyIterator();
+    }
+
+    @Override
+    public Spliterator<Object> spliterator() {
+        return Spliterators.emptySpliterator();
+    }
+
+    private Object readResolve() {
+        return INSTANCE;
+    }
 }

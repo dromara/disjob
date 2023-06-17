@@ -9,15 +9,12 @@
 package cn.ponfee.disjob.common.tuple;
 
 import cn.ponfee.disjob.common.base.DelegatedIntSpliterator;
+import cn.ponfee.disjob.common.base.ImmutableArrayList;
 import cn.ponfee.disjob.common.util.Comparators;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import com.google.common.collect.ImmutableList;
 
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -27,7 +24,6 @@ import java.util.function.Function;
  */
 public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Serializable {
     private static final long serialVersionUID = -3292038317953347997L;
-    public static final int HASH_FACTOR = 31;
 
     /**
      * Get the object at the given index.
@@ -46,44 +42,11 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
     public abstract <T> void set(T value, int index);
 
     /**
-     * Turn this {@code Tuple} into a plain {@code Object[]}.
-     * The array isn't tied to this Tuple but is a <strong>copy</strong>.
-     *
-     * @return A copy of the tuple as a new {@link Object Object[]}.
-     */
-    public abstract Object[] toArray();
-
-    /**
-     * Override the Object toString method as abstract.
-     *
-     * @return a string representation of the Tuple.
-     */
-    @Override
-    public abstract String toString();
-
-    /**
-     * Override the Object equals method as abstract.
-     *
-     * @param obj the reference object with which to compare.
-     * @return {@code true} if this object equals the other.
-     */
-    @Override
-    public abstract boolean equals(Object obj);
-
-    /**
-     * Override the Object hashCode method as abstract.
-     *
-     * @return a hash code value for this object.
-     */
-    @Override
-    public abstract int hashCode();
-
-    /**
      * Returns a copy of this instance.
      *
      * @return a copy of this instance.
      */
-    public abstract <T> T copy();
+    public abstract <T extends Tuple> T copy();
 
     /**
      * Returns int value of this tuple elements count.
@@ -93,32 +56,91 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
     public abstract int length();
 
     /**
-     * Turn this {@code Tuple} into a {@link List List&lt;Object&gt;}.
-     * The list isn't tied to this Tuple but is a <strong>copy</strong> with limited
-     * mutability ({@code add} and {@code remove} are not supported, but {@code set} is).
+     * Turn this {@code Tuple} into a plain {@code Object[]}.
+     * The array isn't tied to this Tuple but is a <strong>copy</strong>.
      *
-     * @return A copy of the tuple as a new {@link List List&lt;Object&gt;}.
+     * @return A copy of the tuple as a new {@link Object Object[]}.
      */
-    public List<Object> toList() {
-        return ImmutableList.copyOf(toArray());
+    public final Object[] toArray() {
+        int len = length();
+        Object[] array = new Object[len];
+        for (int i = 0; i < len; i++) {
+            array[i] = get(i);
+        }
+        return array;
     }
 
     /**
-     * Return an <strong>immutable</strong> {@link Iterator Iterator&lt;Object&gt;} around
-     * the content of this {@code Tuple}.
+     * Returns a string representation of the object.
      *
-     * @return An unmodifiable {@link Iterator} over the elements in this Tuple.
-     * @implNote As an {@link Iterator} is always tied to its {@link Iterable} source by
-     * definition, the iterator cannot be mutable without the iterable also being mutable.
+     * @return a string representation of the Tuple.
      */
     @Override
-    public Iterator<Object> iterator() {
-        return new TupleIterator<>(); // toList().iterator();
+    public final String toString() {
+        return join(", ", String::valueOf, "(", ")");
     }
 
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object.
+     */
     @Override
-    public Spliterator<Object> spliterator() {
-        return new DelegatedIntSpliterator<>(0, length(), this::get);
+    public final int hashCode() {
+        int len = length();
+        if (len < 1) {
+            return 0;
+        }
+
+        int hash = Objects.hashCode(get(0));
+        for (int i = 1; i < len; i++) {
+            hash = 31 * hash + Objects.hashCode(get(i));
+        }
+        return hash;
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return {@code true} if this object equals the other.
+     */
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+
+        Tuple other = (Tuple) obj;
+        for (int i = 0, len = length(); i < len; i++) {
+            if (!Objects.equals(this.get(i), other.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns tuple elements are equals array elements.
+     *
+     * @param elements the elements
+     * @return {@code true} if elements equals.
+     */
+    public final boolean equals(Object... elements) {
+        int len = length();
+        if (elements == null || elements.length != length()) {
+            return false;
+        }
+        for (int i = 0; i < len; i++) {
+            if (!Objects.equals(get(i), elements[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -141,8 +163,34 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
         return Comparators.EQ;
     }
 
-    public final String join() {
-        return join(", ", String::valueOf, "", "");
+    /**
+     * Turn this {@code Tuple} into a {@link List List&lt;Object&gt;}.
+     * The list isn't tied to this Tuple but is a <strong>copy</strong> with limited
+     * mutability ({@code add} and {@code remove} are not supported, but {@code set} is).
+     *
+     * @return A copy of the tuple as a new {@link List List&lt;Object&gt;}.
+     */
+    public List<Object> toList() {
+        return ImmutableArrayList.of(toArray());
+    }
+
+    /**
+     * Return an <strong>immutable</strong> {@link Iterator Iterator&lt;Object&gt;} around
+     * the content of this {@code Tuple}.
+     *
+     * @return An unmodifiable {@link Iterator} over the elements in this Tuple.
+     * @implNote As an {@link Iterator} is always tied to its {@link Iterable} source by
+     * definition, the iterator cannot be mutable without the iterable also being mutable.
+     */
+    @Override
+    public Iterator<Object> iterator() {
+        // Also use: toList().iterator();
+        return new TupleIterator<>();
+    }
+
+    @Override
+    public Spliterator<Object> spliterator() {
+        return new DelegatedIntSpliterator<>(0, length(), this::get);
     }
 
     /**
