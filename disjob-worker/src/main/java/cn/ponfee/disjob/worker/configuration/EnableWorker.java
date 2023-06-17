@@ -50,7 +50,7 @@ import java.lang.annotation.*;
     EnableWorker.EnableRetryProperties.class,
     EnableWorker.EnableHttpProperties.class,
     EnableWorker.EnableWorkerConfiguration.class,
-    WorkerStartupRunner.class,
+    WorkerLifecycle.class,
 })
 public @interface EnableWorker {
 

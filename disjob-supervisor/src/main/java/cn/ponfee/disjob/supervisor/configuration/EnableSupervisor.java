@@ -63,7 +63,7 @@ import java.lang.annotation.*;
     EnableSupervisor.EnableHttpProperties.class,
     EnableSupervisor.EnableSupervisorConfiguration.class,
     EnableSupervisor.EnableComponentScan.class,
-    SupervisorStartupRunner.class,
+    SupervisorLifecycle.class
 })
 public @interface EnableSupervisor {
 

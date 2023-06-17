@@ -16,32 +16,29 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.core.Ordered;
+import org.springframework.context.SmartLifecycle;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Worker startup runner.
+ * Worker lifecycle
  *
  * @author Ponfee
  */
-@AutoConfigureOrder(WorkerStartupRunner.ORDERED)
-public class WorkerStartupRunner implements ApplicationRunner, DisposableBean, Ordered {
+public class WorkerLifecycle implements SmartLifecycle {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerStartupRunner.class);
-    static final int ORDERED = Ordered.LOWEST_PRECEDENCE - 1;
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerLifecycle.class);
 
+    private final AtomicBoolean started = new AtomicBoolean(false);
     private final WorkerStartup workerStartup;
 
-    public WorkerStartupRunner(Worker currentWorker,
-                               RetryProperties retryProperties,
-                               WorkerProperties workerProperties,
-                               // if current server also is a supervisor -> JobManager, else -> DiscoveryRestProxy.create()
-                               SupervisorService supervisorServiceClient,
-                               WorkerRegistry workerRegistry,
-                               TaskReceiver taskReceiver) {
+    public WorkerLifecycle(Worker currentWorker,
+                           RetryProperties retryProperties,
+                           WorkerProperties workerProperties,
+                           // if current server also is a supervisor -> JobManager, else -> DiscoveryRestProxy.create()
+                           SupervisorService supervisorServiceClient,
+                           WorkerRegistry workerRegistry,
+                           TaskReceiver taskReceiver) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
             .retryProperties(retryProperties)
@@ -53,21 +50,42 @@ public class WorkerStartupRunner implements ApplicationRunner, DisposableBean, O
     }
 
     @Override
-    public void run(ApplicationArguments args) {
+    public boolean isRunning() {
+        return started.get();
+    }
+
+    @Override
+    public void start() {
+        if (!started.compareAndSet(false, true)) {
+            LOG.error("Disjob worker lifecycle already stated!");
+        }
+
         LOG.info("Disjob worker launch begin...");
         workerStartup.start();
         LOG.info("Disjob worker launch end.");
     }
 
     @Override
-    public void destroy() {
+    public void stop(Runnable callback) {
+        if (!started.compareAndSet(true, false)) {
+            LOG.error("Disjob worker lifecycle already stopped!");
+        }
+
         LOG.info("Disjob worker stop begin...");
         workerStartup.stop();
         LOG.info("Disjob worker stop end.");
+
+        callback.run();
     }
 
     @Override
-    public int getOrder() {
-        return WorkerStartupRunner.ORDERED;
+    public void stop() {
+        stop(() -> {});
     }
+
+    @Override
+    public int getPhase() {
+        return DEFAULT_PHASE - 1;
+    }
+
 }

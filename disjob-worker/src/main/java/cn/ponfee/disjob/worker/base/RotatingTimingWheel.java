@@ -63,15 +63,14 @@ public class RotatingTimingWheel implements Startable {
     private int round = 0;
 
     public RotatingTimingWheel(Worker currentWorker,
-                               RetryProperties retry,
+                               RetryProperties retryProperties,
                                SupervisorService client,
                                Discovery<Supervisor> discoverySupervisor,
                                TimingWheel<ExecuteTaskParam> timingWheel,
                                WorkerThreadPool threadPool,
                                int updateTaskWorkerThreadPoolSize) {
-        Objects.requireNonNull(retry, "Retry config cannot be null.").check();
         this.currentWorker = currentWorker;
-        this.supervisorServiceClient = LocalSupervisorServiceRetryProxy.newRetryProxyIfLocal(client, retry.getMaxCount(), retry.getBackoffPeriod());
+        this.supervisorServiceClient = SupervisorServiceProxy.newRetryProxyIfLocal(client, retryProperties);
         this.discoverySupervisor = discoverySupervisor;
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;

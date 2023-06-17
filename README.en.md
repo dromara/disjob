@@ -31,6 +31,7 @@ disjob                                                    # Main project
 │   ├── disjob-dispatch-api                               # Abstract interface layer for task dispatch
 │   ├── disjob-dispatch-http                              # Http implementation of task dispatch
 │   └── disjob-dispatch-redis                             # Redis implementation of task dispatch
+├── disjob-id                                             # Distributed ID generator
 ├── disjob-registry                                       # Server(supervisor & worker) registry module
 │   ├── disjob-registry-api                               # Server registry abstract interface layer
 │   ├── disjob-registry-consul                            # Server registry implementation based consul

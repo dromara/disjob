@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Start up worker.
+ * Startup worker.
  *
  * @author Ponfee
  */

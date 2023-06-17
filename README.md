@@ -31,6 +31,7 @@ disjob                                                    # 主项目
 │   ├── disjob-dispatch-api                               # 任务分发的抽象接口层
 │   ├── disjob-dispatch-http                              # 任务分发的Http实现
 │   └── disjob-dispatch-redis                             # 任务分发的Redis实现
+├── disjob-id                                             # 分布式ID生成
 ├── disjob-registry                                       # Server(Supervisor & Worker)注册模块
 │   ├── disjob-registry-api                               # Server注册的抽象接口层
 │   ├── disjob-registry-consul                            # Server注册的Consul实现

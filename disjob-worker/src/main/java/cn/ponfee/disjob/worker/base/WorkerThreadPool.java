@@ -108,14 +108,13 @@ public class WorkerThreadPool extends Thread implements Startable {
 
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
-                            RetryProperties retry,
+                            RetryProperties retryProperties,
                             SupervisorService client) {
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
-        Objects.requireNonNull(retry, "Retry config cannot be null.").check();
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
-        this.client = LocalSupervisorServiceRetryProxy.newRetryProxyIfLocal(client, retry.getMaxCount(), retry.getBackoffPeriod());
+        this.client = SupervisorServiceProxy.newRetryProxyIfLocal(client, retryProperties);
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
