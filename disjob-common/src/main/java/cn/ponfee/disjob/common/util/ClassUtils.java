@@ -206,7 +206,7 @@ public final class ClassUtils {
 
     /**
      * 获取类名称<p>
-     * ClassUtils.getClassName(ClassUtils.class)  ->  code.ponfee.commons.reflect.ClassUtils
+     * ClassUtils.getClassName(ClassUtils.class)  ->  cn.ponfee.commons.reflect.ClassUtils
      *
      * @param clazz the class
      * @return class full name
@@ -222,7 +222,7 @@ public final class ClassUtils {
 
     /**
      * 包名称转目录路径名<p>
-     * getPackagePath("code.ponfee.commons.reflect")  ->  code/ponfee/commons/reflect
+     * getPackagePath("cn.ponfee.commons.reflect")  ->  cn/ponfee/commons/reflect
      *
      * @param packageName the package name
      * @return
@@ -399,7 +399,7 @@ public final class ClassUtils {
             return Tuple2.of((Class<?>) obj, Predicates.Y);
         } else {
             // 实例方法
-            // 对于Class.class对象：只处理Class类中的实例方法，如“Class.class.getName()”。不支持Class类中的静态方法，如“Class.forName("code.ponfee.commons.base.tuple.Tuple0")”
+            // 对于Class.class对象：只处理Class类中的实例方法，如“Class.class.getName()”。不支持Class类中的静态方法，如“Class.forName("cn.ponfee.commons.base.tuple.Tuple0")”
             return Tuple2.of(obj.getClass(), Predicates.N);
         }
     }

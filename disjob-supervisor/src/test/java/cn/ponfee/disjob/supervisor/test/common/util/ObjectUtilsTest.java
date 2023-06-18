@@ -69,20 +69,29 @@ public class ObjectUtilsTest {
 
     @Test
     public void testStaticFinalMethod() {
-        for (Class<?> clazz : new ResourceScanner("cn/ponfee").scan4class()) {
+        findlStaticFinalMethod("cn.ponfee.disjob.common");
+        findlStaticFinalMethod("cn.ponfee.disjob.core");
+        //findlStaticFinalMethod("cn.ponfee.disjob.id");
+        findlStaticFinalMethod("cn.ponfee.disjob.worker");
+        findlStaticFinalMethod("cn.ponfee.disjob.dispatch");
+        findlStaticFinalMethod("cn.ponfee.disjob.registry");
+    }
+
+    public void findlStaticFinalMethod(String packageName) {
+        for (Class<?> clazz : new ResourceScanner(packageName).scan4class()) {
             for (Method method : clazz.getDeclaredMethods()) {
                 if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
                     String cname = method.getDeclaringClass().getName();
                     if (!cname.contains("$") && cname.startsWith("cn.ponfee")) {
-                        System.out.println(clazz+"  "+method);
+                        System.err.println(clazz+"  "+method);
                     }
                 }
             }
             for (Method method : clazz.getMethods()) {
                 if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
                     String cname = method.getDeclaringClass().getName();
-                    if (!cname.contains("$") && cname.startsWith("code.ponfee")) {
-                        System.out.println(clazz+"  "+method);
+                    if (!cname.contains("$") && cname.startsWith("cn.ponfee")) {
+                        System.err.println(clazz+"  "+method);
                     }
                 }
             }
