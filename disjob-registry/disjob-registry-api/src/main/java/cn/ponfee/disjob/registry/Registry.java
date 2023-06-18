@@ -10,13 +10,15 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.core.base.Server;
 
+import java.io.Closeable;
+
 /**
  * Server registry.
  *
  * @param <R> the registry server type
  * @author Ponfee
  */
-public interface Registry<R extends Server> extends AutoCloseable {
+public interface Registry<R extends Server> extends Closeable {
 
     /**
      * Register the server to cluster.
@@ -34,7 +36,7 @@ public interface Registry<R extends Server> extends AutoCloseable {
 
     /**
      * Returns registry server role.
-     * 
+     *
      * @return registry server role
      */
     ServerRole registryRole();

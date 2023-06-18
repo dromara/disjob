@@ -46,7 +46,7 @@ public class HttpJobHandler extends JobHandler<String> {
         DEFAULT_CONNECT_TIMEOUT,
         DEFAULT_READ_TIMEOUT,
         StandardCharsets.UTF_8,
-        RestTemplateUtils.buildJackson2HttpMessageConverter()
+        RestTemplateUtils.buildJackson2HttpMessageConverter(null)
     );
 
     @Override

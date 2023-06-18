@@ -58,6 +58,7 @@ public @interface EnableWorker {
 
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
     class EnableWorkerConfiguration {
+
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean

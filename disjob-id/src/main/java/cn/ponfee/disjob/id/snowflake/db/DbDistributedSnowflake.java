@@ -24,6 +24,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
+import java.io.Closeable;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.Collections;
@@ -40,7 +41,7 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
-public class DbDistributedSnowflake implements IdGenerator, AutoCloseable {
+public class DbDistributedSnowflake implements IdGenerator, Closeable {
 
     private final static Logger LOG = LoggerFactory.getLogger(DbDistributedSnowflake.class);
 

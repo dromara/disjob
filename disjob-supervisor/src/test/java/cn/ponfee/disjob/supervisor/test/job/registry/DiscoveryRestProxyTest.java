@@ -27,7 +27,6 @@ public class DiscoveryRestProxyTest {
             .httpReadTimeout(5000)
             .retryMaxCount(3)
             .retryBackoffPeriod(5000)
-            .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
             .discoveryServer(new ConsulSupervisorRegistry(new ConsulRegistryProperties()))
             .build();
         WorkerService remoteWorkerService = DiscoveryRestProxy.create(WorkerService.class, discoveryRestTemplate);

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public abstract class TaskDispatcher implements AutoCloseable {
+public abstract class TaskDispatcher implements Closeable {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

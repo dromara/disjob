@@ -39,9 +39,9 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  *
  * @author Ponfee
  */
-public class RotatingTimingWheel implements Startable {
+public class TimingWheelRotator implements Startable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RotatingTimingWheel.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
     private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.FULL_DATE_FORMAT);
 
@@ -52,17 +52,16 @@ public class RotatingTimingWheel implements Startable {
     private final WorkerThreadPool workerThreadPool;
     private final ScheduledExecutorService scheduledExecutor;
     private final ExecutorService processExecutor;
-
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private volatile int round = 0;
 
-    public RotatingTimingWheel(Worker currentWorker,
-                               SupervisorService supervisorServiceClient,
-                               Discovery<Supervisor> discoverySupervisor,
-                               TimingWheel<ExecuteTaskParam> timingWheel,
-                               WorkerThreadPool threadPool,
-                               int processThreadPoolSize) {
+    public TimingWheelRotator(Worker currentWorker,
+                              SupervisorService supervisorServiceClient,
+                              Discovery<Supervisor> discoverySupervisor,
+                              TimingWheel<ExecuteTaskParam> timingWheel,
+                              WorkerThreadPool threadPool,
+                              int processThreadPoolSize) {
         this.currentWorker = currentWorker;
         this.supervisorServiceClient = supervisorServiceClient;
         this.discoverySupervisor = discoverySupervisor;
@@ -70,19 +69,19 @@ public class RotatingTimingWheel implements Startable {
         this.workerThreadPool = threadPool;
 
         this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r, "rotating_timing_wheel");
+            Thread thread = new Thread(r, "rotate_timing_wheel");
             thread.setDaemon(true);
             thread.setPriority(Thread.MAX_PRIORITY);
             return thread;
         });
 
-        int actualPoolSize = Math.max(1, processThreadPoolSize);
+        int actualProcessPoolSize = Math.max(1, processThreadPoolSize);
         this.processExecutor = ThreadPoolExecutors.builder()
-            .corePoolSize(actualPoolSize)
-            .maximumPoolSize(actualPoolSize)
+            .corePoolSize(actualProcessPoolSize)
+            .maximumPoolSize(actualProcessPoolSize)
             .workQueue(new LinkedBlockingQueue<>(Integer.MAX_VALUE))
             .keepAliveTimeSeconds(300)
-            .threadFactory(NamedThreadFactory.builder().prefix("update_task_worker").build())
+            .threadFactory(NamedThreadFactory.builder().prefix("process_timing_wheel").build())
             .prestartCoreThreadType(ThreadPoolExecutors.PrestartCoreThreadType.ONE)
             .build();
     }
@@ -125,8 +124,8 @@ public class RotatingTimingWheel implements Startable {
         }
     }
 
-    private void process(List<ExecuteTaskParam> ringTriggers) {
-        List<ExecuteTaskParam> matchedTriggers = ringTriggers.stream()
+    private void process(List<ExecuteTaskParam> tasks) {
+        List<ExecuteTaskParam> matchedTasks = tasks.stream()
             .filter(e -> {
                 if (currentWorker.equalsGroup(e.getWorker())) {
                     return true;
@@ -142,13 +141,13 @@ public class RotatingTimingWheel implements Startable {
             })
             .collect(Collectors.toList());
 
-        if (matchedTriggers.isEmpty()) {
+        if (matchedTasks.isEmpty()) {
             return;
         }
 
-        List<List<ExecuteTaskParam>> partition = Lists.partition(matchedTriggers, PROCESS_BATCH_SIZE);
-        for (List<ExecuteTaskParam> batchTriggers : partition) {
-            List<TaskWorkerParam> list = batchTriggers.stream()
+        List<List<ExecuteTaskParam>> partitions = Lists.partition(matchedTasks, PROCESS_BATCH_SIZE);
+        for (List<ExecuteTaskParam> batchTasks : partitions) {
+            List<TaskWorkerParam> list = batchTasks.stream()
                 .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
                 .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
                 .collect(Collectors.toList());
@@ -158,7 +157,7 @@ public class RotatingTimingWheel implements Startable {
                 // must do submit if occur exception
                 LOG.error("Update task worker error: " + Jsons.toJson(list), t);
             }
-            batchTriggers.forEach(workerThreadPool::submit);
+            batchTasks.forEach(workerThreadPool::submit);
         }
     }
 

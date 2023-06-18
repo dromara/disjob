@@ -131,8 +131,8 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
      * @return {@code true} if elements equals.
      */
     public final boolean equals(Object... elements) {
-        int len = length();
-        if (elements == null || elements.length != length()) {
+        int len;
+        if (elements == null || elements.length != (len = length())) {
             return false;
         }
         for (int i = 0; i < len; i++) {

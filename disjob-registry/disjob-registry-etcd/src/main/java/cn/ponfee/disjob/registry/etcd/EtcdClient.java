@@ -36,6 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
@@ -48,7 +49,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Ponfee
  */
-public class EtcdClient implements AutoCloseable {
+public class EtcdClient implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(EtcdClient.class);
 
@@ -251,7 +252,7 @@ public class EtcdClient implements AutoCloseable {
         return ByteSequence.from(key, UTF_8);
     }
 
-    private class ChildChangedListener implements Consumer<WatchResponse>, AutoCloseable {
+    private class ChildChangedListener implements Consumer<WatchResponse>, Closeable {
         private final String parentKey;
         private final CountDownLatch latch;
         private final Consumer<List<String>> processor;

@@ -11,6 +11,7 @@ package cn.ponfee.disjob.common.spring;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -38,6 +39,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import java.lang.reflect.Array;
 import java.net.URI;
@@ -56,9 +58,12 @@ import static org.springframework.http.HttpMethod.*;
 public class RestTemplateUtils {
     public static final Set<HttpMethod> QUERY_PARAM_METHODS = ImmutableSet.of(GET, DELETE, HEAD, OPTIONS);
 
-    public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter() {
+    public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(@Nullable ObjectMapper objectMapper) {
+        if (objectMapper == null) {
+            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+        }
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
-        messageConverter.setObjectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL));
+        messageConverter.setObjectMapper(objectMapper);
         extensionSupportedMediaTypes(messageConverter);
         return messageConverter;
     }

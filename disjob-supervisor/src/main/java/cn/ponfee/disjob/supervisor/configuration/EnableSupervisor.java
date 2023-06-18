@@ -81,6 +81,7 @@ public @interface EnableSupervisor {
 
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
     class EnableSupervisorConfiguration {
+
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean

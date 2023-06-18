@@ -79,7 +79,37 @@ public final class ThreadPoolExecutors {
         return new Builder();
     }
 
-    public enum PrestartCoreThreadType { NONE, ONE, ALL }
+    public enum PrestartCoreThreadType {
+        /**
+         * Not start core thread
+         */
+        NONE {
+            @Override
+            public void prestart(ThreadPoolExecutor executor) {
+                // do nothing
+            }
+        },
+        /**
+         * Starts a core thread
+         */
+        ONE {
+            @Override
+            public void prestart(ThreadPoolExecutor executor) {
+                executor.prestartCoreThread();
+            }
+        },
+        /**
+         * Starts all core threads
+         */
+        ALL {
+            @Override
+            public void prestart(ThreadPoolExecutor executor) {
+                executor.prestartAllCoreThreads();
+            }
+        };
+
+        public abstract void prestart(ThreadPoolExecutor executor);
+    }
 
     public static class Builder {
         private int corePoolSize;
@@ -153,11 +183,7 @@ public final class ThreadPoolExecutors {
             );
 
             threadPoolExecutor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
-            if (prestartCoreThreadType == PrestartCoreThreadType.ONE) {
-                threadPoolExecutor.prestartCoreThread();
-            } else if (prestartCoreThreadType == PrestartCoreThreadType.ALL) {
-                threadPoolExecutor.prestartAllCoreThreads();
-            }
+            prestartCoreThreadType.prestart(threadPoolExecutor);
             return threadPoolExecutor;
         }
     }

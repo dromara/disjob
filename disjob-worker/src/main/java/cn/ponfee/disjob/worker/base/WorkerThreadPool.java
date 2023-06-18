@@ -734,7 +734,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 LOG.warn("Start task fail: " + param, t);
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
-                    List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
+                    final List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
                     ThrowingRunnable.caught(() -> supervisorServiceClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 // discard task

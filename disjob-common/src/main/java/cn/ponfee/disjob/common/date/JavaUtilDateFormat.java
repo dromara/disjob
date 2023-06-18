@@ -131,11 +131,6 @@ public class JavaUtilDateFormat extends DateFormat {
         }
     }
 
-    public LocalDateTime parseToLocalDateTime(String source, ParsePosition pos) {
-        Date date = parse(source, pos);
-        return date == null ? null : Dates.toLocalDateTime(date);
-    }
-
     @Override
     public Date parse(String source) throws ParseException {
         if (StringUtils.isEmpty(source)) {
@@ -215,6 +210,11 @@ public class JavaUtilDateFormat extends DateFormat {
 
     public LocalDateTime parseToLocalDateTime(String source) throws ParseException {
         Date date = parse(source);
+        return date == null ? null : Dates.toLocalDateTime(date);
+    }
+
+    public LocalDateTime parseToLocalDateTime(String source, ParsePosition pos) {
+        Date date = parse(source, pos);
         return date == null ? null : Dates.toLocalDateTime(date);
     }
 

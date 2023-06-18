@@ -82,8 +82,8 @@ public class SupervisorStartup implements Startable {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        runningInstanceScanner.start();
         waitingInstanceScanner.start();
+        runningInstanceScanner.start();
         triggeringJobScanner.start();
         supervisorRegistry.register(currentSupervisor);
     }
@@ -91,13 +91,13 @@ public class SupervisorStartup implements Startable {
     @Override
     public void stop() {
         ThrowingRunnable.caught(supervisorRegistry::close);
+        ThrowingRunnable.caught(triggeringJobScanner::toStop);
         ThrowingRunnable.caught(runningInstanceScanner::toStop);
         ThrowingRunnable.caught(waitingInstanceScanner::toStop);
-        ThrowingRunnable.caught(triggeringJobScanner::toStop);
         ThrowingRunnable.caught(taskDispatcher::close);
         ThrowingRunnable.caught(triggeringJobScanner::close);
-        ThrowingRunnable.caught(waitingInstanceScanner::close);
         ThrowingRunnable.caught(runningInstanceScanner::close);
+        ThrowingRunnable.caught(waitingInstanceScanner::close);
     }
 
     // ----------------------------------------------------------------------------------------builder

@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +37,7 @@ import java.util.function.Consumer;
  *
  * @author Ponfee
  */
-public class CuratorFrameworkClient implements AutoCloseable {
+public class CuratorFrameworkClient implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(CuratorFrameworkClient.class);
 
     private final Map<String, ChildChangedWatcher> childWatchers = new HashMap<>();

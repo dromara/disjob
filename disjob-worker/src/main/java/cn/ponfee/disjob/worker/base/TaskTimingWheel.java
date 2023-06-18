@@ -27,7 +27,8 @@ public class TaskTimingWheel extends TimingWheel<ExecuteTaskParam> {
 
     @Override
     protected boolean verify(ExecuteTaskParam param) {
-        Objects.requireNonNull(param.getWorker(), "Worker cannot be null.");
+        Objects.requireNonNull(param, "Execute task param cannot be null.");
+        Objects.requireNonNull(param.getWorker(), "Execute task worker cannot be null.");
         return true;
     }
 

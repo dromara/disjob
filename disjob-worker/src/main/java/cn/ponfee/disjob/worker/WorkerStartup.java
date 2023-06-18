@@ -11,16 +11,14 @@ package cn.ponfee.disjob.worker;
 import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.WorkerRegistry;
-import cn.ponfee.disjob.worker.base.RotatingTimingWheel;
+import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.Assert;
 
@@ -39,7 +37,7 @@ public class WorkerStartup implements Startable {
 
     private final Worker currentWorker;
     private final WorkerThreadPool workerThreadPool;
-    private final RotatingTimingWheel rotatingTimingWheel;
+    private final TimingWheelRotator timingWheelRotator;
     private final TaskReceiver taskReceiver;
     private final WorkerRegistry workerRegistry;
 
@@ -70,7 +68,7 @@ public class WorkerStartup implements Startable {
             workerProperties.getKeepAliveTimeSeconds(),
             supervisorServiceClient
         );
-        this.rotatingTimingWheel = new RotatingTimingWheel(
+        this.timingWheelRotator = new TimingWheelRotator(
             currentWorker,
             supervisorServiceClient,
             workerRegistry,
@@ -88,7 +86,7 @@ public class WorkerStartup implements Startable {
             return;
         }
         workerThreadPool.start();
-        rotatingTimingWheel.start();
+        timingWheelRotator.start();
         taskReceiver.start();
         workerRegistry.register(currentWorker);
     }
@@ -97,7 +95,7 @@ public class WorkerStartup implements Startable {
     public void stop() {
         ThrowingRunnable.caught(workerRegistry::close);
         ThrowingRunnable.caught(taskReceiver::close);
-        ThrowingRunnable.caught(rotatingTimingWheel::close);
+        ThrowingRunnable.caught(timingWheelRotator::close);
         ThrowingRunnable.caught(workerThreadPool::close);
     }
 
@@ -120,7 +118,7 @@ public class WorkerStartup implements Startable {
                 .httpReadTimeout(httpProperties.getReadTimeout())
                 .retryMaxCount(retryProperties.getMaxCount())
                 .retryBackoffPeriod(retryProperties.getBackoffPeriod())
-                .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
+                .objectMapper(objectMapper)
                 .discoveryServer(workerRegistry)
                 .build();
             return DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);

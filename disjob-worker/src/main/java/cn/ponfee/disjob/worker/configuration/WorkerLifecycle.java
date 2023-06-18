@@ -46,13 +46,13 @@ public class WorkerLifecycle implements SmartLifecycle {
                            @Nullable ObjectMapper objectMapper) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
-            .supervisorService(supervisorService)
             .workerProperties(workerProperties)
             .retryProperties(retryProperties)
             .httpProperties(httpProperties)
-            .objectMapper(objectMapper)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)
+            .supervisorService(supervisorService)
+            .objectMapper(objectMapper)
             .build();
     }
 

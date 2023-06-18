@@ -11,6 +11,7 @@ package cn.ponfee.disjob.samples.worker.redis;
 import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import lombok.Data;
@@ -49,12 +50,18 @@ public abstract class AbstractRedisTemplateCreator {
     private int maxWait;
     private int shutdownTimeout;
 
+    private ObjectMapper objectMapper;
+
     public final RedisTemplateWrapper create() {
+        if (this.objectMapper == null) {
+            this.objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+        }
+
         RedisConnectionFactory redisConnectionFactory = createRedisConnectionFactory();
 
         RedisTemplate<Object, Object> normalRedisTemplate = new RedisTemplate<>();
         Jackson2JsonRedisSerializer<Object> valueSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        valueSerializer.setObjectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL));
+        valueSerializer.setObjectMapper(objectMapper);
         normalRedisTemplate.setConnectionFactory(redisConnectionFactory);
         normalRedisTemplate.setKeySerializer(RedisSerializer.string());
         normalRedisTemplate.setValueSerializer(valueSerializer);
@@ -103,7 +110,7 @@ public abstract class AbstractRedisTemplateCreator {
         private final StringRedisTemplate stringRedisTemplate;
     }
 
-    public static RedisTemplateWrapper create(String prefix, YamlProperties props) {
+    public static RedisTemplateWrapper create(String prefix, YamlProperties props, ObjectMapper objectMapper) {
         AbstractRedisTemplateCreatorBuilder<?, ?> builder;
         if (props.hasKey(prefix + "host")) {
             // Creates standalone redis template
@@ -136,6 +143,7 @@ public abstract class AbstractRedisTemplateCreator {
             .minIdle(props.getInt(prefix + "lettuce.pool.min-idle", 0))
             .maxWait(props.getInt(prefix + "lettuce.pool.max-wait", 2000))
             .shutdownTimeout(props.getInt("lettuce.shutdown-timeout", 2000))
+            .objectMapper(objectMapper)
             .build()
             .create();
     }

@@ -10,6 +10,7 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.core.base.Server;
 
+import java.io.Closeable;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ import java.util.List;
  * @param <D> the discovery server type
  * @author Ponfee
  */
-public interface Discovery<D extends Server> extends AutoCloseable {
+public interface Discovery<D extends Server> extends Closeable {
 
     /**
      * Gets grouped alive discovered servers.

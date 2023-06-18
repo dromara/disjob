@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.base;
 
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.Set;
 
@@ -16,7 +17,7 @@ import java.util.Set;
  *
  * @author Ponfee
  */
-public interface Startable extends AutoCloseable {
+public interface Startable extends Closeable {
 
     /**
      * Returns list of dependencies startable

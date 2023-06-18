@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -63,7 +64,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Ponfee
  */
-public class ZkDistributedSnowflake implements IdGenerator, AutoCloseable {
+public class ZkDistributedSnowflake implements IdGenerator, Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZkDistributedSnowflake.class);
 
