@@ -40,7 +40,7 @@ public class SupervisorStartup implements Startable {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private SupervisorStartup(Supervisor currentSupervisor,
-                              SupervisorProperties supervisorConfig,
+                              SupervisorProperties supervisorProperties,
                               SupervisorRegistry supervisorRegistry,
                               DistributedJobManager distributedJobManager,
                               DoInLocked scanTriggeringJobLocker,
@@ -48,7 +48,7 @@ public class SupervisorStartup implements Startable {
                               DoInLocked scanRunningInstanceLocker,
                               TaskDispatcher taskDispatcher) {
         Objects.requireNonNull(currentSupervisor, "Current supervisor cannot null.");
-        Objects.requireNonNull(supervisorConfig, "Supervisor config cannot null.").check();
+        Objects.requireNonNull(supervisorProperties, "Supervisor properties cannot null.").check();
         Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
         Objects.requireNonNull(distributedJobManager, "Distributed job manager cannot null.");
         Objects.requireNonNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
@@ -59,18 +59,18 @@ public class SupervisorStartup implements Startable {
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
         this.triggeringJobScanner = new TriggeringJobScanner(
-            supervisorConfig.getScanTriggeringJobPeriodMs(),
-            supervisorConfig.getProcessJobMaximumPoolSize(),
+            supervisorProperties.getScanTriggeringJobPeriodMs(),
+            supervisorProperties.getProcessJobMaximumPoolSize(),
             scanTriggeringJobLocker,
             distributedJobManager
         );
         this.waitingInstanceScanner = new WaitingInstanceScanner(
-            supervisorConfig.getScanWaitingInstancePeriodMs(),
+            supervisorProperties.getScanWaitingInstancePeriodMs(),
             scanWaitingInstanceLocker,
             distributedJobManager
         );
         this.runningInstanceScanner = new RunningInstanceScanner(
-            supervisorConfig.getScanRunningInstancePeriodMs(),
+            supervisorProperties.getScanRunningInstancePeriodMs(),
             scanRunningInstanceLocker,
             distributedJobManager
         );
@@ -108,7 +108,7 @@ public class SupervisorStartup implements Startable {
 
     public static class Builder {
         private Supervisor currentSupervisor;
-        private SupervisorProperties supervisorConfig;
+        private SupervisorProperties supervisorProperties;
         private SupervisorRegistry supervisorRegistry;
         private DistributedJobManager distributedJobManager;
         private DoInLocked scanTriggeringJobLocker;
@@ -124,8 +124,8 @@ public class SupervisorStartup implements Startable {
             return this;
         }
 
-        public Builder supervisorConfig(SupervisorProperties supervisorConfig) {
-            this.supervisorConfig = supervisorConfig;
+        public Builder supervisorProperties(SupervisorProperties supervisorProperties) {
+            this.supervisorProperties = supervisorProperties;
             return this;
         }
 
@@ -162,7 +162,7 @@ public class SupervisorStartup implements Startable {
         public SupervisorStartup build() {
             return new SupervisorStartup(
                 currentSupervisor,
-                supervisorConfig,
+                supervisorProperties,
                 supervisorRegistry,
                 distributedJobManager,
                 scanTriggeringJobLocker,

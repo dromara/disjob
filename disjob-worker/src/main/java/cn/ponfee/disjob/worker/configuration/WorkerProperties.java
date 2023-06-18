@@ -54,9 +54,9 @@ public class WorkerProperties extends ToJsonString implements Serializable {
     private int keepAliveTimeSeconds = 300;
 
     /**
-     * Update task worker thread pool size, default 5.
+     * Process thread pool size, default 5.
      */
-    private int updateTaskWorkerThreadPoolSize = 5;
+    private int processThreadPoolSize = 5;
 
     public void check() {
         Assert.hasText(group, "Group cannot be blank.");
@@ -64,7 +64,7 @@ public class WorkerProperties extends ToJsonString implements Serializable {
         Assert.isTrue(timingWheelRingSize > 0, "Timing wheel ring size must be greater than 0.");
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be greater 0.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be greater 0.");
-        Assert.isTrue(updateTaskWorkerThreadPoolSize > 0, "Update task worker thread pool size must be greater than 0.");
+        Assert.isTrue(processThreadPoolSize > 0, "Process thread pool size must be greater than 0.");
     }
 
 }

@@ -8,15 +8,18 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
+import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.WorkerStartup;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.lang.Nullable;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,17 +36,21 @@ public class WorkerLifecycle implements SmartLifecycle {
     private final WorkerStartup workerStartup;
 
     public WorkerLifecycle(Worker currentWorker,
-                           RetryProperties retryProperties,
                            WorkerProperties workerProperties,
-                           // if current server also is a supervisor -> JobManager, else -> DiscoveryRestProxy.create()
-                           SupervisorService supervisorServiceClient,
+                           RetryProperties retryProperties,
+                           HttpProperties httpProperties,
                            WorkerRegistry workerRegistry,
-                           TaskReceiver taskReceiver) {
+                           TaskReceiver taskReceiver,
+                           // if the current server also is a supervisor -> DistributedJobManager
+                           @Nullable SupervisorService supervisorService,
+                           @Nullable ObjectMapper objectMapper) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
+            .supervisorService(supervisorService)
+            .workerProperties(workerProperties)
             .retryProperties(retryProperties)
-            .workerConfig(workerProperties)
-            .supervisorServiceClient(supervisorServiceClient)
+            .httpProperties(httpProperties)
+            .objectMapper(objectMapper)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)
             .build();

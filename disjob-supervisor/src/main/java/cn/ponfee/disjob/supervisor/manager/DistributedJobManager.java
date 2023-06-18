@@ -132,6 +132,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                                  SchedDependMapper dependMapper,
                                  SchedWorkflowMapper workflowMapper) {
         super(idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
+        // check JobConstants definition is right
         if (!JobConstants.JOB_MANAGER_CLASS_NAME.equals(getClass().getName())) {
             throw new AssertionError("Invalid job manager class name: " + JobConstants.JOB_MANAGER_CLASS_NAME);
         }

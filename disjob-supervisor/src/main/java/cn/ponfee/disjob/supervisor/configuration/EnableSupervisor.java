@@ -12,7 +12,6 @@ import cn.ponfee.disjob.common.lock.DoInDatabaseLocked;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
@@ -23,7 +22,6 @@ import cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
 import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -116,7 +114,7 @@ public @interface EnableSupervisor {
                 .httpReadTimeout(httpProperties.getReadTimeout())
                 .retryMaxCount(retryProperties.getMaxCount())
                 .retryBackoffPeriod(retryProperties.getBackoffPeriod())
-                .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
+                .objectMapper(objectMapper)
                 .discoveryServer(supervisorRegistry)
                 .build();
             WorkerService remoteWorkerService = DiscoveryRestProxy.create(true, WorkerService.class, discoveryRestTemplate);

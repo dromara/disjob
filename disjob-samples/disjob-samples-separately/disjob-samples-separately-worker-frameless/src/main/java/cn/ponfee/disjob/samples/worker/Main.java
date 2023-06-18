@@ -11,14 +11,18 @@ package cn.ponfee.disjob.samples.worker;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.YamlProperties;
-import cn.ponfee.disjob.common.util.*;
-import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.common.util.ClassUtils;
+import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.util.NetUtils;
+import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.core.base.HttpProperties;
+import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.base.RetryProperties;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
-import cn.ponfee.disjob.registry.DiscoveryRestProxy;
-import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
@@ -28,7 +32,6 @@ import cn.ponfee.disjob.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -44,8 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
-import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
-import static cn.ponfee.disjob.core.base.JobConstants.WORKER_KEY_PREFIX;
+import static cn.ponfee.disjob.core.base.JobConstants.*;
 
 /**
  * Job worker configuration.
@@ -119,24 +121,12 @@ public class Main {
 
 
 
-        int retryMaxCount = props.getInt(JobConstants.RETRY_KEY_PREFIX + ".max-count", 3);
-        int retryBackoffPeriod = props.getInt(JobConstants.RETRY_KEY_PREFIX + ".backoff-period", 5000);
-        DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-            .httpConnectTimeout(props.getInt(JobConstants.HTTP_KEY_PREFIX + ".connect-timeout", 2000))
-            .httpReadTimeout(props.getInt(JobConstants.HTTP_KEY_PREFIX + ".read-timeout", 5000))
-            .retryMaxCount(retryMaxCount)
-            .retryBackoffPeriod(retryBackoffPeriod)
-            .objectMapper(Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
-            .discoveryServer(workerRegistry)
-            .build();
-        SupervisorService SupervisorServiceClient = DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
 
-        WorkerProperties workerConfig = props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + ".");
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
-            .retryProperties(RetryProperties.of(retryMaxCount, retryBackoffPeriod))
-            .workerConfig(workerConfig)
-            .supervisorServiceClient(SupervisorServiceClient)
+            .workerProperties(props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + "."))
+            .retryProperties(props.extract(RetryProperties.class, RETRY_KEY_PREFIX + "."))
+            .httpProperties(props.extract(HttpProperties.class, HTTP_KEY_PREFIX + "."))
             .taskReceiver(taskReceiver)
             .workerRegistry(workerRegistry)
             .build();

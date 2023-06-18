@@ -10,21 +10,14 @@ package cn.ponfee.disjob.worker.configuration;
 
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
-import cn.ponfee.disjob.registry.DiscoveryRestProxy;
-import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
-import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.rpc.WorkerServiceProvider;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +25,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.lang.Nullable;
 
 import java.lang.annotation.*;
 
@@ -92,27 +84,6 @@ public @interface EnableWorker {
                 throw new AssertionError("Setting as current worker occur error.", e);
             }
             return currentWorker;
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        @ConditionalOnMissingClass(JobConstants.JOB_MANAGER_CLASS_NAME)
-        @ConditionalOnMissingBean
-        @Bean
-        public SupervisorService supervisorServiceClient(HttpProperties httpProperties,
-                                                         RetryProperties retryProperties,
-                                                         WorkerRegistry workerRegistry,
-                                                         @Nullable ObjectMapper objectMapper) {
-            httpProperties.check();
-            retryProperties.check();
-            DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-                .httpConnectTimeout(httpProperties.getConnectTimeout())
-                .httpReadTimeout(httpProperties.getReadTimeout())
-                .retryMaxCount(retryProperties.getMaxCount())
-                .retryBackoffPeriod(retryProperties.getBackoffPeriod())
-                .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
-                .discoveryServer(workerRegistry)
-                .build();
-            return DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)

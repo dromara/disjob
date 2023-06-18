@@ -40,7 +40,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
     private final SupervisorStartup supervisorStartup;
 
     public SupervisorLifecycle(Supervisor currentSupervisor,
-                               SupervisorProperties supervisorConfig,
+                               SupervisorProperties supervisorProperties,
                                DistributedJobManager distributedJobManager,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) DoInLocked scanTriggeringJobLocker,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) DoInLocked scanWaitingInstanceLocker,
@@ -49,7 +49,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
                                TaskDispatcher taskDispatcher) {
         this.supervisorStartup = SupervisorStartup.builder()
             .currentSupervisor(currentSupervisor)
-            .supervisorConfig(supervisorConfig)
+            .supervisorProperties(supervisorProperties)
             .supervisorRegistry(supervisorRegistry)
             .distributedJobManager(distributedJobManager)
             .scanTriggeringJobLocker(scanTriggeringJobLocker)

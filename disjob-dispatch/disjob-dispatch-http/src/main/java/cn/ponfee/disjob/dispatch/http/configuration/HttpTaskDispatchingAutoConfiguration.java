@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.dispatch.http.configuration;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -22,7 +21,6 @@ import cn.ponfee.disjob.dispatch.http.HttpTaskDispatcher;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -57,7 +55,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
             .httpReadTimeout(httpProperties.getReadTimeout())
             .retryMaxCount(retryProperties.getMaxCount())
             .retryBackoffPeriod(retryProperties.getBackoffPeriod())
-            .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
+            .objectMapper(objectMapper)
             .discoveryServer(discoveryWorker)
             .build();
 

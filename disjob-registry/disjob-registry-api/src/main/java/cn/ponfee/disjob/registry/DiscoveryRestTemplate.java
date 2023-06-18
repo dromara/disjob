@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Server;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -65,6 +66,9 @@ public class DiscoveryRestTemplate<D extends Server> {
         Assert.isTrue(retryMaxCount >= 0, "Retry max count cannot less than 0.");
         Assert.isTrue(retryBackoffPeriod > 0, "Retry backoff period must be greater than 0.");
 
+        if (objectMapper == null) {
+            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+        }
         MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
         httpMessageConverter.setObjectMapper(objectMapper);
         RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);

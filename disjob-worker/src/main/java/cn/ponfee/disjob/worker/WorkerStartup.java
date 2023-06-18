@@ -8,17 +8,25 @@
 
 package cn.ponfee.disjob.worker;
 
+import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.SupervisorService;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
+import cn.ponfee.disjob.registry.DiscoveryRestProxy;
+import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.RotatingTimingWheel;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,45 +37,49 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class WorkerStartup implements Startable {
 
-    private final WorkerThreadPool workerThreadPool;
     private final Worker currentWorker;
-    private final WorkerRegistry workerRegistry;
-    private final TaskReceiver taskReceiver;
+    private final WorkerThreadPool workerThreadPool;
     private final RotatingTimingWheel rotatingTimingWheel;
+    private final TaskReceiver taskReceiver;
+    private final WorkerRegistry workerRegistry;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private WorkerStartup(Worker currentWorker,
-                          RetryProperties retryProperties,
                           WorkerProperties workerProperties,
-                          SupervisorService supervisorServiceClient,
+                          RetryProperties retryProperties,
+                          HttpProperties httpProperties,
                           WorkerRegistry workerRegistry,
-                          TaskReceiver taskReceiver) {
+                          TaskReceiver taskReceiver,
+                          @Nullable SupervisorService supervisorService,
+                          @Nullable ObjectMapper objectMapper) {
         Objects.requireNonNull(currentWorker, "Current worker cannot null.");
-        Objects.requireNonNull(retryProperties, "Retry config cannot be null.").check();
-        Objects.requireNonNull(workerProperties, "Worker config cannot be null.").check();
-        Objects.requireNonNull(supervisorServiceClient, "Supervisor service client cannot null.");
+        Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
+        Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
+        Objects.requireNonNull(httpProperties, "Http properties cannot be null.").check();
         Objects.requireNonNull(workerRegistry, "Server registry cannot null.");
         Objects.requireNonNull(taskReceiver, "Task receiver cannot null.");
+
+        SupervisorService supervisorServiceClient = createProxy(
+            supervisorService, retryProperties, httpProperties, workerRegistry, objectMapper
+        );
 
         this.currentWorker = currentWorker;
         this.workerThreadPool = new WorkerThreadPool(
             workerProperties.getMaximumPoolSize(),
             workerProperties.getKeepAliveTimeSeconds(),
-            retryProperties,
             supervisorServiceClient
         );
-        this.workerRegistry = workerRegistry;
-        this.taskReceiver = taskReceiver;
         this.rotatingTimingWheel = new RotatingTimingWheel(
             currentWorker,
-            retryProperties,
             supervisorServiceClient,
             workerRegistry,
             taskReceiver.getTimingWheel(),
             workerThreadPool,
-            workerProperties.getUpdateTaskWorkerThreadPoolSize()
+            workerProperties.getProcessThreadPoolSize()
         );
+        this.taskReceiver = taskReceiver;
+        this.workerRegistry = workerRegistry;
     }
 
     @Override
@@ -89,6 +101,32 @@ public class WorkerStartup implements Startable {
         ThrowingRunnable.caught(workerThreadPool::close);
     }
 
+    private static SupervisorService createProxy(SupervisorService supervisorService,
+                                                 RetryProperties retryProperties,
+                                                 HttpProperties httpProperties,
+                                                 WorkerRegistry workerRegistry,
+                                                 ObjectMapper objectMapper) {
+        if (supervisorService != null) {
+            // Spring bean class name: cn.ponfee.disjob.supervisor.manager.DistributedJobManager$$EnhancerBySpringCGLIB$$f744bc50
+            String className = supervisorService.getClass().getName();
+            Assert.isTrue(className.startsWith(JobConstants.JOB_MANAGER_CLASS_NAME), "Invalid supervisor service type: " + className);
+            ClassLoader classLoader = supervisorService.getClass().getClassLoader();
+            Class<?>[] interfaces = {SupervisorService.class};
+            InvocationHandler ih = new RetryInvocationHandler(supervisorService, retryProperties.getMaxCount(), retryProperties.getBackoffPeriod());
+            return (SupervisorService) Proxy.newProxyInstance(classLoader, interfaces, ih);
+        } else {
+            DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
+                .httpConnectTimeout(httpProperties.getConnectTimeout())
+                .httpReadTimeout(httpProperties.getReadTimeout())
+                .retryMaxCount(retryProperties.getMaxCount())
+                .retryBackoffPeriod(retryProperties.getBackoffPeriod())
+                .objectMapper(objectMapper != null ? objectMapper : Jsons.createObjectMapper(JsonInclude.Include.NON_NULL))
+                .discoveryServer(workerRegistry)
+                .build();
+            return DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
+        }
+    }
+
     // ----------------------------------------------------------------------------------------builder
 
     public static Builder builder() {
@@ -97,11 +135,13 @@ public class WorkerStartup implements Startable {
 
     public static class Builder {
         private Worker currentWorker;
+        private WorkerProperties workerProperties;
         private RetryProperties retryProperties;
-        private WorkerProperties workerConfig;
-        private SupervisorService supervisorServiceClient;
+        private HttpProperties httpProperties;
         private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
+        private SupervisorService supervisorService;
+        private ObjectMapper objectMapper;
 
         private Builder() {
         }
@@ -111,18 +151,18 @@ public class WorkerStartup implements Startable {
             return this;
         }
 
+        public Builder workerProperties(WorkerProperties workerProperties) {
+            this.workerProperties = workerProperties;
+            return this;
+        }
+
         public Builder retryProperties(RetryProperties retryProperties) {
             this.retryProperties = retryProperties;
             return this;
         }
 
-        public Builder workerConfig(WorkerProperties workerConfig) {
-            this.workerConfig = workerConfig;
-            return this;
-        }
-
-        public Builder supervisorServiceClient(SupervisorService supervisorServiceClient) {
-            this.supervisorServiceClient = supervisorServiceClient;
+        public Builder httpProperties(HttpProperties httpProperties) {
+            this.httpProperties = httpProperties;
             return this;
         }
 
@@ -136,14 +176,26 @@ public class WorkerStartup implements Startable {
             return this;
         }
 
+        public Builder supervisorService(SupervisorService supervisorService) {
+            this.supervisorService = supervisorService;
+            return this;
+        }
+
+        public Builder objectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
         public WorkerStartup build() {
             return new WorkerStartup(
                 currentWorker,
+                workerProperties,
                 retryProperties,
-                workerConfig,
-                supervisorServiceClient,
+                httpProperties,
                 workerRegistry,
-                taskReceiver
+                taskReceiver,
+                supervisorService,
+                objectMapper
             );
         }
     }

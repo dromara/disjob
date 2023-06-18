@@ -17,7 +17,6 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -36,7 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -69,7 +71,7 @@ public class WorkerThreadPool extends Thread implements Startable {
     /**
      * Supervisor client
      */
-    private final SupervisorService client;
+    private final SupervisorService supervisorServiceClient;
 
     /**
      * Maximum pool size
@@ -108,13 +110,12 @@ public class WorkerThreadPool extends Thread implements Startable {
 
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
-                            RetryProperties retryProperties,
-                            SupervisorService client) {
+                            SupervisorService supervisorServiceClient) {
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
-        this.client = SupervisorServiceProxy.newRetryProxyIfLocal(client, retryProperties);
+        this.supervisorServiceClient = supervisorServiceClient;
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
@@ -168,7 +169,7 @@ public class WorkerThreadPool extends Thread implements Startable {
             // stop the work thread
             stopWorkerThread(workerThread, true);
         } finally {
-            terminateTask(client, param, ops, ops.toState(), null);
+            terminateTask(supervisorServiceClient, param, ops, ops.toState(), null);
         }
     }
 
@@ -270,7 +271,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 } catch (DuplicateTaskException e) {
                     LOG.error(e.getMessage());
                     // cancel this execution param
-                    terminateTask(client, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
+                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
 
                     // return this worker thread
                     idlePool.putFirst(workerThread);
@@ -367,7 +368,7 @@ public class WorkerThreadPool extends Thread implements Startable {
     private WorkerThread createWorkerThreadIfNecessary() {
         for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
             if (workerThreadCounter.compareAndSet(count, count + 1)) {
-                WorkerThread thread = new WorkerThread(this, client, keepAliveTimeSeconds);
+                WorkerThread thread = new WorkerThread(this, supervisorServiceClient, keepAliveTimeSeconds);
                 LOG.info("Created worker thread, current size: {}", count + 1);
                 return thread;
             }
@@ -546,7 +547,7 @@ public class WorkerThreadPool extends Thread implements Startable {
 
                     // 3、finally update the sched task state
                     if (success) {
-                        terminateTask(client, param, ops, ops.toState(), null);
+                        terminateTask(supervisorServiceClient, param, ops, ops.toState(), null);
                     } else {
                         LOG.error("Change execution param ops failed on thread pool close: {} | {}", param, ops);
                     }
@@ -601,7 +602,7 @@ public class WorkerThreadPool extends Thread implements Startable {
         /**
          * Supervisor client
          */
-        private final SupervisorService supervisorClient;
+        private final SupervisorService supervisorServiceClient;
 
         /**
          * Thread keep alive time
@@ -624,10 +625,10 @@ public class WorkerThreadPool extends Thread implements Startable {
         private final AtomicReference<ExecuteTaskParam> executingParam = new AtomicReference<>();
 
         public WorkerThread(WorkerThreadPool threadPool,
-                            SupervisorService supervisorClient,
+                            SupervisorService supervisorServiceClient,
                             long keepAliveTimeSeconds) {
             this.threadPool = threadPool;
-            this.supervisorClient = supervisorClient;
+            this.supervisorServiceClient = supervisorServiceClient;
             this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
 
             super.setDaemon(true);
@@ -697,7 +698,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 try {
                     runTask(param);
                 } catch (Throwable t) {
-                    terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                     LOG.error("Worker thread execute failed: " + param, t);
                 }
 
@@ -713,7 +714,7 @@ public class WorkerThreadPool extends Thread implements Startable {
         private void runTask(ExecuteTaskParam param) {
             SchedTask task;
             try {
-                if ((task = supervisorClient.getTask(param.getTaskId())) == null) {
+                if ((task = supervisorServiceClient.getTask(param.getTaskId())) == null) {
                     LOG.error("Sched task not found {}", param);
                     return;
                 }
@@ -725,7 +726,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 }
 
                 // update database records start state(sched_instance, sched_task)
-                if (!supervisorClient.startTask(StartTaskParam.from(param))) {
+                if (!supervisorServiceClient.startTask(StartTaskParam.from(param))) {
                     LOG.warn("Task start conflicted {}", param);
                     return;
                 }
@@ -734,7 +735,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
-                    ThrowingRunnable.caught(() -> supervisorClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
+                    ThrowingRunnable.caught(() -> supervisorServiceClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 // discard task
                 return;
@@ -746,7 +747,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 taskExecutor = JobHandlerUtils.load(param.getJobHandler());
             } catch (Throwable t) {
                 LOG.error("Load job handler error: " + param, t);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
+                terminateTask(supervisorServiceClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
                 return;
             }
 
@@ -757,7 +758,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 taskExecutor.verify();
             } catch (Throwable t) {
                 LOG.error("Task verify failed: " + param, t);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(t));
+                terminateTask(supervisorServiceClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(t));
                 return;
             }
 
@@ -767,7 +768,7 @@ public class WorkerThreadPool extends Thread implements Startable {
                 LOG.info("Initiated sched task {}", param.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Task init error: " + param, t);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
+                terminateTask(supervisorServiceClient, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
                 return;
             }
 
@@ -775,7 +776,7 @@ public class WorkerThreadPool extends Thread implements Startable {
             try {
                 Result<?> result;
                 if (param.getExecuteTimeout() > 0) {
-                    FutureTask<Result<?>> futureTask = new FutureTask<>(() -> taskExecutor.execute(supervisorClient));
+                    FutureTask<Result<?>> futureTask = new FutureTask<>(() -> taskExecutor.execute(supervisorServiceClient));
                     Thread futureTaskThread = new Thread(futureTask);
                     futureTaskThread.setDaemon(true);
                     futureTaskThread.setName(getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement());
@@ -786,34 +787,34 @@ public class WorkerThreadPool extends Thread implements Startable {
                         Threads.stopThread(futureTaskThread, 0, 0, 0);
                     }
                 } else {
-                    result = taskExecutor.execute(supervisorClient);
+                    result = taskExecutor.execute(supervisorServiceClient);
                 }
                 LOG.info("Executed sched task {}", param.getTaskId());
 
                 // 4、execute end
                 if (result.isSuccess()) {
                     LOG.info("Task executed finished {}", param.getTaskId());
-                    terminateTask(supervisorClient, param, Operations.TRIGGER, FINISHED, null);
+                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, FINISHED, null);
                 } else {
                     LOG.error("Task executed failed {} | {}", param, result);
-                    terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_FAILED, result.getMsg());
+                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_FAILED, result.getMsg());
                 }
             } catch (TimeoutException e) {
                 LOG.error("Task execute timeout: " + param, e);
-                terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
+                terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
                 LOG.error("Task exception do pause: " + param, e);
-                stopInstance(supervisorClient, param, Operations.PAUSE, toErrorMsg(e));
+                stopInstance(supervisorServiceClient, param, Operations.PAUSE, toErrorMsg(e));
             } catch (CancelTaskException e) {
                 LOG.error("Task exception do cancel: " + param, e);
-                stopInstance(supervisorClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
+                stopInstance(supervisorServiceClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     LOG.error("Task execute thread death: {} | {}", param, t.getMessage());
                 } else {
                     LOG.error("Task execute occur error: " + param, t);
                 }
-                terminateTask(supervisorClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
             } finally {
                 // 5、destroy
                 try {
