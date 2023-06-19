@@ -106,7 +106,8 @@ public class RedisTaskReceiver extends TaskReceiver {
             super(heartbeatPeriodMs);
         }
 
-        private boolean doReceive() {
+        @Override
+        protected boolean heartbeat() {
             boolean isBusyLoop = true;
 
             for (GroupedWorker gropedWorker : gropedWorkers) {
@@ -157,11 +158,6 @@ public class RedisTaskReceiver extends TaskReceiver {
                 gropedWorkers.forEach(e -> e.skipNext = false);
             }
             return isBusyLoop;
-        }
-
-        @Override
-        protected boolean heartbeat() {
-            return doReceive();
         }
     }
 

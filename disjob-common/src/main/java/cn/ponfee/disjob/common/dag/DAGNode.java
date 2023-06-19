@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.graph;
+package cn.ponfee.disjob.common.dag;
 
 import org.springframework.util.Assert;
 

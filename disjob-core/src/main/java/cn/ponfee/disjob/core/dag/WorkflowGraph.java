@@ -6,10 +6,10 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.graph;
+package cn.ponfee.disjob.core.dag;
 
-import cn.ponfee.disjob.common.graph.DAGEdge;
-import cn.ponfee.disjob.common.graph.DAGNode;
+import cn.ponfee.disjob.common.dag.DAGEdge;
+import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.core.model.SchedWorkflow;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;

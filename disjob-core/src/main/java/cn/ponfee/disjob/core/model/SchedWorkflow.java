@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.model;
 
-import cn.ponfee.disjob.common.graph.DAGEdge;
+import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.core.enums.RunState;
 import lombok.Getter;

@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.graph;
+package cn.ponfee.disjob.common.dag;
 
 import cn.ponfee.disjob.common.util.MavenProjects;
 import com.google.common.graph.EndpointPair;

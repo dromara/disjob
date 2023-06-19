@@ -19,7 +19,6 @@ import org.springframework.core.io.Resource;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -40,8 +39,8 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
         loadYaml(inputStream);
     }
 
-    public YamlProperties(String content) {
-        loadYaml(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+    public YamlProperties(byte[] content) {
+        loadYaml(new ByteArrayInputStream(content));
     }
 
     public <T> T extract(Class<T> beanType, String prefix) {

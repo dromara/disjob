@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.graph;
+package cn.ponfee.disjob.common.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import com.google.common.graph.EndpointPair;

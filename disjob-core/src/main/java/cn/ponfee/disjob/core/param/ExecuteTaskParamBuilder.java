@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.param;
 
-import cn.ponfee.disjob.common.graph.DAGNode;
+import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;

@@ -44,10 +44,13 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     //private final WeakHashMap<NativeWebRequest, Map<String, Object>> resolvedCache = new WeakHashMap<>();
+
     private static final Set<String> QUERY_PARAM_METHODS = ImmutableSet.of(
         GET.name(), DELETE.name(), HEAD.name(), OPTIONS.name()
     );
+
     private static final String CACHE_ATTRIBUTE_KEY = "LOCALIZED_METHOD_ARGUMENTS";
+
     private static final Class<? extends Annotation> MARKED_ANNOTATION_TYPE = LocalizedMethodArguments.class;
 
     @Override

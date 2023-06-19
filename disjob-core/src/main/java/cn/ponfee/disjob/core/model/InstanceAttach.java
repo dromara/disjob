@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.model;
 
-import cn.ponfee.disjob.common.graph.DAGNode;
+import cn.ponfee.disjob.common.dag.DAGNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
