@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -60,9 +61,10 @@ public class TestConfiguration {
 
     @Bean
     public TaskDispatcher taskDispatcher(SupervisorRegistry supervisorRegistry,
+                                         RetryProperties retryProperties,
                                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          RedisTemplate<String, String> redisTemplate) {
-        return new RedisTaskDispatcher(supervisorRegistry, timingWheel, redisTemplate);
+        return new RedisTaskDispatcher(supervisorRegistry, retryProperties, timingWheel, redisTemplate);
     }
 
     @Bean

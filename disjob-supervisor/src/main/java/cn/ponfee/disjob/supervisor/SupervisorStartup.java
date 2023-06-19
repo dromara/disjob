@@ -19,6 +19,8 @@ import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.thread.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.thread.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.thread.WaitingInstanceScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,6 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Ponfee
  */
 public class SupervisorStartup implements Startable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
     private final Supervisor currentSupervisor;
     private final TriggeringJobScanner triggeringJobScanner;
@@ -80,6 +84,7 @@ public class SupervisorStartup implements Startable {
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
+            LOG.warn("Supervisor startup already started.");
             return;
         }
         waitingInstanceScanner.start();
@@ -90,6 +95,10 @@ public class SupervisorStartup implements Startable {
 
     @Override
     public void stop() {
+        if (!started.compareAndSet(true, false)) {
+            LOG.warn("Supervisor startup already Stopped.");
+            return;
+        }
         ThrowingRunnable.caught(supervisorRegistry::close);
         ThrowingRunnable.caught(triggeringJobScanner::toStop);
         ThrowingRunnable.caught(runningInstanceScanner::toStop);

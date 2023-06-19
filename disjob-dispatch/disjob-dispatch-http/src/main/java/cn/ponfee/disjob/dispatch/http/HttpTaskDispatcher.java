@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.dispatch.http;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -25,8 +26,9 @@ public class HttpTaskDispatcher extends TaskDispatcher {
     private final RestTemplate restTemplate;
 
     public HttpTaskDispatcher(DiscoveryRestTemplate<Worker> discoveryRestTemplate,
+                              RetryProperties retryProperties,
                               TimingWheel<ExecuteTaskParam> timingWheel) {
-        super(discoveryRestTemplate.getDiscoveryServer(), timingWheel);
+        super(discoveryRestTemplate.getDiscoveryServer(), retryProperties, timingWheel);
         this.restTemplate = discoveryRestTemplate.getRestTemplate();
     }
 

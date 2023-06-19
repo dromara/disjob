@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.worker.base;
 
-import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -35,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +51,7 @@ import static cn.ponfee.disjob.core.enums.ExecuteState.*;
  *
  * @author Ponfee
  */
-public class WorkerThreadPool extends Thread implements Startable {
+public class WorkerThreadPool extends Thread implements Closeable {
 
     private final static Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
     private final static int ERROR_MSG_MAX_LENGTH = 1024;

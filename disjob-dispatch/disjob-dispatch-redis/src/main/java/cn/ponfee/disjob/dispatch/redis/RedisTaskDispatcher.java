@@ -10,6 +10,7 @@ package cn.ponfee.disjob.dispatch.redis;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -40,9 +41,10 @@ public class RedisTaskDispatcher extends TaskDispatcher {
     private final RedisTemplate<String, String> redisTemplate;
 
     public RedisTaskDispatcher(Discovery<Worker> discoveryWorker,
+                               RetryProperties retryProperties,
                                @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                RedisTemplate<String, String> redisTemplate) {
-        super(discoveryWorker, timingWheel);
+        super(discoveryWorker, retryProperties, timingWheel);
         this.redisTemplate = redisTemplate;
     }
 

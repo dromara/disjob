@@ -20,6 +20,8 @@ import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
@@ -34,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Ponfee
  */
 public class WorkerStartup implements Startable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerStartup.class);
 
     private final Worker currentWorker;
     private final WorkerThreadPool workerThreadPool;
@@ -83,6 +87,7 @@ public class WorkerStartup implements Startable {
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
+            LOG.warn("Worker startup already started.");
             return;
         }
         workerThreadPool.start();
@@ -93,6 +98,10 @@ public class WorkerStartup implements Startable {
 
     @Override
     public void stop() {
+        if (!started.compareAndSet(true, false)) {
+            LOG.warn("Worker startup already stopped.");
+            return;
+        }
         ThrowingRunnable.caught(workerRegistry::close);
         ThrowingRunnable.caught(taskReceiver::close);
         ThrowingRunnable.caught(timingWheelRotator::close);

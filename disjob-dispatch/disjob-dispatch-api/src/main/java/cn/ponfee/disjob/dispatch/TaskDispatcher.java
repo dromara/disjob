@@ -8,9 +8,11 @@
 
 package cn.ponfee.disjob.dispatch;
 
+import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.AsyncDelayedExecutor;
 import cn.ponfee.disjob.common.concurrent.DelayedData;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
@@ -18,14 +20,12 @@ import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.route.ExecutionRouter;
 import cn.ponfee.disjob.core.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;
-import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
-import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public abstract class TaskDispatcher implements Closeable {
+public abstract class TaskDispatcher implements Startable {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -44,20 +44,18 @@ public abstract class TaskDispatcher implements Closeable {
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
     private final int retryMaxCount;
+    private final long retryBackoffPeriod;
     private final AsyncDelayedExecutor<DispatchParam> asyncDelayedExecutor;
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
+                          RetryProperties retryProperties,
                           @Nullable TimingWheel<ExecuteTaskParam> timingWheel) {
-        this(discoveryWorker, timingWheel, 3);
-    }
-
-    public TaskDispatcher(Discovery<Worker> discoveryWorker,
-                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
-                          int retryMaxCount) {
+        Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         this.discoveryWorker = discoveryWorker;
         this.timingWheel = timingWheel;
 
-        this.retryMaxCount = retryMaxCount;
+        this.retryMaxCount = retryProperties.getMaxCount();
+        this.retryBackoffPeriod = retryProperties.getBackoffPeriod();
         this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(3, e -> doDispatch(Collections.singletonList(e)));
     }
 
@@ -108,10 +106,18 @@ public abstract class TaskDispatcher implements Closeable {
     }
 
     /**
-     * Closed resources.
+     * Start do receive
      */
     @Override
-    public void close() {
+    public void start() {
+        // No-op
+    }
+
+    /**
+     * Close resources if necessary.
+     */
+    @Override
+    public void stop() {
         // No-op
     }
 
@@ -193,7 +199,7 @@ public abstract class TaskDispatcher implements Closeable {
         }
 
         dispatchParam.retrying();
-        asyncDelayedExecutor.put(DelayedData.of(dispatchParam, 1000L * IntMath.pow(dispatchParam.retried(), 2)));
+        asyncDelayedExecutor.put(DelayedData.of(dispatchParam, retryBackoffPeriod * dispatchParam.retried()));
     }
 
 }

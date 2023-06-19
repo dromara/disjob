@@ -8,11 +8,11 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Ponfee
  */
-public abstract class AbstractHeartbeatThread extends Thread implements Startable {
+public abstract class AbstractHeartbeatThread extends Thread implements Closeable {
 
     private static final long MILLIS_PER_SECOND = 1000;
     private static final int MAX_BUSY_COUNT = 47;

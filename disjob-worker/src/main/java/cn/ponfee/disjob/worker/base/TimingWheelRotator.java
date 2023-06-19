@@ -89,7 +89,7 @@ public class TimingWheelRotator implements Startable {
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
-            LOG.warn("Repeat do start rotating timing wheel.");
+            LOG.warn("Timing wheel rotator already started.");
             return;
         }
         scheduledExecutor.scheduleAtFixedRate(
@@ -98,6 +98,16 @@ public class TimingWheelRotator implements Startable {
             timingWheel.getTickMs(),
             TimeUnit.MILLISECONDS
         );
+    }
+
+    @Override
+    public void stop() {
+        if (!started.compareAndSet(true, false)) {
+            LOG.warn("Timing wheel rotator already stopped.");
+            return;
+        }
+        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(scheduledExecutor, 3));
+        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(processExecutor, 3));
     }
 
     private void process() {
@@ -159,16 +169,6 @@ public class TimingWheelRotator implements Startable {
             }
             batchTasks.forEach(workerThreadPool::submit);
         }
-    }
-
-    @Override
-    public void stop() {
-        if (!started.compareAndSet(true, false)) {
-            LOG.warn("Repeat do stop rotating timing wheel.");
-            return;
-        }
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(scheduledExecutor, 3));
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(processExecutor, 3));
     }
 
 }

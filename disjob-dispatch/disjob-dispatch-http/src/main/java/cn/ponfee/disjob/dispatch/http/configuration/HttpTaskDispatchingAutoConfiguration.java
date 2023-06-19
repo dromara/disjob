@@ -59,7 +59,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
             .discoveryServer(discoveryWorker)
             .build();
 
-        return new HttpTaskDispatcher(discoveryRestTemplate, timingWheel);
+        return new HttpTaskDispatcher(discoveryRestTemplate, retryProperties, timingWheel);
     }
 
     /**

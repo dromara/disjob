@@ -37,13 +37,18 @@ public abstract class TaskReceiver implements Startable {
      * @param param the execution task param
      */
     public boolean receive(ExecuteTaskParam param) {
-        boolean result = param != null && timingWheel.offer(param);
-        if (result) {
-            log.info("Received task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
-        } else {
-            log.error("Received task filed {}", param);
+        if (param == null) {
+            log.error("Received task cannot be null.");
+            return false;
         }
-        return result;
+
+        if (timingWheel.offer(param)) {
+            log.info("Received task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+            return true;
+        }
+
+        log.error("Received task filed {}", param);
+        return false;
     }
 
     /**

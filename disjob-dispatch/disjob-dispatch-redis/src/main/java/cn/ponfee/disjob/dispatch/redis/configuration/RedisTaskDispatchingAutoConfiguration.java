@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.dispatch.redis.configuration;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
@@ -38,9 +39,10 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
     @ConditionalOnMissingBean
     @Bean
     public TaskDispatcher taskDispatcher(SupervisorRegistry discoveryWorker,
+                                         RetryProperties retryProperties,
                                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          StringRedisTemplate stringRedisTemplate) {
-        return new RedisTaskDispatcher(discoveryWorker, timingWheel, stringRedisTemplate);
+        return new RedisTaskDispatcher(discoveryWorker, retryProperties, timingWheel, stringRedisTemplate);
     }
 
     /**
