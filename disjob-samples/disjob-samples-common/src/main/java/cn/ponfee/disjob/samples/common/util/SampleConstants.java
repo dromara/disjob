@@ -16,4 +16,6 @@ package cn.ponfee.disjob.samples.common.util;
 public class SampleConstants {
 
     public static final String APP_NAME = "app.name";
+
+    public static final int TASK_COUNT = 1;
 }

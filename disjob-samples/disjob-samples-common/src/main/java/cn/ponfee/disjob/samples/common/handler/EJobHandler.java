@@ -12,7 +12,7 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.samples.common.util.Constants;
+import cn.ponfee.disjob.samples.common.util.SampleConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -37,7 +37,7 @@ public class EJobHandler extends JobHandler<Void> {
 
     @Override
     public List<SplitTask> split(String jobParamString) {
-        return IntStream.range(0, Constants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
+        return IntStream.range(0, SampleConstants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
     }
 
     @Override
