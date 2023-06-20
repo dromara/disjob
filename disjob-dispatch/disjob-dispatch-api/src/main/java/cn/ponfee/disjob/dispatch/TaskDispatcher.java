@@ -14,7 +14,6 @@ import cn.ponfee.disjob.common.concurrent.AsyncDelayedExecutor;
 import cn.ponfee.disjob.common.concurrent.DelayedData;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.route.ExecutionRouter;
@@ -80,8 +79,11 @@ public abstract class TaskDispatcher implements Startable {
             return false;
         }
         List<DispatchParam> list = param.stream()
-            .peek(e -> Assert.notNull(e.getWorker(), "Directional dispatching execute param worker cannot be null."))
-            .peek(e -> Assert.isTrue(e.operation() != Operations.TRIGGER, "Directional dispatching execute param operation cannot be TRIGGER."))
+            .peek(e -> {
+                Assert.notNull(e.operation(), () -> "Dispatch task operation cannot be null: " + e);
+                Assert.isTrue(e.operation().isNotTrigger(), "Specific dispatch task operation cannot be trigger: " + e);
+                Assert.notNull(e.getWorker(), "Specific dispatch task worker cannot be null: " + e);
+            })
             .map(e -> new DispatchParam(e, null))
             .collect(Collectors.toList());
         return doDispatch(list);
@@ -99,7 +101,13 @@ public abstract class TaskDispatcher implements Startable {
             return false;
         }
         List<DispatchParam> list = param.stream()
-            .peek(e -> Assert.isTrue(e.operation() == Operations.TRIGGER, "Dispatching execute param operation must be TRIGGER."))
+            .peek(e -> {
+                Assert.notNull(e.operation(), () -> "Dispatch task operation cannot be null: " + e);
+                Assert.isTrue(e.operation().isTrigger(), () -> "Assign dispatch task operation must be trigger: " + e);
+                if (e.getRouteStrategy() == RouteStrategy.BROADCAST) {
+                    Assert.notNull(e.getWorker(), () -> "Broadcast dispatch task worker cannot be null: " + e);
+                }
+            })
             .map(e -> new DispatchParam(e, jobGroup))
             .collect(Collectors.toList());
         return doDispatch(list);
@@ -124,22 +132,25 @@ public abstract class TaskDispatcher implements Startable {
     private boolean doDispatch(List<DispatchParam> dispatchParams) {
         boolean result = true;
         for (DispatchParam dispatchParam : dispatchParams) {
-            assignWorker(dispatchParam);
-
             ExecuteTaskParam param = dispatchParam.executeTaskParam();
-            if (param.getWorker() == null) {
-                // not found worker, delay retry
-                retry(dispatchParam);
-                result = false;
-                continue;
+
+            if (param.operation().isTrigger() && param.getRouteStrategy() != RouteStrategy.BROADCAST) {
+                assignWorker(param, dispatchParam.group());
+                if (param.getWorker() == null) {
+                    // if not found worker, delay retry
+                    retry(dispatchParam);
+                    result = false;
+                    continue;
+                }
             }
+
             try {
                 if (doDispatch(param)) {
                     log.info("Dispatched task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
                 } else {
                     // dispatch failed, delay retry
                     retry(dispatchParam);
-                    log.error("Dispatched task failed " + dispatchParam);
+                    log.error("Dispatched task failed: " + dispatchParam);
                     result = false;
                 }
             } catch (Throwable t) {
@@ -153,29 +164,17 @@ public abstract class TaskDispatcher implements Startable {
         return result;
     }
 
-    private void assignWorker(DispatchParam dispatchParam) {
-        ExecuteTaskParam param = dispatchParam.executeTaskParam();
-        if (param.operation() != Operations.TRIGGER) {
-            // if pause or cancel task operation, cannot assign worker
-            Objects.requireNonNull(param.getWorker(), () -> param.operation() + " execution worker cannot be null: " + param.getTaskId());
-            return;
-        }
-
-        if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
-            Objects.requireNonNull(param.getWorker(), () -> "Broadcast strategy worker cannot be null: " + param.getTaskId());
-            return;
-        }
-
-        List<Worker> workers = discoveryWorker.getDiscoveredServers(dispatchParam.group());
+    private void assignWorker(ExecuteTaskParam param, String group) {
+        List<Worker> workers = discoveryWorker.getDiscoveredServers(group);
+        Worker worker = null;
         if (CollectionUtils.isEmpty(workers)) {
-            log.warn("Assign worker not found available worker");
-            return;
-        }
-
-        ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(param.getRouteStrategy());
-        Worker worker = executionRouter.route(dispatchParam.group(), param, workers);
-        if (worker == null) {
-            log.error("Assign worker to task failed: {} | {}", param.getInstanceId(), param.getTaskId());
+            log.error("Assign worker not found available worker");
+        } else {
+            ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(param.getRouteStrategy());
+            worker = executionRouter.route(group, param, workers);
+            if (worker == null) {
+                log.error("Assign worker to task failed: {} | {}", param.getInstanceId(), param.getTaskId());
+            }
         }
         param.setWorker(worker);
     }

@@ -23,6 +23,8 @@ import org.springframework.web.client.RestTemplate;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
+    private static final String URL_PATTERN = "http://%s:%d/" + Constants.WORKER_RECEIVE_PATH;
+
     private final RestTemplate restTemplate;
 
     public HttpTaskDispatcher(DiscoveryRestTemplate<Worker> discoveryRestTemplate,
@@ -35,7 +37,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
     @Override
     protected boolean dispatch(ExecuteTaskParam param) {
         Worker worker = param.getWorker();
-        String url = String.format("http://%s:%d/%s", worker.getHost(), worker.getPort(), Constants.WORKER_RECEIVE_PATH);
+        String url = String.format(URL_PATTERN, worker.getHost(), worker.getPort());
         Boolean result = restTemplate.postForEntity(url, new Object[]{param}, Boolean.class).getBody();
         return result != null && result;
     }

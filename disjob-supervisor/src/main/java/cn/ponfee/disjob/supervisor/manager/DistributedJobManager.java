@@ -22,9 +22,9 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.*;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -454,7 +454,7 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
             Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
             if (tuple != null && instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) > 0) {
                 // the last executing task of this sched instance
-                if (param.getOperation() == Operations.TRIGGER) {
+                if (param.getOperation().isTrigger()) {
                     instance.setRunState(tuple.a.value());
                     afterTerminateTask(instance);
                 } else if (instance.isWorkflowNode()) {

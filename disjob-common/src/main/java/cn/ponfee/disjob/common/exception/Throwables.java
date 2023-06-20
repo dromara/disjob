@@ -91,8 +91,8 @@ public final class Throwables {
         static void ignored(ThrowingRunnable<?> runnable) {
             try {
                 runnable.run();
-            } catch (Throwable ignored) {
-                Threads.interruptIfNecessary(ignored);
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
             }
         }
 
@@ -149,8 +149,8 @@ public final class Throwables {
         static <R> R ignored(ThrowingSupplier<R, ?> supplier, R defaultValue) {
             try {
                 return supplier.get();
-            } catch (Throwable ignored) {
-                Threads.interruptIfNecessary(ignored);
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
                 return defaultValue;
             }
         }
@@ -205,8 +205,8 @@ public final class Throwables {
         static <R> R ignored(ThrowingCallable<R, ?> callable, R defaultValue) {
             try {
                 return callable.call();
-            } catch (Throwable ignored) {
-                Threads.interruptIfNecessary(ignored);
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
                 return defaultValue;
             }
         }
@@ -257,8 +257,8 @@ public final class Throwables {
         static <E> void ignored(ThrowingConsumer<E, ?> consumer, E arg) {
             try {
                 consumer.accept(arg);
-            } catch (Throwable ignored) {
-                Threads.interruptIfNecessary(ignored);
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
             }
         }
 
@@ -308,8 +308,8 @@ public final class Throwables {
         static <E, R> R ignored(ThrowingFunction<E, R, ?> function, E arg, R defaultValue) {
             try {
                 return function.apply(arg);
-            } catch (Throwable ignored) {
-                Threads.interruptIfNecessary(ignored);
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
                 return defaultValue;
             }
         }

@@ -1,4 +1,4 @@
-### Library not loaded: /usr/local/opt/openssl/lib/libssl.1.0.0.dylib
+### Macbook M1报错：“Library not loaded: /usr/local/opt/openssl/lib/libssl.1.0.0.dylib”
 
 1. 创建目录：`sudo mkdir -p /usr/local/opt/openssl/lib/`
 2. 解压到目录：`sudo unzip -d /usr/local/opt/openssl/lib/ openssl1.0_x86_64.zip`

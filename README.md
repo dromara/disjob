@@ -87,7 +87,8 @@ disjob                                                    # 主项目
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
 
-2. 运行仓库代码提供的SQL脚本，创建数据库表：[mysql-schema.sql](mysql-schema.sql)(也可直接运行[内置mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)，启动时会自动初始化SQL脚本)
+2. 运行仓库代码提供的SQL脚本[mysql-schema.sql](mysql-schema.sql)创建数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
+  - [MacBook M1报“Library not loaded”错误安装参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
 
 3. 修改[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)、[Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、[Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)等配置文件
   - 如果使用默认的本地配置([如consul localhost 8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件(包括Nacos、Zookeeper、Etcd等)
@@ -96,23 +97,21 @@ disjob                                                    # 主项目
 4. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
 5. 启动[samples项目](disjob-samples)下的各应用，包括
-
-```Plain Text
- 1）disjob-samples-merged                        # Supervisor与Worker合并部署的Spring boot应用
- 2）disjob-samples-separately-supervisor         # Supervisor单独部署的Spring boot应用
- 3）disjob-samples-separately-worker-springboot  # Worker单独部署的Spring boot应用
- 4）disjob-samples-separately-worker-frameless   # Worker单独部署(非Spring-boot应用)，直接运行Main方法启动
-```
-
-- 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
-- 可以在开发工具中运行启动类，也可直接运行构建好的jar包
-- 注册中心及分发任务的具体实现：在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中引入指定的依赖即可
-- 项目已内置一些本地启动的server(部分要依赖本地docker环境)
-  - [内置redis-server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
-  - [内置consul-server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
-  - [内置nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)
-  - [内置etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
-  - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
+  - [Supervisor与Worker合并部署的Spring boot应用](disjob-samples/disjob-samples-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
+  - [Supervisor单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
+  - [Worker单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
+  - [Worker单独部署的非Spring-boot应用，直接运行Main方法](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/Main.java)
+  - 说明：
+    - 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
+    - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
+    - 注册中心及分发任务的具体实现：在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中引入指定的依赖即可(默认是redis注册中心、http任务分发)
+  - 项目已内置一些本地启动的server：
+    - [内置redis-server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
+    - [内置consul-server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
+    - [内置nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)（依赖本地docker环境）
+    - [内置etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)（依赖本地docker环境）
+    - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
+    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)
 
 ```java
 @EnableSupervisor

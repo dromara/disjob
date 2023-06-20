@@ -60,4 +60,11 @@ public enum Operations {
         return toState;
     }
 
+    public boolean isTrigger() {
+        return this == TRIGGER;
+    }
+
+    public boolean isNotTrigger() {
+        return !isTrigger();
+    }
 }

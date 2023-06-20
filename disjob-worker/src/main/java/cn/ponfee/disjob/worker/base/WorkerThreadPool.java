@@ -133,7 +133,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         LOG.info("Submitted task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
-        if (param.operation() == Operations.TRIGGER) {
+        if (param.operation().isTrigger()) {
             return taskQueue.offerLast(param);
         } else {
             stopTaskExecutor.execute(() -> stop(param));
@@ -148,7 +148,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
      */
     private void stop(ExecuteTaskParam stopParam) {
         Operations ops = stopParam.operation();
-        Assert.isTrue(ops != null && ops != Operations.TRIGGER, () -> "Invalid stop operation: " + ops);
+        Assert.isTrue(ops != null && ops.isNotTrigger(), () -> "Invalid stop operation: " + ops);
 
         if (closed.get()) {
             return;
@@ -449,7 +449,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private final Map<Long, WorkerThread> pool = new HashMap<>();
 
         synchronized void doExecute(WorkerThread workerThread, ExecuteTaskParam param) throws InterruptedException {
-            if (param == null || param.operation() != Operations.TRIGGER) {
+            if (param == null || param.operation().isNotTrigger()) {
                 // cannot happen
                 throw new IllegalTaskException("Invalid execute param: " + param);
             }

@@ -87,7 +87,8 @@ disjob                                                    # Main project
   - [main project](pom.xml)
   - [samples project](disjob-samples/pom.xml)
 
-2. Run the SQL script provided by the warehouse code to create the database table: [mysql-schema.sql](mysql-schema.sql)(Also can direct run [embed mysql-server](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java), auto init sql script on startup)
+2. Run the SQL script file[mysql-schema.sql](mysql-schema.sql) to create database table(Also can direct run [embed mysql-server](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
+- [MacBook M1 error "Library not loaded" ref](disjob-test/src/main/DB/MariaDB/MariaDB.md)
 
 3. Modify configuration files such as [Mysql](disjob-samples/conf-supervisor/application-mysql.yml), [Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml), [Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml) and so on.
 - if use default localhost configuration([e.g consul localhost:8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file(same as Nacos/Zookeeper/Etcd)
@@ -95,24 +96,22 @@ disjob                                                    # Main project
 
 4. Create a job handler class [PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
 
-5. Startup applications in [samples project](disjob-samples)
-
-```Plain Text
- 1）disjob-samples-merged                        # Applicaion of merged deployment supervisor and worker
- 2）disjob-samples-separately-supervisor         # Spring boot application of only deployment supervisor
- 3）disjob-samples-separately-worker-springboot  # Spring boot application of only deployment worker
- 4）disjob-samples-separately-worker-frameless   # Non spring-boot application of only deployment worker
-```
-
-- Different ports have been configured and can be started at the same time
-- You can run the startup class in the development tool, or directly run the built jar package
-- select registry center and dispatch mode [use by pom](disjob-samples/disjob-samples-common/pom.xml) import
-- Embedded same servers can direct startup on local
-  - [embedded redis server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
-  - [embedded consul server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
-  - [embedded nacos server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)
-  - [embedded etcd server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
-  - [embedded zookeeper server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
+5. Startup these [sample applications](disjob-samples)
+  - [Spring boot application of merged Supervisor&Worker](disjob-samples/disjob-samples-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
+  - [Spring boot application of Supervisor](disjob-samples/disjob-samples-separately/disjob-samples-separately-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
+  - [Spring boot application of Worker](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
+  - [Frameless application of Worker, direct run main](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/Main.java)
+  - Notes:
+    - Different ports have been configured and can be started at the same time
+    - You can run the startup class in the development tool, or directly run the built jar package
+    - select registry center and dispatch mode [use by pom](disjob-samples/disjob-samples-common/pom.xml) import
+  - Embedded same servers can direct startup on local: 
+    - [embedded redis-server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
+    - [embedded consul-server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
+    - [embedded nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)(depends on local docker)
+    - [embedded etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)(depends on local docker)
+    - [embedded zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
+    - [embedded Mysql & Redis](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)
 
 ```java
 @EnableSupervisor
@@ -175,6 +174,6 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 - [ ] Task management background Web UI, account and authority
 - [ ] Build a project document web site
 - [ ] Monitor real-time executing logs of tasks online
-- [ ] alarm subscribe：Email, SMS, Voice, Lark, Ding Talk, WeChat
+- [ ] alarm subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
 - [ ] visual monitoring BI(Dashboard)
 - [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB

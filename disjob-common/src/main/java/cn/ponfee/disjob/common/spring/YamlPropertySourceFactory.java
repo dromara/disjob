@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Spring yaml properties source factory, 
+ * Spring yaml properties source factory,
  * <p>for help use annotation {@link org.springframework.context.annotation.PropertySource}
- * 
+ *
  * <pre>{@code
  * @PropertySource(value = "classpath:xxx.yml", factory = YamlPropertySourceFactory.class)
  * public class DruidConfig {
@@ -31,9 +31,8 @@ import java.util.Properties;
  *   private String username;
  *   @Value("${datasource.password}")
  *   private String password;
- * }
- * }</pre>
- * 
+ * }}</pre>
+ *
  * @author Ponfee
  */
 public class YamlPropertySourceFactory extends DefaultPropertySourceFactory {
