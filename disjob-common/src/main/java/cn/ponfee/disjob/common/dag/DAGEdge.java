@@ -26,19 +26,19 @@ public final class DAGEdge extends ToJsonString implements Serializable {
     private final DAGNode target;
 
     private DAGEdge(DAGNode source, DAGNode target) {
+        Objects.requireNonNull(source, "DAG source node cannot be null.");
+        Objects.requireNonNull(target, "DAG target node cannot be null.");
         this.source = source;
         this.target = target;
     }
 
     public static DAGEdge of(DAGNode source, DAGNode target) {
-        Objects.requireNonNull(source, "DAG source node cannot be null.");
-        Objects.requireNonNull(target, "DAG target node cannot be null.");
         return new DAGEdge(source, target);
     }
 
     public static DAGEdge of(String source, String target) {
-        Objects.requireNonNull(source, "DAG source node cannot be blank.");
-        Objects.requireNonNull(target, "DAG target node cannot be blank.");
+        Objects.requireNonNull(source, "DAG source text cannot be blank.");
+        Objects.requireNonNull(target, "DAG target text cannot be blank.");
         return new DAGEdge(DAGNode.fromString(source), DAGNode.fromString(target));
     }
 

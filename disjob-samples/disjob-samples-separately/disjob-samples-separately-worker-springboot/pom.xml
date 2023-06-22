@@ -23,12 +23,6 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-samples-common</artifactId>
       <version>${project.parent.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-jdbc</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>de.codecentric</groupId>

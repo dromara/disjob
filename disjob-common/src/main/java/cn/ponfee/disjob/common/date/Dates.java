@@ -515,6 +515,7 @@ public class Dates {
     }
 
     // ----------------------------------------------------------------day of
+
     public static int dayOfYear(@Nonnull Date date) {
         return new DateTime(date).getDayOfYear();
     }
