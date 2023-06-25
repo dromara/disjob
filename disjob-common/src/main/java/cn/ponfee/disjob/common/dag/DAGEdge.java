@@ -26,10 +26,8 @@ public final class DAGEdge extends ToJsonString implements Serializable {
     private final DAGNode target;
 
     private DAGEdge(DAGNode source, DAGNode target) {
-        Objects.requireNonNull(source, "DAG source node cannot be null.");
-        Objects.requireNonNull(target, "DAG target node cannot be null.");
-        this.source = source;
-        this.target = target;
+        this.source = Objects.requireNonNull(source, "DAG source node cannot be null.");
+        this.target = Objects.requireNonNull(target, "DAG target node cannot be null.");
     }
 
     public static DAGEdge of(DAGNode source, DAGNode target) {
