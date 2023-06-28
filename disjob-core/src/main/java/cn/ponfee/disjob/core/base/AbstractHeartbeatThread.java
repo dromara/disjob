@@ -51,7 +51,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
      */
     @Override
     public final void run() {
-        log.info("Heartbeat started.");
+        log.info("Heartbeat thread started.");
 
         try {
             int processedCount = 0;
