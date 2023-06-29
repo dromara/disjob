@@ -212,6 +212,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private WorkerThread takeWorkerThread() throws InterruptedException {
         while (true) {
+            if (super.isInterrupted()) {
+                throw new IllegalStateException("Boos thread take interrupted.");
+            }
             if (closed.get()) {
                 throw new IllegalStateException("Take worker thread fail, worker thread pool closed.");
             }
@@ -230,6 +233,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
     public void run() {
         try {
             while (!closed.get()) {
+                if (super.isInterrupted()) {
+                    throw new IllegalStateException("Boss thread run interrupted.");
+                }
                 ExecuteTaskParam param = taskQueue.takeFirst();
 
                 // take a worker
@@ -674,9 +680,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         public void run() {
             while (!stopped.get()) {
                 if (super.isInterrupted()) {
-                    LOG.warn("Worker boss thread interrupted.");
-                    threadPool.removeWorkerThread(this);
-                    return;
+                    LOG.warn("Worker thread run interrupted.");
+                    break;
                 }
 
                 ExecuteTaskParam param;
@@ -684,15 +689,13 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     param = workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS);
                 } catch (InterruptedException e) {
                     LOG.error("Poll execution param block interrupted.", e);
-                    threadPool.removeWorkerThread(this);
                     Thread.currentThread().interrupt();
-                    return;
+                    break;
                 }
 
                 if (param == null) {
                     LOG.info("Worker thread exit, idle wait timeout.");
-                    threadPool.removeWorkerThread(this);
-                    return;
+                    break;
                 }
 
                 try {

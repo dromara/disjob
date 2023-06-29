@@ -82,12 +82,7 @@ public class RedisLock implements Lock, java.io.Serializable {
     /**
      * Redis SET command return success message
      */
-    private static final String SET_SUCCESS = "OK";
-
-    /**
-     * Unlock lua script return success message
-     */
-    private static final long UNLOCK_SUCCESS = 1L;
+    private static final byte[] OK_MSG = "OK".getBytes(UTF_8);
 
     /**
      * Max timeout 1 day
@@ -110,44 +105,50 @@ public class RedisLock implements Lock, java.io.Serializable {
     private static final int MIN_SLEEP_MILLIS = 9;
 
     /**
-     * Redis SETNX(SET if Not eXists)
+     * <pre>
+     * KEYS[1]=key
+     * ARGV[1]=value
+     * ARGV[2]=milliseconds
+     * ARGV[3]=value if current thread held lock
+     * </pre>
+     *
+     * Reentrant lock lua script
      */
-    private static final String NX = "NX";
+    private static final RedisScript<byte[]> LOCK_SCRIPT = new DefaultRedisScript<>(
+        "local ret = redis.call('set', KEYS[1], ARGV[1], 'NX', 'PX', ARGV[2]);     \n" +
+        "if (type(ret) == 'table') then                                            \n" +
+        "  local e;                                                                \n" +
+        "  for k,v in pairs(ret) do                                                \n" +
+        "    e = v;                                                                \n" +
+        "  end                                                                     \n" +
+        "  if (e == 'OK') then                                                     \n" +
+        "    return e;                                                             \n" +
+        "  end                                                                     \n" +
+        "end                                                                       \n" +
+        "local val = redis.call('get', KEYS[1]);                                   \n" +
+        "if (val == ARGV[3] and redis.call('pexpire', KEYS[1], ARGV[2]) ~= 1) then \n" +
+        "  return nil;                                                             \n" +
+        "end                                                                       \n" +
+        "return val;                                                               \n",
+        byte[].class
+    );
 
     /**
-     * Redis PSETEX(SET and PeXpire)
-     */
-    private static final String PX = "PX";
-
-    /**
+     * <pre>
+     * KEYS[1]=key
+     * ARGV[1]=value if current thread held lock
+     * </pre>
+     *
      * Unlock lua script
      */
-    private static final String UNLOCK_SCRIPT_LUA = "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end";
-
-    /**
-     * Redis SETNX(SET if Not eXists)
-     */
-    private static final byte[] NX_BYTES = NX.getBytes(UTF_8);
-
-    /**
-     * Redis PSETEX(SET and PeXpire)
-     */
-    private static final byte[] PX_BYTES = PX.getBytes(UTF_8);
-
-    /**
-     * Unlock lua script
-     */
-    private static final RedisScript<Long> UNLOCK_SCRIPT_OBJECT = new DefaultRedisScript<>(UNLOCK_SCRIPT_LUA, Long.class);
-
-    /**
-     * Redis lua script sha1
-     */
-    private static final String UNLOCK_SCRIPT_SHA1 = UNLOCK_SCRIPT_OBJECT.getSha1();
-
-    /**
-     * Lua script text byte array
-     */
-    private static final byte[] UNLOCK_SCRIPT_BYTES = UNLOCK_SCRIPT_OBJECT.getScriptAsString().getBytes(UTF_8);
+    private static final RedisScript<Long> UNLOCK_SCRIPT = new DefaultRedisScript<>(
+        "if (redis.call('get',KEYS[1]) == ARGV[1]) then \n" +
+        "  return redis.call('del',KEYS[1]);            \n" +
+        "else                                           \n" +
+        "  return 0;                                    \n" +
+        "end                                            \n",
+        Long.class
+    );
 
     /**
      * Current thread locked value
@@ -345,15 +346,43 @@ public class RedisLock implements Lock, java.io.Serializable {
      */
     private boolean acquire() {
         final byte[] lockValue = ObjectUtils.uuid();
-        Boolean res = redisTemplate.execute((RedisCallback<Boolean>) conn -> {
-            String ret = (String) conn.execute("SET", lockKey, lockValue, NX_BYTES, PX_BYTES, timeoutMillis);
-            boolean status = SET_SUCCESS.equals(ret);
-            if (status) {
-                LOCK_VALUE.set(lockValue);
+
+        /*
+        String ret = redisTemplate.execute((RedisCallback<String>) conn ->
+            (String) conn.execute("SET", lockKey, lockValue, "NX".getBytes(), "PX".getBytes(), timeoutMillis)
+        );
+        if ("OK".equals(ret)) {
+            LOCK_VALUE.set(lockValue);
+            return true;
+        }
+        return false;
+        */
+
+        byte[] currVal = LOCK_VALUE.get();
+        final byte[][] keysAndArgs = {lockKey, lockValue, timeoutMillis, currVal};
+        byte[] ret = redisTemplate.execute((RedisCallback<byte[]>) conn -> {
+            if (conn.isPipelined() || conn.isQueueing()) {
+                throw new UnsupportedOperationException("Unsupported pipelined or queueing eval redis lua script.");
             }
-            return status;
+            try {
+                return conn.evalSha(LOCK_SCRIPT.getSha1(), ReturnType.VALUE, 1, keysAndArgs);
+            } catch (Exception e) {
+                if (exceptionContainsNoScriptError(e)) {
+                    LOG.info(e.getMessage());
+                    return conn.eval(LOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.VALUE, 1, keysAndArgs);
+                } else {
+                    return ExceptionUtils.rethrow(e);
+                }
+            }
         });
-        return res != null && res;
+        if (ret == null) {
+            return false;
+        }
+        if (Arrays.equals(ret, OK_MSG)) {
+            LOCK_VALUE.set(lockValue);
+            return true;
+        }
+        return Arrays.equals(ret, currVal);
     }
 
     /**
@@ -368,36 +397,29 @@ public class RedisLock implements Lock, java.io.Serializable {
         }
 
         final byte[][] keysAndArgs = {lockKey, lockValue};
-        Boolean res = redisTemplate.execute((RedisCallback<Boolean>) conn -> {
+        Long ret = redisTemplate.execute((RedisCallback<Long>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
                 // 在exec/closePipeline中会添加lua script sha1，所以这里只需要使用eval
-                conn.eval(UNLOCK_SCRIPT_BYTES, ReturnType.INTEGER, 1, keysAndArgs);
-                return false;
+                // return conn.eval(UNLOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.INTEGER, 1, keysAndArgs);
+                throw new UnsupportedOperationException("Unsupported pipelined or queueing eval redis lua script.");
             }
-
-            Long ret;
             try {
-                ret = conn.evalSha(UNLOCK_SCRIPT_SHA1, ReturnType.INTEGER, 1, keysAndArgs);
+                return conn.evalSha(UNLOCK_SCRIPT.getSha1(), ReturnType.INTEGER, 1, keysAndArgs);
             } catch (Exception e) {
                 if (exceptionContainsNoScriptError(e)) {
                     LOG.info(e.getMessage());
-                    ret = conn.eval(UNLOCK_SCRIPT_BYTES, ReturnType.INTEGER, 1, keysAndArgs);
+                    return conn.eval(UNLOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.INTEGER, 1, keysAndArgs);
                 } else {
                     return ExceptionUtils.rethrow(e);
                 }
             }
-            return ret != null && ret == UNLOCK_SUCCESS;
         });
 
-        LOCK_VALUE.remove();
-        return res != null && res;
+        // <key, value>为String时可使用此方法
+        // Long ret = ((RedisTemplate<String, String>) redisTemplate).execute(UNLOCK_SCRIPT_OBJECT, Arrays.asList("key"), "val");
 
-        /*
-        // key, value为String时使用这个方法
-        Long result = ((RedisTemplate<String, String>) redisTemplate).execute(UNLOCK_SCRIPT_OBJECT, List("lockKey"), "lockValue");
         LOCK_VALUE.remove();
-        return result == UNLOCK_SUCCESS;
-        */
+        return ret != null && ret == 1L;
     }
 
     public static boolean exceptionContainsNoScriptError(Throwable e) {

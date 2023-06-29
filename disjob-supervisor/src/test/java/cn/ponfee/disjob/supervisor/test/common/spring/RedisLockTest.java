@@ -45,8 +45,26 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void test0() throws InterruptedException {
-        RedisLock redisLock = new RedisLock(bean, "test:lock:" + ObjectUtils.uuid32(), 1000);
+        String key = "test:" + ObjectUtils.uuid32();
+        RedisLock redisLock = new RedisLock(bean, key, 10000);
         Assertions.assertTrue(redisLock.tryLock());
+
+        Thread.sleep(55);
+        Long ttl1 = bean.getExpire("lock:" + key, TimeUnit.MILLISECONDS);
+        System.out.println("ttl1: " + ttl1);
+        Assertions.assertTrue(ttl1 > 9000 && ttl1 < 10000);
+
+        Thread.sleep(5000);
+        Long ttl2 = bean.getExpire("lock:" + key, TimeUnit.MILLISECONDS);
+        System.out.println("ttl2: " + ttl2);
+        Assertions.assertTrue(ttl2 > 4000 && ttl2 < 5000);
+
+        Assertions.assertTrue(redisLock.tryLock());
+        Thread.sleep(50);
+        Long ttl3 = bean.getExpire("lock:" + key, TimeUnit.MILLISECONDS);
+        System.out.println("ttl3: " + ttl3);
+        Assertions.assertTrue(ttl3 > 9000 && ttl3 < 10000);
+
         Assertions.assertTrue(redisLock.isLocked());
         Assertions.assertTrue(redisLock.isHeldByCurrentThread());
 

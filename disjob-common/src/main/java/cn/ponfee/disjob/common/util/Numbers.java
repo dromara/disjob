@@ -312,6 +312,14 @@ public final class Numbers {
         return value == 0 ? null : value;
     }
 
+    public static boolean isNullOrZero(Long value) {
+        return value == null || value == 0L;
+    }
+
+    public static boolean isNullOrZero(Integer value) {
+        return value == null || value == 0;
+    }
+
     /**
      * 百分比
      *

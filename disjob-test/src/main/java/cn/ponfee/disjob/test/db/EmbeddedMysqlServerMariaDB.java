@@ -63,6 +63,7 @@ public class EmbeddedMysqlServerMariaDB {
             .setBaseDir(createDirectory("base"))
             .setDataDir(createDirectory("data"))
             //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
+            .addArg("--user=root")
             .build();
         DB db = DB.newEmbeddedDB(configuration);
 

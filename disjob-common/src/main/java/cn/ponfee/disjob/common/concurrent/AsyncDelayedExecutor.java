@@ -88,11 +88,15 @@ public final class AsyncDelayedExecutor<E> extends Thread {
     @Override
     public void run() {
         while (!stopped.get()) {
+            if (super.isInterrupted()) {
+                LOG.error("Async delayed thread interrupted.");
+                break;
+            }
             DelayedData<E> delayed;
             try {
                 delayed = queue.poll(3000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
-                LOG.error("Delayed queue pool occur interrupted.", e);
+                LOG.error("Delayed queue pool interrupted.", e);
                 toStop();
                 Thread.currentThread().interrupt();
                 break;

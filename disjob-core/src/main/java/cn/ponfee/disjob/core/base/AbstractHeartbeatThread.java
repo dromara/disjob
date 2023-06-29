@@ -57,9 +57,8 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
             int processedCount = 0;
             while (!stopped.get()) {
                 if (super.isInterrupted()) {
-                    log.warn("Thread exit by interrupted.");
-                    toStop();
-                    return;
+                    log.error("Thread exit by interrupted.");
+                    break;
                 }
 
                 boolean isBusyLoop;
