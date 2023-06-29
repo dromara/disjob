@@ -18,10 +18,10 @@ import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
-import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
+import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.rpc.SupervisorServiceProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +39,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 
 import java.lang.annotation.*;
+
+import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
  * Enable supervisor role
@@ -60,6 +63,7 @@ import java.lang.annotation.*;
     EnableSupervisor.EnableRetryProperties.class,
     EnableSupervisor.EnableHttpProperties.class,
     EnableSupervisor.EnableSupervisorConfiguration.class,
+    EnableSupervisor.EnableScanLockerConfiguration.class,
     EnableSupervisor.EnableComponentScan.class,
     SupervisorLifecycle.class
 })
@@ -73,10 +77,6 @@ public @interface EnableSupervisor {
     @ConditionalOnMissingBean(HttpProperties.class)
     @EnableConfigurationProperties(HttpProperties.class)
     class EnableHttpProperties {
-    }
-
-    @ComponentScan(basePackageClasses = SupervisorStartup.class)
-    class EnableComponentScan {
     }
 
     @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
@@ -103,6 +103,13 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
+        public SupervisorService supervisorService(DistributedJobManager distributedJobManager) {
+            return new SupervisorServiceProvider(distributedJobManager);
+        }
+
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @ConditionalOnMissingBean
+        @Bean
         public WorkerServiceClient workerServiceClient(HttpProperties httpProperties,
                                                        RetryProperties retryProperties,
                                                        SupervisorRegistry supervisorRegistry,
@@ -122,26 +129,38 @@ public @interface EnableSupervisor {
             return new WorkerServiceClient(remoteWorkerService, currentWorker);
         }
 
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public DoInLocked scanTriggeringJobLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
-        }
-
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_INSTANCE);
-        }
-
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public DoInLocked scanRunningInstanceLocker(@Qualifier(SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
-        }
-
         @ConditionalOnMissingBean
         @Bean
         public SpringContextHolder springContextHolder() {
             return new SpringContextHolder();
         }
+    }
+
+    @Order
+    @ConditionalOnProperty(prefix = JobConstants.SUPERVISOR_KEY_PREFIX, name = "locker", havingValue = "default", matchIfMissing = true)
+    class EnableScanLockerConfiguration {
+
+        @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
+        public DoInLocked scanTriggeringJobLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
+        }
+
+        @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
+        public DoInLocked scanWaitingInstanceLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_INSTANCE);
+        }
+
+        @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
+        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
+        public DoInLocked scanRunningInstanceLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
+        }
+    }
+
+    @ComponentScan(basePackageClasses = SupervisorStartup.class)
+    class EnableComponentScan {
     }
 
 }

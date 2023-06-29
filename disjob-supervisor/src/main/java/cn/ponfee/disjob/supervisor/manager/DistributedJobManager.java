@@ -13,14 +13,11 @@ import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
-import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.common.spring.TransactionUtils;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.enums.*;
@@ -96,7 +93,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
  * @author Ponfee
  */
 @Component
-public class DistributedJobManager extends AbstractJobManager implements SupervisorService, RpcController {
+public class DistributedJobManager extends AbstractJobManager {
 
     private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
     private static final int AFFECTED_ONE_ROW = 1;
@@ -132,10 +129,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
                                  SchedDependMapper dependMapper,
                                  SchedWorkflowMapper workflowMapper) {
         super(idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
-        // check JobConstants definition is right
-        if (!JobConstants.JOB_MANAGER_CLASS_NAME.equals(getClass().getName())) {
-            throw new AssertionError("Invalid job manager class name: " + JobConstants.JOB_MANAGER_CLASS_NAME);
-        }
         this.transactionTemplate = transactionTemplate;
         this.jobMapper = jobMapper;
         this.instanceMapper = instanceMapper;
@@ -162,7 +155,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         return instanceMapper.getWnstanceId(instanceId);
     }
 
-    @Override
     public SchedTask getTask(long taskId) {
         return taskMapper.getByTaskId(taskId);
     }
@@ -225,7 +217,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
         return taskMapper.terminate(taskId, ExecuteState.WAITING_CANCELED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
     }
 
-    @Override
     public boolean checkpoint(long taskId, String executeSnapshot) {
         return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
     }
@@ -322,7 +313,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
      * @param params the list of update task worker params
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    @Override
     public void updateTaskWorker(List<TaskWorkerParam> params) {
         if (CollectionUtils.isNotEmpty(params)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
@@ -338,7 +328,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
      * @return {@code true} if start successfully
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    @Override
     public boolean startTask(StartTaskParam param) {
         SchedInstance instance = instanceMapper.getByInstanceId(param.getInstanceId());
         Assert.notNull(instance, () -> "Sched instance not found: " + param);
@@ -430,7 +419,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
      * @param param the terminal task param
      * @return {@code true} if terminated task successful
      */
-    @Override
     public boolean terminateTask(TerminateTaskParam param) {
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
@@ -526,7 +514,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
      * @param wnstanceId the workflow instance id
      * @return {@code true} if paused successfully
      */
-    @Override
     public boolean pauseInstance(long instanceId, Long wnstanceId) {
         return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Pause instance not found: " + instanceId);
@@ -558,7 +545,6 @@ public class DistributedJobManager extends AbstractJobManager implements Supervi
      * @param ops        the operation
      * @return {@code true} if canceled successfully
      */
-    @Override
     public boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) {
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {

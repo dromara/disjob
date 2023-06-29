@@ -22,7 +22,6 @@ import cn.ponfee.disjob.worker.configuration.WorkerProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
@@ -109,24 +108,22 @@ public class WorkerStartup implements Startable {
     }
 
     private static SupervisorService createProxy(SupervisorService supervisorService,
-                                                 RetryProperties retryProperties,
-                                                 HttpProperties httpProperties,
+                                                 RetryProperties retry,
+                                                 HttpProperties http,
                                                  WorkerRegistry workerRegistry,
                                                  ObjectMapper objectMapper) {
         if (supervisorService != null) {
-            // Spring bean class name: cn.ponfee.disjob.supervisor.manager.DistributedJobManager$$EnhancerBySpringCGLIB$$f744bc50
-            String className = supervisorService.getClass().getName();
-            Assert.isTrue(className.startsWith(JobConstants.JOB_MANAGER_CLASS_NAME), "Invalid supervisor service type: " + className);
+            // cn.ponfee.disjob.supervisor.rpc.SupervisorServiceProvider
             ClassLoader classLoader = supervisorService.getClass().getClassLoader();
             Class<?>[] interfaces = {SupervisorService.class};
-            InvocationHandler ih = new RetryInvocationHandler(supervisorService, retryProperties.getMaxCount(), retryProperties.getBackoffPeriod());
+            InvocationHandler ih = new RetryInvocationHandler(supervisorService, retry.getMaxCount(), retry.getBackoffPeriod());
             return (SupervisorService) Proxy.newProxyInstance(classLoader, interfaces, ih);
         } else {
             DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-                .httpConnectTimeout(httpProperties.getConnectTimeout())
-                .httpReadTimeout(httpProperties.getReadTimeout())
-                .retryMaxCount(retryProperties.getMaxCount())
-                .retryBackoffPeriod(retryProperties.getBackoffPeriod())
+                .httpConnectTimeout(http.getConnectTimeout())
+                .httpReadTimeout(http.getReadTimeout())
+                .retryMaxCount(retry.getMaxCount())
+                .retryBackoffPeriod(retry.getBackoffPeriod())
                 .objectMapper(objectMapper)
                 .discoveryServer(workerRegistry)
                 .build();

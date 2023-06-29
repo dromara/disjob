@@ -86,9 +86,4 @@ public class JobConstants {
      */
     public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SPRING_BEAN_NAME_PREFIX + ".current-worker";
 
-    /**
-     * Job manager class name
-     */
-    public static final String JOB_MANAGER_CLASS_NAME = "cn.ponfee.disjob.supervisor.manager.DistributedJobManager";
-
 }

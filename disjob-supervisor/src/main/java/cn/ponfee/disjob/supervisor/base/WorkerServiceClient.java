@@ -46,17 +46,17 @@ public class WorkerServiceClient {
     }
 
     public void verify(JobHandlerParam param) throws JobException {
-        workerService(param.getJobGroup()).verify(param);
+        get(param.getJobGroup()).verify(param);
     }
 
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
-        return workerService(param.getJobGroup()).split(param);
+        return get(param.getJobGroup()).split(param);
     }
 
     // ------------------------------------------------------------private methods
 
-    private WorkerService workerService(String group) {
-        if ((remoteWorkerService == null || group.equals(currentGroup))) {
+    private WorkerService get(String group) {
+        if (remoteWorkerService == null || group.equals(currentGroup)) {
             return LOCAL_WORKER_SERVICE;
         }
 

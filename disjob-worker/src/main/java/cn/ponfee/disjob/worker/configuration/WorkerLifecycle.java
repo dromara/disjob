@@ -41,7 +41,7 @@ public class WorkerLifecycle implements SmartLifecycle {
                            HttpProperties httpProperties,
                            WorkerRegistry workerRegistry,
                            TaskReceiver taskReceiver,
-                           // if the current server also is a supervisor -> DistributedJobManager
+                           // if the current server also is a supervisor -> cn.ponfee.disjob.supervisor.rpc.SupervisorServiceProvider
                            @Nullable SupervisorService supervisorService,
                            @Nullable ObjectMapper objectMapper) {
         this.workerStartup = WorkerStartup.builder()
