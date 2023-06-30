@@ -16,7 +16,7 @@ management:
     env:
       enabled: true
 
-# disable thymeleaf configuration
+# thymeleaf configuration
 spring.thymeleaf:
   check-template: false
   check-template-location: false

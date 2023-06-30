@@ -29,19 +29,10 @@ disjob:
       token:
 
 # redis configuration
-redis:
+disjob.redis:
   database: 0
-  host: localhost       # redis standalone host name
-  port: 6379            # redis standalone port
-  #username: test_redis  # redis node auth username
-  password: 123456       # redis node auth password
   connect-timeout: 3000
   timeout: 5000
-  #sentinel:
-  #  master: REDIS_SENTINEL
-  #  nodes: 112.74.170.75:16379,112.74.170.75:16380
-    #username: test_sentinel # redis sentinel auth username
-    #password: 654321        # redis sentinel auth password
   lettuce:
     pool:
       max-active: 32
@@ -49,3 +40,16 @@ redis:
       min-idle: 4
       max-wait: 5000
     shutdown-timeout: 5000
+  password: 123456               # redis node auth password
+  #username: node_auth           # redis node auth username(redis 6.x ACL)
+
+  # redis standalone config
+  host: localhost                # redis standalone host name
+  port: 6379                     # redis standalone port
+
+  # redis sentinel config
+  #sentinel:
+  #  master: REDIS_SENTINEL
+  #  nodes: 112.74.170.75:16379,112.74.170.75:16380
+  #  #password: 123456            # redis sentinel auth password
+  #  #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)

@@ -186,7 +186,8 @@ public class Main {
 
     private synchronized static StringRedisTemplate stringRedisTemplate(YamlProperties props) {
         if (stringRedisTemplate == null) {
-            stringRedisTemplate = AbstractRedisTemplateCreator.create("redis.", props, null).getStringRedisTemplate();
+            String keyPrefix = DISJOB_KEY_PREFIX + ".redis.";
+            stringRedisTemplate = AbstractRedisTemplateCreator.create(keyPrefix, props, null).getStringRedisTemplate();
         }
         return stringRedisTemplate;
     }

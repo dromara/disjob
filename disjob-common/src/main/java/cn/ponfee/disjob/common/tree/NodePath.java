@@ -22,13 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-/*
-import cn.ponfee.disjob.common.util.GenericUtils;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-import java.lang.reflect.Type;
-*/
 
 /**
  * Representing immutable node path array
@@ -36,11 +29,7 @@ import java.lang.reflect.Type;
  * @param <T> the node id type
  * @author Ponfee
  */
-// NodePath is extends ArrayList, so must be use mappingTo in fastjson
-// if not do it then deserialized json as a collection type(java.util.ArrayList)
-// hashCode()/equals() extends ImmutableArrayList
-//@JSONType(mappingTo = NodePath.FastjsonDeserializeMarker.class) // fastjson
-@JsonDeserialize(using = NodePath.JacksonDeserializer.class)    // jackson
+@JsonDeserialize(using = NodePath.JacksonDeserializer.class)
 public final class NodePath<T extends Serializable & Comparable<? super T>>
     extends ImmutableArrayList<T> implements Comparable<NodePath<T>> {
 
@@ -96,44 +85,7 @@ public final class NodePath<T extends Serializable & Comparable<? super T>>
         return new NodePath<>(this);
     }
 
-    // -----------------------------------------------------custom fastjson deserialize
-
-    /*
-    @JSONType(deserializer = FastjsonDeserializer.class)
-    public static class FastjsonDeserializeMarker { }
-    */
-
-    /**
-     * <pre> {@code
-     *   public static class IntegerNodePath {
-     *     // 当定义的NodePath字段其泛型参数为具体类型时，必须用JSONField注解，否则报错
-     *     @JSONField(deserializeUsing = FastjsonDeserializer.class)
-     *     private NodePath<Integer> path; // ** NodePath<Integer> **
-     *   }
-     * }</pre>
-     *
-     * @param <T>
-     */
-    /*
-    public static class FastjsonDeserializer<T extends Serializable & Comparable<? super T>> implements ObjectDeserializer {
-        @Override
-        @SuppressWarnings("unchecked")
-        public NodePath<T> deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-            if (GenericUtils.getRawType(type) != NodePath.class) {
-                throw new UnsupportedOperationException("Only supported deserialize NodePath, cannot supported: " + type);
-            }
-            List<T> list = parser.parseArray(GenericUtils.getActualTypeArgument(type, 0));
-            return list.isEmpty() ? null : new NodePath<>(list);
-        }
-
-        @Override
-        public int getFastMatchToken() {
-            return 0;
-        }
-    }
-    */
-
-    // -----------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson deserialize
 
     public static class JacksonDeserializer<T extends Serializable & Comparable<? super T>> extends JsonDeserializer<NodePath<T>> {
         @Override

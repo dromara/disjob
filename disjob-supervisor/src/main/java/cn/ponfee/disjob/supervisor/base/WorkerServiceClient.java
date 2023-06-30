@@ -16,7 +16,10 @@ import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Worker service client
@@ -38,11 +41,12 @@ public class WorkerServiceClient {
     };
 
     private final WorkerService remoteWorkerService;
-    private final String currentGroup;
+    private final Worker currentWorker;
 
-    public WorkerServiceClient(WorkerService remoteWorkerService, Worker currentWorker) {
-        this.remoteWorkerService = remoteWorkerService;
-        this.currentGroup = currentWorker == null ? null : currentWorker.getGroup();
+    public WorkerServiceClient(@Nonnull WorkerService remoteWorkerService,
+                               @Nullable Worker currentWorker) {
+        this.remoteWorkerService = Objects.requireNonNull(remoteWorkerService);
+        this.currentWorker = currentWorker;
     }
 
     public void verify(JobHandlerParam param) throws JobException {
@@ -56,7 +60,7 @@ public class WorkerServiceClient {
     // ------------------------------------------------------------private methods
 
     private WorkerService get(String group) {
-        if (remoteWorkerService == null || group.equals(currentGroup)) {
+        if (currentWorker != null && currentWorker.matchesGroup(group)) {
             return LOCAL_WORKER_SERVICE;
         }
 

@@ -24,21 +24,12 @@ import java.util.Objects;
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 import static cn.ponfee.disjob.common.util.Collects.get;
 
-/*
-import cn.ponfee.disjob.common.util.GenericUtils;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-import java.lang.reflect.Type;
-*/
-
 /**
  * Supervisor definition
  *
  * @author Ponfee
  */
-//@JSONType(deserializer = Supervisor.FastjsonDeserializer.class) // fastjson
-@JsonDeserialize(using = Supervisor.JacksonDeserializer.class)  // jackson
+@JsonDeserialize(using = Supervisor.JacksonDeserializer.class)
 public final class Supervisor extends Server {
     private static final long serialVersionUID = -1254559108807415145L;
 
@@ -77,35 +68,11 @@ public final class Supervisor extends Server {
         return new Supervisor(host, port);
     }
 
-    // --------------------------------------------------------Current supervisor
-
     public static Supervisor current() {
         return Current.current;
     }
 
-    // -----------------------------------------------------custom fastjson deserialize
-
-    /**
-     * Custom deserialize Supervisor based fastjson.
-     */
-    /*
-    public static class FastjsonDeserializer implements ObjectDeserializer {
-        @Override
-        public Supervisor deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-            if (GenericUtils.getRawType(type) != Supervisor.class) {
-                throw new UnsupportedOperationException("Cannot supported deserialize type: " + type);
-            }
-            return of(parser.parseObject());
-        }
-
-        @Override
-        public int getFastMatchToken() {
-            return 0;
-        }
-    }
-    */
-
-    // -----------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson deserialize
 
     /**
      * Custom deserialize Supervisor based jackson.

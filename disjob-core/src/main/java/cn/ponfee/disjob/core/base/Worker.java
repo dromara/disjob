@@ -28,21 +28,13 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 import static cn.ponfee.disjob.common.util.Collects.get;
 import static cn.ponfee.disjob.core.base.JobConstants.WORKER_MULTIPLE_GROUP_SEPARATOR;
 
-/*
-import cn.ponfee.disjob.common.util.GenericUtils;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-import java.lang.reflect.Type;
-*/
-
 /**
  * Worker for execute task(JVM instance)
  *
  * @author Ponfee
  */
-//@JSONType(deserializer = Worker.FastjsonDeserializer.class) // fastjson
-@JsonDeserialize(using = Worker.JacksonDeserializer.class)  // jackson
+// Also instance of use: @JsonCreator + @JsonProperty("group")
+@JsonDeserialize(using = Worker.JacksonDeserializer.class)
 public final class Worker extends Server {
     private static final long serialVersionUID = 8981019172872301692L;
 
@@ -150,35 +142,11 @@ public final class Worker extends Server {
             && matchesGroup(other.group);
     }
 
-    // --------------------------------------------------------current worker
-
     public static Worker current() {
         return Current.current;
     }
 
-    // -----------------------------------------------------custom fastjson deserialize
-
-    /**
-     * Custom deserialize Worker based fastjson.
-     */
-    /*
-    public static class FastjsonDeserializer implements ObjectDeserializer {
-        @Override
-        public Worker deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-            if (GenericUtils.getRawType(type) != Worker.class) {
-                throw new UnsupportedOperationException("Cannot supported deserialize type: " + type);
-            }
-            return of(parser.parseObject());
-        }
-
-        @Override
-        public int getFastMatchToken() {
-            return 0;
-        }
-    }
-    */
-
-    // -----------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson deserialize
 
     /**
      * Custom deserialize Worker based jackson.

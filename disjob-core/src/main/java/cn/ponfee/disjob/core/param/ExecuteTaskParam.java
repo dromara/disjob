@@ -40,21 +40,12 @@ import static cn.ponfee.disjob.common.util.Numbers.nullZero;
 import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-/*
-import cn.ponfee.disjob.common.util.GenericUtils;
-import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-import java.lang.reflect.Type;
-*/
-
 /**
  * Task execution parameter.
  *
  * @author Ponfee
  */
-//@JSONType(deserializer = ExecuteTaskParam.FastjsonDeserializer.class) // fastjson
-@JsonDeserialize(using = ExecuteTaskParam.JacksonDeserializer.class)  // jackson
+@JsonDeserialize(using = ExecuteTaskParam.JacksonDeserializer.class)
 public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing<ExecuteTaskParam>, Serializable {
     private static final long serialVersionUID = -6493747747321536680L;
 
@@ -128,7 +119,8 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         return new ExecuteTaskParamBuilder(instance, schedJob);
     }
 
-    // ------------------------------------------------getter/setter
+    // ---------------------------------------------------------getter/setter
+
     /**
      * For help to deserialization
      *
@@ -174,7 +166,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         return jobHandler;
     }
 
-    // ------------------------------------------------worker
+    // --------------------------------------------------------worker
 
     public Worker getWorker() {
         return worker;
@@ -184,7 +176,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         this.worker = worker;
     }
 
-    // ------------------------------------------------other methods
+    // --------------------------------------------------------other methods
 
     public boolean updateOperation(Operations expect, Operations update) {
         return this.operation.compareAndSet(expect, update);
@@ -283,29 +275,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         );
     }
 
-    // -----------------------------------------------------custom fastjson deserialize
-
-    /**
-     * Custom deserialize ExecuteParam based fastjson.
-     */
-    /*
-    public static class FastjsonDeserializer implements ObjectDeserializer {
-        @Override
-        public ExecuteTaskParam deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-            if (GenericUtils.getRawType(type) != ExecuteTaskParam.class) {
-                throw new UnsupportedOperationException("Cannot supported deserialize type: " + type);
-            }
-            return of(parser.parseObject());
-        }
-
-        @Override
-        public int getFastMatchToken() {
-            return 0;
-        }
-    }
-    */
-
-    // -----------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson deserialize
 
     /**
      * Custom deserialize ExecuteParam based jackson.
