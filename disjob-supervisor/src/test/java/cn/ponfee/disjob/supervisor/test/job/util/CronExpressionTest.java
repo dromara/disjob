@@ -36,7 +36,7 @@ public class CronExpressionTest {
 
         Assertions.assertTrue(CronExpression.isValidExpression("43 31 14 31 5 ? 2022"));
 
-        Date date = Dates.random(Dates.ofMillis(0L), Dates.ofMillis(new Date().getTime()));
+        Date date = Dates.random(Dates.ofTimeMillis(0L), Dates.ofTimeMillis(new Date().getTime()));
         Assertions.assertTrue(CronExpression.isValidExpression(Dates.toCronExpression(date)));
         Assertions.assertFalse(org.springframework.scheduling.support.CronExpression.isValidExpression(Dates.toCronExpression(date)));
     }

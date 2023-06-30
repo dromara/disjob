@@ -8,13 +8,11 @@
 
 package cn.ponfee.disjob.common.date;
 
-import org.joda.time.LocalDateTime;
-import org.joda.time.Period;
-import org.joda.time.PeriodType;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.function.ToIntFunction;
 
 /**
  * <pre>
@@ -34,59 +32,72 @@ import java.util.function.ToIntFunction;
 public enum DatePeriods {
 
     /**
+     * 每毫秒的
+     */
+    PER_MILLIS(ChronoUnit.MILLIS, 1),
+
+    /**
      * 每秒钟的
      */
-    PER_SECOND(PeriodType.seconds(), Period::getSeconds, LocalDateTime::plusSeconds, 1),
+    PER_SECOND(ChronoUnit.SECONDS, 1),
 
     /**
      * 每分钟的
      */
-    MINUTELY(PeriodType.minutes(), Period::getMinutes, LocalDateTime::plusMinutes, 1),
+    MINUTELY(ChronoUnit.MINUTES, 1),
 
     /**
      * 每小时的
      */
-    HOURLY(PeriodType.hours(), Period::getHours, LocalDateTime::plusHours, 1),
+    HOURLY(ChronoUnit.HOURS, 1),
 
     /**
      * 每天
      */
-    DAILY(PeriodType.days(), Period::getDays, LocalDateTime::plusDays, 1),
+    DAILY(ChronoUnit.DAYS, 1),
 
     /**
      * 每周
      */
-    WEEKLY(PeriodType.weeks(), Period::getWeeks, LocalDateTime::plusWeeks, 1),
+    WEEKLY(ChronoUnit.WEEKS, 1),
 
     /**
      * 每月
      */
-    MONTHLY(PeriodType.months(), Period::getMonths, LocalDateTime::plusMonths, 1),
+    MONTHLY(ChronoUnit.MONTHS, 1),
 
     /**
      * 每季度
      */
-    QUARTERLY(PeriodType.months(), Period::getMonths, LocalDateTime::plusMonths, 3),
+    QUARTERLY(ChronoUnit.MONTHS, 3),
 
     /**
      * 每半年
      */
-    SEMIANNUAL(PeriodType.months(), Period::getMonths, LocalDateTime::plusMonths, 6),
+    SEMIANNUAL(ChronoUnit.MONTHS, 6),
 
     /**
      * 每年度
      */
-    ANNUAL(PeriodType.years(), Period::getYears, LocalDateTime::plusYears, 1);
+    ANNUAL(ChronoUnit.YEARS, 1),
 
-    private final PeriodType type;
-    private final ToIntFunction<Period> unit;
-    private final PlusFunction plus;
+    /**
+     * 每十年的
+     */
+    DECADES(ChronoUnit.DECADES, 1),
+
+    /**
+     * 每百年的（世纪）
+     */
+    CENTURIES(ChronoUnit.CENTURIES, 1),
+
+    ;
+
+    private final ChronoUnit unit;
     private final int multiple;
 
-    DatePeriods(PeriodType periodType, ToIntFunction<Period> unit, PlusFunction plus, int multiple) {
-        this.type = periodType;
+    DatePeriods(ChronoUnit unit, int multiple) {
         this.unit = unit;
-        this.plus = plus;
         this.multiple = multiple;
     }
 
@@ -102,14 +113,11 @@ public enum DatePeriods {
     public final Segment next(LocalDateTime original, LocalDateTime target, int step, int next) {
         Assert.isTrue(step > 0, "Step must be positive number.");
         Assert.isTrue(!original.isAfter(target), "Original date cannot be after target date.");
-        // original.withTime(original.getHourOfDay(), 0, 0, 0)
-        // original.withMillisOfDay(0)
-        // target.withMillisOfDay(0)
 
-        Period period = new Period(original, target, type);
         step *= multiple;
-        LocalDateTime begin = plus.apply(original, (unit.applyAsInt(period) / step + next) * step);
-        return new Segment(begin, plus.apply(begin, step));
+        long start = (unit.between(original, target) / step + next) * step;
+        LocalDateTime begin = original.plus(start, unit);
+        return new Segment(begin, begin.plus(step, unit));
     }
 
     public final Segment next(LocalDateTime target, int step, int next) {
@@ -121,16 +129,16 @@ public enum DatePeriods {
     }
 
     public final Segment next(Date original, Date target, int step, int next) {
-        return next(new LocalDateTime(original), new LocalDateTime(target), step, next);
+        return next(Dates.toLocalDateTime(original), Dates.toLocalDateTime(target), step, next);
     }
 
     public final Segment next(Date target, int step, int next) {
-        LocalDateTime original = new LocalDateTime(target);
+        LocalDateTime original = Dates.toLocalDateTime(target);
         return next(original, original, step, next);
     }
 
     public final Segment next(Date target, int next) {
-        LocalDateTime original = new LocalDateTime(target);
+        LocalDateTime original = Dates.toLocalDateTime(target);
         return next(original, original, 1, next);
     }
 
@@ -139,8 +147,8 @@ public enum DatePeriods {
         private final Date end;
 
         private Segment(LocalDateTime begin, LocalDateTime end) {
-            this.begin = begin.toDate();
-            this.end = end.minusMillis(1).toDate();
+            this.begin = Dates.toDate(begin);
+            this.end = Dates.toDate(end.minus(1, ChronoUnit.MILLIS));
         }
 
         public Date begin() {
@@ -157,7 +165,4 @@ public enum DatePeriods {
         }
     }
 
-    private interface PlusFunction {
-        LocalDateTime apply(LocalDateTime dateTime, int value);
-    }
 }

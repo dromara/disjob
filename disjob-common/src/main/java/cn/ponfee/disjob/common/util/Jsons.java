@@ -8,10 +8,7 @@
 
 package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.date.CustomLocalDateTimeDeserializer;
-import cn.ponfee.disjob.common.date.JacksonDate;
-import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
-import cn.ponfee.disjob.common.date.LocalDateTimeFormat;
+import cn.ponfee.disjob.common.date.*;
 import cn.ponfee.disjob.common.exception.JsonException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.*;
@@ -333,7 +330,7 @@ public final class Jsons {
         mapper.registerModule(module);
 
         // java.time.LocalDateTime
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Dates.DATE_PATTERN);
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         JavaTimeModule javaTimeModule = new JavaTimeModule();
         javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(LocalDateTimeFormat.PATTERN_11));

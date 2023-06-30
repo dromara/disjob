@@ -165,7 +165,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     /**
      * 任务依赖：依赖父任务执行完再触发执行子任务(trigger_value为父任务job_id，多个逗号分隔)
      */
-    DEPEND(4, "3988904755200,3988904755201") {
+    DEPEND(4, "1003164910267351000,1003164910267351001") {
         @Override
         public boolean validate(String triggerValue) {
             if (StringUtils.isBlank(triggerValue)) {

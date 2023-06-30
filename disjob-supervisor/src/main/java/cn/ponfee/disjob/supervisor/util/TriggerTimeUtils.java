@@ -42,7 +42,7 @@ public final class TriggerTimeUtils {
         }
 
         MisfireStrategy misfireStrategy = MisfireStrategy.of(job.getMisfireStrategy());
-        Date start = job.getStartTime(), last = Dates.ofMillis(job.getLastTriggerTime()), next, base;
+        Date start = job.getStartTime(), last = Dates.ofTimeMillis(job.getLastTriggerTime()), next, base;
         if (triggerType == TriggerType.ONCE) {
             // 1、如果是ONCE则要特殊处理(只执行一次)
             if (last != null) {

@@ -43,7 +43,7 @@ public class TimingWheelRotator implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
-    private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.FULL_DATE_FORMAT);
+    private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.DATEFULL_PATTERN);
 
     private final Worker currentWorker;
     private final SupervisorService supervisorServiceClient;

@@ -158,7 +158,7 @@ UPDATE sched_job SET job_state=1, last_trigger_time=NULL, next_trigger_time=(uni
 - 也可执行以下CURL命令手动触发执行一次(任选一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
 
 ```bash
-curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236701614080' \
+curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=1003164910267351004' \
 --header 'Content-Type: application/json'
 ```
 

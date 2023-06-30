@@ -67,12 +67,11 @@
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
 
-    <spring-boot.version>2.7.12</spring-boot.version>
+    <spring-boot.version>2.7.13</spring-boot.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
     <guava.version>32.0.1-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.13.0</commons-io.version>
-    <joda-time.version>2.12.5</joda-time.version>
     <mybatis-spring-boot-starter.version>2.3.1</mybatis-spring-boot-starter.version>
     <curator-recipes.version>5.5.0</curator-recipes.version>
     <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>

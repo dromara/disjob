@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.common.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Strings test
@@ -20,18 +20,18 @@ public class StringsTest {
 
     @Test
     public void testWildcardMatch() {
-        Assert.assertFalse(Strings.isMatch("aa", "a"));
-        Assert.assertTrue(Strings.isMatch("aa", "aa"));
-        Assert.assertFalse(Strings.isMatch("aaa", "aa"));
-        Assert.assertTrue(Strings.isMatch("aa", "*"));
-        Assert.assertTrue(Strings.isMatch("aa", "a*"));
-        Assert.assertTrue(Strings.isMatch("ab", "?*"));
-        Assert.assertFalse(Strings.isMatch("aab", "c*a*b"));
+        Assertions.assertFalse(Strings.isMatch("aa", "a"));
+        Assertions.assertTrue(Strings.isMatch("aa", "aa"));
+        Assertions.assertFalse(Strings.isMatch("aaa", "aa"));
+        Assertions.assertTrue(Strings.isMatch("aa", "*"));
+        Assertions.assertTrue(Strings.isMatch("aa", "a*"));
+        Assertions.assertTrue(Strings.isMatch("ab", "?*"));
+        Assertions.assertFalse(Strings.isMatch("aab", "c*a*b"));
     }
 
     @Test
     public void testCount() {
-        Assert.assertEquals(Strings.count("aa", "a"), 2);
-        Assert.assertEquals(Strings.count("ababa", "aba"), 1);
+        Assertions.assertEquals(Strings.count("aa", "a"), 2);
+        Assertions.assertEquals(Strings.count("ababa", "aba"), 1);
     }
 }

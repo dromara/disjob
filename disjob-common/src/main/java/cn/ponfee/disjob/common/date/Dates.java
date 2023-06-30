@@ -10,20 +10,19 @@ package cn.ponfee.disjob.common.date;
 
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
-import org.joda.time.format.DateTimeFormat;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import javax.annotation.Nonnull;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Date utility based joda
+ * Date utility
  * <p><a href="https://segmentfault.com/a/1190000039047353">Java处理GMT/UTC日期时间</a>
  *
  * <pre>
@@ -53,14 +52,19 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Dates {
 
     /**
-     * Default date time format
+     * Date pattern
      */
-    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_PATTERN = "yyyy-MM-dd";
 
     /**
-     * Full date time format
+     * Datetime pattern
      */
-    public static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * Full datetime pattern
+     */
+    public static final String DATEFULL_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 
     /**
      * Zero time millis: -62170185600000L
@@ -70,27 +74,36 @@ public class Dates {
     /**
      * 简单的日期格式校验(yyyy-MM-dd HH:mm:ss)
      *
-     * @param date 输入日期
+     * @param dateStr 输入日期
      * @return 有效返回true, 反之false
      */
-    public static boolean isValidDate(String date) {
-        return isValidDate(date, DEFAULT_DATE_FORMAT);
+    public static boolean isValidDate(String dateStr) {
+        if (StringUtils.isEmpty(dateStr)) {
+            return false;
+        }
+
+        try {
+            JavaUtilDateFormat.DEFAULT.parse(dateStr);
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     /**
      * 简单的日期格式校验
      *
-     * @param date    输入日期，如(yyyy-MM-dd)
+     * @param dateStr 输入日期，如(yyyy-MM-dd)
      * @param pattern 日期格式
      * @return 有效返回true, 反之false
      */
-    public static boolean isValidDate(String date, String pattern) {
-        if (StringUtils.isEmpty(date)) {
+    public static boolean isValidDate(String dateStr, String pattern) {
+        if (StringUtils.isEmpty(dateStr)) {
             return false;
         }
 
         try {
-            toDate(date, pattern);
+            toDate(dateStr, pattern);
             return true;
         } catch (Exception ignored) {
             return false;
@@ -123,11 +136,11 @@ public class Dates {
     /**
      * 获取当前日期字符串
      *
-     * @param format 日期格式
+     * @param pattern 日期格式
      * @return 当前日期字符串
      */
-    public static String now(String format) {
-        return format(now(), format);
+    public static String now(String pattern) {
+        return format(now(), pattern);
     }
 
     /**
@@ -137,7 +150,11 @@ public class Dates {
      * @return 日期对象
      */
     public static Date toDate(String dateStr) {
-        return toDate(dateStr, DEFAULT_DATE_FORMAT);
+        try {
+            return JavaUtilDateFormat.DEFAULT.parse(dateStr);
+        } catch (ParseException e) {
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
     /**
@@ -148,49 +165,53 @@ public class Dates {
      * @return 日期对象
      */
     public static Date toDate(String dateStr, String pattern) {
-        return DateTimeFormat.forPattern(pattern).parseDateTime(dateStr).toDate();
+        try {
+            return new SimpleDateFormat(pattern).parse(dateStr);
+        } catch (ParseException e) {
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
     /**
      * java（毫秒）时间戳
      *
-     * @param timeMillis 毫秒
+     * @param timeMillis 毫秒时间戳
      * @return 日期
      */
-    public static Date ofMillis(long timeMillis) {
+    public static Date ofTimeMillis(long timeMillis) {
         return new Date(timeMillis);
     }
 
-    public static Date ofMillis(Long timeMillis) {
+    public static Date ofTimeMillis(Long timeMillis) {
         return timeMillis == null ? null : new Date(timeMillis);
     }
 
     /**
      * unix时间戳
      *
-     * @param unixTimeSeconds 秒
-     * @return
+     * @param unixTimestamp unix时间戳
+     * @return 日期
      */
-    public static Date ofSeconds(long unixTimeSeconds) {
-        return new Date(unixTimeSeconds * 1000);
+    public static Date ofUnixTimestamp(long unixTimestamp) {
+        return new Date(unixTimestamp * 1000);
     }
 
-    public static Date ofSeconds(Long unixTimeSeconds) {
-        return unixTimeSeconds == null ? null : new Date(unixTimeSeconds * 1000);
+    public static Date ofUnixTimestamp(Long unixTimestamp) {
+        return unixTimestamp == null ? null : new Date(unixTimestamp * 1000);
     }
 
     /**
      * 格式化日期对象
      *
-     * @param date   日期对象
-     * @param format 日期格式
+     * @param date    日期对象
+     * @param pattern 日期格式
      * @return 当前日期字符串
      */
-    public static String format(Date date, String format) {
+    public static String format(Date date, String pattern) {
         if (date == null) {
             return null;
         }
-        return new DateTime(date).toString(format);
+        return new SimpleDateFormat(pattern).format(date);
     }
 
     /**
@@ -200,21 +221,18 @@ public class Dates {
      * @return 日期字符串
      */
     public static String format(Date date) {
-        if (date == null) {
-            return null;
-        }
-        return new DateTime(date).toString(DEFAULT_DATE_FORMAT);
+        return format(date, DATETIME_PATTERN);
     }
 
     /**
      * 格式化日期对象
      *
-     * @param mills   毫秒
-     * @param pattern 格式
+     * @param timeMillis 毫秒
+     * @param pattern    格式
      * @return 日期字符串
      */
-    public static String format(long mills, String pattern) {
-        return new DateTime(mills).toString(pattern);
+    public static String format(long timeMillis, String pattern) {
+        return format(new Date(timeMillis), pattern);
     }
 
     // ----------------------------------------------------------------plus
@@ -222,89 +240,89 @@ public class Dates {
     /**
      * 增加毫秒数
      *
-     * @param date        时间
-     * @param numOfMillis 毫秒数
+     * @param date   时间
+     * @param millis 毫秒数
      * @return 时间
      */
-    public static Date plusMillis(@Nonnull Date date, int numOfMillis) {
-        return new DateTime(date).plusMillis(numOfMillis).toDate();
+    public static Date plusMillis(Date date, long millis) {
+        return new Date(date.getTime() + millis);
     }
 
     /**
      * 增加秒数
      *
-     * @param date         时间
-     * @param numOfSeconds 秒数
+     * @param date    时间
+     * @param seconds 秒数
      * @return 时间
      */
-    public static Date plusSeconds(@Nonnull Date date, int numOfSeconds) {
-        return new DateTime(date).plusSeconds(numOfSeconds).toDate();
+    public static Date plusSeconds(Date date, long seconds) {
+        return plusMillis(date, seconds * 1000);
     }
 
     /**
      * 增加分钟
      *
-     * @param date         时间
-     * @param numOfMinutes 分钟数
+     * @param date    时间
+     * @param minutes 分钟数
      * @return 时间
      */
-    public static Date plusMinutes(@Nonnull Date date, int numOfMinutes) {
-        return new DateTime(date).plusMinutes(numOfMinutes).toDate();
+    public static Date plusMinutes(Date date, long minutes) {
+        return plusMillis(date, minutes * 60 * 1000);
     }
 
     /**
      * 增加小时
      *
-     * @param date       时间
-     * @param numOfHours 小时数
+     * @param date  时间
+     * @param hours 小时数
      * @return 时间
      */
-    public static Date plusHours(@Nonnull Date date, int numOfHours) {
-        return new DateTime(date).plusHours(numOfHours).toDate();
+    public static Date plusHours(Date date, long hours) {
+        return plusMillis(date, hours * 60 * 60 * 1000);
     }
 
     /**
      * 增加天数
      *
-     * @param date    时间
-     * @param numdays 天数
+     * @param date 时间
+     * @param days 天数
      * @return 时间
      */
-    public static Date plusDays(@Nonnull Date date, int numdays) {
-        return new DateTime(date).plusDays(numdays).toDate();
+    public static Date plusDays(Date date, long days) {
+        return plusMillis(date, days * 24 * 60 * 60 * 1000);
     }
 
     /**
      * 增加周
      *
-     * @param date     时间
-     * @param numWeeks 周数
+     * @param date  时间
+     * @param weeks 周数
      * @return 时间
      */
-    public static Date plusWeeks(@Nonnull Date date, int numWeeks) {
-        return new DateTime(date).plusWeeks(numWeeks).toDate();
+    public static Date plusWeeks(Date date, long weeks) {
+        return plusMillis(date, weeks * 7 * 24 * 60 * 60 * 1000);
     }
 
     /**
      * 增加月份
      *
-     * @param date      时间
-     * @param numMonths 月数
+     * @param date   时间
+     * @param months 月数
      * @return 时间
      */
-    public static Date plusMonths(@Nonnull Date date, int numMonths) {
-        return new DateTime(date).plusMonths(numMonths).toDate();
+    public static Date plusMonths(Date date, long months) {
+        return toDate(toLocalDateTime(date).plusMonths(months));
     }
 
     /**
      * 增加年
      *
-     * @param date     时间
-     * @param numYears 年数
+     * @param date  时间
+     * @param years 年数
      * @return 时间
      */
-    public static Date plusYears(@Nonnull Date date, int numYears) {
-        return new DateTime(date).plusYears(numYears).toDate();
+    public static Date plusYears(Date date, long years) {
+        return toDate(toLocalDateTime(date).plusYears(years));
     }
 
     // ----------------------------------------------------------------minus
@@ -312,89 +330,89 @@ public class Dates {
     /**
      * 减少毫秒数
      *
-     * @param date        时间
-     * @param numOfMillis 毫秒数
+     * @param date   时间
+     * @param millis 毫秒数
      * @return 时间
      */
-    public static Date minusMillis(@Nonnull Date date, int numOfMillis) {
-        return new DateTime(date).minusMillis(numOfMillis).toDate();
+    public static Date minusMillis(Date date, long millis) {
+        return plusMillis(date, -millis);
     }
 
     /**
      * 减少秒数
      *
-     * @param date         时间
-     * @param numOfSeconds 秒数
+     * @param date    时间
+     * @param seconds 秒数
      * @return 时间
      */
-    public static Date minusSeconds(@Nonnull Date date, int numOfSeconds) {
-        return new DateTime(date).minusSeconds(numOfSeconds).toDate();
+    public static Date minusSeconds(Date date, long seconds) {
+        return plusSeconds(date, -seconds);
     }
 
     /**
      * 减少分钟
      *
-     * @param date         时间
-     * @param numOfMinutes 分钟数
+     * @param date    时间
+     * @param minutes 分钟数
      * @return 时间
      */
-    public static Date minusMinutes(@Nonnull Date date, int numOfMinutes) {
-        return new DateTime(date).minusMinutes(numOfMinutes).toDate();
+    public static Date minusMinutes(Date date, long minutes) {
+        return plusMinutes(date, -minutes);
     }
 
     /**
      * 减少小时
      *
-     * @param date       时间
-     * @param numOfHours 小时数
+     * @param date  时间
+     * @param hours 小时数
      * @return 时间
      */
-    public static Date minusHours(@Nonnull Date date, int numOfHours) {
-        return new DateTime(date).minusHours(numOfHours).toDate();
+    public static Date minusHours(Date date, long hours) {
+        return plusHours(date, -hours);
     }
 
     /**
      * 减少天数
      *
-     * @param date    时间
-     * @param numdays 天数
+     * @param date 时间
+     * @param days 天数
      * @return 时间
      */
-    public static Date minusDays(@Nonnull Date date, int numdays) {
-        return new DateTime(date).minusDays(numdays).toDate();
+    public static Date minusDays(Date date, long days) {
+        return plusDays(date, -days);
     }
 
     /**
      * 减少周
      *
-     * @param date     时间
-     * @param numWeeks 周数
+     * @param date  时间
+     * @param weeks 周数
      * @return 时间
      */
-    public static Date minusWeeks(@Nonnull Date date, int numWeeks) {
-        return new DateTime(date).minusWeeks(numWeeks).toDate();
+    public static Date minusWeeks(Date date, long weeks) {
+        return plusWeeks(date, -weeks);
     }
 
     /**
      * 减少月份
      *
-     * @param date      时间
-     * @param numMonths 月数
+     * @param date   时间
+     * @param months 月数
      * @return 时间
      */
-    public static Date minusMonths(@Nonnull Date date, int numMonths) {
-        return new DateTime(date).minusMonths(numMonths).toDate();
+    public static Date minusMonths(Date date, long months) {
+        return toDate(toLocalDateTime(date).minusMonths(months));
     }
 
     /**
      * 减少年
      *
-     * @param date     时间
-     * @param numYears 年数
+     * @param date  时间
+     * @param years 年数
      * @return 时间
      */
-    public static Date minusYears(@Nonnull Date date, int numYears) {
-        return new DateTime(date).minusYears(numYears).toDate();
+    public static Date minusYears(Date date, long years) {
+        return toDate(toLocalDateTime(date).minusYears(years));
     }
 
     // ----------------------------------------------------------------start/end
@@ -405,8 +423,8 @@ public class Dates {
      * @param date 时间
      * @return 时间
      */
-    public static Date startOfDay(@Nonnull Date date) {
-        return startOfDay(new DateTime(date));
+    public static Date startOfDay(Date date) {
+        return toDate(startOfDay0(date));
     }
 
     /**
@@ -415,8 +433,8 @@ public class Dates {
      * @param date 时间
      * @return 时间
      */
-    public static Date endOfDay(@Nonnull Date date) {
-        return endOfDay(new DateTime(date));
+    public static Date endOfDay(Date date) {
+        return toDate(endOfDay0(date));
     }
 
     /**
@@ -425,8 +443,8 @@ public class Dates {
      * @param date 日期
      * @return 当前周第一天
      */
-    public static Date startOfWeek(@Nonnull Date date) {
-        return startOfDay(new DateTime(date).dayOfWeek().withMinimumValue());
+    public static Date startOfWeek(Date date) {
+        return toDate(startOfDay0(date).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)));
     }
 
     /**
@@ -435,8 +453,8 @@ public class Dates {
      * @param date 日期
      * @return 当前周最后一天
      */
-    public static Date endOfWeek(@Nonnull Date date) {
-        return endOfDay(new DateTime(date).dayOfWeek().withMaximumValue());
+    public static Date endOfWeek(Date date) {
+        return toDate(endOfDay0(date).with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
     }
 
     /**
@@ -445,8 +463,8 @@ public class Dates {
      * @param date 日期
      * @return 当前月的第一天
      */
-    public static Date startOfMonth(@Nonnull Date date) {
-        return startOfDay(new DateTime(date).dayOfMonth().withMinimumValue());
+    public static Date startOfMonth(Date date) {
+        return toDate(startOfDay0(date).with(TemporalAdjusters.firstDayOfMonth()));
     }
 
     /**
@@ -455,8 +473,8 @@ public class Dates {
      * @param date 日期
      * @return 当前月的最后一天
      */
-    public static Date endOfMonth(@Nonnull Date date) {
-        return endOfDay(new DateTime(date).dayOfMonth().withMaximumValue());
+    public static Date endOfMonth(Date date) {
+        return toDate(endOfDay0(date).with(TemporalAdjusters.lastDayOfMonth()));
     }
 
     /**
@@ -465,8 +483,8 @@ public class Dates {
      * @param date 日期
      * @return 当前年的第一天
      */
-    public static Date startOfYear(@Nonnull Date date) {
-        return startOfDay(new DateTime(date).dayOfYear().withMinimumValue());
+    public static Date startOfYear(Date date) {
+        return toDate(startOfDay0(date).with(TemporalAdjusters.firstDayOfYear()));
     }
 
     /**
@@ -475,8 +493,8 @@ public class Dates {
      * @param date 日期
      * @return 当前年的最后一天
      */
-    public static Date endOfYear(@Nonnull Date date) {
-        return endOfDay(new DateTime(date).dayOfYear().withMaximumValue());
+    public static Date endOfYear(Date date) {
+        return toDate(endOfDay0(date).with(TemporalAdjusters.lastDayOfYear()));
     }
 
     // ----------------------------------------------------------------day of
@@ -484,52 +502,55 @@ public class Dates {
     /**
      * 获取指定时间所在周的周n，1<=day<=7
      *
-     * @param date 相对日期
-     * @param day  1:星期一，2:星期二，...
+     * @param date      相对日期
+     * @param dayOfWeek 1-星期一；2-星期二；...
      * @return 本周周几的日期对象
      */
-    public static Date withDayOfWeek(@Nonnull Date date, int day) {
-        return startOfDay(new DateTime(date).withDayOfWeek(day));
+    public static Date withDayOfWeek(Date date, int dayOfWeek) {
+        LocalDateTime dateTime = toLocalDateTime(date)
+            .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            .with(TemporalAdjusters.nextOrSame(DayOfWeek.of(dayOfWeek)));
+        return toDate(dateTime);
     }
 
     /**
      * 获取指定时间所在月的n号，1<=day<=31
      *
-     * @param date
-     * @param day
-     * @return
+     * @param date       the date
+     * @param dayOfMonth the day of month
+     * @return date
      */
-    public static Date withDayOfMonth(@Nonnull Date date, int day) {
-        return startOfDay(new DateTime(date).withDayOfMonth(day));
+    public static Date withDayOfMonth(Date date, int dayOfMonth) {
+        return toDate(toLocalDateTime(date).withDayOfMonth(dayOfMonth));
     }
 
     /**
      * 获取指定时间所在年的n天，1<=day<=366
      *
-     * @param date
-     * @param day
-     * @return
+     * @param date      the date
+     * @param dayOfYear the day of year
+     * @return date
      */
-    public static Date withDayOfYear(@Nonnull Date date, int day) {
-        return startOfDay(new DateTime(date).withDayOfYear(day));
+    public static Date withDayOfYear(Date date, int dayOfYear) {
+        return toDate(toLocalDateTime(date).withDayOfYear(dayOfYear));
     }
 
     // ----------------------------------------------------------------day of
 
-    public static int dayOfYear(@Nonnull Date date) {
-        return new DateTime(date).getDayOfYear();
+    public static int dayOfYear(Date date) {
+        return toLocalDateTime(date).getDayOfYear();
     }
 
-    public static int dayOfMonth(@Nonnull Date date) {
-        return new DateTime(date).getDayOfMonth();
+    public static int dayOfMonth(Date date) {
+        return toLocalDateTime(date).getDayOfMonth();
     }
 
-    public static int dayOfWeek(@Nonnull Date date) {
-        return new DateTime(date).getDayOfWeek();
+    public static int dayOfWeek(Date date) {
+        return toLocalDateTime(date).getDayOfWeek().getValue();
     }
 
-    public static int hourOfDay(@Nonnull Date date) {
-        return new DateTime(date).getHourOfDay();
+    public static int hourOfDay(Date date) {
+        return toLocalDateTime(date).getHour();
     }
 
     // ----------------------------------------------------------------others
@@ -541,7 +562,7 @@ public class Dates {
      * @param end   结束时间
      * @return 时间间隔
      */
-    public static long clockDiff(@Nonnull Date start, @Nonnull Date end) {
+    public static long clockDiff(Date start, Date end) {
         return (end.getTime() - start.getTime()) / 1000;
     }
 
@@ -551,9 +572,10 @@ public class Dates {
      * @param start the start date
      * @param end   the end date
      * @return a number of between start to end days
+     * @see java.time.temporal.ChronoUnit#between(Temporal, Temporal)
      */
     public static int daysBetween(Date start, Date end) {
-        return Days.daysBetween(new DateTime(start), new DateTime(end)).getDays();
+        return (int) (toLocalDate(end).toEpochDay() - toLocalDate(start).toEpochDay());
     }
 
     /**
@@ -612,6 +634,24 @@ public class Dates {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
+    public static LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    public static Date toDate(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static LocalDateTime startOfDay(LocalDateTime dateTime) {
+        return LocalDateTime.of(dateTime.toLocalDate(), LocalTime.MIN);
+        //return dateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
+    }
+
+    public static LocalDateTime endOfDay(LocalDateTime dateTime) {
+        // 当毫秒数大于499时，如果Mysql的datetime字段没有毫秒位数，数据会自动加1秒，所以此处毫秒为000
+        return LocalDateTime.of(dateTime.toLocalDate(), LocalTime.of(23, 59, 59, 0));
+    }
+
     /**
      * 时区转换
      *
@@ -645,14 +685,14 @@ public class Dates {
     }
 
     public static String zoneConvert(String date, ZoneId sourceZone, ZoneId targetZone) {
-        return zoneConvert(date, DEFAULT_DATE_FORMAT, sourceZone, targetZone);
+        return zoneConvert(date, DATETIME_PATTERN, sourceZone, targetZone);
     }
 
     /**
      * 时区转换
      *
      * @param date       the source date string
-     * @param pattern    the source date format
+     * @param pattern    the source date pattern
      * @param sourceZone the source zone id
      * @param targetZone the target zone id
      * @return date string of target zone id
@@ -689,15 +729,14 @@ public class Dates {
             .toString();
     }
 
-    // ----------------------------------------------------------------private methods
-    private static Date endOfDay(DateTime date) {
-        // 当毫秒数大于499时，如果Mysql的datatime字段没有毫秒位数，数据会自动加1秒，所以此处毫秒为000
-        //date.secondOfDay().withMaximumValue().millisOfSecond().withMinimumValue().toDate();
-        return date.withTime(23, 59, 59, 0).toDate();
+    // -------------------------------------------------------------private methods
+
+    private static LocalDateTime startOfDay0(Date date) {
+        return startOfDay(toLocalDateTime(date));
     }
 
-    private static Date startOfDay(DateTime date) {
-        return date.withTimeAtStartOfDay().toDate();
+    private static LocalDateTime endOfDay0(Date date) {
+        return endOfDay(toLocalDateTime(date));
     }
 
 }

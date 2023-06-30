@@ -25,7 +25,7 @@ public class LocalDateFormat {
     /**
      * The default date format with yyyy-MM-dd
      */
-    public static final LocalDateFormat DEFAULT = new LocalDateFormat("yyyy-MM-dd");
+    public static final LocalDateFormat DEFAULT = new LocalDateFormat(Dates.DATE_PATTERN);
 
     private final LocalDateTimeFormat formatter;
 

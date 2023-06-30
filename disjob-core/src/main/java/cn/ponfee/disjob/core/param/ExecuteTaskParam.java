@@ -292,14 +292,14 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
             return null;
         }
 
-        Operations operation = EnumUtils.getEnumIgnoreCase(Operations.class, MapUtils.getString(map, "operation"));
+        Operations operation = EnumUtils.getEnum(Operations.class, MapUtils.getString(map, "operation"));
         long taskId = MapUtils.getLongValue(map, "taskId");
         long instanceId = MapUtils.getLongValue(map, "instanceId");
         Long wnstanceId = MapUtils.getLong(map, "wnstanceId");
         long triggerTime = MapUtils.getLongValue(map, "triggerTime");
         long jobId = MapUtils.getLongValue(map, "jobId");
-        JobType jobType = EnumUtils.getEnumIgnoreCase(JobType.class, MapUtils.getString(map, "jobType"));
-        RouteStrategy routeStrategy = EnumUtils.getEnumIgnoreCase(RouteStrategy.class, MapUtils.getString(map, "routeStrategy"));
+        JobType jobType = EnumUtils.getEnum(JobType.class, MapUtils.getString(map, "jobType"));
+        RouteStrategy routeStrategy = EnumUtils.getEnum(RouteStrategy.class, MapUtils.getString(map, "routeStrategy"));
         int executeTimeout = MapUtils.getInteger(map, "executeTimeout");
         String jobHandler = MapUtils.getString(map, "jobHandler");
         Worker worker = Worker.of((Map<String, ?>) map.get("worker"));

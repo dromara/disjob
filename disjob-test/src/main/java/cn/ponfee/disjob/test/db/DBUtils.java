@@ -117,7 +117,7 @@ public class DBUtils {
 
     public static void testQuerySchedJob(JdbcTemplate jdbcTemplate) {
         List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM sched_job ORDER BY id ASC");
-        long expect = 3988904755200L;
+        long expect = 1003164910267351000L;
         long actual = Numbers.toLong(result.get(0).get("job_id"));
         Assert.isTrue(expect == actual, () -> expect + " != " + actual);
         System.out.println("Query result: " + Jsons.toJson(result));

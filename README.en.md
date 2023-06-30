@@ -158,7 +158,7 @@ UPDATE sched_job SET job_state=1, last_trigger_time=NULL, next_trigger_time=(uni
 - You can also execute the following CURL command to manually trigger execution (select a supervisor to replace `localhost:8081`)
 
 ```bash
-curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=4236701614080' \
+curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=1003164910267351004' \
 --header 'Content-Type: application/json'
 ```
 

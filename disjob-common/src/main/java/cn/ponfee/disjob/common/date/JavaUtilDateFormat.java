@@ -52,18 +52,18 @@ public class JavaUtilDateFormat extends DateFormat {
     static final FastDateFormat PATTERN_13 = FastDateFormat.getInstance("yyyy/MM");
 
     static final FastDateFormat PATTERN_21 = FastDateFormat.getInstance("yyyyMMdd");
-    static final FastDateFormat PATTERN_22 = FastDateFormat.getInstance("yyyy-MM-dd");
+    static final FastDateFormat PATTERN_22 = FastDateFormat.getInstance(Dates.DATE_PATTERN);
     static final FastDateFormat PATTERN_23 = FastDateFormat.getInstance("yyyy/MM/dd");
 
     static final FastDateFormat PATTERN_31 = FastDateFormat.getInstance("yyyyMMddHHmmss");
     static final FastDateFormat PATTERN_32 = FastDateFormat.getInstance("yyyyMMddHHmmssSSS");
 
-    static final FastDateFormat PATTERN_41 = FastDateFormat.getInstance(Dates.DEFAULT_DATE_FORMAT);
+    static final FastDateFormat PATTERN_41 = FastDateFormat.getInstance(Dates.DATETIME_PATTERN);
     static final FastDateFormat PATTERN_42 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
     static final FastDateFormat PATTERN_43 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
     static final FastDateFormat PATTERN_44 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss");
 
-    static final FastDateFormat PATTERN_51 = FastDateFormat.getInstance(Dates.FULL_DATE_FORMAT);
+    static final FastDateFormat PATTERN_51 = FastDateFormat.getInstance(Dates.DATEFULL_PATTERN);
     static final FastDateFormat PATTERN_52 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss.SSS");
     static final FastDateFormat PATTERN_53 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS");
     static final FastDateFormat PATTERN_54 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss.SSS");
@@ -81,7 +81,7 @@ public class JavaUtilDateFormat extends DateFormat {
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss
      */
-    public static final JavaUtilDateFormat DEFAULT = new JavaUtilDateFormat(Dates.DEFAULT_DATE_FORMAT);
+    public static final JavaUtilDateFormat DEFAULT = new JavaUtilDateFormat(Dates.DATETIME_PATTERN);
 
     /**
      * 兜底解析器

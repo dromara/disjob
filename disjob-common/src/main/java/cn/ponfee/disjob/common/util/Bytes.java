@@ -370,7 +370,7 @@ public final class Bytes {
     public static byte[] remaining(ByteBuffer buf) {
         int count = buf.limit() - buf.position();
         if (count <= 0) {
-            return null;
+            return new byte[0];
         }
         byte[] bytes = new byte[count];
         buf.get(bytes);

@@ -986,7 +986,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 Objects.requireNonNull(transactionTemplate.getTransactionManager()),
                 () -> {
                     TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
-                    // ### Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '4236701615232-1683124620000-2' for key 'uk_jobid_triggertime_runtype'
+                    // ### Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '1003164910267351007-1683124620000-2' for key 'uk_jobid_triggertime_runtype'
                     // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
                     // 极端情况还是会存在唯一索引值冲突：比如依赖的任务多于1000个，但这种情况可以限制所依赖父任务的个数来解决，暂不考虑
                     // parent1(trigger_time=1000, sequence=1001)，parent2(trigger_time=2000, sequence=1)

@@ -91,7 +91,7 @@ public class TimingWheelTest {
         System.out.println((System.currentTimeMillis() % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)); // 要"+8"时区
         System.out.println(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
         System.out.println(LocalDateTime.now().getHour());
-        Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(Dates.ofMillis(0L)));
+        Assertions.assertEquals("1970-01-01 08:00:00", Dates.format(Dates.ofTimeMillis(0L)));
         Assertions.assertEquals(LocalDateTime.now().getHour(), Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
         Assertions.assertEquals(2, String.format("%02d", Calendar.getInstance().get(Calendar.HOUR_OF_DAY)).length());
         Assertions.assertEquals("00", String.format("%02d", 0));
