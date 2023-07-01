@@ -15,9 +15,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -507,9 +507,8 @@ public class Dates {
      * @return 本周周几的日期对象
      */
     public static Date withDayOfWeek(Date date, int dayOfWeek) {
-        LocalDateTime dateTime = toLocalDateTime(date)
-            .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            .with(TemporalAdjusters.nextOrSame(DayOfWeek.of(dayOfWeek)));
+        LocalDateTime dateTime = toLocalDateTime(date).with(WeekFields.of(DayOfWeek.MONDAY, 1).dayOfWeek(), dayOfWeek);
+        //LocalDateTime dateTime = toLocalDateTime(date).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).with(TemporalAdjusters.nextOrSame(DayOfWeek.of(dayOfWeek)));
         return toDate(dateTime);
     }
 
@@ -593,12 +592,12 @@ public class Dates {
         return random(beginMills, endMills);
     }
 
-    public static Date random(long beginMills, long endMills) {
-        if (beginMills >= endMills) {
-            throw new IllegalArgumentException("Date [" + beginMills + "] must before [" + endMills + "]");
+    public static Date random(long beginTimeMills, long endTimeMills) {
+        if (beginTimeMills >= endTimeMills) {
+            throw new IllegalArgumentException("Date [" + beginTimeMills + "] must before [" + endTimeMills + "]");
         }
 
-        return new Date(beginMills + ThreadLocalRandom.current().nextLong(endMills - beginMills));
+        return new Date(beginTimeMills + ThreadLocalRandom.current().nextLong(endTimeMills - beginTimeMills));
     }
 
     /**
@@ -682,29 +681,6 @@ public class Dates {
             return localDateTime;
         }
         return ZonedDateTime.of(localDateTime, sourceZone).withZoneSameInstant(targetZone).toLocalDateTime();
-    }
-
-    public static String zoneConvert(String date, ZoneId sourceZone, ZoneId targetZone) {
-        return zoneConvert(date, DATETIME_PATTERN, sourceZone, targetZone);
-    }
-
-    /**
-     * 时区转换
-     *
-     * @param date       the source date string
-     * @param pattern    the source date pattern
-     * @param sourceZone the source zone id
-     * @param targetZone the target zone id
-     * @return date string of target zone id
-     */
-    public static String zoneConvert(String date, String pattern, ZoneId sourceZone, ZoneId targetZone) {
-        if (date == null || sourceZone.equals(targetZone)) {
-            return date;
-        }
-        DateTimeFormatter format = DateTimeFormatter.ofPattern(pattern);
-        LocalDateTime source = LocalDateTime.parse(date, format);
-        LocalDateTime target = zoneConvert(source, sourceZone, targetZone);
-        return target.format(format);
     }
 
     public static String toCronExpression(Date date) {

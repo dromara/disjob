@@ -12,7 +12,7 @@ import java.time.temporal.ChronoField;
 import java.util.Date;
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DateFormatTest {
 

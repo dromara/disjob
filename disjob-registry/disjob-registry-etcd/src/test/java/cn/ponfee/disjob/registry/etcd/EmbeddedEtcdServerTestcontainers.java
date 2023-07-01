@@ -18,6 +18,8 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Embedded etcd server base testcontainers and docker.
  *
+ * io.etcd:jetcd-launcher:0.7.5
+ *
  * @author Ponfee
  */
 public final class EmbeddedEtcdServerTestcontainers {

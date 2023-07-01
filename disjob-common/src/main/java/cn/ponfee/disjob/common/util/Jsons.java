@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.date.*;
-import cn.ponfee.disjob.common.exception.JsonException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
@@ -24,6 +23,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.Assert;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -75,13 +75,12 @@ public final class Jsons {
      *
      * @param output the output stream
      * @param target the target object
-     * @throws JsonException if occur exception
      */
-    public void write(OutputStream output, Object target) throws JsonException {
+    public void write(OutputStream output, Object target) {
         try {
             mapper.writeValue(output, target);
         } catch (IOException e) {
-            throw new JsonException(e);
+            ExceptionUtils.rethrow(e);
         }
     }
 
@@ -90,13 +89,12 @@ public final class Jsons {
      *
      * @param target target object
      * @return json string
-     * @throws JsonException the exception for json
      */
-    public String string(Object target) throws JsonException {
+    public String string(Object target) {
         try {
             return mapper.writeValueAsString(target);
         } catch (IOException e) {
-            throw new JsonException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -105,13 +103,12 @@ public final class Jsons {
      *
      * @param target object
      * @return byte[] array
-     * @throws JsonException the exception for json
      */
-    public byte[] bytes(Object target) throws JsonException {
+    public byte[] bytes(Object target) {
         try {
             return mapper.writeValueAsBytes(target);
         } catch (IOException e) {
-            throw new JsonException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -123,19 +120,18 @@ public final class Jsons {
      * @param json     json string
      * @param javaType JavaType
      * @return the javaType's object
-     * @throws JsonException the exception for json
      * @see ObjectMapper#getTypeFactory()
      * @see ObjectMapper#constructType(Type)
      * @see com.fasterxml.jackson.databind.type.TypeFactory#constructGeneralizedType(JavaType, Class)
      */
-    public <T> T parse(String json, JavaType javaType) throws JsonException {
+    public <T> T parse(String json, JavaType javaType) {
         if (StringUtils.isEmpty(json)) {
             return null;
         }
         try {
             return mapper.readValue(json, javaType);
         } catch (Exception e) {
-            throw new JsonException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -145,40 +141,39 @@ public final class Jsons {
      * @param json     json byte array
      * @param javaType JavaType
      * @return the javaType's object
-     * @throws JsonException the exception for json
      */
-    public <T> T parse(byte[] json, JavaType javaType) throws JsonException {
+    public <T> T parse(byte[] json, JavaType javaType) {
         if (json == null || json.length == 0) {
             return null;
         }
         try {
             return mapper.readValue(json, javaType);
         } catch (Exception e) {
-            throw new JsonException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
-    public <T> T parse(String json, Class<T> target) throws JsonException {
+    public <T> T parse(String json, Class<T> target) {
         return parse(json, mapper.constructType(target));
     }
 
-    public <T> T parse(byte[] json, Class<T> target) throws JsonException {
+    public <T> T parse(byte[] json, Class<T> target) {
         return parse(json, mapper.constructType(target));
     }
 
-    public <T> T parse(String json, Type type) throws JsonException {
+    public <T> T parse(String json, Type type) {
         return parse(json, mapper.constructType(type));
     }
 
-    public <T> T parse(byte[] json, Type type) throws JsonException {
+    public <T> T parse(byte[] json, Type type) {
         return parse(json, mapper.constructType(type));
     }
 
-    public <T> T parse(String json, TypeReference<T> type) throws JsonException {
+    public <T> T parse(String json, TypeReference<T> type) {
         return parse(json, mapper.constructType(type));
     }
 
-    public <T> T parse(byte[] json, TypeReference<T> type) throws JsonException {
+    public <T> T parse(byte[] json, TypeReference<T> type) {
         return parse(json, mapper.constructType(type));
     }
 
@@ -191,7 +186,7 @@ public final class Jsons {
         return NORMAL.bytes(target);
     }
 
-    public static Object[] parseArray(String body, Class<?>... types) throws JsonException {
+    public static Object[] parseArray(String body, Class<?>... types) {
         if (body == null) {
             return null;
         }
@@ -212,7 +207,7 @@ public final class Jsons {
         return result;
     }
 
-    public static Object[] parseMethodArgs(String body, Method method) throws JsonException {
+    public static Object[] parseMethodArgs(String body, Method method) {
         if (body == null) {
             return null;
         }
@@ -348,7 +343,7 @@ public final class Jsons {
         try {
             return mapper.readTree(body);
         } catch (JsonProcessingException e) {
-            throw new JsonException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 
@@ -359,7 +354,7 @@ public final class Jsons {
                 .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
                 .readValue(mapper.treeAsTokens(jsonNode));
         } catch (IOException e) {
-            throw new JsonException(e);
+            return ExceptionUtils.rethrow(e);
         }
     }
 

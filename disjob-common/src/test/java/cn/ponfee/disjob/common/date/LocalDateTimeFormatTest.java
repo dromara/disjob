@@ -21,6 +21,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static cn.ponfee.disjob.common.date.Dates.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -34,54 +35,54 @@ public class LocalDateTimeFormatTest {
     @Test
     public void test9() {
         LocalDateTime localDateTime = LocalDateTime.of(2022, 01, 02, 03, 04, 05, 123000000);
-        Date date = Dates.toDate(localDateTime);
+        Date date = toDate(localDateTime);
 
         assertEquals("2022-01-02T03:04:05.123", localDateTime.toString());
-        assertEquals("2022-01-02 03:04:05", Dates.format(date).toString());
-        assertEquals("2022-01-02T07:04:05.123", Dates.zoneConvert(localDateTime, ZoneId.of("UTC+4"), ZoneId.of("UTC+8")).toString());
-        assertEquals("2022-01-02 11:04:05", Dates.format(Dates.zoneConvert(date, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
-        assertEquals("2022-01-01 19:04:05", Dates.format(Dates.zoneConvert(date, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
+        assertEquals("2022-01-02 03:04:05", format(date));
+        assertEquals("2022-01-02T07:04:05.123", zoneConvert(localDateTime, ZoneId.of("UTC+4"), ZoneId.of("UTC+8")).toString());
+        assertEquals("2022-01-02 11:04:05", format(zoneConvert(date, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
+        assertEquals("2022-01-01 19:04:05", format(zoneConvert(date, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
 
         LocalDateTime originLocalDateTime = LocalDateTime.of(1970, 01, 01, 00, 00, 00, 0);
-        Date originDate = Dates.toDate(originLocalDateTime); // defaultZone: UTC+8
-        assertEquals("1970-01-01T08:00", Dates.zoneConvert(originLocalDateTime, ZoneId.of("UTC+0"), ZoneId.of("UTC+8")).toString());
-        assertEquals("1969-12-31T16:00", Dates.zoneConvert(originLocalDateTime, ZoneId.of("UTC+8"), ZoneId.of("UTC+0")).toString());
-        assertEquals("1970-01-01 08:00:00", Dates.format(Dates.zoneConvert(originDate, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
-        assertEquals("1969-12-31 16:00:00", Dates.format(Dates.zoneConvert(originDate, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
+        Date originDate = toDate(originLocalDateTime); // defaultZone: UTC+8
+        assertEquals("1970-01-01T08:00", zoneConvert(originLocalDateTime, ZoneId.of("UTC+0"), ZoneId.of("UTC+8")).toString());
+        assertEquals("1969-12-31T16:00", zoneConvert(originLocalDateTime, ZoneId.of("UTC+8"), ZoneId.of("UTC+0")).toString());
+        assertEquals("1970-01-01 08:00:00", format(zoneConvert(originDate, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
+        assertEquals("1969-12-31 16:00:00", format(zoneConvert(originDate, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Dates.DATETIME_PATTERN);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATETIME_PATTERN);
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("UTC+0")));
         assertEquals("1969-12-31 16:00:00", simpleDateFormat.format(originDate));
 
-        assertEquals("1970-01-01 08:00:00", Dates.zoneConvert("1970-01-01 00:00:00", ZoneId.of("UTC+0"), ZoneId.of("UTC+8")));
-        assertEquals("1970-01-01 00:00:00", Dates.zoneConvert("1970-01-01 08:00:00", ZoneId.of("UTC+8"), ZoneId.of("UTC+0")));
+        assertEquals("1970-01-01 08:00:00", format(zoneConvert(toDate("1970-01-01 00:00:00"), ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
+        assertEquals("1970-01-01 00:00:00", format(zoneConvert(toDate("1970-01-01 08:00:00"), ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
     }
 
     @Test
     public void test8() {
         LocalDateTime localDateTime = LocalDateTime.now();
-        Date date = Dates.toDate(localDateTime);
+        Date date = toDate(localDateTime);
 
-        System.out.println(localDateTime.toString());
-        System.out.println(Dates.format(date).toString());
+        System.out.println(localDateTime);
+        System.out.println(format(date));
 
         System.out.println("\n-------toDate");
-        System.out.println(Dates.toDate(localDateTime));
-        System.out.println(Dates.toDate(localDateTime));
+        System.out.println(toDate(localDateTime));
+        System.out.println(toDate(localDateTime));
 
         System.out.println("\n-------toLocalDateTime");
-        System.out.println(Dates.toLocalDateTime(date));
-        System.out.println(Dates.toLocalDateTime(date));
+        System.out.println(toLocalDateTime(date));
+        System.out.println(toLocalDateTime(date));
 
         System.out.println("\n-------zoneConvert1");
-        LocalDateTime targetLocalDateTime = Dates.zoneConvert(localDateTime, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"));
-        Date targetDate = Dates.zoneConvert(date, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"));
+        LocalDateTime targetLocalDateTime = zoneConvert(localDateTime, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"));
+        Date targetDate = zoneConvert(date, ZoneId.of("UTC+8"), ZoneId.of("UTC+0"));
         System.out.println(targetLocalDateTime);
         System.out.println(targetDate);
 
         System.out.println("\n-------zoneConvert2");
-        targetLocalDateTime = Dates.zoneConvert(localDateTime, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"));
-        targetDate = Dates.zoneConvert(date, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"));
+        targetLocalDateTime = zoneConvert(localDateTime, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"));
+        targetDate = zoneConvert(date, ZoneId.of("UTC+0"), ZoneId.of("UTC+8"));
         System.out.println(targetLocalDateTime);
         System.out.println(targetDate);
     }
@@ -91,11 +92,11 @@ public class LocalDateTimeFormatTest {
         LocalDateTime localDateTime = LocalDateTime.of(2022, 01, 02, 03, 05, 05, 123000000);
         assertEquals("2022-01-02T03:05:05.123", localDateTime.toString());
 
-        assertEquals("20220102030505",          LocalDateTimeFormat.PATTERN_01.format(localDateTime));
-        assertEquals("2022-01-02 03:05:05",     LocalDateTimeFormat.PATTERN_11.format(localDateTime));
-        assertEquals("2022/01/02 03:05:05",     LocalDateTimeFormat.PATTERN_12.format(localDateTime));
-        assertEquals("2022-01-02T03:05:05",     LocalDateTimeFormat.PATTERN_13.format(localDateTime));
-        assertEquals("2022/01/02T03:05:05",     LocalDateTimeFormat.PATTERN_14.format(localDateTime));
+        assertEquals("20220102030505", LocalDateTimeFormat.PATTERN_01.format(localDateTime));
+        assertEquals("2022-01-02 03:05:05", LocalDateTimeFormat.PATTERN_11.format(localDateTime));
+        assertEquals("2022/01/02 03:05:05", LocalDateTimeFormat.PATTERN_12.format(localDateTime));
+        assertEquals("2022-01-02T03:05:05", LocalDateTimeFormat.PATTERN_13.format(localDateTime));
+        assertEquals("2022/01/02T03:05:05", LocalDateTimeFormat.PATTERN_14.format(localDateTime));
         assertEquals("2022-01-02 03:05:05.123", LocalDateTimeFormat.PATTERN_21.format(localDateTime));
         assertEquals("2022/01/02 03:05:05.123", LocalDateTimeFormat.PATTERN_22.format(localDateTime));
         assertEquals("2022-01-02T03:05:05.123", LocalDateTimeFormat.PATTERN_23.format(localDateTime));
@@ -126,7 +127,7 @@ public class LocalDateTimeFormatTest {
         assertEquals("2022-01-02T03:05:05.123", LocalDateTimeFormat.DEFAULT.parse("2022-01-02T03:05:05.123Z").toString());
         assertEquals("2022-01-02T03:05:05.123", LocalDateTimeFormat.DEFAULT.parse("2022/01/02T03:05:05.123Z").toString());
 
-        Date date = Dates.toDate(localDateTime);
+        Date date = toDate(localDateTime);
         assertEquals("Sun Jan 02 03:05:05 CST 2022", date.toString());
         assertEquals("2022-01-02T03:05:05.123", LocalDateTimeFormat.DEFAULT.parse(String.valueOf(date.getTime())).toString());
         assertEquals("2022-01-02T03:05:05", LocalDateTimeFormat.DEFAULT.parse(String.valueOf(date.getTime() / 1000)).toString());
