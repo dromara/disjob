@@ -103,7 +103,7 @@ public class Dates {
         }
 
         try {
-            toDate(dateStr, pattern);
+            new SimpleDateFormat(pattern).parse(dateStr);
             return true;
         } catch (Exception ignored) {
             return false;
@@ -127,10 +127,6 @@ public class Dates {
      */
     public static Date now() {
         return new Date();
-    }
-
-    public static long unixTimestamp() {
-        return System.currentTimeMillis() / 1000;
     }
 
     /**
@@ -184,6 +180,10 @@ public class Dates {
 
     public static Date ofTimeMillis(Long timeMillis) {
         return timeMillis == null ? null : new Date(timeMillis);
+    }
+
+    public static long currentUnixTimestamp() {
+        return System.currentTimeMillis() / 1000;
     }
 
     /**
@@ -648,7 +648,7 @@ public class Dates {
 
     public static LocalDateTime endOfDay(LocalDateTime dateTime) {
         // 当毫秒数大于499时，如果Mysql的datetime字段没有毫秒位数，数据会自动加1秒，所以此处毫秒为000
-        return LocalDateTime.of(dateTime.toLocalDate(), LocalTime.of(23, 59, 59, 0));
+        return LocalDateTime.of(dateTime.toLocalDate(), LocalTime.of(23, 59, 59, /*999_999_999*/0));
     }
 
     /**

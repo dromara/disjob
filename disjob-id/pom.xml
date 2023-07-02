@@ -25,11 +25,13 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-framework</artifactId>
       <version>${curator-recipes.version}</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -40,7 +42,6 @@
           <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
   </dependencies>
 

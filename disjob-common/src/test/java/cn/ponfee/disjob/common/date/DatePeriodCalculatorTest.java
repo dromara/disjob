@@ -27,43 +27,43 @@ public class DatePeriodCalculatorTest {
     @Test
     public void test1()  {
         test(Dates.toDate("2020-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
-        System.out.println("------------------------\n");
         test(Dates.toDate("2021-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+        test(Dates.toDate("2021-12-31 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+        test(Dates.toDate("2021-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss"));
     }
 
-    private static void test(Date startDate )  {
-        int step = 2;
-        int next = 1;
-        Date target = startDate;
+    private static void test(Date original )  {
+        int step = 2, next = 1;
+        Date target = original;
         String except, actual;
 
-        except = calc(DatePeriodCalculator.Periods.DAILY, startDate, target, step, next);
-        actual = DatePeriods.DAILY.next(startDate, target, step, next).toString();
+        except = calc(Periods.DAILY, original, target, step, next);
+        actual = DatePeriods.DAILY.next(original, target, step, next).toString();
         System.out.println(actual);
         Assertions.assertEquals(except, actual);
 
-        except = calc(DatePeriodCalculator.Periods.WEEKLY, startDate, target, step, next);
-        actual = DatePeriods.WEEKLY.next(startDate, target, step, next).toString();
+        except = calc(Periods.WEEKLY, original, target, step, next);
+        actual = DatePeriods.WEEKLY.next(original, target, step, next).toString();
         System.out.println(actual);
         Assertions.assertEquals(except, actual);
 
-        except = calc(DatePeriodCalculator.Periods.MONTHLY, startDate, target, step, next);
-        actual = DatePeriods.MONTHLY.next(startDate, target, step, next).toString();
+        except = calc(Periods.MONTHLY, original, target, step, next);
+        actual = DatePeriods.MONTHLY.next(original, target, step, next).toString();
         System.out.println(actual);
         Assertions.assertEquals(except, actual);
 
-        except = calc(DatePeriodCalculator.Periods.QUARTERLY, startDate, target, step, next);
-        actual = DatePeriods.QUARTERLY.next(startDate, target, step, next).toString();
+        except = calc(Periods.QUARTERLY, original, target, step, next);
+        actual = DatePeriods.QUARTERLY.next(original, target, step, next).toString();
         System.out.println(actual);
         Assertions.assertEquals(except, actual);
 
-        except = calc(DatePeriodCalculator.Periods.HALF_YEARLY, startDate, target, step, next);
-        actual = DatePeriods.SEMIANNUAL.next(startDate, target, step, next).toString();
+        except = calc(Periods.HALF_YEARLY, original, target, step, next);
+        actual = DatePeriods.SEMIANNUAL.next(original, target, step, next).toString();
         System.out.println(actual);
         Assertions.assertEquals(except, actual);
 
-        except = calc(DatePeriodCalculator.Periods.YEARLY, startDate, target, step, next);
-        actual = DatePeriods.ANNUAL.next(startDate, target, step, next).toString();
+        except = calc(Periods.YEARLY, original, target, step, next);
+        actual = DatePeriods.ANNUAL.next(original, target, step, next).toString();
         System.out.println(actual);
         Assertions.assertEquals(except, actual);
     }
@@ -96,7 +96,7 @@ public class DatePeriodCalculatorTest {
             Calendar c2 = Calendar.getInstance();
             c1.setTime(starting);
             c2.setTime(target);
-            Date startDate = null;
+            Date startDate;
             int cycleNum, year;
             Calendar tmp;
             float days;
@@ -152,29 +152,25 @@ public class DatePeriodCalculatorTest {
             c1.add(Calendar.MILLISECOND, -1);
             return new Date[]{startDate, c1.getTime()};
         }
+    }
 
-        public Date[] calculate(int next) {
-            return calculate(1, next);
-        }
+    private enum Periods {
+        DAILY("每日"), //
+        WEEKLY("每周"), //
+        MONTHLY("每月"), //
+        QUARTERLY("每季度"), //
+        HALF_YEARLY("每半年"), //
+        YEARLY("每年");
 
-        private enum Periods {
-            DAILY("每日"), //
-            WEEKLY("每周"), //
-            MONTHLY("每月"), //
-            QUARTERLY("每季度"), //
-            HALF_YEARLY("每半年"), //
-            YEARLY("每年");
+        private final String desc;
 
-            private final String desc;
-
-            Periods(String desc) {
-                this.desc = desc;
-            }
+        Periods(String desc) {
+            this.desc = desc;
         }
     }
 
-    private static String calc(DatePeriodCalculator.Periods p, Date start, Date target, int step, int next) {
-        Date[] dates = new DatePeriodCalculator(start, target, p).calculate(step, next);
+    private static String calc(Periods period, Date start, Date target, int step, int next) {
+        Date[] dates = new DatePeriodCalculator(start, target, period).calculate(step, next);
         return FORMAT.format(dates[0]) + " ~ " + FORMAT.format(dates[1]);
     }
 
