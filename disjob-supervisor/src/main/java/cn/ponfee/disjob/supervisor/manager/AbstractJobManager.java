@@ -156,8 +156,8 @@ public abstract class AbstractJobManager {
     }
 
     /**
-     * Broadcast strategy after assigned worker, and then the worker is dead,
-     * the task always waiting state until canceled.
+     * Broadcast strategy task after assigned worker.
+     * if the worker was dead, should cancel the task.
      *
      * @param taskId the task id
      * @return {@code true} if cancel successful

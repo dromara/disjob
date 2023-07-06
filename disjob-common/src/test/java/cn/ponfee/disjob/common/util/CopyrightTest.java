@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -103,7 +102,7 @@ public class CopyrightTest {
     private static void handleFile(Consumer<File> consumer) {
         FileUtils
             .listFiles(new File(BASE_DIR).getParentFile(), new String[]{"java"}, true)
-            .forEach(e -> ThrowingRunnable.run(() -> consumer.accept(e)));
+            .forEach(consumer);
     }
 
     private boolean isOwnerCode(String sourceCode) {

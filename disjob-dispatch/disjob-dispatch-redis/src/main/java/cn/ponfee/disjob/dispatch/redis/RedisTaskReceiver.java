@@ -22,7 +22,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.List;
@@ -48,8 +47,11 @@ public class RedisTaskReceiver extends TaskReceiver {
      *   ltrim(key, n, -1)
      * }</pre>
      */
-    private static final RedisScript<List> BATCH_POP_SCRIPT_OBJECT = new DefaultRedisScript<>(
-        "local ret=redis.call('lrange',KEYS[1],0,ARGV[1]-1);redis.call('ltrim',KEYS[1],ARGV[1],-1);return ret;", List.class
+    private static final RedisScript<List> BATCH_POP_SCRIPT_OBJECT = RedisScript.of(
+        "local ret = redis.call('lrange', KEYS[1], 0, ARGV[1]-1); \n" +
+        "redis.call('ltrim', KEYS[1], ARGV[1], -1);               \n" +
+        "return ret;                                              \n",
+        List.class
     );
 
     /**

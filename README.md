@@ -47,7 +47,7 @@ disjob                                                    # 主项目
 │       ├── disjob-samples-separately-supervisor          # Supervisor单独部署的范例（Spring boot应用）
 │       ├── disjob-samples-separately-worker-frameless    # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
 │       └── disjob-samples-separately-worker-springboot   # Worker单独部署的范例（Spring boot应用）
-├── disjob-supervisor                                     # Supervisor代码（Spring-boot应用，需要引导Spring扫描该包目录）
+├── disjob-supervisor                                     # Supervisor代码（Spring-boot应用）
 ├── disjob-test                                           # 用于辅助测试
 └── disjob-worker                                         # Worker代码
 ```
@@ -62,6 +62,7 @@ disjob                                                    # 主项目
 - 提供任务执行快照的自动保存(checkpoint)，让执行信息不丢失，保证因异常中断的任务能得到继续执行
 - 提供执行中的任务控制能力，可随时暂停/取消正在执行中的任务，亦可恢复执行被暂停的任务
 - 提供任务依赖执行的能力，多个任务构建好依赖关系后，任务便按既定的依赖顺序依次执行
+- 支持DAG工作流任务，jobHandler可设置为复杂表达式，例如：A->B,C,(D->E)->F,E->H
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 

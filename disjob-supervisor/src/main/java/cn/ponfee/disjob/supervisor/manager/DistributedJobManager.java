@@ -226,11 +226,8 @@ public class DistributedJobManager extends AbstractJobManager {
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) throws JobException {
         job.verifyBeforeAdd();
-
         job.checkAndDefaultSetting();
-
         super.verifyJob(job);
-
         job.setJobId(generateId());
         parseTriggerConfig(job);
 
@@ -240,9 +237,7 @@ public class DistributedJobManager extends AbstractJobManager {
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
         job.verifyBeforeUpdate();
-
         job.checkAndDefaultSetting();
-
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
         } else {
@@ -301,10 +296,9 @@ public class DistributedJobManager extends AbstractJobManager {
         if (jobMapper.updateNextTriggerTime(job) == 0) {
             // operation conflicted
             return false;
-        } else {
-            createInstance(triggerInstance);
-            return true;
         }
+        createInstance(triggerInstance);
+        return true;
     }
 
     /**
@@ -352,8 +346,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
-    public void changeInstanceState(long instanceId, int targetExecuteState) {
-        ExecuteState toExecuteState = ExecuteState.of(targetExecuteState);
+    public void changeInstanceState(long instanceId, ExecuteState toExecuteState) {
         RunState toRunState = toExecuteState.runState();
         Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, "Cannot force update state to EXECUTING");
         doTransactionLockInSynchronized(instanceId, null, instance -> {

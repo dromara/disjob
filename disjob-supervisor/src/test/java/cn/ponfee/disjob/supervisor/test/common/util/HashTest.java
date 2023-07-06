@@ -160,19 +160,10 @@ public class HashTest {
     }
 
     private static byte[] uuid(UUID uuid) {
-        long most = uuid.getMostSignificantBits(),
-            least = uuid.getLeastSignificantBits();
-        return new byte[]{
-            (byte) (most >>> 56), (byte) (most >>> 48),
-            (byte) (most >>> 40), (byte) (most >>> 32),
-            (byte) (most >>> 24), (byte) (most >>> 16),
-            (byte) (most >>> 8), (byte) (most),
-
-            (byte) (least >>> 56), (byte) (least >>> 48),
-            (byte) (least >>> 40), (byte) (least >>> 32),
-            (byte) (least >>> 24), (byte) (least >>> 16),
-            (byte) (least >>> 8), (byte) (least)
-        };
+        byte[] value = new byte[16];
+        Bytes.put(uuid.getMostSignificantBits(), value, 0);
+        Bytes.put(uuid.getLeastSignificantBits(), value, 8);
+        return value;
     }
 
     @Test

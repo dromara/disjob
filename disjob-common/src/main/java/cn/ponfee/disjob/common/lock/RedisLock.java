@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.lock;
 
-import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -17,12 +16,9 @@ import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -31,11 +27,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Distributes lock based redis(unlock使用redis lua script)
+ * <p>可重入锁的一般场景：当前线程多次调用含有锁操作的函数、当前线程含有锁操作的函数自身调用
  *
  * <pre>
  * class X {
  *   public void m() {
- *     Lock lock = new RedisLock(redisTemplate, "lockKey", 100);
+ *     Lock lock = new RedisLock(redisTemplate, "lockKey", 5000, 30);
  *     lock.lock();  // block until acquire lock or timeout
  *     try {
  *       // ... method body
@@ -47,7 +44,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * class Y {
  *   public void m() {
- *     Lock lock = new RedisLock(redisTemplate, "lockKey", 100);
+ *     Lock lock = new RedisLock(redisTemplate, "lockKey", 5000, 30);
  *     if (!lock.tryLock()) return;
  *     try {
  *       // ... method body
@@ -59,7 +56,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * class Z {
  *   public void m() {
- *     Lock lock = new RedisLock(redisTemplate, "lockKey", 100);
+ *     Lock lock = new RedisLock(redisTemplate, "lockKey", 5000, 30);
  *     // auto timeout release lock
  *     if (!lock.tryLock(100, TimeUnit.MILLISECONDS)) return;
  *     try {
@@ -74,96 +71,90 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Ponfee
  * @see <a href="https://redisson.org">better implementation: redisson</a>
  */
-public class RedisLock implements Lock, java.io.Serializable {
+public class RedisLock implements Lock {
 
-    private static final long serialVersionUID = 7019337086720416828L;
     private static final Logger LOG = LoggerFactory.getLogger(RedisLock.class);
-
-    /**
-     * Redis SET command return success message
-     */
-    private static final byte[] OK_MSG = "OK".getBytes(UTF_8);
-
-    /**
-     * Max timeout 1 day
-     */
-    private static final int MAX_TIMEOUT_MILLIS = 24 * 60 * 60 * 1000;
-
-    /**
-     * Default timeout 5 minutes
-     */
-    private static final int DEFAULT_TIMEOUT_MILLIS = 5 * 60 * 1000;
-
-    /**
-     * Min timeout 9 milliseconds
-     */
-    private static final int MIN_TIMEOUT_MILLIS = 9;
-
-    /**
-     * Min sleep 9 milliseconds
-     */
-    private static final int MIN_SLEEP_MILLIS = 9;
 
     /**
      * <pre>
      * KEYS[1]=key
-     * ARGV[1]=value
-     * ARGV[2]=milliseconds
-     * ARGV[3]=value if current thread held lock
+     * ARGV[1]=pexpire milliseconds
+     * ARGV[2]=lock value
      * </pre>
      *
      * Reentrant lock lua script
      */
-    private static final RedisScript<byte[]> LOCK_SCRIPT = new DefaultRedisScript<>(
-        "local ret = redis.call('set', KEYS[1], ARGV[1], 'NX', 'PX', ARGV[2]);     \n" +
-        "if (type(ret) == 'table') then                                            \n" +
-        "  local e;                                                                \n" +
-        "  for k,v in pairs(ret) do                                                \n" +
-        "    e = v;                                                                \n" +
-        "  end                                                                     \n" +
-        "  if (e == 'OK') then                                                     \n" +
-        "    return e;                                                             \n" +
-        "  end                                                                     \n" +
-        "end                                                                       \n" +
-        "local val = redis.call('get', KEYS[1]);                                   \n" +
-        "if (val == ARGV[3] and redis.call('pexpire', KEYS[1], ARGV[2]) ~= 1) then \n" +
-        "  return nil;                                                             \n" +
-        "end                                                                       \n" +
-        "return val;                                                               \n",
-        byte[].class
-    );
+    private static final String LOCK_LUA_SCRIPT =
+        "if (   redis.call('exists',  KEYS[1]         )==0         \n" +
+        "    or redis.call('hexists', KEYS[1], ARGV[2])==1  ) then \n" +
+        "  redis.call('hincrby', KEYS[1], ARGV[2], 1);             \n" +
+        "  redis.call('pexpire', KEYS[1], ARGV[1]);                \n" +
+        "  return nil;                                             \n" +
+        "end;                                                      \n" +
+        "return redis.call('pttl', KEYS[1]);                       \n";
 
     /**
      * <pre>
      * KEYS[1]=key
-     * ARGV[1]=value if current thread held lock
+     * ARGV[1]=pexpire milliseconds
+     * ARGV[2]=lock value
      * </pre>
      *
-     * Unlock lua script
+     * <p>Unlock lua script
      */
-    private static final RedisScript<Long> UNLOCK_SCRIPT = new DefaultRedisScript<>(
-        "if (redis.call('get',KEYS[1]) == ARGV[1]) then \n" +
-        "  return redis.call('del',KEYS[1]);            \n" +
-        "else                                           \n" +
-        "  return 0;                                    \n" +
-        "end                                            \n",
-        Long.class
-    );
+    private static final String UNLOCK_LUA_SCRIPT =
+        "if (redis.call('hexists', KEYS[1], ARGV[2]) == 0) then  \n" +
+        "  return nil;                                           \n" +
+        "end;                                                    \n" +
+        "local cnt = redis.call('hincrby', KEYS[1], ARGV[2], -1) \n" +
+        "if (cnt > 0) then                                       \n" +
+        "  redis.call('pexpire', KEYS[1], ARGV[1]);              \n" +
+        "  return 0;                                             \n" +
+        "else                                                    \n" +
+        "  redis.call('del', KEYS[1]);                           \n" +
+        "  return 1;                                             \n" +
+        "end;                                                    \n";
 
     /**
-     * Current thread locked value
+     * <pre>
+     * KEYS[1]=key
+     * ARGV[1]=pexpire milliseconds
+     * ARGV[2]=lock value
+     * </pre>
+     *
+     * <p>Renew lua script
      */
-    private static final ThreadLocal<byte[]> LOCK_VALUE = new ThreadLocal<>();
+    private static final String RENEW_LUA_SCRIPT =
+        "if (redis.call('hexists', KEYS[1], ARGV[2]) == 1) then \n" +
+        "  redis.call('pexpire', KEYS[1], ARGV[1]);             \n" +
+        "  return 1;                                            \n" +
+        "end;                                                   \n" +
+        "return 0;                                              \n";
+
+    /**
+     * Reentrant lock lua script
+     */
+    private static final RedisScript<Long> LOCK_SCRIPT = RedisScript.of(LOCK_LUA_SCRIPT, Long.class);
+
+    /**
+     * Unlock lua script
+     */
+    private static final RedisScript<Long> UNLOCK_SCRIPT = RedisScript.of(UNLOCK_LUA_SCRIPT, Long.class);
 
     /**
      * Spring redis template.
      */
-    private final transient RedisTemplate<?, ?> redisTemplate;
+    private final RedisTemplate<?, ?> redisTemplate;
 
     /**
      * Lock key
      */
     private final byte[] lockKey;
+
+    /**
+     * Lock uuid value
+     */
+    private final String lockUuid;
 
     /**
      * Lock timeout, prevent deadlock.
@@ -175,32 +166,23 @@ public class RedisLock implements Lock, java.io.Serializable {
      */
     private final long sleepMillis;
 
-    public RedisLock(RedisTemplate<?, ?> redisTemplate, String lockKey) {
-        this(redisTemplate, lockKey, DEFAULT_TIMEOUT_MILLIS);
-    }
-
-    public RedisLock(RedisTemplate<?, ?> redisTemplate, String lockKey, int timeoutMillis) {
-        this(redisTemplate, lockKey, timeoutMillis, MIN_SLEEP_MILLIS);
-    }
-
     /**
      * Constructor
      *
      * @param redisTemplate spring redis template
      * @param lockKey       the lock key
      * @param timeoutMillis lock timeout millis seconds(prevent deadlock)
-     * @param sleepMillis   wait sleep millis seconds
+     * @param sleepMillis   wait sleep milliseconds
      */
-    public RedisLock(RedisTemplate<?, ?> redisTemplate, String lockKey, int timeoutMillis, int sleepMillis) {
+    RedisLock(RedisTemplate<?, ?> redisTemplate, String lockKey, long timeoutMillis, long sleepMillis) {
         Assert.notNull(redisTemplate, "Redis template cannot be null.");
         Assert.hasText(lockKey, "Lock key cannot be empty.");
 
         this.redisTemplate = redisTemplate;
-        // add key prefix "lock:"
         this.lockKey = ("lock:" + lockKey).getBytes(UTF_8);
-        timeoutMillis = Numbers.bound(timeoutMillis, MIN_TIMEOUT_MILLIS, MAX_TIMEOUT_MILLIS);
+        this.lockUuid = ObjectUtils.uuid32() + ":";
         this.timeoutMillis = Long.toString(timeoutMillis).getBytes(UTF_8);
-        this.sleepMillis = Numbers.bound(sleepMillis, MIN_SLEEP_MILLIS, timeoutMillis);
+        this.sleepMillis = Math.min(sleepMillis, timeoutMillis);
     }
 
     /**
@@ -258,7 +240,7 @@ public class RedisLock implements Lock, java.io.Serializable {
      * @throws InterruptedException if interrupted
      */
     @Override
-    public boolean tryLock(long timeout, @Nonnull TimeUnit unit) throws InterruptedException {
+    public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
         long end = System.nanoTime() + unit.toNanos(timeout);
         for (; ; ) {
             if (Thread.interrupted()) {
@@ -313,11 +295,7 @@ public class RedisLock implements Lock, java.io.Serializable {
      * @return if {@code true} the current thread held locked
      */
     public boolean isHeldByCurrentThread() {
-        byte[] value = LOCK_VALUE.get();
-        if (value == null) {
-            return false;
-        }
-        return Arrays.equals(value, redisTemplate.execute((RedisCallback<byte[]>) conn -> conn.get(lockKey)));
+        return redisTemplate.execute((RedisCallback<byte[]>) conn -> conn.hGet(lockKey, getLockValue())) != null;
     }
 
     /**
@@ -333,7 +311,7 @@ public class RedisLock implements Lock, java.io.Serializable {
     /**
      * Force unlock
      */
-    public void funlock() {
+    public void forceUnlock() {
         redisTemplate.execute((RedisCallback<Long>) conn -> conn.del(lockKey));
     }
 
@@ -345,44 +323,26 @@ public class RedisLock implements Lock, java.io.Serializable {
      * @return {@code true} is acquired
      */
     private boolean acquire() {
-        final byte[] lockValue = ObjectUtils.uuid();
+        final byte[][] keysAndArgs = {lockKey, timeoutMillis, getLockValue()};
 
-        /*
-        String ret = redisTemplate.execute((RedisCallback<String>) conn ->
-            (String) conn.execute("SET", lockKey, lockValue, "NX".getBytes(), "PX".getBytes(), timeoutMillis)
-        );
-        if ("OK".equals(ret)) {
-            LOCK_VALUE.set(lockValue);
-            return true;
-        }
-        return false;
-        */
-
-        byte[] currVal = LOCK_VALUE.get();
-        final byte[][] keysAndArgs = {lockKey, lockValue, timeoutMillis, currVal};
-        byte[] ret = redisTemplate.execute((RedisCallback<byte[]>) conn -> {
+        // ret: null-获取锁成功；x-锁被其它线程持有(pttl的返回值)；
+        Long ret = redisTemplate.execute((RedisCallback<Long>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
                 throw new UnsupportedOperationException("Unsupported pipelined or queueing eval redis lua script.");
             }
             try {
-                return conn.evalSha(LOCK_SCRIPT.getSha1(), ReturnType.VALUE, 1, keysAndArgs);
+                return conn.evalSha(LOCK_SCRIPT.getSha1(), ReturnType.INTEGER, 1, keysAndArgs);
             } catch (Exception e) {
                 if (exceptionContainsNoScriptError(e)) {
                     LOG.info(e.getMessage());
-                    return conn.eval(LOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.VALUE, 1, keysAndArgs);
+                    return conn.eval(LOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.INTEGER, 1, keysAndArgs);
                 } else {
                     return ExceptionUtils.rethrow(e);
                 }
             }
         });
-        if (ret == null) {
-            return false;
-        }
-        if (Arrays.equals(ret, OK_MSG)) {
-            LOCK_VALUE.set(lockValue);
-            return true;
-        }
-        return Arrays.equals(ret, currVal);
+
+        return ret == null;
     }
 
     /**
@@ -391,12 +351,9 @@ public class RedisLock implements Lock, java.io.Serializable {
      * @return {@code true} is released
      */
     private boolean release() {
-        byte[] lockValue = LOCK_VALUE.get();
-        if (lockValue == null) {
-            return true;
-        }
+        final byte[][] keysAndArgs = {lockKey, timeoutMillis, getLockValue()};
 
-        final byte[][] keysAndArgs = {lockKey, lockValue};
+        // ret: null-当前线程未持有锁；0-当前线程有重入且非最后一次释放锁；1-当前线程最后一次释放锁成功；
         Long ret = redisTemplate.execute((RedisCallback<Long>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
                 // 在exec/closePipeline中会添加lua script sha1，所以这里只需要使用eval
@@ -415,11 +372,7 @@ public class RedisLock implements Lock, java.io.Serializable {
             }
         });
 
-        // <key, value>为String时可使用此方法
-        // Long ret = ((RedisTemplate<String, String>) redisTemplate).execute(UNLOCK_SCRIPT_OBJECT, Arrays.asList("key"), "val");
-
-        LOCK_VALUE.remove();
-        return ret != null && ret == 1L;
+        return ret != null && ret == 1;
     }
 
     public static boolean exceptionContainsNoScriptError(Throwable e) {
@@ -438,8 +391,12 @@ public class RedisLock implements Lock, java.io.Serializable {
         return false;
     }
 
+    private byte[] getLockValue() {
+        return (lockUuid + Thread.currentThread().getId()).getBytes(UTF_8);
+    }
+
     private long computeSleepMillis(int round) {
-        return round < 15 ? sleepMillis : Math.min(sleepMillis * 30, 300);
+        return round < 10 ? sleepMillis : Math.min(sleepMillis * round, 200);
     }
 
 }

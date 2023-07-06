@@ -113,6 +113,7 @@ public class WorkerStartup implements Startable {
                                                  WorkerRegistry workerRegistry,
                                                  ObjectMapper objectMapper) {
         if (supervisorService != null) {
+            // 此Worker同时也是Supervisor身份，则本地调用，通过动态代理增加重试能力
             // cn.ponfee.disjob.supervisor.rpc.SupervisorServiceProvider
             ClassLoader classLoader = supervisorService.getClass().getClassLoader();
             Class<?>[] interfaces = {SupervisorService.class};

@@ -4,46 +4,12 @@
 
   <sql id="Table_Name">sched_job</sql>
 
-  <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedJob">
-    <result column="job_id" jdbcType="BIGINT" property="jobId" />
-    <result column="job_group" jdbcType="VARCHAR" property="jobGroup" />
-    <result column="job_name" jdbcType="VARCHAR" property="jobName" />
-    <result column="job_handler" jdbcType="LONGVARCHAR" property="jobHandler" />
-    <result column="job_state" jdbcType="TINYINT" property="jobState" />
-    <result column="job_type" jdbcType="TINYINT" property="jobType" />
-    <result column="job_param" jdbcType="LONGVARCHAR" property="jobParam" />
-    <result column="retry_type" jdbcType="TINYINT" property="retryType" />
-    <result column="retry_count" jdbcType="TINYINT" property="retryCount" />
-    <result column="retry_interval" jdbcType="INTEGER" property="retryInterval" />
-    <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
-    <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
-    <result column="trigger_type" jdbcType="TINYINT" property="triggerType" />
-    <result column="trigger_value" jdbcType="VARCHAR" property="triggerValue" />
-    <result column="execute_timeout" jdbcType="INTEGER" property="executeTimeout" />
-    <result column="collision_strategy" jdbcType="TINYINT" property="collisionStrategy" />
-    <result column="misfire_strategy" jdbcType="TINYINT" property="misfireStrategy" />
-    <result column="route_strategy" jdbcType="TINYINT" property="routeStrategy" />
-    <result column="weight_score" jdbcType="TINYINT" property="weightScore" />
-    <result column="remark" jdbcType="VARCHAR" property="remark" />
-    <result column="last_trigger_time" jdbcType="BIGINT" property="lastTriggerTime" />
-    <result column="next_trigger_time" jdbcType="BIGINT" property="nextTriggerTime" />
-    <result column="next_scan_time" jdbcType="TIMESTAMP" property="nextScanTime" />
-    <result column="failed_scan_count" jdbcType="INTEGER" property="failedScanCount" />
-    <result column="alarm_subscribers" jdbcType="VARCHAR" property="alarmSubscribers" />
-    <result column="is_deleted" jdbcType="BOOLEAN" property="deleted" />
-    <result column="version" jdbcType="INTEGER" property="version" />
-    <result column="updated_by" jdbcType="VARCHAR" property="updatedBy" />
-    <result column="created_by" jdbcType="VARCHAR" property="createdBy" />
-    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
-    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
-  </resultMap>
-
   <sql id="Base_Column_List">
     job_id, job_group, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value, execute_timeout,
     collision_strategy, misfire_strategy, route_strategy, weight_score, remark, last_trigger_time,
     next_trigger_time, next_scan_time, failed_scan_count, alarm_subscribers, version,
-    IFNULL(is_deleted, 1) is_deleted, updated_by, created_by, updated_at, created_at
+    IFNULL(is_deleted, 1) deleted, updated_by, created_by, updated_at, created_at
   </sql>
 
   <!-- ********************use int test start******************** -->
@@ -62,7 +28,7 @@
   </update>
   <!-- ********************use int test end******************** -->
 
-  <select id="findByJobIds" parameterType="collection" resultMap="BaseResultMap">
+  <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
@@ -157,14 +123,14 @@
       AND is_deleted = 0
   </update>
 
-  <select id="getByJobId" parameterType="_long" resultMap="BaseResultMap">
+  <select id="getByJobId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND is_deleted = 0
   </select>
 
-  <select id="findBeTriggering" resultMap="BaseResultMap">
+  <select id="findBeTriggering" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE job_state = 1

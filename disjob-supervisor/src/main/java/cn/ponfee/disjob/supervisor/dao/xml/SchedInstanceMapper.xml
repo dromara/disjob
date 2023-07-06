@@ -4,25 +4,6 @@
 
   <sql id="Table_Name">sched_instance</sql>
 
-  <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedInstance">
-    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
-    <result column="rnstance_id" jdbcType="BIGINT" property="rnstanceId" />
-    <result column="pnstance_id" jdbcType="BIGINT" property="pnstanceId" />
-    <result column="wnstance_id" jdbcType="BIGINT" property="wnstanceId" />
-    <result column="job_id" jdbcType="BIGINT" property="jobId" />
-    <result column="trigger_time" jdbcType="BIGINT" property="triggerTime" />
-    <result column="run_type" jdbcType="TINYINT" property="runType" />
-    <result column="run_state" jdbcType="TINYINT" property="runState" />
-    <result column="run_start_time" jdbcType="TIMESTAMP" property="runStartTime" />
-    <result column="run_end_time" jdbcType="TIMESTAMP" property="runEndTime" />
-    <result column="run_duration" jdbcType="BIGINT" property="runDuration" />
-    <result column="retried_count" jdbcType="TINYINT" property="retriedCount" />
-    <result column="attach" jdbcType="VARCHAR" property="attach" />
-    <result column="version" jdbcType="INTEGER" property="version" />
-    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
-    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
-  </resultMap>
-
   <sql id="Base_Column_List">
     instance_id, rnstance_id, pnstance_id, wnstance_id,
     job_id, trigger_time, run_type, run_state, run_start_time,
@@ -62,13 +43,13 @@
     )
   </insert>
 
-  <select id="getByInstanceId" parameterType="_long" resultMap="BaseResultMap">
+  <select id="getByInstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="getByJobIdAndTriggerTimeAndRunType" resultMap="BaseResultMap">
+  <select id="getByJobIdAndTriggerTimeAndRunType" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE job_id=#{jobId,jdbcType=BIGINT}
@@ -126,7 +107,7 @@
       AND #{toState,jdbcType=TINYINT} != 20
   </update>
 
-  <select id="findExpireState" resultMap="BaseResultMap">
+  <select id="findExpireState" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE run_state = #{runState,jdbcType=TINYINT}
@@ -137,7 +118,7 @@
     LIMIT #{size}
   </select>
 
-  <select id="findUnterminatedRetry" parameterType="_long" resultMap="BaseResultMap">
+  <select id="findUnterminatedRetry" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE rnstance_id = #{rnstanceId,jdbcType=BIGINT}
@@ -145,7 +126,7 @@
       AND run_state &lt; 40
   </select>
 
-  <select id="findWorkflowNode" parameterType="_long" resultMap="BaseResultMap">
+  <select id="findWorkflowNode" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
@@ -160,7 +141,7 @@
       AND version = #{version,jdbcType=INTEGER}
   </update>
 
-  <select id="lock" parameterType="_long" resultMap="BaseResultMap">
+  <select id="lock" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}

@@ -127,7 +127,7 @@ public class ApiController extends BaseController {
         ExecuteState.of(targetExecuteState);
 
         log.info("Do force change state {} | {}", instanceId, targetExecuteState);
-        jobManager.changeInstanceState(instanceId, targetExecuteState);
+        jobManager.changeInstanceState(instanceId, ExecuteState.of(targetExecuteState));
         return Result.success();
     }
 

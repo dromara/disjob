@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.test.redis;
 
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import redis.embedded.RedisServer;
 
 /**
@@ -26,7 +25,7 @@ public final class EmbeddedRedisServerKstyrc {
 
     public static void main(String[] args) {
         RedisServer redisServer = start(6379, 6380);
-        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.checked(redisServer::stop)));
+        Runtime.getRuntime().addShutdownHook(new Thread(redisServer::stop));
     }
 
     public static RedisServer start(int masterPort, int slavePort) {

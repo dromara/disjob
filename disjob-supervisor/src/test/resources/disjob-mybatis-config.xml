@@ -6,8 +6,7 @@
     <setting name="lazyLoadingEnabled" value="false"/>
     <setting name="mapUnderscoreToCamelCase" value="true"/>
     <setting name="defaultFetchSize" value="100"/>
-    <setting name="defaultStatementTimeout" value="3000"/>
-    <!--<setting name="logImpl" value="org.apache.ibatis.logging.stdout.StdOutImpl"/>-->
+    <setting name="defaultStatementTimeout" value="25"/>
   </settings>
 
 </configuration>

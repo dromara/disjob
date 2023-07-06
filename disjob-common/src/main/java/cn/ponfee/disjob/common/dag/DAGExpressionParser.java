@@ -35,9 +35,9 @@ import java.util.stream.Stream;
  * Parse DAG expression to graph
  *
  * <pre>
- * new DAGParser("(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)").parse();
+ * 1、new DAGParser("(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)").parse();
  *
- * (A->((B->C->D),(A->F))->(G,H,X)->J)
+ * 2、(A->((B->C->D),(A->F))->(G,H,X)->J)
  *   <0:0:Start -> 1:1:A>
  *   <1:1:A -> 1:1:B>
  *   <1:1:A -> 1:2:A>
@@ -55,10 +55,21 @@ import java.util.stream.Stream;
  *   <1:1:X -> 1:1:J>
  *   <1:1:J -> 0:0:End>
  *
- * (A->Y)
+ * 3、(A->Y)
  *   <0:0:Start -> 2:3:A>
  *   <2:3:A -> 2:1:Y>
  *   <2:1:Y -> 0:0:End>
+ *
+ * 4、无法支持：
+ *   Start -> A
+ *   Start -> B
+ *   A     -> C
+ *   A     -> D
+ *   B     -> D
+ *   B     -> E
+ *   C     -> End
+ *   D     -> End
+ *   E     -> End
  * </pre>
  *
  * @author Ponfee

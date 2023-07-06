@@ -28,6 +28,7 @@ public final class Bytes {
     private static final char[] HEX_UPPER_CODES = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
     // -----------------------------------------------------------------hexEncode/hexDecode
+
     public static void hexEncode(char[] charArray, int i, byte b) {
         charArray[  i] = HEX_LOWER_CODES[(0xF0 & b) >>> 4];
         charArray[++i] = HEX_LOWER_CODES[ 0x0F & b       ];
@@ -46,9 +47,9 @@ public final class Bytes {
 
     /**
      * encode the byte array the hex string
-     * @param bytes
-     * @param lowercase
-     * @return
+     * @param bytes the byte array
+     * @param lowercase the boolean
+     * @return string
      */
     public static String hexEncode(byte[] bytes, boolean lowercase) {
         //new BigInteger(1, bytes).toString(16);
@@ -94,8 +95,8 @@ public final class Bytes {
      *   127: 01111111
      *  -128: 10000000
      *
-     * @param array
-     * @return
+     * @param array the byte array
+     * @return binary string
      */
     public static String toBinary(byte... array) {
         if (array == null || array.length == 0) {
@@ -184,10 +185,9 @@ public final class Bytes {
 
     // -----------------------------------------------------------------int
     public static byte[] toBytes(int value) {
-        return new byte[] {
-            (byte) (value >>> 24), (byte) (value >>> 16),
-            (byte) (value >>>  8), (byte) (value       )
-        };
+        byte[] bytes = new byte[4];
+        put(value, bytes, 0);
+        return bytes;
     }
 
     public static int toInt(byte[] bytes) {
@@ -208,12 +208,9 @@ public final class Bytes {
      * @return byte array
      */
     public static byte[] toBytes(long value) {
-        return new byte[] {
-            (byte) (value >>> 56), (byte) (value >>> 48),
-            (byte) (value >>> 40), (byte) (value >>> 32),
-            (byte) (value >>> 24), (byte) (value >>> 16),
-            (byte) (value >>>  8), (byte) (value       )
-        };
+        byte[] bytes = new byte[8];
+        put(value, bytes, 0);
+        return bytes;
     }
 
     public static String toHex(long value) {
@@ -255,7 +252,7 @@ public final class Bytes {
     /**
      * convert byte array to long number
      * @param bytes the byte array
-     * @return
+     * @return long value
      */
     public static long toLong(byte[] bytes) {
         return toLong(bytes, 0);
@@ -265,14 +262,14 @@ public final class Bytes {
     /**
      * Convert a BigDecimal value to a byte array
      *
-     * @param val
+     * @param val the BigDecimal value
      * @return the byte array
      */
     public static byte[] toBytes(BigDecimal val) {
         byte[] valueBytes = val.unscaledValue().toByteArray();
         byte[] result = new byte[valueBytes.length + Integer.BYTES];
-        int offset = putInt(val.scale(), result, 0);
-        System.arraycopy(valueBytes, 0, result, offset, valueBytes.length);
+        put(val.scale(), result, 0);
+        System.arraycopy(valueBytes, 0, result, 4, valueBytes.length);
         return result;
     }
 
@@ -282,21 +279,24 @@ public final class Bytes {
      * @param val    the int value
      * @param bytes  the byte array
      * @param offset the byte array start offset
-     * @return int of next offset
      */
-    public static int putInt(int val, byte[] bytes, int offset) {
-        bytes[  offset] = (byte) (val >>> 24);
-        bytes[++offset] = (byte) (val >>> 16);
-        bytes[++offset] = (byte) (val >>>  8);
-        bytes[++offset] = (byte) (val       );
-        return ++offset;
+    public static void put(int val, byte[] bytes, int offset) {
+        for (int i = 3; i >= 0; i--, offset++) {
+            bytes[offset] = (byte) (val >>> (i << 3));
+        }
+    }
+
+    public static void put(long val, byte[] bytes, int offset) {
+        for (int i = 7; i >= 0; i--, offset++) {
+            bytes[offset] = (byte) (val >>> (i << 3));
+        }
     }
 
     /**
      * Converts a byte array to a BigDecimal
      *
-     * @param bytes
-     * @return the char value
+     * @param bytes the byte array
+     * @return BigDecimal
      */
     public static BigDecimal toBigDecimal(byte[] bytes) {
         return toBigDecimal(bytes, 0, bytes.length);
@@ -305,14 +305,13 @@ public final class Bytes {
     /**
      * Converts a byte array to a BigDecimal value
      *
-     * @param bytes
-     * @param offset
-     * @param length
-     * @return the char value
+     * @param bytes  the byte array
+     * @param offset the offset
+     * @param length the length
+     * @return BigDecimal
      */
-    public static BigDecimal toBigDecimal(byte[] bytes, int offset, final int length) {
-        if (bytes == null || length < Integer.BYTES + 1 ||
-            (offset + length > bytes.length)) {
+    public static BigDecimal toBigDecimal(byte[] bytes, int offset, int length) {
+        if (bytes == null || length < (Integer.BYTES + 1) || (offset + length) > bytes.length) {
             return null;
         }
 

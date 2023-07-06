@@ -2,12 +2,21 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
 
-    <settings>
-        <setting name="lazyLoadingEnabled" value="false"/>
-        <setting name="mapUnderscoreToCamelCase" value="true"/>
-        <setting name="defaultFetchSize" value="100"/>
-        <setting name="defaultStatementTimeout" value="3000"/>
-        <!--<setting name="logImpl" value="org.apache.ibatis.logging.stdout.StdOutImpl"/>-->
-    </settings>
+  <settings>
+    <!-- 延迟加载的全局开关，当开启时所有关联对象都会延迟加载，默认false -->
+    <setting name="lazyLoadingEnabled" value="false"/>
+
+    <!-- 下划线转驼峰，默认false -->
+    <setting name="mapUnderscoreToCamelCase" value="true"/>
+
+    <!-- 为驱动的结果集获取数量（fetchSize）设置一个建议值，此参数只可以在查询设置中被覆盖。默认为null -->
+    <setting name="defaultFetchSize" value="100"/>
+
+    <!-- 超时时间，它决定数据库驱动等待数据库响应的秒数。默认为null -->
+    <setting name="defaultStatementTimeout" value="25"/>
+
+    <!-- 指定 MyBatis 所用日志的具体实现，未指定时将自动查找。 -->
+    <!--<setting name="logImpl" value="SLF4J"/>-->
+  </settings>
 
 </configuration>

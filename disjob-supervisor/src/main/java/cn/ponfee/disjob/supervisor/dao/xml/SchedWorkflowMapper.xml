@@ -4,15 +4,6 @@
 
   <sql id="Table_Name">sched_workflow</sql>
 
-  <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedWorkflow">
-    <result column="wnstance_id" jdbcType="BIGINT" property="wnstanceId" />
-    <result column="cur_node" jdbcType="VARCHAR" property="curNode" />
-    <result column="pre_node" jdbcType="VARCHAR" property="preNode" />
-    <result column="sequence" jdbcType="INTEGER" property="sequence" />
-    <result column="run_state" jdbcType="TINYINT" property="runState" />
-    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
-  </resultMap>
-
   <sql id="Base_Column_List">
     wnstance_id, cur_node, pre_node, sequence, run_state, instance_id
   </sql>
@@ -38,7 +29,7 @@
     </foreach>
   </insert>
 
-  <select id="findByWnstanceId" parameterType="_long" resultMap="BaseResultMap">
+  <select id="findByWnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedWorkflow">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
@@ -60,7 +51,7 @@
       </if>
   </update>
 
-  <update id="resumeWaiting">
+  <update id="resumeWaiting" parameterType="_long">
     UPDATE <include refid="Table_Name" />
     SET run_state = 10
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}

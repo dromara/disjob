@@ -11,6 +11,7 @@ package cn.ponfee.disjob.samples.common.handler;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.model.SchedTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +35,10 @@ public class NoopJobHandler extends JobHandler<Void> {
 
     @Override
     public Result<Void> execute(Checkpoint checkpoint) throws Exception {
-        LOG.info("task execute start: {}", task().getTaskId());
+        SchedTask task = task();
+        LOG.info("task execute start: {}", task.getTaskId());
         Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
-        LOG.info("task execute done: {}", task().getTaskId());
+        LOG.info("task execute done: {}", task.getTaskId());
         return Result.success();
     }
 

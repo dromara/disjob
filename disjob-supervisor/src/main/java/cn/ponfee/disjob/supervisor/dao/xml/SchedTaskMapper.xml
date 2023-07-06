@@ -4,27 +4,6 @@
 
   <sql id="Table_Name">sched_task</sql>
 
-  <resultMap id="BaseResultMap" type="cn.ponfee.disjob.core.model.SchedTask">
-    <result column="task_id" jdbcType="BIGINT" property="taskId" />
-    <result column="instance_id" jdbcType="BIGINT" property="instanceId" />
-    <result column="task_no" jdbcType="INTEGER" property="taskNo" />
-    <result column="task_count" jdbcType="INTEGER" property="taskCount" />
-    <result column="execute_state" jdbcType="TINYINT" property="executeState" />
-    <result column="worker" jdbcType="VARCHAR" property="worker" />
-    <result column="version" jdbcType="INTEGER" property="version" />
-  </resultMap>
-
-  <resultMap id="LargeResultMap" type="cn.ponfee.disjob.core.model.SchedTask" extends="BaseResultMap" >
-    <result column="execute_start_time" jdbcType="TIMESTAMP" property="executeStartTime" />
-    <result column="execute_end_time" jdbcType="TIMESTAMP" property="executeEndTime" />
-    <result column="execute_duration" jdbcType="BIGINT" property="executeDuration" />
-    <result column="task_param" jdbcType="LONGVARCHAR" property="taskParam" />
-    <result column="execute_snapshot" jdbcType="LONGVARCHAR" property="executeSnapshot" />
-    <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
-    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
-    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
-  </resultMap>
-
   <sql id="Base_Column_List">
     task_id, instance_id, task_no, task_count, execute_state, worker, version
   </sql>
@@ -62,19 +41,19 @@
     </foreach>
   </insert>
 
-  <select id="getByTaskId" parameterType="_long" resultMap="LargeResultMap">
+  <select id="getByTaskId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
-  <select id="findBaseByInstanceId" parameterType="_long" resultMap="BaseResultMap">
+  <select id="findBaseByInstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="findLargeByInstanceId" parameterType="_long" resultMap="LargeResultMap">
+  <select id="findLargeByInstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -146,7 +125,7 @@
   </delete>
 
   <!-- allowMultiQueries=true -->
-  <update id="batchUpdateWorker">
+  <update id="batchUpdateWorker" parameterType="collection">
     <foreach collection="collection" item="item" separator=";">
       UPDATE <include refid="Table_Name" />
       SET worker=#{item.worker,jdbcType=VARCHAR},

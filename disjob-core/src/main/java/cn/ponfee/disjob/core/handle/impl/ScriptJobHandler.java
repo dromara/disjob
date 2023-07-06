@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.util.ProcessUtils;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
@@ -41,17 +42,18 @@ public class ScriptJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(Checkpoint checkpoint) throws Exception {
-        ScriptParam scriptParam = Jsons.fromJson(task().getTaskParam(), ScriptParam.class);
+        final SchedTask task = task();
+        ScriptParam scriptParam = Jsons.fromJson(task.getTaskParam(), ScriptParam.class);
         Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
         Charset charset = Files.charset(scriptParam.charset);
 
-        String scriptFileName = scriptParam.type.buildFileName(task().getTaskId());
+        String scriptFileName = scriptParam.type.buildFileName(task.getTaskId());
         String scriptPath = prepareScriptFile(scriptParam.script, scriptFileName, charset);
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
-        return ProcessUtils.complete(process, charset, task(), log);
+        return ProcessUtils.complete(process, charset, task, log);
     }
 
     public enum ScriptType {

@@ -118,14 +118,20 @@ public abstract class SpringBootTestBase<T> {
 
     // --------------------------------------annotated junit methods definition
 
+    /**
+     * 一个测试类执行一次
+     */
     @BeforeAll
     public static void beforeClass() {
         System.out.println("before test class: " + Dates.format(new Date()));
     }
 
+    /**
+     * 一个测试类执行一次，先于Spring初始化
+     */
     @BeforeAll
     public final void beforeAll0() {
-        log.info("before test all");
+        log.info("before test all: " + getClass());
         beforeAll();
     }
 
@@ -153,7 +159,7 @@ public abstract class SpringBootTestBase<T> {
 
     @AfterAll
     public final void afterAll0() {
-        log.info("after test all");
+        log.info("after test all: " + getClass());
         afterAll();
     }
 

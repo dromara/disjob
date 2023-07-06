@@ -50,9 +50,12 @@ public class DatesTest {
         Assertions.assertFalse(isValidDate("2020-xx-00 00:00:00", DATETIME_PATTERN));
 
         Assertions.assertTrue(isZeroDate(toDate(ZERO_DATE_TIME)));
+        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATE_TIME, DATETIME_PATTERN)));
+        Assertions.assertEquals("0002-11-30 00:00:00.000", format(ofTimeMillis(-62170185600000L), DATEFULL_PATTERN));
+        Assertions.assertEquals("0002-11-30 00:00:00.000", format(toDate(ZERO_DATE_TIME), DATEFULL_PATTERN));
+
         Assertions.assertEquals("1970-01-01 08:00:01", format(ofUnixTimestamp(1)));
         Assertions.assertEquals("1970-01-01 08:00:00", format(ofTimeMillis(1)));
-        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATE_TIME, DATETIME_PATTERN)));
         Assertions.assertEquals(19, now(DATETIME_PATTERN).length());
         Assertions.assertEquals(str, format(toDate(str), DATEFULL_PATTERN));
         Assertions.assertEquals(str, format(date, DATEFULL_PATTERN));
