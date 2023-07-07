@@ -25,11 +25,11 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 
 /**
  * NetUtils Test
@@ -38,9 +38,9 @@ public class NetUtilsTest {
 
     @Test
     void testGetAvailablePort() {
-        assertThat(NetUtils.findAvailablePort(), greaterThan(0));
-        assertThat(NetUtils.findAvailablePort(12345), greaterThanOrEqualTo(12345));
-        assertThat(NetUtils.findAvailablePort(-1), greaterThanOrEqualTo(0));
+        assertThat(NetUtils.findAvailablePort()).isGreaterThan(0);
+        assertThat(NetUtils.findAvailablePort(12345)).isGreaterThanOrEqualTo(12345);
+        assertThat(NetUtils.findAvailablePort(-1)).isGreaterThanOrEqualTo(0);
     }
 
     @Test
@@ -73,7 +73,8 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isValidLocalHost("128.0.0.1"));
     }
 
-    @Test @Disabled
+    @Test
+    @Disabled
     void testIsConnectable() {
         assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 100));
         assertFalse(NetUtils.isConnectableHostPort("www.unknownhostname.com", 80, 100));
@@ -82,40 +83,45 @@ public class NetUtilsTest {
     @Test
     void testIsValidAddress() {
         assertFalse(NetUtils.isValidIpv4Address(null));
-        InetAddress address = mock(InetAddress.class);
-        when(address.isLoopbackAddress()).thenReturn(true);
-        assertFalse(NetUtils.isValidIpv4Address(address));
-        address = mock(InetAddress.class);
-        when(address.getHostAddress()).thenReturn("localhost");
-        assertFalse(NetUtils.isValidIpv4Address(address));
-        address = mock(InetAddress.class);
-        when(address.getHostAddress()).thenReturn("0.0.0.0");
-        assertFalse(NetUtils.isValidIpv4Address(address));
-        address = mock(InetAddress.class);
-        when(address.getHostAddress()).thenReturn("127.0.0.1");
-        assertFalse(NetUtils.isValidIpv4Address(address));
-        address = mock(InetAddress.class);
-        when(address.getHostAddress()).thenReturn("1.2.3.4");
-        assertTrue(NetUtils.isValidIpv4Address(address));
+
+        InetAddress address1 = mock(InetAddress.class);
+        when(address1.isLoopbackAddress()).thenReturn(true);
+        assertFalse(NetUtils.isValidIpv4Address(address1));
+
+        InetAddress address2 = mock(InetAddress.class);
+        when(address2.getHostAddress()).thenReturn("localhost");
+        assertFalse(NetUtils.isValidIpv4Address(address2));
+
+        InetAddress address3 = mock(InetAddress.class);
+        when(address3.getHostAddress()).thenReturn("0.0.0.0");
+        assertFalse(NetUtils.isValidIpv4Address(address3));
+
+        InetAddress address4 = mock(InetAddress.class);
+        when(address4.getHostAddress()).thenReturn("127.0.0.1");
+        assertFalse(NetUtils.isValidIpv4Address(address4));
+
+        InetAddress address5 = mock(InetAddress.class);
+        when(address5.getHostAddress()).thenReturn("1.2.3.4");
+        assertTrue(NetUtils.isValidIpv4Address(address5));
     }
 
     @Test
     void testGetLocalHost() {
-        assertNotNull(NetUtils.getLocalHost());
-        System.out.println(NetUtils.getLocalHost());
+        String localHost = NetUtils.getLocalHost();
+        System.out.println("Local host: " + localHost);
+        assertNotNull(localHost);
     }
 
     @Test
     void testGetHostName() {
-        String hostName = NetUtils.getHostName("127.0.0.1");
-        assertNotNull(hostName);
+        assertNotNull(NetUtils.getHostName("127.0.0.1"));
     }
 
     @Test
     void testGetIpByHost() {
-        assertThat(NetUtils.getHostAddress("localhost"), equalTo("127.0.0.1"));
-        assertThat(NetUtils.getHostAddress("127.0.0.1"), equalTo("127.0.0.1"));
-        assertThat(NetUtils.getHostAddress("job.local"), equalTo("job.local"));
+        assertEquals(NetUtils.getHostAddress("localhost"), "127.0.0.1");
+        assertEquals(NetUtils.getHostAddress("127.0.0.1"), "127.0.0.1");
+        assertEquals(NetUtils.getHostAddress("job.local"), "job.local");
         assertEquals(NetUtils.getHostName("www.baidu.com"), "www.baidu.com");
         assertTrue(NetUtils.isValidIpAddress("14.215.177.38"));
     }
@@ -156,7 +162,7 @@ public class NetUtilsTest {
             this.setIgnoredInterfaces(Pattern.quote(networkInterface.getDisplayName()));
             NetworkInterface newNetworkInterface = NetUtils.findValidNetworkInterface();
             if (newNetworkInterface != null) {
-                assertTrue(!networkInterface.getDisplayName().equals(newNetworkInterface.getDisplayName()));
+                assertNotEquals(networkInterface.getDisplayName(), newNetworkInterface.getDisplayName());
             }
         } finally {
             // recover the origin ignored interfaces
@@ -178,7 +184,7 @@ public class NetUtilsTest {
                 this.setIgnoredInterfaces(ignoredInterfaces);
                 NetworkInterface newNetworkInterface = NetUtils.findValidNetworkInterface();
                 if (newNetworkInterface != null) {
-                    assertTrue(!newNetworkInterface.getDisplayName().startsWith(displayName.substring(0, 1)));
+                    assertFalse(newNetworkInterface.getDisplayName().startsWith(displayName.substring(0, 1)));
                 }
             }
         } finally {

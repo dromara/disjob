@@ -135,8 +135,8 @@
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
+    <!-- Generate annotated @Mapper interface implementation class -->
     <dependency>
-      <!-- Generate annotated @Mapper interface implementation class -->
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct-processor</artifactId>
       <version>${mapstruct.version}</version>
@@ -179,14 +179,10 @@
       <artifactId>junit-platform-runner</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- assertj > hamcrest -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -142,7 +142,7 @@ public class JavaUtilDateFormat extends DateFormat {
             if (length < 24) {
                 source = padding(source) + "Z";
             }
-            if (hasTSeparator(source)) {
+            if (isTSeparator(source)) {
                 return (isCrossbar(source) ? PATTERN_63 : PATTERN_64).parse(source);
             } else {
                 return (isCrossbar(source) ? PATTERN_61 : PATTERN_62).parse(source);
@@ -172,21 +172,21 @@ public class JavaUtilDateFormat extends DateFormat {
                 break;
             case 14: return PATTERN_31.parse(source);
             case 19:
-                if (hasTSeparator(source)) {
+                if (isTSeparator(source)) {
                     return (isCrossbar(source) ? PATTERN_43 : PATTERN_44).parse(source);
                 } else {
                     return (isCrossbar(source) ? PATTERN_41 : PATTERN_42).parse(source);
                 }
             case 17: return PATTERN_32.parse(source);
             case 23:
-                if (hasTSeparator(source)) {
+                if (isTSeparator(source)) {
                     return (isCrossbar(source) ? PATTERN_53 : PATTERN_54).parse(source);
                 } else {
                     return (isCrossbar(source) ? PATTERN_51 : PATTERN_52).parse(source);
                 }
             case 26:
             case 29:
-                if (hasTSeparator(source)) {
+                if (isTSeparator(source)) {
                     // 2021-12-31T17:01:01.000+08、2021-12-31T17:01:01.000+08:00
                     return (isCrossbar(source) ? PATTERN_73 : PATTERN_74).parse(source);
                 } else {
@@ -293,7 +293,7 @@ public class JavaUtilDateFormat extends DateFormat {
     }
 
     // 'T' literal is the date and time separator
-    static boolean hasTSeparator(String str) {
+    static boolean isTSeparator(String str) {
         return str.charAt(10) == 'T';
     }
 

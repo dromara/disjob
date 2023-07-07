@@ -9,27 +9,28 @@
 package cn.ponfee.disjob;
 
 /**
- * Application test suite
+ * Test suite for supervisor
  *
  * @author Ponfee
  */
+
 /*
 @org.junit.runner.RunWith(org.junit.runners.Suite.class)
 @org.junit.runners.Suite.SuiteClasses({
-    cn.ponfee.disjob.supervisor.test.job.util.CommonTest.class,
-    cn.ponfee.disjob.supervisor.test.job.dao.SchedJobMapperTest.class,
-    cn.ponfee.disjob.supervisor.test.common.transaction.JobTxManagerTest.class
+    cn.ponfee.disjob.supervisor.base.DiscoveryRestProxyTest.class,
+    cn.ponfee.disjob.supervisor.util.CommonTest.class,
+    cn.ponfee.disjob.supervisor.transaction.JobTxManagerTest.class
 })
 */
 
 /*
 @org.junit.runner.RunWith(org.junit.platform.runner.JUnitPlatform.class)
-@org.junit.platform.suite.api.SelectPackages({"cn.ponfee.disjob"})
+@org.junit.platform.suite.api.SelectPackages("cn.ponfee.disjob.supervisor")
 */
 
 @org.junit.platform.suite.api.Suite
-@org.junit.platform.suite.api.SuiteDisplayName("Disjob supervisor test suite")
 @org.junit.platform.suite.api.SelectPackages("cn.ponfee.disjob.supervisor")
+@org.junit.platform.suite.api.SuiteDisplayName("Disjob supervisor test suite")
 public class AllTestSuite {
 
 }

@@ -405,8 +405,10 @@ public final class TreeNode<T extends Serializable & Comparable<? super T>, A> e
         }
 
         // 非叶子节点
-        int maxChildTreeDepth        = 0, maxChildTreeMaxDegree    = 0,
-            sumChildrenTreeLeafCount = 0, sumChildrenTreeNodeCount = 0;
+        int maxChildTreeDepth        = 0,
+            maxChildTreeMaxDegree    = 0,
+            sumChildrenTreeLeafCount = 0,
+            sumChildrenTreeNodeCount = 0;
         TreeNode<T, A> child;
         for (int i = 0; i < children.size(); i++) {
             child = children.get(i);

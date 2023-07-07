@@ -69,7 +69,7 @@ public class LocalDateTimeFormat {
         }
 
         int length = source.length();
-        if (length >= 20 && hasTSeparator(source) && source.endsWith("Z")) {
+        if (length >= 20 && isTSeparator(source) && source.endsWith("Z")) {
             if (isCrossbar(source)) {
                 // example: 2022-07-18T15:11:11Z, 2022-07-18T15:11:11.Z, 2022-07-18T15:11:11.1Z, 2022-07-18T15:11:11.13Z, 2022-07-18T15:11:11.133Z
                 // 解析会报错：DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
@@ -107,13 +107,13 @@ public class LocalDateTimeFormat {
             case 14:
                 return LocalDateTime.parse(source, PATTERN_01);
             case 19:
-                if (hasTSeparator(source)) {
+                if (isTSeparator(source)) {
                     return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_13 : PATTERN_14);
                 } else {
                     return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_11 : PATTERN_12);
                 }
             case 23:
-                if (hasTSeparator(source)) {
+                if (isTSeparator(source)) {
                     return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_23 : PATTERN_24);
                 } else {
                     return LocalDateTime.parse(source, isCrossbar(source) ? PATTERN_21 : PATTERN_22);
