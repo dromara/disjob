@@ -69,7 +69,7 @@ public class Dates {
     /**
      * Zero time millis: -62170185600000L
      */
-    public static final String ZERO_DATE_TIME = "0000-00-00 00:00:00";
+    public static final String ZERO_DATETIME = "0000-00-00 00:00:00";
 
     /**
      * 简单的日期格式校验(yyyy-MM-dd HH:mm:ss)

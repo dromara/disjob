@@ -22,8 +22,6 @@ import java.util.function.Function;
 public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializable {
     private static final long serialVersionUID = -7637967889181161801L;
 
-    public static final Result<Void> SUCCESS = new Success();
-
     /**
      * the code
      */
@@ -68,7 +66,7 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
     // -----------------------------------------------static success methods
 
     public static Result<Void> success() {
-        return SUCCESS;
+        return Success.INSTANCE;
     }
 
     public static <T> Result<T> success(T data) {
@@ -158,6 +156,8 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         private static final int CODE = 0;
         private static final String MSG = "OK";
 
+        public static final Result<Void> INSTANCE = new Success();
+
         private Success() {
             super(CODE, MSG, null);
         }
@@ -178,7 +178,7 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         }
 
         private Object readResolve() {
-            return SUCCESS;
+            return INSTANCE;
         }
     }
 

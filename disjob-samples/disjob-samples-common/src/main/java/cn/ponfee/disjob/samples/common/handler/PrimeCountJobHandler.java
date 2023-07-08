@@ -93,7 +93,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
             execution = Jsons.fromJson(task.getExecuteSnapshot(), ExecuteSnapshot.class);
             if (execution.getNext() == null || execution.isFinished()) {
                 Assert.isTrue(execution.isFinished() && execution.getNext() == null, "Invalid execute snapshot data.");
-                return Result.SUCCESS;
+                return Result.success();
             }
         }
 
@@ -122,7 +122,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
             }
             lastTime = currTime;
         }
-        return Result.SUCCESS;
+        return Result.success();
     }
 
     @Data

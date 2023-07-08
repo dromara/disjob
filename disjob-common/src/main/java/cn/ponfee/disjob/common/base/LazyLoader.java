@@ -26,7 +26,7 @@ public class LazyLoader<T> implements Supplier<T> {
 
     private final Supplier<T> loader;
 
-    private Optional<T> holder;
+    private Optional<T> holder = null;
 
     private LazyLoader(Supplier<T> loader) {
         this.loader = Objects.requireNonNull(loader);

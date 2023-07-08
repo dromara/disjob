@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import cn.ponfee.disjob.core.base.JobConstants;
+
 /**
  * Supervisor constants definitions.
  *
@@ -48,5 +50,10 @@ public class SupervisorConstants {
      * Spring bean name of scan running instance locker
      */
     public static final String SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER = "scan-running-instance-locker";
+
+    /**
+     * Mybatis config file location
+     */
+    public static final String MYBATIS_CONFIG_FILE_LOCATION = JobConstants.SUPERVISOR_KEY_PREFIX + ".mybatis-config-file-location";
 
 }

@@ -27,8 +27,10 @@ import java.util.Properties;
  * public class DruidConfig {
  *   @Value("${datasource.jdbc-url}")
  *   private String jdbcUrl;
+ *
  *   @Value("${datasource.username}")
  *   private String username;
+ *
  *   @Value("${datasource.password}")
  *   private String password;
  * }}</pre>

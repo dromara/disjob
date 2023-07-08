@@ -91,6 +91,10 @@ public final class TreeNode<T extends Serializable & Comparable<? super T>, A> e
         }
     }
 
+    public static <T extends Serializable & Comparable<? super T>, A> TreeNodeBuilder<T, A> builder(T nid) {
+        return new TreeNodeBuilder<>(nid);
+    }
+
     // ------------------------------------------------------mount children nodes
 
     public <E extends BaseNode<T, A>> TreeNode<T, A> mount(List<E> nodes) {

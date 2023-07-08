@@ -12,13 +12,13 @@ import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
-import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -42,9 +42,9 @@ public class WorkerServiceClientTest extends SpringBootTestBase<Object> {
 
         WorkerServiceClient client = new WorkerServiceClient(workerService, null);
         List<SplitTask> result = client.split(new JobHandlerParam(null, null, "group", null, null));
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals(taskParam, result.get(0).getTaskParam());
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(taskParam, result.get(0).getTaskParam());
     }
 
 }

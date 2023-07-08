@@ -10,9 +10,11 @@ package cn.ponfee.disjob.supervisor.dao;
 
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,8 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
+
+import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.MYBATIS_CONFIG_FILE_LOCATION;
 
 /**
  * Supervisor datasource configuration
@@ -46,9 +50,10 @@ import javax.sql.DataSource;
     sqlSessionTemplateRef = SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_NAME_SUFFIX
 )
 public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
+    private static final String DEFAULT_MYBATIS_CONFIG_FILE_LOCATION = "classpath:disjob-mybatis-config.xml";
 
-    public SupervisorDataSourceConfig() {
-        super("disjob-mybatis-config.xml");
+    public SupervisorDataSourceConfig(@Value("${" + MYBATIS_CONFIG_FILE_LOCATION + ":}") String mybatisConfigFileLocation) {
+        super(StringUtils.defaultIfBlank(mybatisConfigFileLocation, DEFAULT_MYBATIS_CONFIG_FILE_LOCATION));
     }
 
     /**

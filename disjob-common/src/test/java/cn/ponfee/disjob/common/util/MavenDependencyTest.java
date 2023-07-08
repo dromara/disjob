@@ -15,6 +15,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,7 +32,10 @@ import java.util.stream.Collectors;
 public class MavenDependencyTest {
 
     public static void main(String[] args) throws IOException {
+        StopWatch stopWatch = StopWatch.createStarted();
         String dependencyTree = dependencyTree();
+        stopWatch.stop();
+
         System.out.println("\n\n<<<-----------------------------------dependency tree----------------------------------->>>");
         System.out.println(dependencyTree);
         System.out.println("<<<-----------------------------------dependency tree----------------------------------->>>\n\n");
@@ -44,15 +48,20 @@ public class MavenDependencyTest {
             System.out.println(result);
         }
         System.out.println("<<<-----------------------------------dependency jar conflict----------------------------------->>>\n\n");
+
+        System.out.println("\n\nExecute maven install & dependency tree cost time: " + stopWatch);
     }
 
     private static String dependencyTree() {
         String path = new File(MavenProjects.getProjectBaseDir()).getParentFile().getAbsolutePath() + "/";
-        // mvnw 的输出带格式，不好解析
-        //String command = "bash " + path + "mvnw dependency:tree -f " + path + "pom.xml";
-        String command = "mvn dependency:tree -f " + path + "pom.xml";
+        String installCmd = "bash " + path + "mvnw clean install -DskipTests -U -f " + path + "pom.xml";
+
+        // String treeCmd = "mvn dependency:tree -f " + path + "pom.xml";
+        // -B: Run in non-interactive (batch) mode (disables output color)
+        String treeCmd = "bash " + path + "mvnw -B dependency:tree -f " + path + "pom.xml";
         try {
-            return execute(command);
+            execute(installCmd);
+            return execute(treeCmd);
         } catch (Exception e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -62,7 +71,7 @@ public class MavenDependencyTest {
         StringBuilder builder = new StringBuilder();
         Arrays.stream(text.split("\n"))
             .filter(e -> StringUtils.startsWithAny(e, "[INFO] +- ", "[INFO] |  "))
-            .map(s -> s.replaceAll("^\\[INFO\\] ", "").replaceAll("^\\W+", "").trim())
+            .map(s -> s.replaceAll("^\\[INFO] ", "").replaceAll("^\\W+", "").trim())
             .map(s -> s.split(":"))
             .filter(e -> e.length >= 4)
             .map(e -> Tuple4.of(e[0], e[1], e[2], e[3]))

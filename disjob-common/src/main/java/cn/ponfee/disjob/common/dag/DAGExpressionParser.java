@@ -13,7 +13,6 @@ import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.tree.BaseNode;
 import cn.ponfee.disjob.common.tree.PlainNode;
 import cn.ponfee.disjob.common.tree.TreeNode;
-import cn.ponfee.disjob.common.tree.TreeNodeBuilder;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Collects;
 import com.google.common.collect.ImmutableList;
@@ -35,9 +34,9 @@ import java.util.stream.Stream;
  * Parse DAG expression to graph
  *
  * <pre>
- * 解析：new DAGParser("(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)").parse();
+ * 解析：new DAGParser("A->((B->C->D),(A->F))->(G,H,X)->J; A->Y").parse();
  * 结果：
- * (A->((B->C->D),(A->F))->(G,H,X)->J)
+ * [ A->((B->C->D),(A->F))->(G,H,X)->J ]
  *   <0:0:Start -> 1:1:A>
  *   <1:1:A -> 1:1:B>
  *   <1:1:A -> 1:2:A>
@@ -55,7 +54,7 @@ import java.util.stream.Stream;
  *   <1:1:X -> 1:1:J>
  *   <1:1:J -> 0:0:End>
  *
- * (A->Y)
+ * [ A->Y ]
  *   <0:0:Start -> 2:3:A>
  *   <2:3:A -> 2:1:Y>
  *   <2:1:Y -> 0:0:End>
@@ -251,7 +250,7 @@ public class DAGExpressionParser {
         buildTree(groups, TreeNodeId.ROOT_ID, 1, 0, nodes);
 
         // create a dummy root node
-        TreeNode<TreeNodeId, Object> dummyRoot = TreeNodeBuilder.newBuilder(TreeNodeId.ROOT_ID).build();
+        TreeNode<TreeNodeId, Object> dummyRoot = TreeNode.builder(TreeNodeId.ROOT_ID).build();
 
         // mount nodes
         dummyRoot.mount(nodes);

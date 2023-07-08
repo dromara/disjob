@@ -66,10 +66,10 @@ public class DateFormatTest {
 
     @Test
     public void test4() throws ParseException {
-        Date zero = JavaUtilDateFormat.PATTERN_41.parse(Dates.ZERO_DATE_TIME);
+        Date zero = JavaUtilDateFormat.PATTERN_41.parse(Dates.ZERO_DATETIME);
         assertEquals(-62170185600000L, zero.getTime());
-        assertEquals(zero, JavaUtilDateFormat.DEFAULT.parse(Dates.ZERO_DATE_TIME));
-        assertEquals(zero, DateUtils.parseDate(Dates.ZERO_DATE_TIME, Dates.DATETIME_PATTERN));
+        assertEquals(zero, JavaUtilDateFormat.DEFAULT.parse(Dates.ZERO_DATETIME));
+        assertEquals(zero, DateUtils.parseDate(Dates.ZERO_DATETIME, Dates.DATETIME_PATTERN));
 
     }
 }

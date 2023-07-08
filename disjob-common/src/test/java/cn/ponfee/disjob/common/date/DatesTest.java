@@ -49,10 +49,10 @@ public class DatesTest {
         Assertions.assertFalse(isValidDate(null, DATETIME_PATTERN));
         Assertions.assertFalse(isValidDate("2020-xx-00 00:00:00", DATETIME_PATTERN));
 
-        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATE_TIME)));
-        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATE_TIME, DATETIME_PATTERN)));
+        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATETIME)));
+        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATETIME, DATETIME_PATTERN)));
         Assertions.assertEquals("0002-11-30 00:00:00.000", format(ofTimeMillis(-62170185600000L), DATEFULL_PATTERN));
-        Assertions.assertEquals("0002-11-30 00:00:00.000", format(toDate(ZERO_DATE_TIME), DATEFULL_PATTERN));
+        Assertions.assertEquals("0002-11-30 00:00:00.000", format(toDate(ZERO_DATETIME), DATEFULL_PATTERN));
 
         Assertions.assertEquals("1970-01-01 08:00:01", format(ofUnixTimestamp(1)));
         Assertions.assertEquals("1970-01-01 08:00:00", format(ofTimeMillis(1)));
@@ -127,7 +127,7 @@ public class DatesTest {
 
     @Test
     public void testDateFormat() throws ParseException {
-        String json = "{\"createTime\":\"" + Dates.ZERO_DATE_TIME + "\"}";
+        String json = "{\"createTime\":\"" + Dates.ZERO_DATETIME + "\"}";
        DateEntity dateEntity = Jsons.fromJson(json,DateEntity.class);
 
 
@@ -147,8 +147,8 @@ public class DatesTest {
         Date zeroDate = new Date(time);
         Assertions.assertEquals(zeroDate, dateEntity.getCreateTime());
         Assertions.assertEquals(zeroDate, new Date(zeroDate.getTime()));
-        Assertions.assertEquals(zeroDate, DateUtils.parseDate(Dates.ZERO_DATE_TIME, Dates.DATETIME_PATTERN));
-        Assertions.assertEquals(zeroDate, DATE_FORMAT.parse(Dates.ZERO_DATE_TIME));
+        Assertions.assertEquals(zeroDate, DateUtils.parseDate(Dates.ZERO_DATETIME, Dates.DATETIME_PATTERN));
+        Assertions.assertEquals(zeroDate, DATE_FORMAT.parse(Dates.ZERO_DATETIME));
         //Assertions.assertEquals(time, Dates.toDate(zeroDateStr, Dates.DEFAULT_DATETIME_FORMAT).getTime()); error
     }
 

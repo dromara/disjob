@@ -66,7 +66,7 @@ public class SpringWebExceptionHandler {
             out.write(errorMsg);
         } else {
             response.setContentType(APPLICATION_JSON_VALUE_UTF8);
-            out.write(Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toJson());
+            out.write(Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toString());
         }
         out.flush();
     }

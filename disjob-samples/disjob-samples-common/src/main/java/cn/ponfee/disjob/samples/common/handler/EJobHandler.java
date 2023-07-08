@@ -44,7 +44,7 @@ public class EJobHandler extends JobHandler<Void> {
     public Result<Void> execute(Checkpoint checkpoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
         LOG.info(this.getClass().getSimpleName() + " execution finished.");
-        return Result.SUCCESS;
+        return Result.success();
     }
 
 }
