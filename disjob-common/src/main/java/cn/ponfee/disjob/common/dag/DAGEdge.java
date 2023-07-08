@@ -15,7 +15,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Graph edge
+ * DAG Edge
  *
  * @author Ponfee
  */

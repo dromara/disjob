@@ -135,7 +135,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
     private synchronized void doRefreshDiscoveryServers(List<Instance> instances) {
         List<D> servers;
         if (CollectionUtils.isEmpty(instances)) {
-            log.error("Not discovered available {} from nacos.", discoveryRole.name());
+            log.warn("Not discovered available {} from nacos.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = instances.stream()

@@ -124,7 +124,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         List<D> servers;
         log.info("Watched servers {}", list);
         if (CollectionUtils.isEmpty(list)) {
-            log.error("Not discovered available {} from zookeeper.", discoveryRole.name());
+            log.warn("Not discovered available {} from zookeeper.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = list.stream()

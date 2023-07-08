@@ -249,7 +249,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         Set<String> discovered = (Set<String>) result.get(1);
         if (CollectionUtils.isEmpty(discovered)) {
-            log.error("Not discovered available {} from redis.", discoveryRole.name());
+            log.warn("Not discovered available {} from redis.", discoveryRole.name());
             discovered = Collections.emptySet();
         }
 

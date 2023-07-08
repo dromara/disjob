@@ -160,7 +160,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     private synchronized void doRefreshDiscoveryServers(List<String> list) {
         List<D> servers;
         if (CollectionUtils.isEmpty(list)) {
-            log.error("Not discovered available {} from etcd.", discoveryRole.name());
+            log.warn("Not discovered available {} from etcd.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = list.stream()

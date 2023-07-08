@@ -11,6 +11,7 @@ package cn.ponfee.disjob.common.dag;
 import org.springframework.util.Assert;
 
 import java.beans.Transient;
+import java.io.Serializable;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
@@ -20,23 +21,29 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
  *
  * @author Ponfee
  */
-public final class DAGNode {
+public final class DAGNode implements Serializable {
+    private static final long serialVersionUID = 7413110685194391605L;
 
     public static final DAGNode START = new DAGNode(0, 0, "Start");
     public static final DAGNode END = new DAGNode(0, 0, "End");
 
     /**
-     * Section
+     * <pre>
+     *  任务链的编号，用来区分不同的任务链
+     *  如[Start -> A -> B -> End; Start -> C -> D -> End]，表达式用“;”分隔成两个不同的任务链
+     *  1  Start -> A -> B -> End
+     *  2  Start -> C -> D -> End
+     * </pre>
      */
     private final int section;
 
     /**
-     * Ordinal
+     * 名称相同时通过顺序来区分，如[Start -> A -> B -> A -> End]，两个A不一样的
      */
     private final int ordinal;
 
     /**
-     * Name
+     * 名称
      */
     private final String name;
 

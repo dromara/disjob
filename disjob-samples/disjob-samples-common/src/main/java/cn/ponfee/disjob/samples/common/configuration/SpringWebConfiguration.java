@@ -14,8 +14,6 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.HttpProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,15 +22,9 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -42,8 +34,6 @@ import java.util.List;
  */
 @Configuration
 public class SpringWebConfiguration implements WebMvcConfigurer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SpringWebConfiguration.class);
 
     private final ObjectMapper objectMapper;
 
@@ -98,51 +88,6 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(new LocalizedMethodArgumentResolver());
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new CustomHandlerInterceptor()).addPathPatterns("/**");
-    }
-
-    public static class CustomHandlerInterceptor implements HandlerInterceptor {
-        @Override
-        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-            if (LOG.isDebugEnabled()) {
-                Enumeration<String> names = request.getHeaderNames();
-                StringBuilder header = new StringBuilder();
-                while (names.hasMoreElements()) {
-                    String name = names.nextElement();
-                    header.append(name).append("=").append(request.getHeader(name)).append(" & ");
-                }
-                if (header.length() > 0) {
-                    header.setLength(header.length() - 3);
-                }
-
-                LOG.debug(
-                    "\nRequest URL: {}\nRequest Method: {}\nRequest Headers: {}\nRequest Parameter: {}\n",
-                    request.getRequestURL(), request.getMethod(), header, request.getParameterMap()
-                );
-            }
-            return true;
-        }
-
-        @Override
-        public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-            if (LOG.isDebugEnabled()) {
-                StringBuilder header = new StringBuilder();
-                response.getHeaderNames().forEach(name -> header.append(name).append("=").append(request.getHeader(name)).append(" & "));
-                if (header.length() > 0) {
-                    header.setLength(header.length() - 3);
-                }
-                LOG.debug("\nResponse Headers: {}\n", header);
-            }
-        }
-
-        @Override
-        public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-            // No-op
-        }
     }
 
 }

@@ -185,7 +185,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     private synchronized void doRefreshDiscoveryServers(List<HealthService> healthServices) {
         List<D> servers;
         if (CollectionUtils.isEmpty(healthServices)) {
-            log.error("Not discovered available {} from consul.", discoveryRole.name());
+            log.warn("Not discovered available {} from consul.", discoveryRole.name());
             servers = Collections.emptyList();
         } else {
             servers = healthServices.stream()
