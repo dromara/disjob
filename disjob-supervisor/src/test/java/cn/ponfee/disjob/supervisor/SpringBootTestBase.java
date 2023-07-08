@@ -71,6 +71,7 @@ import java.util.stream.Collectors;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ExtendWith(SpringExtension.class)
+// PER_METHOD(默认)：每个测试方法都会创建一个新的测试类实例；PER_CLASS：所有测试方法只创建一个测试类的实例；
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,

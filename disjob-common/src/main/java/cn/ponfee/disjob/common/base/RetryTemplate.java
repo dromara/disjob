@@ -46,7 +46,7 @@ public class RetryTemplate {
                 return action.get();
             } catch (Throwable e) {
                 if (e instanceof InterruptedException) {
-                    LOG.error("Thread interrupted, skip template retry.");
+                    LOG.error("Thread interrupted, skip retry.");
                     Thread.currentThread().interrupt();
                     throw e;
                 }

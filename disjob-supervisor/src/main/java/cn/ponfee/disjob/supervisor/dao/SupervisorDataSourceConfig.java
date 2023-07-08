@@ -27,7 +27,7 @@ import javax.sql.DataSource;
  * Supervisor datasource configuration
  *
  * <pre>
- *  spring.datasource.disjob:
+ *  disjob.datasource:
  *    driver-class-name: com.mysql.cj.jdbc.Driver
  *    jdbc-url: jdbc:mysql://112.74.170.75:3306/disjob?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
  *    username: disjob
@@ -64,7 +64,7 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     public static final String DB_NAME = "disjob";
 
     @Bean(name = DB_NAME + DATA_SOURCE_NAME_SUFFIX)
-    @ConfigurationProperties(prefix = "spring.datasource.disjob")
+    @ConfigurationProperties(prefix = "disjob.datasource")
     @Override
     public DataSource dataSource() {
         // return new com.zaxxer.hikari.HikariDataSource();
