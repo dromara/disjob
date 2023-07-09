@@ -19,7 +19,7 @@ import java.util.Objects;
  * @param <A> the attachment biz object type
  * @author Ponfee
  */
-public final class TreeNodeBuilder<T extends Serializable & Comparable<? super T>, A> {
+public final class TreeNodeBuilder<T extends Serializable & Comparable<T>, A> {
 
     private final T nid;
 

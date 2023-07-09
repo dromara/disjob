@@ -30,7 +30,7 @@ import java.util.Objects;
  * @author Ponfee
  */
 @JsonDeserialize(using = NodePath.JacksonDeserializer.class)
-public final class NodePath<T extends Serializable & Comparable<? super T>>
+public final class NodePath<T extends Serializable & Comparable<T>>
     extends ImmutableArrayList<T> implements Comparable<NodePath<T>> {
 
     private static final long serialVersionUID = 9090552044337950223L;
@@ -87,7 +87,7 @@ public final class NodePath<T extends Serializable & Comparable<? super T>>
 
     // --------------------------------------------------------custom jackson deserialize
 
-    public static class JacksonDeserializer<T extends Serializable & Comparable<? super T>> extends JsonDeserializer<NodePath<T>> {
+    public static class JacksonDeserializer<T extends Serializable & Comparable<T>> extends JsonDeserializer<NodePath<T>> {
         @Override
         @SuppressWarnings("unchecked")
         public NodePath<T> deserialize(JsonParser p, DeserializationContext ctx) throws IOException {

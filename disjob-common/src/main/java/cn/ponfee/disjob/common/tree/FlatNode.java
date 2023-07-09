@@ -20,7 +20,7 @@ import java.util.function.Function;
  * @param <A> the attachment biz object type
  * @author Ponfee
  */
-public final class FlatNode<T extends Serializable & Comparable<? super T>, A> extends BaseNode<T, A> {
+public final class FlatNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
     private static final long serialVersionUID = 5191371614061952661L;
 
     private final boolean leaf; // 是否叶子节点

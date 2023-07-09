@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  * @param <A> the attachment biz object type
  * @author Ponfee
  */
-public final class TreeNode<T extends Serializable & Comparable<? super T>, A> extends BaseNode<T, A> {
+public final class TreeNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
     private static final long serialVersionUID = -9081626363752680404L;
 
     public static final String DEFAULT_ROOT_ID = "__ROOT__";
@@ -91,7 +91,7 @@ public final class TreeNode<T extends Serializable & Comparable<? super T>, A> e
         }
     }
 
-    public static <T extends Serializable & Comparable<? super T>, A> TreeNodeBuilder<T, A> builder(T nid) {
+    public static <T extends Serializable & Comparable<T>, A> TreeNodeBuilder<T, A> builder(T nid) {
         return new TreeNodeBuilder<>(nid);
     }
 

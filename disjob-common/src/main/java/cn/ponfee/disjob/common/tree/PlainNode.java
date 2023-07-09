@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @param <A> the attachment biz object type
  * @author Ponfee
  */
-public final class PlainNode<T extends Serializable & Comparable<? super T>, A> extends BaseNode<T, A> {
+public final class PlainNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
     private static final long serialVersionUID = -2189191471047483877L;
 
     public PlainNode(T nid, T pid, A attach) {

@@ -21,7 +21,7 @@ import java.util.function.Function;
  *
  * @author Ponfee
  */
-public class SiblingNodesComparator<T extends Serializable & Comparable<? super T>, A> {
+public class SiblingNodesComparator<T extends Serializable & Comparable<T>, A> {
 
     private final Comparator<TreeNode<T, A>> comparator;
 
@@ -29,12 +29,12 @@ public class SiblingNodesComparator<T extends Serializable & Comparable<? super 
         this.comparator = comparator;
     }
 
-    public static <T extends Serializable & Comparable<? super T>, A, U extends Comparable<? super U>> SiblingNodesComparator<T, A> comparing(Function<TreeNode<T, A>, U> first) {
+    public static <T extends Serializable & Comparable<T>, A, U extends Comparable<? super U>> SiblingNodesComparator<T, A> comparing(Function<TreeNode<T, A>, U> first) {
         // default nullsLast and ASC
         return comparing(first, false, true);
     }
 
-    public static <T extends Serializable & Comparable<? super T>, A, U extends Comparable<? super U>> SiblingNodesComparator<T, A> comparing(Function<TreeNode<T, A>, U> first, boolean nullsFirst, boolean asc) {
+    public static <T extends Serializable & Comparable<T>, A, U extends Comparable<? super U>> SiblingNodesComparator<T, A> comparing(Function<TreeNode<T, A>, U> first, boolean nullsFirst, boolean asc) {
         return new SiblingNodesComparator<>(Comparator.comparing(first, comparator(nullsFirst, asc)));
     }
 

@@ -22,7 +22,7 @@ import java.util.List;
  * @param <A> the attachment biz object type
  * @author Ponfee
  */
-public abstract class BaseNode<T extends Serializable & Comparable<? super T>, A> implements Serializable, Cloneable {
+public abstract class BaseNode<T extends Serializable & Comparable<T>, A> implements Serializable, Cloneable {
     private static final long serialVersionUID = -4116799955526185765L;
 
     // -------------------------------------------------------------------基础信息

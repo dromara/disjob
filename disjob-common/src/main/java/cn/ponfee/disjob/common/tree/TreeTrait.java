@@ -19,7 +19,7 @@ import java.util.List;
  * @param <E> the TreeTrait type
  * @author Ponfee
  */
-public interface TreeTrait<T extends Serializable & Comparable<? super T>, A, E extends TreeTrait<T, A, E>> {
+public interface TreeTrait<T extends Serializable & Comparable<T>, A, E extends TreeTrait<T, A, E>> {
 
     /**
      * Sets node list as children

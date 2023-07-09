@@ -19,7 +19,7 @@ import java.util.List;
  * @param <A> the attachment biz object type
  * @author Ponfee
  */
-public class MapTreeTrait<T extends Serializable & Comparable<? super T>, A>
+public class MapTreeTrait<T extends Serializable & Comparable<T>, A>
     extends LinkedHashMap<String, Object> implements TreeTrait<T, A, MapTreeTrait<T, A>> {
     private static final long serialVersionUID = -5799393887664198242L;
 
