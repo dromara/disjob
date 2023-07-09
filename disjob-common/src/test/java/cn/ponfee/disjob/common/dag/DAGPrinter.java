@@ -43,6 +43,15 @@ public class DAGPrinter {
         drawGraph("A -> B,C -> E,(F->G) -> H", "dag4.png");
         drawGraph("A -> (B->C->D),(A->F) -> G,H,X -> J ; A->Y", "dag5.png");
         drawGraph("ALoader -> (BMap->CMap->DMap),(AMap->FMap) -> GShuffle,HShuffle,XShuffle -> JReduce ; A->Y", "dag6.png");
+        drawGraph("A->B,C,(D->E)->F,E->G", "dag7.png");
+
+        drawGraph("A->B,C,D",                 "10.png");
+        drawGraph("A->B->C,D",                "20.png");
+        drawGraph("A->B->C->D->G;A->E->F->G", "30.png");
+        drawGraph("A->(B->C->D),(E->F)->G",   "31.png");
+        drawGraph("A->B->C,D,E;A->H->I,J,K",  "40.png");
+        drawGraph("A->(B->C,D,E),(H->I,J,K)", "41.png");
+        drawGraph("A,B,C->D",                 "50.png");
     }
 
     private static void drawGraph(String expr, String fileName) throws IOException {
