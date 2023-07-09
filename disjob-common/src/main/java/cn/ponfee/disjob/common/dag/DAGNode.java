@@ -30,15 +30,16 @@ public final class DAGNode implements Serializable {
     /**
      * <pre>
      *  任务链的编号，用来区分不同的任务链
-     *  如[Start -> A -> B -> End; Start -> C -> D -> End]，表达式用“;”分隔成两个不同的任务链
-     *  1  Start -> A -> B -> End
-     *  2  Start -> C -> D -> End
+     *  如[A -> B; C -> D]，表达式用“;”分隔成两个不同的任务链
+     *  section=1： A -> B
+     *  section=2： C -> D
      * </pre>
      */
     private final int section;
 
     /**
-     * 名称相同时通过顺序来区分，如[Start -> A -> B -> A -> End]，两个A不一样的
+     * 名称相同时通过顺序来区分，如[A -> B -> A]，两个A是不同的
+     * <p>实际结果为 [1:1:A -> 1:1:B -> 1:2:A]
      */
     private final int ordinal;
 

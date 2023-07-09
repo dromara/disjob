@@ -65,6 +65,8 @@ import java.util.stream.Stream;
  *    <2:3:A -> 2:1:Y>
  *    <2:1:Y -> 0:0:End>
  *
+ * ---------------------------------------------------
+ *
  * 无法用expression来表达的场景：[A->C, A->D, B->D, B->E]
  * ┌─────────────────────────────────┐
  * │               ┌─────>C──┐       │
@@ -82,13 +84,6 @@ import java.util.stream.Stream;
  *     {"source": "1:1:B", "target": "1:1:D"},
  *     {"source": "1:1:B", "target": "1:1:E"}
  *   ]
- *
- * 正则相关：
- *   1、(?i) 开启大小写忽略模式，但是只适用于ASCII字符
- *   2、(?u) 开启utf-8编码模式
- *   3、(?s) 单行模式，“.”匹配任意字符(包括空白字符)
- *   4、(?m) 开启多行匹配模式，“.”不匹配空白字符
- *   5、(?d) 单行模式，“.”不匹配空白字符
  * </pre>
  *
  * @author Ponfee
@@ -97,6 +92,12 @@ public class DAGExpressionParser {
 
     /**
      * <pre>
+     * 1、(?i) 开启大小写忽略模式，但是只适用于ASCII字符
+     * 2、(?u) 开启utf-8编码模式
+     * 3、(?s) 单行模式，“.”匹配任意字符(包括空白字符)
+     * 4、(?m) 开启多行匹配模式，“.”不匹配空白字符
+     * 5、(?d) 单行模式，“.”不匹配空白字符
+     *
      * Match json array: [{...}]
      * 有两种方式：
      *   1、(?s)^\s*\[\s*\{.+}\s*]\s*$
@@ -151,6 +152,12 @@ public class DAGExpressionParser {
         return graph;
     }
 
+    /**
+     * [{"source":"1:1:A","target":"1:1:C"},{"source":"1:1:A","target":"1:1:D"},{"source":"1:1:B","target":"1:1:D"},{"source":"1:1:B","target":"1:1:E"}]
+     *
+     * @param graphBuilder the graph builder
+     * @param edges        the edges
+     */
     private void parseJsonGraph(ImmutableGraph.Builder<DAGNode> graphBuilder, List<GraphEdge> edges) {
         Assert.notEmpty(edges, "Graph edges cannot be empty.");
         Set<DAGNode> allNode = new HashSet<>();
@@ -173,6 +180,11 @@ public class DAGExpressionParser {
         allNode.stream().filter(Predicates.not(nonTail::contains)).forEach(e -> graphBuilder.putEdge(e, DAGNode.END));
     }
 
+    /**
+     * A->((B->C->D),(A->F))->(G,H,X)->J; A->Y
+     *
+     * @param graphBuilder the graph builder
+     */
     private void parsePlainExpr(ImmutableGraph.Builder<DAGNode> graphBuilder) {
         Assert.isTrue(checkParenthesis(expression), () -> "Invalid expression parenthesis: " + expression);
         List<String> sections = Stream.of(expression.split(";")).filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
