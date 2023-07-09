@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Bytes;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
@@ -236,7 +236,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                 .collect(Collectors.toSet());
             List<Integer> usableWorkerIds = IntStream.range(0, workerIdMaxCount)
                 .boxed()
-                .filter(ObjectUtils.not(usedWorkIds::contains))
+                .filter(Predicates.not(usedWorkIds::contains))
                 .collect(Collectors.toList());
             if (CollectionUtils.isEmpty(usableWorkerIds)) {
                 throw new IllegalStateException("Not found usable zk worker id.");

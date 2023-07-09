@@ -13,7 +13,7 @@ import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
@@ -156,7 +156,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
             Set<Integer> usedWorkIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());
             List<Integer> usableWorkerIds = IntStream.range(0, workerIdMaxCount)
                 .boxed()
-                .filter(ObjectUtils.not(usedWorkIds::contains))
+                .filter(Predicates.not(usedWorkIds::contains))
                 .collect(Collectors.toList());
             if (CollectionUtils.isEmpty(usableWorkerIds)) {
                 throw new IllegalStateException("Not found usable db worker id.");

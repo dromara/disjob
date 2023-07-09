@@ -130,7 +130,6 @@ public class DAGExpressionParser {
 
     public DAGExpressionParser(String text) {
         Assert.hasText(text, "Expression cannot be blank.");
-        Assert.isTrue(checkParenthesis(text), () -> "Invalid expression parenthesis: " + text);
         this.expression = text.trim();
     }
 
@@ -175,6 +174,7 @@ public class DAGExpressionParser {
     }
 
     private void parsePlainExpr(ImmutableGraph.Builder<DAGNode> graphBuilder) {
+        Assert.isTrue(checkParenthesis(expression), () -> "Invalid expression parenthesis: " + expression);
         List<String> sections = Stream.of(expression.split(";")).filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
         Assert.notEmpty(sections, () -> "Invalid split with ';' expression: " + expression);
 
