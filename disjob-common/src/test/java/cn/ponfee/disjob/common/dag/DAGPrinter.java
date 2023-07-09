@@ -52,6 +52,8 @@ public class DAGPrinter {
         drawGraph("A->B->C,D,E;A->H->I,J,K",  "40.png");
         drawGraph("A->(B->C,D,E),(H->I,J,K)", "41.png");
         drawGraph("A,B,C->D",                 "50.png");
+
+        drawGraph("[{\"source\":\"1:1:A\",\"target\":\"1:1:C\"},{\"source\":\"1:1:A\",\"target\":\"1:1:D\"},{\"source\":\"1:1:B\",\"target\":\"1:1:D\"},{\"source\":\"1:1:B\",\"target\":\"1:1:E\"}]", "json-graph.png");
     }
 
     private static void drawGraph(String expr, String fileName) throws IOException {

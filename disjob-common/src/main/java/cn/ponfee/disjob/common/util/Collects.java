@@ -47,8 +47,8 @@ public class Collects {
      */
     public static <T> Set<T> different(Set<T> set1, Set<T> set2) {
         Set<T> res = new HashSet<>();
-        set1.stream().filter(ObjectUtils.not(set2::contains)).forEach(res::add);
-        set2.stream().filter(ObjectUtils.not(set1::contains)).forEach(res::add);
+        set1.stream().filter(Predicates.not(set2::contains)).forEach(res::add);
+        set2.stream().filter(Predicates.not(set1::contains)).forEach(res::add);
         return res;
     }
 

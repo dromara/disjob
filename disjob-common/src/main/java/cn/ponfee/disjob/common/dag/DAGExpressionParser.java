@@ -15,11 +15,16 @@ import cn.ponfee.disjob.common.tree.PlainNode;
 import cn.ponfee.disjob.common.tree.TreeNode;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Predicates;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +32,7 @@ import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,7 +65,7 @@ import java.util.stream.Stream;
  *    <2:3:A -> 2:1:Y>
  *    <2:1:Y -> 0:0:End>
  *
- * 无法用表达式来描述的场景：[Start->A, Start->B, A->C, A->D, B->D, B->E, C->End, D->End, E->End]
+ * 无法用expression来表达的场景：[A->C, A->D, B->D, B->E]
  * ┌─────────────────────────────────┐
  * │               ┌─────>C──┐       │
  * │        ┌──>A──┤         │       │
@@ -69,7 +75,7 @@ import java.util.stream.Stream;
  * │        └──>B──┤         │       │
  * │               └─────>E──┘       │
  * └─────────────────────────────────┘
- * 但可通过graph来描述：
+ * 但可通过json graph来表达：
  *   [
  *     {"source": "1:1:A", "target": "1:1:C"},
  *     {"source": "1:1:A", "target": "1:1:D"},
@@ -77,11 +83,27 @@ import java.util.stream.Stream;
  *     {"source": "1:1:B", "target": "1:1:E"}
  *   ]
  *
+ * 正则相关：
+ *   1、(?i) 开启大小写忽略模式，但是只适用于ASCII字符
+ *   2、(?u) 开启utf-8编码模式
+ *   3、(?s) 单行模式，“.”匹配任意字符(包括空白字符)
+ *   4、(?m) 开启多行匹配模式，“.”不匹配空白字符
+ *   5、(?d) 单行模式，“.”不匹配空白字符
  * </pre>
  *
  * @author Ponfee
  */
 public class DAGExpressionParser {
+
+    /**
+     * <pre>
+     * Match json array: [{...}]
+     * 有两种方式：
+     *   1、(?s)^\s*\[\s*\{.+}\s*]\s*$
+     *   2、(?m)^\s*\[\s*\{(\s*\S+\s*)+}\s*]\s*$
+     * </pre>
+     */
+    private static final Pattern JSON_GRAPH_PATTERN = Pattern.compile("(?s)^\\s*\\[\\s*\\{.+}\\s*]\\s*$");
 
     private static final String SEP_STAGE = "->";
     private static final String SEP_UNION = Str.COMMA;
@@ -113,15 +135,13 @@ public class DAGExpressionParser {
     }
 
     public Graph<DAGNode> parse() {
-        List<String> sections = Stream.of(expression.split(";")).filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
-        Assert.notEmpty(sections, () -> "Invalid split with ';' expression: " + expression);
-
         ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
-        for (int i = 0, n = sections.size(); i < n; i++) {
-            String section = sections.get(i);
-            Assert.isTrue(checkParenthesis(section), () -> "Invalid expression parenthesis: " + section);
-            String expr = completeParenthesis(section);
-            buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, DAGNode.START, DAGNode.END);
+
+        List<GraphEdge> edges;
+        if (JSON_GRAPH_PATTERN.matcher(expression).matches() && (edges = GraphEdge.fromJson(expression)) != null) {
+            parseJsonGraph(graphBuilder, edges);
+        } else {
+            parsePlainExpr(graphBuilder);
         }
 
         ImmutableGraph<DAGNode> graph = graphBuilder.build();
@@ -130,6 +150,40 @@ public class DAGExpressionParser {
         Assert.state(graph.predecessors(DAGNode.END).stream().noneMatch(DAGNode::isStart), () -> "Expression name cannot direct start: " + expression);
         Assert.state(!Graphs.hasCycle(graph), () -> "Expression name section has cycle: " + expression);
         return graph;
+    }
+
+    private void parseJsonGraph(ImmutableGraph.Builder<DAGNode> graphBuilder, List<GraphEdge> edges) {
+        Assert.notEmpty(edges, "Graph edges cannot be empty.");
+        Set<DAGNode> allNode = new HashSet<>();
+        Set<DAGNode> nonHead = new HashSet<>();
+        Set<DAGNode> nonTail = new HashSet<>();
+        for (GraphEdge graphEdge : edges) {
+            DAGEdge dagEdge = graphEdge.toDAGEdge();
+            DAGNode source = dagEdge.getSource();
+            DAGNode target = dagEdge.getTarget();
+            Assert.isTrue(!source.isStart() && !source.isEnd(), () -> "Graph edge cannot be start or end: " + source);
+            Assert.isTrue(!target.isStart() && !target.isEnd(), () -> "Graph edge cannot be start or end: " + target);
+
+            graphBuilder.putEdge(source, target);
+            allNode.add(source);
+            allNode.add(target);
+            nonHead.add(target);
+            nonTail.add(source);
+        }
+        allNode.stream().filter(Predicates.not(nonHead::contains)).forEach(e -> graphBuilder.putEdge(DAGNode.START, e));
+        allNode.stream().filter(Predicates.not(nonTail::contains)).forEach(e -> graphBuilder.putEdge(e, DAGNode.END));
+    }
+
+    private void parsePlainExpr(ImmutableGraph.Builder<DAGNode> graphBuilder) {
+        List<String> sections = Stream.of(expression.split(";")).filter(StringUtils::isNotBlank).map(String::trim).collect(Collectors.toList());
+        Assert.notEmpty(sections, () -> "Invalid split with ';' expression: " + expression);
+
+        for (int i = 0, n = sections.size(); i < n; i++) {
+            String section = sections.get(i);
+            Assert.isTrue(checkParenthesis(section), () -> "Invalid expression parenthesis: " + section);
+            String expr = completeParenthesis(section);
+            buildGraph(i + 1, Collections.singletonList(expr), graphBuilder, DAGNode.START, DAGNode.END);
+        }
     }
 
     private void buildGraph(int section, List<String> expressions,
@@ -402,6 +456,28 @@ public class DAGExpressionParser {
         return Str.OPEN + text + Str.CLOSE;
     }
 
+    @Getter
+    @Setter
+    private static final class GraphEdge implements Serializable {
+        private static final long serialVersionUID = 7881441757444058390L;
+        private static final TypeReference<List<GraphEdge>> LIST_TYPE = new TypeReference<List<GraphEdge>>() {};
+
+        private String source;
+        private String target;
+
+        private DAGEdge toDAGEdge() {
+            return DAGEdge.of(source, target);
+        }
+
+        private static List<GraphEdge> fromJson(String expression) {
+            try {
+                return Jsons.fromJson(expression, LIST_TYPE);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
     static final class TreeNodeId implements Serializable, Comparable<TreeNodeId> {
         private static final long serialVersionUID = -468548698179536500L;
         private static final TreeNodeId ROOT_ID = new TreeNodeId(-1, -1);
@@ -454,7 +530,7 @@ public class DAGExpressionParser {
         }
     }
 
-    private final static class PartitionIdentityKey {
+    private static final class PartitionIdentityKey {
         private final String expr;
         private final int open;
         private final int close;
