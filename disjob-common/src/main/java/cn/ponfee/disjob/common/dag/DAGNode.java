@@ -83,6 +83,11 @@ public final class DAGNode implements Serializable {
         return this.equals(END);
     }
 
+    @Transient
+    public boolean isStartOrEnd() {
+        return isStart() || isEnd();
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(section, ordinal, name);

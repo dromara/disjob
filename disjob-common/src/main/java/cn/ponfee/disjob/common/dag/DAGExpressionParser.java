@@ -167,8 +167,8 @@ public class DAGExpressionParser {
             DAGEdge dagEdge = graphEdge.toDAGEdge();
             DAGNode source = dagEdge.getSource();
             DAGNode target = dagEdge.getTarget();
-            Assert.isTrue(!source.isStart() && !source.isEnd(), () -> "Graph edge cannot be start or end: " + source);
-            Assert.isTrue(!target.isStart() && !target.isEnd(), () -> "Graph edge cannot be start or end: " + target);
+            Assert.isTrue(!source.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + source);
+            Assert.isTrue(!target.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + target);
 
             graphBuilder.putEdge(source, target);
             allNode.add(source);
@@ -267,7 +267,7 @@ public class DAGExpressionParser {
         List<String> result = new ArrayList<>(groups.size());
         for (int i = 0, n = groups.size() - 1; i < n; i++) {
             PartitionIdentityKey key = new PartitionIdentityKey(expr, groups.get(i) + 1, groups.get(i + 1));
-            // if such as continuous of open “((”，then str is empty content
+            // if twice open “((”，then str is empty content
             String str = partitionCache.computeIfAbsent(key, PartitionIdentityKey::partition);
             if (StringUtils.isNotBlank(str)) {
                 result.add(str);
@@ -481,9 +481,9 @@ public class DAGExpressionParser {
             return DAGEdge.of(source, target);
         }
 
-        private static List<GraphEdge> fromJson(String expression) {
+        private static List<GraphEdge> fromJson(String text) {
             try {
-                return Jsons.fromJson(expression, LIST_TYPE);
+                return Jsons.fromJson(text, LIST_TYPE);
             } catch (Exception e) {
                 return null;
             }

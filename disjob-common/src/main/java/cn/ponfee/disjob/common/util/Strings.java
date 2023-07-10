@@ -73,22 +73,6 @@ public final class Strings {
     }
 
     /**
-     * Count str occur on text.
-     *
-     * @param text the text
-     * @param str  the string
-     * @return number of occur count
-     */
-    public static int count(String text, String str) {
-        int count = 0;
-        for (int len = str.length(), index = -len; (index = text.indexOf(str, index + len)) != -1; ) {
-            count++;
-        }
-        return count;
-    }
-
-
-    /**
      * 驼峰转为带分隔符名字，如驼峰转换为下划线：CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, camelCaseName);
      *
      * @param camelcaseName the camelcase name

@@ -16,22 +16,22 @@
   <select id="testFindByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT job_id jobId, remark
     FROM <include refid="Table_Name" />
-    WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
+    WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
   </select>
   <select id="testListLimit" parameterType="int" resultType="long">
-    SELECT job_id FROM <include refid="Table_Name" /> LIMIT #{limit, jdbcType=INTEGER}
+    SELECT job_id FROM <include refid="Table_Name" /> LIMIT #{limit,jdbcType=INTEGER}
   </select>
   <update id="testUpdateRemark">
     UPDATE <include refid="Table_Name" />
-    SET remark=#{remark, jdbcType=VARCHAR}, version=version+1
-    WHERE job_id=#{jobId, jdbcType=BIGINT}
+    SET remark=#{remark,jdbcType=VARCHAR}, version=version+1
+    WHERE job_id=#{jobId,jdbcType=BIGINT}
   </update>
   <!-- ********************use int test end******************** -->
 
   <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId, jdbcType=BIGINT}</foreach>)
+    WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
       AND is_deleted = 0
   </select>
 
@@ -144,7 +144,7 @@
   <update id="updateNextScanTime" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
-        failed_scan_count = #{failedScanCount, jdbcType=INTEGER},
+        failed_scan_count = #{failedScanCount,jdbcType=INTEGER},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}

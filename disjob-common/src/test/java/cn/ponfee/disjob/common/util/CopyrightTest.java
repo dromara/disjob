@@ -11,6 +11,7 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -73,7 +74,7 @@ public class CopyrightTest {
     public void checkCopyright() {
         handleFile(file -> {
             String text = ThrowingSupplier.get(() -> IOUtils.toString(file.toURI(), UTF_8));
-            if (Strings.count(text, " @author ") == 0) {
+            if (StringUtils.countMatches(text, " @author ") == 0) {
                 System.out.println(file.getName());
             } else if (isOwnerCode(text)) {
                 // 自己编写的代码，添加Copyright
@@ -110,7 +111,7 @@ public class CopyrightTest {
             // is current file: CopyrightTest.java
             return true;
         }
-        return sourceCode.contains(" * @author Ponfee\n") && Strings.count(sourceCode, " @author ") == 1;
+        return sourceCode.contains(" * @author Ponfee\n") && StringUtils.countMatches(sourceCode, " @author ") == 1;
     }
 
 }

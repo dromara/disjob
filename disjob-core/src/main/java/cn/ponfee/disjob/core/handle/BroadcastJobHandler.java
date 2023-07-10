@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.JobException;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public abstract class BroadcastJobHandler<T> extends JobHandler<T> {
 
     @Override
     public final List<SplitTask> split(String jobParam) throws JobException {
-        throw new JobException(JobCodeMsg.BROADCAST_UNSUPPORTED_SPLIT);
+        throw new UnsupportedOperationException("Broadcast job handler unsupported split.");
     }
 
 }

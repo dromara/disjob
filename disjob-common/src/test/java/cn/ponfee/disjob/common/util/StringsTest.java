@@ -28,10 +28,4 @@ public class StringsTest {
         Assertions.assertTrue(Strings.isMatch("ab", "?*"));
         Assertions.assertFalse(Strings.isMatch("aab", "c*a*b"));
     }
-
-    @Test
-    public void testCount() {
-        Assertions.assertEquals(Strings.count("aa", "a"), 2);
-        Assertions.assertEquals(Strings.count("ababa", "aba"), 1);
-    }
 }

@@ -8,9 +8,13 @@
 
 package cn.ponfee.disjob.core.handle;
 
+import cn.ponfee.disjob.common.dag.DAGExpressionParser;
+import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
+import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
@@ -18,7 +22,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.core.base.JobCodeMsg.INVALID_JOB_HANDLER;
 import static cn.ponfee.disjob.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
@@ -31,27 +38,48 @@ import static cn.ponfee.disjob.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
 public class JobHandlerUtils {
 
     public static void verify(JobHandlerParam param) throws JobException {
-        String jobHandler = param.getJobHandler();
-        Assert.hasText(jobHandler, "Job handler cannot be blank.");
-        if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
-            JobHandler<?> handler;
-            try {
-                handler = JobHandlerUtils.load(jobHandler);
-            } catch (Throwable e) {
-                throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
-            }
-            if (!(handler instanceof BroadcastJobHandler)) {
-                throw new JobException(INVALID_JOB_HANDLER, "Not a broadcast job handler.");
-            }
+        Assert.hasText(param.getJobHandler(), "Job handler cannot be blank.");
+        Set<String> jobHandlers;
+        if (param.getJobType() == JobType.WORKFLOW) {
+            jobHandlers = new DAGExpressionParser(param.getJobHandler())
+                .parse()
+                .nodes()
+                .stream()
+                .filter(Predicates.not(DAGNode::isStartOrEnd))
+                .map(DAGNode::getName)
+                .collect(Collectors.toSet());
         } else {
-            List<SplitTask> tasks;
-            try {
-                tasks = split(param);
-            } catch (Throwable e) {
-                throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
-            }
-            if (CollectionUtils.isEmpty(tasks)) {
-                throw new JobException(INVALID_JOB_HANDLER, "Not split any task.");
+            jobHandlers = Collections.singleton(param.getJobHandler());
+        }
+
+        JobHandlerParam cloneParam = null;
+        for (String jobHandler : jobHandlers) {
+            if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
+                JobHandler<?> handler;
+                try {
+                    handler = JobHandlerUtils.load(jobHandler);
+                } catch (JobException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
+                }
+                if (!(handler instanceof BroadcastJobHandler)) {
+                    throw new JobException(INVALID_JOB_HANDLER, "Not a broadcast job handler.");
+                }
+            } else {
+                List<SplitTask> tasks;
+                try {
+                    cloneParam = (cloneParam != null) ? cloneParam : param.clone();
+                    cloneParam.setJobHandler(jobHandler);
+                    tasks = split(cloneParam);
+                } catch (JobException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
+                }
+                if (CollectionUtils.isEmpty(tasks)) {
+                    throw new JobException(INVALID_JOB_HANDLER, "Not split any task.");
+                }
             }
         }
     }
