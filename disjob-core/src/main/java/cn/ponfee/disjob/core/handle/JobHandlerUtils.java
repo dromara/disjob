@@ -52,33 +52,24 @@ public class JobHandlerUtils {
             jobHandlers = Collections.singleton(param.getJobHandler());
         }
 
-        JobHandlerParam cloneParam = null;
         for (String jobHandler : jobHandlers) {
             if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
-                JobHandler<?> handler;
                 try {
-                    handler = JobHandlerUtils.load(jobHandler);
+                    JobHandler<?> handler = JobHandlerUtils.load(jobHandler);
+                    Assert.isTrue(handler instanceof BroadcastJobHandler, "Not a broadcast job handler.");
                 } catch (JobException e) {
                     throw e;
                 } catch (Throwable e) {
                     throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
-                }
-                if (!(handler instanceof BroadcastJobHandler)) {
-                    throw new JobException(INVALID_JOB_HANDLER, "Not a broadcast job handler.");
                 }
             } else {
-                List<SplitTask> tasks;
                 try {
-                    cloneParam = (cloneParam != null) ? cloneParam : param.clone();
-                    cloneParam.setJobHandler(jobHandler);
-                    tasks = split(cloneParam);
+                    param.setJobHandler(jobHandler);
+                    Assert.notEmpty(split(param), "Not split any task.");
                 } catch (JobException e) {
                     throw e;
                 } catch (Throwable e) {
                     throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
-                }
-                if (CollectionUtils.isEmpty(tasks)) {
-                    throw new JobException(INVALID_JOB_HANDLER, "Not split any task.");
                 }
             }
         }

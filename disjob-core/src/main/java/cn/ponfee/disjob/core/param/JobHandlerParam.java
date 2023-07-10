@@ -44,11 +44,6 @@ public class JobHandlerParam extends ToJsonString implements Serializable {
         this.routeStrategy = routeStrategy;
     }
 
-    @Override
-    public JobHandlerParam clone() {
-        return new JobHandlerParam(jobHandler, jobParam, jobGroup, jobType, routeStrategy);
-    }
-
     public static JobHandlerParam from(SchedJob job) {
         return from(job, job.getJobHandler());
     }
