@@ -48,6 +48,7 @@ public class JobHandlerUtils {
                 .filter(Predicates.not(DAGNode::isStartOrEnd))
                 .map(DAGNode::getName)
                 .collect(Collectors.toSet());
+            Assert.notEmpty(jobHandlers, () -> "Invalid workflow job handler: " + param.getJobHandler());
         } else {
             jobHandlers = Collections.singleton(param.getJobHandler());
         }
@@ -56,7 +57,7 @@ public class JobHandlerUtils {
             if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
                 try {
                     JobHandler<?> handler = JobHandlerUtils.load(jobHandler);
-                    Assert.isTrue(handler instanceof BroadcastJobHandler, "Not a broadcast job handler.");
+                    Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
                 } catch (JobException e) {
                     throw e;
                 } catch (Throwable e) {
@@ -65,7 +66,7 @@ public class JobHandlerUtils {
             } else {
                 try {
                     param.setJobHandler(jobHandler);
-                    Assert.notEmpty(split(param), "Not split any task.");
+                    Assert.notEmpty(split(param), () -> "Not split any task: " + jobHandler);
                 } catch (JobException e) {
                     throw e;
                 } catch (Throwable e) {

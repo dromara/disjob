@@ -102,10 +102,10 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                                   String serverTag,
                                   int sequenceBitLength,
                                   int workerIdBitLength) {
-        Assert.isTrue(!bizTag.contains(SEP), "Biz tag cannot contains '/': " + bizTag);
-        Assert.isTrue(!serverTag.contains(SEP), "Server tag cannot contains '/': " + serverTag);
+        Assert.isTrue(!bizTag.contains(SEP), () -> "Biz tag cannot contains '/': " + bizTag);
+        Assert.isTrue(!serverTag.contains(SEP), () -> "Server tag cannot contains '/': " + serverTag);
         int len = sequenceBitLength + workerIdBitLength;
-        Assert.isTrue(len <= 22, "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
+        Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
         this.serverTag = serverTag;
         String snowflakeRootPath = "/snowflake/" + bizTag;
         this.serverTagParentPath = snowflakeRootPath + "/tag";
@@ -206,7 +206,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                 byte[] workerIdData = getData(workerIdPath);
                 if (workerIdData != null) {
                     WorkerIdData data = WorkerIdData.deserialize(workerIdData);
-                    Assert.state(serverTag.equals(data.server), "Inconsistent server tag: " + serverTag + " != " + data.server);
+                    Assert.state(serverTag.equals(data.server), () -> "Inconsistent server tag: " + serverTag + " != " + data.server);
                 }
 
                 updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
@@ -303,7 +303,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             createEphemeral(serverTagPath, Bytes.toBytes(workerId));
         } else {
             int id = Bytes.toInt(serverTagData);
-            Assert.isTrue(id == workerId, "Reconnected worker id was changed, expect=" + workerId + ", actual=" + id);
+            Assert.isTrue(id == workerId, () -> "Reconnected worker id was changed, expect=" + workerId + ", actual=" + id);
         }
 
         String workerIdPath = workerIdParentPath + SEP + workerId;
@@ -312,7 +312,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             createEphemeral(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
         } else {
             WorkerIdData data = WorkerIdData.deserialize(workerIdData);
-            Assert.isTrue(serverTag.equals(data.server), "Reconnected server tag was changed, expect=" + serverTag + ", actual=" + data.server);
+            Assert.isTrue(serverTag.equals(data.server), () -> "Reconnected server tag was changed, expect=" + serverTag + ", actual=" + data.server);
             updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
         }
     }

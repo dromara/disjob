@@ -81,8 +81,8 @@ public abstract class TaskDispatcher implements Startable {
         List<DispatchParam> list = param.stream()
             .peek(e -> {
                 Assert.notNull(e.operation(), () -> "Dispatch task operation cannot be null: " + e);
-                Assert.isTrue(e.operation().isNotTrigger(), "Specific dispatch task operation cannot be trigger: " + e);
-                Assert.notNull(e.getWorker(), "Specific dispatch task worker cannot be null: " + e);
+                Assert.isTrue(e.operation().isNotTrigger(), () -> "Specific dispatch task operation cannot be trigger: " + e);
+                Assert.notNull(e.getWorker(), () -> "Specific dispatch task worker cannot be null: " + e);
             })
             .map(e -> new DispatchParam(e, null))
             .collect(Collectors.toList());

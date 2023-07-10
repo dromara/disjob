@@ -97,7 +97,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
                                   int sequenceBitLength,
                                   int workerIdBitLength) {
         int len = sequenceBitLength + workerIdBitLength;
-        Assert.isTrue(len <= 22, "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
+        Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
 
         this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
         this.bizTag = bizTag;
