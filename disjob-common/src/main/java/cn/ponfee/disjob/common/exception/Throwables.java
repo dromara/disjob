@@ -262,6 +262,10 @@ public final class Throwables {
             }
         }
 
+        static <E> void caught(ThrowingConsumer<E, ?> consumer, E arg) {
+            caught(consumer, arg, null);
+        }
+
         static <E> void caught(ThrowingConsumer<E, ?> consumer, E arg, Supplier<String> message) {
             try {
                 consumer.accept(arg);

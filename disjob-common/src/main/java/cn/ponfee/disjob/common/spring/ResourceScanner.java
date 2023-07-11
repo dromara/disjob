@@ -8,7 +8,9 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
 
 import java.io.IOException;
@@ -25,91 +28,87 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.Map.Entry;
 
 import static org.springframework.core.io.support.ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX;
 
 /**
  * <pre>
- *   用法：
- *   new ResourceScanner("∕**∕").scan4text("*.properties")
- *   new ResourceScanner("∕**∕").scan4text("*.class");
- *   new ResourceScanner("∕").scan4text("*.xml");
- *   new ResourceScanner("∕**∕").scan4text("*.xml")
+ *  资源扫描文件，用法：
+ *   new ResourceScanner("/*.template").scan4text()
+ *   new ResourceScanner("/**∕tika*.xml").scan4text()
  *
- *   new ResourceScanner("cn.ponfee").scan4class();
- *   new ResourceScanner("cn.ponfee").scan4class(new Class[] { Service.class });
- *   new ResourceScanner(ClassUtils.getPackagePath(XXX.class)).scan4text("abc.txt");
+ *   // findAllClassPathResources：“/*” 等同 “*”，“/”开头会被截取path.substring(1)
+ *   new ResourceScanner("*.xml").scan4binary()
+ *   new ResourceScanner("/*.xml").scan4binary()
+ *   new ResourceScanner("**∕*.xml").scan4binary()
+ *   new ResourceScanner("/**∕*.xml").scan4binary()
+ *   new ResourceScanner("/log4j2.xml.template").scan4binary()
+ *   new ResourceScanner("log4j2.xml.template").scan4binary()
+ *
+ *   new ResourceScanner("/cn/ponfee/commons/jce/*.class").scan4binary()
+ *   new ResourceScanner("/cn/ponfee/commons/jce/**∕*.class").scan4binary()
+ *
+ *   new ResourceScanner("/cn/ponfee/commons/base/**∕*.class").scan4class()
+ *   new ResourceScanner("/cn/ponfee/commons/**∕*.class").scan4class(null, new Class[] {Service.class})
+ *   new ResourceScanner("/cn/ponfee/commons/**∕*.class").scan4class(null, new Class[] {Component.class})
+ *   new ResourceScanner("/cn/ponfee/commons/**∕*.class").scan4class(new Class[]{Tuple.class}, null)
  * </pre>
- *
- * 资源扫描
  *
  * @author Ponfee
  * @see org.springframework.context.annotation.ClassPathBeanDefinitionScanner
  */
 public class ResourceScanner {
-
     private static final Logger LOG = LoggerFactory.getLogger(ResourceScanner.class);
 
-    private final List<String> scanPaths = new LinkedList<>();
+    private final List<String> locationPatterns;
 
-    /**
-     * @param paths 扫描路径
-     */
-    public ResourceScanner(String... paths) {
-        if (paths == null || paths.length == 0) {
-            paths = new String[] { "*" };
+    public ResourceScanner(String... locationPatterns) {
+        if (ArrayUtils.isEmpty(locationPatterns)) {
+            locationPatterns = new String[]{"*"};
         }
-
-        Collections.addAll(this.scanPaths, paths);
+        this.locationPatterns = Arrays.asList(locationPatterns);
     }
 
     /**
      * 类扫描
-     * @return
+     *
+     * @return result of class set
      */
-    @SuppressWarnings("unchecked")
     public Set<Class<?>> scan4class() {
-        return scan4class(new Class[0]);
+        return scan4class(null, null);
     }
 
     /**
      * 类扫描
-     * @param annotations 包含指定注解的类
-     * @return
+     *
+     * @param assignableTypes 扫描指定的子类
+     * @param annotationTypes 扫描包含指定注解的类
+     * @return result of class set
      */
-    @SuppressWarnings("unchecked")
-    public Set<Class<?>> scan4class(Class<? extends Annotation>... annotations) {
-        if (this.scanPaths.isEmpty()) {
-            return Collections.emptySet();
-        }
-
+    public Set<Class<?>> scan4class(Class<?>[] assignableTypes, Class<? extends Annotation>[] annotationTypes) {
         List<TypeFilter> typeFilters = new LinkedList<>();
-        if (annotations != null) {
-            for (Class<? extends Annotation> annotation : annotations) {
-                typeFilters.add(new AnnotationTypeFilter(annotation, false));
-            }
+
+        if (ArrayUtils.isNotEmpty(assignableTypes)) {
+            Arrays.stream(assignableTypes).map(AssignableTypeFilter::new).forEach(typeFilters::add);
+        }
+        if (ArrayUtils.isNotEmpty(annotationTypes)) {
+            // considerMetaAnnotations=true: @Service -> @Component
+            Arrays.stream(annotationTypes).map(AnnotationTypeFilter::new).forEach(typeFilters::add);
         }
 
         Set<Class<?>> result = new HashSet<>();
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        MetadataReaderFactory factory = new CachingMetadataReaderFactory(resolver);
         try {
-            for (String packageName : this.scanPaths) {
-                packageName = packageName.replace('.', '/');
-                Resource[] resources = resolver.getResources(
-                    CLASSPATH_ALL_URL_PREFIX + packageName + "/**/*.class"
-                );
-                MetadataReaderFactory mrf = new CachingMetadataReaderFactory(resolver);
-                for (Resource resource : resources) {
+            for (String locationPattern : this.locationPatterns) {
+                for (Resource resource : resolver.getResources(CLASSPATH_ALL_URL_PREFIX + locationPattern)) {
                     if (!resource.isReadable()) {
                         continue;
                     }
-
-                    MetadataReader reader = mrf.getMetadataReader(resource);
-                    if (!this.matchesFilter(reader, typeFilters, mrf)) {
+                    MetadataReader reader = factory.getMetadataReader(resource);
+                    if (!matches(typeFilters, reader, factory)) {
                         continue;
                     }
-
                     try {
                         result.add(Class.forName(reader.getClassMetadata().getClassName()));
                     } catch (Throwable e) {
@@ -126,96 +125,60 @@ public class ResourceScanner {
     /**
      * Scan as byte array
      *
-     * @return Map<String, byte[]>
+     * @return type of Map<String, byte[]> result
      */
     public Map<String, byte[]> scan4binary() {
-        return scan4binary("*");
+        return scan(IOUtils::toByteArray);
     }
 
     /**
-     * Scan as byte array
+     * Scan as string
      *
-     * @param wildcard 通配符
-     * @return a result of Map<String, byte[]>
+     * @return type of Map<String, String> result
      */
-    public Map<String, byte[]> scan4binary(String wildcard) {
-        if (wildcard == null) {
-            wildcard = "*";
-        }
+    public Map<String, String> scan4text() {
+        return scan4text(Charset.defaultCharset());
+    }
 
-        Map<String, byte[]> result = new HashMap<>(16);
+    /**
+     * Scan as string
+     *
+     * @param charset the charset
+     * @return type of Map<String, String> result
+     */
+    public Map<String, String> scan4text(Charset charset) {
+        return scan(e -> IOUtils.toString(e, charset));
+    }
+
+    // --------------------------------------------------------------------------private methods
+
+    private <T> Map<String, T> scan(ThrowingFunction<InputStream, T, ?> mapper) {
+        Map<String, T> result = new HashMap<>(16);
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
-            for (String path : this.scanPaths) {
-                Resource[] resources = resolver.getResources(CLASSPATH_ALL_URL_PREFIX + path + wildcard);
-                for (Resource resource : resources) {
+            for (String locationPattern : locationPatterns) {
+                for (Resource resource : resolver.getResources(CLASSPATH_ALL_URL_PREFIX + locationPattern)) {
                     if (!resource.isReadable()) {
                         continue;
                     }
-                    try (InputStream in = resource.getInputStream()) {
-                        result.put(resource.getFilename(), IOUtils.toByteArray(in));
-                    } catch (IOException e) {
-                        LOG.error("scan binary error", e);
+                    try (InputStream input = resource.getInputStream()) {
+                        result.put(resource.getFilename(), mapper.apply(input));
+                    } catch (Throwable e) {
+                        LOG.error("Resource scan location pattern failed: " + locationPattern, e);
                     }
                 }
             }
-            return result;
         } catch (IOException e) {
             return ExceptionUtils.rethrow(e);
-        }
-    }
-
-    /**
-     * 文本扫描
-     *
-     * @return
-     */
-    public Map<String, String> scan4text() {
-        return scan4text(null, Charset.defaultCharset());
-    }
-
-    /**
-     * 文本扫描
-     *
-     * @param wildcard
-     * @return
-     */
-    public Map<String, String> scan4text(String wildcard) {
-        return scan4text(wildcard, Charset.defaultCharset());
-    }
-
-    /**
-     * 文本扫描
-     *
-     * @param wildcard
-     * @param charset
-     * @return
-     */
-    public Map<String, String> scan4text(String wildcard, Charset charset) {
-        Map<String, String> result = new HashMap<>(16);
-        for (Entry<String, byte[]> entry : scan4binary(wildcard).entrySet()) {
-            result.put(entry.getKey(), new String(entry.getValue(), charset));
         }
         return result;
     }
 
-    // --------------------------------------------------------------------------private methods
-    /**
-     * 检查当前扫描到的Bean含有任何一个指定的注解标记
-     *
-     * @param reader the MetadataReader
-     * @param typeFilters the List<TypeFilter>
-     * @param factory the MetadataReaderFactory
-     * @return {@code true} means matched
-     * @throws IOException if occur IOException
-     */
-    private boolean matchesFilter(MetadataReader reader, List<TypeFilter> typeFilters,
-                                  MetadataReaderFactory factory) throws IOException {
-        if (typeFilters.isEmpty()) {
+    private static boolean matches(List<TypeFilter> filters, MetadataReader reader, MetadataReaderFactory factory) throws IOException {
+        if (filters.isEmpty()) {
             return true;
         }
-
-        for (TypeFilter filter : typeFilters) {
+        for (TypeFilter filter : filters) {
             if (filter.match(reader, factory)) {
                 return true;
             }
