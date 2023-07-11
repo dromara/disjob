@@ -123,11 +123,11 @@ public class RedisTaskReceiver extends TaskReceiver {
                     }
 
                     try {
-                        return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, gropedWorker.keyAndArgs);
+                        return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
                     } catch (Exception e) {
                         if (RedisLock.exceptionContainsNoScriptError(e)) {
                             log.info(e.getMessage());
-                            return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, gropedWorker.keyAndArgs);
+                            return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
                         } else {
                             log.error("Call redis eval sha occur error.", e);
                             return ExceptionUtils.rethrow(e);
@@ -165,14 +165,14 @@ public class RedisTaskReceiver extends TaskReceiver {
 
     private class GroupedWorker {
         private final Worker worker;
-        private final byte[][] keyAndArgs;
+        private final byte[][] keysAndArgs;
         private final RedisKeyRenewal redisKeyRenewal;
         private volatile boolean skipNext = false;
 
         public GroupedWorker(Worker worker) {
             byte[] key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker).getBytes();
             this.worker = worker;
-            this.keyAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
+            this.keysAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
             this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, key);
         }
     }

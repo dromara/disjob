@@ -52,9 +52,9 @@
   <select id="getByJobIdAndTriggerTimeAndRunType" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE job_id=#{jobId,jdbcType=BIGINT}
-      AND trigger_time=#{triggerTime,jdbcType=BIGINT}
-      AND run_type=#{runType,jdbcType=TINYINT}
+    WHERE job_id = #{jobId,jdbcType=BIGINT}
+      AND trigger_time = #{triggerTime,jdbcType=BIGINT}
+      AND run_type = #{runType,jdbcType=TINYINT}
   </select>
 
   <select id="getWnstanceId" parameterType="_long" resultType="long">

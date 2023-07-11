@@ -23,8 +23,8 @@
   </select>
   <update id="testUpdateRemark">
     UPDATE <include refid="Table_Name" />
-    SET remark=#{remark,jdbcType=VARCHAR}, version=version+1
-    WHERE job_id=#{jobId,jdbcType=BIGINT}
+    SET remark = #{remark,jdbcType=VARCHAR}, version = version+1
+    WHERE job_id = #{jobId,jdbcType=BIGINT}
   </update>
   <!-- ********************use int test end******************** -->
 

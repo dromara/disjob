@@ -27,10 +27,10 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
         this.jobManager = jobManager;
     }
 
-    public final void createThenSaveAndDispatch(SchedJob job, RunType runType, long triggerTime) throws JobException {
-        T ti = create(job, runType, triggerTime);
-        if (jobManager.createInstance(job, ti)) {
-            dispatch(job, ti);
+    public final void createWithSaveAndDispatch(SchedJob job, RunType runType, long triggerTime) throws JobException {
+        T triggerInstance = create(job, runType, triggerTime);
+        if (jobManager.createInstance(job, triggerInstance)) {
+            dispatch(job, triggerInstance);
         }
     }
 

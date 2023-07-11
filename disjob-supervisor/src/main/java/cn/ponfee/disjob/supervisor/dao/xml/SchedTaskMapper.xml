@@ -128,10 +128,10 @@
   <update id="batchUpdateWorker" parameterType="collection">
     <foreach collection="collection" item="item" separator=";">
       UPDATE <include refid="Table_Name" />
-      SET worker=#{item.worker,jdbcType=VARCHAR},
-          version=version+1
-      WHERE task_id=#{item.taskId,jdbcType=BIGINT}
-        AND execute_state=10
+      SET worker = #{item.worker,jdbcType=VARCHAR},
+          version = version+1
+      WHERE task_id = #{item.taskId,jdbcType=BIGINT}
+        AND execute_state = 10
     </foreach>
   </update>
 

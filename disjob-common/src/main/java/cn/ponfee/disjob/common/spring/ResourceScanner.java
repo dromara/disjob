@@ -38,15 +38,15 @@ import static org.springframework.core.io.support.ResourcePatternResolver.CLASSP
  *   new ResourceScanner("/**∕tika*.xml").scan4text()
  *
  *   // findAllClassPathResources：“/*” 等同 “*”，“/”开头会被截取path.substring(1)
- *   new ResourceScanner("*.xml").scan4binary()
- *   new ResourceScanner("/*.xml").scan4binary()
- *   new ResourceScanner("**∕*.xml").scan4binary()
- *   new ResourceScanner("/**∕*.xml").scan4binary()
- *   new ResourceScanner("/log4j2.xml.template").scan4binary()
- *   new ResourceScanner("log4j2.xml.template").scan4binary()
+ *   new ResourceScanner("*.xml").scan4bytes()
+ *   new ResourceScanner("/*.xml").scan4bytes()
+ *   new ResourceScanner("**∕*.xml").scan4bytes()
+ *   new ResourceScanner("/**∕*.xml").scan4bytes()
+ *   new ResourceScanner("log4j2.xml.template").scan4bytes()
+ *   new ResourceScanner("/log4j2.xml.template").scan4bytes()
  *
- *   new ResourceScanner("/cn/ponfee/commons/jce/*.class").scan4binary()
- *   new ResourceScanner("/cn/ponfee/commons/jce/**∕*.class").scan4binary()
+ *   new ResourceScanner("/cn/ponfee/commons/jce/*.class").scan4bytes()
+ *   new ResourceScanner("/cn/ponfee/commons/jce/**∕*.class").scan4bytes()
  *
  *   new ResourceScanner("/cn/ponfee/commons/base/**∕*.class").scan4class()
  *   new ResourceScanner("/cn/ponfee/commons/**∕*.class").scan4class(null, new Class[] {Service.class})
@@ -60,12 +60,28 @@ import static org.springframework.core.io.support.ResourcePatternResolver.CLASSP
 public class ResourceScanner {
     private static final Logger LOG = LoggerFactory.getLogger(ResourceScanner.class);
 
+    /**
+     * Prefix of resource schema.
+     *
+     * @see org.springframework.core.io.support.ResourcePatternResolver#CLASSPATH_ALL_URL_PREFIX
+     * @see org.springframework.util.ResourceUtils#CLASSPATH_URL_PREFIX
+     * @see org.springframework.util.ResourceUtils#FILE_URL_PREFIX
+     * @see org.springframework.util.ResourceUtils#JAR_URL_PREFIX
+     * @see org.springframework.util.ResourceUtils#WAR_URL_PREFIX
+     */
+    private final String urlPrefix;
+
     private final List<String> locationPatterns;
 
     public ResourceScanner(String... locationPatterns) {
+        this(CLASSPATH_ALL_URL_PREFIX, locationPatterns);
+    }
+
+    public ResourceScanner(String urlPrefix, String[] locationPatterns) {
         if (ArrayUtils.isEmpty(locationPatterns)) {
             locationPatterns = new String[]{"*"};
         }
+        this.urlPrefix = urlPrefix;
         this.locationPatterns = Arrays.asList(locationPatterns);
     }
 
@@ -101,7 +117,7 @@ public class ResourceScanner {
         MetadataReaderFactory factory = new CachingMetadataReaderFactory(resolver);
         try {
             for (String locationPattern : this.locationPatterns) {
-                for (Resource resource : resolver.getResources(CLASSPATH_ALL_URL_PREFIX + locationPattern)) {
+                for (Resource resource : resolver.getResources(urlPrefix + locationPattern)) {
                     if (!resource.isReadable()) {
                         continue;
                     }
@@ -127,7 +143,7 @@ public class ResourceScanner {
      *
      * @return type of Map<String, byte[]> result
      */
-    public Map<String, byte[]> scan4binary() {
+    public Map<String, byte[]> scan4bytes() {
         return scan(IOUtils::toByteArray);
     }
 
@@ -157,7 +173,7 @@ public class ResourceScanner {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
             for (String locationPattern : locationPatterns) {
-                for (Resource resource : resolver.getResources(CLASSPATH_ALL_URL_PREFIX + locationPattern)) {
+                for (Resource resource : resolver.getResources(urlPrefix + locationPattern)) {
                     if (!resource.isReadable()) {
                         continue;
                     }

@@ -78,7 +78,8 @@ public final class Worker extends Server {
             return false;
         }
         Worker other = (Worker) o;
-        return this.group.equals(other.group)
+        return super.equals(other)
+            && this.group.equals(other.group)
             && this.workerId.equals(other.workerId);
     }
 
@@ -130,16 +131,37 @@ public final class Worker extends Server {
             : groups.stream().map(e -> new Worker(e, workerId, host, port)).collect(Collectors.toList());
     }
 
+    /**
+     * 判断当前Worker机器的group是否匹配任务分配的group
+     *
+     * @param taskGroup the task group
+     * @return {@code true} if matched
+     */
     public boolean matchesGroup(String taskGroup) {
-        // Strings.matches(taskGroup, group);
-        // new org.springframework.util.AntPathMatcher();
         return groups.contains(taskGroup);
     }
 
-    public boolean equalsGroup(Worker other) {
+    /**
+     * 判断当前Worker机器的group是否匹配任务分配的worker
+     *
+     * @param other the task assigned worker
+     * @return {@code true} if matched worker
+     */
+    public boolean matchesWorker(Worker other) {
         return super.equals(other)
-            && Objects.equals(workerId, other.workerId)
-            && matchesGroup(other.group);
+            && this.matchesGroup(other.group)
+            && this.workerId.equals(other.workerId);
+    }
+
+    /**
+     * 判断是否同一台机器：worker-id可以不相等(机器重启)
+     *
+     * @param other the other worker
+     * @return {@code true} if same worker
+     */
+    public boolean sameWorker(Worker other) {
+        return super.equals(other)
+            && this.matchesGroup(other.group);
     }
 
     public static Worker current() {

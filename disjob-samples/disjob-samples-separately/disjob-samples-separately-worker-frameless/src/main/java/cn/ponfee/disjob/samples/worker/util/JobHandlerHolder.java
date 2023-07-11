@@ -34,6 +34,7 @@ public class JobHandlerHolder {
                 continue;
             }
             Class<? extends JobHandler<?>> type = (Class<? extends JobHandler<?>>) clazz;
+            map.put(type.getName(), type);
             map.put(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, type.getSimpleName()), type);
             Component component = AnnotatedElementUtils.findMergedAnnotation(clazz, Component.class);
             if (component != null) {

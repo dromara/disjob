@@ -44,7 +44,7 @@ public class LocalPriorityExecutionRouter extends ExecutionRouter {
         if (current == null) {
             return null;
         }
-        return workers.stream().filter(current::equalsGroup).findAny().orElse(null);
+        return workers.stream().filter(current::matchesWorker).findAny().orElse(null);
     }
 
 }

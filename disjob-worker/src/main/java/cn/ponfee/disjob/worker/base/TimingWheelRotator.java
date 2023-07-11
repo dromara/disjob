@@ -137,17 +137,18 @@ public class TimingWheelRotator implements Startable {
     private void process(List<ExecuteTaskParam> tasks) {
         List<ExecuteTaskParam> matchedTasks = tasks.stream()
             .filter(e -> {
-                if (currentWorker.equalsGroup(e.getWorker())) {
-                    return true;
+                Worker assignedWorker = e.getWorker();
+                if (!currentWorker.sameWorker(assignedWorker)) {
+                    LOG.error("Processed unmatched worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
+                    return false;
                 }
-                LOG.error("The current worker '{}' cannot match expect worker '{}'", currentWorker, e.getWorker());
-                return false;
-            })
-            .peek(e -> {
-                if (LOG.isInfoEnabled()) {
-                    String triggerTime = DATE_FORMAT.format(e.getTriggerTime());
-                    LOG.info("Process task {} | {} | {} | {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime);
+                if (!currentWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
+                    // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却Http方式分发给新的WorkerId(同机器同端口)
+                    // 这种情况：1、可以剔除掉，等待Supervisor重新分发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍；
+                    LOG.warn("Processed former worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
                 }
+                LOG.info("Processed task {} | {} | {} | {}", e.getTaskId(), e.getOperation(), assignedWorker, DATE_FORMAT.format(e.getTriggerTime()));
+                return true;
             })
             .collect(Collectors.toList());
 
