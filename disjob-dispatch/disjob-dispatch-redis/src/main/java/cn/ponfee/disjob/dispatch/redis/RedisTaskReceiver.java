@@ -9,8 +9,8 @@
 package cn.ponfee.disjob.dispatch.redis;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.lock.RedisLock;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
+import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.core.base.AbstractHeartbeatThread;
 import cn.ponfee.disjob.core.base.JobConstants;
@@ -18,9 +18,7 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.data.redis.connection.ReturnType;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 
@@ -47,22 +45,12 @@ public class RedisTaskReceiver extends TaskReceiver {
      *   ltrim(key, n, -1)
      * }</pre>
      */
-    private static final RedisScript<List> BATCH_POP_SCRIPT_OBJECT = RedisScript.of(
+    private static final RedisScript<List> BATCH_POP_SCRIPT = RedisScript.of(
         "local ret = redis.call('lrange', KEYS[1], 0, ARGV[1]-1); \n" +
         "redis.call('ltrim', KEYS[1], ARGV[1], -1);               \n" +
         "return ret;                                              \n",
         List.class
     );
-
-    /**
-     * Redis lua script sha1
-     */
-    private static final String BATCH_POP_SCRIPT_SHA1 = BATCH_POP_SCRIPT_OBJECT.getSha1();
-
-    /**
-     * Lua script text byte array
-     */
-    private static final byte[] BATCH_POP_SCRIPT_BYTES = BATCH_POP_SCRIPT_OBJECT.getScriptAsString().getBytes(UTF_8);
 
     /**
      * List left pop batch size
@@ -117,23 +105,8 @@ public class RedisTaskReceiver extends TaskReceiver {
                     gropedWorker.skipNext = false;
                     continue;
                 }
-                List<byte[]> received = redisTemplate.execute((RedisCallback<List<byte[]>>) conn -> {
-                    if (conn.isPipelined() || conn.isQueueing()) {
-                        throw new UnsupportedOperationException("Unsupported pipelined or queueing redis operations.");
-                    }
-
-                    try {
-                        return conn.evalSha(BATCH_POP_SCRIPT_SHA1, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
-                    } catch (Exception e) {
-                        if (RedisLock.exceptionContainsNoScriptError(e)) {
-                            log.info(e.getMessage());
-                            return conn.eval(BATCH_POP_SCRIPT_BYTES, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
-                        } else {
-                            log.error("Call redis eval sha occur error.", e);
-                            return ExceptionUtils.rethrow(e);
-                        }
-                    }
-                });
+                List<byte[]> received = RedisTemplateUtils.executeScript(
+                    redisTemplate, BATCH_POP_SCRIPT, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
 
                 gropedWorker.redisKeyRenewal.renewIfNecessary();
 

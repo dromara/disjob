@@ -18,6 +18,7 @@ import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
@@ -39,7 +40,16 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
  */
 public abstract class RedisServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
+    private static final RedisScript<List> DISCOVERY_SCRIPT = RedisScript.of(
+        "redis.call('zremrangebyscore', KEYS[1], '-inf', ARGV[1]);          \n" +
+        "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '+inf'); \n" +
+        "redis.call('pexpire', KEYS[1], ARGV[2]);                           \n" +
+        "return ret;                                                        \n",
+        List.class
+    );
+
     private static final long REDIS_KEY_TTL_MILLIS = 30L * 86400 * 1000;
+    private static final String REDIS_KEY_TTL_MILLIS_STRING = Long.toString(REDIS_KEY_TTL_MILLIS);
     private static final String CHANNEL = "channel";
 
     /**
@@ -60,6 +70,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     // -------------------------------------------------Discovery
 
     private volatile long nextRefreshTimeMillis = 0;
+    private final List<String> discoveryRedisKey;
 
     // -------------------------------------------------Subscribe
 
@@ -71,6 +82,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
+        this.discoveryRedisKey = Collections.singletonList(discoveryRootPath);
         this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(
             1, NamedThreadFactory.builder().prefix("redis_server_registry").daemon(true).build()
         );
@@ -234,23 +246,12 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private synchronized void doRefreshDiscoveryServers() {
-        long now = System.currentTimeMillis();
-        List<Object> result = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
-            @Override
-            public Void execute(RedisOperations operations) {
-                operations.opsForZSet().removeRangeByScore(discoveryRootPath, 0, now);
-                operations.opsForZSet().rangeByScore(discoveryRootPath, now, Long.MAX_VALUE);
-                operations.expire(discoveryRootPath, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
+        List<String> discovered = stringRedisTemplate.execute(
+            DISCOVERY_SCRIPT, discoveryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS_STRING);
 
-                // in pipelined, must return null
-                return null;
-            }
-        });
-
-        Set<String> discovered = (Set<String>) result.get(1);
         if (CollectionUtils.isEmpty(discovered)) {
             log.warn("Not discovered available {} from redis.", discoveryRole.name());
-            discovered = Collections.emptySet();
+            discovered = Collections.emptyList();
         }
 
         List<D> servers = discovered.stream().<D>map(discoveryRole::deserialize).collect(Collectors.toList());

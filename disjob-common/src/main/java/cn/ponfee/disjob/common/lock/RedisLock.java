@@ -8,11 +8,10 @@
 
 package cn.ponfee.disjob.common.lock;
 
+import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -326,21 +325,7 @@ public class RedisLock implements Lock {
         final byte[][] keysAndArgs = {lockKey, timeoutMillis, getLockValue()};
 
         // ret: null-获取锁成功；x-锁被其它线程持有(pttl的返回值)；
-        Long ret = redisTemplate.execute((RedisCallback<Long>) conn -> {
-            if (conn.isPipelined() || conn.isQueueing()) {
-                throw new UnsupportedOperationException("Unsupported pipelined or queueing eval redis lua script.");
-            }
-            try {
-                return conn.evalSha(LOCK_SCRIPT.getSha1(), ReturnType.INTEGER, 1, keysAndArgs);
-            } catch (Exception e) {
-                if (exceptionContainsNoScriptError(e)) {
-                    LOG.info(e.getMessage());
-                    return conn.eval(LOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.INTEGER, 1, keysAndArgs);
-                } else {
-                    return ExceptionUtils.rethrow(e);
-                }
-            }
-        });
+        Long ret = RedisTemplateUtils.executeScript(redisTemplate, LOCK_SCRIPT, ReturnType.INTEGER, 1, keysAndArgs);
 
         return ret == null;
     }
@@ -354,41 +339,9 @@ public class RedisLock implements Lock {
         final byte[][] keysAndArgs = {lockKey, timeoutMillis, getLockValue()};
 
         // ret: null-当前线程未持有锁；0-当前线程有重入且非最后一次释放锁；1-当前线程最后一次释放锁成功；
-        Long ret = redisTemplate.execute((RedisCallback<Long>) conn -> {
-            if (conn.isPipelined() || conn.isQueueing()) {
-                // 在exec/closePipeline中会添加lua script sha1，所以这里只需要使用eval
-                // return conn.eval(UNLOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.INTEGER, 1, keysAndArgs);
-                throw new UnsupportedOperationException("Unsupported pipelined or queueing eval redis lua script.");
-            }
-            try {
-                return conn.evalSha(UNLOCK_SCRIPT.getSha1(), ReturnType.INTEGER, 1, keysAndArgs);
-            } catch (Exception e) {
-                if (exceptionContainsNoScriptError(e)) {
-                    LOG.info(e.getMessage());
-                    return conn.eval(UNLOCK_SCRIPT.getScriptAsString().getBytes(UTF_8), ReturnType.INTEGER, 1, keysAndArgs);
-                } else {
-                    return ExceptionUtils.rethrow(e);
-                }
-            }
-        });
+        Long ret = RedisTemplateUtils.executeScript(redisTemplate, UNLOCK_SCRIPT, ReturnType.INTEGER, 1, keysAndArgs);
 
         return ret != null && ret == 1;
-    }
-
-    public static boolean exceptionContainsNoScriptError(Throwable e) {
-        if (!(e instanceof NonTransientDataAccessException)) {
-            return false;
-        }
-
-        Throwable current = e;
-        while (current != null) {
-            String exMessage = current.getMessage();
-            if (exMessage != null && exMessage.contains("NOSCRIPT")) {
-                return true;
-            }
-            current = current.getCause();
-        }
-        return false;
     }
 
     private byte[] getLockValue() {
