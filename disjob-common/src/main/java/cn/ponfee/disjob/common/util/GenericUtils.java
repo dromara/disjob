@@ -14,6 +14,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 泛型工具类
@@ -24,7 +25,7 @@ import java.util.Map.Entry;
  */
 public final class GenericUtils {
 
-    private static final Map<Class<?>, Map<String, Class<?>>> VARIABLE_TYPE_MAPPING = new HashMap<>();
+    private static final Map<Class<?>, Map<String, Class<?>>> VARIABLE_TYPE_MAPPING = new ConcurrentHashMap<>();
 
     /**
      * map泛型协变
@@ -291,8 +292,9 @@ public final class GenericUtils {
             return (Class<T>) Object.class;
         }
 
-        return (Class<T>) SynchronizedCaches.get(clazz, VARIABLE_TYPE_MAPPING, GenericUtils::getActualTypeVariableMapping)
-                                            .getOrDefault(getTypeVariableName(null, var).get(0), Object.class);
+        return (Class<T>) VARIABLE_TYPE_MAPPING
+            .computeIfAbsent(clazz, GenericUtils::getActualTypeVariableMapping)
+            .getOrDefault(getTypeVariableName(null, var).get(0), Object.class);
     }
 
     private static void resolveMapping(Map<String, Class<?>> result, Type type) {

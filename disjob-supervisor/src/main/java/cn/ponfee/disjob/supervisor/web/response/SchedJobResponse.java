@@ -43,7 +43,6 @@ public class SchedJobResponse extends ToJsonString implements Serializable {
     private Integer collisionStrategy;
     private Integer misfireStrategy;
     private Integer routeStrategy;
-    private Integer weightScore;
     private Long lastTriggerTime;
     private Long nextTriggerTime;
     private String alarmSubscribers;

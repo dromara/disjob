@@ -152,7 +152,7 @@ SELECT * FROM sched_job;
 SELECT * from sched_instance;
 SELECT * from sched_task;
 
--- The following SQL can be executed to trigger the execution of the JOB again
+-- The following SQL can be executed to trigger the execution of the Job again
 UPDATE sched_job SET job_state=1, last_trigger_time=NULL, next_trigger_time=(unix_timestamp()*1000+2000) WHERE job_name='prime-counter';
 ```
 

@@ -44,7 +44,6 @@ public class AddSchedJobRequest extends ToJsonString implements Serializable {
     private Integer collisionStrategy;
     private Integer misfireStrategy;
     private Integer routeStrategy;
-    private Integer weightScore;
     private String alarmSubscribers;
     private String remark;
 

@@ -48,7 +48,6 @@ CREATE TABLE `sched_job` (
   `collision_strategy`  TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行；2-串行；3-覆盖(先取消上一次的执行)；4-丢弃；',
   `misfire_strategy`    TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '过期策略：1-触发最近一次；2-丢弃；3-触发所有；',
   `route_strategy`      TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '任务分配给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；',
-  `weight_score`        TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT 'Job的权重分数，用于分配各Job的调度资源(分数越高表示需要占用的资源越多)',
   `last_trigger_time`   BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '最近一次的触发时间(毫秒时间戳)',
   `next_trigger_time`   BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '下一次的触发时间(毫秒时间戳)',
   `next_scan_time`      DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '下一次的扫描时间',

@@ -138,11 +138,6 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer routeStrategy;
 
     /**
-     * Job的权重分数，用于分配各Job的调度资源(分数越高表示需要占用的资源越多)
-     */
-    private Integer weightScore;
-
-    /**
      * 最近一次的触发时间(毫秒时间戳)
      */
     private Long lastTriggerTime;
@@ -217,9 +212,6 @@ public class SchedJob extends BaseEntity implements Serializable {
         if (jobType == null) {
             this.jobType = JobType.NORMAL.value();
         }
-        if (weightScore == null) {
-            this.weightScore = 1;
-        }
 
         if (retryType == null) {
             this.retryType = RetryType.NONE.value();
@@ -254,7 +246,6 @@ public class SchedJob extends BaseEntity implements Serializable {
         // verify
         JobState.of(jobState);
         JobType.of(jobType);
-        Assert.isTrue(weightScore > 0, () -> "Invalid weight score: " + weightScore);
         Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
         CollisionStrategy.of(collisionStrategy);
         MisfireStrategy.of(misfireStrategy);
