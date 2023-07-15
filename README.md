@@ -58,9 +58,10 @@ disjob                                                    # 主项目
 - Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor负责生成任务，把任务分发给Worker执行，支持的任务分发方式有：Redis、Http
 - 需要指定Job的分组(job-group)，Job的任务只会分发给指定组的Worker执行
-- 提供拆分任务的能力，重写拆分方法[`JobHandler#split`](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现任务分治并行执行
-- 支持暂停和取消运行中的任务，亦可恢复继续执行被暂停的任务
+- 提供拆分任务的能力，重写拆分方法[`JobHandler#split`](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现任务分治及并行执行
+- 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(checkpoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
+- 支持广播任务，广播任务会分发给job-group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
 - 支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A->B,C,(D->E)->F,E->G
 
