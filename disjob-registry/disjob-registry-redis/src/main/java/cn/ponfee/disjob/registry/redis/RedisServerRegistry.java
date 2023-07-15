@@ -17,7 +17,8 @@ import cn.ponfee.disjob.registry.EventType;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
@@ -40,16 +41,26 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
  */
 public abstract class RedisServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
+    private static final RedisScript<Void> REGISTRY_SCRIPT = RedisScript.of(
+        "local score  = ARGV[1];                        \n" +
+        "local expire = ARGV[2];                        \n" +
+        "local length = #ARGV;                          \n" +
+        "for i = 3,length do                            \n" +
+        "  redis.call('zadd', KEYS[1], score, ARGV[i]); \n" +
+        "end                                            \n" +
+        "redis.call('pexpire', KEYS[1], expire);        \n" ,
+        Void.class
+    );
+
     private static final RedisScript<List> DISCOVERY_SCRIPT = RedisScript.of(
         "redis.call('zremrangebyscore', KEYS[1], '-inf', ARGV[1]);          \n" +
         "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '+inf'); \n" +
         "redis.call('pexpire', KEYS[1], ARGV[2]);                           \n" +
-        "return ret;                                                        \n",
+        "return ret;                                                        \n" ,
         List.class
     );
 
-    private static final long REDIS_KEY_TTL_MILLIS = 30L * 86400 * 1000;
-    private static final String REDIS_KEY_TTL_MILLIS_STRING = Long.toString(REDIS_KEY_TTL_MILLIS);
+    private static final String REDIS_KEY_TTL_MILLIS = Long.toString(30L * 86400 * 1000);
     private static final String CHANNEL = "channel";
 
     /**
@@ -66,6 +77,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private final long sessionTimeoutMs;
     private final ScheduledThreadPoolExecutor registryScheduledExecutor;
+    private final List<String> registryRedisKey;
 
     // -------------------------------------------------Discovery
 
@@ -82,6 +94,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
+        this.registryRedisKey = Collections.singletonList(registryRootPath);
         this.discoveryRedisKey = Collections.singletonList(discoveryRootPath);
         this.registryScheduledExecutor = new ScheduledThreadPoolExecutor(
             1, NamedThreadFactory.builder().prefix("redis_server_registry").daemon(true).build()
@@ -211,27 +224,43 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         doRefreshDiscoveryServers();
     }
 
+    /**
+     * <pre>
+     * Also use pipelined
+     *
+     * {@code
+     *    Set<ZSetOperations.TypedTuple<String>> tuples = servers
+     *        .stream()
+     *        .map(e -> ZSetOperations.TypedTuple.of(e.serialize(), score))
+     *        .collect(Collectors.toSet());
+     *
+     *    stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
+     *        @Override
+     *        public Void execute(RedisOperations operations) {
+     *            operations.opsForZSet().add(registryRootPath, tuples);
+     *            operations.expire(registryRootPath, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
+     *            // in pipelined, must return null
+     *            return null;
+     *        }
+     *    });
+     * }
+     * </pre>
+     *
+     * @param servers the registry servers
+     */
     private void doRegister(Set<R> servers) {
         if (CollectionUtils.isEmpty(servers)) {
             return;
         }
 
-        Double score = (double) (System.currentTimeMillis() + sessionTimeoutMs);
-        Set<ZSetOperations.TypedTuple<String>> tuples = servers
-            .stream()
-            .map(e -> ZSetOperations.TypedTuple.of(e.serialize(), score))
-            .collect(Collectors.toSet());
-
-        stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
-            @Override
-            public Void execute(RedisOperations operations) {
-                operations.opsForZSet().add(registryRootPath, tuples);
-                operations.expire(registryRootPath, REDIS_KEY_TTL_MILLIS, TimeUnit.MILLISECONDS);
-
-                // in pipelined, must return null
-                return null;
-            }
-        });
+        int i = 0;
+        Object[] args = new Object[servers.size() + 2];
+        args[i++] = Long.toString(System.currentTimeMillis() + sessionTimeoutMs);
+        args[i++] = REDIS_KEY_TTL_MILLIS;
+        for (R server : servers) {
+            args[i++] = server.serialize();
+        }
+        stringRedisTemplate.execute(REGISTRY_SCRIPT, registryRedisKey, args);
     }
 
     private void doRefreshDiscoveryServersIfNecessary() {
@@ -247,7 +276,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private synchronized void doRefreshDiscoveryServers() {
         List<String> discovered = stringRedisTemplate.execute(
-            DISCOVERY_SCRIPT, discoveryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS_STRING);
+            DISCOVERY_SCRIPT, discoveryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
+        );
 
         if (CollectionUtils.isEmpty(discovered)) {
             log.warn("Not discovered available {} from redis.", discoveryRole.name());

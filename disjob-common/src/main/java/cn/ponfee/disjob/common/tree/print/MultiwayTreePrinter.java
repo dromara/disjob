@@ -36,7 +36,8 @@ public final class MultiwayTreePrinter<T> {
         this.nodeChildren = nodeChildren;
     }
 
-    /*// DFS递归方式
+    /*
+    // DFS递归方式
     public void print(T root) throws IOException {
         print("", "", "", root);
     }

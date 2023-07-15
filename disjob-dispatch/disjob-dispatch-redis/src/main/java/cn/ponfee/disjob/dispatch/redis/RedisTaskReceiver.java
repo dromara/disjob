@@ -48,7 +48,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     private static final RedisScript<List> BATCH_POP_SCRIPT = RedisScript.of(
         "local ret = redis.call('lrange', KEYS[1], 0, ARGV[1]-1); \n" +
         "redis.call('ltrim', KEYS[1], ARGV[1], -1);               \n" +
-        "return ret;                                              \n",
+        "return ret;                                              \n" ,
         List.class
     );
 

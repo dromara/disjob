@@ -76,32 +76,32 @@ public class RedisLock implements Lock {
 
     /**
      * <pre>
-     * KEYS[1]=key
-     * ARGV[1]=pexpire milliseconds
-     * ARGV[2]=lock value
-     * </pre>
-     *
      * Reentrant lock lua script
+     *   KEYS[1]=key
+     *   ARGV[1]=pexpire milliseconds
+     *   ARGV[2]=lock value
+     * </pre>
      */
-    private static final String LOCK_LUA_SCRIPT =
+    private static final RedisScript<Long> LOCK_SCRIPT = RedisScript.of(
         "if (   redis.call('exists',  KEYS[1]         )==0         \n" +
         "    or redis.call('hexists', KEYS[1], ARGV[2])==1  ) then \n" +
         "  redis.call('hincrby', KEYS[1], ARGV[2], 1);             \n" +
         "  redis.call('pexpire', KEYS[1], ARGV[1]);                \n" +
         "  return nil;                                             \n" +
         "end;                                                      \n" +
-        "return redis.call('pttl', KEYS[1]);                       \n";
+        "return redis.call('pttl', KEYS[1]);                       \n" ,
+        Long.class
+    );
 
     /**
      * <pre>
-     * KEYS[1]=key
-     * ARGV[1]=pexpire milliseconds
-     * ARGV[2]=lock value
+     * Unlock lua script
+     *   KEYS[1]=key
+     *   ARGV[1]=pexpire milliseconds
+     *   ARGV[2]=lock value
      * </pre>
-     *
-     * <p>Unlock lua script
      */
-    private static final String UNLOCK_LUA_SCRIPT =
+    private static final RedisScript<Long> UNLOCK_SCRIPT = RedisScript.of(
         "if (redis.call('hexists', KEYS[1], ARGV[2]) == 0) then  \n" +
         "  return nil;                                           \n" +
         "end;                                                    \n" +
@@ -112,33 +112,26 @@ public class RedisLock implements Lock {
         "else                                                    \n" +
         "  redis.call('del', KEYS[1]);                           \n" +
         "  return 1;                                             \n" +
-        "end;                                                    \n";
+        "end;                                                    \n" ,
+        Long.class
+    );
 
     /**
      * <pre>
-     * KEYS[1]=key
-     * ARGV[1]=pexpire milliseconds
-     * ARGV[2]=lock value
+     * Renew lock lua script
+     *   KEYS[1]=key
+     *   ARGV[1]=pexpire milliseconds
+     *   ARGV[2]=lock value
      * </pre>
-     *
-     * <p>Renew lua script
      */
-    private static final String RENEW_LUA_SCRIPT =
+    private static final RedisScript<Long> RENEW_SCRIPT = RedisScript.of(
         "if (redis.call('hexists', KEYS[1], ARGV[2]) == 1) then \n" +
         "  redis.call('pexpire', KEYS[1], ARGV[1]);             \n" +
         "  return 1;                                            \n" +
         "end;                                                   \n" +
-        "return 0;                                              \n";
-
-    /**
-     * Reentrant lock lua script
-     */
-    private static final RedisScript<Long> LOCK_SCRIPT = RedisScript.of(LOCK_LUA_SCRIPT, Long.class);
-
-    /**
-     * Unlock lua script
-     */
-    private static final RedisScript<Long> UNLOCK_SCRIPT = RedisScript.of(UNLOCK_LUA_SCRIPT, Long.class);
+        "return 0;                                              \n" ,
+        Long.class
+    );
 
     /**
      * Spring redis template.

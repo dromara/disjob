@@ -167,7 +167,8 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return collect;
     }
 
-    /*// 递归方式DFS
+    /*
+    // 递归方式DFS
     public List<FlatNode<T, A>> flatDFS() {
         List<FlatNode<T, A>> collect = Lists.newLinkedList();
         dfs(collect);
@@ -207,7 +208,8 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return collect;
     }
 
-    /*// 递归方式CFS
+    /*
+    // 递归方式CFS
     public List<FlatNode<T, A>> flatCFS() {
         List<FlatNode<T, A>> collect = Collects.newLinkedList(new FlatNode<>(this));
         cfs(collect);
@@ -239,7 +241,8 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         return collect;
     }
 
-    /*// 递归方式BFS
+    /*
+    // 递归方式BFS
     public List<FlatNode<T, A>> flatBFS() {
         List<FlatNode<T, A>> collect = new LinkedList<>();
         Queue<TreeNode<T, A>> queue = Collects.newLinkedList(this);

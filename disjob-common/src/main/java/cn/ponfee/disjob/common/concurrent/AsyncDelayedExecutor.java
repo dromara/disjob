@@ -21,6 +21,15 @@ import java.util.function.Consumer;
 /**
  * Async delayed executor
  *
+ * 延时任务方案：
+ *   1、DelayQueue#take
+ *   2、Timer#schedule
+ *   3、ScheduledThreadPoolExecutor#schedule
+ *   4、Netty: HashedWheelTimer#newTimeout
+ *   5、RocketMQ: Message#setDelayTimeLevel
+ *   6、RabbitMQ: x-dead-letter-exchange
+ *   7、Redisson: RDelayedQueue
+ *
  * @param <E> the element type
  * @author Ponfee
  */

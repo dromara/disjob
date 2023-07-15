@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * Spring boot test base class
  *
  * 1、TestInstance：可以在非static方法上加@BeforeAll/@AfterAll注解
- *   LifeCycle.PER_METHOD(default)：每个测试方法执行前创建新的测试类实例
+ *   LifeCycle.PER_METHOD(default)：每个测试方法单独创建测试类的实例
  *   Lifecycle.PER_CLASS：整个测试的过程之中创建一个测试类的实例
  *
  * 2、@MockitoSettings(strictness = Strictness.STRICT_STUBS)
