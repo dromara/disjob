@@ -55,14 +55,14 @@ disjob                                                    # 主项目
 ## Features
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
-- Supervisor与Worker通过注册中心解耦，目前支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
-- Supervisor以任务分发方式把任务给到Worker，目前支持的任务分发方式有：Redis、Http
-- 支持任务分组(job-group)，任务会分发给指定组的Worker执行
-- 自定义拆分任务，重写[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可把一个大任务拆分为多个小任务，任务分治
-- 提供任务执行快照的自动保存(checkpoint)，让执行信息不丢失，保证因异常中断的任务能得到继续执行
-- 提供执行中的任务控制能力，可随时暂停/取消正在执行中的任务，亦可恢复执行被暂停的任务
-- 提供任务依赖执行的能力，多个任务构建好依赖关系后，任务便按既定的依赖顺序依次执行
-- 支持DAG工作流任务，jobHandler可设置为复杂表达式，例如：A->B,C,(D->E)->F,E->G
+- Supervisor与Worker通过注册中心相互发现，目前支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
+- Supervisor负责生成任务，把任务分发给Worker执行，目前支持的任务分发方式有：Redis、Http
+- 需要指定Job的分组(job-group)，Job的任务只会分发给指定组的Worker执行
+- 提供任务的拆分能力，重写任务拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个小任务，实现任务分治
+- 支持暂停、取消正在执行的任务，可恢复继续执行被暂停的任务
+- 提供任务执行状态的自动保存(checkpoint)，让执行信息不丢失，保证手动或异常暂停的任务从上一次的执行状态中继续执行
+- 支持Job间的依赖执行，多个Job配置好依赖关系后便按赖顺的序依次执行
+- 支持DAG工作流，可把jobHandler设置为复杂的DAG表达式，如：A->B,C,(D->E)->F,E->G
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 
