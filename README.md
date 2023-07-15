@@ -55,14 +55,14 @@ disjob                                                    # 主项目
 ## Features
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
-- Supervisor与Worker通过注册中心相互发现，目前支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
-- Supervisor负责生成任务，把任务分发给Worker执行，目前支持的任务分发方式有：Redis、Http
+- Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
+- Supervisor负责生成任务，把任务分发给Worker执行，支持的任务分发方式有：Redis、Http
 - 需要指定Job的分组(job-group)，Job的任务只会分发给指定组的Worker执行
-- 提供任务的拆分能力，重写任务拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个小任务，实现任务分治
-- 支持暂停、取消正在执行的任务，可恢复继续执行被暂停的任务
-- 提供任务执行状态的自动保存(checkpoint)，让执行信息不丢失，保证手动或异常暂停的任务从上一次的执行状态中继续执行
-- 支持Job间的依赖执行，多个Job配置好依赖关系后便按赖顺的序依次执行
-- 支持DAG工作流，可把jobHandler设置为复杂的DAG表达式，如：A->B,C,(D->E)->F,E->G
+- 提供拆分任务的能力，重写拆分方法[`JobHandler#split`](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现任务分治并行执行
+- 支持暂停和取消运行中的任务，亦可恢复继续执行被暂停的任务
+- 支持任务保存(checkpoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
+- 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
+- 支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A->B,C,(D->E)->F,E->G
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 
@@ -84,28 +84,15 @@ disjob                                                    # 主项目
 
 ## Quick Start
 
-1. IDE分别导入项目(分为两个独立的项目，共用一个Git仓库)
+1. IDE分别导入项目(分为两个独立的项目，共用一个`git`仓库)
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
 
 2. 运行仓库代码提供的SQL脚本[mysql-schema.sql](mysql-schema.sql)创建数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
-  - [MacBook M1报“Library not loaded”错误安装参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
+  - [MacOS报“Library not loaded”错误信息参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
 
-3. 修改[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)、[Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、[Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)等配置文件
-  - 如果使用默认的本地配置([如consul localhost 8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java))，可无需添加对应的resource配置文件(包括Nacos、Zookeeper、Etcd等)
-  - 非Spring-boot的Worker应用的配置文件为[worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
-
-4. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
-
-5. 启动[samples项目](disjob-samples)下的各应用，包括
-  - [Supervisor与Worker合并部署的Spring boot应用](disjob-samples/disjob-samples-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
-  - [Supervisor单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
-  - [Worker单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
-  - [Worker单独部署的非Spring-boot应用，直接运行Main方法](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/Main.java)
-  - 说明：
-    - 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
-    - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
-    - 注册中心及分发任务的具体实现：在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中引入指定的依赖即可(默认是redis注册中心、http任务分发)
+3. 在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中选择注册中心及任务分发的具体实现(默认redis注册中心、http任务分发)
+  - 在pom中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}
   - 项目已内置一些本地启动的server：
     - [内置redis-server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
     - [内置consul-server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
@@ -114,6 +101,23 @@ disjob                                                    # 主项目
     - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
     - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)
 
+4. 修改配置文件
+  - 数据库配置：[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)
+  - 注册中心配置：只需配置选择的注册中心即可，如[Consul注册中心](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)、[Redis注册中心](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)
+  - 任务分发配置：[Redis分发](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、若选择Http分发方式可无需配置
+  - 其它可按需配置(不配置则会使用默认值)：[supervisor](disjob-samples/conf-supervisor/)、[worker](disjob-samples/conf-worker/)、[web](disjob-samples/disjob-samples-common/src/main/resources)
+  - 非Spring-boot的Worker应用配置文件：[worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+
+5. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
+
+6. 启动[samples项目](disjob-samples)下的各应用，包括
+  - [Supervisor与Worker合并部署的Spring boot应用](disjob-samples/disjob-samples-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
+  - [Supervisor单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
+  - [Worker单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
+  - [Worker单独部署的非Spring-boot应用，直接运行Main方法](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/Main.java)
+  - 说明：
+    - 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
+    - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
 ```java
 @EnableSupervisor
 @EnableWorker
@@ -124,7 +128,7 @@ public class MergedApplication extends AbstractSamplesApplication {
 }
 ```
 
-6. 执行以下curl命令添加任务(任选一台运行中的Supervisor应用替换`localhost:8081`)
+7. 执行以下curl命令添加任务(任选一台运行中的Supervisor应用替换`localhost:8081`)
   - `triggerValue`修改为大于当前时间的日期值以便即将触发(如当前时间点的下一分钟)
   - `jobHandler`支持：类的全限定名、Spring bean name、DAG表达式、源码
 
@@ -142,7 +146,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 }'
 ```
 
-7. 查询库表验证任务是否添加成功，以及可查看任务的执行信息
+8. 查询库表验证任务是否添加成功，以及可查看任务的执行信息
 
 ```sql
 -- 刚CURL添加的任务会落入该表中
