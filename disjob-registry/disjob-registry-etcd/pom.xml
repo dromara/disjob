@@ -17,7 +17,7 @@
   <url>https://github.com/ponfee/disjob</url>
 
   <properties>
-    <jetcd.version>0.7.5</jetcd.version>
+    <jetcd.version>0.7.6</jetcd.version>
   </properties>
 
   <dependencies>

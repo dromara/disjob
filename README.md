@@ -173,7 +173,6 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=1003
 
 ## Todo List
 
-- [x] Worker提供任务校验及拆分的Http接口给Supervisor调用（[WorkerServiceProvider](disjob-worker/src/main/java/cn/ponfee/disjob/worker/rpc/WorkerServiceProvider.java)）
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [x] 工作流任务(Workflow DAG)
 - [ ] 任务管理后台Web UI、账户体系及权限控制

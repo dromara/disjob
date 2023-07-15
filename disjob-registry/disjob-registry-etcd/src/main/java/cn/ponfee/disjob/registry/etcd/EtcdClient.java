@@ -61,11 +61,11 @@ public class EtcdClient implements Closeable {
         WatchEvent.EventType.PUT, WatchEvent.EventType.DELETE
     );
 
-    private static final GetOption GET_PREFIX_OPTION = GetOption.newBuilder().isPrefix(true).build();
+    private static final GetOption GET_PREFIX_OPTION = GetOption.builder().isPrefix(true).build();
 
-    private static final GetOption GET_COUNT_OPTION = GetOption.newBuilder().withCountOnly(true).build();
+    private static final GetOption GET_COUNT_OPTION = GetOption.builder().withCountOnly(true).build();
 
-    private static final WatchOption WATCH_PREFIX_OPTION = WatchOption.newBuilder().isPrefix(true).build();
+    private static final WatchOption WATCH_PREFIX_OPTION = WatchOption.builder().isPrefix(true).build();
 
     /**
      * Etcd properties
@@ -136,7 +136,7 @@ public class EtcdClient implements Closeable {
         LeaseTimeToLiveResponse resp = client.getLeaseClient()
             .timeToLive(leaseId, LeaseOption.DEFAULT)
             .get(config.getRequestTimeoutMs(), TimeUnit.MILLISECONDS);
-        return resp == null ? 0 : resp.getTTl();
+        return resp == null ? 0 : resp.getTTL();
     }
 
     public boolean keepAliveOnceLease(long leaseId) throws Exception {
@@ -174,7 +174,7 @@ public class EtcdClient implements Closeable {
 
     public void createEphemeralKey(String key, String value, long leaseId) throws Exception {
         client.getKVClient()
-            .put(utf8(key), utf8(value), PutOption.newBuilder().withLeaseId(leaseId).build())
+            .put(utf8(key), utf8(value), PutOption.builder().withLeaseId(leaseId).build())
             .get(config.getRequestTimeoutMs(), TimeUnit.MILLISECONDS);
     }
 
