@@ -43,7 +43,7 @@ public class DAGPrinter {
         drawGraph("A -> B,C -> E,(F->G) -> H", "dag4.png");
         drawGraph("A -> (B->C->D),(A->F) -> G,H,X -> J ; A->Y", "dag5.png");
         drawGraph("ALoader -> (BMap->CMap->DMap),(AMap->FMap) -> GShuffle,HShuffle,XShuffle -> JReduce ; A->Y", "dag6.png");
-        drawGraph("A->B,C,(D->E)->F,E->G", "dag7.png");
+        drawGraph("A->B,C,(D->E)->D,F->G", "dag7.png");
 
         drawGraph("A->B,C,D",                 "10.png");
         drawGraph("A->B->C,D",                "20.png");

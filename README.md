@@ -63,7 +63,7 @@ disjob                                                    # 主项目
 - 支持任务保存(checkpoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
 - 支持广播任务，广播任务会分发给job-group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
-- 支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A->B,C,(D->E)->F,E->G
+- 支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A->B,C,(D->E)->D,F->G
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 
