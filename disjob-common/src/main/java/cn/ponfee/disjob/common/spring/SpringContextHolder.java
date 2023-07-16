@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Spring container context holder
@@ -29,7 +30,7 @@ public class SpringContextHolder implements ApplicationContextAware {
             if (applicationContext != null) {
                 throw new IllegalStateException("Spring context holder already initialized.");
             }
-            applicationContext = cxt;
+            applicationContext = Objects.requireNonNull(cxt);
         }
     }
 

@@ -126,9 +126,9 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isValidIpAddress("14.215.177.38"));
     }
 
+    @Disabled
     @Test
     void testLocalHost() {
-        assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
         assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
     }
 

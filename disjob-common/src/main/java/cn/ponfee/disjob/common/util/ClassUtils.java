@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -43,9 +44,9 @@ public final class ClassUtils {
 
     public static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 
-    private static final Map<Object, Constructor<?>> CONSTRUCTOR_CACHE = new HashMap<>();
-    private static final Map<Object, Method> METHOD_CACHE = new HashMap<>();
-    private static final Map<String, Class<?>> CLASS_CACHE = new HashMap<>();
+    private static final Map<Object, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Object, Method>              METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Class<?>>             CLASS_CACHE = new ConcurrentHashMap<>();
 
     private static final GroovyClassLoader GROOVY_CLASS_LOADER = new GroovyClassLoader();
 
@@ -57,7 +58,7 @@ public final class ClassUtils {
      */
     public static <T> Class<T> getClass(String text) {
         String key = DigestUtils.md5Hex(text);
-        Class<?> clazz = SynchronizedCaches.get(key, CLASS_CACHE, () -> {
+        Class<?> clazz = CLASS_CACHE.computeIfAbsent(key, k -> {
             if (QUALIFIED_CLASS_NAME_PATTERN.matcher(text).matches()) {
                 try {
                     return Class.forName(text);
@@ -253,7 +254,7 @@ public final class ClassUtils {
     public static <T> Constructor<T> getConstructor(Class<T> type, Class<?>... parameterTypes) {
         boolean noArgs = ArrayUtils.isEmpty(parameterTypes);
         Object key = noArgs ? type : Tuple2.of(type, ArrayHashKey.of((Object[]) parameterTypes));
-        Constructor<T> constructor = (Constructor<T>) SynchronizedCaches.get(key, CONSTRUCTOR_CACHE, () -> {
+        Constructor<T> constructor = (Constructor<T>) CONSTRUCTOR_CACHE.computeIfAbsent(key, k -> {
             try {
                 return getConstructor0(type, parameterTypes);
             } catch (Exception e) {
@@ -332,7 +333,7 @@ public final class ClassUtils {
         Class<?> type = tuple.a;
         boolean noArgs = ArrayUtils.isEmpty(parameterTypes);
         Object key = noArgs ? Tuple2.of(type, methodName) : Tuple3.of(type, methodName, ArrayHashKey.of((Object[]) parameterTypes));
-        Method method = SynchronizedCaches.get(key, METHOD_CACHE, () -> {
+        Method method = METHOD_CACHE.computeIfAbsent(key, k -> {
             try {
                 Method m = getMethod0(type, methodName, parameterTypes);
                 return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
