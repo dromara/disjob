@@ -119,9 +119,9 @@ public class SchedJob extends BaseEntity implements Serializable {
     /**
      * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行；2-串行；3-覆盖(先取消上一次的执行)；4-丢弃；
      *
-     * @see CollisionStrategy
+     * @see CollidedStrategy
      */
-    private Integer collisionStrategy;
+    private Integer collidedStrategy;
 
     /**
      * 过期策略：1-触发最近一次；2-丢弃；3-触发所有；
@@ -233,8 +233,8 @@ public class SchedJob extends BaseEntity implements Serializable {
         if (executeTimeout == null) {
             this.executeTimeout = 0;
         }
-        if (collisionStrategy == null) {
-            this.collisionStrategy = CollisionStrategy.CONCURRENT.value();
+        if (collidedStrategy == null) {
+            this.collidedStrategy = CollidedStrategy.CONCURRENT.value();
         }
         if (misfireStrategy == null) {
             this.misfireStrategy = MisfireStrategy.LAST.value();
@@ -247,7 +247,7 @@ public class SchedJob extends BaseEntity implements Serializable {
         JobState.of(jobState);
         JobType.of(jobType);
         Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
-        CollisionStrategy.of(collisionStrategy);
+        CollidedStrategy.of(collidedStrategy);
         MisfireStrategy.of(misfireStrategy);
         RouteStrategy.of(routeStrategy);
         if (startTime != null && endTime != null) {

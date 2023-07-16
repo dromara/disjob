@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The collision strategy enum definition.
- * <p>mapped by sched_job.collision_strategy
+ * The collided strategy enum definition.
+ * <p>mapped by sched_job.collided_strategy
  *
  * @author Ponfee
  */
-public enum CollisionStrategy implements IntValueEnum<CollisionStrategy> {
+public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
 
     /**
      * 并行
@@ -44,11 +44,11 @@ public enum CollisionStrategy implements IntValueEnum<CollisionStrategy> {
 
     ;
 
-    private static final Map<Integer, CollisionStrategy> MAPPING = Enums.toMap(CollisionStrategy.class, CollisionStrategy::value);
+    private static final Map<Integer, CollidedStrategy> MAPPING = Enums.toMap(CollidedStrategy.class, CollidedStrategy::value);
 
     private final int value;
 
-    CollisionStrategy(int value) {
+    CollidedStrategy(int value) {
         this.value = value;
     }
 
@@ -57,8 +57,8 @@ public enum CollisionStrategy implements IntValueEnum<CollisionStrategy> {
         return value;
     }
 
-    public static CollisionStrategy of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid collision strategy value: " + value);
+    public static CollidedStrategy of(Integer value) {
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid collided strategy value: " + value);
     }
 
 }

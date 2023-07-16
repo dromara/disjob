@@ -75,9 +75,9 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     EXECUTE_TIMEOUT(55, RunState.CANCELED),
 
     /**
-     * 执行冲突取消(sched_job.collision_strategy=3)
+     * 执行冲突取消(sched_job.collided_strategy=3)
      */
-    EXECUTE_COLLISION(56, RunState.CANCELED),
+    EXECUTE_COLLIDED(56, RunState.CANCELED),
 
     /**
      * 手动取消

@@ -7,7 +7,7 @@
   <sql id="Base_Column_List">
     job_id, job_group, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value, execute_timeout,
-    collision_strategy, misfire_strategy, route_strategy, remark, last_trigger_time,
+    collided_strategy, misfire_strategy, route_strategy, remark, last_trigger_time,
     next_trigger_time, next_scan_time, failed_scan_count, alarm_subscribers, version,
     IFNULL(is_deleted, 1) deleted, updated_by, created_by, updated_at, created_at
   </sql>
@@ -52,7 +52,7 @@
       trigger_type,
       trigger_value,
       execute_timeout,
-      collision_strategy,
+      collided_strategy,
       misfire_strategy,
       route_strategy,
       remark,
@@ -76,7 +76,7 @@
       #{triggerType,jdbcType=TINYINT},
       #{triggerValue,jdbcType=VARCHAR},
       #{executeTimeout,jdbcType=INTEGER},
-      #{collisionStrategy,jdbcType=TINYINT},
+      #{collidedStrategy,jdbcType=TINYINT},
       #{misfireStrategy,jdbcType=TINYINT},
       #{routeStrategy,jdbcType=TINYINT},
       #{remark,jdbcType=VARCHAR},
@@ -108,7 +108,7 @@
         </if>
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
         execute_timeout = #{executeTimeout,jdbcType=INTEGER},
-        collision_strategy = #{collisionStrategy,jdbcType=TINYINT},
+        collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
         remark = #{remark,jdbcType=VARCHAR},

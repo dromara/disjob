@@ -45,7 +45,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  */
 public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
-    private static final int SCAN_COLLISION_INTERVAL_SECONDS = 60;
+    private static final int SCAN_COLLIDED_INTERVAL_SECONDS = 60;
     private static final int REMARK_MAX_LENGTH = 255;
     private static final int FAILED_SCAN_COUNT_THRESHOLD = 5;
 
@@ -126,8 +126,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return;
             }
 
-            // check collision with last schedule
-            if (checkBlockCollisionTrigger(job, now)) {
+            // check collided with last schedule
+            if (checkBlockCollidedTrigger(job, now)) {
                 return;
             }
 
@@ -179,16 +179,16 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     /**
-     * Check is whether block if the next trigger collision
+     * Check is whether block if the next trigger collided
      *
      * @param job the sched job
      * @param now the now date time
      * @return {@code true} will block the next trigger
      */
-    private boolean checkBlockCollisionTrigger(SchedJob job, Date now) {
-        CollisionStrategy collisionStrategy = CollisionStrategy.of(job.getCollisionStrategy());
+    private boolean checkBlockCollidedTrigger(SchedJob job, Date now) {
+        CollidedStrategy collidedStrategy = CollidedStrategy.of(job.getCollidedStrategy());
         Long lastTriggerTime;
-        if (CollisionStrategy.CONCURRENT == collisionStrategy || (lastTriggerTime = job.getLastTriggerTime()) == null) {
+        if (CollidedStrategy.CONCURRENT == collidedStrategy || (lastTriggerTime = job.getLastTriggerTime()) == null) {
             return false;
         }
 
@@ -204,15 +204,15 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return false;
             case WAITING:
             case PAUSED:
-                return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
+                return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
             case RUNNING:
                 List<SchedTask> tasks = jobManager.findBaseInstanceTask(instanceId);
                 if (jobManager.hasAliveExecuting(tasks)) {
-                    return checkBlockCollisionTrigger(job, Collections.singletonList(lastInstance), collisionStrategy, now);
+                    return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
                 } else {
                     // all workers are dead
-                    log.info("Collision, all worker dead, terminate the sched instance: {}", instanceId);
-                    jobManager.cancelInstance(instanceId, lastInstance.getWnstanceId(), Operations.COLLISION_CANCEL);
+                    log.info("All worker dead, terminate collided sched instance: {}", instanceId);
+                    jobManager.cancelInstance(instanceId, lastInstance.getWnstanceId(), Operations.COLLIDED_CANCEL);
                     return false;
                 }
             case CANCELED:
@@ -220,15 +220,15 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 if (CollectionUtils.isEmpty(list)) {
                     return false;
                 } else {
-                    return checkBlockCollisionTrigger(job, list, collisionStrategy, now);
+                    return checkBlockCollidedTrigger(job, list, collidedStrategy, now);
                 }
             default:
                 throw new UnsupportedOperationException("Unsupported run state: " + runState.name());
         }
     }
 
-    private boolean checkBlockCollisionTrigger(SchedJob job, List<SchedInstance> instances, CollisionStrategy collisionStrategy, Date now) {
-        switch (collisionStrategy) {
+    private boolean checkBlockCollidedTrigger(SchedJob job, List<SchedInstance> instances, CollidedStrategy collidedStrategy, Date now) {
+        switch (collidedStrategy) {
             case DISCARD:
                 // 丢弃执行：基于当前时间来更新下一次的执行时间
                 Integer misfireStrategy = job.getMisfireStrategy();
@@ -241,21 +241,21 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 }
                 if (job.getNextTriggerTime() == null) {
                     // It has not next triggered time, then stop the job
-                    job.setRemark("Disable collision reason: has not next trigger time.");
+                    job.setRemark("Disable collided reason: has not next trigger time.");
                     job.setJobState(JobState.DISABLE.value());
                 }
                 jobManager.updateJobNextTriggerTime(job);
                 return true;
             case SERIAL:
                 // 串行执行：更新下一次的扫描时间
-                updateNextScanTime(job, now, SCAN_COLLISION_INTERVAL_SECONDS);
+                updateNextScanTime(job, now, SCAN_COLLIDED_INTERVAL_SECONDS);
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                instances.forEach(e -> jobManager.cancelInstance(e.getInstanceId(), e.getWnstanceId(), Operations.COLLISION_CANCEL));
+                instances.forEach(e -> jobManager.cancelInstance(e.getInstanceId(), e.getWnstanceId(), Operations.COLLIDED_CANCEL));
                 return false;
             default:
-                throw new UnsupportedOperationException("Unsupported collision strategy: " + collisionStrategy.name());
+                throw new UnsupportedOperationException("Unsupported collided strategy: " + collidedStrategy.name());
         }
     }
 

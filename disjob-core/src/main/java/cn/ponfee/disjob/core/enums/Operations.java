@@ -33,9 +33,9 @@ public enum Operations {
     EXCEPTION_CANCEL(EXECUTING, EXECUTE_EXCEPTION),
 
     /**
-     * Collision cancel from EXECUTING to EXECUTE_COLLISION
+     * Collided cancel from EXECUTING to EXECUTE_COLLIDED
      */
-    COLLISION_CANCEL(EXECUTING, EXECUTE_COLLISION),
+    COLLIDED_CANCEL(EXECUTING, EXECUTE_COLLIDED),
 
     /**
      * Manual cancel from EXECUTING to MANUAL_CANCELED
