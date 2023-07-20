@@ -59,6 +59,11 @@
 
     <!-- test dependency -->
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-id</artifactId>
       <version>${project.parent.version}</version>

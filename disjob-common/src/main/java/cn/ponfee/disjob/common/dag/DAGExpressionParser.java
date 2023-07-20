@@ -137,7 +137,7 @@ public class DAGExpressionParser {
     public Graph<DAGNode> parse() {
         ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
 
-        List<GraphEdge> edges;
+        List<DAGEdge> edges;
         if (JSON_GRAPH_PATTERN.matcher(expression).matches() && (edges = GraphEdge.fromJson(expression)) != null) {
             parseJsonGraph(graphBuilder, edges);
         } else {
@@ -158,15 +158,14 @@ public class DAGExpressionParser {
      * @param graphBuilder the graph builder
      * @param edges        the edges
      */
-    private void parseJsonGraph(ImmutableGraph.Builder<DAGNode> graphBuilder, List<GraphEdge> edges) {
+    private void parseJsonGraph(ImmutableGraph.Builder<DAGNode> graphBuilder, List<DAGEdge> edges) {
         Assert.notEmpty(edges, "Graph edges cannot be empty.");
         Set<DAGNode> allNode = new HashSet<>();
         Set<DAGNode> nonHead = new HashSet<>();
         Set<DAGNode> nonTail = new HashSet<>();
-        for (GraphEdge graphEdge : edges) {
-            DAGEdge dagEdge = graphEdge.toDAGEdge();
-            DAGNode source = dagEdge.getSource();
-            DAGNode target = dagEdge.getTarget();
+        for (DAGEdge edge : edges) {
+            DAGNode source = edge.getSource();
+            DAGNode target = edge.getTarget();
             Assert.isTrue(!source.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + source);
             Assert.isTrue(!target.isStartOrEnd(), () -> "Graph edge cannot be start or end: " + target);
 
@@ -481,9 +480,13 @@ public class DAGExpressionParser {
             return DAGEdge.of(source, target);
         }
 
-        private static List<GraphEdge> fromJson(String text) {
+        private static List<DAGEdge> fromJson(String text) {
             try {
-                return Jsons.fromJson(text, LIST_TYPE);
+                List<GraphEdge> list = Jsons.fromJson(text, LIST_TYPE);
+                if (CollectionUtils.isEmpty(list)) {
+                    return null;
+                }
+                return list.stream().map(GraphEdge::toDAGEdge).collect(Collectors.toList());
             } catch (Exception e) {
                 return null;
             }

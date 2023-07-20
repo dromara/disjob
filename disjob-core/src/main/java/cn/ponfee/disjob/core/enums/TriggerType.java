@@ -89,7 +89,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         @Override
         public boolean validate(String triggerValue) {
             try {
-                Dates.toDate(triggerValue);
+                Dates.DATETIME_FORMAT.parse(triggerValue);
                 return true;
             } catch (Exception ignored) {
                 return false;
@@ -99,7 +99,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         @Override
         public Date computeNextFireTime(String triggerValue, Date startTime) {
             try {
-                Date dateTime = Dates.toDate(triggerValue);
+                Date dateTime = Dates.DATETIME_FORMAT.parse(triggerValue);
                 return dateTime.after(startTime) ? dateTime : null;
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid once date format: " + triggerValue, e);

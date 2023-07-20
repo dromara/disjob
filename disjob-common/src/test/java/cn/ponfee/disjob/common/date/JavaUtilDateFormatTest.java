@@ -36,7 +36,7 @@ public class JavaUtilDateFormatTest {
         Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse("2022-01-02 03:04:05.678");
         assertEquals("Sun Jan 02 03:04:05 CST 2022", date.toString());
         assertEquals("Sun Jan 02 17:04:05 CST 2022", new Date(date.toString()).toString());
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ROOT);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ROOT);
         assertEquals("Sun Jan 02 03:04:05 CST 2022", Dates.toDate(LocalDateTime.parse(date.toString(), dtf)).toString());
         assertEquals("Sun Jan 02 17:04:05 CST 2022", Date.from(ZonedDateTime.parse(date.toString(), dtf).toInstant()).toString());
 
@@ -255,12 +255,12 @@ public class JavaUtilDateFormatTest {
         System.out.println(JavaUtilDateFormat.PATTERN_64.format(date));
 
         System.out.println("\n------------------------");
-        assertTrue(JavaUtilDateFormat.DATE_TO_STRING_PATTERN.matcher("Sat Jun 01 22:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.DATE_TO_STRING_PATTERN.matcher("Sat Jun 0122:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.DATE_TO_STRING_PATTERN.matcher("sat Jun 01 22:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.DATE_TO_STRING_PATTERN.matcher("Sat Jun 01 22:36:21 DST 2019").matches());
-        assertFalse(JavaUtilDateFormat.DATE_TO_STRING_PATTERN.matcher("Sat jun 01 22:36:21 CST 2019").matches());
-        assertFalse(JavaUtilDateFormat.DATE_TO_STRING_PATTERN.matcher("Sat Jun 01 22:36:21CST 2019").matches());
+        assertTrue(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 01 22:36:21 CST 2019").matches());
+        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 0122:36:21 CST 2019").matches());
+        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("sat Jun 01 22:36:21 CST 2019").matches());
+        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 01 22:36:21 DST 2019").matches());
+        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat jun 01 22:36:21 CST 2019").matches());
+        assertFalse(JavaUtilDateFormat.TOSTRING_PATTERN.matcher("Sat Jun 01 22:36:21CST 2019").matches());
         System.out.println(JavaUtilDateFormat.DEFAULT.parse("Sat Jun 01 22:36:21 CST 2019", new ParsePosition(0)));
         System.out.println(format.parse("Sat Jun 01 22:36:21 CST 2019"));
         System.out.println(format.parse("2020-12-01 10:33:06"));
@@ -269,11 +269,11 @@ public class JavaUtilDateFormatTest {
         System.out.println(new JavaUtilDateFormat("yyyy").parse("2022"));
         System.out.println(JavaUtilDateFormat.DEFAULT.format(new Date(0)));
 
-        assertTrue(JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher("0").matches());
-        assertTrue(JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher("1").matches());
-        assertTrue(JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher("9").matches());
-        assertTrue(JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher("1644894528").matches());
-        assertFalse(JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher("01644894528").matches());
+        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("0").matches());
+        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("1").matches());
+        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("9").matches());
+        assertTrue(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("1644894528").matches());
+        assertFalse(JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher("01644894528").matches());
 
         System.out.println("\n------------------------");
         System.out.println(JavaUtilDateFormat.PATTERN_41.parse("2122-01-01 00:00:00", new ParsePosition(0)));

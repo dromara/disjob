@@ -6,9 +6,9 @@
 
   <sql id="Base_Column_List">
     job_id, job_group, job_name, job_handler, job_state, job_type, job_param, retry_type,
-    retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value, execute_timeout,
-    collided_strategy, misfire_strategy, route_strategy, remark, last_trigger_time,
-    next_trigger_time, next_scan_time, failed_scan_count, alarm_subscribers, version,
+    retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value,
+    execute_timeout, collided_strategy, misfire_strategy, route_strategy, remark,
+    last_trigger_time, next_trigger_time, next_scan_time, failed_scan_count, version,
     IFNULL(is_deleted, 1) deleted, updated_by, created_by, updated_at, created_at
   </sql>
 
@@ -57,7 +57,6 @@
       route_strategy,
       remark,
       next_trigger_time,
-      alarm_subscribers,
       updated_by,
       created_by
     ) VALUES (
@@ -81,7 +80,6 @@
       #{routeStrategy,jdbcType=TINYINT},
       #{remark,jdbcType=VARCHAR},
       #{nextTriggerTime,jdbcType=BIGINT},
-      #{alarmSubscribers,jdbcType=VARCHAR},
       #{updatedBy,jdbcType=VARCHAR},
       #{createdBy,jdbcType=VARCHAR}
     )
@@ -112,7 +110,6 @@
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
         remark = #{remark,jdbcType=VARCHAR},
-        alarm_subscribers = #{alarmSubscribers,jdbcType=VARCHAR},
         version = version+1,
         updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}

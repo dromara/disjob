@@ -93,13 +93,13 @@ public class LocalDateTimeFormat {
                 } else if (c == Char.SLASH) {
                     // yyyy/MM/dd
                     return LocalDateTime.parse(source + " 00:00:00", PATTERN_12);
-                } else if (JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
+                } else if (JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher(source).matches()) {
                     // long string(length 10) of second unix timestamp(e.g. 1640966400)
                     return Dates.toLocalDateTime(new Date(Long.parseLong(source) * 1000));
                 }
                 break;
             case 13:
-                if (JavaUtilDateFormat.DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
+                if (JavaUtilDateFormat.TIMESTAMP_PATTERN.matcher(source).matches()) {
                     // long string(length 13) of millisecond unix timestamp(e.g. 1640966400000)
                     return Dates.toLocalDateTime(new Date(Long.parseLong(source)));
                 }

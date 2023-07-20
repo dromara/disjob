@@ -21,6 +21,9 @@ import org.junit.jupiter.api.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -35,29 +38,27 @@ import static cn.ponfee.disjob.common.date.Dates.*;
  */
 public class DatesTest {
 
-    public static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.DATETIME_PATTERN);
-
     static int round = 1_000_000;
 
     @Test
-    public void test() {
+    public void test() throws ParseException {
         String str = "2023-01-03 15:23:45.321";
         Date date = toDate(str, DATEFULL_PATTERN);
-        Assertions.assertTrue(isValidDate(str));
-        Assertions.assertFalse(isValidDate(null));
+        Assertions.assertNotNull(JavaUtilDateFormat.DEFAULT.parse(str));
+        Assertions.assertNull(JavaUtilDateFormat.DEFAULT.parse(null));
         Assertions.assertTrue(isValidDate(str, DATETIME_PATTERN));
         Assertions.assertFalse(isValidDate(null, DATETIME_PATTERN));
         Assertions.assertFalse(isValidDate("2020-xx-00 00:00:00", DATETIME_PATTERN));
 
-        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATETIME)));
+        Assertions.assertTrue(isZeroDate(JavaUtilDateFormat.DEFAULT.parse(ZERO_DATETIME)));
         Assertions.assertTrue(isZeroDate(toDate(ZERO_DATETIME, DATETIME_PATTERN)));
         Assertions.assertEquals("0002-11-30 00:00:00.000", format(ofTimeMillis(-62170185600000L), DATEFULL_PATTERN));
-        Assertions.assertEquals("0002-11-30 00:00:00.000", format(toDate(ZERO_DATETIME), DATEFULL_PATTERN));
+        Assertions.assertEquals("0002-11-30 00:00:00.000", format(JavaUtilDateFormat.DEFAULT.parse(ZERO_DATETIME), DATEFULL_PATTERN));
 
         Assertions.assertEquals("1970-01-01 08:00:01", format(ofUnixTimestamp(1)));
         Assertions.assertEquals("1970-01-01 08:00:00", format(ofTimeMillis(1)));
         Assertions.assertEquals(19, now(DATETIME_PATTERN).length());
-        Assertions.assertEquals(str, format(toDate(str), DATEFULL_PATTERN));
+        Assertions.assertEquals(str, format(JavaUtilDateFormat.DEFAULT.parse(str), DATEFULL_PATTERN));
         Assertions.assertEquals(str, format(date, DATEFULL_PATTERN));
         Assertions.assertEquals("1970-01-01 08:00:02.312", format(2312, DATEFULL_PATTERN));
 
@@ -102,9 +103,9 @@ public class DatesTest {
         Assertions.assertEquals(3, dayOfMonth(date));
         Assertions.assertEquals(156, dayOfYear(toDate("2023-06-05 15:23:45.321", DATEFULL_PATTERN)));
 
-        Assertions.assertEquals(15, daysBetween(toDate("2023-05-21 15:23:45"),toDate("2023-06-05 15:23:45")));
+        Assertions.assertEquals(15, daysBetween(JavaUtilDateFormat.DEFAULT.parse("2023-05-21 15:23:45"),JavaUtilDateFormat.DEFAULT.parse("2023-06-05 15:23:45")));
 
-        Assertions.assertEquals("45 23 15 3 1 ? 2023", toCronExpression(toDate(str)));
+        Assertions.assertEquals("45 23 15 3 1 ? 2023", toCronExpression(JavaUtilDateFormat.DEFAULT.parse(str)));
     }
 
     @Test
@@ -136,7 +137,7 @@ public class DatesTest {
 
         // test format
         Assertions.assertEquals("0002-11-30 00:00:00", DateFormatUtils.format(dateEntity.getCreateTime(), Dates.DATETIME_PATTERN));
-        Assertions.assertEquals("0002-11-30 00:00:00", DATE_FORMAT.format(dateEntity.getCreateTime()));
+        Assertions.assertEquals("0002-11-30 00:00:00", Dates.DATETIME_FORMAT.format(dateEntity.getCreateTime()));
         //Assertions.assertEquals("-0001-11-28 00:05:43", Dates.format(orderDriverEntity.getCreateTime(), Dates.DEFAULT_DATETIME_FORMAT)); error
 
         long time = -62170185600000L;
@@ -148,14 +149,14 @@ public class DatesTest {
         Assertions.assertEquals(zeroDate, dateEntity.getCreateTime());
         Assertions.assertEquals(zeroDate, new Date(zeroDate.getTime()));
         Assertions.assertEquals(zeroDate, DateUtils.parseDate(Dates.ZERO_DATETIME, Dates.DATETIME_PATTERN));
-        Assertions.assertEquals(zeroDate, DATE_FORMAT.parse(Dates.ZERO_DATETIME));
+        Assertions.assertEquals(zeroDate, Dates.DATETIME_FORMAT.parse(Dates.ZERO_DATETIME));
         //Assertions.assertEquals(time, Dates.toDate(zeroDateStr, Dates.DEFAULT_DATETIME_FORMAT).getTime()); error
     }
 
     @Test
-    public void testDateMax() {
-        Date a = Dates.toDate("2021-10-12 12:34:23");
-        Date b = Dates.toDate("2021-10-12 12:34:24");
+    public void testDateMax() throws ParseException {
+        Date a = JavaUtilDateFormat.DEFAULT.parse("2021-10-12 12:34:23");
+        Date b = JavaUtilDateFormat.DEFAULT.parse("2021-10-12 12:34:24");
 
         Assertions.assertEquals(null, Dates.max(null, null));
         Assertions.assertEquals(null, Dates.min(null, null));
@@ -236,12 +237,12 @@ public class DatesTest {
         System.out.println("Dates.format(date): " + Dates.format(date));
         String dateString = date.toString();
         System.out.println("date.toString(): " + dateString);
-        Date parsed1 = FastDateFormat.getInstance("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH).parse(dateString);
+        Date parsed1 = FastDateFormat.getInstance(DATE_TO_STRING_PATTERN, Locale.ENGLISH).parse(dateString);
         System.out.println(Dates.format(parsed1));
         Assertions.assertNotEquals(date, parsed1);
 
         System.out.println("--------");
-        FastDateFormat format = FastDateFormat.getInstance("EEE MMM dd HH:mm:ss zzz yyyy", Locale.CHINA);
+        FastDateFormat format = FastDateFormat.getInstance(DATE_TO_STRING_PATTERN, Locale.CHINA);
         dateString = format.format(date);
         System.out.println("FastDateFormat.format(date): " + dateString);
         Date parsed2 = format.parse(dateString);
@@ -250,11 +251,25 @@ public class DatesTest {
     }
 
     @Test
-    public void testStreamMax() {
-        Date max = Arrays.stream(new Date[]{Dates.toDate("2020-01-03 00:00:00"), Dates.toDate("2020-01-02 00:00:00")})
+    public void testStreamMax() throws ParseException {
+        Date max = Arrays.stream(new Date[]{JavaUtilDateFormat.DEFAULT.parse("2020-01-03 00:00:00"), JavaUtilDateFormat.DEFAULT.parse("2020-01-02 00:00:00")})
             .max(Comparator.naturalOrder())
             .orElse(null);
         System.out.println(Dates.format(max));
+    }
+
+    @Test
+    public void testZone() throws ParseException {
+        String source = "Wed Jul 19 21:14:25 CST 2023";
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TO_STRING_PATTERN, Locale.ROOT);
+
+        // 14小时时差
+        Assertions.assertEquals("2023-07-20 11:14:25", Dates.format(FastDateFormat.getInstance(DATE_TO_STRING_PATTERN, Locale.ENGLISH).parse(source)));
+        Assertions.assertEquals("2023-07-20 11:14:25", Dates.format(new Date(source)));
+        Assertions.assertEquals("2023-07-20 10:14:25", Dates.format(Date.from(ZonedDateTime.parse(source, dateTimeFormatter).toInstant())));
+
+        // 正常
+        Assertions.assertEquals("2023-07-19 21:14:25", Dates.format(Dates.toDate(LocalDateTime.parse(source, dateTimeFormatter))));
     }
 
     @Data

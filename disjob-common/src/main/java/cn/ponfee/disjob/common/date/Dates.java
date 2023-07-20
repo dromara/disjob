@@ -11,6 +11,7 @@ package cn.ponfee.disjob.common.date;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -67,28 +68,19 @@ public class Dates {
     public static final String DATEFULL_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 
     /**
+     * Date format of {@link Date#toString()}
+     */
+    public static final String DATE_TO_STRING_PATTERN = "EEE MMM dd HH:mm:ss zzz yyyy";
+
+    /**
      * Zero time millis: -62170185600000L
      */
     public static final String ZERO_DATETIME = "0000-00-00 00:00:00";
 
     /**
-     * 简单的日期格式校验(yyyy-MM-dd HH:mm:ss)
-     *
-     * @param dateStr 输入日期
-     * @return 有效返回true, 反之false
+     * Fast date format for datetime pattern
      */
-    public static boolean isValidDate(String dateStr) {
-        if (StringUtils.isEmpty(dateStr)) {
-            return false;
-        }
-
-        try {
-            JavaUtilDateFormat.DEFAULT.parse(dateStr);
-            return true;
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
+    public static final FastDateFormat DATETIME_FORMAT = FastDateFormat.getInstance(Dates.DATETIME_PATTERN);
 
     /**
      * 简单的日期格式校验
@@ -137,20 +129,6 @@ public class Dates {
      */
     public static String now(String pattern) {
         return format(now(), pattern);
-    }
-
-    /**
-     * 转换日期字符串为日期对象(默认格式: yyyy-MM-dd HH:mm:ss)
-     *
-     * @param dateStr 日期字符串
-     * @return 日期对象
-     */
-    public static Date toDate(String dateStr) {
-        try {
-            return JavaUtilDateFormat.DEFAULT.parse(dateStr);
-        } catch (ParseException e) {
-            return ExceptionUtils.rethrow(e);
-        }
     }
 
     /**
@@ -221,7 +199,10 @@ public class Dates {
      * @return 日期字符串
      */
     public static String format(Date date) {
-        return format(date, DATETIME_PATTERN);
+        if (date == null) {
+            return null;
+        }
+        return DATETIME_FORMAT.format(date);
     }
 
     /**

@@ -1040,11 +1040,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void parseTriggerConfig(SchedJob job) {
-        Date date = new Date();
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
-        if (!triggerType.validate(job.getTriggerValue())) {
-            throw new IllegalArgumentException("Invalid trigger value: " + job.getTriggerType() + ", " + job.getTriggerValue());
-        }
 
         if (triggerType == TriggerType.DEPEND) {
             List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Str.COMMA))
@@ -1072,7 +1068,7 @@ public class DistributedJobManager extends AbstractJobManager {
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
-            Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), date);
+            Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), new Date());
             Assert.notNull(nextTriggerTime, () -> "Has not next trigger time " + job.getTriggerValue());
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }

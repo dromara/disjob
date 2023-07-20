@@ -16,10 +16,11 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.mapstruct</groupId>
-      <artifactId>mapstruct</artifactId>
-      <version>${mapstruct.version}</version>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-core</artifactId>
     </dependency>
+
+    <!-- spring boot web -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -29,15 +30,28 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <!-- apache log4j2 for log implementation -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+    </dependency>
+
     <!-- 解决启动报错：DnsServerAddressStreamProviders >>>> Unable to load io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'. Use DEBUG level to see the full stack: java.lang.UnsatisfiedLinkError: failed to load the required native library -->
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-core</artifactId>
     </dependency>
 
     <!-- Registry: select one implementation for server registry -->
@@ -84,6 +98,7 @@
     </dependency>
     -->
 
+    <!-- Test dependencies -->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>

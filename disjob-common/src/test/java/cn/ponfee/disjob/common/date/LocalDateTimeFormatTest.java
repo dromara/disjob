@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class LocalDateTimeFormatTest {
 
     @Test
-    public void test9() {
+    public void test9() throws ParseException {
         LocalDateTime localDateTime = LocalDateTime.of(2022, 01, 02, 03, 04, 05, 123000000);
         Date date = toDate(localDateTime);
 
@@ -54,8 +54,8 @@ public class LocalDateTimeFormatTest {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("UTC+0")));
         assertEquals("1969-12-31 16:00:00", simpleDateFormat.format(originDate));
 
-        assertEquals("1970-01-01 08:00:00", format(zoneConvert(toDate("1970-01-01 00:00:00"), ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
-        assertEquals("1970-01-01 00:00:00", format(zoneConvert(toDate("1970-01-01 08:00:00"), ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
+        assertEquals("1970-01-01 08:00:00", format(zoneConvert(JavaUtilDateFormat.DEFAULT.parse("1970-01-01 00:00:00"), ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
+        assertEquals("1970-01-01 00:00:00", format(zoneConvert(JavaUtilDateFormat.DEFAULT.parse("1970-01-01 08:00:00"), ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class LocalDateTimeFormatTest {
     }
 
     @Test
-    public void test0() throws ParseException {
+    public void test0() {
         LocalDateTime localDateTime = LocalDateTime.of(2022, 01, 02, 03, 05, 05, 123000000);
         assertEquals("2022-01-02T03:05:05.123", localDateTime.toString());
 

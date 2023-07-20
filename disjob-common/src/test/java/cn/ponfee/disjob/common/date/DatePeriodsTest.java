@@ -6,6 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
 import java.util.Date;
 
 public class DatePeriodsTest {
@@ -49,9 +50,9 @@ public class DatePeriodsTest {
     }
 
     @Test
-    public void testDateMax() {
-        Date a = Dates.toDate("2020-10-12 12:34:23");
-        Date b = Dates.toDate("2020-10-12 12:34:26");
+    public void testDateMax() throws ParseException {
+        Date a = JavaUtilDateFormat.DEFAULT.parse("2020-10-12 12:34:23");
+        Date b = JavaUtilDateFormat.DEFAULT.parse("2020-10-12 12:34:26");
 
         Assertions.assertEquals(null, Dates.max(null, null));
         Assertions.assertEquals(null, Dates.min(null, null));

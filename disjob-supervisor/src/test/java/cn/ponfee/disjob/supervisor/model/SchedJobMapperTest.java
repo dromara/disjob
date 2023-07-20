@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.handle.impl.ScriptJobHandler;
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -77,7 +78,6 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
         job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job));
-        job.setAlarmSubscribers("");
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -88,7 +88,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     }
 
     @Test
-    public void testInsert2() {
+    public void testInsert2() throws ParseException {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
@@ -108,7 +108,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
 
         String date = "2022-06-16 11:37:00";
         job.setTriggerValue(date);
-        job.setNextTriggerTime(Dates.toDate(date).getTime());
+        job.setNextTriggerTime(JavaUtilDateFormat.DEFAULT.parse(date).getTime());
         job.setExecuteTimeout(3600000);
         job.setMisfireStrategy(MisfireStrategy.LAST.value());
         job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
@@ -116,7 +116,6 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
         job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job));
-        job.setAlarmSubscribers("");
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -127,7 +126,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     }
 
     @Test
-    public void testInsert3() {
+    public void testInsert3() throws ParseException {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
         job.setJobGroup("default");
@@ -147,7 +146,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
 
         String date = "2022-06-17 18:02:00";
         job.setTriggerValue(date);
-        job.setNextTriggerTime(Dates.toDate(date).getTime());
+        job.setNextTriggerTime(JavaUtilDateFormat.DEFAULT.parse(date).getTime());
         job.setExecuteTimeout(3600000);
         job.setMisfireStrategy(MisfireStrategy.LAST.value());
         job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
@@ -155,7 +154,6 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
         job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job));
-        job.setAlarmSubscribers("");
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());

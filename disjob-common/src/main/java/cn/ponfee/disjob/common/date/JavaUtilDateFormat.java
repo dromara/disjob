@@ -35,17 +35,17 @@ public class JavaUtilDateFormat extends DateFormat {
     /**
      * For {@code java.util.Date#toString}
      */
-    private static final DateTimeFormatter DATE_TO_STRING_FORMAT = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ROOT);
+    private static final DateTimeFormatter DATE_TO_STRING_FORMAT = DateTimeFormatter.ofPattern(Dates.DATE_TO_STRING_PATTERN, Locale.ROOT);
 
     /**
      * For {@link Date#toString()} "EEE MMM dd HH:mm:ss zzz yyyy" format
      */
-    static final Pattern DATE_TO_STRING_PATTERN = Pattern.compile("^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) [A-Z][a-z]{2} \\d{2} \\d{2}:\\d{2}:\\d{2} CST \\d{4}$");
+    static final Pattern TOSTRING_PATTERN = Pattern.compile("^(Sun|Mon|Tue|Wed|Thu|Fri|Sat) [A-Z][a-z]{2} \\d{2} \\d{2}:\\d{2}:\\d{2} CST \\d{4}$");
 
     /**
      * 日期时间戳：秒/毫秒
      */
-    static final Pattern DATE_TIMESTAMP_PATTERN = Pattern.compile("^0|[1-9]\\d*$");
+    static final Pattern TIMESTAMP_PATTERN = Pattern.compile("^0|[1-9]\\d*$");
 
     static final FastDateFormat PATTERN_11 = FastDateFormat.getInstance("yyyyMM");
     static final FastDateFormat PATTERN_12 = FastDateFormat.getInstance("yyyy-MM");
@@ -58,7 +58,7 @@ public class JavaUtilDateFormat extends DateFormat {
     static final FastDateFormat PATTERN_31 = FastDateFormat.getInstance("yyyyMMddHHmmss");
     static final FastDateFormat PATTERN_32 = FastDateFormat.getInstance("yyyyMMddHHmmssSSS");
 
-    static final FastDateFormat PATTERN_41 = FastDateFormat.getInstance(Dates.DATETIME_PATTERN);
+    static final FastDateFormat PATTERN_41 = Dates.DATETIME_FORMAT;
     static final FastDateFormat PATTERN_42 = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
     static final FastDateFormat PATTERN_43 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
     static final FastDateFormat PATTERN_44 = FastDateFormat.getInstance("yyyy/MM/dd'T'HH:mm:ss");
@@ -159,14 +159,14 @@ public class JavaUtilDateFormat extends DateFormat {
                     return PATTERN_22.parse(source);
                 } else if (separator == Char.SLASH) {
                     return PATTERN_23.parse(source);
-                } else if (DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
+                } else if (TIMESTAMP_PATTERN.matcher(source).matches()) {
                     // long string(length 10) of unix timestamp(e.g. 1640966400)
                     return new Date(Long.parseLong(source) * 1000);
                 }
                 break;
             case 13:
                 // long string(length 13) of mills unix timestamp(e.g. 1640966400000)
-                if (DATE_TIMESTAMP_PATTERN.matcher(source).matches()) {
+                if (TIMESTAMP_PATTERN.matcher(source).matches()) {
                     return new Date(Long.parseLong(source));
                 }
                 break;
@@ -196,7 +196,7 @@ public class JavaUtilDateFormat extends DateFormat {
             case 28:
                 if (isCST(source)) {
                     // 以下使用方式会相差14小时：
-                    //   1）FastDateFormat.getInstance("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH).parse(source);
+                    //   1）FastDateFormat.getInstance(Dates.DATE_TO_STRING_PATTERN, Locale.ENGLISH).parse(source);
                     //   2）new Date(source);
                     //   3）Date.from(ZonedDateTime.parse(source, DATE_TO_STRING_FORMAT).toInstant());
                     return Dates.toDate(LocalDateTime.parse(source, DATE_TO_STRING_FORMAT));
@@ -298,7 +298,7 @@ public class JavaUtilDateFormat extends DateFormat {
     }
 
     static boolean isCST(String str) {
-        return DATE_TO_STRING_PATTERN.matcher(str).matches();
+        return TOSTRING_PATTERN.matcher(str).matches();
     }
 
     static String padding(String source) {

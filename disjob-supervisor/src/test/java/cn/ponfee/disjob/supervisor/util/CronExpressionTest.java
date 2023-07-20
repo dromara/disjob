@@ -11,6 +11,7 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.date.CronExpression;
 import cn.ponfee.disjob.common.date.DatePeriods;
 import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.TriggerType;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
@@ -28,7 +29,7 @@ import java.util.Date;
 public class CronExpressionTest {
 
     @Test
-    public void testCronExp() throws ParseException {
+    public void testCronExp() {
         Assertions.assertTrue(TriggerType.CRON.validate("0 0 10,14,16 * * ?"));
         Assertions.assertTrue(TriggerType.CRON.validate("0 0 12 ? * WED"));
         Assertions.assertFalse(TriggerType.CRON.validate("0 0 25 ? * WED"));
@@ -61,9 +62,9 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void testComputeNextFireTimeCRON() {
+    public void testComputeNextFireTimeCRON() throws ParseException {
         String triggerValue = "0 0 10,14,16 * * ?";
-        Date d1 = TriggerType.CRON.computeNextFireTime(triggerValue, Dates.toDate("2022-06-01 12:31:34"));
+        Date d1 = TriggerType.CRON.computeNextFireTime(triggerValue, JavaUtilDateFormat.DEFAULT.parse("2022-06-01 12:31:34"));
         Assertions.assertEquals("2022-06-01 14:00:00", Dates.format(d1));
 
         Date d2 = TriggerType.CRON.computeNextFireTime(triggerValue, d1);
@@ -71,24 +72,24 @@ public class CronExpressionTest {
     }
 
     @Test
-    public void testComputeNextFireTimeONCE() {
+    public void testComputeNextFireTimeONCE() throws ParseException {
         String triggerValue = "2022-06-01 10:00:00";
-        Assertions.assertNull(TriggerType.ONCE.computeNextFireTime(triggerValue, Dates.toDate("2022-06-01 10:00:01")));
+        Assertions.assertNull(TriggerType.ONCE.computeNextFireTime(triggerValue, JavaUtilDateFormat.DEFAULT.parse("2022-06-01 10:00:01")));
 
-        Date d1 = TriggerType.ONCE.computeNextFireTime(triggerValue, Dates.toDate("2022-05-31 10:00:01"));
+        Date d1 = TriggerType.ONCE.computeNextFireTime(triggerValue, JavaUtilDateFormat.DEFAULT.parse("2022-05-31 10:00:01"));
         Assertions.assertEquals("2022-06-01 10:00:00", Dates.format(d1));
         Assertions.assertNull(TriggerType.ONCE.computeNextFireTime(triggerValue, d1));
     }
 
     @Test
-    public void testComputeNextFireTimePERIOD() {
+    public void testComputeNextFireTimePERIOD() throws ParseException {
         String triggerValue = "{\"period\":\"MONTHLY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}";
         Assertions.assertFalse(TriggerType.PERIOD.computeNextFireTime(triggerValue, new Date()).before(new Date()));
 
-        Date startTime = Dates.toDate("2022-05-01 00:00:00");
+        Date startTime = JavaUtilDateFormat.DEFAULT.parse("2022-05-01 00:00:00");
         Assertions.assertEquals("2022-06-01 00:00:00", Dates.format(TriggerType.PERIOD.computeNextFireTime(triggerValue, startTime)));
 
-        startTime = Dates.toDate("2022-05-31 23:59:58");
+        startTime = JavaUtilDateFormat.DEFAULT.parse("2022-05-31 23:59:58");
         Assertions.assertEquals("2022-06-01 00:00:00", Dates.format(TriggerType.PERIOD.computeNextFireTime(triggerValue, startTime)));
     }
 

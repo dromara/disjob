@@ -9,12 +9,13 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.date.DatePeriods;
-import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,14 +24,14 @@ import java.util.concurrent.TimeUnit;
 public class TriggerValueTest {
 
     @Test
-    public void testValue() {
+    public void testValue() throws ParseException {
         Assertions.assertThrows(IllegalArgumentException.class, () -> DatePeriods.valueOf("ABC"));
 
         String conf = "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":2}";
         PeriodTriggerValue triggerValue = Jsons.fromJson(conf, PeriodTriggerValue.class);
         Assertions.assertEquals(triggerValue.getPeriod(), DatePeriods.DAILY);
         Assertions.assertEquals(triggerValue.getStep(), 2);
-        Assertions.assertEquals(triggerValue.getStart(), Dates.toDate("2000-01-01 00:00:00"));
+        Assertions.assertEquals(triggerValue.getStart(), JavaUtilDateFormat.DEFAULT.parse("2000-01-01 00:00:00"));
     }
 
     @Test
