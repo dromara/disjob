@@ -27,27 +27,27 @@ public enum RunState implements IntValueEnum<RunState> {
     /**
      * 待运行
      */
-    WAITING(10, false, false),
+    WAITING(10, false, false, "待运行"),
 
     /**
      * 运行中
      */
-    RUNNING(20, false, false),
+    RUNNING(20, false, false, "运行中"),
 
     /**
      * 已暂停
      */
-    PAUSED(30, false, false),
+    PAUSED(30, false, false, "已暂停"),
 
     /**
      * 已完成
      */
-    FINISHED(40, true, false),
+    FINISHED(40, true, false, "已完成"),
 
     /**
      * 已取消
      */
-    CANCELED(50, true, true),
+    CANCELED(50, true, true, "已取消"),
 
     ;
 
@@ -83,15 +83,23 @@ public enum RunState implements IntValueEnum<RunState> {
      */
     private final boolean failure;
 
-    RunState(int value, boolean terminal, boolean failure) {
+    private final String desc;
+
+    RunState(int value, boolean terminal, boolean failure, String desc) {
         this.value = value;
         this.terminal = terminal;
         this.failure = failure;
+        this.desc = desc;
     }
 
     @Override
     public int value() {
         return value;
+    }
+
+    @Override
+    public String desc() {
+        return desc;
     }
 
     public boolean isTerminal() {

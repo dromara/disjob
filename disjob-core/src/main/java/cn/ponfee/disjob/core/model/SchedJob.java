@@ -117,7 +117,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer executeTimeout;
 
     /**
-     * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行；2-串行；3-覆盖(先取消上一次的执行)；4-丢弃；
+     * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务（丢弃本次任务，继续执行上次任务）；
      *
      * @see CollidedStrategy
      */

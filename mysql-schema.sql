@@ -45,7 +45,7 @@ CREATE TABLE `sched_job` (
   `trigger_type`        TINYINT        UNSIGNED  NOT NULL                               COMMENT '触发器类型：1-Crontab方式；2-指定时间执行一次；3-周期性执行；4-任务依赖；',
   `trigger_value`       VARCHAR(255)             NOT NULL                               COMMENT '触发器配置(对应trigger_type)：1-Crontab表达式；2-时间格式；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-父任务job_id(多个逗号分隔)；',
   `execute_timeout`     INT            UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '执行超时时间(毫秒)，若大于0则执行超时会中断任务',
-  `collided_strategy`   TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行；2-串行；3-覆盖(先取消上一次的执行)；4-丢弃；',
+  `collided_strategy`   TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务（丢弃本次任务，继续执行上次任务）；',
   `misfire_strategy`    TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '过期策略：1-触发最近一次；2-丢弃；3-触发所有；',
   `route_strategy`      TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '任务分配给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；',
   `last_trigger_time`   BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '最近一次的触发时间(毫秒时间戳)',

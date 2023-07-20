@@ -25,36 +25,43 @@ public enum RunType implements IntValueEnum<RunType> {
     /**
      * 调度计划
      */
-    SCHEDULE(1),
+    SCHEDULE(1, "调度计划"),
 
     /**
      * 任务依赖
      */
-    DEPEND(2),
+    DEPEND(2, "任务依赖"),
 
     /**
      * 失败重试
      */
-    RETRY(3),
+    RETRY(3, "失败重试"),
 
     /**
      * 手动触发
      */
-    MANUAL(4),
+    MANUAL(4, "手动触发"),
 
     ;
 
     private static final Map<Integer, RunType> MAPPING = Enums.toMap(RunType.class, RunType::value);
 
     private final int value;
+    private final String desc;
 
-    RunType(int value) {
+    RunType(int value, String desc) {
         this.value = value;
+        this.desc = desc;
     }
 
     @Override
     public int value() {
         return value;
+    }
+
+    @Override
+    public String desc() {
+        return desc;
     }
 
     public static RunType of(Integer value) {

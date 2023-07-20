@@ -25,26 +25,33 @@ public enum JobType implements IntValueEnum<JobType> {
     /**
      * 普通
      */
-    NORMAL(1),
+    NORMAL(1, "普通"),
 
     /**
      * 工作流(DAG)
      */
-    WORKFLOW(2),
+    WORKFLOW(2, "工作流(DAG)"),
 
     ;
 
     private static final Map<Integer, JobType> MAPPING = Enums.toMap(JobType.class, JobType::value);
 
     private final int value;
+    private final String desc;
 
-    JobType(int value) {
+    JobType(int value, String desc) {
         this.value = value;
+        this.desc = desc;
     }
 
     @Override
     public int value() {
         return value;
+    }
+
+    @Override
+    public String desc() {
+        return desc;
     }
 
     public static JobType of(Integer value) {

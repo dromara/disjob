@@ -23,24 +23,31 @@ public enum JobState implements IntValueEnum<JobState> {
     /**
      * 已禁用
      */
-    DISABLE(0),
+    DISABLE(0, "已禁用"),
 
     /**
      * 已启用
      */
-    ENABLE(1),
+    ENABLE(1, "已启用"),
 
     ;
 
     private final int value;
+    private final String desc;
 
-    JobState(int value) {
+    JobState(int value, String desc) {
         this.value = value;
+        this.desc = desc;
     }
 
     @Override
     public int value() {
         return value;
+    }
+
+    @Override
+    public String desc() {
+        return desc;
     }
 
     public static JobState of(Integer value) {

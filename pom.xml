@@ -149,19 +149,14 @@
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
+    <!-- 谨慎使用，经常会出现启动后运行报错的问题。对于多个模块项目，包含@Component的模块都需要在其pom中增加该依赖，否则启动会报错
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
-    <!-- 在编译期校验潜在错误使用约束的问题  -->
-    <dependency>
-      <groupId>org.hibernate.validator</groupId>
-      <artifactId>hibernate-validator-annotation-processor</artifactId>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
+    -->
 
     <!-- Test dependencies -->
     <dependency>
@@ -376,11 +371,6 @@
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-configuration-processor</artifactId>
               <version>${spring-boot.version}</version>
-            </path>
-            <path>
-              <groupId>org.springframework</groupId>
-              <artifactId>spring-context-indexer</artifactId>
-              <version>${spring-framework.version}</version>
             </path>
           </annotationProcessorPaths> -->
         </configuration>

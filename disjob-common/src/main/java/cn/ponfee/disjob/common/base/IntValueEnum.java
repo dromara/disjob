@@ -16,7 +16,19 @@ package cn.ponfee.disjob.common.base;
  */
 public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
 
+    /**
+     * Returns enum int value
+     *
+     * @return enum int value
+     */
     int value();
+
+    /**
+     * Returns enum description
+     *
+     * @return enum description
+     */
+    String desc();
 
     default boolean equals(Integer value) {
         return value != null && value == value();

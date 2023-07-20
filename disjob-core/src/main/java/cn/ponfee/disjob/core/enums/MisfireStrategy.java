@@ -25,31 +25,38 @@ public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
     /**
      * 触发最近一次misfire
      */
-    LAST(1),
+    LAST(1, "触发最近一次"),
 
     /**
      * 丢弃所有misfire
      */
-    DISCARD(2),
+    DISCARD(2, "丢弃所有"),
 
     /**
      * 触发所有misfire
      */
-    EVERY(3),
+    EVERY(3, "触发所有"),
 
     ;
 
     private static final Map<Integer, MisfireStrategy> MAPPING = Enums.toMap(MisfireStrategy.class, MisfireStrategy::value);
 
     private final int value;
+    private final String desc;
 
-    MisfireStrategy(int value) {
+    MisfireStrategy(int value, String desc) {
         this.value = value;
+        this.desc = desc;
     }
 
     @Override
     public int value() {
         return value;
+    }
+
+    @Override
+    public String desc() {
+        return desc;
     }
 
     public static MisfireStrategy of(Integer value) {

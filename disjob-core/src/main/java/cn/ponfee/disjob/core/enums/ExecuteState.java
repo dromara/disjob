@@ -27,67 +27,67 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     /**
      * 等待执行
      */
-    WAITING(10, RunState.WAITING),
+    WAITING(10, RunState.WAITING, "等待执行"),
 
     /**
      * 正在执行
      */
-    EXECUTING(20, RunState.RUNNING),
+    EXECUTING(20, RunState.RUNNING, "正在执行"),
 
     /**
      * 暂停执行
      */
-    PAUSED(30, RunState.PAUSED),
+    PAUSED(30, RunState.PAUSED, "暂停执行"),
 
     /**
      * 正常完成
      */
-    FINISHED(40, RunState.FINISHED),
+    FINISHED(40, RunState.FINISHED, "正常完成"),
 
     /**
      * 实例化失败取消
      */
-    INSTANCE_FAILED(50, RunState.CANCELED),
+    INSTANCE_FAILED(50, RunState.CANCELED, "实例化失败取消"),
 
     /**
      * 校验失败取消
      */
-    VERIFY_FAILED(51, RunState.CANCELED),
+    VERIFY_FAILED(51, RunState.CANCELED, "校验失败取消"),
 
     /**
      * 初始化异常取消
      */
-    INIT_EXCEPTION(52, RunState.CANCELED),
+    INIT_EXCEPTION(52, RunState.CANCELED, "初始化异常取消"),
 
     /**
      * 执行失败取消
      */
-    EXECUTE_FAILED(53, RunState.CANCELED),
+    EXECUTE_FAILED(53, RunState.CANCELED, "执行失败取消"),
 
     /**
      * 执行异常取消
      */
-    EXECUTE_EXCEPTION(54, RunState.CANCELED),
+    EXECUTE_EXCEPTION(54, RunState.CANCELED, "执行异常取消"),
 
     /**
      * 执行超时取消
      */
-    EXECUTE_TIMEOUT(55, RunState.CANCELED),
+    EXECUTE_TIMEOUT(55, RunState.CANCELED, "执行超时取消"),
 
     /**
      * 执行冲突取消(sched_job.collided_strategy=3)
      */
-    EXECUTE_COLLIDED(56, RunState.CANCELED),
+    EXECUTE_COLLIDED(56, RunState.CANCELED, "执行冲突取消"),
 
     /**
      * 手动取消
      */
-    MANUAL_CANCELED(57, RunState.CANCELED),
+    MANUAL_CANCELED(57, RunState.CANCELED, "手动取消"),
 
     /**
      * 广播未执行取消(分配的worker机器消亡)
      */
-    WAITING_CANCELED(58, RunState.CANCELED),
+    WAITING_CANCELED(58, RunState.CANCELED, "广播未执行取消"),
     ;
 
     /**
@@ -109,14 +109,22 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
      */
     private final RunState runState;
 
-    ExecuteState(int value, RunState runState) {
+    private final String desc;
+
+    ExecuteState(int value, RunState runState, String desc) {
         this.value = value;
         this.runState = runState;
+        this.desc = desc;
     }
 
     @Override
     public int value() {
         return value;
+    }
+
+    @Override
+    public String desc() {
+        return desc;
     }
 
     public boolean isTerminal() {

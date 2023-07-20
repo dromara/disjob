@@ -17,7 +17,19 @@ package cn.ponfee.disjob.common.base;
  */
 public interface ValueEnum<V, T extends Enum<T> & ValueEnum<V, T>> {
 
+    /**
+     * Returns enum value
+     *
+     * @return enum value
+     */
     V value();
+
+    /**
+     * Returns enum description
+     *
+     * @return enum description
+     */
+    String desc();
 
     static <V, T extends Enum<T> & ValueEnum<V, T>> T of(Class<T> type, V value) {
         if (type == null || !type.isEnum()) {

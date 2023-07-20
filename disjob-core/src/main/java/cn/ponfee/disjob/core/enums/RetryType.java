@@ -25,31 +25,38 @@ public enum RetryType implements IntValueEnum<RetryType> {
     /**
      * 不重试
      */
-    NONE(0),
+    NONE(0, "不重试"),
 
     /**
      * 只重试失败的Task(copy previous failed task param)
      */
-    FAILED(1),
+    FAILED(1, "只重试失败的Task"),
 
     /**
      * 重试所有的Task(re-split job param to task param)
      */
-    ALL(2),
+    ALL(2, "重试所有的Task"),
 
     ;
 
     private static final Map<Integer, RetryType> MAPPING = Enums.toMap(RetryType.class, RetryType::value);
 
     private final int value;
+    private final String desc;
 
-    RetryType(int value) {
+    RetryType(int value, String desc) {
         this.value = value;
+        this.desc = desc;
     }
 
     @Override
     public int value() {
         return value;
+    }
+
+    @Override
+    public String desc() {
+        return desc;
     }
 
     public static RetryType of(Integer value) {
