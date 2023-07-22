@@ -13,7 +13,6 @@ import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.text.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,11 +22,10 @@ import java.util.regex.Pattern;
 /**
  * Convert to {@code java.util.Date}, none zone offset.
  * <p>unix timestamp只支持对10位(秒)和13位(毫秒)做解析
+ * <p>线程安全
  *
  * @author Ponfee
- * @ThreadSafe
  */
-@ThreadSafe
 public class JavaUtilDateFormat extends DateFormat {
 
     private static final long serialVersionUID = 6837172676882367405L;

@@ -10,7 +10,6 @@ package cn.ponfee.disjob.common.date;
 
 import cn.ponfee.disjob.common.base.Symbol.Char;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -23,12 +22,11 @@ import static cn.ponfee.disjob.common.date.JavaUtilDateFormat.*;
  * Convert to {@code java.time.LocalDateTime}, none zone offset.
  * <p>unix timestamp只支持对10位(秒)和13位(毫秒)做解析
  * <p>时区：LocalDateTime[无]、Date[0时区]、Instant[0时区]、ZonedDateTime[自带]
+ * <p>线程安全
  *
  * @author Ponfee
- * @ThreadSafe
  * @see JavaUtilDateFormat#parseToLocalDateTime(String)
  */
-@ThreadSafe
 public class LocalDateTimeFormat {
 
     static final DateTimeFormatter PATTERN_01 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");

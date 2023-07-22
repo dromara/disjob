@@ -13,7 +13,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,22 +41,22 @@ public class JdbcTemplateWrapper {
         return jdbcTemplate.execute(action);
     }
 
-    public int insert(String sql, @Nullable Object... args) {
+    public int insert(String sql, Object... args) {
         Assert.isTrue(sql.startsWith("INSERT "), () -> "Invalid DELETE sql: " + sql);
         return jdbcTemplate.update(sql, args);
     }
 
-    public int update(String sql, @Nullable Object... args) {
+    public int update(String sql, Object... args) {
         Assert.isTrue(sql.startsWith("UPDATE "), () -> "Invalid DELETE sql: " + sql);
         return jdbcTemplate.update(sql, args);
     }
 
-    public int delete(String sql, @Nullable Object... args) {
+    public int delete(String sql, Object... args) {
         Assert.isTrue(sql.startsWith("DELETE "), () -> "Invalid DELETE sql: " + sql);
         return jdbcTemplate.update(sql, args);
     }
 
-    public <T> List<T> queryForList(String sql, RowMapper<T> rowMapper, @Nullable Object... args) {
+    public <T> List<T> queryForList(String sql, RowMapper<T> rowMapper, Object... args) {
         Assert.isTrue(sql.startsWith("SELECT "), () -> "Invalid SELECT sql: " + sql);
         return jdbcTemplate.queryForStream(sql, rowMapper, args).collect(Collectors.toList());
     }

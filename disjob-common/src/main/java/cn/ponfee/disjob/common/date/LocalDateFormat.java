@@ -8,18 +8,16 @@
 
 package cn.ponfee.disjob.common.date;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
  * Convert to {@code java.time.LocalDate}, none zone offset.
+ * <p>线程安全
  *
  * @author Ponfee
- * @ThreadSafe
  */
-@ThreadSafe
 public class LocalDateFormat {
 
     /**

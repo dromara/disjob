@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
+import com.google.common.base.CaseFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
 
         // init thread parameters
         super.setDaemon(true);
-        super.setName(getClass().getSimpleName());
+        super.setName(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, getClass().getSimpleName()) + "_thread");
     }
 
     /**

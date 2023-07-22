@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.Assert;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -40,11 +39,10 @@ import java.util.Map;
 
 /**
  * The json utility based jackson
+ * <p>线程安全
  *
  * @author Ponfee
- * @ThreadSafe
  */
-@ThreadSafe
 public final class Jsons {
 
     public static final TypeReference<Map<String, Object>> MAP_NORMAL = new TypeReference<Map<String, Object>>() {};

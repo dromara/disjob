@@ -10,9 +10,6 @@ package cn.ponfee.disjob.common.util;
 
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-
 /**
  * 数学算术
  * 取模：Modulo Operation
@@ -23,7 +20,7 @@ public class Maths {
 
     /**
      * 以2为底n的对数
-     * 
+     *
      * @param n the value
      * @return a value of log(n)/log(2)
      */
@@ -36,7 +33,7 @@ public class Maths {
      * {@link Math#log10(double) }  求以10为底n的对数（lg）
      * {@link Math#log(double)   }  以e为底n的对数（自然对数，ln）
      * {@link Math#log1p(double) }  以e为底n+1的对数
-     * 
+     *
      * @param n     a value
      * @param base  底数
      * @return a double of logarithm
@@ -47,12 +44,12 @@ public class Maths {
 
     /**
      * rotate shift left，循环左移位操作：0<=n<=32
-     * 
+     *
      * @param x the value
      * @param n shift bit len
      * @return a number of rotate left result
      */
-    public static int rotateLeft(int x, @Min(0) @Max(32) int n) {
+    public static int rotateLeft(int x, int n) {
         return (x << n) | (x >>> (32 - n));
     }
 
@@ -73,7 +70,7 @@ public class Maths {
      *  bitsMask(63) -> 9223372036854775807 -> 0111111111111111111111111111111111111111111111111111111111111111
      *  bitsMask(64) -> -1                  -> 1111111111111111111111111111111111111111111111111111111111111111
      * </pre>
-     * 
+     *
      * @param bits the bit count
      * @return a long value
      */
@@ -84,12 +81,12 @@ public class Maths {
 
     /**
      * Returns a long value for {@code base}<sup>{@code exponent}</sup>.
-     * 
+     *
      * @param base      the base
      * @param exponent  the exponent
      * @return a long value for {@code base}<sup>{@code exponent}</sup>.
      */
-    public static long pow(@Min(1) long base, @Min(0) int exponent) {
+    public static long pow(long base, int exponent) {
         if (exponent == 0) {
             return 1;
         }
@@ -111,6 +108,7 @@ public class Maths {
     }
 
     // ------------------------------------------------------------------------int plus/minus
+
     public static int plus(int a, int b) {
         if (a > 0 && b > 0) {
             return Integer.MAX_VALUE - b < a ? Integer.MAX_VALUE : a + b;
@@ -132,6 +130,7 @@ public class Maths {
     }
 
     // ------------------------------------------------------------------------long plus/minus
+
     public static long plus(long a, long b) {
         if (a > 0 && b > 0) {
             return Long.MAX_VALUE - b < a ? Long.MAX_VALUE : a + b;

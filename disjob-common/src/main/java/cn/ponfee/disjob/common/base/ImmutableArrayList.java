@@ -51,7 +51,6 @@ public class ImmutableArrayList<E> extends ToJsonString
         return new ImmutableArrayList<>();
     }
 
-    @SafeVarargs
     public static <T> ImmutableArrayList<T> of(T... array) {
         return new ImmutableArrayList<>(array);
     }

@@ -138,7 +138,6 @@ public final class ObjectUtils {
      * @param type  target object type
      * @return target type object
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> T cast(Object value, Class<T> type) {
         if (type.isInstance(value)) {
             return (T) value;

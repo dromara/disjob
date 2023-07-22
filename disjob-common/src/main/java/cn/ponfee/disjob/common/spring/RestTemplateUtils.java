@@ -39,7 +39,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import java.lang.reflect.Array;
 import java.net.URI;
@@ -58,7 +57,7 @@ import static org.springframework.http.HttpMethod.*;
 public class RestTemplateUtils {
     public static final Set<HttpMethod> QUERY_PARAM_METHODS = ImmutableSet.of(GET, DELETE, HEAD, OPTIONS);
 
-    public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(@Nullable ObjectMapper objectMapper) {
+    public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         if (objectMapper == null) {
             objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
         }
