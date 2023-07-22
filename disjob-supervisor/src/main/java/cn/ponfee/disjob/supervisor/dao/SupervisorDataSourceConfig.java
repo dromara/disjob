@@ -50,10 +50,9 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.MYBATIS_CONFI
     sqlSessionTemplateRef = SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_NAME_SUFFIX
 )
 public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
-    private static final String DEFAULT_MYBATIS_CONFIG_FILE_LOCATION = "classpath:disjob-mybatis-config.xml";
 
     public SupervisorDataSourceConfig(@Value("${" + MYBATIS_CONFIG_FILE_LOCATION + ":}") String mybatisConfigFileLocation) {
-        super(StringUtils.defaultIfBlank(mybatisConfigFileLocation, DEFAULT_MYBATIS_CONFIG_FILE_LOCATION));
+        super(defaultIfBlank(mybatisConfigFileLocation));
     }
 
     /**
@@ -69,12 +68,10 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     public static final String DB_NAME = "disjob";
 
     @Bean(name = DB_NAME + DATA_SOURCE_NAME_SUFFIX)
-    @ConfigurationProperties(prefix = "disjob.datasource")
+    @ConfigurationProperties(prefix = DB_NAME + ".datasource")
     @Override
     public DataSource dataSource() {
-        // return new com.zaxxer.hikari.HikariDataSource();
-        return DataSourceBuilder
-            .create()
+        return DataSourceBuilder.create()
             //.type(com.zaxxer.hikari.HikariDataSource.class)
             .build();
     }
@@ -103,4 +100,9 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }
+
+    private static String defaultIfBlank(String mybatisConfigFileLocation) {
+        return StringUtils.defaultIfBlank(mybatisConfigFileLocation, "classpath:disjob-mybatis-config.xml");
+    }
+
 }

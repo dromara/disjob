@@ -1,0 +1,162 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
+package cn.ponfee.disjob.supervisor.base;
+
+import cn.ponfee.disjob.common.spring.SpringUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.mybatis.spring.mapper.MapperScannerConfigurer;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.lang.NonNull;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import javax.sql.DataSource;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Abstract Datasource Configuration.
+ *
+ * 使用该方式时，基于注解方式的事务不生效
+ *
+ * @author Ponfee
+ */
+public abstract class AbstractDataSourceConfig implements ApplicationContextAware, EnvironmentAware, BeanDefinitionRegistryPostProcessor {
+
+    public static final String DATA_SOURCE_NAME_SUFFIX               = "DataSource";
+    public static final String SQL_SESSION_FACTORY_NAME_SUFFIX       = "SqlSessionFactory";
+    public static final String SQL_SESSION_TEMPLATE_NAME_SUFFIX      = "SqlSessionTemplate";
+    public static final String TX_MANAGER_NAME_SUFFIX                = "TransactionManager";
+    public static final String TX_TEMPLATE_NAME_SUFFIX               = "TransactionTemplate";
+    public static final String JDBC_TEMPLATE_NAME_SUFFIX             = "JdbcTemplate";
+    public static final String MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX = "MapperScannerConfigurer";
+
+    private final String databaseName;
+    private final String mybatisMapperFileLocation;
+
+    private ApplicationContext applicationContext;
+    private Environment environment;
+
+    public AbstractDataSourceConfig(String databaseName) {
+        this(databaseName, -1);
+    }
+
+    public AbstractDataSourceConfig(String databaseName, int wildcardLastIndex) {
+        this.databaseName = databaseName;
+
+        List<String> list = Arrays.stream(ClassUtils.getPackageName(getClass()).split("\\."))
+            .filter(StringUtils::isNotEmpty)
+            .collect(Collectors.toList());
+        String path;
+        if (list.size() == 0) {
+            path = "";
+        } else if (wildcardLastIndex == 0) {
+            path = String.join("/", list) + "/**/";
+        } else if (wildcardLastIndex < 0) {
+            path = String.join("/", list) + "/";
+        } else if (list.size() <= wildcardLastIndex) {
+            path = "/**/" + String.join("/", list) + "/";
+        } else {
+            int pos = list.size() - wildcardLastIndex;
+            path = String.join("/", list.subList(0, pos)) + "/**/" + String.join("/", list.subList(pos, list.size())) + "/";
+        }
+        // classpath*:cn/ponfee/disjob/supervisor/dao/xml/*.xml
+        this.mybatisMapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", path);
+    }
+
+    public AbstractDataSourceConfig(String databaseName, String mybatisMapperFileLocation) {
+        this.databaseName = databaseName;
+        this.mybatisMapperFileLocation = mybatisMapperFileLocation;
+    }
+
+    // ------------------------------------------------------------------------methods
+
+    @Override
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void setEnvironment(@NonNull Environment environment) {
+        this.environment = environment;
+    }
+
+    protected abstract String mybatisConfigFileLocation(Environment environment);
+
+    @Override
+    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory listableBeanFactory) throws BeansException {
+        // -------------------------data source
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) listableBeanFactory;
+        DataSource dataSource = DataSourceBuilder.create()
+            //.type(com.zaxxer.hikari.HikariDataSource.class)
+            .build();
+        Binder binder = Binder.get(environment);
+        binder.bind(databaseName + ".datasource", Bindable.ofInstance(dataSource));
+        beanFactory.registerSingleton(databaseName + DATA_SOURCE_NAME_SUFFIX, dataSource);
+
+        // -------------------------register to spring as singleton bean
+        SqlSessionFactory sqlSessionFactory;
+        try {
+            sqlSessionFactory = createSqlSessionFactory(dataSource);
+        } catch (Exception e) {
+            throw new BeanInstantiationException(SqlSessionFactory.class, "Create mybatis SqlSessionFactory error.", e);
+        }
+        beanFactory.registerSingleton(databaseName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactory);
+        beanFactory.registerSingleton(databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX, new SqlSessionTemplate(sqlSessionFactory));
+        beanFactory.registerSingleton(databaseName + JDBC_TEMPLATE_NAME_SUFFIX, new JdbcTemplate(dataSource));
+        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+        beanFactory.registerSingleton(databaseName + TX_MANAGER_NAME_SUFFIX, transactionManager);
+        beanFactory.registerSingleton(databaseName + TX_TEMPLATE_NAME_SUFFIX, new TransactionTemplate(transactionManager));
+
+        // -------------------------mybatis mapper scanner
+        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
+        mapperScannerConfigurer.setBasePackage(this.getClass().getPackage().getName() + ".mapper");
+        mapperScannerConfigurer.setSqlSessionTemplateBeanName(databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX);
+        mapperScannerConfigurer.setBeanName(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX);
+        mapperScannerConfigurer.postProcessBeanDefinitionRegistry(beanFactory);
+        mapperScannerConfigurer.setProcessPropertyPlaceHolders(true);
+        mapperScannerConfigurer.setApplicationContext(applicationContext);
+        beanFactory.registerSingleton(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurer);
+    }
+
+    @Override
+    public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
+        // No-op
+    }
+
+    private SqlSessionFactory createSqlSessionFactory(DataSource dataSource) throws Exception {
+        SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
+        factoryBean.setDataSource(dataSource);
+        factoryBean.setConfigLocation(SpringUtils.getResource(mybatisConfigFileLocation(environment)));
+        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mybatisMapperFileLocation));
+        return factoryBean.getObject();
+    }
+
+}
