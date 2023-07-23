@@ -17,10 +17,9 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.*;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -36,6 +35,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -43,8 +43,6 @@ import java.util.stream.Collectors;
 
 /**
  * Abstract Datasource Configuration.
- *
- * 使用该方式时，基于注解方式的事务不生效
  *
  * @author Ponfee
  */
@@ -110,6 +108,9 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
 
     protected abstract String mybatisConfigFileLocation(Environment environment);
 
+    /**
+     * 使用该方式时，基于注解方式的事务不生效
+     */
     @Override
     public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory listableBeanFactory) throws BeansException {
         // -------------------------data source
@@ -146,9 +147,71 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
         beanFactory.registerSingleton(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurer);
     }
 
+    /**
+     * 使用该方式时，基于注解方式的事务不生效
+     * 要加`@EnableTransactionManagement`才能使事务生效
+     */
     @Override
-    public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
-        // No-op
+    public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) throws BeansException {
+        // MapperScannerConfigurer bean definition
+        BeanDefinitionBuilder mapperScannerConfigurerBdb = BeanDefinitionBuilder.genericBeanDefinition(MapperScannerConfigurer.class);
+        mapperScannerConfigurerBdb.addPropertyValue("processPropertyPlaceHolders", true);
+        mapperScannerConfigurerBdb.addPropertyValue("basePackage", this.getClass().getPackage().getName() + ".mapper");
+        mapperScannerConfigurerBdb.addPropertyValue("sqlSessionTemplateBeanName", databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX);
+        mapperScannerConfigurerBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        registry.registerBeanDefinition(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurerBdb.getBeanDefinition());
+
+        // DataSource bean definition
+        BeanDefinitionBuilder dataSourceBdb = BeanDefinitionBuilder.genericBeanDefinition(DataSource.class);
+        dataSourceBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        AbstractBeanDefinition dataSourceBd = dataSourceBdb.getBeanDefinition();
+        final Binder binder = Binder.get(environment);
+        dataSourceBd.setInstanceSupplier(() -> {
+            DataSource dataSource = DataSourceBuilder.create().build();
+            binder.bind(databaseName + ".datasource", Bindable.ofInstance(dataSource));
+            return dataSource;
+        });
+        registry.registerBeanDefinition(databaseName + DATA_SOURCE_NAME_SUFFIX, dataSourceBd);
+
+        // SqlSessionFactoryBean bean definition
+        BeanDefinitionBuilder sqlSessionFactoryBeanBdb = BeanDefinitionBuilder.genericBeanDefinition(SqlSessionFactoryBean.class);
+        sqlSessionFactoryBeanBdb.addPropertyReference("dataSource", databaseName + DATA_SOURCE_NAME_SUFFIX);
+        try {
+            sqlSessionFactoryBeanBdb.addPropertyValue("configLocation", SpringUtils.getResource(mybatisConfigFileLocation(environment)));
+            sqlSessionFactoryBeanBdb.addPropertyValue("mapperLocations", new PathMatchingResourcePatternResolver().getResources(mybatisMapperFileLocation));
+        } catch (IOException e) {
+            throw new BeanInstantiationException(SqlSessionFactory.class, "Load mybatis location file error.", e);
+        }
+        sqlSessionFactoryBeanBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        registry.registerBeanDefinition(databaseName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactoryBeanBdb.getBeanDefinition());
+
+        // SqlSessionTemplate bean definition
+        BeanDefinitionBuilder sqlSessionTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(SqlSessionTemplate.class);
+        sqlSessionTemplateBdb.addConstructorArgReference(databaseName + SQL_SESSION_FACTORY_NAME_SUFFIX);
+        sqlSessionTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        registry.registerBeanDefinition(databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX, sqlSessionTemplateBdb.getBeanDefinition());
+
+        // JdbcTemplate bean definition
+        BeanDefinitionBuilder jdbcTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(JdbcTemplate.class);
+        jdbcTemplateBdb.addConstructorArgReference(databaseName + DATA_SOURCE_NAME_SUFFIX);
+        jdbcTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        registry.registerBeanDefinition(databaseName + JDBC_TEMPLATE_NAME_SUFFIX, jdbcTemplateBdb.getBeanDefinition());
+
+        // DataSourceTransactionManager bean definition
+        BeanDefinitionBuilder dataSourceTransactionManagerBdb = BeanDefinitionBuilder.genericBeanDefinition(DataSourceTransactionManager.class);
+        dataSourceTransactionManagerBdb.addConstructorArgReference(databaseName + DATA_SOURCE_NAME_SUFFIX);
+        dataSourceTransactionManagerBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        registry.registerBeanDefinition(databaseName + TX_MANAGER_NAME_SUFFIX, dataSourceTransactionManagerBdb.getBeanDefinition());
+
+        // TransactionTemplate bean definition
+        BeanDefinitionBuilder transactionTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(TransactionTemplate.class);
+        transactionTemplateBdb.addConstructorArgReference(databaseName + TX_MANAGER_NAME_SUFFIX);
+        transactionTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        registry.registerBeanDefinition(databaseName + TX_TEMPLATE_NAME_SUFFIX, transactionTemplateBdb.getBeanDefinition());
+
+        // annotation transaction
+        //registry.registerBeanDefinition(AutoProxyRegistrar.class.getName(), new RootBeanDefinition(AutoProxyRegistrar.class));
+        //registry.registerBeanDefinition(ProxyTransactionManagementConfiguration.class.getName(), new RootBeanDefinition(ProxyTransactionManagementConfiguration.class));
     }
 
     private SqlSessionFactory createSqlSessionFactory(DataSource dataSource) throws Exception {

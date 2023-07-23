@@ -21,13 +21,13 @@ spring.thymeleaf:
   check-template: false
   check-template-location: false
 
-# springdoc “swagger-ui” and “/api-docs endpoint” custom path, StandaloneLayout/BaseLayout
+# springdoc “swagger-ui” and “api-docs” endpoint custom path, StandaloneLayout/BaseLayout
 springdoc:
   swagger-ui:
-    path: /api-docs.html
+    path: /apidocs.html
     layout: StandaloneLayout
   api-docs:
-    path: /api-docs
+    path: /apidocs
 
 # tomcat server configuration
 server.tomcat:

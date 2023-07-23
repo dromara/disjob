@@ -11,8 +11,10 @@ package cn.ponfee.disjob.supervisor.base;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.io.VFS;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
@@ -77,6 +79,7 @@ public abstract class AbstractDataSourceConfig {
     public abstract DataSource dataSource();
 
     protected final SqlSessionFactory createSqlSessionFactory() throws Exception {
+        VFS.addImplClass(SpringBootVFS.class);
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource());
         factoryBean.setConfigLocation(SpringUtils.getResource(mybatisConfigFileLocation));

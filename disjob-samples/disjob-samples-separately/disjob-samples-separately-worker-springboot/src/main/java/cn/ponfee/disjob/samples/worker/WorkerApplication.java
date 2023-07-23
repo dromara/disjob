@@ -16,6 +16,10 @@ import org.springframework.boot.SpringApplication;
 /**
  * Worker application based spring boot
  *
+ * banner:
+ *  https://patorjk.com/software/taag/#p=display&h=1&v=1&f=Graffiti&t=Disjob
+ *  https://patorjk.com/software/taag/#p=display&h=1&f=Big&t=Disjob
+ *
  * @author Ponfee
  */
 @EnableWorker
