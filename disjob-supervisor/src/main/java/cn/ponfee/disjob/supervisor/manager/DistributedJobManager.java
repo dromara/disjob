@@ -262,6 +262,11 @@ public class DistributedJobManager extends AbstractJobManager {
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void deleteJob(long jobId) {
+        SchedJob job = jobMapper.getByJobId(jobId);
+        Assert.notNull(job, "Job id not found: " + jobId);
+        if (JobState.ENABLE.equals(job.getJobState())) {
+            throw new IllegalStateException("Please disable job before delete this job.");
+        }
         Assert.isTrue(jobMapper.deleteByJobId(jobId) == AFFECTED_ONE_ROW, "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
         dependMapper.deleteByChildJobId(jobId);

@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.supervisor.dao;
 
-import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -58,9 +58,14 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     /**
      * Package path
      *
-     * @see ClassUtils#getPackagePath(Class)
+     * @see ClassUtils#getPackageName(Class)
      */
     static final String BASE_PACKAGE = "cn.ponfee.disjob.supervisor.dao";
+    static {
+        if (!BASE_PACKAGE.equals(ClassUtils.getPackageName(SupervisorDataSourceConfig.class))) {
+            throw new Error("Invalid package path of " + SupervisorDataSourceConfig.class);
+        }
+    }
 
     /**
      * database name

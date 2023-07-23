@@ -49,7 +49,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      * Cron expression<br/>
      * Specified date time of cron exp(2021-12-31 23:59:59): 59 59 23 31 12 ? 2021
      */
-    CRON(1, "0/10 * * * * ?", "Cron expression") {
+    CRON(1, "0/10 * * * * ?", "Cron表达式") {
         @Override
         public boolean validate(String triggerValue) {
             return CronExpression.isValidExpression(triggerValue);
@@ -85,7 +85,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      *
      * @see java.util.Date
      */
-    ONCE(2, "2000-01-01 00:00:00", "指定执行时间(执行一次)") {
+    ONCE(2, "2000-01-01 00:00:00", "指定时间") {
         @Override
         public boolean validate(String triggerValue) {
             try {
@@ -118,7 +118,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      *
      * @see DatePeriods
      */
-    PERIOD(3, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}", "周期性执行") {
+    PERIOD(3, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}", "固定周期") {
         @Override
         public boolean validate(String triggerValue) {
             try {

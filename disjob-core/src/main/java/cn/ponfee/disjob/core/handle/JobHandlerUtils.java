@@ -114,12 +114,12 @@ public class JobHandlerUtils {
 
         Class<JobHandler<?>> type = ClassUtils.getClass(text);
         if (type == null) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal class text: " + text);
+            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal job handler: " + text);
         }
 
         // interface type: Modifier.isAbstract(type.getModifiers()) -> true
         if (!JobHandler.class.isAssignableFrom(type) || Modifier.isAbstract(type.getModifiers())) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid class type: " + ClassUtils.getName(type) + ", " + text);
+            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler: " + ClassUtils.getName(type) + ", " + text);
         }
 
         handler = SpringContextHolder.getPrototypeBean(type);

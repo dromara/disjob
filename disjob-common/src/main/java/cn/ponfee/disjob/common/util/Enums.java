@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 /**
  * Enum utility
- * 
+ *
  * @author Ponfee
  */
 public class Enums {
@@ -43,10 +43,11 @@ public class Enums {
      * @return the immutable map of enum to map enums, never null
      */
     public static <K, E extends Enum<E>> Map<K, E> toMap(Class<E> enumType, Function<E, K> keyMapper) {
-        ImmutableMap.Builder<K, E> mapping = ImmutableMap.builder();
+        ImmutableMap.Builder<K, E> result = ImmutableMap.builder();
         for (final E e: enumType.getEnumConstants()) {
-            mapping.put(keyMapper.apply(e), e);
+            result.put(keyMapper.apply(e), e);
         }
-        return mapping.build();
+        return result.build();
     }
+
 }

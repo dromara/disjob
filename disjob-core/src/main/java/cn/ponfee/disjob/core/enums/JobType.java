@@ -25,7 +25,7 @@ public enum JobType implements IntValueEnum<JobType> {
     /**
      * 普通
      */
-    NORMAL(1, "普通"),
+    NORMAL(1, "普通(Normal)"),
 
     /**
      * 工作流(DAG)

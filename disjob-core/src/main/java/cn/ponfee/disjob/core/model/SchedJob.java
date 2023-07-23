@@ -49,23 +49,23 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String jobName;
 
     /**
-     * Job类型：1-普通(Normal)；2-工作流(Workflow)；
+     * Job类型：1-普通(Normal)；2-工作流(DAG)；
      *
      * @see JobType
      */
     private Integer jobType;
 
     /**
-     * Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)
-     */
-    private String jobHandler;
-
-    /**
-     * Job状态：0-已禁用；1-已启用；
+     * Job状态：0-禁用；1-启用；
      *
      * @see JobState
      */
     private Integer jobState;
+
+    /**
+     * Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)
+     */
+    private String jobHandler;
 
     /**
      * Job参数
@@ -100,14 +100,14 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Date endTime;
 
     /**
-     * 触发器类型：1-Crontab方式；2-指定时间执行一次；3-周期性执行；4-任务依赖；
+     * 触发器类型：1-Cron表达式；2-指定时间；3-固定周期；4-任务依赖；
      *
      * @see TriggerType
      */
     private Integer triggerType;
 
     /**
-     * 触发器配置(对应trigger_type)：1-Crontab表达式；2-时间格式；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-父任务job_id(多个逗号分隔)；
+     * 触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-父任务job_id(多个逗号分隔)；
      */
     private String triggerValue;
 

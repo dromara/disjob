@@ -8,6 +8,10 @@
 
 package cn.ponfee.disjob.common.base;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
+
 /**
  * Represents int value enum type structure.
  *
@@ -47,6 +51,14 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
             }
         }
         throw new IllegalArgumentException("Invalid value: " + value);
+    }
+
+    static List<IntValueDesc> values(Class<? extends IntValueEnum<?>> clazz) {
+        ImmutableList.Builder<IntValueDesc> result = ImmutableList.builder();
+        for (final IntValueEnum<?> e : clazz.getEnumConstants()) {
+            result.add(new IntValueDesc(e.value(), e.desc()));
+        }
+        return result.build();
     }
 
 }

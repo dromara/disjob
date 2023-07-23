@@ -63,6 +63,10 @@ public abstract class AbstractDataSourceConfig {
             int pos = list.size() - wildcardLastIndex;
             path = String.join("/", list.subList(0, pos)) + "/**/" + String.join("/", list.subList(pos, list.size())) + "/";
         }
+
+        // -1 => classpath*:cn/ponfee/disjob/supervisor/dao/xml/*.xml
+        //  0 => classpath*:cn/ponfee/disjob/supervisor/dao/**/xml/*.xml
+        //  1 => classpath*:cn/ponfee/disjob/supervisor/**/dao/xml/*.xml
         this.mybatisMapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", path);
     }
 

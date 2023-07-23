@@ -33,9 +33,9 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
     RANDOM(2, "随机"),
 
     /**
-     * 简单的哈希
+     * 简单哈希
      */
-    SIMPLE_HASH(3, "简单的哈希"),
+    SIMPLE_HASH(3, "简单哈希"),
 
     /**
      * 一致性哈希
@@ -45,7 +45,7 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
     /**
      * 本地优先(当supervisor同时也是worker角色时生效)
      */
-    LOCAL_PRIORITY(5, "本地优先("),
+    LOCAL_PRIORITY(5, "本地优先"),
 
     /**
      * 广播

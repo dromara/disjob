@@ -21,14 +21,14 @@ import java.util.Objects;
 public enum JobState implements IntValueEnum<JobState> {
 
     /**
-     * 已禁用
+     * 启用
      */
-    DISABLE(0, "已禁用"),
+    ENABLE(1, "启用"),
 
     /**
-     * 已启用
+     * 禁用
      */
-    ENABLE(1, "已启用"),
+    DISABLE(0, "禁用"),
 
     ;
 
