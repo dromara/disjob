@@ -139,7 +139,7 @@ curl --location --request POST 'http://localhost:8081/api/job/add' \
 --data-raw '{
     "jobGroup": "default",
     "jobName": "prime-counter",
-    "jobHandler": "cn.ponfee.disjob.samples.common.handler.PrimeCountJobHandler",
+    "jobHandler": "cn.ponfee.disjob.test.handler.PrimeCountJobHandler",
     "jobState": 1,
     "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
     "triggerType": 2,

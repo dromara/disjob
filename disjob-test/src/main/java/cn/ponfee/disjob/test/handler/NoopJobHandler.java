@@ -6,44 +6,39 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common.handler;
+package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.samples.common.util.SampleConstants;
+import cn.ponfee.disjob.core.model.SchedTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
- * Workflow
+ * No operation job handler, use in test job handler.
  *
  * @author Ponfee
  */
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-@Service("CJobHandler")
-public class CJobHandler extends JobHandler<Void> {
+public class NoopJobHandler extends JobHandler<Void> {
 
-    private final static Logger LOG = LoggerFactory.getLogger(CJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NoopJobHandler.class);
+    public static volatile long major = 9997;
+    public static volatile long minor = 19997;
 
     @Override
-    public List<SplitTask> split(String jobParamString) {
-        return IntStream.range(0, SampleConstants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
+    public void init() {
+        LOG.debug("Noop job init.");
     }
 
     @Override
     public Result<Void> execute(Checkpoint checkpoint) throws Exception {
-        Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
-        LOG.info(this.getClass().getSimpleName() + " execution finished.");
+        SchedTask task = task();
+        LOG.info("task execute start: {}", task.getTaskId());
+        Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
+        LOG.info("task execute done: {}", task.getTaskId());
         return Result.success();
     }
 

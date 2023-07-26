@@ -6,10 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples;
+package cn.ponfee.disjob.test.util;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.samples.common.util.Prime;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;

@@ -47,37 +47,37 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     /**
      * 实例化失败取消
      */
-    INSTANCE_FAILED(50, RunState.CANCELED, "实例化失败取消"),
+    INSTANCE_FAILED(50, RunState.CANCELED, "实例化异常"),
 
     /**
      * 校验失败取消
      */
-    VERIFY_FAILED(51, RunState.CANCELED, "校验失败取消"),
+    VERIFY_FAILED(51, RunState.CANCELED, "校验失败"),
 
     /**
      * 初始化异常取消
      */
-    INIT_EXCEPTION(52, RunState.CANCELED, "初始化异常取消"),
+    INIT_EXCEPTION(52, RunState.CANCELED, "初始化异常"),
 
     /**
      * 执行失败取消
      */
-    EXECUTE_FAILED(53, RunState.CANCELED, "执行失败取消"),
+    EXECUTE_FAILED(53, RunState.CANCELED, "执行失败"),
 
     /**
      * 执行异常取消
      */
-    EXECUTE_EXCEPTION(54, RunState.CANCELED, "执行异常取消"),
+    EXECUTE_EXCEPTION(54, RunState.CANCELED, "执行异常"),
 
     /**
      * 执行超时取消
      */
-    EXECUTE_TIMEOUT(55, RunState.CANCELED, "执行超时取消"),
+    EXECUTE_TIMEOUT(55, RunState.CANCELED, "执行超时"),
 
     /**
      * 执行冲突取消(sched_job.collided_strategy=3)
      */
-    EXECUTE_COLLIDED(56, RunState.CANCELED, "执行冲突取消"),
+    EXECUTE_COLLIDED(56, RunState.CANCELED, "执行冲突"),
 
     /**
      * 手动取消
@@ -87,7 +87,7 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     /**
      * 广播未执行取消(分配的worker机器消亡)
      */
-    WAITING_CANCELED(58, RunState.CANCELED, "广播未执行取消"),
+    WAITING_CANCELED(58, RunState.CANCELED, "广播未执行"),
     ;
 
     /**

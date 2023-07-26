@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common.handler;
+package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -16,7 +16,7 @@ import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.samples.common.util.Prime;
+import cn.ponfee.disjob.test.util.Prime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

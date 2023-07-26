@@ -6,14 +6,14 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples;
+package cn.ponfee.disjob.test.util;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.samples.common.handler.PrimeCountJobHandler;
+import cn.ponfee.disjob.test.handler.PrimeCountJobHandler;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

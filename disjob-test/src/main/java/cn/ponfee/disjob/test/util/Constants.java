@@ -6,14 +6,14 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common.util;
+package cn.ponfee.disjob.test.util;
 
 /**
- * Samples constants definitions
+ * Test constants definitions
  *
  * @author Ponfee
  */
-public class SampleConstants {
+public class Constants {
 
-    public static final String APP_NAME = "app.name";
+    public static final int TASK_COUNT = 1;
 }

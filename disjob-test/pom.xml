@@ -19,7 +19,7 @@
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-common</artifactId>
+      <artifactId>disjob-core</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
 

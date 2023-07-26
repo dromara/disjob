@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common.handler;
+package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.BroadcastJobHandler;

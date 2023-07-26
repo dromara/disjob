@@ -6,13 +6,13 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common.handler;
+package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.samples.common.util.SampleConstants;
+import cn.ponfee.disjob.test.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -30,14 +30,14 @@ import java.util.stream.IntStream;
  * @author Ponfee
  */
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-@Service("EJobHandler")
-public class EJobHandler extends JobHandler<Void> {
+@Service("CJobHandler")
+public class CJobHandler extends JobHandler<Void> {
 
-    private final static Logger LOG = LoggerFactory.getLogger(EJobHandler.class);
+    private final static Logger LOG = LoggerFactory.getLogger(CJobHandler.class);
 
     @Override
     public List<SplitTask> split(String jobParamString) {
-        return IntStream.range(0, SampleConstants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
+        return IntStream.range(0, Constants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
     }
 
     @Override

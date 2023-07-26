@@ -6,39 +6,44 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common.handler;
+package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.test.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * No operation job handler, use in test job handler.
+ * Workflow
  *
  * @author Ponfee
  */
-public class NoopJobHandler extends JobHandler<Void> {
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@Service("DJobHandler")
+public class DJobHandler extends JobHandler<Void> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NoopJobHandler.class);
-    public static volatile long major = 9997;
-    public static volatile long minor = 19997;
+    private final static Logger LOG = LoggerFactory.getLogger(DJobHandler.class);
 
     @Override
-    public void init() {
-        LOG.debug("Noop job init.");
+    public List<SplitTask> split(String jobParamString) {
+        return IntStream.range(0, Constants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
     }
 
     @Override
     public Result<Void> execute(Checkpoint checkpoint) throws Exception {
-        SchedTask task = task();
-        LOG.info("task execute start: {}", task.getTaskId());
-        Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
-        LOG.info("task execute done: {}", task.getTaskId());
+        Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
+        LOG.info(this.getClass().getSimpleName() + " execution finished.");
         return Result.success();
     }
 

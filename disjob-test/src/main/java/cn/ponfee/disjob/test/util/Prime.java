@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.samples.common.util;
+package cn.ponfee.disjob.test.util;
 
 import com.google.common.math.LongMath;
 import org.slf4j.Logger;
