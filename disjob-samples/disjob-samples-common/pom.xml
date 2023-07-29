@@ -98,11 +98,9 @@
     </dependency>
     -->
 
-    <!-- Test dependencies -->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 

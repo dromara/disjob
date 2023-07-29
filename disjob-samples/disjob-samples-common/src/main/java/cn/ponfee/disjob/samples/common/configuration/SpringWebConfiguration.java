@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -33,6 +34,7 @@ import java.util.List;
  * @author Ponfee
  */
 @Configuration
+@ComponentScan("cn.ponfee.disjob.test.handler")
 public class SpringWebConfiguration implements WebMvcConfigurer {
 
     private final ObjectMapper objectMapper;

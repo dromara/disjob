@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.worker.rpc;
+package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.WorkerService;

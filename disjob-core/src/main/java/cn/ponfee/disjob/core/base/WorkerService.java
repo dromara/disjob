@@ -13,6 +13,7 @@ import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
@@ -22,14 +23,15 @@ import java.util.List;
  * @author Ponfee
  */
 @Hidden
+@RequestMapping(WorkerService.PREFIX_PATH)
 public interface WorkerService {
 
-    String PREFIX_PATH = "worker/rpc/";
+    String PREFIX_PATH = "worker/service/";
 
-    @PostMapping(PREFIX_PATH + "job/verify")
+    @PostMapping("job/verify")
     void verify(JobHandlerParam param) throws JobException;
 
-    @PostMapping(PREFIX_PATH + "job/split")
+    @PostMapping("job/split")
     List<SplitTask> split(JobHandlerParam param) throws JobException;
 
 }

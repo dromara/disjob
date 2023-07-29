@@ -17,6 +17,7 @@ import cn.ponfee.disjob.core.param.TerminateTaskParam;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
@@ -26,32 +27,31 @@ import java.util.List;
  * @author Ponfee
  */
 @Hidden
+@RequestMapping("supervisor/service/")
 public interface SupervisorService extends Checkpoint {
 
-    String PREFIX_PATH = "supervisor/rpc/";
-
-    @GetMapping(PREFIX_PATH + "task/get")
+    @GetMapping("task/get")
     SchedTask getTask(long taskId) throws Exception;
 
-    @PostMapping(PREFIX_PATH + "task/start")
+    @PostMapping("task/start")
     boolean startTask(StartTaskParam param) throws Exception;
 
-    @PostMapping(PREFIX_PATH + "task_worker/update")
+    @PostMapping("task/worker/update")
     void updateTaskWorker(List<TaskWorkerParam> params);
 
-    @PostMapping(PREFIX_PATH + "task/terminate")
+    @PostMapping("task/terminate")
     boolean terminateTask(TerminateTaskParam param) throws Exception;
 
-    @PostMapping(PREFIX_PATH + "instance/pause")
+    @PostMapping("instance/pause")
     boolean pauseInstance(long instanceId, Long wnstanceId) throws Exception;
 
-    @PostMapping(PREFIX_PATH + "instance/cancel")
+    @PostMapping("instance/cancel")
     boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) throws Exception;
 
     // ---------------------------------------------------------------------------checkpoint
 
     @Override
-    @PostMapping(PREFIX_PATH + "task/checkpoint")
+    @PostMapping("task/checkpoint")
     boolean checkpoint(long taskId, String executeSnapshot) throws Exception;
 
 }

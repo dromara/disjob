@@ -159,4 +159,54 @@
       AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_state &lt; 40) t)=0
   </delete>
 
+  <select id="queryPageCount" resultType="_long">
+    SELECT COUNT(*) cnt
+    FROM <include refid="Table_Name" />
+    <include refid="Query_Page_Condition" />
+  </select>
+
+  <select id="queryPageRecords" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+    SELECT <include refid="Base_Column_List" />
+    FROM <include refid="Table_Name" />
+    <include refid="Query_Page_Condition" />
+    ORDER BY trigger_time DESC
+    <if test="paged">LIMIT #{offset}, #{pageSize}</if>
+  </select>
+
+  <select id="selectByPnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+    SELECT <include refid="Base_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE pnstance_id = #{pnstanceId}
+  </select>
+
+  <select id="queryChildCount" parameterType="collection" resultType="map">
+    SELECT pnstance_id AS pnstanceId, count(*) count
+    FROM <include refid="Table_Name" />
+    WHERE pnstance_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
+    GROUP BY pnstance_id
+  </select>
+
+  <sql id="Query_Page_Condition">
+    <where>
+      <if test="jobId != null">
+        AND job_id = #{jobId}
+      </if>
+      <if test="runType != null">
+        AND run_type = #{runType}
+      </if>
+      <if test="runState != null">
+        AND run_state = #{runState}
+      </if>
+      <if test="startTime != null">
+        AND trigger_time >= UNIX_TIMESTAMP(#{startTime})*1000
+      </if>
+      <if test="endTime != null">
+        AND trigger_time &lt;= UNIX_TIMESTAMP(#{endTime})*1000
+      </if>
+      <if test="parent">
+        AND pnstance_id IS NULL
+      </if>
+    </where>
+  </sql>
+
 </mapper>

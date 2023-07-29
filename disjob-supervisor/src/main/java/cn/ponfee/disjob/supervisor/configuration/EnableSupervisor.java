@@ -18,10 +18,13 @@ import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
+import cn.ponfee.disjob.core.supervisor.api.SupervisorOpenapi;
+import cn.ponfee.disjob.supervisor.base.SupervisorOpenapiProvider;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
 import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.rpc.SupervisorServiceProvider;
+import cn.ponfee.disjob.supervisor.base.SupervisorServiceProvider;
+import cn.ponfee.disjob.supervisor.manager.DistributedJobQuerier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -105,6 +108,14 @@ public @interface EnableSupervisor {
         @Bean
         public SupervisorService supervisorService(DistributedJobManager distributedJobManager) {
             return new SupervisorServiceProvider(distributedJobManager);
+        }
+
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @ConditionalOnMissingBean
+        @Bean
+        public SupervisorOpenapi supervisorOpenapi(DistributedJobManager jobManager,
+                                                   DistributedJobQuerier jobQuerier) {
+            return new SupervisorOpenapiProvider(jobManager, jobQuerier);
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)

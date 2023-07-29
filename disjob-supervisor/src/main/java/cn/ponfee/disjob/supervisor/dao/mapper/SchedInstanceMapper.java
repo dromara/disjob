@@ -9,10 +9,12 @@
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.model.SchedInstance;
+import cn.ponfee.disjob.core.supervisor.api.request.SchedInstancePageRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Mybatis mapper of sched_instance database table.
@@ -76,4 +78,14 @@ public interface SchedInstanceMapper {
     SchedInstance getByJobIdAndTriggerTimeAndRunType(@Param("jobId") long jobId,
                                                      @Param("triggerTime") long triggerTime,
                                                      @Param("runType") int runType);
+
+    // -------------------------------------------------query for page
+
+    long queryPageCount(SchedInstancePageRequest request);
+
+    List<SchedInstance> queryPageRecords(SchedInstancePageRequest request);
+
+    List<SchedInstance> selectByPnstanceId(long pinstanceId);
+
+    List<Map<String, Object>> queryChildCount(List<Long> pinstanceIds);
 }

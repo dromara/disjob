@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.api.response;
+package cn.ponfee.disjob.core.supervisor.api.response;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
@@ -25,6 +25,7 @@ import java.util.Date;
 public class SchedJobResponse extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -989147023126011287L;
 
+    private Long id;
     private Long jobId;
     private String jobGroup;
     private String jobName;

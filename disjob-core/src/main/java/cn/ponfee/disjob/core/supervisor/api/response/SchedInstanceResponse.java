@@ -6,13 +6,13 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.api.response;
+package cn.ponfee.disjob.core.supervisor.api.response;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.supervisor.api.converter.SchedJobConverter;
+import cn.ponfee.disjob.core.supervisor.api.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,6 +43,11 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
     private Long runDuration;
     private Integer retriedCount;
     private String attach;
+
+    /**
+     * 是否有子节点：0-无；1-有；
+     */
+    private Integer isTreeLeaf;
 
     private List<SchedTaskResponse> tasks;
 

@@ -16,7 +16,7 @@
   <select id="testFindByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT job_id jobId, remark
     FROM <include refid="Table_Name" />
-    WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
+    WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
   </select>
   <select id="testListLimit" parameterType="int" resultType="long">
     SELECT job_id FROM <include refid="Table_Name" /> LIMIT #{limit,jdbcType=INTEGER}
@@ -31,7 +31,7 @@
   <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE job_id IN (<foreach collection="collection" index="index" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
+    WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
       AND is_deleted = 0
   </select>
 
@@ -187,5 +187,35 @@
       AND job_state = 0
       AND is_deleted = 0
   </update>
+
+  <select id="queryPageCount" resultType="_long">
+    SELECT COUNT(*) cnt
+    FROM <include refid="Table_Name" />
+    <include refid="Query_Page_Condition" />
+  </select>
+
+  <select id="queryPageRecords"  resultType="cn.ponfee.disjob.core.model.SchedJob">
+    SELECT <include refid="Base_Column_List" />
+    FROM <include refid="Table_Name" />
+    <include refid="Query_Page_Condition" />
+    ORDER BY updated_at DESC
+    <if test="paged">LIMIT #{offset}, #{pageSize}</if>
+  </select>
+
+  <sql id="Query_Page_Condition">
+    WHERE is_deleted = 0
+      <if test="jobGroup != null and jobGroup != ''">
+        AND job_group = #{jobGroup}
+      </if>
+      <if test="jobName != null and jobName != ''">
+        AND job_name LIKE concat('%', #{jobName}, '%')
+      </if>
+      <if test="jobType != null">
+        AND job_type = #{jobType}
+      </if>
+      <if test="jobState != null">
+        AND job_state = #{jobState}
+      </if>
+  </sql>
 
 </mapper>

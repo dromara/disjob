@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.core.supervisor.api.request.SchedJobPageRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -88,4 +89,9 @@ public interface SchedJobMapper {
      */
     int deleteByJobId(long jobId);
 
+    // -------------------------------------------------query for page
+
+    long queryPageCount(SchedJobPageRequest request);
+
+    List<SchedJob> queryPageRecords(SchedJobPageRequest request);
 }

@@ -6,11 +6,11 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.api.request;
+package cn.ponfee.disjob.core.supervisor.api.request;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.supervisor.api.converter.SchedJobConverter;
+import cn.ponfee.disjob.core.supervisor.api.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -45,6 +45,7 @@ public class AddSchedJobRequest extends ToJsonString implements Serializable {
     private Integer misfireStrategy;
     private Integer routeStrategy;
     private String remark;
+    private String createdBy;
 
     public SchedJob tosSchedJob() {
         return SchedJobConverter.INSTANCE.convert(this);

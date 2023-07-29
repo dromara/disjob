@@ -6,15 +6,17 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.api;
+package cn.ponfee.disjob.core.supervisor.api;
 
-import cn.ponfee.disjob.common.model.Result;
+import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.supervisor.api.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.api.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.supervisor.api.response.SchedInstanceResponse;
-import cn.ponfee.disjob.supervisor.api.response.SchedJobResponse;
-import cn.ponfee.disjob.supervisor.api.response.SchedTaskResponse;
+import cn.ponfee.disjob.core.supervisor.api.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.core.supervisor.api.response.SchedJobResponse;
+import cn.ponfee.disjob.core.supervisor.api.request.AddSchedJobRequest;
+import cn.ponfee.disjob.core.supervisor.api.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.core.supervisor.api.request.SchedJobPageRequest;
+import cn.ponfee.disjob.core.supervisor.api.response.SchedInstanceResponse;
+import cn.ponfee.disjob.core.supervisor.api.response.SchedTaskResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,10 +28,8 @@ import java.util.List;
  * @author Ponfee
  */
 @Tag(name = "Supervisor open api")
-@RequestMapping(SupervisorApi.PREFIX_PATH)
-public interface SupervisorApi {
-
-    String PREFIX_PATH = "/supervisor/api/";
+@RequestMapping("supervisor/openapi/")
+public interface SupervisorOpenapi {
 
     // ------------------------------------------------------------------job
 
@@ -42,7 +42,7 @@ public interface SupervisorApi {
     @DeleteMapping("job/delete")
     void deleteJob(long jobId);
 
-    @PostMapping("job/change_state")
+    @PostMapping("job/state/change")
     Boolean changeJobState(long jobId, int jobState);
 
     @PostMapping("job/trigger")
@@ -50,6 +50,9 @@ public interface SupervisorApi {
 
     @GetMapping("job/get")
     SchedJobResponse getJob(long jobId);
+
+    @GetMapping("job/page")
+    PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest);
 
     // ------------------------------------------------------------------instance
 
@@ -65,13 +68,19 @@ public interface SupervisorApi {
     @DeleteMapping("instance/delete")
     void deleteInstance(long instanceId);
 
-    @PostMapping("instance/change_state")
-    void changeState(long instanceId, int targetExecuteState);
+    @PostMapping("instance/state/change")
+    void changeInstanceState(long instanceId, int targetExecuteState);
 
     @GetMapping("instance/get")
     SchedInstanceResponse getInstance(long instanceId);
 
-    @GetMapping("instance/get")
-    List<SchedTaskResponse> getTasks(long instanceId);
+    @GetMapping("instance/tasks")
+    List<SchedTaskResponse> getInstanceTasks(long instanceId);
+
+    @GetMapping("instance/page")
+    PageResponse<SchedInstanceResponse> queryInstanceForPage(SchedInstancePageRequest pageRequest);
+
+    @GetMapping("instance/children")
+    List<SchedInstanceResponse> listInstanceChildren(long pnstanceId);
 
 }

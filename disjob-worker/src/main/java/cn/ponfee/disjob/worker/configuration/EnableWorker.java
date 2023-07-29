@@ -14,7 +14,7 @@ import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
-import cn.ponfee.disjob.worker.rpc.WorkerServiceProvider;
+import cn.ponfee.disjob.worker.base.WorkerServiceProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
