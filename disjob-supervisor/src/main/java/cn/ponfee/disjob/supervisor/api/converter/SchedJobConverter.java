@@ -6,16 +6,16 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.web.converter;
+package cn.ponfee.disjob.supervisor.api.converter;
 
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.supervisor.web.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.web.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.supervisor.web.response.SchedInstanceResponse;
-import cn.ponfee.disjob.supervisor.web.response.SchedJobResponse;
-import cn.ponfee.disjob.supervisor.web.response.SchedTaskResponse;
+import cn.ponfee.disjob.supervisor.api.request.AddSchedJobRequest;
+import cn.ponfee.disjob.supervisor.api.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.api.response.SchedInstanceResponse;
+import cn.ponfee.disjob.supervisor.api.response.SchedJobResponse;
+import cn.ponfee.disjob.supervisor.api.response.SchedTaskResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

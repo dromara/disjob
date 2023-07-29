@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.util.List;
 
 /**
- * Supervisor provides api, for the worker communication.
+ * Supervisor service api, for the worker communication.
  *
  * @author Ponfee
  */

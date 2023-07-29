@@ -6,10 +6,10 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.web.request;
+package cn.ponfee.disjob.supervisor.api.request;
 
 import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.supervisor.web.converter.SchedJobConverter;
+import cn.ponfee.disjob.supervisor.api.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 

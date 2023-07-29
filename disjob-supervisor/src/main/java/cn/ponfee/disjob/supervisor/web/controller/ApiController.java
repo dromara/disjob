@@ -18,11 +18,11 @@ import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.web.converter.SchedJobConverter;
-import cn.ponfee.disjob.supervisor.web.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.web.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.supervisor.web.response.SchedInstanceResponse;
-import cn.ponfee.disjob.supervisor.web.response.SchedJobResponse;
+import cn.ponfee.disjob.supervisor.api.converter.SchedJobConverter;
+import cn.ponfee.disjob.supervisor.api.request.AddSchedJobRequest;
+import cn.ponfee.disjob.supervisor.api.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.api.response.SchedInstanceResponse;
+import cn.ponfee.disjob.supervisor.api.response.SchedJobResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-@Tag(name = "Supervisor openapi", description = "cn.ponfee.disjob.supervisor.web.controller.ApiController")
+@Tag(name = "Supervisor open api")
 @RestController
 @RequestMapping("api")
 public class ApiController extends BaseController {
@@ -102,15 +102,13 @@ public class ApiController extends BaseController {
     @PostMapping("instance/pause")
     public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do pausing sched instance {}", instanceId);
-        Long wnstanceId = jobManager.getWnstanceId(instanceId);
-        return Result.success(jobManager.pauseInstance(instanceId, wnstanceId));
+        return Result.success(jobManager.pauseInstance(instanceId));
     }
 
     @PostMapping("instance/cancel")
     public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
         log.info("Do canceling sched instance {}", instanceId);
-        Long wnstanceId = jobManager.getWnstanceId(instanceId);
-        boolean res = jobManager.cancelInstance(instanceId, wnstanceId, Operations.MANUAL_CANCEL);
+        boolean res = jobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL);
         return Result.success(res);
     }
 

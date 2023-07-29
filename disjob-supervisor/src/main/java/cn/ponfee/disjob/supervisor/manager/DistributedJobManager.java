@@ -505,6 +505,10 @@ public class DistributedJobManager extends AbstractJobManager {
         });
     }
 
+    public boolean pauseInstance(long instanceId) {
+        return pauseInstance(instanceId, instanceMapper.getWnstanceId(instanceId));
+    }
+
     /**
      * Pause instance
      *
@@ -533,6 +537,10 @@ public class DistributedJobManager extends AbstractJobManager {
 
             return true;
         });
+    }
+
+    public boolean cancelInstance(long instanceId, Operations ops) {
+        return cancelInstance(instanceId, instanceMapper.getWnstanceId(instanceId), ops);
     }
 
     /**
