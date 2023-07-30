@@ -6,29 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.supervisor.api.request;
-
-import cn.ponfee.disjob.common.model.PageRequest;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Date;
-
 /**
- * Sched instance page request
+ * Openapi package
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public class SchedInstancePageRequest extends PageRequest {
-    private static final long serialVersionUID = 2550102303488212001L;
-
-    private Long jobId;
-    private Integer runType;
-    private Integer runState;
-    private Date startTime;
-    private Date endTime;
-    private boolean parent;
-
-}
+package cn.ponfee.disjob.core.openapi;

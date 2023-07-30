@@ -111,7 +111,8 @@
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
         remark = #{remark,jdbcType=VARCHAR},
         version = version+1,
-        updated_by = #{updatedBy,jdbcType=VARCHAR}
+        updated_by = #{updatedBy,jdbcType=VARCHAR},
+        updated_at = #{updatedAt,jdbcType=TIMESTAMP}
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}
       AND is_deleted = 0
@@ -198,7 +199,7 @@
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     <include refid="Query_Page_Condition" />
-    ORDER BY updated_at DESC
+    ORDER BY created_at DESC
     <if test="paged">LIMIT #{offset}, #{pageSize}</if>
   </select>
 

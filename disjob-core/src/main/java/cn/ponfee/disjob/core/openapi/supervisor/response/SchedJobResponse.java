@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.supervisor.api.response;
+package cn.ponfee.disjob.core.openapi.supervisor.response;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;

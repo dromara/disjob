@@ -18,7 +18,7 @@ import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.core.supervisor.api.SupervisorOpenapi;
+import cn.ponfee.disjob.core.openapi.supervisor.SupervisorOpenapi;
 import cn.ponfee.disjob.supervisor.base.SupervisorOpenapiProvider;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;

@@ -6,25 +6,29 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.supervisor.api.request;
+package cn.ponfee.disjob.core.openapi.supervisor.request;
 
 import cn.ponfee.disjob.common.model.PageRequest;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 /**
- * Sched job page request
+ * Sched instance page request
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SchedJobPageRequest extends PageRequest {
-    private static final long serialVersionUID = -6482618667917024367L;
+public class SchedInstancePageRequest extends PageRequest {
+    private static final long serialVersionUID = 2550102303488212001L;
 
-    private String jobGroup;
-    private String jobName;
-    private Integer jobType;
-    private Integer jobState;
+    private Long jobId;
+    private Integer runType;
+    private Integer runState;
+    private Date startTime;
+    private Date endTime;
+    private boolean parent;
 
 }

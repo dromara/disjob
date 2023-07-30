@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.supervisor.api.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.core.openapi.supervisor.request.SchedInstancePageRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;

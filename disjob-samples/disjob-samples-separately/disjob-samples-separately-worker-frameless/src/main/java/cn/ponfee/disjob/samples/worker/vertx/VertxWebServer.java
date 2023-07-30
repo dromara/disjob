@@ -43,7 +43,7 @@ public class VertxWebServer extends AbstractVerticle {
 
     private static final Logger LOG = LoggerFactory.getLogger(VertxWebServer.class);
 
-    private static final String RPC_PATH_PREFIX = "/" + WorkerService.PREFIX_PATH;
+    private static final String PATH_PREFIX = "/" + WorkerService.PREFIX_PATH;
     private static final WorkerServiceProvider WORKER_SERVICE_PROVIDER = new WorkerServiceProvider();
 
     private final int port;
@@ -91,19 +91,19 @@ public class VertxWebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         //String[] args = ctx.body().asPojo(String[].class);
-        router.post(RPC_PATH_PREFIX + "job/verify").handler(ctx -> invoke(() -> {
+        router.post(PATH_PREFIX + "job/verify").handler(ctx -> invoke(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
             WORKER_SERVICE_PROVIDER.verify(param);
             return null;
         }, ctx, BAD_REQUEST));
 
-        router.post(RPC_PATH_PREFIX + "job/split").handler(ctx -> invoke(() -> {
+        router.post(PATH_PREFIX + "job/split").handler(ctx -> invoke(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
             return WORKER_SERVICE_PROVIDER.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {
-            router.post(RPC_PATH_PREFIX + "task/receive").handler(ctx -> invoke(() -> {
+            router.post(PATH_PREFIX + "task/receive").handler(ctx -> invoke(() -> {
                 ExecuteTaskParam param = parseArg(ctx, ExecuteTaskParam.class);
                 return httpTaskReceiver.receive(param);
             }, ctx, INTERNAL_SERVER_ERROR));

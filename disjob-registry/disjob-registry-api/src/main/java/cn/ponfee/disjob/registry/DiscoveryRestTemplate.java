@@ -136,9 +136,9 @@ public class DiscoveryRestTemplate<D extends Server> {
 
                 ex = e;
                 if (e instanceof ResourceAccessException || is5xxServerError(e)) {
-                    LOG.error("Invoke discovered server rpc fail: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
+                    LOG.error("Invoke discovered server fail: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
                 } else {
-                    LOG.error("Invoke discovered server rpc error: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
+                    LOG.error("Invoke discovered server error: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
                 }
 
                 if (i < n) {

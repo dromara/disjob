@@ -225,6 +225,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) throws JobException {
+        job.setUpdatedBy(job.getCreatedBy());
         job.verifyBeforeAdd();
         job.checkAndDefaultSetting();
         super.verifyJob(job);
@@ -257,6 +258,7 @@ public class DistributedJobManager extends AbstractJobManager {
             parseTriggerConfig(job);
         }
 
+        job.setUpdatedAt(new Date());
         Assert.state(jobMapper.updateByJobId(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
     }
 

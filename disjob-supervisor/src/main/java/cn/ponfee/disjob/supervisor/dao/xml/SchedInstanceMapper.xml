@@ -170,7 +170,7 @@
     FROM <include refid="Table_Name" />
     <include refid="Query_Page_Condition" />
     ORDER BY trigger_time DESC
-    <if test="paged">LIMIT #{offset}, #{pageSize}</if>
+    LIMIT #{offset}, #{pageSize}
   </select>
 
   <select id="selectByPnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
