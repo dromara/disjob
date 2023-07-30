@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/disjob/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/disjob/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-1.12-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
+[![Maven Central](https://img.shields.io/badge/maven--central-2.0.0-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
 
 **`简体中文`** | [English](README.en.md)
 
@@ -24,6 +24,7 @@
 
 ```Plain Text
 disjob                                                    # 主项目
+├── disjob-admin                                          # 基于Ruoyi框架二次开发的Disjob后台管理系统
 ├── disjob-bom                                            # Maven project bom module
 ├── disjob-common                                         # 工具包
 ├── disjob-core                                           # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
@@ -73,7 +74,7 @@ disjob                                                    # 主项目
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>disjob-{xxx}</artifactId>
-  <version>1.12</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 

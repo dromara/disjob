@@ -22,8 +22,8 @@
   </modules>
 
   <properties>
-    <revision>2.0.0-SNAPSHOT</revision>
-    <disjob.version>2.0.0-SNAPSHOT</disjob.version>
+    <revision>2.0.0</revision>
+    <disjob.version>2.0.0</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
     <java.version>1.8</java.version>
