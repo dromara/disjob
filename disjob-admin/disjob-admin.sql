@@ -34,7 +34,7 @@ create table sys_dept (
   status            char(1)         default '0'                comment '部门状态（0正常 1停用）',
   del_flag          char(1)         default '0'                comment '删除标志（0代表存在 2代表删除）',
   create_by         varchar(64)     default ''                 comment '创建者',
-  create_time 	    datetime                                   comment '创建时间',
+  create_time       datetime                                   comment '创建时间',
   update_by         varchar(64)     default ''                 comment '更新者',
   update_time       datetime                                   comment '更新时间',
   primary key (dept_id)
@@ -87,7 +87,7 @@ create table sys_user (
 -- ----------------------------
 -- 初始化-用户信息表数据：admin/admin123、disjob/disjob123
 -- ----------------------------
-insert into sys_user values(1,  103, 'admin',  '管理员',  '00', 'ponfee.cn@gmail.com', '15888888888', '1', '', '29c67a30398638269fe600f73a054934', '111111', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
+insert into sys_user values(1,  103, 'admin',  '管理员',  '00', 'ponfee.cn@gmail.com', '15888888888', '1', '', '14c17b4e4c51db8d772a59bb43718fe1', '7e040d', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
 insert into sys_user values(2,  105, 'disjob', 'Disjob', '00', 'ponfee.cn@gmail.com', '15666666666', '1', '', 'e92fa6078eb4a44f55232dac9fe9e5e3', '486a3e', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '测试员');
 
 
@@ -104,7 +104,7 @@ create table sys_post
   status        char(1)         not null                   comment '状态（0正常 1停用）',
   create_by     varchar(64)     default ''                 comment '创建者',
   create_time   datetime                                   comment '创建时间',
-  update_by     varchar(64)     default ''			       comment '更新者',
+  update_by     varchar(64)     default ''                 comment '更新者',
   update_time   datetime                                   comment '更新时间',
   remark        varchar(500)    default null               comment '备注',
   primary key (post_id)
@@ -673,7 +673,7 @@ create table gen_table (
   gen_path             varchar(200)    default '/'                comment '生成路径（不填默认项目路径）',
   options              varchar(1000)                              comment '其它生成选项',
   create_by            varchar(64)     default ''                 comment '创建者',
-  create_time 	       datetime                                   comment '创建时间',
+  create_time          datetime                                   comment '创建时间',
   update_by            varchar(64)     default ''                 comment '更新者',
   update_time          datetime                                   comment '更新时间',
   remark               varchar(500)    default null               comment '备注',
@@ -705,7 +705,7 @@ create table gen_table_column (
   dict_type         varchar(200)    default ''                 comment '字典类型',
   sort              int                                        comment '排序',
   create_by         varchar(64)     default ''                 comment '创建者',
-  create_time 	    datetime                                   comment '创建时间',
+  create_time       datetime                                   comment '创建时间',
   update_by         varchar(64)     default ''                 comment '更新者',
   update_time       datetime                                   comment '更新时间',
   primary key (column_id)

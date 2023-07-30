@@ -44,7 +44,7 @@
 				  <a th:href="@{logout}" style="padding-left:5px;"><i class="fa fa-sign-out text-danger"></i> 注销</a>
 				</div>
 			</div>
-			
+
             <!-- 左侧菜单 -->
 			<th:block th:each="menu : ${menus}">
 			<div class="tab-pane fade height-full" th:id="|menu_${menu.menuId}|">
@@ -61,11 +61,11 @@
 				  <ul th:if="${not #lists.isEmpty(cmenu.children)}" class="nav nav-second-level collapse">
 				    <li th:each="emenu : ${cmenu.children}">
 				      <a th:if="${#lists.isEmpty(emenu.children)}" th:href="@{${emenu.url}}" th:class="${#strings.isEmpty(emenu.target)} ? |menuItem| : ${emenu.target}" th:data-refresh="${emenu.isRefresh == '0'}">
-				        <i th:class="${emenu.icon} + ' fa-fw'"></i> 
+				        <i th:class="${emenu.icon} + ' fa-fw'"></i>
 				        [[${emenu.menuName}]]
 				      </a>
 				      <a th:if="${not #lists.isEmpty(emenu.children)}" href="#">
-				        <i th:class="${emenu.icon} + ' fa-fw'"></i> 
+				        <i th:class="${emenu.icon} + ' fa-fw'"></i>
 				        [[${emenu.menuName}]]
 				        <span class="fa arrow"></span>
 				      </a>
@@ -78,7 +78,7 @@
 			  </ul>
 			</div>
 			</th:block>
-			
+
 			<!-- 首页菜单 -->
 			<div class="tab-pane fade height-full" id="index">
 			  <ul class="nav">
@@ -105,22 +105,22 @@
                 <!-- 顶部栏 -->
                 <div id="navMenu">
                   <ul class="nav navbar-toolbar nav-tabs navbar-left hidden-xs">
-                    
+
                     <!-- 顶部菜单列表 -->
 	                <th:block th:each="menu : ${menus}">
                	    <li role="presentation" th:id="|tab_${menu.menuId}|">
                	        <a th:if="${#lists.isEmpty(menu.children)}" data-toggle="tab" th:class="@{${!#strings.isEmpty(menu.target) && menu.target == 'menuBlank'} ? 'menuBlank' : 'menuItem noactive'}" th:href="@{${menu.url}}">
                             <i th:class="${menu.icon}"></i> <span>[[${menu.menuName}]]</span>
-                        </a>	
+                        </a>
                         <a th:if="${not #lists.isEmpty(menu.children)}" data-toggle="tab" th:class="@{${!#strings.isEmpty(menu.target) && menu.target == 'menuBlank'} ? 'menuBlank'}" th:href="@{${!#strings.isEmpty(menu.target) && menu.target == 'menuBlank'} ? @{${menu.url}} : |#menu_${menu.menuId}|}">
                             <i th:class="${menu.icon}"></i> <span>[[${menu.menuName}]]</span>
                         </a>
                     </li>
 	                </th:block>
-	                
+
 	                <li role="presentation" id="tab_index">
                       <a data-toggle="tab" href="#index">
-                        <i class="fa fa-area-chart"></i> <span>统计报表</span>
+                        <i class="fa fa-area-chart"></i> <span>系统首页</span>
                       </a>
                     </li>
 
@@ -185,7 +185,7 @@
             <iframe class="RuoYi_iframe" name="iframe0" width="100%" height="100%" th:data-id="@{/system/main}"
                 th:src="@{/system/main}" frameborder="0" seamless></iframe>
         </div>
-        
+
         <div th:if="${footer}" class="footer">
             <div class="pull-right">© [[${copyrightYear}]] Disjob Copyright </div>
         </div>
@@ -207,8 +207,8 @@
 <script th:src="@{/js/resize-tabs.js}"></script>
 <script th:inline="javascript">
 window.history.forward(1);
-var ctx = [[@{/}]]; 
-var lockscreen = [[${session.lockscreen}]]; 
+var ctx = [[@{/}]];
+var lockscreen = [[${session.lockscreen}]];
 if(lockscreen){window.top.location=ctx+"lockscreen";}
 // 皮肤缓存
 var skin = storage.get("skin");
@@ -293,7 +293,7 @@ $(function() {
 	    	$(".navbar-toolbar li a").eq(0).click();
 	    }
 	}
-	
+
 	/* 初始密码提示 */
 	if([[${isDefaultModifyPwd}]]) {
 		layer.confirm("您的密码还是初始密码，请修改密码！", {
@@ -306,7 +306,7 @@ $(function() {
 			layer.close(index);
 		});
 	}
-	
+
 	/* 过期密码提示 */
 	if([[${isPasswordExpired}]]) {
 		layer.confirm("您的密码已过期，请尽快修改密码！", {
@@ -319,7 +319,7 @@ $(function() {
 			layer.close(index);
 		});
 	}
-	
+
 	$("[data-toggle='tooltip']").tooltip();
 });
 </script>

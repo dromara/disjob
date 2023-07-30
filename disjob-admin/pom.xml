@@ -10,14 +10,14 @@
 
   <name>Disjob</name>
   <url>https://github.com/ponfee/disjob</url>
-  <description>Disjob后台管理</description>
+  <description>Disjob管理后台</description>
 
   <modules>
     <module>ruoyi-admin</module>
+    <module>ruoyi-common</module>
     <module>ruoyi-framework</module>
     <module>ruoyi-system</module>
     <module>ruoyi-generator</module>
-    <module>ruoyi-common</module>
     <module>ruoyi-disjob</module>
   </modules>
 

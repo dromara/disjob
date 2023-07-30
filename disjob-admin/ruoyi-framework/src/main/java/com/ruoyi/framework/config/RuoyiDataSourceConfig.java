@@ -43,7 +43,7 @@ import java.util.Map;
  * @author Ponfee
  */
 @Configuration
-@MapperScan({"com.ruoyi.**.mapper", "cn.ponfee.disjob.admin.mapper"})
+@MapperScan({"com.ruoyi.**.mapper"})
 public class RuoyiDataSourceConfig {
 
     private final Environment env;

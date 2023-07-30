@@ -171,7 +171,10 @@
     },
     {
       field: 'retriedCount',
-      title: '已重试次数'
+      title: '已重试次数',
+      formatter: function (value, row, index) {
+          return value === 0 ? "-" : value;
+      }
     },
     {
       field: 'attach',
