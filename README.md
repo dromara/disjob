@@ -177,7 +177,7 @@ curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=1003
 
 - [x] 扩展注册中心：Zookeeper、Etcd、Nacos
 - [x] 工作流任务(Workflow DAG)
-- [ ] 任务管理后台Web UI、账户体系及权限控制
+- [x] 任务管理后台、账户体系及权限控制
 - [ ] 搭建一个关于项目使用说明的文档站点
 - [ ] 在线查看任务实时运行日志
 - [ ] 告警订阅：邮件、短信、电话、飞书、钉钉、微信
