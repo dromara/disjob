@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:include="include :: header('调度实例')" />
+</head>
+<body class="gray-bg">
+
+<div class="container-div">
+  <div class="row">
+    <div class="col-sm-12 search-collapse">
+      <form id="tree-form">
+        <div class="select-list">
+          <ul>
+            <li>
+              <label>JobId：</label>
+              <input type="text" name="jobId" autocomplete="off" />
+            </li>
+            <li>
+              <label>运行状态：</label>
+              <select name="runState" th:with="enum=${@disjobService.enums('RunState')}">
+                <option value="" selected>所有</option>
+                <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
+              </select>
+            </li>
+            <li>
+              <label>运行类型：</label>
+              <select name="runType" th:with="enum=${@disjobService.enums('RunType')}">
+                <option value="" selected>所有</option>
+                <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
+              </select>
+            </li>
+            <li class="select-time">
+              <label>触发时间：</label>
+              <input name="startTime" type="text" id="tree-startTime" autocomplete="off" />
+              <span>-</span>
+              <input name="endTime" type="text" id="tree-endTime" autocomplete="off" />
+            </li>
+            <li>
+              <a class="btn btn-primary btn-rounded btn-sm" onclick="$.treeTable.search('tree-form', 'tree-table')"><i class="fa fa-search"></i>&nbsp;搜索</a>
+              <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset('tree-form', 'tree-table')"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+            </li>
+          </ul>
+        </div>
+      </form>
+    </div>
+    <div class="btn-group-sm" id="tree-toolbar" role="group">
+    </div>
+    <div class="col-sm-12 select-table table-striped">
+      <table id="tree-table"></table>
+    </div>
+  </div>
+</div>
+
+<div class="container-div">
+  <div class="row">
+    <div class="col-sm-12 search-collapse">
+      <form id="flat-form">
+        <div class="select-list">
+          <ul>
+            <li>
+              <label>JobId：</label>
+              <input type="text" name="jobId" autocomplete="off" />
+            </li>
+            <li>
+              <label>运行状态：</label>
+              <select name="runState" th:with="enum=${@disjobService.enums('RunState')}">
+                <option value="" selected>所有</option>
+                <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
+              </select>
+            </li>
+            <li>
+              <label>运行类型：</label>
+              <select name="runType" th:with="enum=${@disjobService.enums('RunType')}">
+                <option value="" selected>所有</option>
+                <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
+              </select>
+            </li>
+            <li class="select-time">
+              <label>触发时间：</label>
+              <input name="startTime" type="text" id="flat-startTime" autocomplete="off" />
+              <span>-</span>
+              <input name="endTime" type="text" id="flat-endTime" autocomplete="off" />
+            </li>
+            <li>
+              <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search('flat-form', 'flat-table')"><i class="fa fa-search"></i>&nbsp;搜索</a>
+              <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset('flat-form', 'flat-table')"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+            </li>
+          </ul>
+        </div>
+      </form>
+    </div>
+    <div class="btn-group-sm" id="flat-toolbar" role="group">
+    </div>
+    <div class="col-sm-12 select-table table-striped">
+      <table id="flat-table"></table>
+    </div>
+  </div>
+</div>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+  var operateFlag = [[${@permission.hasPermi('disjob:instance:operate')}]];
+  var runTypes = [[${@disjobService.enums('RunType')}]];
+  var runStates = [[${@disjobService.enums('RunState')}]];
+  var prefix = ctx + "disjob/instance";
+  var stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
+
+  var defaultOps = {
+    uniqueId: "instanceId",
+    expandAll: false,
+    expandFirst: false,
+    expandColumn: 1,
+    pagination: true,
+    removeUrl: prefix + "/remove/{id}",
+    columns: [{
+      field: 'selectItem',
+      radio: true
+    },
+    {
+      field: 'instanceId',
+      title: 'InstanceId',
+      width: '300',
+      formatter: function (value, row, index) {
+        return value === row.wnstanceId ? value : '<a href="javascript:void(0)" onclick="tasks(\'' + value + '\')">' + value + '</a>';
+      }
+    },
+    {
+      field: 'jobId',
+      title: 'JobId',
+      width: '150',
+      formatter: function (value, row, index) {
+        return '<a href="javascript:void(0)" onclick="job(\'' + value + '\')">' + value + '</a>';
+      }
+    },
+    {
+      field: 'runState',
+      title: '运行状态',
+      formatter: function (value, row, index) {
+        var label = $.table.selectData(runStates, value, 'value', 'desc');
+        return $.common.sprintf("<span class='badge badge-%s'>%s</span>", stateMap[value], label);
+      }
+    },
+    {
+      field: 'runType',
+      title: '运行类型：',
+      formatter: function (value, row, index) {
+        return $.table.selectData(runTypes, value, 'value', 'desc');
+      }
+    },
+    {
+      field: 'triggerTime',
+      title: '触发时间',
+      formatter: function (value, row, index) {
+        return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
+      }
+    },
+    {
+      field: 'runStartTime',
+      title: '运行开始时间'
+    },
+    {
+      field: 'runEndTime',
+      title: '运行结束时间'
+    },
+    {
+      field: 'runDuration',
+      title: '运行时长(秒)',
+      formatter: function (value, row, index) {
+        return value ? parseFloat((value / 1000).toFixed(3)) : "";
+      }
+    },
+    {
+      field: 'retriedCount',
+      title: '已重试的次数'
+    },
+    {
+      field: 'attach',
+      title: '附加信息',
+      formatter: function (value, row, index) {
+        return $.table.tooltip(value, 20);
+      }
+    },
+    {
+      field: 'rnstanceId',
+      title: 'RnstanceId',
+      visible: false
+    },
+    {
+      field: 'pnstanceId',
+      title: 'PnstanceId',
+      visible: false
+    },
+    {
+      field: 'wnstanceId',
+      title: 'WnstanceId',
+      visible: false
+    },
+    {
+      title: '操作',
+      align: 'right',
+      formatter: function (value, row, index) {
+        var actions = [];
+        if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
+          // 非lead的工作流任务实例  ==>  不支持操作
+          return '';
+        }
+        if (row.runState === 20) {
+          actions.push('<a class="btn btn-warning btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i>暂停</a> ')
+        }
+        if (row.runState === 30) {
+          actions.push('<a class="btn btn-info btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="resume(\'' + row.instanceId + '\')"><i class="fa fa-play"></i>恢复</a> ')
+        }
+        if (row.runState < 40) {
+          actions.push('<a class="btn btn-outline btn-danger btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="cancel(\'' + row.instanceId + '\')"><i class="fa fa-remove"></i>取消</a> ')
+        }
+        if (row.runState >= 40) {
+          actions.push('<a class="btn btn-danger btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.instanceId + '\')"><i class="fa fa-trash"></i>删除</a> ')
+        }
+        return actions.join('');
+      }
+    }]
+  };
+
+  $(function () {
+    var treeOps = $.extend({
+      id: "tree-table",
+      formId: "tree-form",
+      toolbar: "tree-toolbar",
+      code: "instanceId",
+      parentCode: "pnstanceId",
+      url: prefix + "/tree",
+      dataUrl: prefix + "/children",
+      modalName: "调度实例-tree"
+    }, defaultOps);
+    $.treeTable.init(treeOps);
+
+    var flatOps = $.extend({
+      id: "flat-table",
+      formId: "flat-form",
+      toolbar: "flat-toolbar",
+      url: prefix + "/flat",
+      firstLoad: false,
+      modalName: "调度实例-flat"
+    }, defaultOps);
+    $.table.init(flatOps);
+
+    layui.use('laydate', function () {
+      var laydate = layui.laydate;
+      var treeStartDate = laydate.render({
+        elem: '#tree-startTime',
+        max: $('#tree-endTime').val(),
+        theme: 'molv',
+        trigger: 'click',
+        done: function (value, date) {
+          // 结束时间大于开始时间
+          if (value !== '') {
+            treeEndDate.config.min.year = date.year;
+            treeEndDate.config.min.month = date.month - 1;
+            treeEndDate.config.min.date = date.date;
+          } else {
+            treeEndDate.config.min.year = '';
+            treeEndDate.config.min.month = '';
+            treeEndDate.config.min.date = '';
+          }
+        }
+      });
+      var treeEndDate = laydate.render({
+        elem: '#tree-endTime',
+        min: $('#tree-startTime').val(),
+        theme: 'molv',
+        trigger: 'click',
+        done: function (value, date) {
+          // 开始时间小于结束时间
+          if (value !== '') {
+            treeStartDate.config.max.year = date.year;
+            treeStartDate.config.max.month = date.month - 1;
+            treeStartDate.config.max.date = date.date;
+          } else {
+            treeStartDate.config.max.year = '';
+            treeStartDate.config.max.month = '';
+            treeStartDate.config.max.date = '';
+          }
+        }
+      });
+      var flatStartDate = laydate.render({
+        elem: '#flat-startTime',
+        max: $('#flat-endTime').val(),
+        theme: 'molv',
+        trigger: 'click',
+        done: function (value, date) {
+          // 结束时间大于开始时间
+          if (value !== '') {
+            flatEndDate.config.min.year = date.year;
+            flatEndDate.config.min.month = date.month - 1;
+            flatEndDate.config.min.date = date.date;
+          } else {
+            flatEndDate.config.min.year = '';
+            flatEndDate.config.min.month = '';
+            flatEndDate.config.min.date = '';
+          }
+        }
+      });
+      var flatEndDate = laydate.render({
+        elem: '#flat-endTime',
+        min: $('#flat-startTime').val(),
+        theme: 'molv',
+        trigger: 'click',
+        done: function (value, date) {
+          // 开始时间小于结束时间
+          if (value !== '') {
+            flatStartDate.config.max.year = date.year;
+            flatStartDate.config.max.month = date.month - 1;
+            flatStartDate.config.max.date = date.date;
+          } else {
+            flatStartDate.config.max.year = '';
+            flatStartDate.config.max.month = '';
+            flatStartDate.config.max.date = '';
+          }
+        }
+      });
+    });
+  });
+
+  function tasks(instanceId) {
+    var url = prefix + '/tasks/' + instanceId;
+    $.modal.openFull("调度任务", url);
+  }
+
+  function job(jobId) {
+    var url = ctx + 'disjob/job/detail/' + jobId;
+    $.modal.open("调度配置详情", url);
+  }
+
+  function pause(instanceId) {
+    $.modal.confirm("确认要暂停吗？", function () {
+      $.operate.post(prefix + "/pause/" + instanceId);
+    });
+  }
+
+  function resume(instanceId) {
+    $.modal.confirm("确认要恢复吗？", function () {
+      $.operate.post(prefix + "/resume/" + instanceId);
+    });
+  }
+
+  function cancel(instanceId) {
+    $.modal.confirm("确认要取消吗？", function () {
+      $.operate.post(prefix + "/cancel/" + instanceId);
+    });
+  }
+</script>
+
+</body>
+</html>

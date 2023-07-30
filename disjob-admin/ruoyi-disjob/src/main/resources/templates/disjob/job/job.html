@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <th:block th:include="include :: header('调度配置')" />
+</head>
+<body class="gray-bg">
+
+  <div class="container-div">
+    <div class="row">
+      <div class="col-sm-12 search-collapse">
+        <form id="sched-job-form">
+          <div class="select-list">
+            <ul>
+              <li>
+                <label>Job分组：</label>
+                <input type="text" name="jobGroup" />
+              </li>
+              <li>
+                <label>Job名称：</label>
+                <input type="text" name="jobName" />
+              </li>
+              <li>
+                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+              </li>
+            </ul>
+          </div>
+        </form>
+      </div>
+
+      <div class="btn-group-sm" id="toolbar" role="group">
+        <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="disjob:job:operate">
+          <i class="fa fa-plus"></i> 添加
+        </a>
+        <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="disjob:job:operate">
+          <i class="fa fa-edit"></i> 修改
+        </a>
+        <a class="btn btn-danger multiple disabled" onclick="removeAll()" shiro:hasPermission="disjob:job:operate">
+          <i class="fa fa-trash"></i> 删除
+        </a>
+        <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="disjob:job:query">
+          <i class="fa fa-download"></i> 导出
+        </a>
+      </div>
+
+      <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:include="include :: footer" />
+  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+  <script th:inline="javascript">
+    var operateFlag = [[${@permission.hasPermi('disjob:job:operate')}]];
+    var prefix = ctx + "disjob/job";
+
+    var jobTypes        = [[${@disjobService.enums('JobType')}]];
+    var triggerTypes    = [[${@disjobService.enums('TriggerType')}]];
+    var routeStrategies = [[${@disjobService.enums('RouteStrategy')}]];
+
+    $(function () {
+      var options = {
+        url: prefix + "/list",
+        createUrl: prefix + "/add",
+        updateUrl: prefix + "/edit/{id}",
+        removeUrl: prefix + "/remove",
+        exportUrl: prefix + "/export",
+        fixedColumns: true,
+        fixedNumber: 2,
+        modalName: "调度配置",
+        columns: [{
+          checkbox: true
+        },
+        {
+          field: 'jobId',
+          title: 'JobId',
+          formatter: function (value, row, index) {
+            return '<a href="javascript:void(0)" onclick="detail(\'' + value + '\')">' + value + '</a>';
+          }
+        },
+        {
+          field: 'jobGroup',
+          title: 'Job分组'
+        },
+        {
+          field: 'jobName',
+          title: 'Job名称'
+        },
+        {
+          field: 'jobState',
+          title: 'Job状态',
+          formatter: function (value, row, index) {
+            var str = (row.jobState === 0) ? 'off' : 'on';
+            return '<i class=\"fa fa-toggle-' + str + ' text-info fa-2x\" onclick="changeState(\'' + row.jobId + '\', ' + value + ')"></i> ';
+          }
+        },
+        {
+          field: 'jobType',
+          title: 'Job类型',
+          formatter: function (value, row, index) {
+            return $.table.selectData(jobTypes, value, 'value', 'desc');
+          }
+        },
+        {
+          field: 'triggerType',
+          title: '触发器类型',
+          formatter: function (value, row, index) {
+            return $.table.selectData(triggerTypes, value, 'value', 'desc');
+          }
+        },
+        {
+          field: 'triggerValue',
+          title: '触发器配置',
+          formatter: function (value, row, index) {
+            return $.table.tooltip(value, 20);
+          }
+        },
+        {
+          field: 'routeStrategy',
+          title: '路由策略',
+          formatter: function (value, row, index) {
+            return $.table.selectData(routeStrategies, value, 'value', 'desc');
+          }
+        },
+        {
+          field: 'lastTriggerTime',
+          title: '上一次触发时间',
+          formatter: function (value, row, index) {
+            return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
+          }
+        },
+        {
+          field: 'nextTriggerTime',
+          title: '下一次触发时间',
+          formatter: function (value, row, index) {
+            return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
+          }
+        },
+        {
+          field: 'remark',
+          title: '备注',
+          formatter: function (value, row, index) {
+            return $.table.tooltip(value, 30);
+          }
+        },
+        {
+          field: 'updatedBy',
+          title: '更新人'
+        },
+        {
+          field: 'createdBy',
+          title: '创建人'
+        },
+        /*{
+          field: 'updatedAt',
+          title: '更新时间'
+        },*/
+        {
+          field: 'createdAt',
+          title: '创建时间'
+        },
+        {
+          title: '操作',
+          align: 'center',
+          formatter: function (value, row, index) {
+            var actions = [];
+            if (row.jobState === 0) {
+              actions.push("<a class='btn btn-danger btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i>删除</a> ");
+            }
+            actions.push("<a class='btn btn-primary btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='trigger(&quot;" + row.jobId + "&quot;)'><i class='fa fa-hand-pointer-o'></i>触发</a> ");
+            actions.push("<a class='btn btn-success btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.edit(&quot;" + row.jobId + "&quot;)'><i class='fa fa-edit'></i>编辑</a> ");
+            return '<a tabindex="0" class="btn btn-info btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i>操作</a>';
+          }
+        }]
+      };
+      $.table.init(options);
+    });
+
+    function detail(jobId) {
+      var url = prefix + '/detail/' + jobId;
+      $.modal.open("调度配置详情", url);
+    }
+
+    function changeState(jobId, fromJobState) {
+      var toJobState = (fromJobState === 0) ? 1 : 0;
+      $.modal.confirm("确认要" + (toJobState === 0 ? "禁用" : "启用") + "吗？", function () {
+        $.operate.post(prefix + "/changeState", {"jobId": jobId, "toState": toJobState});
+      });
+    }
+
+    function trigger(jobId) {
+      $.modal.confirm("确认要触发执行吗？", function () {
+        $.operate.post(prefix + "/trigger", {"jobId": jobId});
+      });
+    }
+
+    // 批量删除
+    function removeAll() {
+      table.set();
+      var rows = $("#" + table.options.id).bootstrapTable('getSelections');
+      if (rows.length === 0) {
+        $.modal.alertWarning("请至少选择一条记录");
+        return;
+      }
+      for (var i = 0, n = rows.length; i < n; i++) {
+        if (rows[i].jobState === 1) {
+          $.modal.alertWarning("不能删除启用状态的调度配置[" + rows[i].jobId + "]");
+          return;
+        }
+      }
+
+      $.modal.confirm("确认要删除选中的" + rows.length + "条数据吗?", function () {
+        var url = table.options.removeUrl;
+        var ids = $.map(rows, function (row) {
+          return row.jobId;
+        });
+        var data = {"ids": ids.join()};
+        $.operate.submit(url, "post", "json", data);
+      });
+    }
+  </script>
+
+</body>
+</html>

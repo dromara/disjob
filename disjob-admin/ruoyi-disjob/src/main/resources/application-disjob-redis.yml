@@ -1,0 +1,33 @@
+# redis configuration
+spring.redis:
+  database: 0
+  connect-timeout: 3000
+  timeout: 5000
+  client-type: LETTUCE
+  lettuce:
+    pool:
+      max-active: 32
+      max-idle: 8
+      min-idle: 1
+      max-wait: 5000
+    shutdown-timeout: 5000
+  password: 123456               # redis node auth password
+  #username: node_auth           # redis node auth username(redis 6.x ACL)
+
+  # redis standalone config
+  #host: localhost                # redis standalone host name
+  #port: 6379                     # redis standalone port
+
+  # redis sentinel config
+  sentinel:
+    master: REDIS_SENTINEL
+    nodes: localhost:16379,localhost:16380
+    #password: 123456            # redis sentinel auth password
+    #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)
+
+
+# 使用redis做注册中心
+disjob.registry.redis:
+  namespace: redis_namespace
+  session-timeout-ms: 60000
+  registry-period-ms: 4000

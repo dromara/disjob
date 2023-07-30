@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:include="include :: header('查看调度配置')" />
+</head>
+<body class="white-bg">
+
+  <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+    <form class="form-horizontal m" id="form-job-edit" th:object="${job}">
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">Job分组：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[(*{jobGroup})]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">Job名称：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[(*{jobName})]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">Job状态：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[( ${@disjobService.desc('JobState', job.jobState)} )]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">Job类型：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[( ${@disjobService.desc('JobType', job.jobType)} )]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">Job处理器：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[(*{jobHandler})]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label">Job参数：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[(*{jobParam})]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label">重试配置：</label>
+        <div class="col-sm-3">
+          <select disabled name="retryType" class="form-control m-b" th:with="enum=${@disjobService.enums('RetryType')}">
+            <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}" th:field="*{retryType}"></option>
+          </select>
+        </div>
+        <div class="col-sm-3">
+          <input disabled name="retryCount" class="form-control" th:value="${#strings.concat(job.retryCount, ' 次')}" type="text" />
+        </div>
+        <div class="col-sm-3">
+          <input disabled name="retryInterval" th:value="${#strings.concat(job.retryInterval, ' 毫秒')}" class="form-control" type="text" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label">Job有效期：</label>
+        <div class="col-sm-9">
+          <div class="input-daterange input-group">
+            <input disabled name="startTime" th:value="${#dates.format(job.startTime, 'yyyy-MM-dd')}" type="text" class="input-sm form-control" />
+            <span class="input-group-addon"> ~ </span>
+            <input disabled name="endTime" th:value="${#dates.format(job.endTime, 'yyyy-MM-dd')}" type="text" class="input-sm form-control" />
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">触发器配置：</label>
+        <div class="col-sm-3">
+          <select disabled name="triggerType" class="form-control m-b" th:with="enum=${@disjobService.enums('TriggerType')}">
+            <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}" th:field="*{triggerType}"></option>
+          </select>
+        </div>
+        <div class="col-sm-6">
+          <input disabled name="triggerValue" th:field="*{triggerValue}" class="form-control" type="text" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">执行冲突策略：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[( ${@disjobService.desc('CollidedStrategy', job.collidedStrategy)} )]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">过期策略：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[( ${@disjobService.desc('MisfireStrategy', job.misfireStrategy)} )]</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">路由策略：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[( ${@disjobService.desc('RouteStrategy', job.routeStrategy)} )]</p>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <th:block th:include="include :: footer" />
+
+</body>
+</html>

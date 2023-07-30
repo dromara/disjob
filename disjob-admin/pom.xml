@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>cn.ponfee</groupId>
+  <artifactId>disjob-admin-parent</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
+
+  <name>Disjob</name>
+  <url>https://github.com/ponfee/disjob</url>
+  <description>Disjob后台管理</description>
+
+  <modules>
+    <module>ruoyi-admin</module>
+    <module>ruoyi-framework</module>
+    <module>ruoyi-system</module>
+    <module>ruoyi-generator</module>
+    <module>ruoyi-common</module>
+    <module>ruoyi-disjob</module>
+  </modules>
+
+  <properties>
+    <revision>2.0.0-SNAPSHOT</revision>
+    <disjob.version>2.0.0-SNAPSHOT</disjob.version>
+
+    <file.encoding>UTF-8</file.encoding>
+    <java.version>1.8</java.version>
+    <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
+
+    <spring-boot.version>2.7.13</spring-boot.version>
+    <shiro-core.version>1.12.0</shiro-core.version>
+    <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
+    <druid-spring-boot-starter.version>1.2.18</druid-spring-boot-starter.version>
+    <UserAgentUtils.version>1.21</UserAgentUtils.version>
+    <kaptcha.version>2.3.3</kaptcha.version>
+    <pagehelper-spring-boot-starter.version>1.4.7</pagehelper-spring-boot-starter.version>
+    <fastjson.version>1.2.83</fastjson.version>
+    <oshi-core.version>6.4.4</oshi-core.version>
+    <commons-io.version>2.13.0</commons-io.version>
+    <poi-ooxml.version>5.2.3</poi-ooxml.version>
+    <velocity-engine-core.version>2.3</velocity-engine-core.version>
+    <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
+
+    <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
+    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+    <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- SpringBoot的依赖配置-->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- 阿里数据库连接池 -->
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>druid-spring-boot-starter</artifactId>
+        <version>${druid-spring-boot-starter.version}</version>
+      </dependency>
+
+      <!-- 验证码 -->
+      <dependency>
+        <groupId>pro.fessional</groupId>
+        <artifactId>kaptcha</artifactId>
+        <version>${kaptcha.version}</version>
+      </dependency>
+
+      <!-- Shiro核心框架 -->
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-core</artifactId>
+        <version>${shiro-core.version}</version>
+      </dependency>
+
+      <!-- Shiro使用Spring框架 -->
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-spring</artifactId>
+        <version>${shiro-core.version}</version>
+      </dependency>
+
+      <!-- Shiro使用EhCache缓存框架 -->
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-ehcache</artifactId>
+        <version>${shiro-core.version}</version>
+      </dependency>
+
+      <!-- thymeleaf模板引擎和shiro框架的整合 -->
+      <dependency>
+        <groupId>com.github.theborakompanioni</groupId>
+        <artifactId>thymeleaf-extras-shiro</artifactId>
+        <version>${thymeleaf-extras-shiro.version}</version>
+      </dependency>
+
+      <!-- 解析客户端操作系统、浏览器等 -->
+      <dependency>
+        <groupId>eu.bitwalker</groupId>
+        <artifactId>UserAgentUtils</artifactId>
+        <version>${UserAgentUtils.version}</version>
+      </dependency>
+
+      <!-- pagehelper 分页插件 -->
+      <dependency>
+        <groupId>com.github.pagehelper</groupId>
+        <artifactId>pagehelper-spring-boot-starter</artifactId>
+        <version>${pagehelper-spring-boot-starter.version}</version>
+      </dependency>
+
+      <!-- 获取系统信息 -->
+      <dependency>
+        <groupId>com.github.oshi</groupId>
+        <artifactId>oshi-core</artifactId>
+        <version>${oshi-core.version}</version>
+      </dependency>
+
+      <!-- io常用工具类 -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+
+      <!-- excel工具 -->
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>${poi-ooxml.version}</version>
+      </dependency>
+
+      <!-- velocity代码生成使用模板 -->
+      <dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-engine-core</artifactId>
+        <version>${velocity-engine-core.version}</version>
+      </dependency>
+
+      <!-- 阿里JSON解析器 -->
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+        <version>${fastjson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-ui</artifactId>
+        <version>${springdoc-openapi-ui.version}</version>
+      </dependency>
+
+      <!-- 代码生成-->
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-generator</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- 核心模块-->
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-framework</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- 系统模块-->
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-system</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- 通用工具-->
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- disjob管理模块-->
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>ruoyi-disjob</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>${flatten-maven-plugin.version}</version>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+          <outputDirectory>target</outputDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten.process-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <repositories>
+    <repository>
+      <id>oss.sonatype.org-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>s01.oss.sonatype.org-snapshots</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+</project>
