@@ -151,14 +151,6 @@ public class DistributedJobManager extends AbstractJobManager {
         return instanceMapper.getByJobIdAndTriggerTimeAndRunType(jobId, triggerTime, runType);
     }
 
-    public Long getWnstanceId(long instanceId) {
-        return instanceMapper.getWnstanceId(instanceId);
-    }
-
-    public SchedTask getTask(long taskId) {
-        return taskMapper.getByTaskId(taskId);
-    }
-
     /**
      * Scan will be triggering sched jobs.
      *
@@ -182,12 +174,8 @@ public class DistributedJobManager extends AbstractJobManager {
         return instanceMapper.findUnterminatedRetry(rnstanceId);
     }
 
-    public List<SchedTask> findBaseInstanceTask(long instanceId) {
+    public List<SchedTask> findBaseInstanceTasks(long instanceId) {
         return taskMapper.findBaseByInstanceId(instanceId);
-    }
-
-    public List<SchedTask> findLargeInstanceTask(long instanceId) {
-        return taskMapper.findLargeByInstanceId(instanceId);
     }
 
     // ------------------------------------------------------------------database single operation without transactional
@@ -376,7 +364,8 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     public void deleteInstance(long instanceId) {
-        doTransactionLockInSynchronized(instanceId, getWnstanceId(instanceId), instance -> {
+        Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
+        doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Sched instance not found: " + instanceId);
             Assert.isTrue(RunState.of(instance.getRunState()).isTerminal(), () -> "Deleting instance must be terminal: " + instance);
 
@@ -584,7 +573,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if resumed successfully
      */
     public boolean resumeInstance(long instanceId) {
-        Long wnstanceId = getWnstanceId(instanceId);
+        Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
         return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel failed, instance_id not found: " + instanceId);
             if (!RunState.PAUSED.equals(instance.getRunState())) {

@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.openapi.supervisor.converter.SchedJobConverter;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedJobPageRequest;
@@ -19,6 +20,7 @@ import cn.ponfee.disjob.core.openapi.supervisor.response.SchedInstanceResponse;
 import cn.ponfee.disjob.core.openapi.supervisor.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
+import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
@@ -36,13 +38,24 @@ import java.util.stream.Collectors;
 public class DistributedJobQuerier {
 
     private final SchedJobMapper jobMapper;
+    private final SchedTaskMapper taskMapper;
     private final SchedInstanceMapper instanceMapper;
 
 
     public DistributedJobQuerier(SchedJobMapper jobMapper,
+                                 SchedTaskMapper taskMapper,
                                  SchedInstanceMapper instanceMapper) {
         this.jobMapper = jobMapper;
+        this.taskMapper = taskMapper;
         this.instanceMapper = instanceMapper;
+    }
+
+    public SchedTask getTask(long taskId) {
+        return taskMapper.getByTaskId(taskId);
+    }
+
+    public List<SchedTask> findLargeInstanceTasks(long instanceId) {
+        return taskMapper.findLargeByInstanceId(instanceId);
     }
 
     public PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest) {
@@ -62,22 +75,24 @@ public class DistributedJobQuerier {
         long total = pageRequest.isPaged() ? instanceMapper.queryPageCount(pageRequest) : rows.size();
 
         if (pageRequest.isParent()) {
-            processIsTreeLeaf(rows);
+            fillIsTreeLeaf(rows);
         }
 
         return new PageResponse<>(rows, total, pageRequest);
     }
 
-    public List<SchedInstanceResponse> listChildren(long pnstanceId) {
+    public List<SchedInstanceResponse> listInstanceChildren(long pnstanceId) {
         List<SchedInstanceResponse> rows = instanceMapper.selectByPnstanceId(pnstanceId)
             .stream()
             .map(SchedJobConverter.INSTANCE::convert)
             .collect(Collectors.toList());
-        processIsTreeLeaf(rows);
+        fillIsTreeLeaf(rows);
         return rows;
     }
 
-    private void processIsTreeLeaf(List<SchedInstanceResponse> list) {
+    // --------------------------------------------------------------------------private methods
+
+    private void fillIsTreeLeaf(List<SchedInstanceResponse> list) {
         if (CollectionUtils.isEmpty(list)) {
             return;
         }

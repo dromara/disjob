@@ -106,8 +106,9 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public SupervisorService supervisorService(DistributedJobManager distributedJobManager) {
-            return new SupervisorServiceProvider(distributedJobManager);
+        public SupervisorService supervisorService(DistributedJobManager jobManager,
+                                                   DistributedJobQuerier jobQuerier) {
+            return new SupervisorServiceProvider(jobManager, jobQuerier);
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)

@@ -16,6 +16,7 @@ import cn.ponfee.disjob.core.param.StartTaskParam;
 import cn.ponfee.disjob.core.param.TaskWorkerParam;
 import cn.ponfee.disjob.core.param.TerminateTaskParam;
 import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.manager.DistributedJobQuerier;
 
 import java.util.List;
 
@@ -26,45 +27,48 @@ import java.util.List;
  */
 public class SupervisorServiceProvider implements SupervisorService, RpcController {
 
-    private final DistributedJobManager distributedJobManager;
+    private final DistributedJobManager jobManager;
+    private final DistributedJobQuerier jobQuerier;
 
-    public SupervisorServiceProvider(DistributedJobManager distributedJobManager) {
-        this.distributedJobManager = distributedJobManager;
+    public SupervisorServiceProvider(DistributedJobManager jobManager,
+                                     DistributedJobQuerier jobQuerier) {
+        this.jobManager = jobManager;
+        this.jobQuerier = jobQuerier;
     }
 
     @Override
     public SchedTask getTask(long taskId) {
-        return distributedJobManager.getTask(taskId);
+        return jobQuerier.getTask(taskId);
     }
 
     @Override
     public boolean startTask(StartTaskParam param) {
-        return distributedJobManager.startTask(param);
+        return jobManager.startTask(param);
     }
 
     @Override
     public void updateTaskWorker(List<TaskWorkerParam> params) {
-        distributedJobManager.updateTaskWorker(params);
+        jobManager.updateTaskWorker(params);
     }
 
     @Override
     public boolean terminateTask(TerminateTaskParam param) {
-        return distributedJobManager.terminateTask(param);
+        return jobManager.terminateTask(param);
     }
 
     @Override
     public boolean pauseInstance(long instanceId, Long wnstanceId) {
-        return distributedJobManager.pauseInstance(instanceId, wnstanceId);
+        return jobManager.pauseInstance(instanceId, wnstanceId);
     }
 
     @Override
     public boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) {
-        return distributedJobManager.cancelInstance(instanceId, wnstanceId, ops);
+        return jobManager.cancelInstance(instanceId, wnstanceId, ops);
     }
 
     @Override
     public boolean checkpoint(long taskId, String executeSnapshot) {
-        return distributedJobManager.checkpoint(taskId, executeSnapshot);
+        return jobManager.checkpoint(taskId, executeSnapshot);
     }
 
 }

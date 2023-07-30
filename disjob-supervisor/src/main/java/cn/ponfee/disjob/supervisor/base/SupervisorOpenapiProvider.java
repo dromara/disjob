@@ -136,13 +136,13 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
             return null;
         }
 
-        List<SchedTask> tasks = jobManager.findLargeInstanceTask(instanceId);
+        List<SchedTask> tasks = jobQuerier.findLargeInstanceTasks(instanceId);
         return SchedInstanceResponse.of(instance, tasks);
     }
 
     @Override
     public List<SchedTaskResponse> getInstanceTasks(long instanceId) {
-        List<SchedTask> tasks = jobManager.findLargeInstanceTask(instanceId);
+        List<SchedTask> tasks = jobQuerier.findLargeInstanceTasks(instanceId);
         if (tasks == null) {
             return null;
         }
@@ -156,7 +156,7 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
 
     @Override
     public List<SchedInstanceResponse> listInstanceChildren(long pnstanceId) {
-        return jobQuerier.listChildren(pnstanceId);
+        return jobQuerier.listInstanceChildren(pnstanceId);
     }
 
 }
