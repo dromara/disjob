@@ -1,21 +1,21 @@
 -- ----------------------------
 -- DROP OBJECTS
 -- ----------------------------
-DROP USER IF EXISTS 'disjob_admin'@'%';
+DROP USER IF EXISTS 'disjob'@'%';
 FLUSH PRIVILEGES;
 
 -- ----------------------------
 -- CREATE DATABASE
 -- ----------------------------
--- DROP DATABASE IF EXISTS disjob_admin;
-CREATE DATABASE IF NOT EXISTS disjob_admin DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE disjob_admin;
+-- DROP DATABASE IF EXISTS disjob;
+CREATE DATABASE IF NOT EXISTS disjob DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE disjob;
 
 -- ----------------------------
 -- USER PRIVILEGES
 -- ----------------------------
-CREATE USER 'disjob_admin'@'%' IDENTIFIED BY 'disjob_admin$123456';
-GRANT ALL PRIVILEGES ON disjob_admin.* TO 'disjob_admin'@'%' WITH GRANT OPTION;
+CREATE USER 'disjob'@'%' IDENTIFIED BY 'disjob$123456';
+GRANT ALL PRIVILEGES ON disjob.* TO 'disjob'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 
 -- ----------------------------

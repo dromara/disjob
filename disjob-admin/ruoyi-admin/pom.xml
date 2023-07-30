@@ -6,7 +6,7 @@
 
   <parent>
     <groupId>cn.ponfee</groupId>
-    <artifactId>disjob-admin-parent</artifactId>
+    <artifactId>disjob-admin</artifactId>
     <version>${revision}</version>
   </parent>
 
@@ -48,7 +48,7 @@
       <artifactId>ruoyi-generator</artifactId>
     </dependency>
 
-    <!-- distributed job scheduler -->
+    <!-- Disjob -->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-disjob</artifactId>

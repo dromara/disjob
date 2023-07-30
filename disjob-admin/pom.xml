@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>cn.ponfee</groupId>
-  <artifactId>disjob-admin-parent</artifactId>
+  <artifactId>disjob-admin</artifactId>
   <version>${revision}</version>
   <packaging>pom</packaging>
 

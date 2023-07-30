@@ -159,6 +159,8 @@
       AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT} AND run_state &lt; 40) t)=0
   </delete>
 
+  <!-- ********************page query******************** -->
+
   <select id="queryPageCount" resultType="_long">
     SELECT COUNT(*) cnt
     FROM <include refid="Table_Name" />
@@ -198,10 +200,10 @@
         AND run_state = #{runState}
       </if>
       <if test="startTime != null">
-        AND trigger_time >= UNIX_TIMESTAMP(#{startTime})*1000
+        AND trigger_time >= UNIX_TIMESTAMP(#{startTime}) * 1000
       </if>
       <if test="endTime != null">
-        AND trigger_time &lt;= UNIX_TIMESTAMP(#{endTime})*1000
+        AND trigger_time &lt;= UNIX_TIMESTAMP(#{endTime}) * 1000
       </if>
       <if test="parent">
         AND pnstance_id IS NULL

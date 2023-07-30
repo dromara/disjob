@@ -189,6 +189,8 @@
       AND is_deleted = 0
   </update>
 
+  <!-- ********************page query******************** -->
+
   <select id="queryPageCount" resultType="_long">
     SELECT COUNT(*) cnt
     FROM <include refid="Table_Name" />
