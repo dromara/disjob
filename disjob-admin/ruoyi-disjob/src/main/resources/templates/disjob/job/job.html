@@ -166,11 +166,11 @@
           formatter: function (value, row, index) {
             var actions = [];
             if (row.jobState === 0) {
-              actions.push("<a class='btn btn-danger btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i>删除</a> ");
+              actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i>删除</a> ");
             }
-            actions.push("<a class='btn btn-primary btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='trigger(&quot;" + row.jobId + "&quot;)'><i class='fa fa-hand-pointer-o'></i>触发</a> ");
-            actions.push("<a class='btn btn-success btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.edit(&quot;" + row.jobId + "&quot;)'><i class='fa fa-edit'></i>编辑</a> ");
-            return '<a tabindex="0" class="btn btn-info btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i>操作</a>';
+            actions.push("<a class='btn btn-primary btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='trigger(&quot;" + row.jobId + "&quot;)'><i class='fa fa-hand-pointer-o'></i>触发</a> ");
+            actions.push("<a class='btn btn-success btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.edit(&quot;" + row.jobId + "&quot;)'><i class='fa fa-edit'></i>编辑</a> ");
+            return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i>操作</a>';
           }
         }]
       };

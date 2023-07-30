@@ -74,7 +74,7 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
     @Override
     public Boolean changeJobState(long jobId, int jobState) {
         LOG.info("Do change sched job state {}", jobId);
-        return jobManager.changeJobState(jobId, JobState.DISABLE);
+        return jobManager.changeJobState(jobId, JobState.of(jobState));
     }
 
     @Override

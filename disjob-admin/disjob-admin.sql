@@ -88,7 +88,7 @@ create table sys_user (
 -- 初始化-用户信息表数据：admin/admin123、disjob/disjob123
 -- ----------------------------
 insert into sys_user values(1,  103, 'admin',  '管理员',  '00', 'ponfee.cn@gmail.com', '15888888888', '1', '', '29c67a30398638269fe600f73a054934', '111111', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
-insert into sys_user values(2,  105, 'disjob', 'Disjob', '00', 'ponfee.cn@gmail.com', '15666666666', '1', '', '75e487c58065fdc0d0a1df584c7e772a', '222222', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '测试员');
+insert into sys_user values(2,  105, 'disjob', 'Disjob', '00', 'ponfee.cn@gmail.com', '15666666666', '1', '', 'e92fa6078eb4a44f55232dac9fe9e5e3', '486a3e', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '测试员');
 
 
 -- ----------------------------

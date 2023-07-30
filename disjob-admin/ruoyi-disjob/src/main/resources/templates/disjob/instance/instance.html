@@ -171,7 +171,7 @@
     },
     {
       field: 'retriedCount',
-      title: '已重试的次数'
+      title: '已重试次数'
     },
     {
       field: 'attach',
@@ -205,16 +205,16 @@
           return '';
         }
         if (row.runState === 20) {
-          actions.push('<a class="btn btn-warning btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i>暂停</a> ')
+          actions.push('<a class="btn btn-warning btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i>暂停</a> ')
         }
         if (row.runState === 30) {
-          actions.push('<a class="btn btn-info btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="resume(\'' + row.instanceId + '\')"><i class="fa fa-play"></i>恢复</a> ')
+          actions.push('<a class="btn btn-info btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="resume(\'' + row.instanceId + '\')"><i class="fa fa-play"></i>恢复</a> ')
         }
         if (row.runState < 40) {
-          actions.push('<a class="btn btn-outline btn-danger btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="cancel(\'' + row.instanceId + '\')"><i class="fa fa-remove"></i>取消</a> ')
+          actions.push('<a class="btn btn-danger btn-rounded btn-outline btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="cancel(\'' + row.instanceId + '\')"><i class="fa fa-remove"></i>取消</a> ')
         }
         if (row.runState >= 40) {
-          actions.push('<a class="btn btn-danger btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.instanceId + '\')"><i class="fa fa-trash"></i>删除</a> ')
+          actions.push('<a class="btn btn-danger btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.instanceId + '\')"><i class="fa fa-trash"></i>删除</a> ')
         }
         return actions.join('');
       }
