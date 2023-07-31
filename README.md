@@ -90,7 +90,7 @@ disjob                                                    # 主项目
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
 
-2. 运行仓库代码提供的SQL脚本[mysql-schema.sql](mysql-schema.sql)创建数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
+2. 运行仓库代码提供的SQL脚本[mysql-schema.sql](mysql-disjob.sql)创建数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
   - [MacOS报“Library not loaded”错误信息参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
 
 3. 在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中选择注册中心及任务分发的具体实现(默认redis注册中心、http任务分发)

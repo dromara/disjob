@@ -15,15 +15,15 @@ spring.redis:
   #username: node_auth           # redis node auth username(redis 6.x ACL)
 
   # redis standalone config
-  #host: localhost                # redis standalone host name
-  #port: 6379                     # redis standalone port
+  host: localhost                # redis standalone host name
+  port: 6379                     # redis standalone port
 
   # redis sentinel config
-  sentinel:
-    master: REDIS_SENTINEL
-    nodes: localhost:16379,localhost:16380
-    #password: 123456            # redis sentinel auth password
-    #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)
+  #sentinel:
+  #  master: REDIS_SENTINEL
+  #  nodes: 112.74.170.75:16379,112.74.170.75:16380
+  #  #password: 123456            # redis sentinel auth password
+  #  #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)
 
 
 # 使用redis做注册中心

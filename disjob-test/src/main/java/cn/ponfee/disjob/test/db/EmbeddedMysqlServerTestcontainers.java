@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.ext.ScriptUtils;
+import org.testcontainers.jdbc.JdbcDatabaseDelegate;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collections;
@@ -48,7 +50,7 @@ public class EmbeddedMysqlServerTestcontainers {
             .withPassword("")
             .withDatabaseName("test")
             .withEnv("MYSQL_ROOT_HOST", "%")
-            .withInitScript(DBUtils.DB_SCRIPT_PATH)
+            //.withInitScript(DISJOB_SCRIPT_PATH)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
         ) {
             mySQLContainer.setPortBindings(PORT_BINDINGS);
@@ -59,13 +61,11 @@ public class EmbeddedMysqlServerTestcontainers {
             System.out.println("Embedded docker mysql started!");
             //mySQLContainer.execInContainer("mysqld --skip-grant-tables");
 
-            /*
-            // the script-path only use for log, so here can set to an empty string value
+            // scriptPath只用于打印日志，此处直接设置为空字符串
             String scriptPath = "";
             String jdbcUrlParameter = "?useSSL=false&connectTimeout=2000&socketTimeout=5000";
-            String scriptContent = DBUtils.loadScript();
-            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, scriptContent);
-            */
+            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH));
+            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_SCRIPT_CLASSPATH));
 
             JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, USERNAME, PASSWORD);
 

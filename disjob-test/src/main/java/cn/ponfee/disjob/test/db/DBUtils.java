@@ -34,7 +34,9 @@ public class DBUtils {
     public static final String DB_NAME = "disjob";
     public static final String USERNAME = "disjob";
     public static final String PASSWORD = "disjob$123456";
-    public static final String DB_SCRIPT_PATH = "mysql-schema.sql";
+
+    public static final String DISJOB_SCRIPT_CLASSPATH = "mysql-disjob.sql";
+    public static final String DISJOB_ADMIN_SCRIPT_CLASSPATH = "mysql-disjob_admin.sql";
 
     public static JdbcTemplate createJdbcTemplate(String url, String username, String password) {
         HikariConfig config = new HikariConfig();
@@ -44,8 +46,8 @@ public class DBUtils {
         return new JdbcTemplate(new HikariDataSource(config));
     }
 
-    public static String loadScript() throws Exception {
-        return IOUtils.resourceToString(DB_SCRIPT_PATH, StandardCharsets.UTF_8, DBUtils.class.getClassLoader());
+    public static String loadScript(String scriptPath) throws Exception {
+        return IOUtils.resourceToString(scriptPath, StandardCharsets.UTF_8, DBUtils.class.getClassLoader());
     }
 
     public static void testNativeConnection(String driver, String url, String username, String password) throws Exception {

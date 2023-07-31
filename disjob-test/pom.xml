@@ -74,7 +74,14 @@
       <resource>
         <directory>../</directory>
         <includes>
-          <include>mysql-schema.sql</include>
+          <include>mysql-disjob.sql</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>../disjob-admin/</directory>
+        <includes>
+          <include>mysql-disjob_admin.sql</include>
         </includes>
         <filtering>false</filtering>
       </resource>

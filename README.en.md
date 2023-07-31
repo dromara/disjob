@@ -89,7 +89,7 @@ disjob                                                    # Main project
   - [main project](pom.xml)
   - [samples project](disjob-samples/pom.xml)
 
-2. Run the SQL script file[mysql-schema.sql](mysql-schema.sql) to create database table(Also can direct run [embed mysql-server](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
+2. Run the SQL script file[mysql-schema.sql](mysql-disjob.sql) to create database table(Also can direct run [embed mysql-server](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
 - [MacBook M1 error "Library not loaded" ref](disjob-test/src/main/DB/MariaDB/MariaDB.md)
 
 3. Modify configuration files such as [Mysql](disjob-samples/conf-supervisor/application-mysql.yml), [Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml), [Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml) and so on.
