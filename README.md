@@ -86,12 +86,14 @@ disjob                                                    # 主项目
 
 ## Quick Start
 
-1. IDE分别导入项目(分为两个独立的项目，共用一个`git`仓库)
+1. IDE分别导入项目(分为三个独立的项目，共用一个`git`仓库)
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
+  - [后台管理](disjob-admin/pom.xml)
 
-2. 运行仓库代码提供的SQL脚本[mysql-schema.sql](mysql-disjob.sql)创建数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化SQL脚本)
+2. 运行仓库代码提供的两个SQL脚本：[mysql-disjob.sql](mysql-disjob.sql)、[mysql-disjob_admin.sql](disjob-admin/mysql-disjob_admin.sql)创建两个数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化两个SQL脚本)
   - [MacOS报“Library not loaded”错误信息参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
+  - 内置mysql server无需用户名密码
 
 3. 在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中选择注册中心及任务分发的具体实现(默认redis注册中心、http任务分发)
   - 在pom中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}
@@ -101,7 +103,7 @@ disjob                                                    # 主项目
     - [内置nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)（依赖本地docker环境）
     - [内置etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)（依赖本地docker环境）
     - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
-    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)
+    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)，建议使用该工具类来启动本地mysql、redis
 
 4. 修改配置文件
   - 数据库配置：[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)
@@ -110,9 +112,7 @@ disjob                                                    # 主项目
   - 其它可按需配置(不配置则会使用默认值)：[supervisor](disjob-samples/conf-supervisor/)、[worker](disjob-samples/conf-worker/)、[web](disjob-samples/disjob-samples-common/src/main/resources)
   - 非Spring-boot的Worker应用配置文件：[worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
 
-5. 编写自己的任务处理器[PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java)，并继承[JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
-
-6. 启动[samples项目](disjob-samples)下的各应用，包括
+5. 启动[samples项目](disjob-samples)下的各应用，包括
   - [Supervisor与Worker合并部署的Spring boot应用](disjob-samples/disjob-samples-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
   - [Supervisor单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
   - [Worker单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
@@ -130,44 +130,21 @@ public class MergedApplication extends AbstractSamplesApplication {
 }
 ```
 
-7. 执行以下curl命令添加任务(任选一台运行中的Supervisor应用替换`localhost:8081`)
-  - `triggerValue`修改为大于当前时间的日期值以便即将触发(如当前时间点的下一分钟)
-  - `jobHandler`支持：类的全限定名、Spring bean name、DAG表达式、源码
+6. 修改后台管理disjob-admin的配置
+  - [pom.xml](disjob-admin/ruoyi-disjob/pom.xml)中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}，默认是redis注册、http分发
+  - [disjob mysql](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)配置
+  - [redis](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)配置
+  - [disjob_admin mysql](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)配置，使用的是druid数据源，修改master库的用户名密码即可
 
-```bash
-curl --location --request POST 'http://localhost:8081/api/job/add' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "jobGroup": "default",
-    "jobName": "prime-counter",
-    "jobHandler": "cn.ponfee.disjob.test.handler.PrimeCountJobHandler",
-    "jobState": 1,
-    "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
-    "triggerType": 2,
-    "triggerValue": "2022-10-06 12:00:00"
-}'
-```
 
-8. 查询库表验证任务是否添加成功，以及可查看任务的执行信息
+7. 启动disjob-admin
+  - [启动类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
+  - 启动成功浏览器访问[http://127.0.0.1:80/]()，输入用户名：admin，密码：admin123，登录系统
+  - 登录后在左侧菜单栏找到`调度管理`菜单，即可使用后台管理功能：
+    - 调度配置：查看、新增、修改等
+    - 调度实例：具体时间点执行的实例，一个实例对应多个task。有两个查询页面（鼠标向下滚动可看到第二个页面），第一个页面是只查询父实例并支持下钻，第二个页面查询所有实例
 
-```sql
--- 刚CURL添加的任务会落入该表中
-SELECT * FROM sched_job;
-
--- 查看任务的执行信息
-SELECT * from sched_instance;
-SELECT * from sched_task;
-
--- 可执行以下SQL让该Job再次触发执行
-UPDATE sched_job SET job_state=1, last_trigger_time=NULL, next_trigger_time=(unix_timestamp()*1000+2000) WHERE job_name='prime-counter';
-```
-
-- 也可执行以下CURL命令手动触发执行一次(任选一台运行中的Supervisor替换`localhost:8081`，jobId替换为待触发执行的job)
-
-```bash
-curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=1003164910267351004' \
---header 'Content-Type: application/json'
-```
+8. 提示：若使用内置的mysql、redis，所有配置都无需修改即可使用
 
 ## Contributing
 

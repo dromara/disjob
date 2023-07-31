@@ -273,8 +273,14 @@ public class JavaUtilDateFormat extends DateFormat {
 
     @Override @Deprecated
     public void setTimeZone(TimeZone zone) {
-        if (!Objects.equals(zone, super.getTimeZone())) {
-            throw new UnsupportedOperationException();
+        if (zone == null && super.getTimeZone() == null) {
+            return;
+        }
+        if (zone == null || super.getTimeZone() == null) {
+            throw new UnsupportedOperationException("JavaUtilDateFormat: invalid null time zone.");
+        }
+        if (zone.getRawOffset() != super.getTimeZone().getRawOffset()) {
+            throw new UnsupportedOperationException("JavaUtilDateFormat: Not a same time zone.");
         }
     }
 

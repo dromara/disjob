@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
+import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.ObjectUtils;
@@ -92,6 +93,12 @@ public @interface EnableWorker {
         @Bean
         public WorkerService workerService() {
             return new WorkerServiceProvider();
+        }
+
+        @ConditionalOnMissingBean
+        @Bean
+        public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {
+            return new LocalizedMethodArgumentConfigurer();
         }
 
         @ConditionalOnMissingBean

@@ -40,7 +40,7 @@ import at.pollux.thymeleaf.shiro.dialect.ShiroDialect;
 
 /**
  * 权限配置加载
- * 
+ *
  * @author ruoyi
  */
 @Configuration
@@ -288,6 +288,11 @@ public class ShiroConfig
         filterChainDefinitionMap.put("/js/**", "anon");
         filterChainDefinitionMap.put("/ruoyi/**", "anon");
         filterChainDefinitionMap.put("/captcha/captchaImage**", "anon");
+
+        // disjob服务间的PRC调用，后续给服务间颁发证书或密钥来解决安全问题
+        filterChainDefinitionMap.put("/supervisor/service/**", "anon");
+        filterChainDefinitionMap.put("/worker/service/**", "anon");
+
         // 退出 logout地址，shiro去清除session
         filterChainDefinitionMap.put("/logout", "logout");
         // 不需要拦截的访问

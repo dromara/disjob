@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.configuration;
 
 import cn.ponfee.disjob.common.lock.DoInDatabaseLocked;
 import cn.ponfee.disjob.common.lock.DoInLocked;
+import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
@@ -139,6 +140,12 @@ public @interface EnableSupervisor {
                 .build();
             WorkerService remoteWorkerService = DiscoveryRestProxy.create(true, WorkerService.class, discoveryRestTemplate);
             return new WorkerServiceClient(remoteWorkerService, currentWorker);
+        }
+
+        @ConditionalOnMissingBean
+        @Bean
+        public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {
+            return new LocalizedMethodArgumentConfigurer();
         }
 
         @ConditionalOnMissingBean
