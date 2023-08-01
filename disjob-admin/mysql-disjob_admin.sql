@@ -287,7 +287,7 @@ values('操作', @parentId, '2',  '#',  'F', '0', 'disjob:job:operate',       '#
 
 -- 调度实例菜单 SQL
 insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, update_by, update_time, remark)
-values('调度实例', '5', '1', '/disjob/instance', 'C', '0', 'disjob:instance:view', '#', 'admin', sysdate(), '', null, '调度实例菜单');
+values('调度实例', '5', '2', '/disjob/instance', 'C', '0', 'disjob:instance:view', '#', 'admin', sysdate(), '', null, '调度实例菜单');
 -- 调度实例菜单ID
 SELECT @parentId := LAST_INSERT_ID();
 -- 查询权限 SQL
