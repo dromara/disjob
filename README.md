@@ -10,7 +10,7 @@
 
 ## Introduction
 
-一个分布式的任务调度框架，除了具备常规的分布式任务调度功能外，还提供：任务拆分、暂停/取消运行中的任务、恢复执行被暂停的任务、失败重试、广播任务、任务依赖、工作流任务(DAG)、管理器与执行器分离部署等能力。
+一个分布式的任务调度框架，除了具备常规的分布式任务调度功能外，还提供：暂停/取消运行中的任务、恢复执行被暂停的任务、任务拆分、失败重试、广播任务、任务依赖、工作流任务(DAG)、管理器与执行器分离部署、Web管理后台等能力。
 
 轻量级，简单易用，特别适合长任务的执行。有较好的伸缩性、扩展性、稳定性，历经生产检验。
 
@@ -65,6 +65,7 @@ disjob                                                    # 主项目
 - 支持广播任务，广播任务会分发给job-group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
 - 支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A->B,C,(D->E)->D,F->G
+- 提供Web管理后台，通过界面进行作业配置，任务监控等
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 
@@ -91,9 +92,9 @@ disjob                                                    # 主项目
   - [samples项目](disjob-samples/pom.xml)
   - [后台管理](disjob-admin/pom.xml)
 
-2. 运行仓库代码提供的两个SQL脚本：[mysql-disjob.sql](mysql-disjob.sql)、[mysql-disjob_admin.sql](disjob-admin/mysql-disjob_admin.sql)创建两个数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化两个SQL脚本)
+2. 运行仓库提供的两个SQL脚本：[mysql-disjob.sql](mysql-disjob.sql)、[mysql-disjob_admin.sql](disjob-admin/mysql-disjob_admin.sql)创建两个数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化两个SQL脚本)
   - [MacOS报“Library not loaded”错误信息参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
-  - 内置mysql server无需用户名密码
+  - 内置的本地mysql server无需用户名密码即可使用
 
 3. 在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中选择注册中心及任务分发的具体实现(默认redis注册中心、http任务分发)
   - 在pom中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}
@@ -103,7 +104,7 @@ disjob                                                    # 主项目
     - [内置nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)（依赖本地docker环境）
     - [内置etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)（依赖本地docker环境）
     - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
-    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)，建议使用该工具类来启动本地mysql、redis
+    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)（建议使用该类来一次启动本地mysql与redis）
 
 4. 修改配置文件
   - 数据库配置：[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)
@@ -134,17 +135,16 @@ public class MergedApplication extends AbstractSamplesApplication {
   - [pom.xml](disjob-admin/ruoyi-disjob/pom.xml)中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}，默认是redis注册、http分发
   - [disjob mysql](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)配置
   - [redis](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)配置
-  - [disjob_admin mysql](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)配置，使用的是druid数据源，修改master库的用户名密码即可
-
+  - [disjob_admin mysql](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)配置（使用的是druid数据源）
 
 7. 启动disjob-admin
-  - [启动类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
-  - 启动成功浏览器访问[http://127.0.0.1:80/]()，输入用户名：admin，密码：admin123，登录系统
-  - 登录后在左侧菜单栏找到`调度管理`菜单，即可使用后台管理功能：
+  - [启动java类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
+  - 启动成功后浏览器访问 http://127.0.0.1:80/ 进入后台管理系统（用户名密码：admin/admin123）
+  - 登录后在左侧菜单栏找到`调度管理`菜单，即可使用后台管理功能
     - 调度配置：查看、新增、修改等
-    - 调度实例：具体时间点执行的实例，一个实例对应多个task。有两个查询页面（鼠标向下滚动可看到第二个页面），第一个页面是只查询父实例并支持下钻，第二个页面查询所有实例
+    - 调度实例：具体时间点的运行实例，一个实例有多个task。鼠标向下滚动可看到第二个分页，第一个分页查询root实例并支持下钻，第二个分页查询所有实例
 
-8. 提示：若使用内置的mysql、redis，所有配置都无需修改即可使用
+> **温馨提示：若使用内置的mysql、redis，以上所有配置都无需修改即可启动各应用**
 
 ## Contributing
 
