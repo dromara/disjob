@@ -67,8 +67,6 @@ disjob                                                    # Main project
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 
-> [Note](https://developer.aliyun.com/mvn/search): If it cannot download, please remove **aliyun maven central mirror** configuration from the maven `settings.xml` file.
-
 ```xml
 <dependency>
   <groupId>cn.ponfee</groupId>
