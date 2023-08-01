@@ -85,6 +85,8 @@ disjob                                                    # 主项目
 
 ## Quick Start
 
+0. 演示地址：http://ponfee.cn:8000/ ，用户名：`disjob`，密码：`disjob123`
+
 1. IDE分别导入项目(分为三个独立的项目，共用一个`git`仓库)
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
