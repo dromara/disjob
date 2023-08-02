@@ -164,6 +164,9 @@
           title: '操作',
           align: 'center',
           formatter: function (value, row, index) {
+            if (![[${@permission.isPermitted('disjob:job:operate')}]]) {
+              return '';
+            }
             var actions = [];
             if (row.jobState === 0) {
               actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i>删除</a> ");
