@@ -143,7 +143,7 @@
     },
     {
       field: 'runType',
-      title: '运行类型：',
+      title: '运行类型',
       formatter: function (value, row, index) {
         return $.table.selectData(runTypes, value, 'value', 'desc');
       }
@@ -201,7 +201,7 @@
     },
     {
       title: '操作',
-      align: 'right',
+      align: 'left',
       formatter: function (value, row, index) {
         var actions = [];
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {

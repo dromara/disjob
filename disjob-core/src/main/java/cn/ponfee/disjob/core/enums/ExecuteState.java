@@ -40,9 +40,9 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     PAUSED(30, RunState.PAUSED, "暂停执行"),
 
     /**
-     * 正常完成
+     * 执行完成
      */
-    FINISHED(40, RunState.FINISHED, "正常完成"),
+    FINISHED(40, RunState.FINISHED, "执行完成"),
 
     /**
      * 实例化失败取消

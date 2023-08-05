@@ -106,7 +106,7 @@ CREATE TABLE `sched_task` (
   `execute_start_time`  DATETIME(3)                        DEFAULT NULL                 COMMENT '执行开始时间',
   `execute_end_time`    DATETIME(3)                        DEFAULT NULL                 COMMENT '执行结束时间',
   `execute_duration`    BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '执行时长(毫秒)',
-  `execute_state`       TINYINT        UNSIGNED  NOT NULL                               COMMENT '执行状态：10-等待执行；20-正在执行；30-暂停执行；40-正常完成；50-实例化异常；51-校验失败；52-初始化异常；53-执行失败；54-执行异常；55-执行超时；56-执行冲突(sched_job.collided_strategy=3)；57-手动取消；58-广播未执行；',
+  `execute_state`       TINYINT        UNSIGNED  NOT NULL                               COMMENT '执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-实例化异常；51-校验失败；52-初始化异常；53-执行失败；54-执行异常；55-执行超时；56-执行冲突(sched_job.collided_strategy=3)；57-手动取消；58-广播未执行；',
   `execute_snapshot`    TEXT                               DEFAULT NULL                 COMMENT '保存的执行快照(状态)数据',
   `worker`              VARCHAR(255)                       DEFAULT NULL                 COMMENT '工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)',
   `error_msg`           VARCHAR(1024)                      DEFAULT NULL                 COMMENT '执行错误信息',
