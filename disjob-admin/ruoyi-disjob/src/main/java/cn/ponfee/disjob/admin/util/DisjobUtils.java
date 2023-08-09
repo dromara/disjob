@@ -14,6 +14,8 @@ import com.ruoyi.common.core.page.TableSupport;
 import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.utils.ServletUtils;
 
+import java.util.List;
+
 /**
  * Disjob Utils
  *
@@ -21,6 +23,13 @@ import com.ruoyi.common.utils.ServletUtils;
  */
 public class DisjobUtils {
 
+    /**
+     * 转为table结构
+     *
+     * @param page the page query result
+     * @return TableDataInfo
+     * @see com.ruoyi.common.core.controller.BaseController#getDataTable(List)
+     */
     public static TableDataInfo toTableDataInfo(PageResponse<?> page) {
         TableDataInfo rspData = new TableDataInfo();
         rspData.setCode(0);

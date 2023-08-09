@@ -85,12 +85,12 @@ disjob                                                    # 主项目
 
 ## Quick Start
 
-0. 演示地址：http://ponfee.cn:8000/ ，用户名：`disjob`，密码：`disjob123`
+0. 管理后台演示地址：http://ponfee.cn:8000/ ，用户名/密码：`disjob/disjob123`
 
 1. IDE分别导入项目(分为三个独立的项目，共用一个`git`仓库)
   - [主项目](pom.xml)
   - [samples项目](disjob-samples/pom.xml)
-  - [后台管理](disjob-admin/pom.xml)
+  - [管理后台](disjob-admin/pom.xml)
 
 2. 运行仓库提供的两个SQL脚本：[mysql-disjob.sql](mysql-disjob.sql)、[mysql-disjob_admin.sql](disjob-admin/mysql-disjob_admin.sql)创建两个数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化两个SQL脚本)
   - [MacOS报“Library not loaded”错误信息参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
@@ -131,7 +131,7 @@ public class MergedApplication extends AbstractSamplesApplication {
 }
 ```
 
-6. 修改后台管理disjob-admin的配置
+6. 修改管理后台disjob-admin的配置
   - [pom.xml](disjob-admin/ruoyi-disjob/pom.xml)中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}，默认是redis注册、http分发
   - [disjob mysql](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)配置
   - [redis](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)配置
@@ -144,7 +144,7 @@ public class MergedApplication extends AbstractSamplesApplication {
     - 调度配置：查看、新增、修改等
     - 调度实例：具体时间点的运行实例，一个实例有多个task。鼠标向下滚动可看到第二个分页，第一个分页查询root实例并支持下钻，第二个分页查询所有实例
 
-> **温馨提示：若使用内置的mysql、redis，以上所有配置都无需修改即可启动各应用**
+> **💡提示：若使用内置的mysql、redis，以上所有配置都无需修改即可启动各应用**
 
 ## Contributing
 

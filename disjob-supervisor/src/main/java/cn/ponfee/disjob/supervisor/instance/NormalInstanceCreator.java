@@ -14,7 +14,7 @@ import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import lombok.Getter;
 
 import java.util.Date;

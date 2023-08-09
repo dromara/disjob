@@ -50,7 +50,7 @@ public class EmbeddedMysqlServerTestcontainers {
             .withPassword("")
             .withDatabaseName("test")
             .withEnv("MYSQL_ROOT_HOST", "%")
-            //.withInitScript(DISJOB_SCRIPT_PATH)
+            //.withInitScript(DISJOB_SCRIPT_CLASSPATH)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
         ) {
             mySQLContainer.setPortBindings(PORT_BINDINGS);

@@ -19,7 +19,7 @@ import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;

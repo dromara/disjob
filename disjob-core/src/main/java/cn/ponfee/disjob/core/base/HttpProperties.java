@@ -17,7 +17,7 @@ import org.springframework.util.Assert;
 import java.io.Serializable;
 
 /**
- * Worker configuration properties.
+ * Http configuration properties.
  *
  * @author Ponfee
  */

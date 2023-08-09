@@ -9,7 +9,7 @@
 //package cn.ponfee.disjob.supervisor.config;
 //
 //import cn.ponfee.disjob.common.spring.SpringContextHolder;
-//import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
+//import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 //import lombok.extern.slf4j.Slf4j;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.stereotype.Component;

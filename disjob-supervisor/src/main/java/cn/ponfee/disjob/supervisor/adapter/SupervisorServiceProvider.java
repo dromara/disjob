@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.base;
+package cn.ponfee.disjob.supervisor.adapter;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.SupervisorService;
@@ -15,8 +15,8 @@ import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.StartTaskParam;
 import cn.ponfee.disjob.core.param.TaskWorkerParam;
 import cn.ponfee.disjob.core.param.TerminateTaskParam;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 
 import java.util.List;
 

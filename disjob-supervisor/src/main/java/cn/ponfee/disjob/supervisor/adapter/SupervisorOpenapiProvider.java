@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.base;
+package cn.ponfee.disjob.supervisor.adapter;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.spring.RpcController;
@@ -26,8 +26,8 @@ import cn.ponfee.disjob.core.openapi.supervisor.request.UpdateSchedJobRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.response.SchedInstanceResponse;
 import cn.ponfee.disjob.core.openapi.supervisor.response.SchedJobResponse;
 import cn.ponfee.disjob.core.openapi.supervisor.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +116,7 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
 
     @Override
     public void changeInstanceState(long instanceId, int targetExecuteState) {
-        // verify the state
+        // verify the execution state
         ExecuteState.of(targetExecuteState);
 
         LOG.info("Do force change state {} | {}", instanceId, targetExecuteState);

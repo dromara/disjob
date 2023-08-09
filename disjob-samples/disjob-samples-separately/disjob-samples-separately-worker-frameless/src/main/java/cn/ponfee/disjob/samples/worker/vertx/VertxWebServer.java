@@ -18,7 +18,7 @@ import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.samples.worker.util.JobHandlerHolder;
-import cn.ponfee.disjob.worker.base.WorkerServiceProvider;
+import cn.ponfee.disjob.worker.adapter.WorkerServiceProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;

@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.manager;
+package cn.ponfee.disjob.supervisor.service;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;

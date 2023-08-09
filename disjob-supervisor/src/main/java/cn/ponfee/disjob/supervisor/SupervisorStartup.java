@@ -15,7 +15,7 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.thread.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.thread.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.thread.WaitingInstanceScanner;

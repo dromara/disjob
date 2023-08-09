@@ -16,7 +16,7 @@ import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.supervisor.manager.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Date;
