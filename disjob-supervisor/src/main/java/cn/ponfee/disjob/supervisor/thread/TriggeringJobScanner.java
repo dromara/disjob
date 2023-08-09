@@ -20,6 +20,7 @@ import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
@@ -51,16 +52,19 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private final DoInLocked doInLocked;
     private final DistributedJobManager jobManager;
+    private final DistributedJobQuerier jobQuerier;
     private final long afterMilliseconds;
     private final ExecutorService processJobExecutor;
 
     public TriggeringJobScanner(long heartbeatPeriodMilliseconds,
                                 int processJobMaximumPoolSize,
                                 DoInLocked doInLocked,
-                                DistributedJobManager jobManager) {
+                                DistributedJobManager jobManager,
+                                DistributedJobQuerier jobQuerier) {
         super(heartbeatPeriodMilliseconds);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
+        this.jobQuerier = jobQuerier;
         this.afterMilliseconds = (heartbeatPeriodMs * 3); // 3s * 3 = 9s
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
@@ -82,7 +86,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         Boolean result = doInLocked.action(() -> {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterMilliseconds;
-            List<SchedJob> jobs = jobManager.findBeTriggeringJob(maxNextTriggerTime, PROCESS_BATCH_SIZE);
+            List<SchedJob> jobs = jobQuerier.findBeTriggeringJob(maxNextTriggerTime, PROCESS_BATCH_SIZE);
             if (CollectionUtils.isEmpty(jobs)) {
                 return true;
             }
@@ -192,7 +196,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         }
 
-        SchedInstance lastInstance = jobManager.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
+        SchedInstance lastInstance = jobQuerier.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
         if (lastInstance == null) {
             return false;
         }
@@ -206,7 +210,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             case PAUSED:
                 return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
             case RUNNING:
-                List<SchedTask> tasks = jobManager.findBaseInstanceTasks(instanceId);
+                List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(instanceId);
                 if (jobManager.hasAliveExecuting(tasks)) {
                     return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
                 } else {
@@ -216,7 +220,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                     return false;
                 }
             case CANCELED:
-                List<SchedInstance> list = jobManager.findUnterminatedRetryInstance(instanceId);
+                List<SchedInstance> list = jobQuerier.findUnterminatedRetryInstance(instanceId);
                 if (CollectionUtils.isEmpty(list)) {
                     return false;
                 } else {

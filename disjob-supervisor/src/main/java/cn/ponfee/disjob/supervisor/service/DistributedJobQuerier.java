@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.service;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;
+import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -25,6 +26,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,13 +43,51 @@ public class DistributedJobQuerier {
     private final SchedTaskMapper taskMapper;
     private final SchedInstanceMapper instanceMapper;
 
-
     public DistributedJobQuerier(SchedJobMapper jobMapper,
                                  SchedTaskMapper taskMapper,
                                  SchedInstanceMapper instanceMapper) {
         this.jobMapper = jobMapper;
         this.taskMapper = taskMapper;
         this.instanceMapper = instanceMapper;
+    }
+
+    public SchedJob getJob(long jobId) {
+        return jobMapper.getByJobId(jobId);
+    }
+
+    public SchedInstance getInstance(long instanceId) {
+        return instanceMapper.getByInstanceId(instanceId);
+    }
+
+    public SchedInstance getInstance(long jobId, long triggerTime, int runType) {
+        return instanceMapper.getByJobIdAndTriggerTimeAndRunType(jobId, triggerTime, runType);
+    }
+
+    /**
+     * Scan will be triggering sched jobs.
+     *
+     * @param maxNextTriggerTime the maxNextTriggerTime
+     * @param size               the query data size
+     * @return will be triggering sched jobs
+     */
+    public List<SchedJob> findBeTriggeringJob(long maxNextTriggerTime, int size) {
+        return jobMapper.findBeTriggering(maxNextTriggerTime, size);
+    }
+
+    public List<SchedInstance> findExpireWaitingInstance(Date expireTime, int size) {
+        return instanceMapper.findExpireState(RunState.WAITING.value(), expireTime.getTime(), expireTime, size);
+    }
+
+    public List<SchedInstance> findExpireRunningInstance(Date expireTime, int size) {
+        return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime.getTime(), expireTime, size);
+    }
+
+    public List<SchedInstance> findUnterminatedRetryInstance(long rnstanceId) {
+        return instanceMapper.findUnterminatedRetry(rnstanceId);
+    }
+
+    public List<SchedTask> findBaseInstanceTasks(long instanceId) {
+        return taskMapper.findBaseByInstanceId(instanceId);
     }
 
     public SchedTask getTask(long taskId) {

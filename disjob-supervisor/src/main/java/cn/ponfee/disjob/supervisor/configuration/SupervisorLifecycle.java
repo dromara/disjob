@@ -14,6 +14,7 @@ import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,6 +44,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
                                SupervisorProperties supervisorProperties,
                                SupervisorRegistry supervisorRegistry,
                                DistributedJobManager distributedJobManager,
+                               DistributedJobQuerier distributedJobQuerier,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) DoInLocked scanTriggeringJobLocker,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) DoInLocked scanWaitingInstanceLocker,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) DoInLocked scanRunningInstanceLocker,
@@ -52,6 +54,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
             .supervisorProperties(supervisorProperties)
             .supervisorRegistry(supervisorRegistry)
             .distributedJobManager(distributedJobManager)
+            .distributedJobQuerier(distributedJobQuerier)
             .scanTriggeringJobLocker(scanTriggeringJobLocker)
             .scanWaitingInstanceLocker(scanWaitingInstanceLocker)
             .scanRunningInstanceLocker(scanRunningInstanceLocker)

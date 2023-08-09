@@ -137,47 +137,6 @@ public class DistributedJobManager extends AbstractJobManager {
         this.workflowMapper = workflowMapper;
     }
 
-    // ------------------------------------------------------------------database query
-
-    public SchedJob getJob(long jobId) {
-        return jobMapper.getByJobId(jobId);
-    }
-
-    public SchedInstance getInstance(long instanceId) {
-        return instanceMapper.getByInstanceId(instanceId);
-    }
-
-    public SchedInstance getInstance(long jobId, long triggerTime, int runType) {
-        return instanceMapper.getByJobIdAndTriggerTimeAndRunType(jobId, triggerTime, runType);
-    }
-
-    /**
-     * Scan will be triggering sched jobs.
-     *
-     * @param maxNextTriggerTime the maxNextTriggerTime
-     * @param size               the query data size
-     * @return will be triggering sched jobs
-     */
-    public List<SchedJob> findBeTriggeringJob(long maxNextTriggerTime, int size) {
-        return jobMapper.findBeTriggering(maxNextTriggerTime, size);
-    }
-
-    public List<SchedInstance> findExpireWaitingInstance(Date expireTime, int size) {
-        return instanceMapper.findExpireState(RunState.WAITING.value(), expireTime.getTime(), expireTime, size);
-    }
-
-    public List<SchedInstance> findExpireRunningInstance(Date expireTime, int size) {
-        return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime.getTime(), expireTime, size);
-    }
-
-    public List<SchedInstance> findUnterminatedRetryInstance(long rnstanceId) {
-        return instanceMapper.findUnterminatedRetry(rnstanceId);
-    }
-
-    public List<SchedTask> findBaseInstanceTasks(long instanceId) {
-        return taskMapper.findBaseByInstanceId(instanceId);
-    }
-
     // ------------------------------------------------------------------database single operation without transactional
 
     public boolean stopJob(SchedJob job) {

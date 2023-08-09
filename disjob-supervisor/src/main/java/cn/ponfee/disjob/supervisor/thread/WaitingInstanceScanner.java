@@ -17,6 +17,7 @@ import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Date;
@@ -33,14 +34,17 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private final DoInLocked doInLocked;
     private final DistributedJobManager jobManager;
+    private final DistributedJobQuerier jobQuerier;
     private final long beforeMilliseconds;
 
     public WaitingInstanceScanner(long heartbeatPeriodMilliseconds,
                                   DoInLocked doInLocked,
-                                  DistributedJobManager jobManager) {
+                                  DistributedJobManager jobManager,
+                                  DistributedJobQuerier jobQuerier) {
         super(heartbeatPeriodMilliseconds);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
+        this.jobQuerier = jobQuerier;
         this.beforeMilliseconds = (heartbeatPeriodMs << 3); // 15s * 8 = 120s
     }
 
@@ -59,7 +63,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private boolean process() {
         Date now = new Date(), expireTime = new Date(now.getTime() - beforeMilliseconds);
-        List<SchedInstance> instances = jobManager.findExpireWaitingInstance(expireTime, PROCESS_BATCH_SIZE);
+        List<SchedInstance> instances = jobQuerier.findExpireWaitingInstance(expireTime, PROCESS_BATCH_SIZE);
         if (CollectionUtils.isEmpty(instances)) {
             return true;
         }
@@ -75,7 +79,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             return;
         }
 
-        List<SchedTask> tasks = jobManager.findBaseInstanceTasks(instance.getInstanceId());
+        List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(instance.getInstanceId());
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
@@ -86,7 +90,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             if (CollectionUtils.isEmpty(redispatchingTasks)) {
                 return;
             }
-            SchedJob schedJob = jobManager.getJob(instance.getJobId());
+            SchedJob schedJob = jobQuerier.getJob(instance.getJobId());
             if (schedJob == null) {
                 log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
                 return;
@@ -104,7 +108,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
             if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
                 // double check instance run state
-                SchedInstance reloadInstance = jobManager.getInstance(instance.getInstanceId());
+                SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
                 if (reloadInstance == null) {
                     log.error("Scanned waiting state instance not exists: {}", instance.getInstanceId());
                     return;

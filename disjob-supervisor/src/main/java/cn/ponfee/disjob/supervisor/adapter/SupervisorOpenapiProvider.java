@@ -85,7 +85,7 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
 
     @Override
     public SchedJobResponse getJob(long jobId) {
-        SchedJob schedJob = jobManager.getJob(jobId);
+        SchedJob schedJob = jobQuerier.getJob(jobId);
         return SchedJobConverter.INSTANCE.convert(schedJob);
     }
 
@@ -131,7 +131,7 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
 
     @Override
     public SchedInstanceResponse getInstance(long instanceId) {
-        SchedInstance instance = jobManager.getInstance(instanceId);
+        SchedInstance instance = jobQuerier.getInstance(instanceId);
         if (instance == null) {
             return null;
         }

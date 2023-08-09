@@ -16,6 +16,7 @@ import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.thread.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.thread.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.thread.WaitingInstanceScanner;
@@ -47,6 +48,7 @@ public class SupervisorStartup implements Startable {
                               SupervisorProperties supervisorProperties,
                               SupervisorRegistry supervisorRegistry,
                               DistributedJobManager distributedJobManager,
+                              DistributedJobQuerier distributedJobQuerier,
                               DoInLocked scanTriggeringJobLocker,
                               DoInLocked scanWaitingInstanceLocker,
                               DoInLocked scanRunningInstanceLocker,
@@ -66,17 +68,20 @@ public class SupervisorStartup implements Startable {
             supervisorProperties.getScanTriggeringJobPeriodMs(),
             supervisorProperties.getProcessJobMaximumPoolSize(),
             scanTriggeringJobLocker,
-            distributedJobManager
+            distributedJobManager,
+            distributedJobQuerier
         );
         this.waitingInstanceScanner = new WaitingInstanceScanner(
             supervisorProperties.getScanWaitingInstancePeriodMs(),
             scanWaitingInstanceLocker,
-            distributedJobManager
+            distributedJobManager,
+            distributedJobQuerier
         );
         this.runningInstanceScanner = new RunningInstanceScanner(
             supervisorProperties.getScanRunningInstancePeriodMs(),
             scanRunningInstanceLocker,
-            distributedJobManager
+            distributedJobManager,
+            distributedJobQuerier
         );
         this.taskDispatcher = taskDispatcher;
     }
@@ -120,6 +125,7 @@ public class SupervisorStartup implements Startable {
         private SupervisorProperties supervisorProperties;
         private SupervisorRegistry supervisorRegistry;
         private DistributedJobManager distributedJobManager;
+        private DistributedJobQuerier distributedJobQuerier;
         private DoInLocked scanTriggeringJobLocker;
         private DoInLocked scanWaitingInstanceLocker;
         private DoInLocked scanRunningInstanceLocker;
@@ -145,6 +151,11 @@ public class SupervisorStartup implements Startable {
 
         public Builder distributedJobManager(DistributedJobManager distributedJobManager) {
             this.distributedJobManager = distributedJobManager;
+            return this;
+        }
+
+        public Builder distributedJobQuerier(DistributedJobQuerier distributedJobQuerier) {
+            this.distributedJobQuerier = distributedJobQuerier;
             return this;
         }
 
@@ -174,6 +185,7 @@ public class SupervisorStartup implements Startable {
                 supervisorProperties,
                 supervisorRegistry,
                 distributedJobManager,
+                distributedJobQuerier,
                 scanTriggeringJobLocker,
                 scanWaitingInstanceLocker,
                 scanRunningInstanceLocker,
