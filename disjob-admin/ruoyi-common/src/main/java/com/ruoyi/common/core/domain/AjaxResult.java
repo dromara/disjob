@@ -1,8 +1,9 @@
 package com.ruoyi.common.core.domain;
 
+import com.ruoyi.common.utils.StringUtils;
+
 import java.util.HashMap;
 import java.util.Objects;
-import com.ruoyi.common.utils.StringUtils;
 
 /**
  * 操作消息提醒

@@ -1,8 +1,8 @@
 package com.ruoyi.common.utils.security;
 
+import javax.crypto.KeyGenerator;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import javax.crypto.KeyGenerator;
 
 /**
  * 对称密钥密码算法工具类

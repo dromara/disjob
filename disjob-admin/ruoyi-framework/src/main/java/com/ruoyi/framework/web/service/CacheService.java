@@ -1,14 +1,15 @@
 package com.ruoyi.framework.web.service;
 
-import java.util.Set;
-import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.stereotype.Service;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.utils.CacheUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 /**
  * 缓存操作处理
- * 
+ *
  * @author ruoyi
  */
 @Service
@@ -16,7 +17,7 @@ public class CacheService
 {
     /**
      * 获取所有缓存名称
-     * 
+     *
      * @return 缓存列表
      */
     public String[] getCacheNames()
@@ -27,7 +28,7 @@ public class CacheService
 
     /**
      * 根据缓存名称获取所有键名
-     * 
+     *
      * @param cacheName 缓存名称
      * @return 键名列表
      */
@@ -38,7 +39,7 @@ public class CacheService
 
     /**
      * 根据缓存名称和键名获取内容值
-     * 
+     *
      * @param cacheName 缓存名称
      * @param cacheKey 键名
      * @return 键值
@@ -50,7 +51,7 @@ public class CacheService
 
     /**
      * 根据名称删除缓存信息
-     * 
+     *
      * @param cacheName 缓存名称
      */
     public void clearCacheName(String cacheName)
@@ -60,7 +61,7 @@ public class CacheService
 
     /**
      * 根据名称和键名删除缓存信息
-     * 
+     *
      * @param cacheName 缓存名称
      * @param cacheKey 键名
      */

@@ -1,16 +1,5 @@
 package com.ruoyi.system.service.impl;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.domain.Ztree;
 import com.ruoyi.common.core.domain.entity.SysMenu;
@@ -20,10 +9,15 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.mapper.SysMenuMapper;
 import com.ruoyi.system.mapper.SysRoleMenuMapper;
 import com.ruoyi.system.service.ISysMenuService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * 菜单 业务层处理
- * 
+ *
  * @author ruoyi
  */
 @Service
@@ -39,7 +33,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 根据用户查询菜单
-     * 
+     *
      * @param user 用户信息
      * @return 菜单列表
      */
@@ -61,7 +55,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 查询菜单集合
-     * 
+     *
      * @return 所有菜单信息
      */
     @Override
@@ -82,7 +76,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 查询菜单集合
-     * 
+     *
      * @return 所有菜单信息
      */
     @Override
@@ -102,7 +96,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 根据用户ID查询权限
-     * 
+     *
      * @param userId 用户ID
      * @return 权限列表
      */
@@ -123,7 +117,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 根据角色ID查询权限
-     * 
+     *
      * @param roleId 角色ID
      * @return 权限列表
      */
@@ -144,7 +138,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 根据角色ID查询菜单
-     * 
+     *
      * @param role 角色对象
      * @return 菜单列表
      */
@@ -168,7 +162,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 查询所有菜单
-     * 
+     *
      * @return 菜单列表
      */
     @Override
@@ -181,7 +175,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 查询系统所有权限
-     * 
+     *
      * @return 权限列表
      */
     @Override
@@ -201,7 +195,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 对象转菜单树
-     * 
+     *
      * @param menuList 菜单列表
      * @return 树结构列表
      */
@@ -212,7 +206,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 对象转菜单树
-     * 
+     *
      * @param menuList 菜单列表
      * @param roleMenuList 角色已存在菜单列表
      * @param permsFlag 是否需要显示权限标识
@@ -251,7 +245,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 删除菜单管理信息
-     * 
+     *
      * @param menuId 菜单ID
      * @return 结果
      */
@@ -263,7 +257,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 根据菜单ID查询信息
-     * 
+     *
      * @param menuId 菜单ID
      * @return 菜单信息
      */
@@ -275,7 +269,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 查询子菜单数量
-     * 
+     *
      * @param parentId 父级菜单ID
      * @return 结果
      */
@@ -287,7 +281,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 查询菜单使用数量
-     * 
+     *
      * @param menuId 菜单ID
      * @return 结果
      */
@@ -299,7 +293,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 新增保存菜单信息
-     * 
+     *
      * @param menu 菜单信息
      * @return 结果
      */
@@ -311,7 +305,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 修改保存菜单信息
-     * 
+     *
      * @param menu 菜单信息
      * @return 结果
      */
@@ -323,7 +317,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 校验菜单名称是否唯一
-     * 
+     *
      * @param menu 菜单信息
      * @return 结果
      */
@@ -341,7 +335,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 根据父节点的ID获取所有子节点
-     * 
+     *
      * @param list 分类表
      * @param parentId 传入的父节点ID
      * @return String
@@ -351,7 +345,7 @@ public class SysMenuServiceImpl implements ISysMenuService
         List<SysMenu> returnList = new ArrayList<SysMenu>();
         for (Iterator<SysMenu> iterator = list.iterator(); iterator.hasNext();)
         {
-            SysMenu t = (SysMenu) iterator.next();
+            SysMenu t = iterator.next();
             // 一、根据传入的某个父节点ID,遍历该父节点的所有子节点
             if (t.getParentId() == parentId)
             {
@@ -364,7 +358,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     /**
      * 递归列表
-     * 
+     *
      * @param list
      * @param t
      */
@@ -391,7 +385,7 @@ public class SysMenuServiceImpl implements ISysMenuService
         Iterator<SysMenu> it = list.iterator();
         while (it.hasNext())
         {
-            SysMenu n = (SysMenu) it.next();
+            SysMenu n = it.next();
             if (n.getParentId().longValue() == t.getMenuId().longValue())
             {
                 tlist.add(n);

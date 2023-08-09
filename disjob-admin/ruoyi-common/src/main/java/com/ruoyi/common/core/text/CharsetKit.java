@@ -1,12 +1,13 @@
 package com.ruoyi.common.core.text;
 
+import com.ruoyi.common.utils.StringUtils;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import com.ruoyi.common.utils.StringUtils;
 
 /**
  * 字符集工具类
- * 
+ *
  * @author ruoyi
  */
 public class CharsetKit
@@ -19,15 +20,15 @@ public class CharsetKit
     public static final String GBK = "GBK";
 
     /** ISO-8859-1 */
-    public static final Charset CHARSET_ISO_8859_1 = Charset.forName(ISO_8859_1);
+    public static final Charset CHARSET_ISO_8859_1 = StandardCharsets.ISO_8859_1;
     /** UTF-8 */
-    public static final Charset CHARSET_UTF_8 = Charset.forName(UTF_8);
+    public static final Charset CHARSET_UTF_8 = StandardCharsets.UTF_8;
     /** GBK */
     public static final Charset CHARSET_GBK = Charset.forName(GBK);
 
     /**
      * 转换为Charset对象
-     * 
+     *
      * @param charset 字符集，为空则返回默认字符集
      * @return Charset
      */
@@ -38,7 +39,7 @@ public class CharsetKit
 
     /**
      * 转换字符串的字符集编码
-     * 
+     *
      * @param source 字符串
      * @param srcCharset 源字符集，默认ISO-8859-1
      * @param destCharset 目标字符集，默认UTF-8
@@ -51,7 +52,7 @@ public class CharsetKit
 
     /**
      * 转换字符串的字符集编码
-     * 
+     *
      * @param source 字符串
      * @param srcCharset 源字符集，默认ISO-8859-1
      * @param destCharset 目标字符集，默认UTF-8

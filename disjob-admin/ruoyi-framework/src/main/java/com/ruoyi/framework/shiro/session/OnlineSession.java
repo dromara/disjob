@@ -1,13 +1,13 @@
 package com.ruoyi.framework.shiro.session;
 
+import com.ruoyi.common.enums.OnlineStatus;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.shiro.session.mgt.SimpleSession;
-import com.ruoyi.common.enums.OnlineStatus;
 
 /**
  * 在线用户会话属性
- * 
+ *
  * @author ruoyi
  */
 public class OnlineSession extends SimpleSession
@@ -22,7 +22,7 @@ public class OnlineSession extends SimpleSession
 
     /** 部门名称 */
     private String deptName;
-	
+
 	/** 用户头像 */
 	private String avatar;
 
@@ -135,7 +135,7 @@ public class OnlineSession extends SimpleSession
 	public void setAvatar(String avatar) {
 		this.avatar = avatar;
 	}
-	
+
     @Override
     public void setAttribute(Object key, Object value)
     {

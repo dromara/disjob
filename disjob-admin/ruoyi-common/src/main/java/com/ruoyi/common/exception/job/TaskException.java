@@ -2,14 +2,14 @@ package com.ruoyi.common.exception.job;
 
 /**
  * 计划策略异常
- * 
+ *
  * @author ruoyi
  */
 public class TaskException extends Exception
 {
     private static final long serialVersionUID = 1L;
 
-    private Code code;
+    private final Code code;
 
     public TaskException(String msg, Code code)
     {

@@ -5018,7 +5018,7 @@ var Table_Table = /*#__PURE__*/function () {
 
           case TableResultAction.resultAction.RemoveCell:
             // Do not need remove cell because row will be deleted.
-            continue;
+
         }
       }
 
@@ -5077,7 +5077,7 @@ var Table_Table = /*#__PURE__*/function () {
 
           case TableResultAction.resultAction.RemoveCell:
             dom.remove(actions[actionIndex].baseCell, true);
-            continue;
+
         }
       }
     }

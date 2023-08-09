@@ -2,7 +2,7 @@ package com.ruoyi.common.constant;
 
 /**
  * 任务调度通用常量
- * 
+ *
  * @author ruoyi
  */
 public class ScheduleConstants
@@ -35,9 +35,9 @@ public class ScheduleConstants
          */
         PAUSE("1");
 
-        private String value;
+        private final String value;
 
-        private Status(String value)
+        Status(String value)
         {
             this.value = value;
         }

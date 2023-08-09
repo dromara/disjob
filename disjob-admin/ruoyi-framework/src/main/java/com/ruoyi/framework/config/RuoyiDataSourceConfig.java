@@ -8,8 +8,6 @@ import com.ruoyi.common.enums.DataSourceType;
 import com.ruoyi.common.utils.MybatisUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.config.properties.DruidProperties;
-import static com.ruoyi.framework.config.properties.DruidProperties.DRUID_PREFIX_KEY;
-
 import com.ruoyi.framework.config.properties.SimpleJdbcProperties;
 import com.ruoyi.framework.datasource.DynamicDataSource;
 import org.apache.ibatis.io.VFS;
@@ -35,6 +33,8 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.ruoyi.framework.config.properties.DruidProperties.DRUID_PREFIX_KEY;
 
 /**
  * druid 配置多数据源

@@ -1,20 +1,21 @@
 package com.ruoyi.system.domain;
 
-import java.util.Date;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.enums.OnlineStatus;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.util.Date;
 
 /**
  * 当前在线会话 sys_user_online
- * 
+ *
  * @author ruoyi
  */
 public class SysUserOnline extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
-    
+
     /** 用户会话id */
     private String sessionId;
 
@@ -157,7 +158,7 @@ public class SysUserOnline extends BaseEntity
     {
         this.status = status;
     }
-    
+
 	@Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

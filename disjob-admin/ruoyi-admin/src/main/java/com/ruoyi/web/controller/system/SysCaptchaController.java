@@ -1,24 +1,25 @@
 package com.ruoyi.web.controller.system;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import com.google.code.kaptcha.Constants;
+import com.google.code.kaptcha.Producer;
+import com.ruoyi.common.core.controller.BaseController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
-import com.google.code.kaptcha.Constants;
-import com.google.code.kaptcha.Producer;
-import com.ruoyi.common.core.controller.BaseController;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 /**
  * 图片验证码（支持算术形式）
- * 
+ *
  * @author ruoyi
  */
 @Controller

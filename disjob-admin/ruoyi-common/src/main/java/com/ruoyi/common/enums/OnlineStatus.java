@@ -2,7 +2,7 @@ package com.ruoyi.common.enums;
 
 /**
  * 用户会话
- * 
+ *
  * @author ruoyi
  */
 public enum OnlineStatus
@@ -12,7 +12,7 @@ public enum OnlineStatus
 
     private final String info;
 
-    private OnlineStatus(String info)
+    OnlineStatus(String info)
     {
         this.info = info;
     }

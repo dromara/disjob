@@ -1,17 +1,18 @@
 package com.ruoyi.framework.shiro.web.filter.captcha;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.shiro.web.filter.AccessControlFilter;
 import com.google.code.kaptcha.Constants;
 import com.ruoyi.common.constant.ShiroConstants;
 import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
+import org.apache.shiro.web.filter.AccessControlFilter;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 验证码过滤器
- * 
+ *
  * @author ruoyi
  */
 public class CaptchaValidateFilter extends AccessControlFilter
@@ -50,7 +51,7 @@ public class CaptchaValidateFilter extends AccessControlFilter
     {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         // 验证码禁用 或不是表单提交 允许访问
-        if (captchaEnabled == false || !"post".equals(httpServletRequest.getMethod().toLowerCase()))
+        if (captchaEnabled == false || !"post".equalsIgnoreCase(httpServletRequest.getMethod()))
         {
             return true;
         }
@@ -63,11 +64,7 @@ public class CaptchaValidateFilter extends AccessControlFilter
         String code = String.valueOf(obj != null ? obj : "");
         // 验证码清除，防止多次使用。
         request.getSession().removeAttribute(Constants.KAPTCHA_SESSION_KEY);
-        if (StringUtils.isEmpty(validateCode) || !validateCode.equalsIgnoreCase(code))
-        {
-            return false;
-        }
-        return true;
+        return !StringUtils.isEmpty(validateCode) && validateCode.equalsIgnoreCase(code);
     }
 
     @Override

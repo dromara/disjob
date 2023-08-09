@@ -1,24 +1,25 @@
 package com.ruoyi.system.service.impl;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Deque;
-import java.util.List;
+import com.ruoyi.common.constant.ShiroConstants;
+import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.spring.SpringUtils;
+import com.ruoyi.system.domain.SysUserOnline;
+import com.ruoyi.system.mapper.SysUserOnlineMapper;
+import com.ruoyi.system.service.ISysUserOnlineService;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.common.constant.ShiroConstants;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.system.domain.SysUserOnline;
-import com.ruoyi.system.mapper.SysUserOnlineMapper;
-import com.ruoyi.system.service.ISysUserOnlineService;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Deque;
+import java.util.List;
 
 /**
  * 在线用户 服务层处理
- * 
+ *
  * @author ruoyi
  */
 @Service
@@ -29,7 +30,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 通过会话序号查询信息
-     * 
+     *
      * @param sessionId 会话ID
      * @return 在线用户信息
      */
@@ -41,7 +42,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 通过会话序号删除信息
-     * 
+     *
      * @param sessionId 会话ID
      * @return 在线用户信息
      */
@@ -57,7 +58,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 通过会话序号删除信息
-     * 
+     *
      * @param sessions 会话ID集合
      * @return 在线用户信息
      */
@@ -76,7 +77,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 保存会话信息
-     * 
+     *
      * @param online 会话信息
      */
     @Override
@@ -87,7 +88,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 查询会话集合
-     * 
+     *
      * @param userOnline 在线用户
      */
     @Override
@@ -98,7 +99,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 强退用户
-     * 
+     *
      * @param sessionId 会话ID
      */
     @Override
@@ -109,7 +110,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 清理用户缓存
-     * 
+     *
      * @param loginName 登录名称
      * @param sessionId 会话ID
      */
@@ -128,7 +129,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 
     /**
      * 查询会话集合
-     * 
+     *
      * @param expiredDate 失效日期
      */
     @Override
