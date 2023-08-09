@@ -184,7 +184,7 @@
 		.unbind(c.COLLAPSE)
 		.unbind(c.ASYNC_SUCCESS)
 		.unbind(c.ASYNC_ERROR);
-	},	
+	},
 	//default event proxy of core
 	_eventProxy = function(event) {
 		var target = event.target,
@@ -230,7 +230,7 @@
 				case "switchNode" :
 					if (!node.isParent) {
 						nodeEventType = "";
-					} else if (tools.eqs(event.type, "click") 
+					} else if (tools.eqs(event.type, "click")
 						|| (tools.eqs(event.type, "dblclick") && tools.apply(setting.view.dblClickExpand, [setting.treeId, node], setting.view.dblClickExpand))) {
 						nodeEventCallback = handler.onSwitchNode;
 					} else {
@@ -827,7 +827,6 @@
 					childHtml = view.appendNodes(setting, level + 1, node[childKey], node, initFlag, openFlag && node.open);
 				}
 				if (openFlag) {
-					
 					view.makeDOMNodeMainBefore(html, setting, node);
 					view.makeDOMNodeLine(html, setting, node);
 					data.getBeforeA(setting, node, html);
@@ -1239,7 +1238,7 @@
 			if (!data.getNodeCache(setting, node.tId)) {
 				return;
 			}
-                        
+
 			$("#" + node.tId).remove();
 			data.removeNodeCache(setting, node);
 			data.removeSelectedNode(setting, node);
@@ -1252,7 +1251,7 @@
 			}
 			view.setFirstNode(setting, parentNode);
 			view.setLastNode(setting, parentNode);
-                                                
+
 			var tmp_ulObj,tmp_switchObj,tmp_icoObj,
 			childLength = parentNode[childKey].length;
 
@@ -1397,7 +1396,6 @@
 			} else if (setting.async.enable) {
 				if (!view.asyncNode(setting, node)) {
 					view.expandCollapseNode(setting, node, !node.open);
-					return;
 				}
 			} else if (node) {
 				view.expandCollapseNode(setting, node, !node.open);
@@ -1452,7 +1450,7 @@
 			event.bindTree(setting);
 			event.unbindEvent(setting);
 			event.bindEvent(setting);
-			
+
 			var zTreeTools = {
 				setting : setting,
 				addNodes : function(parentNode, newNodes, isSilent) {
@@ -1500,7 +1498,7 @@
 					if (expandFlag === node.open && !sonSign) {
 						return null;
 					}
-					
+
 					data.getRoot(setting).expandTriggerFlag = callbackFlag;
 					if (sonSign) {
 						view.expandCollapseSonNode(this.setting, node, expandFlag, true, function() {
@@ -1816,7 +1814,7 @@
 				checked = !node[checkedKey];
 			}
 			callbackFlag = !!callbackFlag;
-			
+
 			if (node[checkedKey] === checked && !checkTypeFlag) {
 				return;
 			} else if (callbackFlag && tools.apply(this.setting.callback.beforeCheck, [this.setting.treeId, node], true) == false) {
@@ -2200,7 +2198,7 @@
 					if (sNode.chkDisabled === true) hasDisable = true;
 				}
 			}
-			
+
 			if (node != data.getRoot(setting) && node.chkDisabled !== true) {
 				if (hasDisable && node.nocheck !== true) {
 					data.makeChkFlag(setting, node);
@@ -2356,7 +2354,7 @@
 		r.curHoverNode = null;
 		r.dragFlag = 0;
 		r.dragNodeShowBefore = [];
-		r.dragMaskList = new Array();
+		r.dragMaskList = [];
 		r.showHoverDom = true;
 	},
 	//default cache of exedit
@@ -2573,7 +2571,6 @@
 
 			view.editNodeBlur = true;
 			view.cancelCurEditNode(setting, null, true);
-			
 
 			var doc = $(document), curNode, tmpArrow, tmpTarget,
 			isOtherTree = false,
@@ -2917,9 +2914,9 @@
 					var dragTargetNode = tmpTargetNodeId == null ? null: data.getNodeCache(targetSetting, tmpTargetNodeId);
 					if (tools.apply(setting.callback.beforeDrop, [targetSetting.treeId, nodes, dragTargetNode, moveType, isCopy], true) == false) return;
 					var newNodes = isCopy ? tools.clone(nodes) : nodes;
-					
+
 					function dropCallback() {
-						if (isOtherTree) {							
+						if (isOtherTree) {
 							if (!isCopy) {
 								for(var i=0, l=nodes.length; i<l; i++) {
 									view.removeNode(setting, nodes[i]);
@@ -3101,7 +3098,7 @@
 			var root = data.getRoot(setting),
 			nameKey = setting.data.key.name,
 			node = root.curEditNode;
-			
+
 			if (node) {
 				var inputObj = root.curEditInput;
 				var newName = forceName ? forceName:inputObj.val();
@@ -3182,7 +3179,7 @@
 			if (moveType != consts.move.TYPE_PREV && moveType != consts.move.TYPE_NEXT) {
 				moveType = consts.move.TYPE_INNER;
 			}
-			
+
 			if (moveType == consts.move.TYPE_INNER) {
 				if (targetNodeIsRoot) {
 					//parentTId of root node is null
@@ -3265,7 +3262,7 @@
 				}
 			}
 			if (moveType == consts.move.TYPE_INNER) {
-				if (!targetNode[childKey]) targetNode[childKey] = new Array();
+				if (!targetNode[childKey]) targetNode[childKey] = [];
 				if (targetNode[childKey].length > 0) {
 					newNeighbor = targetNode[childKey][targetNode[childKey].length - 1];
 					newNeighbor.isLastNode = false;

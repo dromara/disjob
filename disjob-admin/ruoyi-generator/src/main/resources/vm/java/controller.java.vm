@@ -26,7 +26,7 @@ import com.ruoyi.common.core.domain.Ztree;
 
 /**
  * ${functionName}Controller
- * 
+ *
  * @author ${author}
  * @date ${datetime}
  */
@@ -34,7 +34,7 @@ import com.ruoyi.common.core.domain.Ztree;
 @RequestMapping("/${moduleName}/${businessName}")
 public class ${ClassName}Controller extends BaseController
 {
-    private String prefix = "${moduleName}/${businessName}";
+    private final String prefix = "${moduleName}/${businessName}";
 
     @Autowired
     private I${ClassName}Service ${className}Service;

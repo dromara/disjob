@@ -81,7 +81,7 @@
 		r.curHoverNode = null;
 		r.dragFlag = 0;
 		r.dragNodeShowBefore = [];
-		r.dragMaskList = new Array();
+		r.dragMaskList = [];
 		r.showHoverDom = true;
 	},
 	//default cache of exedit
@@ -298,7 +298,6 @@
 
 			view.editNodeBlur = true;
 			view.cancelCurEditNode(setting, null, true);
-			
 
 			var doc = $(document), curNode, tmpArrow, tmpTarget,
 			isOtherTree = false,
@@ -642,9 +641,9 @@
 					var dragTargetNode = tmpTargetNodeId == null ? null: data.getNodeCache(targetSetting, tmpTargetNodeId);
 					if (tools.apply(setting.callback.beforeDrop, [targetSetting.treeId, nodes, dragTargetNode, moveType, isCopy], true) == false) return;
 					var newNodes = isCopy ? tools.clone(nodes) : nodes;
-					
+
 					function dropCallback() {
-						if (isOtherTree) {							
+						if (isOtherTree) {
 							if (!isCopy) {
 								for(var i=0, l=nodes.length; i<l; i++) {
 									view.removeNode(setting, nodes[i]);
@@ -826,7 +825,7 @@
 			var root = data.getRoot(setting),
 			nameKey = setting.data.key.name,
 			node = root.curEditNode;
-			
+
 			if (node) {
 				var inputObj = root.curEditInput;
 				var newName = forceName ? forceName:inputObj.val();
@@ -907,7 +906,7 @@
 			if (moveType != consts.move.TYPE_PREV && moveType != consts.move.TYPE_NEXT) {
 				moveType = consts.move.TYPE_INNER;
 			}
-			
+
 			if (moveType == consts.move.TYPE_INNER) {
 				if (targetNodeIsRoot) {
 					//parentTId of root node is null
@@ -990,7 +989,7 @@
 				}
 			}
 			if (moveType == consts.move.TYPE_INNER) {
-				if (!targetNode[childKey]) targetNode[childKey] = new Array();
+				if (!targetNode[childKey]) targetNode[childKey] = [];
 				if (targetNode[childKey].length > 0) {
 					newNeighbor = targetNode[childKey][targetNode[childKey].length - 1];
 					newNeighbor.isLastNode = false;

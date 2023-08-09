@@ -30,9 +30,9 @@
 					</div>
 				</form>
 			</div>
-			
+
 			<div class="btn-group-sm" id="toolbar" role="group">
-			     <a class="btn btn-success multiple disabled" onclick="javascript:batchGenCode()" shiro:hasPermission="tool:gen:code">
+			     <a class="btn btn-success multiple disabled" onclick="batchGenCode()" shiro:hasPermission="tool:gen:code">
 			        <i class="fa fa-download"></i> 生成
 			    </a>
 				<a class="btn btn-success" onclick="createTable()" shiro:hasRole="admin">
@@ -48,7 +48,7 @@
 		            <i class="fa fa-remove"></i> 删除
 		        </a>
 		    </div>
-		
+
 		    <div class="col-sm-12 select-table table-striped">
 			    <table id="bootstrap-table"></table>
 			</div>
@@ -63,7 +63,7 @@
 		var removeFlag = [[${@permission.hasPermi('tool:gen:remove')}]];
 		var previewFlag = [[${@permission.hasPermi('tool:gen:preview')}]];
 		var codeFlag = [[${@permission.hasPermi('tool:gen:code')}]];
-	
+
 		$(function() {
 		    var options = {
 		        url: prefix + "/list",
@@ -137,7 +137,7 @@
 		    };
 		    $.table.init(options);
 		});
-		
+
 		// 预览代码
 		function preview(tableId) {
 			var preViewUrl = prefix + "/preview/" + tableId;
@@ -170,7 +170,7 @@
 				$.modal.closeLoading();
 			});
 		}
-	
+
 		// 生成代码
 		function genCode(tableName, genType) {
 		    $.modal.confirm("确定要生成" + tableName + "表代码吗？", function() {
@@ -182,14 +182,14 @@
 				}
 		    })
 		}
-		
+
 		// 同步数据库
 		function synchDb(tableName){
 			$.modal.confirm("确认要强制同步" + tableName + "表结构吗？", function() {
 			    $.operate.get(prefix + "/synchDb/" + tableName);
 			})
 		}
-	
+
 		// 批量生成代码
 		function batchGenCode() {
 		    var rows = $.table.selectColumns("tableName");

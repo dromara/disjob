@@ -183,7 +183,7 @@
 		.unbind(c.COLLAPSE)
 		.unbind(c.ASYNC_SUCCESS)
 		.unbind(c.ASYNC_ERROR);
-	},	
+	},
 	//default event proxy of core
 	_eventProxy = function(event) {
 		var target = event.target,
@@ -229,7 +229,7 @@
 				case "switchNode" :
 					if (!node.isParent) {
 						nodeEventType = "";
-					} else if (tools.eqs(event.type, "click") 
+					} else if (tools.eqs(event.type, "click")
 						|| (tools.eqs(event.type, "dblclick") && tools.apply(setting.view.dblClickExpand, [setting.treeId, node], setting.view.dblClickExpand))) {
 						nodeEventCallback = handler.onSwitchNode;
 					} else {
@@ -826,7 +826,7 @@
 					childHtml = view.appendNodes(setting, level + 1, node[childKey], node, initFlag, openFlag && node.open);
 				}
 				if (openFlag) {
-					
+
 					view.makeDOMNodeMainBefore(html, setting, node);
 					view.makeDOMNodeLine(html, setting, node);
 					data.getBeforeA(setting, node, html);
@@ -1238,7 +1238,7 @@
 			if (!data.getNodeCache(setting, node.tId)) {
 				return;
 			}
-                        
+
 			$("#" + node.tId).remove();
 			data.removeNodeCache(setting, node);
 			data.removeSelectedNode(setting, node);
@@ -1251,7 +1251,7 @@
 			}
 			view.setFirstNode(setting, parentNode);
 			view.setLastNode(setting, parentNode);
-                                                
+
 			var tmp_ulObj,tmp_switchObj,tmp_icoObj,
 			childLength = parentNode[childKey].length;
 
@@ -1396,7 +1396,6 @@
 			} else if (setting.async.enable) {
 				if (!view.asyncNode(setting, node)) {
 					view.expandCollapseNode(setting, node, !node.open);
-					return;
 				}
 			} else if (node) {
 				view.expandCollapseNode(setting, node, !node.open);
@@ -1451,7 +1450,7 @@
 			event.bindTree(setting);
 			event.unbindEvent(setting);
 			event.bindEvent(setting);
-			
+
 			var zTreeTools = {
 				setting : setting,
 				addNodes : function(parentNode, newNodes, isSilent) {
@@ -1499,7 +1498,7 @@
 					if (expandFlag === node.open && !sonSign) {
 						return null;
 					}
-					
+
 					data.getRoot(setting).expandTriggerFlag = callbackFlag;
 					if (sonSign) {
 						view.expandCollapseSonNode(this.setting, node, expandFlag, true, function() {

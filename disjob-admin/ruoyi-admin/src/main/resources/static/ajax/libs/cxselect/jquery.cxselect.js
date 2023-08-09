@@ -13,7 +13,7 @@
     define(['jquery'], factory);
   } else {
     factory(window.jQuery || window.Zepto || window.$);
-  };
+  }
 }(function($) {
   var cxSelect = function() {
     var self = this;
@@ -29,14 +29,14 @@
         callback = arguments[i];
       } else if (typeof arguments[i] === 'object') {
         settings = arguments[i];
-      };
-    };
+      }
+    }
 
     var api = new cxSelect.init(dom, settings);
 
     if (typeof callback === 'function') {
       callback(api);
-    };
+    }
 
     return api;
   };
@@ -46,7 +46,7 @@
       return true;
     } else {
       return (o && o.nodeType && o.nodeType === 1) ? true : false;
-    };
+    }
   };
 
   cxSelect.isJquery = function(o){
@@ -66,15 +66,15 @@
       space = space.split('.');
       for (var i = 0, l = space.length; i < l; i++) {
         data = data[space[i]];
-      };
-    };
+      }
+    }
     return data;
   };
 
   cxSelect.init = function(dom, settings) {
     var self = this;
 
-    if (!cxSelect.isJquery(dom) && !cxSelect.isZepto(dom)) {return};
+    if (!cxSelect.isJquery(dom) && !cxSelect.isZepto(dom)) {return}
 
     var theSelect = {
       dom: {
@@ -107,7 +107,7 @@
 
     if (typeof _dataSelects === 'string' && _dataSelects.length) {
       theSelect.settings.selects = _dataSelects.split(',');
-    };
+    }
 
     self.setOptions();
     self.attach();
@@ -125,7 +125,7 @@
       $.getJSON(theSelect.settings.url, function(json) {
         cxSelect.start.call(theSelect, json);
       });
-    };
+    }
   };
 
   // 设置参数
@@ -134,7 +134,7 @@
 
     if (opts) {
       $.extend(self.settings, opts);
-    };
+    }
 
     // 初次或重设选择器组
     if (!$.isArray(self.selectArray) || !self.selectArray.length || (opts && opts.selects)) {
@@ -146,12 +146,12 @@
         for (var i = 0, l = self.settings.selects.length; i < l; i++) {
           _tempSelect = self.dom.box.find('select.' + self.settings.selects[i]);
 
-          if (!_tempSelect || !_tempSelect.length) {break};
+          if (!_tempSelect || !_tempSelect.length) {break}
 
           self.selectArray.push(_tempSelect);
-        };
-      };
-    };
+        }
+      }
+    }
 
     if (opts) {
       if (!$.isArray(opts.data) && typeof opts.url === 'string' && opts.url.length) {
@@ -161,8 +161,8 @@
 
       } else {
         cxSelect.start.call(self, opts.data);
-      };
-    };
+      }
+    }
   };
 
   // 绑定
@@ -171,11 +171,11 @@
 
     if (!self.attachStatus) {
       self.dom.box.on('change', 'select', self.changeEvent);
-    };
+    }
 
     if (typeof self.attachStatus === 'boolean') {
       cxSelect.start.call(self);
-    };
+    }
 
     self.attachStatus = true;
   };
@@ -205,10 +205,10 @@
         _style.display = 'none';
       } else if (self.settings.emptyStyle === 'hidden') {
         _style.visibility = 'hidden';
-      };
+      }
 
       self.selectArray[i].css(_style);
-    };
+    }
   };
 
   cxSelect.start = function(data) {
@@ -216,16 +216,16 @@
 
     if ($.isArray(data)) {
       self.settings.data = cxSelect.getData(data, self.settings.jsonSpace);
-    };
+    }
 
-    if (!self.selectArray.length) {return};
+    if (!self.selectArray.length) {return}
 
     // 保存默认值
     for (var i = 0, l = self.selectArray.length; i < l; i++) {
       if (typeof self.selectArray[i].attr('data-value') !== 'string' && self.selectArray[i][0].options.length) {
         self.selectArray[i].attr('data-value', self.selectArray[i].val());
-      };
-    };
+      }
+    }
 
     if (self.settings.data || (typeof self.selectArray[0].data('url') === 'string' && self.selectArray[0].data('url').length)) {
       cxSelect.getOptionData.call(self, 0);
@@ -237,14 +237,14 @@
         'display': '',
         'visibility': ''
       });
-    };
+    }
   };
 
   // 获取选项数据
   cxSelect.getOptionData = function(index) {
     var self = this;
 
-    if (typeof index !== 'number' || isNaN(index) || index < 0 || index >= self.selectArray.length) {return};
+    if (typeof index !== 'number' || isNaN(index) || index < 0 || index >= self.selectArray.length) {return}
 
     var _indexPrev = index - 1;
     var _select = self.selectArray[index];
@@ -271,9 +271,9 @@
             _query[_queryName] = _selectValue;
           } else if (typeof _selectName === 'string' && _selectName.length) {
             _query[_selectName] = _selectValue;
-          };
-        };
-      };
+          }
+        }
+      }
 
       $.getJSON(_dataUrl, _query, function(json) {
         _selectData = cxSelect.getData(json, _jsonSpace);
@@ -293,11 +293,11 @@
         } else {
           _selectData = null;
           break;
-        };
-      };
+        }
+      }
 
       cxSelect.buildOption.call(self, index, _selectData);
-    };
+    }
   };
 
   // 构建选项列表
@@ -311,7 +311,7 @@
     var _jsonName = typeof _select.data('jsonName') === 'undefined' ? self.settings.jsonName : _select.data('jsonName');
     var _jsonValue = typeof _select.data('jsonValue') === 'undefined' ? self.settings.jsonValue : _select.data('jsonValue');
 
-    if (!$.isArray(data)) {return};
+    if (!$.isArray(data)) {return}
 
     var _html = !_required ? '<option value="' + String(_firstValue) + '">' + String(_firstTitle) + '</option>' : '';
 
@@ -320,18 +320,18 @@
       // 无值字段时使用标题作为值
       if (typeof _jsonValue !== 'string' || !_jsonValue.length) {
         _jsonValue = _jsonName;
-      };
+      }
 
       for (var i = 0, l = data.length; i < l; i++) {
         _html += '<option value="' + String(data[i][_jsonValue]) + '">' + String(data[i][_jsonName]) + '</option>';
-      };
+      }
 
     // 数组即为值的数据
     } else {
       for (var i = 0, l = data.length; i < l; i++) {
         _html += '<option value="' + String(data[i]) + '">' + String(data[i]) + '</option>';
-      };
-    };
+      }
+    }
 
     _select.html(_html).prop('disabled', false).css({
       'display': '',
@@ -344,12 +344,12 @@
 
       if (_select[0].selectedIndex < 0) {
         _select[0].options[0].selected = true;
-      };
-    };
+      }
+    }
 
     if (_required || _select[0].selectedIndex > 0) {
       _select.trigger('change');
-    };
+    }
 
   };
 
@@ -357,7 +357,7 @@
   cxSelect.selectChange = function(name) {
     var self = this;
 
-    if (typeof name !== 'string' || !name.length) {return};
+    if (typeof name !== 'string' || !name.length) {return}
 
     var index;
 
@@ -369,13 +369,13 @@
       if (name.indexOf(',' + self.settings.selects[i] + ',') > -1) {
         index = i;
         break;
-      };
-    };
+      }
+    }
 
     if (typeof index === 'number' && index > -1) {
       index += 1;
       cxSelect.getOptionData.call(self, index);
-    };
+    }
   };
 
   $.cxSelect = function() {

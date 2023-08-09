@@ -1,12 +1,12 @@
 /**
  * 通用方法封装处理
- * Copyright (c) 2019 ruoyi 
+ * Copyright (c) 2019 ruoyi
  */
 
 var startLayDate;
 var endLayDate;
 $(function() {
-	
+
     //  layer扩展皮肤
     if (window.layer !== undefined) {
         layer.config({
@@ -14,12 +14,12 @@ $(function() {
             skin: 'layer-ext-moon'
         });
     }
-	
+
     // 回到顶部绑定
     if ($.fn.toTop !== undefined) {
         $('#scroll-up').toTop();
     }
-	
+
     // select2复选框事件绑定
     if ($.fn.select2 !== undefined) {
         $.fn.select2.defaults.set( "theme", "bootstrap" );
@@ -29,7 +29,7 @@ $(function() {
             })
         })
     }
-	
+
     // iCheck单选框及复选框事件绑定
     if ($.fn.iCheck !== undefined) {
         $(".check-box:not(.noicheck),.radio-box:not(.noicheck)").each(function() {
@@ -39,14 +39,14 @@ $(function() {
             })
         })
     }
-	
+
     // 取消回车自动提交表单
     $(document).on("keypress", ":input:not(textarea):not([type=submit])", function(event) {
         if (event.keyCode == 13) {
             event.preventDefault();
         }
     });
-	 
+
     // laydate 时间控件绑定
     if ($(".select-time").length > 0) {
        layui.use('laydate', function() {
@@ -92,7 +92,7 @@ $(function() {
             });
         });
     }
-	
+
     // laydate time-input 时间控件绑定
     if ($(".time-input").length > 0) {
         layui.use('laydate', function () {
@@ -140,7 +140,7 @@ $(function() {
             });
         });
     }
-	
+
     // tree 关键字搜索绑定
     if ($("#keyword").length > 0) {
         $("#keyword").bind("focus", function focusKey(e) {
@@ -154,7 +154,7 @@ $(function() {
             $.tree.searchNode(e);
         }).bind("input propertychange", $.tree.searchNode);
     }
-	
+
     // tree表格树 展开/折叠
     var expandFlag;
     $("#expandAllBtn").click(function() {
@@ -167,7 +167,7 @@ $(function() {
         }
         expandFlag = expandFlag ? false: true;
     })
-	
+
     // 按下ESC按钮关闭弹层
     $('body', document).on('keyup', function(e) {
         if (e.which === 27) {
@@ -289,7 +289,7 @@ function createMenuItem(dataUrl, menuName, isRefresh) {
         // 添加选项卡对应的iframe
         var str1 = '<iframe class="RuoYi_iframe" name="iframe' + dataIndex + '" width="100%" height="100%" src="' + dataUrl + '" frameborder="0" data-id="' + dataUrl + '" data-panel="' + panelUrl + '" seamless></iframe>';
         $('.mainContent', topWindow).find('iframe.RuoYi_iframe').hide().parents('.mainContent').append(str1);
-        
+
         window.parent.$.modal.loading("数据加载中，请稍候...");
         $('.mainContent iframe:visible', topWindow).on('load', function() {
             window.parent.$.modal.closeLoading();
@@ -451,12 +451,12 @@ var sub = {
     			dataColumns.push(table.options.columns[columnIndex]);
     		}
     	}
-		var params = new Array();
+		var params = [];
 		var data = $("#" + table.options.id).bootstrapTable('getData');
     	var count = data.length;
     	for (var dataIndex = 0; dataIndex < count; dataIndex++) {
     	    var columns = $('#' + table.options.id + ' tr[data-index="' + dataIndex + '"] td:visible');
-    	    var obj = new Object();
+    	    var obj = {};
     	    for (var i = 0; i < columns.length; i++) {
     	        var inputValue = $(columns[i]).find('input');
     	        var selectValue = $(columns[i]).find('select');
@@ -529,11 +529,11 @@ function loadJs(file, headElem) {
 // 禁止后退键（Backspace）
 window.onload = function() {
 	document.getElementsByTagName("body")[0].onkeydown = function() {
-		// 获取事件对象  
+		// 获取事件对象
 		var elem = event.relatedTarget || event.srcElement || event.target || event.currentTarget;
-		// 判断按键为backSpace键  
+		// 判断按键为backSpace键
 		if (event.keyCode == 8) {
-			// 判断是否需要阻止按下键盘的事件默认传递  
+			// 判断是否需要阻止按下键盘的事件默认传递
 			var name = elem.nodeName;
 			var className = elem.className;
 			// 屏蔽特定的样式名称

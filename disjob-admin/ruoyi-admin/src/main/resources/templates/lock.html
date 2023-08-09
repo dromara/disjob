@@ -28,7 +28,7 @@
             </div>
         </form>
     </div>
-    
+
     <div class="help-block text-center" style="margin-top: 50px;">系统锁屏,请输入密码登录!</div>
     <div class="text-center">
         <a th:href="@{logout}">退出重新登录</a>
@@ -64,7 +64,7 @@
       }
 	  return fmt;
 	}
-    
+
     $(function() {
         $('.lockscreen-time').text((new Date()).format('hh:mm:ss'));
         setInterval(function() {
@@ -79,7 +79,7 @@
    	    	unlock();
    	    }
    	});
-     
+
     function unlock() {
         var username = $("input[name='username']").val();
         var password = $("input[name='password']").val();
@@ -87,7 +87,7 @@
         	$.modal.msg("请输入密码");
             return;
         }
-        
+
         var index = "";
         var config = {
             url: ctx + "unlockscreen",
@@ -108,7 +108,7 @@
             }
         };
         $.ajax(config);
-    };
+    }
 
     var container;
     var camera, scene, projector, renderer;
@@ -156,24 +156,24 @@
         container.appendChild(renderer.domElement);
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         window.addEventListener('resize', onWindowResize, false);
-    };
+    }
 
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight - 10);
-    };
+    }
 
     function onDocumentMouseMove(event) {
         event.preventDefault();
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    };
+    }
 
     function animate() {
         requestAnimationFrame(animate);
         render();
-    };
+    }
 
     var radius = 600;
     var theta = 0;

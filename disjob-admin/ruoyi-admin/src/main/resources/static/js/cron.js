@@ -286,7 +286,7 @@ $().ready(function () {
             change_month_assign();
         }
     });
-    
+
     //week
     $("#week_all").click(function () {
         if ($(this).prop('checked')) {
@@ -350,7 +350,7 @@ $().ready(function () {
             change_week_assign();
         }
     });
-    
+
     //year
     $("#year_all").click(function () {
         if ($(this).prop('checked')) {
@@ -382,7 +382,7 @@ $().ready(function () {
 });
 
 function change_sec_assign() {
-    var sec_array = new Array();
+    var sec_array = [];
     $("input[name='zd_second']:checked").each(function () {
         sec_array[sec_array.length] = $(this).val();
     });
@@ -458,7 +458,7 @@ function change_sec_per() {
 }
 
 function change_min_assign() {
-    var sec_array = new Array();
+    var sec_array = [];
     $("input[name='zd_minute']:checked").each(function () {
         sec_array[sec_array.length] = $(this).val();
     });
@@ -535,7 +535,7 @@ function change_min_per() {
 }
 
 function change_hour_assign() {
-    var sec_array = new Array();
+    var sec_array = [];
     $("input[name='zd_hour']:checked").each(function () {
         sec_array[sec_array.length] = $(this).val();
     });
@@ -612,7 +612,7 @@ function change_hour_per() {
 }
 
 function change_day_assign() {
-    var sec_array = new Array();
+    var sec_array = [];
     $("input[name='zd_day']:checked").each(function () {
         sec_array[sec_array.length] = $(this).val();
     });
@@ -707,7 +707,7 @@ function change_day_work() {
 }
 
 function change_month_assign() {
-    var sec_array = new Array();
+    var sec_array = [];
     $("input[name='zd_month']:checked").each(function () {
         sec_array[sec_array.length] = $(this).val();
     });
@@ -784,7 +784,7 @@ function change_month_per() {
 }
 
 function change_week_assign() {
-    var sec_array = new Array();
+    var sec_array = [];
     $("input[name='zd_week']:checked").each(function () {
         sec_array[sec_array.length] = $(this).val();
     });
