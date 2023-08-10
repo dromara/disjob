@@ -14,13 +14,10 @@
   <description>common通用工具</description>
 
   <dependencies>
-    <!-- Spring框架基本的核心工具 -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
     </dependency>
-
-    <!-- SpringWeb模块 -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
@@ -91,10 +88,10 @@
       <artifactId>snakeyaml</artifactId>
     </dependency>
 
-    <!-- servlet包 -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

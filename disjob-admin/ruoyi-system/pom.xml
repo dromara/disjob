@@ -14,7 +14,6 @@
   <description>system系统模块</description>
 
   <dependencies>
-    <!-- 通用工具-->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-common</artifactId>

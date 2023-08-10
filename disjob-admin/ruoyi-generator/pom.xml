@@ -14,16 +14,21 @@
   <description>generator代码生成</description>
 
   <dependencies>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>ruoyi-common</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!--velocity代码生成使用模板 -->
     <dependency>
       <groupId>org.apache.velocity</groupId>
       <artifactId>velocity-engine-core</artifactId>
-    </dependency>
-
-    <!-- 通用工具-->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>ruoyi-common</artifactId>
     </dependency>
 
     <!-- 阿里数据库连接池 -->

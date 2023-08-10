@@ -15,6 +15,19 @@
   <description>web服务入口</description>
 
   <dependencies>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>ruoyi-framework</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>ruoyi-generator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>ruoyi-disjob</artifactId>
+    </dependency>
+
     <!-- SpringBoot集成thymeleaf模板 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -26,7 +39,7 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
-      <optional>true</optional> <!-- 表示依赖不会传递 -->
+      <optional>true</optional>
     </dependency>
 
     <!-- Mysql驱动包 -->
@@ -35,27 +48,11 @@
       <artifactId>mysql-connector-j</artifactId>
       <scope>runtime</scope>
     </dependency>
-
-    <!-- 核心模块-->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>ruoyi-framework</artifactId>
-    </dependency>
-
-    <!-- 代码生成-->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>ruoyi-generator</artifactId>
-    </dependency>
-
-    <!-- Disjob -->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>ruoyi-disjob</artifactId>
-    </dependency>
   </dependencies>
 
   <build>
+    <finalName>${project.artifactId}</finalName>
+
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -73,7 +70,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!--<plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>${maven-war-plugin.version}</version>
@@ -81,9 +78,8 @@
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <warName>${project.artifactId}</warName>
         </configuration>
-      </plugin>
+      </plugin>-->
     </plugins>
-    <finalName>${project.artifactId}</finalName>
   </build>
 
 </project>

@@ -14,13 +14,15 @@
   <description>framework框架核心</description>
 
   <dependencies>
-    <!-- SpringBoot Web容器 -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>ruoyi-system</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-
-    <!-- SpringBoot 拦截器 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-aop</artifactId>
@@ -66,12 +68,6 @@
     <dependency>
       <groupId>com.github.oshi</groupId>
       <artifactId>oshi-core</artifactId>
-    </dependency>
-
-    <!-- 系统模块-->
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>ruoyi-system</artifactId>
     </dependency>
   </dependencies>
 
