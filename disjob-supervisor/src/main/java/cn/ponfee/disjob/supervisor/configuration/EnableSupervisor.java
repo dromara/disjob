@@ -69,6 +69,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
     EnableSupervisor.EnableSupervisorConfiguration.class,
     EnableSupervisor.EnableScanLockerConfiguration.class,
     EnableSupervisor.EnableComponentScan.class,
+    EnableSupervisor.EnableSupervisorAdapter.class,
     SupervisorLifecycle.class
 })
 public @interface EnableSupervisor {
@@ -107,22 +108,6 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public SupervisorService supervisorService(DistributedJobManager jobManager,
-                                                   DistributedJobQuerier jobQuerier) {
-            return new SupervisorServiceProvider(jobManager, jobQuerier);
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @ConditionalOnMissingBean
-        @Bean
-        public SupervisorOpenapi supervisorOpenapi(DistributedJobManager jobManager,
-                                                   DistributedJobQuerier jobQuerier) {
-            return new SupervisorOpenapiProvider(jobManager, jobQuerier);
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @ConditionalOnMissingBean
-        @Bean
         public WorkerServiceClient workerServiceClient(HttpProperties httpProperties,
                                                        RetryProperties retryProperties,
                                                        SupervisorRegistry supervisorRegistry,
@@ -155,6 +140,30 @@ public @interface EnableSupervisor {
         }
     }
 
+    @ComponentScan(basePackageClasses = SupervisorStartup.class)
+    class EnableComponentScan {
+    }
+
+    @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
+    class EnableSupervisorAdapter {
+
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @ConditionalOnMissingBean
+        @Bean
+        public SupervisorService supervisorService(DistributedJobManager jobManager,
+                                                   DistributedJobQuerier jobQuerier) {
+            return new SupervisorServiceProvider(jobManager, jobQuerier);
+        }
+
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @ConditionalOnMissingBean
+        @Bean
+        public SupervisorOpenapi supervisorOpenapi(DistributedJobManager jobManager,
+                                                   DistributedJobQuerier jobQuerier) {
+            return new SupervisorOpenapiProvider(jobManager, jobQuerier);
+        }
+    }
+
     @Order
     @ConditionalOnProperty(prefix = JobConstants.SUPERVISOR_KEY_PREFIX, name = "locker", havingValue = "default", matchIfMissing = true)
     class EnableScanLockerConfiguration {
@@ -176,10 +185,6 @@ public @interface EnableSupervisor {
         public DoInLocked scanRunningInstanceLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
         }
-    }
-
-    @ComponentScan(basePackageClasses = SupervisorStartup.class)
-    class EnableComponentScan {
     }
 
 }

@@ -104,18 +104,6 @@
       <optional>true</optional>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context-indexer</artifactId>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate.validator</groupId>
-      <artifactId>hibernate-validator-annotation-processor</artifactId>
-      <optional>true</optional>
-      <scope>provided</scope>
-    </dependency>
 
     <!-- test -->
     <dependency>
@@ -151,26 +139,6 @@
   <build>
     <finalName>${project.artifactId}</finalName>
 
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-      </resource>
-      <resource>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**/*.xml</include>
-        </includes>
-        <filtering>false</filtering>
-      </resource>
-    </resources>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>false</filtering>
-      </testResource>
-    </testResources>
-
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -183,7 +151,7 @@
         </configuration>
         <executions>
           <execution>
-            <id>flatten</id>
+            <id>flatten.process-resources</id>
             <phase>process-resources</phase>
             <goals>
               <goal>flatten</goal>
