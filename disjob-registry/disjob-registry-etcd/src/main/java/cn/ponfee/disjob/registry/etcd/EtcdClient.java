@@ -233,10 +233,15 @@ public class EtcdClient implements Closeable {
     // ----------------------------------------------------------------others
 
     public boolean isConnected() {
-        Object connectionManager = Fields.get(client, "connectionManager");
-        ManagedChannel managedChannel = ClassUtils.invoke(connectionManager, "getChannel");
-        ConnectivityState state = managedChannel.getState(false);
-        return CONNECTED_STATUS_LIST.contains(state);
+        try {
+            Object connectionManager = Fields.get(client, "connectionManager");
+            ManagedChannel managedChannel = ClassUtils.invoke(connectionManager, "getChannel");
+            ConnectivityState state = managedChannel.getState(false);
+            return CONNECTED_STATUS_LIST.contains(state);
+        } catch (Throwable t) {
+            LOG.error("Detect etcd is connected error", t);
+            return false;
+        }
     }
 
     @Override

@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -69,7 +70,7 @@ public class TimingWheelRotator implements Startable {
         this.workerThreadPool = threadPool;
 
         this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r, "rotate_timing_wheel");
+            Thread thread = new Thread(r, "timing_wheel_rotate");
             thread.setDaemon(true);
             thread.setPriority(Thread.MAX_PRIORITY);
             return thread;
@@ -81,7 +82,7 @@ public class TimingWheelRotator implements Startable {
             .maximumPoolSize(actualProcessPoolSize)
             .workQueue(new LinkedBlockingQueue<>(Integer.MAX_VALUE))
             .keepAliveTimeSeconds(300)
-            .threadFactory(NamedThreadFactory.builder().prefix("process_timing_wheel").build())
+            .threadFactory(NamedThreadFactory.builder().prefix("timing_wheel_process").build())
             .prestartCoreThreadType(ThreadPoolExecutors.PrestartCoreThreadType.ONE)
             .build();
     }
@@ -92,8 +93,10 @@ public class TimingWheelRotator implements Startable {
             LOG.warn("Timing wheel rotator already started.");
             return;
         }
+
+        LOG.info("Timing wheel rotator started.");
         scheduledExecutor.scheduleAtFixedRate(
-            this::process,
+            Throwables.caught(this::process),
             timingWheel.getTickMs(),
             timingWheel.getTickMs(),
             TimeUnit.MILLISECONDS
@@ -106,6 +109,8 @@ public class TimingWheelRotator implements Startable {
             LOG.warn("Timing wheel rotator already stopped.");
             return;
         }
+
+        LOG.info("Timing wheel rotator stopped.");
         ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(scheduledExecutor, 3));
         ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(processExecutor, 3));
     }
@@ -113,7 +118,7 @@ public class TimingWheelRotator implements Startable {
     private void process() {
         if (++round > 1024) {
             round = 0;
-            LOG.info("worker-thread-pool: {}, jvm-thread-count: {}", workerThreadPool, Thread.activeCount());
+            LOG.info("Timing wheel rotator heartbeat: worker-thread-pool={}, jvm-thread-count={}", workerThreadPool, Thread.activeCount());
         }
 
         if (!started.get()) {

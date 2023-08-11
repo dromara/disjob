@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.common.base;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -90,6 +92,7 @@ import java.util.PriorityQueue;
 public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements java.io.Serializable {
     private static final long serialVersionUID = 4500377208898808026L;
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     private static final int PROCESS_SLOTS_SIZE = 2;
 
     /**
@@ -159,7 +162,14 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         // 如果小于leastTimeMillis，则放入leastTimeMillis所在的槽位
         long slotTimeMillis = Math.max(timing.timing(), leastTimeMillis);
         int ringIndex = calculateIndex(slotTimeMillis);
-        return wheel[ringIndex].offer(timing);
+
+        boolean res = wheel[ringIndex].offer(timing);
+        if (res) {
+            log.info("Timing wheel task success {}", timing);
+        } else {
+            log.error("Timing wheel task failed " + timing);
+        }
+        return res;
     }
 
     public final List<T> poll() {

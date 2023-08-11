@@ -42,13 +42,13 @@ public abstract class TaskReceiver implements Startable {
             return false;
         }
 
-        if (timingWheel.offer(param)) {
-            log.info("Received task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
-            return true;
+        boolean res = timingWheel.offer(param);
+        if (res) {
+            log.info("Received task success {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+        } else {
+            log.error("Received task failed " + param);
         }
-
-        log.error("Received task filed {}", param);
-        return false;
+        return res;
     }
 
     /**

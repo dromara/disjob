@@ -146,11 +146,11 @@ public abstract class TaskDispatcher implements Startable {
 
             try {
                 if (doDispatch(param)) {
-                    log.info("Dispatched task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+                    log.info("Dispatched task success {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
                 } else {
                     // dispatch failed, delay retry
                     retry(dispatchParam);
-                    log.error("Dispatched task failed: " + dispatchParam);
+                    log.error("Dispatched task failed " + dispatchParam);
                     result = false;
                 }
             } catch (Throwable t) {
@@ -183,6 +183,7 @@ public abstract class TaskDispatcher implements Startable {
         Worker current = Worker.current();
         if (timingWheel != null && current != null && current.matchesWorker(param.getWorker())) {
             // if the server both is supervisor & worker: dispatch to local worker
+            log.info("Dispatching task to local worker {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
             return timingWheel.offer(param);
         } else {
             // dispatch to remote worker

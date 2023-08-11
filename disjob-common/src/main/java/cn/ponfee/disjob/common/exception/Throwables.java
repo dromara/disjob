@@ -63,6 +63,53 @@ public final class Throwables {
         return "error: <" + ClassUtils.getName(throwable.getClass()) + ">";
     }
 
+    // ------------------------------------------------------------------------caught
+
+    public static Runnable caught(ThrowingRunnable<?> runnable) {
+        return () -> {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                LOG.error("", t);
+                Threads.interruptIfNecessary(t);
+            }
+        };
+    }
+
+    public static <E> Consumer<E> checked(ThrowingConsumer<E, ?> consumer) {
+        return arg -> {
+            try {
+                consumer.accept(arg);
+            } catch (Throwable t) {
+                LOG.error("", t);
+                Threads.interruptIfNecessary(t);
+            }
+        };
+    }
+
+    public static <R> Supplier<R> checked(ThrowingSupplier<R, ?> supplier) {
+        return () -> {
+            try {
+                return supplier.get();
+            } catch (Throwable t) {
+                LOG.error("", t);
+                Threads.interruptIfNecessary(t);
+                return null;
+            }
+        };
+    }
+
+    public static <E, R> Function<E, R> checked(ThrowingFunction<E, R, ?> function) {
+        return arg -> {
+            try {
+                return function.apply(arg);
+            } catch (Throwable t) {
+                LOG.error("", t);
+                Threads.interruptIfNecessary(t);
+                return null;
+            }
+        };
+    }
 
     // -------------------------------------------------------------------------------interface definitions
 

@@ -58,8 +58,8 @@ public class RedisTaskDispatcher extends TaskDispatcher {
             (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), param.serialize())
         );
 
-        RedisKeyRenewal renewal = workerRenewMap.computeIfAbsent(key, k -> new RedisKeyRenewal(redisTemplate, key));
-        renewal.renewIfNecessary();
+        // renew redis key ttl
+        workerRenewMap.computeIfAbsent(key, k -> new RedisKeyRenewal(redisTemplate, key)).renewIfNecessary();
 
         return (ret != null && ret > 0);
     }
