@@ -88,9 +88,9 @@ disjob                                                    # 主项目
 0. 管理后台演示地址：http://ponfee.cn:8000/ ，用户名/密码：`disjob/disjob123`
 
 1. IDE分别导入项目(分为三个独立的项目，共用一个`git`仓库)
-  - [主项目](pom.xml)
-  - [samples项目](disjob-samples/pom.xml)
-  - [管理后台](disjob-admin/pom.xml)
+  - [主项目—disjob](pom.xml)
+  - [样例项目—disjob-samples](disjob-samples/pom.xml)
+  - [管理后台—disjob-admin](disjob-admin/pom.xml)
 
 2. 运行仓库提供的两个SQL脚本：[mysql-disjob.sql](mysql-disjob.sql)、[mysql-disjob_admin.sql](disjob-admin/mysql-disjob_admin.sql)创建两个数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化两个SQL脚本)
   - [MacOS报“Library not loaded”错误信息参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)

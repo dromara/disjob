@@ -14,6 +14,7 @@ import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -96,7 +97,7 @@ public class TimingWheelRotator implements Startable {
 
         LOG.info("Timing wheel rotator started.");
         scheduledExecutor.scheduleAtFixedRate(
-            Throwables.caught(this::process),
+            Throwables.caught((ThrowingRunnable<?>) this::process),
             timingWheel.getTickMs(),
             timingWheel.getTickMs(),
             TimeUnit.MILLISECONDS
