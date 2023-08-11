@@ -76,7 +76,7 @@ public final class Throwables {
         };
     }
 
-    public static <E> Consumer<E> checked(ThrowingConsumer<E, ?> consumer) {
+    public static <E> Consumer<E> caught(ThrowingConsumer<E, ?> consumer) {
         return arg -> {
             try {
                 consumer.accept(arg);
@@ -87,7 +87,7 @@ public final class Throwables {
         };
     }
 
-    public static <R> Supplier<R> checked(ThrowingSupplier<R, ?> supplier) {
+    public static <R> Supplier<R> caught(ThrowingSupplier<R, ?> supplier) {
         return () -> {
             try {
                 return supplier.get();
@@ -99,7 +99,7 @@ public final class Throwables {
         };
     }
 
-    public static <E, R> Function<E, R> checked(ThrowingFunction<E, R, ?> function) {
+    public static <E, R> Function<E, R> caught(ThrowingFunction<E, R, ?> function) {
         return arg -> {
             try {
                 return function.apply(arg);

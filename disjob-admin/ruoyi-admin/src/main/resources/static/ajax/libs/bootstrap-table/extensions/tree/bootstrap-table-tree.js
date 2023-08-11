@@ -403,12 +403,12 @@
             $this.parent().addClass('active').siblings().removeClass('active');
             var $pagination = target.find(".fixed-table-pagination");
             options.pageSize = $this.text().toUpperCase() === target.totalRows ? target.totalRows : + $this.text();
-            
+
             if(target.totalRows < options.pageSize * options.pageNumber){
                 options.pageNumber = 1;
             }
             $pagination.find('.page-size').text(options.pageSize);
-            initServer();
+            initServer(target.lastAjaxParams);
         }
         var onPagePre = function(event){
             if ((options.pageNumber - 1) === 0) {
@@ -416,22 +416,22 @@
             } else {
                 options.pageNumber--;
             }
-            initServer();
+            initServer(target.lastAjaxParams);
         }
         var onPageNumber = function(event){
             if (options.pageNumber == $(event.currentTarget).text()) {
                 return;
             }
             options.pageNumber = $(event.currentTarget).text();
-            initServer();
+            initServer(target.lastAjaxParams);
         }
         var onPageFirst = function(event){
             options.pageNumber = 1;
-            initServer();
+            initServer(target.lastAjaxParams);
         }
         var onPageLast = function (event) {
             options.pageNumber = target.totalPages;
-            initServer();
+            initServer(target.lastAjaxParams);
         }
         var onPageNext = function(event){
             if ((options.pageNumber + 1) > target.totalPages) {
@@ -439,7 +439,7 @@
             } else {
                 options.pageNumber++;
             }
-            initServer();
+            initServer(target.lastAjaxParams);
         }
         // 动态设置表头宽度
         var autoTheadWidth = function(initFlag) {
@@ -447,7 +447,7 @@
                 var $thead = target.find("thead");
                 var $tbody = target.find("tbody");
                 var borderWidth = parseInt(target.css("border-left-width")) + parseInt(target.css("border-right-width"))
-                
+
                 $thead.css("width", $tbody.children(":first").width());
                 if(initFlag){
                     var resizeWaiter = false;
@@ -465,7 +465,7 @@
                     });
                 }
             }
-        
+
         }
         // 缓存并格式化数据
         var formatData = function(data) {
