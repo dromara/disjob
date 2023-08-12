@@ -352,9 +352,9 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-          <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <compilerVersion>${java.version}</compilerVersion>
           <encoding>${file.encoding}</encoding>
           <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
           <!-- <annotationProcessorPaths>

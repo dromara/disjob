@@ -22,7 +22,7 @@
   </modules>
 
   <properties>
-    <revision>1.0-SNAPSHOT</revision>
+    <revision>2.0.1-SNAPSHOT</revision>
     <disjob.version>2.0.1-SNAPSHOT</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
@@ -32,8 +32,8 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
-    <maven.install.skip>true</maven.install.skip>
-    <maven.deploy.skip>true</maven.deploy.skip>
+    <!--<maven.install.skip>true</maven.install.skip>
+    <maven.deploy.skip>true</maven.deploy.skip>-->
 
     <spring-boot.version>2.7.13</spring-boot.version>
     <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
@@ -95,13 +95,12 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-          <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
-          <encoding>${file.encoding}</encoding>
-          <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
@@ -128,7 +127,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!--<plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
         <version>${maven-deploy-plugin.version}</version>
@@ -157,7 +156,7 @@
         <configuration>
           <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
         </configuration>
-      </plugin>
+      </plugin>-->
     </plugins>
   </build>
 
