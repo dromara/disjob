@@ -194,7 +194,7 @@ insert into sys_menu values('112',  '服务监控', '2', '4', '/monitor/server',
 insert into sys_menu values('113',  '缓存监控', '2', '5', '/monitor/cache',        '', 'C', '0', '1', 'monitor:cache:view',       'fa fa-cube',            'admin', sysdate(), '', null, '缓存监控菜单');
 insert into sys_menu values('114',  '表单构建', '3', '1', '/tool/build',           '', 'C', '0', '1', 'tool:build:view',          'fa fa-wpforms',         'admin', sysdate(), '', null, '表单构建菜单');
 insert into sys_menu values('115',  '代码生成', '3', '2', '/tool/gen',             '', 'C', '0', '1', 'tool:gen:view',            'fa fa-code',            'admin', sysdate(), '', null, '代码生成菜单');
-insert into sys_menu values('116',  '系统接口', '3', '3', '/tool/apidocs',         '', 'C', '0', '1', 'tool:apidocs:view',        'fa fa-gg',              'admin', sysdate(), '', null, '系统接口菜单');
+insert into sys_menu values('116',  '系统接口', '3', '3', '/apidocs',              '', 'C', '0', '1', 'tool:apidocs:view',        'fa fa-gg',              'admin', sysdate(), '', null, '系统接口菜单');
 -- 三级菜单
 insert into sys_menu values('500',  '操作日志', '108', '1', '/monitor/operlog',    '', 'C', '0', '1', 'monitor:operlog:view',     'fa fa-address-book',    'admin', sysdate(), '', null, '操作日志菜单');
 insert into sys_menu values('501',  '登录日志', '108', '2', '/monitor/logininfor', '', 'C', '0', '1', 'monitor:logininfor:view',  'fa fa-file-image-o',    'admin', sysdate(), '', null, '登录日志菜单');

@@ -6,17 +6,25 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Springdoc接口
+ * Tool controller
  *
  * @author ruoyi
  */
 @Controller
-public class SpringdocController extends BaseController
-{
+public class ToolController extends BaseController {
+
+    private static final String PREFIX = "tool";
+
+    @RequiresPermissions("tool:build:view")
+    @GetMapping(PREFIX + "/build")
+    public String build() {
+        return PREFIX + "/build";
+    }
+
     @RequiresPermissions("tool:apidocs:view")
-    @GetMapping("/tool/apidocs")
-    public String index()
-    {
+    @GetMapping("apidocs")
+    public String apidocs() {
         return redirect("/apidocs.html");
     }
+
 }

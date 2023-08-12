@@ -23,7 +23,7 @@
   </modules>
 
   <properties>
-    <revision>2.0.1-SNAPSHOT</revision>
+    <revision>1.0.0-SNAPSHOT</revision>
     <disjob.version>2.0.1-SNAPSHOT</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>

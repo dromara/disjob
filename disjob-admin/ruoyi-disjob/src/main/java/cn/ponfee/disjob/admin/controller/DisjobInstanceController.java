@@ -40,7 +40,7 @@ public class DisjobInstanceController extends BaseController {
     }
 
     @RequiresPermissions(PERMISSION_VIEW)
-    @GetMapping()
+    @GetMapping
     public String instance() {
         return PREFIX + "/instance";
     }
