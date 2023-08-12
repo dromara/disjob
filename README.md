@@ -135,7 +135,7 @@ public class MergedApplication extends AbstractSamplesApplication {
   - [disjob mysql](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)配置
   - [redis](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)配置
   - [disjob_admin mysql](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)配置（使用的是druid数据源）
-  - [加@EnableWorker启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（disjob-admin必须启用Supervisor角色）
+  - [可加@EnableWorker启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（disjob-admin必须启用Supervisor角色）
 
 7. 启动disjob-admin
   - [启动java类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)

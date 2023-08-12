@@ -74,7 +74,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-sm-3 control-label is-required">触发器配置：</label>
+        <label class="col-sm-3 control-label is-required">触发器配置(<a href="http://cron.qqe2.com/" target="_blank">CronExpr</a>)：</label>
         <div class="col-sm-3">
           <select name="triggerType" class="form-control m-b" th:with="enum=${@disjobService.enums('TriggerType')}">
             <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}" th:field="*{triggerType}"></option>

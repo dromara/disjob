@@ -39,8 +39,8 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
 @Configuration
 @ComponentScan("cn.ponfee.disjob.test.handler")
 @EnableJacksonDateConfigurer
-@EnableSupervisor
-@EnableWorker // 要取消worker角色需要把该注解去掉
+@EnableSupervisor // job-admin必须启用Supervisor角色，即：@EnableSupervisor注解是必须加的
+@EnableWorker     // 若要取消worker角色可去掉@EnableWorker注解
 public class DisjobAdminConfiguration implements WebMvcConfigurer {
 
     public DisjobAdminConfiguration(@Nullable ObjectMapper mapper) {
