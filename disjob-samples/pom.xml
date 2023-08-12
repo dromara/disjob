@@ -8,7 +8,18 @@
   <artifactId>disjob-samples</artifactId>
   <version>${revision}</version>
   <packaging>pom</packaging>
-  <name>${project.artifactId}</name>
+
+  <name>Disjob Samples</name>
+  <url>https://github.com/ponfee/disjob</url>
+  <description>Disjob范例</description>
+
+  <modules>
+    <module>disjob-samples-common</module>
+    <module>disjob-samples-merged-springboot</module>
+    <module>disjob-samples-supervisor-springboot</module>
+    <module>disjob-samples-worker-frameless</module>
+    <module>disjob-samples-worker-springboot</module>
+  </modules>
 
   <properties>
     <revision>1.0-SNAPSHOT</revision>
@@ -35,12 +46,6 @@
     <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
   </properties>
 
-  <modules>
-    <module>disjob-samples-common</module>
-    <module>disjob-samples-merged</module>
-    <module>disjob-samples-separately</module>
-  </modules>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -64,6 +69,12 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-samples-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -76,32 +87,8 @@
     </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <id>oss.sonatype.org-snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-    <repository>
-      <id>s01.oss.sonatype.org-snapshots</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-
   <build>
     <finalName>${project.artifactId}</finalName>
-
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -172,7 +159,29 @@
         </configuration>
       </plugin>
     </plugins>
-
   </build>
+
+  <repositories>
+    <repository>
+      <id>oss.sonatype.org-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>s01.oss.sonatype.org-snapshots</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
 
 </project>

@@ -43,11 +43,10 @@ disjob                                                    # 主项目
 ├── disjob-reports                                        # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                                        # Samples项目
 │   ├── disjob-samples-common                             # 存放使用范例中用到的公共代码，包括使用到的一些公共配置文件等
-│   ├── disjob-samples-merged                             # Supervisor与Worker合并部署的范例（Spring boot应用）
-│   └── disjob-samples-separately                         # Supervisor与Worker分离部署的范例模块
-│       ├── disjob-samples-separately-supervisor          # Supervisor单独部署的范例（Spring boot应用）
-│       ├── disjob-samples-separately-worker-frameless    # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
-│       └── disjob-samples-separately-worker-springboot   # Worker单独部署的范例（Spring boot应用）
+│   ├── disjob-samples-merged-springboot                  # Supervisor与Worker合并部署的范例（Spring boot应用）
+│   ├── disjob-samples-supervisor-springboot              # Supervisor单独部署的范例（Spring boot应用）
+│   ├── disjob-samples-worker-frameless                   # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
+│   └── disjob-samples-worker-springboot                  # Worker单独部署的范例（Spring boot应用）
 ├── disjob-supervisor                                     # Supervisor代码（Spring-boot应用）
 ├── disjob-test                                           # 用于辅助测试
 └── disjob-worker                                         # Worker代码
@@ -111,13 +110,13 @@ disjob                                                    # 主项目
   - 注册中心配置：只需配置选择的注册中心即可，如[Consul注册中心](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)、[Redis注册中心](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)
   - 任务分发配置：[Redis分发](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、若选择Http分发方式可无需配置
   - 其它可按需配置(不配置则会使用默认值)：[supervisor](disjob-samples/conf-supervisor/)、[worker](disjob-samples/conf-worker/)、[web](disjob-samples/disjob-samples-common/src/main/resources)
-  - 非Spring-boot的Worker应用配置文件：[worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+  - 非Spring-boot的Worker应用配置文件：[worker-conf.yml](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)
 
 5. 启动[samples项目](disjob-samples)下的各应用，包括
-  - [Supervisor与Worker合并部署的Spring boot应用](disjob-samples/disjob-samples-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
-  - [Supervisor单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
-  - [Worker单独部署的Spring boot应用](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
-  - [Worker单独部署的非Spring-boot应用，直接运行Main方法](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/Main.java)
+  - [Supervisor与Worker合并部署的Spring boot应用](disjob-samples/disjob-samples-merged-springboot/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
+  - [Supervisor单独部署的Spring boot应用](disjob-samples/disjob-samples-supervisor-springboot/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
+  - [Worker单独部署的Spring boot应用](disjob-samples/disjob-samples-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
+  - [Worker单独部署的非Spring-boot应用，直接运行Main方法](disjob-samples/disjob-samples-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
   - 说明：
     - 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
     - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
@@ -136,6 +135,7 @@ public class MergedApplication extends AbstractSamplesApplication {
   - [disjob mysql](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)配置
   - [redis](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)配置
   - [disjob_admin mysql](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)配置（使用的是druid数据源）
+  - [加@EnableWorker启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（disjob-admin必须启用Supervisor角色）
 
 7. 启动disjob-admin
   - [启动java类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)

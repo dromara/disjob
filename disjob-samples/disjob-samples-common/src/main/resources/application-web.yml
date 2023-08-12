@@ -16,11 +16,6 @@ management:
     env:
       enabled: true
 
-# thymeleaf configuration
-spring.thymeleaf:
-  check-template: false
-  check-template-location: false
-
 # springdoc “swagger-ui” and “api-docs” endpoint custom path, StandaloneLayout/BaseLayout
 springdoc:
   swagger-ui:

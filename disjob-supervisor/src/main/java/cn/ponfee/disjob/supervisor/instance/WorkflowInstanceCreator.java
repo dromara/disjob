@@ -11,6 +11,7 @@ package cn.ponfee.disjob.supervisor.instance;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGExpressionParser;
 import cn.ponfee.disjob.common.dag.DAGNode;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.dag.WorkflowGraph;
@@ -46,7 +47,7 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
         long wnstanceId = jobManager.generateId();
         SchedInstance leadInstance = SchedInstance.create(wnstanceId, job.getJobId(), runType, triggerTime, 0, now);
         leadInstance.setRunState(RunState.RUNNING.value());
-        leadInstance.setRunStartTime(now);
+        leadInstance.setRunStartTime(Dates.max(now, new Date(triggerTime)));
         leadInstance.setWnstanceId(wnstanceId);
 
         MutableInt sequence = new MutableInt(1);

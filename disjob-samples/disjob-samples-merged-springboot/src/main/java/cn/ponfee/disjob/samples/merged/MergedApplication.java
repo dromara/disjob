@@ -6,58 +6,51 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.admin;
+package cn.ponfee.disjob.samples.merged;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.Symbol;
-import cn.ponfee.disjob.common.spring.EnableJacksonDateConfigurer;
+import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.id.snowflake.db.DbDistributedSnowflake;
+import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
+import cn.ponfee.disjob.samples.common.util.SampleConstants;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import de.codecentric.boot.admin.server.config.EnableAdminServer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.lang.Nullable;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
- * Disjob admin configuration
+ * Disjob application based spring boot
  *
  * @author Ponfee
  */
-@Configuration
-@ComponentScan("cn.ponfee.disjob.test.handler")
-@EnableJacksonDateConfigurer
 @EnableSupervisor
-@EnableWorker // 要取消worker角色需要把该注解去掉
-public class DisjobAdminConfiguration implements WebMvcConfigurer {
+@EnableWorker
+@EnableAdminServer
+public class MergedApplication extends AbstractSamplesApplication {
 
-    public DisjobAdminConfiguration(@Nullable ObjectMapper mapper) {
-        if (mapper == null) {
-            throw new Error("Not found jackson object mapper in spring container.");
-        }
-        SimpleModule simpleModule = new SimpleModule();
-        // Long 转为 String 防止 js 丢失精度
-        simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
-        mapper.registerModule(simpleModule);
+    static {
+        // for log4j log file dir
+        System.setProperty(SampleConstants.APP_NAME, "merged-springboot");
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(MergedApplication.class, args);
     }
 
     @Bean
     public IdGenerator idGenerator(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate,
                                    @Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
-        return new DbDistributedSnowflake(jdbcTemplate, "disjob", JobUtils.getLocalHost(boundHost) + Symbol.Char.COLON + port);
+        return new DbDistributedSnowflake(jdbcTemplate, "disjob", JobUtils.getLocalHost(boundHost) + Char.COLON + port);
     }
 
 }
