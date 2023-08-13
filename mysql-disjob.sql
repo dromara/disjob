@@ -88,10 +88,11 @@ CREATE TABLE `sched_instance` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_instanceid` (`instance_id`),
   UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`),
+  KEY `ix_runstate_triggertime` (`run_state`, `trigger_time`) COMMENT '用于扫表',
+  KEY `ix_triggertime` (`trigger_time`),
   KEY `ix_rnstanceid` (`rnstance_id`),
   KEY `ix_pnstanceid` (`pnstance_id`),
   KEY `ix_wnstanceid` (`wnstance_id`),
-  KEY `ix_runstate_triggertime` (`run_state`, `trigger_time`) COMMENT '用于扫表',
   KEY `ix_createdat` (`created_at`),
   KEY `ix_updatedat` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度实例表';

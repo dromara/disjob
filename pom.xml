@@ -9,7 +9,7 @@
   <version>${revision}</version>
   <packaging>pom</packaging>
 
-  <name>disjob</name>
+  <name>${project.artifactId}</name>
   <description>A distributed job scheduling framework</description>
   <url>https://github.com/ponfee/disjob</url>
   <licenses>

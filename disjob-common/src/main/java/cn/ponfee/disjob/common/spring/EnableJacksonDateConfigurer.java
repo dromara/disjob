@@ -41,26 +41,29 @@ public @interface EnableJacksonDateConfigurer {
     class ObjectMapperConfigurer {
 
         public ObjectMapperConfigurer(@Nullable ObjectMapper objectMapper) {
-            if (objectMapper != null) {
-                objectMapper.setDateFormat(JavaUtilDateFormat.DEFAULT);
-
-                SimpleModule module = new SimpleModule();
-                module.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
-                module.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
-                objectMapper.registerModule(module);
-
-                // java.time.LocalDateTime
-                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Dates.DATE_PATTERN);
-                DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-                JavaTimeModule javaTimeModule = new JavaTimeModule();
-                javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(LocalDateTimeFormat.PATTERN_11));
-                javaTimeModule.addDeserializer(LocalDateTime.class, CustomLocalDateTimeDeserializer.INSTANCE);
-                javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter));
-                javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
-                javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
-                javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
-                objectMapper.registerModule(javaTimeModule);
+            if (objectMapper == null) {
+                return;
             }
+
+            objectMapper.setDateFormat(JavaUtilDateFormat.DEFAULT);
+
+            SimpleModule module = new SimpleModule();
+            module.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
+            module.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
+            objectMapper.registerModule(module);
+
+            // java.time.LocalDateTime
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Dates.DATE_PATTERN);
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+            JavaTimeModule javaTimeModule = new JavaTimeModule();
+            javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(LocalDateTimeFormat.PATTERN_11));
+            javaTimeModule.addDeserializer(LocalDateTime.class, CustomLocalDateTimeDeserializer.INSTANCE);
+            javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter));
+            javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
+            javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
+            javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
+            objectMapper.registerModule(javaTimeModule);
         }
     }
 

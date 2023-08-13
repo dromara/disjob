@@ -1,18 +1,18 @@
 package cn.ponfee.disjob.admin.domain;
 
+import cn.ponfee.disjob.core.openapi.supervisor.response.SchedJobResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
+import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
 
 /**
- * 配置对象 sched_job
+ * SchedJob 导出
  *
  * @author ponfee
  */
-public class DisjobJob extends BaseEntity {
-    private static final long serialVersionUID = 1L;
+public class SchedJobExport {
 
     /**
      * 全局唯一ID
@@ -137,16 +137,6 @@ public class DisjobJob extends BaseEntity {
     private Long nextTriggerTime;
 
     /**
-     * 行记录版本号
-     */
-    private Integer version;
-
-    /**
-     * 是否已删除：0-否；NULL-是(用NULL来解决因软删引起的唯一索引冲突问题)；
-     */
-    private Integer isDeleted;
-
-    /**
      * 更新人
      */
     @Excel(name = "更新人")
@@ -172,6 +162,11 @@ public class DisjobJob extends BaseEntity {
     @Excel(name = "创建时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date createdAt;
 
+    public static SchedJobExport ofSchedJobResponse(SchedJobResponse schedJobResponse) {
+        SchedJobExport schedJobExport = new SchedJobExport();
+        BeanUtils.copyProperties(schedJobResponse, schedJobExport);
+        return schedJobExport;
+    }
 
     public void setJobId(Long jobId) {
         this.jobId = jobId;
@@ -331,22 +326,6 @@ public class DisjobJob extends BaseEntity {
 
     public Long getNextTriggerTime() {
         return nextTriggerTime;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setIsDeleted(Integer isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
-    public Integer getIsDeleted() {
-        return isDeleted;
     }
 
     public void setUpdatedBy(String updatedBy) {

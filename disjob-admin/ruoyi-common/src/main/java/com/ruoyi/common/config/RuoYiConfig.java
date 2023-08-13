@@ -5,18 +5,13 @@ import org.springframework.stereotype.Component;
 
 /**
  * 全局配置类
- * 
+ *
  * @author ruoyi
  */
 @Component
 @ConfigurationProperties(prefix = "ruoyi")
 public class RuoYiConfig
 {
-    /** 项目名称 */
-    private static String name;
-
-    /** 版本 */
-    private static String version;
 
     /** 版权年份 */
     private static String copyrightYear;
@@ -26,26 +21,6 @@ public class RuoYiConfig
 
     /** 获取地址开关 */
     private static boolean addressEnabled;
-
-    public static String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        RuoYiConfig.name = name;
-    }
-
-    public static String getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion(String version)
-    {
-        RuoYiConfig.version = version;
-    }
 
     public static String getCopyrightYear()
     {

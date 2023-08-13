@@ -1,8 +1,9 @@
 package cn.ponfee.disjob.admin.controller;
 
-import cn.ponfee.disjob.admin.domain.DisjobJob;
+import cn.ponfee.disjob.admin.domain.SchedJobExport;
 import cn.ponfee.disjob.admin.util.DisjobUtils;
 import cn.ponfee.disjob.common.model.PageResponse;
+import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.openapi.supervisor.SupervisorOpenapi;
 import cn.ponfee.disjob.core.openapi.supervisor.request.AddSchedJobRequest;
@@ -17,7 +18,6 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
@@ -91,15 +91,9 @@ public class DisjobJobController extends BaseController {
     public AjaxResult export(SchedJobPageRequest request) {
         request.setPaged(false);
         List<SchedJobResponse> rows = supervisorOpenapi.queryJobForPage(request).getRows();
-        List<DisjobJob> list = rows.stream()
-            .map(e -> {
-                DisjobJob disjobJob = new DisjobJob();
-                BeanUtils.copyProperties(e, disjobJob);
-                return disjobJob;
-            })
-            .collect(Collectors.toList());
-        ExcelUtil<DisjobJob> util = new ExcelUtil<>(DisjobJob.class);
-        return util.exportExcel(list, "调度配置数据");
+        List<SchedJobExport> list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
+        ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
+        return excel.exportExcel(list, "调度配置数据");
     }
 
     // -------------------------------------------------------操作

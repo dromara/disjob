@@ -128,9 +128,8 @@ public class SysIndexController extends BaseController
 
     // 系统介绍
     @GetMapping("/system/main")
-    public String main(ModelMap mmap)
+    public String main()
     {
-        mmap.put("version", RuoYiConfig.getVersion());
         return "main";
     }
 
