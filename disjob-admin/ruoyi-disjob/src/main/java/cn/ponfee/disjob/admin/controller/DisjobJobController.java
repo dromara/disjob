@@ -1,7 +1,15 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.domain.SchedJobExport;
-import cn.ponfee.disjob.admin.util.DisjobUtils;
+import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -31,7 +39,7 @@ import java.util.stream.Collectors;
 /**
  * 调度配置Controller
  *
- * @author ponfee
+ * @author Ponfee
  */
 @Controller
 @RequestMapping("/" + DisjobJobController.PREFIX)
@@ -63,10 +71,10 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedJobPageRequest request) {
-        request.setPageNumber(DisjobUtils.getPageNumberParameter());
-        request.setPageSize(DisjobUtils.getPageSizeParameter());
+        request.setPageNumber(super.getPageNumber());
+        request.setPageSize(super.getPageSize());
         PageResponse<SchedJobResponse> response = supervisorOpenapi.queryJobForPage(request);
-        return DisjobUtils.toTableDataInfo(response);
+        return PageUtils.toTableDataInfo(response);
     }
 
     /**

@@ -1,6 +1,14 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.disjob.admin.controller;
 
-import cn.ponfee.disjob.admin.util.DisjobUtils;
+import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.openapi.supervisor.SupervisorOpenapi;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedInstancePageRequest;
@@ -21,7 +29,7 @@ import java.util.List;
 /**
  * 调度实例Controller
  *
- * @author ponfee
+ * @author Ponfee
  */
 @Controller
 @RequestMapping("/" + DisjobInstanceController.PREFIX)
@@ -52,9 +60,9 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public TableDataInfo tree(SchedInstancePageRequest request) {
         request.setParent(true);
-        request.setPageNumber(DisjobUtils.getPageNumberParameter());
-        request.setPageSize(DisjobUtils.getPageSizeParameter());
-        return DisjobUtils.toTableDataInfo(supervisorOpenapi.queryInstanceForPage(request));
+        request.setPageNumber(super.getPageNumber());
+        request.setPageSize(super.getPageSize());
+        return PageUtils.toTableDataInfo(supervisorOpenapi.queryInstanceForPage(request));
     }
 
     /**
@@ -65,9 +73,9 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public TableDataInfo flat(SchedInstancePageRequest request) {
         request.setParent(false);
-        request.setPageNumber(DisjobUtils.getPageNumberParameter());
-        request.setPageSize(DisjobUtils.getPageSizeParameter());
-        return DisjobUtils.toTableDataInfo(supervisorOpenapi.queryInstanceForPage(request));
+        request.setPageNumber(super.getPageNumber());
+        request.setPageSize(super.getPageSize());
+        return PageUtils.toTableDataInfo(supervisorOpenapi.queryInstanceForPage(request));
     }
 
     @RequiresPermissions(PERMISSION_QUERY)

@@ -8,6 +8,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.core.page.TableSupport;
+import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.utils.*;
 import com.ruoyi.common.utils.sql.SqlUtil;
 import org.slf4j.Logger;
@@ -223,4 +224,13 @@ public class BaseController
     {
         return getSysUser().getLoginName();
     }
+
+    public int getPageNumber() {
+        return Convert.toInt(ServletUtils.getParameter(TableSupport.PAGE_NUM), 1);
+    }
+
+    public int getPageSize() {
+        return Convert.toInt(ServletUtils.getParameter(TableSupport.PAGE_SIZE), 20);
+    }
+
 }

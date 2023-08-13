@@ -10,9 +10,6 @@ package cn.ponfee.disjob.admin.util;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import com.ruoyi.common.core.page.TableDataInfo;
-import com.ruoyi.common.core.page.TableSupport;
-import com.ruoyi.common.core.text.Convert;
-import com.ruoyi.common.utils.ServletUtils;
 
 import java.util.List;
 
@@ -21,7 +18,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class DisjobUtils {
+public class PageUtils {
 
     /**
      * 转为table结构
@@ -38,11 +35,5 @@ public class DisjobUtils {
         return rspData;
     }
 
-    public static int getPageNumberParameter() {
-        return Convert.toInt(ServletUtils.getParameter(TableSupport.PAGE_NUM), 1);
-    }
 
-    public static int getPageSizeParameter() {
-        return Convert.toInt(ServletUtils.getParameter(TableSupport.PAGE_SIZE), 20);
-    }
 }

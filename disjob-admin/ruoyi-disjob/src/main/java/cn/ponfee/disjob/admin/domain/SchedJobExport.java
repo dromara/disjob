@@ -1,3 +1,11 @@
+/* __________              _____                                                *\
+** \______   \____   _____/ ____\____   ____    Copyright (c) 2017-2023 Ponfee  **
+**  |     ___/  _ \ /    \   __\/ __ \_/ __ \   http://www.ponfee.cn            **
+**  |    |  (  <_> )   |  \  | \  ___/\  ___/   Apache License Version 2.0      **
+**  |____|   \____/|___|  /__|  \___  >\___  >  http://www.apache.org/licenses/ **
+**                      \/          \/     \/                                   **
+\*                                                                              */
+
 package cn.ponfee.disjob.admin.domain;
 
 import cn.ponfee.disjob.core.openapi.supervisor.response.SchedJobResponse;
@@ -10,7 +18,7 @@ import java.util.Date;
 /**
  * SchedJob 导出
  *
- * @author ponfee
+ * @author Ponfee
  */
 public class SchedJobExport {
 
@@ -168,196 +176,195 @@ public class SchedJobExport {
         return schedJobExport;
     }
 
-    public void setJobId(Long jobId) {
-        this.jobId = jobId;
-    }
-
     public Long getJobId() {
         return jobId;
     }
 
-    public void setJobGroup(String jobGroup) {
-        this.jobGroup = jobGroup;
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
     }
 
     public String getJobGroup() {
         return jobGroup;
     }
 
-    public void setJobName(String jobName) {
-        this.jobName = jobName;
+    public void setJobGroup(String jobGroup) {
+        this.jobGroup = jobGroup;
     }
 
     public String getJobName() {
         return jobName;
     }
 
-    public void setJobType(Integer jobType) {
-        this.jobType = jobType;
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
     }
 
     public Integer getJobType() {
         return jobType;
     }
 
-    public void setJobHandler(String jobHandler) {
-        this.jobHandler = jobHandler;
-    }
-
-    public String getJobHandler() {
-        return jobHandler;
-    }
-
-    public void setJobState(Integer jobState) {
-        this.jobState = jobState;
+    public void setJobType(Integer jobType) {
+        this.jobType = jobType;
     }
 
     public Integer getJobState() {
         return jobState;
     }
 
-    public void setJobParam(String jobParam) {
-        this.jobParam = jobParam;
+    public void setJobState(Integer jobState) {
+        this.jobState = jobState;
+    }
+
+    public String getJobHandler() {
+        return jobHandler;
+    }
+
+    public void setJobHandler(String jobHandler) {
+        this.jobHandler = jobHandler;
     }
 
     public String getJobParam() {
         return jobParam;
     }
 
-    public void setRetryType(Integer retryType) {
-        this.retryType = retryType;
+    public void setJobParam(String jobParam) {
+        this.jobParam = jobParam;
     }
 
     public Integer getRetryType() {
         return retryType;
     }
 
-    public void setRetryCount(Integer retryCount) {
-        this.retryCount = retryCount;
+    public void setRetryType(Integer retryType) {
+        this.retryType = retryType;
     }
 
     public Integer getRetryCount() {
         return retryCount;
     }
 
-    public void setRetryInterval(Integer retryInterval) {
-        this.retryInterval = retryInterval;
+    public void setRetryCount(Integer retryCount) {
+        this.retryCount = retryCount;
     }
 
     public Integer getRetryInterval() {
         return retryInterval;
     }
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+    public void setRetryInterval(Integer retryInterval) {
+        this.retryInterval = retryInterval;
     }
 
     public Date getStartTime() {
         return startTime;
     }
 
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
     }
 
     public Date getEndTime() {
         return endTime;
     }
 
-    public void setTriggerType(Integer triggerType) {
-        this.triggerType = triggerType;
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 
     public Integer getTriggerType() {
         return triggerType;
     }
 
-    public void setTriggerValue(String triggerValue) {
-        this.triggerValue = triggerValue;
+    public void setTriggerType(Integer triggerType) {
+        this.triggerType = triggerType;
     }
 
     public String getTriggerValue() {
         return triggerValue;
     }
 
-    public void setExecuteTimeout(Integer executeTimeout) {
-        this.executeTimeout = executeTimeout;
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
     }
 
     public Integer getExecuteTimeout() {
         return executeTimeout;
     }
 
-    public void setCollidedStrategy(Integer collidedStrategy) {
-        this.collidedStrategy = collidedStrategy;
+    public void setExecuteTimeout(Integer executeTimeout) {
+        this.executeTimeout = executeTimeout;
     }
 
     public Integer getCollidedStrategy() {
         return collidedStrategy;
     }
 
-    public void setMisfireStrategy(Integer misfireStrategy) {
-        this.misfireStrategy = misfireStrategy;
+    public void setCollidedStrategy(Integer collidedStrategy) {
+        this.collidedStrategy = collidedStrategy;
     }
 
     public Integer getMisfireStrategy() {
         return misfireStrategy;
     }
 
-    public void setRouteStrategy(Integer routeStrategy) {
-        this.routeStrategy = routeStrategy;
+    public void setMisfireStrategy(Integer misfireStrategy) {
+        this.misfireStrategy = misfireStrategy;
     }
 
     public Integer getRouteStrategy() {
         return routeStrategy;
     }
 
-    public void setLastTriggerTime(Long lastTriggerTime) {
-        this.lastTriggerTime = lastTriggerTime;
+    public void setRouteStrategy(Integer routeStrategy) {
+        this.routeStrategy = routeStrategy;
     }
 
     public Long getLastTriggerTime() {
         return lastTriggerTime;
     }
 
-    public void setNextTriggerTime(Long nextTriggerTime) {
-        this.nextTriggerTime = nextTriggerTime;
+    public void setLastTriggerTime(Long lastTriggerTime) {
+        this.lastTriggerTime = lastTriggerTime;
     }
 
     public Long getNextTriggerTime() {
         return nextTriggerTime;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
+    public void setNextTriggerTime(Long nextTriggerTime) {
+        this.nextTriggerTime = nextTriggerTime;
     }
 
     public String getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
     public String getCreatedBy() {
         return createdBy;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
     public Date getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public Date getCreatedAt() {
         return createdAt;
     }
 
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 }
