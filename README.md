@@ -103,7 +103,7 @@ disjob                                                    # 主项目
     - [内置nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)（依赖本地docker环境）
     - [内置etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)（依赖本地docker环境）
     - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
-    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)（建议使用该类来一次启动本地mysql与redis）
+    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)（推荐使用该类来一次性启动本地mysql及redis）
 
 4. 修改配置文件
   - 数据库配置：[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)

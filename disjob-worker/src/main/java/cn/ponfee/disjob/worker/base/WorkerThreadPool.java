@@ -357,12 +357,13 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * @param doStop       if whether do stop the thread
      */
     private void stopWorkerThread(WorkerThread workerThread, boolean doStop) {
-        workerThreadCounter.decrementAndGet();
+        workerThread.toStop();
+        if (workerThread.toDestroy()) {
+            workerThreadCounter.decrementAndGet();
+        }
         if (doStop) {
             LOG.info("Do stop the worker thread: {}", workerThread.getName());
             workerThread.doStop(0, 0, 2000);
-        } else {
-            workerThread.toStop();
         }
     }
 
@@ -623,16 +624,21 @@ public class WorkerThreadPool extends Thread implements Closeable {
         /**
          * Thread is whether stopped status
          */
-        private final AtomicBoolean stopped = new AtomicBoolean(false);
+        private volatile boolean stopped = false;
+
+        /**
+         * Thread is whether destroyed
+         */
+        private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
         /**
          * Atomic reference object of executing param
          */
         private final AtomicReference<ExecuteTaskParam> executingParam = new AtomicReference<>();
 
-        public WorkerThread(WorkerThreadPool threadPool,
-                            SupervisorService supervisorServiceClient,
-                            long keepAliveTimeSeconds) {
+        private WorkerThread(WorkerThreadPool threadPool,
+                             SupervisorService supervisorServiceClient,
+                             long keepAliveTimeSeconds) {
             this.threadPool = threadPool;
             this.supervisorServiceClient = supervisorServiceClient;
             this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
@@ -642,8 +648,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
             super.start();
         }
 
-        public final void execute(ExecuteTaskParam param) throws InterruptedException {
-            if (stopped.get() || isStopped()) {
+        private void execute(ExecuteTaskParam param) throws InterruptedException {
+            if (stopped || isStopped()) {
                 throw new BrokenThreadException("Worker thread already stopped: " + super.getName());
             }
             if (!workQueue.offer(param, 100, TimeUnit.MILLISECONDS)) {
@@ -651,17 +657,20 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
         }
 
-        public final boolean toStop() {
-            return stopped.compareAndSet(false, true);
+        private void toStop() {
+            stopped = true;
         }
 
-        public final boolean doStop(int sleepCount, long sleepMillis, long joinMillis) {
-            toStop();
+        private boolean doStop(int sleepCount, long sleepMillis, long joinMillis) {
             return Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
         }
 
-        public final boolean updateExecuteParam(ExecuteTaskParam expect, ExecuteTaskParam update) {
+        private boolean updateExecuteParam(ExecuteTaskParam expect, ExecuteTaskParam update) {
             return executingParam.compareAndSet(expect, update);
+        }
+
+        private boolean toDestroy() {
+            return destroyed.compareAndSet(false, true);
         }
 
         public final ExecuteTaskParam executingParam() {
@@ -678,7 +687,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         @Override
         public void run() {
-            while (!stopped.get()) {
+            while (!stopped) {
                 if (super.isInterrupted()) {
                     LOG.warn("Worker thread run interrupted.");
                     break;
