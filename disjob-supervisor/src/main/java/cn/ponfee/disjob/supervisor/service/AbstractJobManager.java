@@ -60,7 +60,6 @@ public abstract class AbstractJobManager {
     }
 
     public void verifyJob(SchedJob job) throws JobException {
-        Assert.hasText(job.getJobHandler(), "Job handler cannot be empty.");
         workerServiceClient.verify(JobHandlerParam.from(job));
     }
 

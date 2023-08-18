@@ -99,10 +99,12 @@ public class DistributedJobQuerier {
     }
 
     public PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest) {
-        List<SchedJob> list = jobMapper.queryPageRecords(pageRequest);
-        List<SchedJobResponse> rows = list.stream().map(SchedJobConverter.INSTANCE::convert).collect(Collectors.toList());
-        long total = pageRequest.isPaged() ? jobMapper.queryPageCount(pageRequest) : rows.size();
-        return new PageResponse<>(rows, total, pageRequest);
+        return PageResponse.query(
+            pageRequest,
+            jobMapper::queryPageCount,
+            jobMapper::queryPageRecords,
+            SchedJobConverter.INSTANCE::convert
+        );
     }
 
     public PageResponse<SchedInstanceResponse> queryInstanceForPage(SchedInstancePageRequest pageRequest) {
@@ -110,15 +112,17 @@ public class DistributedJobQuerier {
             pageRequest.setEndTime(Dates.endOfDay(pageRequest.getEndTime()));
         }
 
-        List<SchedInstance> list = instanceMapper.queryPageRecords(pageRequest);
-        List<SchedInstanceResponse> rows = list.stream().map(SchedJobConverter.INSTANCE::convert).collect(Collectors.toList());
-        long total = pageRequest.isPaged() ? instanceMapper.queryPageCount(pageRequest) : rows.size();
+        PageResponse<SchedInstanceResponse> pageResponse = PageResponse.query(
+            pageRequest,
+            instanceMapper::queryPageCount,
+            instanceMapper::queryPageRecords,
+            SchedJobConverter.INSTANCE::convert
+        );
 
         if (pageRequest.isParent()) {
-            fillIsTreeLeaf(rows);
+            fillIsTreeLeaf(pageResponse.getRows());
         }
-
-        return new PageResponse<>(rows, total, pageRequest);
+        return pageResponse;
     }
 
     public List<SchedInstanceResponse> listInstanceChildren(long pnstanceId) {

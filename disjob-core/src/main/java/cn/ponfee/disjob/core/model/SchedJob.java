@@ -192,7 +192,14 @@ public class SchedJob extends BaseEntity implements Serializable {
         Assert.isTrue(length(jobGroup) <= 30, "jobGroup length cannot exceed 30.");
         Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
         Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
+        Assert.hasText(jobHandler, "Job handler cannot be empty.");
         Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
+
+        this.triggerValue = triggerValue.trim();
+        this.jobGroup = jobGroup.trim();
+        this.jobName = jobName.trim();
+        this.jobHandler = jobHandler.trim();
+        this.remark = remark.trim();
     }
 
     public void verifyBeforeUpdate() {

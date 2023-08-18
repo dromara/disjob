@@ -65,4 +65,19 @@ public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<
         return (long) (pageNumber - 1) * pageSize;
     }
 
+    public void adjustPageNumber(long total) {
+        if (pageNumber < 1 || total == 0) {
+            this.pageNumber = 1;
+        } else {
+            this.pageNumber = Math.min(pageNumber, PageResponse.computeTotalPages(pageSize, total));
+        }
+    }
+
+    public void check() {
+        int minPageSize = paged ? 1 : 0;
+        if (pageSize < minPageSize) {
+            throw new IllegalArgumentException("Invalid page size value [" + pageSize + "].");
+        }
+    }
+
 }

@@ -202,7 +202,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
     }
 
     private void createTableIfNotExists() {
-        if (hasTable()) {
+        if (existsTable()) {
             return;
         }
 
@@ -210,7 +210,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
             jdbcTemplateWrapper.execute(CREATE_TABLE_SQL);
             LOG.info("Created table {} success.", TABLE_NAME);
         } catch (Throwable t) {
-            if (hasTable()) {
+            if (existsTable()) {
                 LOG.warn("Create table {} failed {}", TABLE_NAME, t.getMessage());
             } else {
                 throw new Error("Create table " + TABLE_NAME + " error.", t);
@@ -218,7 +218,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
         }
     }
 
-    private boolean hasTable() {
+    private boolean existsTable() {
         Boolean result = jdbcTemplateWrapper.execute(conn -> {
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet rs = meta.getTables(null, null, TABLE_NAME, null);

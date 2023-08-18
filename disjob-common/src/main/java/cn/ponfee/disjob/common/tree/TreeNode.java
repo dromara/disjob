@@ -76,9 +76,14 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
      * @param buildPath              the if whether build path
      * @param doMount                the if whether do mount, if is inner new TreeNode then false else true
      */
-    TreeNode(T nid, T pid, boolean enabled, boolean available, A attach,
+    TreeNode(T nid,
+             T pid,
+             boolean enabled,
+             boolean available,
+             A attach,
              Comparator<? super TreeNode<T, A>> siblingNodesComparator,
-             boolean buildPath, boolean doMount) {
+             boolean buildPath,
+             boolean doMount) {
         super(nid, pid, enabled, available, attach);
 
         this.siblingNodesComparator = Objects.requireNonNull(siblingNodesComparator);

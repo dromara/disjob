@@ -153,7 +153,16 @@ public class DAGExpressionParser {
     }
 
     /**
-     * [{"source":"1:1:A","target":"1:1:C"},{"source":"1:1:A","target":"1:1:D"},{"source":"1:1:B","target":"1:1:D"},{"source":"1:1:B","target":"1:1:E"}]
+     * Parse graph from json
+     *
+     * <pre>
+     * [
+     *   {"source":"1:1:A","target":"1:1:C"},
+     *   {"source":"1:1:A","target":"1:1:D"},
+     *   {"source":"1:1:B","target":"1:1:D"},
+     *   {"source":"1:1:B","target":"1:1:E"}
+     * ]
+     * </pre>
      *
      * @param graphBuilder the graph builder
      * @param edges        the edges
@@ -180,6 +189,8 @@ public class DAGExpressionParser {
     }
 
     /**
+     * Parse graph from plain text
+     *
      * A->((B->C->D),(A->F))->(G,H,X)->J; A->Y
      *
      * @param graphBuilder the graph builder
