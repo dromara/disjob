@@ -263,7 +263,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     stopWorkerThread(workerThread, true);
                     throw e;
                 } catch (BrokenThreadException e) {
-                    LOG.error("Do execute broken thread.", e);
+                    LOG.error(e.getMessage());
                     // re-execute this execution param
                     taskQueue.putFirst(param);
                     // destroy this worker thread
@@ -652,7 +652,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (stopped || isStopped()) {
                 throw new BrokenThreadException("Worker thread already stopped: " + super.getName());
             }
-            if (!workQueue.offer(param, 100, TimeUnit.MILLISECONDS)) {
+            if (!workQueue.offer(param, 1000, TimeUnit.MILLISECONDS)) {
                 throw new BrokenThreadException("Put to worker thread queue timeout: " + super.getName());
             }
         }
