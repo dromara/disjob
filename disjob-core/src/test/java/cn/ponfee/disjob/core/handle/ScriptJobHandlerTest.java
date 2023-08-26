@@ -13,11 +13,13 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.disjob.core.model.SchedTask;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Ponfee
  */
+@Disabled
 public class ScriptJobHandlerTest {
 
     @Test

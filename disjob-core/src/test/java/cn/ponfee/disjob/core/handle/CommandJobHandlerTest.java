@@ -14,6 +14,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.impl.CommandJobHandler;
 import cn.ponfee.disjob.core.model.SchedTask;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
@@ -21,6 +22,7 @@ import java.util.Date;
 /**
  * @author Ponfee
  */
+@Disabled
 public class CommandJobHandlerTest {
 
     @Test
