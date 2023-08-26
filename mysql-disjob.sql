@@ -4,6 +4,7 @@
 -- 语法：DROP USER 'username'@'host_name'，“%”表示删除所有主机中的该用户，默认为“%”
 DROP USER IF EXISTS 'disjob'@'%';
 FLUSH PRIVILEGES;
+SET NAMES utf8mb4;
 
 
 -- ----------------------------

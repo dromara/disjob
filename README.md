@@ -79,7 +79,7 @@ disjob                                                    # 主项目
 ## Build From Source
 
 ```bash
-./mvnw clean install -DskipTests -Dcheckstyle.skip=true -U
+./mvnw clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U
 ```
 
 ## Quick Start
