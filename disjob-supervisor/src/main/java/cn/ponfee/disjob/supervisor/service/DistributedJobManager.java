@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.service;
 
+import cn.ponfee.disjob.common.base.Functions;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.Symbol.Str;
@@ -563,11 +564,7 @@ public class DistributedJobManager extends AbstractJobManager {
     // ------------------------------------------------------------------private methods
 
     private void doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Consumer<SchedInstance> action) {
-        doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
-                action.accept(instance);
-                return Boolean.TRUE;
-            }
-        );
+        doTransactionLockInSynchronized(instanceId, wnstanceId, Functions.convert(action, Boolean.TRUE));
     }
 
     /**

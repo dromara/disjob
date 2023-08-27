@@ -25,14 +25,7 @@ public class RetryTemplate {
     private static final Logger LOG = LoggerFactory.getLogger(RetryTemplate.class);
 
     public static void execute(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
-        execute(
-            () -> {
-                action.run();
-                return Boolean.TRUE;
-            },
-            retryMaxCount,
-            retryBackoffPeriod
-        );
+        execute(action.toThrowingSupplier(Boolean.TRUE), retryMaxCount, retryBackoffPeriod);
     }
 
     public static <T> T execute(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {

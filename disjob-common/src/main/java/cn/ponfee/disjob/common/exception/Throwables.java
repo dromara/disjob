@@ -117,6 +117,13 @@ public final class Throwables {
     public interface ThrowingRunnable<T extends Throwable> {
         void run() throws T;
 
+        default <E> ThrowingSupplier<E, Throwable> toThrowingSupplier(E result) {
+            return () -> {
+                run();
+                return result;
+            };
+        }
+
         static void run(ThrowingRunnable<?> runnable) {
             try {
                 runnable.run();

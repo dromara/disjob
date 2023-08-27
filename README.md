@@ -24,7 +24,7 @@
 
 ```Plain Text
 disjob                                                    # 主项目
-├── disjob-admin                                          # 基于Ruoyi框架二次开发的Disjob后台管理系统
+├── disjob-admin                                          # 基于Ruoyi框架二次开发的Disjob管理后台
 ├── disjob-bom                                            # Maven project bom module
 ├── disjob-common                                         # 工具包
 ├── disjob-core                                           # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
@@ -139,7 +139,7 @@ public class MergedApplication extends AbstractSamplesApplication {
 
 7. 启动disjob-admin
   - [启动java类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
-  - 启动成功后浏览器访问 http://127.0.0.1:80/ 进入后台管理系统（用户名密码：admin/admin123）
+  - 启动成功后浏览器访问 http://127.0.0.1:80/ 进入管理后台（用户名密码：admin/admin123）
   - 登录后在左侧菜单栏找到`调度管理`菜单，即可使用后台管理功能
     - 调度配置：查看、新增、修改等
     - 调度实例：具体时间点的运行实例，一个实例有多个task。鼠标向下滚动可看到第二个分页，第一个分页查询root实例并支持下钻，第二个分页查询所有实例
