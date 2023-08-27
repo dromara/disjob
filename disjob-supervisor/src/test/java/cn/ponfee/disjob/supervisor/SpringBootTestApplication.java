@@ -25,7 +25,11 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 public class SpringBootTestApplication {
 
     static {
-        EmbeddedMysqlAndRedisServer.starter().start();
+        EmbeddedMysqlAndRedisServer.starter()
+            .mysqlPort(23306)
+            .redisMasterPort(26379)
+            .redisSlavePort(26380)
+            .start();
         ThrowingRunnable.caught(() -> Thread.sleep(5000));
     }
 

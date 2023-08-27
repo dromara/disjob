@@ -3,7 +3,7 @@ server.port: 0
 # database configuration
 disjob.datasource:
   driver-class-name: com.mysql.cj.jdbc.Driver
-  jdbc-url: jdbc:mysql://localhost:3306/disjob?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
+  jdbc-url: jdbc:mysql://localhost:23306/disjob?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
   username: disjob
   password: disjob$123456
   minimum-idle: 10
@@ -11,21 +11,9 @@ disjob.datasource:
   connection-timeout: 2000
   pool-name: disjob
 
-
 # redis configuration
 spring.redis:
   client-type: LETTUCE
-
   password: 123456               # redis node auth password
-  #username: node_auth           # redis node auth username(redis 6.x ACL)
-
-  # redis standalone config
   host: localhost                # redis standalone host name
-  port: 6379                     # redis standalone port
-
-  # redis sentinel config
-  #sentinel:
-  #  master: REDIS_SENTINEL
-  #  nodes: 112.74.170.75:16379,112.74.170.75:16380
-  #  #password: 123456            # redis sentinel auth password
-  #  #username: sentinel_auth     # redis sentinel auth username(redis 6.x ACL)
+  port: 26379                    # redis standalone port

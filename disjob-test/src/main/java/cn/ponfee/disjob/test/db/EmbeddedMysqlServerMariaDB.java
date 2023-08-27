@@ -62,10 +62,10 @@ public class EmbeddedMysqlServerMariaDB {
             .setPort(port) // OR, default: setPort(0); => autom. detect free port
             .setBaseDir(createDirectory("base"))
             .setDataDir(createDirectory("data"))
-            //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
+            .addArg("--user=root")
             .addArg("--character-set-server=utf8mb4")
             //.addArg("--default-character-set=utf8mb4")
-            .addArg("--user=root")
+            //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
             .build();
         DB db = DB.newEmbeddedDB(configuration);
 

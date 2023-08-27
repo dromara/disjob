@@ -703,8 +703,13 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
 
                 if (param == null) {
-                    LOG.info("Worker thread exit, idle wait timeout.");
-                    break;
+                    if (executingParam.get() != null) {
+                        param = workQueue.poll();
+                    }
+                    if (param == null) {
+                        LOG.info("Worker thread exit, idle wait timeout.");
+                        break;
+                    }
                 }
 
                 try {
