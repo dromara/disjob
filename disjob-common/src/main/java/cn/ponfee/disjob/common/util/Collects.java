@@ -121,7 +121,7 @@ public class Collects {
         if (array == null || index < 0 || index >= array.length) {
             return null;
         }
-        return index < array.length ? array[index] : null;
+        return array[index];
     }
 
     public static <T> T get(List<T> list, int index) {

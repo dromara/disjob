@@ -10,11 +10,16 @@ package cn.ponfee.disjob.common.model;
 
 import cn.ponfee.disjob.common.base.RemovableTypedKeyValue;
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.common.util.Collects;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.ToLongFunction;
 
 /**
  * Page request for pageable query
@@ -42,7 +47,7 @@ public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<
     private int pageSize;
 
     /**
-     * Sort string, for example: "last_update_time desc, name"
+     * Sort string, for example: "updated_at desc, name asc"
      */
     private String sort;
 
@@ -65,18 +70,44 @@ public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<
         return (long) (pageNumber - 1) * pageSize;
     }
 
-    public void adjustPageNumber(long total) {
+    public <P extends PageRequest, A> PageResponse<A> query(ToLongFunction<P> queryCount,
+                                                            Function<P, List<A>> queryRecord) {
+        return query(queryCount, queryRecord, null);
+    }
+
+    public <P extends PageRequest, A, B> PageResponse<B> query(ToLongFunction<P> queryCount,
+                                                               Function<P, List<A>> queryRecords,
+                                                               Function<A, B> mapper) {
+        check();
+        P this0 = (P) this;
+        long total;
+        List<A> list;
+        if (isPaged()) {
+            total = queryCount.applyAsLong(this0);
+            correctPageNumber(total);
+            list = (total == 0) ? Collections.emptyList() : queryRecords.apply(this0);
+        } else {
+            list = queryRecords.apply(this0);
+            total = list.size();
+        }
+        List<B> rows = (mapper == null) ? (List<B>) list : Collects.convert(list, mapper);
+        return new PageResponse<>(rows, total, this0);
+    }
+
+    // ------------------------------------------------------------------------private methods
+
+    private void check() {
+        int minPageSize = paged ? 1 : 0;
+        if (pageSize < minPageSize) {
+            throw new IllegalArgumentException("Invalid page size value [" + pageSize + "].");
+        }
+    }
+
+    private void correctPageNumber(long total) {
         if (pageNumber < 1 || total == 0) {
             this.pageNumber = 1;
         } else {
             this.pageNumber = Math.min(pageNumber, PageResponse.computeTotalPages(pageSize, total));
-        }
-    }
-
-    public void check() {
-        int minPageSize = paged ? 1 : 0;
-        if (pageSize < minPageSize) {
-            throw new IllegalArgumentException("Invalid page size value [" + pageSize + "].");
         }
     }
 

@@ -9,15 +9,11 @@
 package cn.ponfee.disjob.common.model;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.common.util.Collects;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.ToLongFunction;
 
 /**
  * Page query response
@@ -63,31 +59,6 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
 
     public static int computeTotalPages(int pageSize, long total) {
         return (int) ((total + pageSize - 1) / pageSize);
-    }
-
-    public static <P extends PageRequest, A> PageResponse<A> query(P pageRequest,
-                                                                   ToLongFunction<P> queryCount,
-                                                                   Function<P, List<A>> queryRecord) {
-        return query(pageRequest, queryCount, queryRecord, null);
-    }
-
-    public static <P extends PageRequest, A, B> PageResponse<B> query(P pageRequest,
-                                                                      ToLongFunction<P> queryCount,
-                                                                      Function<P, List<A>> queryRecords,
-                                                                      Function<A, B> mapper) {
-        pageRequest.check();
-        long total;
-        List<A> list;
-        if (pageRequest.isPaged()) {
-            total = queryCount.applyAsLong(pageRequest);
-            pageRequest.adjustPageNumber(total);
-            list = (total == 0) ? Collections.emptyList() : queryRecords.apply(pageRequest);
-        } else {
-            list = queryRecords.apply(pageRequest);
-            total = list.size();
-        }
-        List<B> rows = (mapper == null) ? (List<B>) list : Collects.convert(list, mapper);
-        return new PageResponse<>(rows, total, pageRequest);
     }
 
 }

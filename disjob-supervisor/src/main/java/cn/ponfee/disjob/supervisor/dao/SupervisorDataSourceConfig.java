@@ -10,11 +10,9 @@ package cn.ponfee.disjob.supervisor.dao;
 
 import cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +22,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
-
-import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.MYBATIS_CONFIG_FILE_LOCATION;
 
 /**
  * Supervisor datasource configuration
@@ -51,10 +47,6 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.MYBATIS_CONFI
 )
 public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
 
-    public SupervisorDataSourceConfig(@Value("${" + MYBATIS_CONFIG_FILE_LOCATION + ":}") String mybatisConfigFileLocation) {
-        super(defaultIfBlank(mybatisConfigFileLocation));
-    }
-
     /**
      * Package path
      *
@@ -62,6 +54,7 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
      */
     static final String BASE_PACKAGE = "cn.ponfee.disjob.supervisor.dao";
     static {
+        // Check package name
         if (!BASE_PACKAGE.equals(ClassUtils.getPackageName(SupervisorDataSourceConfig.class))) {
             throw new Error("Invalid package path of " + SupervisorDataSourceConfig.class);
         }
@@ -104,10 +97,6 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     @Bean(name = DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX)
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
-    }
-
-    private static String defaultIfBlank(String mybatisConfigFileLocation) {
-        return StringUtils.defaultIfBlank(mybatisConfigFileLocation, "classpath:disjob-mybatis-config.xml");
     }
 
 }

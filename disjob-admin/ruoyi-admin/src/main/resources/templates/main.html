@@ -189,7 +189,7 @@
                         <li>Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd</li>
                         <li>Supervisor负责生成任务，把任务分发给Worker执行，支持的任务分发方式有：Redis、Http</li>
                         <li>需要指定Job的分组(job-group)，Job的任务只会分发给指定组的Worker执行</li>
-                        <li>提供拆分任务的能力，重写拆分方法<a href="https://github.com/ponfee/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java">JobHandler#split</a>即可拆分为多个任务，实现任务分治及并行执行</li>
+                        <li>提供拆分任务的能力，重写拆分方法<a href="https://github.com/ponfee/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java">JobHandler#split</a>即可拆分为多个任务，实现分布式任务并行执行</li>
                         <li>支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试</li>
                         <li>支持任务保存(checkpoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行</li>
                         <li>支持广播任务，广播任务会分发给job-group下的所有worker执行</li>
@@ -316,7 +316,7 @@ public class MergedApplication extends AbstractSamplesApplication {
                     <ul class="contains-task-list">
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" checked=""> 扩展注册中心：Zookeeper、Etcd、Nacos</li>
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" checked=""> 工作流任务(Workflow DAG)</li>
-                        <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" checked=""> 任务管理后台、账户体系及权限控制</li>
+                        <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" checked=""> 管理后台、账户体系及权限控制</li>
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 搭建一个关于项目使用说明的文档站点</li>
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 在线查看任务实时运行日志</li>
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 告警订阅：邮件、短信、电话、飞书、钉钉、微信</li>

@@ -8,10 +8,10 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.common.spring.SpringUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.VFS;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
@@ -37,16 +37,13 @@ public abstract class AbstractDataSourceConfig {
     public static final String TX_TEMPLATE_NAME_SUFFIX          = "TransactionTemplate";
     public static final String JDBC_TEMPLATE_NAME_SUFFIX        = "JdbcTemplate";
 
-    private final String mybatisConfigFileLocation;
     private final String mybatisMapperFileLocation;
 
-    public AbstractDataSourceConfig(String mybatisConfigFileLocation) {
-        this(mybatisConfigFileLocation, -1);
+    public AbstractDataSourceConfig() {
+        this(-1);
     }
 
-    public AbstractDataSourceConfig(String mybatisConfigFileLocation, int wildcardLastIndex) {
-        this.mybatisConfigFileLocation = mybatisConfigFileLocation;
-
+    public AbstractDataSourceConfig(int wildcardLastIndex) {
         List<String> list = Arrays.stream(ClassUtils.getPackageName(getClass()).split("\\."))
             .filter(StringUtils::isNotEmpty)
             .collect(Collectors.toList());
@@ -70,8 +67,7 @@ public abstract class AbstractDataSourceConfig {
         this.mybatisMapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", path);
     }
 
-    public AbstractDataSourceConfig(String mybatisConfigFileLocation, String mybatisMapperFileLocation) {
-        this.mybatisConfigFileLocation = mybatisConfigFileLocation;
+    public AbstractDataSourceConfig(String mybatisMapperFileLocation) {
         this.mybatisMapperFileLocation = mybatisMapperFileLocation;
     }
 
@@ -86,9 +82,21 @@ public abstract class AbstractDataSourceConfig {
         VFS.addImplClass(SpringBootVFS.class);
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource());
-        factoryBean.setConfigLocation(SpringUtils.getResource(mybatisConfigFileLocation));
+        factoryBean.setConfiguration(createMybatisConfiguration());
         factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mybatisMapperFileLocation));
         return factoryBean.getObject();
+    }
+
+    private static Configuration createMybatisConfiguration() {
+        Configuration configuration = new Configuration();
+        // 下划线转驼峰：默认false
+        configuration.setMapUnderscoreToCamelCase(true);
+        // 为驱动的结果集获取数量（fetchSize）设置一个建议值，此参数只可以在查询设置中被覆盖：默认null
+        configuration.setDefaultFetchSize(100);
+        // 超时时间，它决定数据库驱动等待数据库响应的秒数：默认null
+        configuration.setDefaultStatementTimeout(25);
+
+        return configuration;
     }
 
 }

@@ -8,9 +8,9 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.common.spring.SpringUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -106,8 +106,6 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
         this.environment = environment;
     }
 
-    protected abstract String mybatisConfigFileLocation(Environment environment);
-
     /**
      * 使用该方式时，基于注解方式的事务不生效
      */
@@ -177,7 +175,7 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
         BeanDefinitionBuilder sqlSessionFactoryBeanBdb = BeanDefinitionBuilder.genericBeanDefinition(SqlSessionFactoryBean.class);
         sqlSessionFactoryBeanBdb.addPropertyReference("dataSource", databaseName + DATA_SOURCE_NAME_SUFFIX);
         try {
-            sqlSessionFactoryBeanBdb.addPropertyValue("configLocation", SpringUtils.getResource(mybatisConfigFileLocation(environment)));
+            sqlSessionFactoryBeanBdb.addPropertyValue("configuration", createMybatisConfiguration());
             sqlSessionFactoryBeanBdb.addPropertyValue("mapperLocations", new PathMatchingResourcePatternResolver().getResources(mybatisMapperFileLocation));
         } catch (IOException e) {
             throw new BeanInstantiationException(SqlSessionFactory.class, "Load mybatis location file error.", e);
@@ -217,9 +215,20 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
     private SqlSessionFactory createSqlSessionFactory(DataSource dataSource) throws Exception {
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource);
-        factoryBean.setConfigLocation(SpringUtils.getResource(mybatisConfigFileLocation(environment)));
+        factoryBean.setConfiguration(createMybatisConfiguration());
         factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mybatisMapperFileLocation));
         return factoryBean.getObject();
     }
 
+    private static Configuration createMybatisConfiguration() {
+        Configuration configuration = new Configuration();
+        // 下划线转驼峰：默认false
+        configuration.setMapUnderscoreToCamelCase(true);
+        // 为驱动的结果集获取数量（fetchSize）设置一个建议值，此参数只可以在查询设置中被覆盖：默认null
+        configuration.setDefaultFetchSize(100);
+        // 超时时间，它决定数据库驱动等待数据库响应的秒数：默认null
+        configuration.setDefaultStatementTimeout(25);
+
+        return configuration;
+    }
 }

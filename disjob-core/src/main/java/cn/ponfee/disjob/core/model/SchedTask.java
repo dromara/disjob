@@ -77,7 +77,7 @@ public class SchedTask extends BaseEntity implements Serializable {
     private Integer executeState;
 
     /**
-     * 保存的执行快照(状态)数据
+     * 保存的执行快照数据
      */
     private String executeSnapshot;
 

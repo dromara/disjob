@@ -99,8 +99,7 @@ public class DistributedJobQuerier {
     }
 
     public PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest) {
-        return PageResponse.query(
-            pageRequest,
+        return pageRequest.query(
             jobMapper::queryPageCount,
             jobMapper::queryPageRecords,
             SchedJobConverter.INSTANCE::convert
@@ -112,8 +111,7 @@ public class DistributedJobQuerier {
             pageRequest.setEndTime(Dates.endOfDay(pageRequest.getEndTime()));
         }
 
-        PageResponse<SchedInstanceResponse> pageResponse = PageResponse.query(
-            pageRequest,
+        PageResponse<SchedInstanceResponse> pageResponse = pageRequest.query(
             instanceMapper::queryPageCount,
             instanceMapper::queryPageRecords,
             SchedJobConverter.INSTANCE::convert
