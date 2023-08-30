@@ -43,14 +43,14 @@ public final class EmbeddedRedisServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Collections.singletonList("6379:6379");
 
     public static void main(String[] args) {
-        DockerImageName consulImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("redis-test");
+        DockerImageName redisImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("redis-test");
 
         // --name: DockerImageName
         // --privileged: withPrivilegedMode
         // -p: setPortBindings
         // -v: withFileSystemBind
         // -e: withEnv
-        GenericContainer<?> dockerRedisContainer = new GenericContainer<>(consulImage)
+        GenericContainer<?> dockerRedisContainer = new GenericContainer<>(redisImage)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedRedisServerTestcontainers.class)))
             // 挂载映射文件非必需
             //.withFileSystemBind("/opt/docker/redis", "/usr/local/etc/redis", BindMode.READ_ONLY)

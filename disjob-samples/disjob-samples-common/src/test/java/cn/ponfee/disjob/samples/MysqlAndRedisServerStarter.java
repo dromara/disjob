@@ -18,7 +18,11 @@ import cn.ponfee.disjob.test.EmbeddedMysqlAndRedisServer;
 public class MysqlAndRedisServerStarter {
 
     public static void main(String[] args) {
-        EmbeddedMysqlAndRedisServer.starter().start();
+        EmbeddedMysqlAndRedisServer.starter()
+            .mysqlPort(3306)
+            .redisMasterPort(6379)
+            .redisSlavePort(6380)
+            .start();
     }
 
 }

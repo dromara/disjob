@@ -13,8 +13,8 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.impl.CommandJobHandler;
 import cn.ponfee.disjob.core.model.SchedTask;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
@@ -22,11 +22,14 @@ import java.util.Date;
 /**
  * @author Ponfee
  */
-@Disabled
 public class CommandJobHandlerTest {
 
     @Test
     public void testCommand() throws Exception {
+        if (!SystemUtils.IS_OS_UNIX) {
+            return;
+        }
+
         SchedTask task = new SchedTask();
         task.setTaskId(1L);
 

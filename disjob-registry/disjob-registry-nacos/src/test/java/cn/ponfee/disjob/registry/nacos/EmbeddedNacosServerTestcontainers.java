@@ -60,14 +60,14 @@ public final class EmbeddedNacosServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848", "8849:8849", "9848:9848", "9849:9849");
 
     public static void main(String[] args) {
-        DockerImageName consulImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("nacos-test");
+        DockerImageName nacosImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("nacos-test");
 
         // --name: DockerImageName
         // --privileged: withPrivilegedMode
         // -p: setPortBindings
         // -v: withFileSystemBind
         // -e: withEnv
-        GenericContainer<?> dockerNacosContainer = new GenericContainer<>(consulImage)
+        GenericContainer<?> dockerNacosContainer = new GenericContainer<>(nacosImage)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedNacosServerTestcontainers.class)))
             // 挂载映射文件非必需
             //.withFileSystemBind("/opt/docker/nacos/init.d/custom.properties", "/home/nacos/init.d/custom.properties", BindMode.READ_ONLY)

@@ -12,18 +12,21 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.disjob.core.model.SchedTask;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Ponfee
  */
-@Disabled
 public class ScriptJobHandlerTest {
 
     @Test
     public void testShell() throws Exception {
+        if (!SystemUtils.IS_OS_UNIX) {
+            return;
+        }
+
         ScriptJobHandler.ScriptParam scriptParam = new ScriptJobHandler.ScriptParam();
         scriptParam.setType(ScriptJobHandler.ScriptType.SHELL);
         scriptParam.setScript("#!/bin/sh\necho \"hello, shell!\"\n");

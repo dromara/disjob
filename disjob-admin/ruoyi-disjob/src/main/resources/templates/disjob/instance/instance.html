@@ -120,7 +120,7 @@
     {
       field: 'instanceId',
       title: 'InstanceId',
-      width: '300',
+      width: '250',
       formatter: function (value, row, index) {
         return value === row.wnstanceId ? value : '<a href="javascript:void(0)" onclick="tasks(\'' + value + '\')">' + value + '</a>';
       }
@@ -136,6 +136,7 @@
     {
       field: 'runState',
       title: '运行状态',
+      width: '70',
       formatter: function (value, row, index) {
         var label = $.table.selectData(runStates, value, 'value', 'desc');
         return $.common.sprintf("<span class='badge badge-%s'>%s</span>", stateMap[value], label);
@@ -144,6 +145,7 @@
     {
       field: 'runType',
       title: '运行类型',
+      width: '70',
       formatter: function (value, row, index) {
         return $.table.selectData(runTypes, value, 'value', 'desc');
       }
@@ -151,21 +153,25 @@
     {
       field: 'triggerTime',
       title: '触发时间',
+      width: '140',
       formatter: function (value, row, index) {
         return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
       }
     },
     {
       field: 'runStartTime',
-      title: '运行开始时间'
+      title: '运行开始时间',
+      width: '140'
     },
     {
       field: 'runEndTime',
-      title: '运行结束时间'
+      title: '运行结束时间',
+      visible: false
     },
     {
       field: 'runDuration',
       title: '运行时长(秒)',
+      width: '90',
       formatter: function (value, row, index) {
         return value ? parseFloat((value / 1000).toFixed(3)) : "";
       }
@@ -173,6 +179,7 @@
     {
       field: 'retriedCount',
       title: '已重试次数',
+      width: '90',
       formatter: function (value, row, index) {
           return value === 0 ? "-" : value;
       }
@@ -180,6 +187,7 @@
     {
       field: 'attach',
       title: '附加信息',
+      width: '90',
       formatter: function (value, row, index) {
         return $.table.tooltip(value, 20);
       }
