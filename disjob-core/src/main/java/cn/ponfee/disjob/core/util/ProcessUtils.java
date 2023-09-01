@@ -11,7 +11,7 @@ package cn.ponfee.disjob.core.util;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -31,21 +31,21 @@ import java.util.function.Consumer;
  */
 public class ProcessUtils {
 
-    public static Result<String> complete(Process process, Charset charset, SchedTask task, Logger log) {
+    public static Result<String> complete(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
             // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
             String verbose = IOUtils.toString(is, charset);
             String error = IOUtils.toString(es, charset);
             int code = process.waitFor();
             if (code == 0) {
-                log.info("Execute success: {} | {}", task.getTaskId(), verbose);
+                log.info("Execute success: {} | {}", executingTask.getTaskId(), verbose);
                 return Result.success(verbose);
             } else {
-                log.error("Execute failed: {} | {} | {} | {}", task, code, verbose, error);
+                log.error("Execute failed: {} | {} | {} | {}", executingTask, code, verbose, error);
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Execute failed: code=" + code + ", error=" + error);
             }
         } catch (Throwable t) {
-            log.error("Execute error: " + task, t);
+            log.error("Execute error: " + executingTask, t);
             return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Execute error: " + Throwables.getRootCauseMessage(t));
         }
     }

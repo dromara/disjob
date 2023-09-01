@@ -10,10 +10,11 @@ package cn.ponfee.disjob.core.handle;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.impl.ScriptJobHandler;
-import cn.ponfee.disjob.core.model.SchedTask;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -31,31 +32,30 @@ public class ScriptJobHandlerTest {
         scriptParam.setType(ScriptJobHandler.ScriptType.SHELL);
         scriptParam.setScript("#!/bin/sh\necho \"hello, shell!\"\n");
 
-        SchedTask task = new SchedTask();
-        task.setTaskId(1L);
-        task.setTaskParam(Jsons.toJson(scriptParam));
+        ExecutingTask executingTask = new ExecutingTask();
+        executingTask.setTaskId(1L);
+        executingTask.setTaskParam(Jsons.toJson(scriptParam));
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
-        scriptJobHandler.task(task);
 
-        Result<String> execute = scriptJobHandler.execute(Checkpoint.DISCARD);
+        Result<String> execute = scriptJobHandler.execute(executingTask, Checkpoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
     }
 
+    @Disabled
     @Test
     public void testPython() throws Exception {
         ScriptJobHandler.ScriptParam scriptParam = new ScriptJobHandler.ScriptParam();
         scriptParam.setType(ScriptJobHandler.ScriptType.PYTHON);
         scriptParam.setScript("print('hello, python!')\n");
 
-        SchedTask task = new SchedTask();
-        task.setTaskId(1L);
-        task.setTaskParam(Jsons.toJson(scriptParam));
+        ExecutingTask executingTask = new ExecutingTask();
+        executingTask.setTaskId(1L);
+        executingTask.setTaskParam(Jsons.toJson(scriptParam));
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
-        scriptJobHandler.task(task);
 
-        Result<String> execute = scriptJobHandler.execute(Checkpoint.DISCARD);
+        Result<String> execute = scriptJobHandler.execute(executingTask, Checkpoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
 

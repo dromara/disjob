@@ -16,6 +16,7 @@ import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ public class ExecuteParamTest {
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
             @Override
-            public Result execute(Checkpoint checkpoint) {
+            public Result execute(ExecutingTask executingTask, Checkpoint checkpoint) {
                 return null;
             }
         });
@@ -51,7 +52,7 @@ public class ExecuteParamTest {
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
             @Override
-            public Result execute(Checkpoint checkpoint) {
+            public Result execute(ExecutingTask executingTask, Checkpoint checkpoint) {
                 return null;
             }
         });

@@ -13,7 +13,7 @@ import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.util.ProcessUtils;
 import lombok.Data;
 import org.springframework.util.Assert;
@@ -37,15 +37,14 @@ import java.nio.charset.Charset;
 public class CommandJobHandler extends JobHandler<String> {
 
     @Override
-    public Result<String> execute(Checkpoint checkpoint) throws Exception {
-        final SchedTask task = task();
-        Assert.hasText(task.getTaskParam(), "Command param cannot be empty.");
-        CommandParam commandParam = Jsons.fromJson(task.getTaskParam(), CommandParam.class);
+    public Result<String> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
+        Assert.hasText(executingTask.getTaskParam(), "Command param cannot be empty.");
+        CommandParam commandParam = Jsons.fromJson(executingTask.getTaskParam(), CommandParam.class);
         Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");
         Charset charset = Files.charset(commandParam.charset);
 
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
-        return ProcessUtils.complete(process, charset, task, log);
+        return ProcessUtils.complete(process, charset, executingTask, log);
     }
 
     @Data

@@ -25,7 +25,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * <pre>
  * DAG graph for workflow
+ *
+ * source -> pre_node
+ * target -> cur_node
+ * </pre>
  *
  * @author Ponfee
  */

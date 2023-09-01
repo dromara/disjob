@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import lombok.Data;
 import org.apache.http.client.config.RequestConfig;
 import org.springframework.http.HttpEntity;
@@ -51,9 +51,8 @@ public class HttpJobHandler extends JobHandler<String> {
     );
 
     @Override
-    public Result<String> execute(Checkpoint checkpoint) {
-        final SchedTask task = task();
-        HttpJobRequest req = Jsons.fromJson(task.getTaskParam(), HttpJobRequest.class);
+    public Result<String> execute(ExecutingTask executingTask, Checkpoint checkpoint) {
+        HttpJobRequest req = Jsons.fromJson(executingTask.getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");
         HttpMethod method = HttpMethod.valueOf(req.method.toUpperCase());
@@ -102,7 +101,7 @@ public class HttpJobHandler extends JobHandler<String> {
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + res.getStatusCode() + ", response: " + res.getBody());
             }
         } catch (Throwable t) {
-            log.error("Http request failed: " + task, t);
+            log.error("Http request failed: " + executingTask, t);
             return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), Throwables.getRootCauseMessage(t));
         }
     }

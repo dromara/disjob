@@ -8,12 +8,17 @@
 
 package cn.ponfee.disjob.supervisor.service;
 
+import cn.ponfee.disjob.common.dag.DAGEdge;
+import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;
+import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.model.SchedWorkflow;
 import cn.ponfee.disjob.core.openapi.supervisor.converter.SchedJobConverter;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedJobPageRequest;
@@ -22,10 +27,12 @@ import cn.ponfee.disjob.core.openapi.supervisor.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
+import cn.ponfee.disjob.supervisor.dao.mapper.SchedWorkflowMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -42,13 +49,16 @@ public class DistributedJobQuerier {
     private final SchedJobMapper jobMapper;
     private final SchedTaskMapper taskMapper;
     private final SchedInstanceMapper instanceMapper;
+    private final SchedWorkflowMapper workflowMapper;
 
     public DistributedJobQuerier(SchedJobMapper jobMapper,
                                  SchedTaskMapper taskMapper,
-                                 SchedInstanceMapper instanceMapper) {
+                                 SchedInstanceMapper instanceMapper,
+                                 SchedWorkflowMapper workflowMapper) {
         this.jobMapper = jobMapper;
         this.taskMapper = taskMapper;
         this.instanceMapper = instanceMapper;
+        this.workflowMapper = workflowMapper;
     }
 
     public SchedJob getJob(long jobId) {
@@ -92,6 +102,35 @@ public class DistributedJobQuerier {
 
     public SchedTask getTask(long taskId) {
         return taskMapper.getByTaskId(taskId);
+    }
+
+    public List<WorkflowPredecessorNode> getWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+        List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
+        if (CollectionUtils.isEmpty(workflows)) {
+            return null;
+        }
+
+        SchedWorkflow curWorkflow = workflows.stream().filter(e -> e.getInstanceId() == instanceId).findAny().orElse(null);
+        if (curWorkflow == null) {
+            return null;
+        }
+
+        DAGNode curNode = DAGNode.fromString(curWorkflow.getCurNode());
+        WorkflowGraph workflowGraph = new WorkflowGraph(workflows);
+        Map<DAGEdge, SchedWorkflow> predecessors = workflowGraph.predecessors(curNode);
+        if (MapUtils.isEmpty(predecessors)) {
+            return null;
+        }
+
+        return predecessors.values()
+            .stream()
+            .map(e -> {
+                List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId());
+                tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
+                return WorkflowPredecessorNode.of(e, tasks);
+            })
+            .sorted(Comparator.comparing(WorkflowPredecessorNode::getSequence))
+            .collect(Collectors.toList());
     }
 
     public List<SchedTask> findLargeInstanceTasks(long instanceId) {

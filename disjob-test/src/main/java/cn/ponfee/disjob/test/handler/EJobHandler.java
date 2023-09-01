@@ -8,10 +8,12 @@
 
 package cn.ponfee.disjob.test.handler;
 
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.test.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -41,9 +44,10 @@ public class EJobHandler extends JobHandler<Void> {
     }
 
     @Override
-    public Result<Void> execute(Checkpoint checkpoint) throws Exception {
+    public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
         LOG.info(this.getClass().getSimpleName() + " execution finished.");
+        checkpoint.checkpoint(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return Result.success();
     }
 

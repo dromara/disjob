@@ -10,6 +10,7 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.handle.Checkpoint;
+import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.StartTaskParam;
 import cn.ponfee.disjob.core.param.TaskWorkerParam;
@@ -37,7 +38,18 @@ public interface SupervisorService extends Checkpoint {
     boolean startTask(StartTaskParam param) throws Exception;
 
     @PostMapping("task/worker/update")
-    void updateTaskWorker(List<TaskWorkerParam> params);
+    void updateTaskWorker(List<TaskWorkerParam> params) throws Exception;
+
+    /**
+     * Gets workflow predecessor nodes
+     *
+     * @param wnstanceId the workflow lead instance id
+     * @param instanceId the instance id
+     * @return list of predecessor nodes
+     * @throws Exception if occur error
+     */
+    @GetMapping("workflow/predecessor/nodes/get")
+    List<WorkflowPredecessorNode> getWorkflowPredecessorNodes(long wnstanceId, long instanceId) throws Exception;
 
     @PostMapping("task/terminate")
     boolean terminateTask(TerminateTaskParam param) throws Exception;

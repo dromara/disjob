@@ -8,12 +8,15 @@
 
 package cn.ponfee.disjob.test.handler;
 
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.BroadcastJobHandler;
 import cn.ponfee.disjob.core.handle.Checkpoint;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -26,14 +29,15 @@ public class TestBroadcastJobHandler extends BroadcastJobHandler<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(TestBroadcastJobHandler.class);
 
     @Override
-    public void init() {
+    public void init(ExecutingTask executingTask) {
         LOG.debug("Broadcast job init.");
     }
 
     @Override
-    public Result<Void> execute(Checkpoint checkpoint) throws Exception {
+    public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
         Thread.sleep(5000 + ThreadLocalRandom.current().nextLong(10000));
-        LOG.info("Broadcast job execute done: {}", task().getTaskId());
+        LOG.info("Broadcast job execute done: {}", executingTask.getTaskId());
+        checkpoint.checkpoint(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return Result.success();
     }
 

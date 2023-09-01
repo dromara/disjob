@@ -11,6 +11,7 @@ package cn.ponfee.disjob.supervisor.provider;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.StartTaskParam;
 import cn.ponfee.disjob.core.param.TaskWorkerParam;
@@ -49,6 +50,11 @@ public class SupervisorServiceProvider implements SupervisorService, RpcControll
     @Override
     public void updateTaskWorker(List<TaskWorkerParam> params) {
         jobManager.updateTaskWorker(params);
+    }
+
+    @Override
+    public List<WorkflowPredecessorNode> getWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+        return jobQuerier.getWorkflowPredecessorNodes(wnstanceId, instanceId);
     }
 
     @Override

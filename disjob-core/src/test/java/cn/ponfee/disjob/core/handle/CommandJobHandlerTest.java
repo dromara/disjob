@@ -11,8 +11,8 @@ package cn.ponfee.disjob.core.handle;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.impl.CommandJobHandler;
-import cn.ponfee.disjob.core.model.SchedTask;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,17 +30,16 @@ public class CommandJobHandlerTest {
             return;
         }
 
-        SchedTask task = new SchedTask();
-        task.setTaskId(1L);
+        ExecutingTask executingTask = new ExecutingTask();
+        executingTask.setTaskId(1L);
 
         CommandJobHandler.CommandParam commandParam = new CommandJobHandler.CommandParam();
         commandParam.setCmdarray(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
-        task.setTaskParam(Jsons.toJson(commandParam));
+        executingTask.setTaskParam(Jsons.toJson(commandParam));
 
         CommandJobHandler commandJobHandler = new CommandJobHandler();
-        commandJobHandler.task(task);
 
-        Result<String> result = commandJobHandler.execute(Checkpoint.DISCARD);
+        Result<String> result = commandJobHandler.execute(executingTask, Checkpoint.DISCARD);
 
         String expect = "{\"code\":0,\"msg\":\"OK\",\"data\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
         Assertions.assertEquals(expect, Jsons.toJson(result));

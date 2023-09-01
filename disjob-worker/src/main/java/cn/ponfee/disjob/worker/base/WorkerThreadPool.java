@@ -18,12 +18,15 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.SupervisorService;
 import cn.ponfee.disjob.core.enums.ExecuteState;
+import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.CancelTaskException;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
+import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.param.StartTaskParam;
@@ -467,7 +470,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     // 同一个task re-dispatch，导致重复
                     throw new IllegalTaskException("Repeat execute task: " + param);
                 } else {
-                    // 不同的task，task-id生成有重复
+                    // 如果task分表时，不同的task的task-id生成有重复(task不做分片表的不会存在该问题)
                     throw new DuplicateTaskException("Duplicate task id: " + param + " | " + exists.executingParam());
                 }
             }
@@ -730,6 +733,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void runTask(ExecuteTaskParam param) {
             SchedTask task;
+            ExecutingTask executingTask;
             try {
                 if ((task = supervisorServiceClient.getTask(param.getTaskId())) == null) {
                     LOG.error("Sched task not found {}", param);
@@ -741,6 +745,13 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.warn("Task state not executable: {} | {} | {}", task.getTaskId(), fromState, param.operation());
                     return;
                 }
+
+                // build executing task
+                List<WorkflowPredecessorNode> workflowPredecessorNodes = null;
+                if (param.getJobType() == JobType.WORKFLOW) {
+                    workflowPredecessorNodes = supervisorServiceClient.getWorkflowPredecessorNodes(param.getWnstanceId(), param.getInstanceId());
+                }
+                executingTask = ExecutingTask.of(param.getJobId(), param.getWnstanceId(), task, workflowPredecessorNodes);
 
                 // update database records start state(sched_instance, sched_task)
                 if (!supervisorServiceClient.startTask(StartTaskParam.from(param))) {
@@ -762,26 +773,16 @@ public class WorkerThreadPool extends Thread implements Closeable {
             TaskExecutor<?> taskExecutor;
             try {
                 taskExecutor = JobHandlerUtils.load(param.getJobHandler());
+                param.taskExecutor(taskExecutor);
             } catch (Throwable t) {
                 LOG.error("Load job handler error: " + param, t);
                 terminateTask(supervisorServiceClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
                 return;
             }
 
-            taskExecutor.task(task);
-            param.taskExecutor(taskExecutor);
-
-            try {
-                taskExecutor.verify();
-            } catch (Throwable t) {
-                LOG.error("Task verify failed: " + param, t);
-                terminateTask(supervisorServiceClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(t));
-                return;
-            }
-
             // 2、init
             try {
-                taskExecutor.init();
+                taskExecutor.init(executingTask);
                 LOG.info("Initiated sched task {}", param.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Task init error: " + param, t);
@@ -793,7 +794,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             try {
                 Result<?> result;
                 if (param.getExecuteTimeout() > 0) {
-                    FutureTask<Result<?>> futureTask = new FutureTask<>(() -> taskExecutor.execute(supervisorServiceClient));
+                    FutureTask<Result<?>> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, supervisorServiceClient));
                     Thread futureTaskThread = new Thread(futureTask);
                     futureTaskThread.setDaemon(true);
                     futureTaskThread.setName(getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement());
@@ -804,7 +805,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                         Threads.stopThread(futureTaskThread, 0, 0, 0);
                     }
                 } else {
-                    result = taskExecutor.execute(supervisorServiceClient);
+                    result = taskExecutor.execute(executingTask, supervisorServiceClient);
                 }
                 LOG.info("Executed sched task {}", param.getTaskId());
 

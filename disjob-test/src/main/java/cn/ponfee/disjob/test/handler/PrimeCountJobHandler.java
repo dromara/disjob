@@ -15,7 +15,7 @@ import cn.ponfee.disjob.core.exception.PauseTaskException;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.test.util.Prime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -74,9 +74,8 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
      * @throws Exception if execute occur error
      */
     @Override
-    public Result<Void> execute(Checkpoint checkpoint) throws Exception {
-        final SchedTask task = task();
-        TaskParam taskParam = Jsons.fromJson(task.getTaskParam(), TaskParam.class);
+    public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
+        TaskParam taskParam = Jsons.fromJson(executingTask.getTaskParam(), TaskParam.class);
         long start = taskParam.getStart();
         long blockSize = taskParam.getBlockSize();
         long step = taskParam.getStep();
@@ -87,10 +86,10 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
         Assert.isTrue(n > 0, "N must be greater than zero.");
 
         ExecuteSnapshot execution;
-        if (StringUtils.isEmpty(task.getExecuteSnapshot())) {
+        if (StringUtils.isEmpty(executingTask.getExecuteSnapshot())) {
             execution = new ExecuteSnapshot(start);
         } else {
-            execution = Jsons.fromJson(task.getExecuteSnapshot(), ExecuteSnapshot.class);
+            execution = Jsons.fromJson(executingTask.getExecuteSnapshot(), ExecuteSnapshot.class);
             if (execution.getNext() == null || execution.isFinished()) {
                 Assert.isTrue(execution.isFinished() && execution.getNext() == null, "Invalid execute snapshot data.");
                 return Result.success();
@@ -101,7 +100,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
         long lastTime = System.currentTimeMillis(), currTime;
         while (next <= n) {
             if (super.isStopped() || Thread.currentThread().isInterrupted()) {
-                checkpoint.checkpoint(task.getTaskId(), Jsons.toJson(execution));
+                checkpoint.checkpoint(executingTask.getTaskId(), Jsons.toJson(execution));
                 throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_EXCEPTION);
             }
 
@@ -118,7 +117,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
 
             currTime = System.currentTimeMillis();
             if (execution.isFinished() || (currTime - lastTime) > 5000) {
-                checkpoint.checkpoint(task.getTaskId(), Jsons.toJson(execution));
+                checkpoint.checkpoint(executingTask.getTaskId(), Jsons.toJson(execution));
             }
             lastTime = currTime;
         }

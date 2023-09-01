@@ -9,36 +9,16 @@
 package cn.ponfee.disjob.core.handle;
 
 import cn.ponfee.disjob.common.model.Result;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 
 /**
- * Schedule task executor
+ * Task executor
  *
  * @author Ponfee
  */
 public abstract class TaskExecutor<T> {
 
     private volatile boolean stopped = false;
-
-    private SchedTask task;
-
-    /**
-     * Setting the sched task object.
-     *
-     * @param task the sched task object
-     */
-    public final void task(SchedTask task) {
-        this.task = task;
-    }
-
-    /**
-     * Returns the sched task object.
-     *
-     * @return sched task object
-     */
-    public final SchedTask task() {
-        return task;
-    }
 
     /**
      * Stop execute.
@@ -57,27 +37,22 @@ public abstract class TaskExecutor<T> {
     }
 
     /**
-     * Verifies schedule task
+     * Initializes task
      *
-     * @throws Exception if verified failed
-     */
-    public void verify() throws Exception { }
-
-    /**
-     * Initializes schedule task
-     *
+     * @param executingTask the executing task
      * @throws Exception if init failed
      */
-    public void init() throws Exception { }
+    public void init(ExecutingTask executingTask) throws Exception { }
 
     /**
-     * Executes schedule task
+     * Executes task
      *
-     * @param checkpoint the checkpoint
-     * @return execution result
+     * @param executingTask the executing task
+     * @param checkpoint    the checkpoint
+     * @return executed result
      * @throws Exception if execute failed
      */
-    public abstract Result<T> execute(Checkpoint checkpoint) throws Exception;
+    public abstract Result<T> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception;
 
     /**
      * Destroy this task executor

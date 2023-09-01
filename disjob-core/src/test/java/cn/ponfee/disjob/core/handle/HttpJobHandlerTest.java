@@ -10,8 +10,8 @@ package cn.ponfee.disjob.core.handle;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.impl.HttpJobHandler;
-import cn.ponfee.disjob.core.model.SchedTask;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -22,16 +22,15 @@ public class HttpJobHandlerTest {
 
     @Test
     public void testHttpJobHandler() {
-        SchedTask task = new SchedTask();
-        task.setTaskId(1L);
+        ExecutingTask executingTask = new ExecutingTask();
+        executingTask.setTaskId(1L);
         HttpJobHandler.HttpJobRequest req = new HttpJobHandler.HttpJobRequest();
         req.setMethod("GET");
         req.setUrl("https://www.baidu.com");
-        task.setTaskParam(Jsons.toJson(req));
+        executingTask.setTaskParam(Jsons.toJson(req));
         HttpJobHandler httpJobHandler = new HttpJobHandler();
-        httpJobHandler.task(task);
 
-        Result<String> result = httpJobHandler.execute(Checkpoint.DISCARD);
+        Result<String> result = httpJobHandler.execute(executingTask, Checkpoint.DISCARD);
         System.out.println(Jsons.toJson(result));
         Assertions.assertTrue(result.isSuccess());
     }

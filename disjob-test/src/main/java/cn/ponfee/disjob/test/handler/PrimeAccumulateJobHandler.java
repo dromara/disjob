@@ -8,40 +8,37 @@
 
 package cn.ponfee.disjob.test.handler;
 
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.Result;
+import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.execution.AbstractExecutionTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 
-import java.util.Date;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.List;
 
 /**
- * No operation job handler, use in test job handler.
+ * 质数计数后的累加器
  *
  * @author Ponfee
  */
-public class NoopJobHandler extends JobHandler<Void> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(NoopJobHandler.class);
-    public static volatile long major = 9997;
-    public static volatile long minor = 19997;
-
-    @Override
-    public void init(ExecutingTask executingTask) {
-        LOG.debug("Noop job init.");
-    }
+public class PrimeAccumulateJobHandler extends JobHandler<Void> {
 
     @Override
     public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
-        LOG.info("task execute start: {}", executingTask.getTaskId());
-        Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
-        LOG.info("task execute done: {}", executingTask.getTaskId());
-        checkpoint.checkpoint(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
+        List<WorkflowPredecessorNode> workflowPredecessorNodes = executingTask.getWorkflowPredecessorNodes();
+
+        long sum = workflowPredecessorNodes.stream()
+            .flatMap(e -> e.getExecutedTasks().stream())
+            .map(AbstractExecutionTask::getExecuteSnapshot)
+            .map(e -> Jsons.fromJson(e, PrimeCountJobHandler.ExecuteSnapshot.class))
+            .mapToLong(PrimeCountJobHandler.ExecuteSnapshot::getCount)
+            .sum();
+        checkpoint.checkpoint(executingTask.getTaskId(), Long.toString(sum));
+
         return Result.success();
     }
+
 
 }
