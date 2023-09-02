@@ -40,5 +40,4 @@ public class PrimeAccumulateJobHandler extends JobHandler<Void> {
         return Result.success();
     }
 
-
 }

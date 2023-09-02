@@ -747,11 +747,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
 
                 // build executing task
-                List<WorkflowPredecessorNode> workflowPredecessorNodes = null;
+                List<WorkflowPredecessorNode> nodes = null;
                 if (param.getJobType() == JobType.WORKFLOW) {
-                    workflowPredecessorNodes = supervisorServiceClient.getWorkflowPredecessorNodes(param.getWnstanceId(), param.getInstanceId());
+                    nodes = supervisorServiceClient.getWorkflowPredecessorNodes(param.getWnstanceId(), param.getInstanceId());
                 }
-                executingTask = ExecutingTask.of(param.getJobId(), param.getWnstanceId(), task, workflowPredecessorNodes);
+                executingTask = ExecutingTask.of(param.getJobId(), param.getWnstanceId(), task, nodes);
 
                 // update database records start state(sched_instance, sched_task)
                 if (!supervisorServiceClient.startTask(StartTaskParam.from(param))) {

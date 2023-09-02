@@ -40,7 +40,7 @@ public class WorkflowPredecessorNode extends ToJsonString implements Serializabl
         node.setSequence(workflow.getSequence());
         node.setCurNode(workflow.getCurNode());
         node.setRunState(RunState.of(workflow.getRunState()));
-        node.setExecutedTasks(ExecutedTask.of(tasks));
+        node.setExecutedTasks(ExecutedTask.convert(tasks));
         return node;
     }
 

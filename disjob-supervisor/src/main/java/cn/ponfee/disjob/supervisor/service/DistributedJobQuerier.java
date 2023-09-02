@@ -110,8 +110,16 @@ public class DistributedJobQuerier {
             return null;
         }
 
-        SchedWorkflow curWorkflow = workflows.stream().filter(e -> e.getInstanceId() == instanceId).findAny().orElse(null);
+        SchedWorkflow curWorkflow = workflows.stream()
+            .filter(e -> e.getInstanceId() != null)
+            .filter(e -> e.getInstanceId() == instanceId)
+            .findAny()
+            .orElse(null);
         if (curWorkflow == null) {
+            return null;
+        }
+
+        if (DAGNode.fromString(curWorkflow.getPreNode()).isStart()) {
             return null;
         }
 

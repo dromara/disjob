@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.core.handle.execution;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +21,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public abstract class AbstractExecutionTask implements Serializable {
+public abstract class AbstractExecutionTask extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 6002495716472663520L;
 
     /**

@@ -30,14 +30,15 @@ public class ExecutingTask extends AbstractExecutionTask {
     private Long jobId;
 
     /**
-     * sched_instance.wnstance_id
-     */
-    private Long wnstanceId;
-
-    /**
      * sched_instance.instance_id
      */
     private Long instanceId;
+
+    /**
+     * sched_instance.wnstance_id
+     * <p>非工作流任务时值为null
+     */
+    private Long wnstanceId;
 
     /**
      * job_handler执行task的参数
@@ -49,7 +50,10 @@ public class ExecutingTask extends AbstractExecutionTask {
      */
     private List<WorkflowPredecessorNode> workflowPredecessorNodes;
 
-    public static ExecutingTask of(Long jobId, Long wnstanceId, SchedTask task, List<WorkflowPredecessorNode> workflowPredecessorNodes) {
+    public static ExecutingTask of(Long jobId,
+                                   Long wnstanceId,
+                                   SchedTask task,
+                                   List<WorkflowPredecessorNode> workflowPredecessorNodes) {
         ExecutingTask executingTask = ExecutionTaskConverter.INSTANCE.toExecutingTask(task);
         executingTask.setJobId(jobId);
         executingTask.setWnstanceId(wnstanceId);

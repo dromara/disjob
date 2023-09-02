@@ -44,7 +44,7 @@ public interface SupervisorService extends Checkpoint {
      * Gets workflow predecessor nodes
      *
      * @param wnstanceId the workflow lead instance id
-     * @param instanceId the instance id
+     * @param instanceId the current node instance id
      * @return list of predecessor nodes
      * @throws Exception if occur error
      */

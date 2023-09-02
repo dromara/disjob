@@ -12,7 +12,6 @@ import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.model.SchedTask;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,8 +31,8 @@ public class ExecutedTask extends AbstractExecutionTask {
      */
     private ExecuteState executeState;
 
-    public static List<ExecutedTask> of(List<SchedTask> tasks) {
-        if (CollectionUtils.isEmpty(tasks)) {
+    public static List<ExecutedTask> convert(List<SchedTask> tasks) {
+        if (tasks == null) {
             return null;
         }
         return tasks.stream()
