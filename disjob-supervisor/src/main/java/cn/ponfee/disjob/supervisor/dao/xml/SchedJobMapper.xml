@@ -109,7 +109,9 @@
         collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
-        remark = #{remark,jdbcType=VARCHAR},
+        <if test="remark != null and remark != ''">
+          remark = #{remark,jdbcType=VARCHAR},
+        </if>
         version = version+1,
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         updated_at = #{updatedAt,jdbcType=TIMESTAMP}

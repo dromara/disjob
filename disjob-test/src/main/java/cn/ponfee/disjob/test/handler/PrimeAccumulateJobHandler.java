@@ -14,9 +14,6 @@ import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.execution.AbstractExecutionTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
-
-import java.util.List;
 
 /**
  * 质数计数后的累加器
@@ -27,9 +24,8 @@ public class PrimeAccumulateJobHandler extends JobHandler<Void> {
 
     @Override
     public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
-        List<WorkflowPredecessorNode> workflowPredecessorNodes = executingTask.getWorkflowPredecessorNodes();
-
-        long sum = workflowPredecessorNodes.stream()
+        long sum = executingTask.getWorkflowPredecessorNodes()
+            .stream()
             .flatMap(e -> e.getExecutedTasks().stream())
             .map(AbstractExecutionTask::getExecuteSnapshot)
             .map(e -> Jsons.fromJson(e, PrimeCountJobHandler.ExecuteSnapshot.class))

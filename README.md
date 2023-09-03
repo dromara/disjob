@@ -61,6 +61,7 @@ disjob                                                    # 主项目
 - 提供拆分任务的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(checkpoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
+- 任务在执行时若抛出PauseTaskException，会暂停对应实例下的全部任务(包括分布在不同worker机器中的任务)
 - 支持广播任务，广播任务会分发给job-group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
 - 支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A->B,C,(D->E)->D,F->G
@@ -141,8 +142,8 @@ public class MergedApplication extends AbstractSamplesApplication {
   - [启动java类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
   - 启动成功后浏览器访问 http://127.0.0.1:80/ 进入管理后台（用户名密码：admin/admin123）
   - 登录后在左侧菜单栏找到`调度管理`菜单，即可使用后台管理功能
-    - 调度配置：查看、新增、修改等
-    - 调度实例：具体时间点的运行实例，一个实例有多个task。鼠标向下滚动可看到第二个分页，第一个分页查询root实例并支持下钻，第二个分页查询所有实例
+    - 调度配置：查看、新增、修改、删除、触发、禁用等
+    - 调度实例：具体时间点的运行实例，一个实例拆分成多个task。(第一个分页表格为`查询root实例并支持下钻`，鼠标向下滚动页面后看到的第二个分页表格为`查询所有实例`)
 
 > **💡提示：若使用内置的mysql、redis，以上所有配置都无需修改即可启动各应用**
 

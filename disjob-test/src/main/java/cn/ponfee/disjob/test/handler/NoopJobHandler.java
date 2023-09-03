@@ -36,7 +36,10 @@ public class NoopJobHandler extends JobHandler<Void> {
 
     @Override
     public List<SplitTask> split(String jobParamString) {
-        return IntStream.range(0, 9).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
+        return IntStream.range(0, 1 + ThreadLocalRandom.current().nextInt(5))
+            .mapToObj(i -> getClass().getSimpleName() + "-" + i)
+            .map(SplitTask::new)
+            .collect(Collectors.toList());
     }
 
     @Override

@@ -34,7 +34,10 @@ import java.util.Optional;
  */
 public class PrimeCountJobHandler extends JobHandler<Void> {
 
-    private static final long DEFAULT_BLOCK_SIZE = 100_000_000L; // 默认以每块1亿分批统计
+    /**
+     * 默认以每块1亿分批统计
+     */
+    private static final long DEFAULT_BLOCK_SIZE = 100_000_000L;
 
     /**
      * 拆分任务，自定义控制任务的拆分数量
