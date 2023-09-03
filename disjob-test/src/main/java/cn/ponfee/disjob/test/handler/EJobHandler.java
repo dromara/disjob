@@ -40,7 +40,7 @@ public class EJobHandler extends JobHandler<Void> {
 
     @Override
     public List<SplitTask> split(String jobParamString) {
-        return IntStream.range(0, Constants.TASK_COUNT).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
+        return IntStream.range(0, Constants.TASK_COUNT + 4).mapToObj(Integer::toString).map(SplitTask::new).collect(Collectors.toList());
     }
 
     @Override

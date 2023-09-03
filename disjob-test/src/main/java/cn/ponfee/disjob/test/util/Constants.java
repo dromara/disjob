@@ -15,5 +15,5 @@ package cn.ponfee.disjob.test.util;
  */
 public class Constants {
 
-    public static final int TASK_COUNT = 1;
+    public static final int TASK_COUNT = 3;
 }

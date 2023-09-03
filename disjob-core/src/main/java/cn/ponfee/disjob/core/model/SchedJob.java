@@ -199,7 +199,7 @@ public class SchedJob extends BaseEntity implements Serializable {
         this.jobGroup = jobGroup.trim();
         this.jobName = jobName.trim();
         this.jobHandler = jobHandler.trim();
-        this.remark = remark.trim();
+        this.remark = (remark == null) ? "" : remark.trim();
     }
 
     public void verifyBeforeUpdate() {
