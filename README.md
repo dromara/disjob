@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
 [![Build status](https://github.com/ponfee/disjob/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/disjob/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-2.0.1-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
+[![Maven Central](https://img.shields.io/badge/maven--central-2.0.2-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
 
 **`简体中文`** | [English](README.en.md)
 
@@ -72,7 +72,7 @@ disjob                                                    # 主项目
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>disjob-{xxx}</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2</version>
 </dependency>
 ```
 
