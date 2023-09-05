@@ -718,8 +718,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 try {
                     runTask(param);
                 } catch (Throwable t) {
-                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                     LOG.error("Worker thread execute failed: " + param, t);
+                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                 }
 
                 // return this to idle thread pool
