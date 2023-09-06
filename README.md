@@ -22,34 +22,34 @@
 
 - 工程结构
 
-```Plain Text
-disjob                                                    # 主项目
-├── disjob-admin                                          # 基于Ruoyi框架二次开发的Disjob管理后台
-├── disjob-bom                                            # Maven project bom module
-├── disjob-common                                         # 公共的工具类模块
-├── disjob-core                                           # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
-├── disjob-dispatch                                       # 任务分发模块
-│   ├── disjob-dispatch-api                               # 任务分发的抽象接口层
-│   ├── disjob-dispatch-http                              # 任务分发的Http实现
-│   └── disjob-dispatch-redis                             # 任务分发的Redis实现
-├── disjob-id                                             # 分布式ID生成模块
-├── disjob-registry                                       # Server(Supervisor & Worker)注册模块
-│   ├── disjob-registry-api                               # Server注册的抽象接口层
-│   ├── disjob-registry-consul                            # Server注册的Consul实现
-│   ├── disjob-registry-etcd                              # Server注册的Etcd实现
-│   ├── disjob-registry-nacos                             # Server注册的Nacos实现
-│   ├── disjob-registry-redis                             # Server注册的Redis实现
-│   └── disjob-registry-zookeeper                         # Server注册的Zookeeper实现
-├── disjob-reports                                        # 聚合各个模块的测试覆盖率报告
-├── disjob-samples                                        # Samples项目
-│   ├── disjob-samples-common                             # 使用范例中用到的公共代码及公共配置文件
-│   ├── disjob-samples-merged-springboot                  # Supervisor与Worker合并部署的范例（Spring-boot应用）
-│   ├── disjob-samples-supervisor-springboot              # Supervisor单独部署的范例（Spring-boot应用）
-│   ├── disjob-samples-worker-frameless                   # Worker单独部署的范例（普通Java-main应用）
-│   └── disjob-samples-worker-springboot                  # Worker单独部署的范例（Spring-boot应用）
-├── disjob-supervisor                                     # Supervisor代码
-├── disjob-test                                           # 用于辅助测试
-└── disjob-worker                                         # Worker代码
+```text
+disjob                                        # 主项目
+├── disjob-admin                              # 基于Ruoyi框架二次开发的Disjob管理后台
+├── disjob-bom                                # Maven project bom module
+├── disjob-common                             # 公共的工具类模块
+├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
+├── disjob-dispatch                           # 任务分发模块
+│   ├── disjob-dispatch-api                   # 任务分发的抽象接口层
+│   ├── disjob-dispatch-http                  # 任务分发的Http实现
+│   └── disjob-dispatch-redis                 # 任务分发的Redis实现
+├── disjob-id                                 # 分布式ID生成模块
+├── disjob-registry                           # Server(Supervisor & Worker)注册模块
+│   ├── disjob-registry-api                   # Server注册的抽象接口层
+│   ├── disjob-registry-consul                # Server注册的Consul实现
+│   ├── disjob-registry-etcd                  # Server注册的Etcd实现
+│   ├── disjob-registry-nacos                 # Server注册的Nacos实现
+│   ├── disjob-registry-redis                 # Server注册的Redis实现
+│   └── disjob-registry-zookeeper             # Server注册的Zookeeper实现
+├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
+├── disjob-samples                            # Samples项目
+│   ├── disjob-samples-common                 # 使用范例中用到的公共代码及公共配置文件
+│   ├── disjob-samples-merged-springboot      # Supervisor与Worker合并部署的范例（Spring-boot应用）
+│   ├── disjob-samples-supervisor-springboot  # Supervisor单独部署的范例（Spring-boot应用）
+│   ├── disjob-samples-worker-frameless       # Worker单独部署的范例（普通Java-main应用）
+│   └── disjob-samples-worker-springboot      # Worker单独部署的范例（Spring-boot应用）
+├── disjob-supervisor                         # Supervisor代码
+├── disjob-test                               # 用于辅助测试
+└── disjob-worker                             # Worker代码
 ```
 
 ## Features
@@ -79,7 +79,7 @@ disjob                                                    # 主项目
 
 ## Build From Source
 
-```bash
+```shell
 ./mvnw clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U
 ```
 
@@ -151,6 +151,7 @@ disjob                                                    # 主项目
 - [Etcd](disjob-registry/disjob-registry-etcd/src/main/java/cn/ponfee/disjob/registry/etcd/configuration/EtcdRegistryProperties.java)
 
 > 例如：若使用Consul做配置中心时，可加如下配置
+
 ```yaml
 disjob.registry.consul:
   namespace: consul_namespace
