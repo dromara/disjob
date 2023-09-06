@@ -43,14 +43,51 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-worker</artifactId>
     </dependency>
+
+    <!-- Registry: select one implementation for server registry -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-redis</artifactId>
+    </dependency>
+    <!--
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-redis</artifactId>
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-consul</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-nacos</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-zookeeper</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-etcd</artifactId>
+    </dependency>
+    -->
+
+    <!-- Dispatching: select one implementation for task dispatching -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-http</artifactId>
     </dependency>
+    <!--
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-dispatch-redis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-dispatch-http</artifactId>
+    </dependency>
+    -->
+
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>

@@ -27,6 +27,6 @@ public abstract class AbstractRegistryProperties extends ToJsonString implements
     /**
      * Registry namespace
      */
-    private String namespace;
+    private String namespace = "disjob_registry";
 
 }

@@ -68,7 +68,7 @@
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
 
-    <spring-boot.version>2.7.14</spring-boot.version>
+    <spring-boot.version>2.7.15</spring-boot.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
     <guava.version>32.1.2-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
@@ -77,9 +77,9 @@
     <curator-recipes.version>5.5.0</curator-recipes.version>
     <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
-    <embedded-redis.version>1.2</embedded-redis.version>
+    <embedded-redis.version>1.3</embedded-redis.version>
     <graphviz-java.version>0.18.1</graphviz-java.version>
-    <testcontainers.version>1.18.3</testcontainers.version>
+    <testcontainers.version>1.19.0</testcontainers.version>
 
     <!-- spring-boot-dependencies [type=pom, scope=import]方式，无法自动引入plugin依赖版本 -->
     <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>

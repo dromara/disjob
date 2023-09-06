@@ -58,6 +58,7 @@ public class MavenDependencyTest {
 
         // String treeCmd = "mvn dependency:tree -f " + path + "pom.xml";
         // -B: Run in non-interactive (batch) mode (disables output color)
+        // -q: 安静模式,只输出ERROR
         String treeCmd = "bash " + path + "mvnw -B dependency:tree -f " + path + "pom.xml";
         try {
             execute(installCmd);

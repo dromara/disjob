@@ -1,6 +1,0 @@
-# 使用consul做注册中心
-disjob.registry.consul:
-  namespace: consul_namespace
-  host: localhost
-  port: 8500
-  token:

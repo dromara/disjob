@@ -26,13 +26,13 @@
 disjob                                                    # 主项目
 ├── disjob-admin                                          # 基于Ruoyi框架二次开发的Disjob管理后台
 ├── disjob-bom                                            # Maven project bom module
-├── disjob-common                                         # 工具包
+├── disjob-common                                         # 公共的工具类模块
 ├── disjob-core                                           # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
 ├── disjob-dispatch                                       # 任务分发模块
 │   ├── disjob-dispatch-api                               # 任务分发的抽象接口层
 │   ├── disjob-dispatch-http                              # 任务分发的Http实现
 │   └── disjob-dispatch-redis                             # 任务分发的Redis实现
-├── disjob-id                                             # 分布式ID生成
+├── disjob-id                                             # 分布式ID生成模块
 ├── disjob-registry                                       # Server(Supervisor & Worker)注册模块
 │   ├── disjob-registry-api                               # Server注册的抽象接口层
 │   ├── disjob-registry-consul                            # Server注册的Consul实现
@@ -42,12 +42,12 @@ disjob                                                    # 主项目
 │   └── disjob-registry-zookeeper                         # Server注册的Zookeeper实现
 ├── disjob-reports                                        # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                                        # Samples项目
-│   ├── disjob-samples-common                             # 存放使用范例中用到的公共代码，包括使用到的一些公共配置文件等
-│   ├── disjob-samples-merged-springboot                  # Supervisor与Worker合并部署的范例（Spring boot应用）
-│   ├── disjob-samples-supervisor-springboot              # Supervisor单独部署的范例（Spring boot应用）
-│   ├── disjob-samples-worker-frameless                   # Worker单独部署的范例（非Spring-boot应用，直接main方法启动）
-│   └── disjob-samples-worker-springboot                  # Worker单独部署的范例（Spring boot应用）
-├── disjob-supervisor                                     # Supervisor代码（Spring-boot应用）
+│   ├── disjob-samples-common                             # 使用范例中用到的公共代码及公共配置文件
+│   ├── disjob-samples-merged-springboot                  # Supervisor与Worker合并部署的范例（Spring-boot应用）
+│   ├── disjob-samples-supervisor-springboot              # Supervisor单独部署的范例（Spring-boot应用）
+│   ├── disjob-samples-worker-frameless                   # Worker单独部署的范例（普通Java-main应用）
+│   └── disjob-samples-worker-springboot                  # Worker单独部署的范例（Spring-boot应用）
+├── disjob-supervisor                                     # Supervisor代码
 ├── disjob-test                                           # 用于辅助测试
 └── disjob-worker                                         # Worker代码
 ```
@@ -85,67 +85,79 @@ disjob                                                    # 主项目
 
 ## Quick Start
 
-0. 管理后台演示地址：http://ponfee.cn:8000/ ，用户名/密码：`disjob/disjob123`
+1. 在开发工具中分别导入项目（分为三个独立的项目，共用一个`git`仓库）
 
-1. IDE分别导入项目(分为三个独立的项目，共用一个`git`仓库)
-  - [主项目—disjob](pom.xml)
-  - [范例项目—disjob-samples](disjob-samples/pom.xml)
-  - [管理后台—disjob-admin](disjob-admin/pom.xml)
+- [主项目—disjob](pom.xml)
+- [范例项目—disjob-samples](disjob-samples/pom.xml)
+- [管理后台—disjob-admin](disjob-admin/pom.xml)
 
-2. 运行仓库提供的两个SQL脚本：[mysql-disjob.sql](mysql-disjob.sql)、[mysql-disjob_admin.sql](disjob-admin/mysql-disjob_admin.sql)创建两个数据库表(也可直接运行[内置Mysql](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)，启动时会自动初始化两个SQL脚本)
-  - [MacOS报“Library not loaded”错误信息参考](disjob-test/src/main/DB/MariaDB/MariaDB.md)
-  - 内置的本地mysql server无需用户名密码即可使用
+2. 启动以下各应用组成分布式调度集群
 
-3. 在[pom文件](disjob-samples/disjob-samples-common/pom.xml)中选择注册中心及任务分发的具体实现(默认redis注册中心、http任务分发)
-  - 在pom中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}
-  - 项目已内置一些本地启动的server：
-    - [内置redis-server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
-    - [内置consul-server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
-    - [内置nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)（依赖本地docker环境）
-    - [内置etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)（依赖本地docker环境）
-    - [内置zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
-    - [内置Mysql & Redis的合体](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)（推荐使用该类来一次性启动本地mysql及redis）
+> 已配置不同的端口可同时启动。可以在开发工具中运行Java类，也可通过`java -jar`命令运行构建好的jar包。
 
-4. 修改配置文件
-  - 数据库配置：[Mysql](disjob-samples/conf-supervisor/application-mysql.yml)
-  - 注册中心配置：只需配置选择的注册中心即可，如[Consul注册中心](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml)、[Redis注册中心](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)
-  - 任务分发配置：[Redis分发](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)、若选择Http分发方式可无需配置
-  - 其它可按需配置(不配置则会使用默认值)：[supervisor](disjob-samples/conf-supervisor/)、[worker](disjob-samples/conf-worker/)、[web](disjob-samples/disjob-samples-common/src/main/resources)
-  - 非Spring-boot的Worker应用配置文件：[worker-conf.yml](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)
+- [启动内嵌的本地Mysql & Redis](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)
+  - MacOS系统若报`MariaDB`的“[Library not loaded](disjob-test/src/main/DB/MariaDB/MariaDB.md)”错误时参考
+  - 使用客户端工具连接mysql时，用户名为`root`，无需密码
+  - 启动时已经自动执行了初始化的SQL脚本
+- [启动Worker单独部署的Spring-boot应用](disjob-samples/disjob-samples-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
+- [启动Worker单独部署的普通Java-main应用](disjob-samples/disjob-samples-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
+- [启动Supervisor+Worker合并部署的Spring-boot应用](disjob-samples/disjob-samples-merged-springboot/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
+- [启动Supervisor单独部署的Spring-boot应用](disjob-samples/disjob-samples-supervisor-springboot/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
+- [启动Admin管理后台的Spring-boot应用](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
 
-5. 启动[samples项目](disjob-samples)下的各应用，包括
-  - [Supervisor与Worker合并部署的Spring boot应用](disjob-samples/disjob-samples-merged-springboot/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
-  - [Supervisor单独部署的Spring boot应用](disjob-samples/disjob-samples-supervisor-springboot/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
-  - [Worker单独部署的Spring boot应用](disjob-samples/disjob-samples-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
-  - [Worker单独部署的非Spring-boot应用，直接运行Main方法](disjob-samples/disjob-samples-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
-  - 说明：
-    - 已配置不同端口，可同时启动(多个Server组成分布式集群调度环境)
-    - 可以在开发工具中运行启动类，也可直接运行构建好的jar包
-```java
-@EnableSupervisor
-@EnableWorker
-public class MergedApplication extends AbstractSamplesApplication {
-  public static void main(String[] args) {
-    SpringApplication.run(MergedApplication.class, args);
-  }
-}
+3. 登录管理后台
+
+- 浏览器访问【 http://127.0.0.1:80/ 】登录管理后台，用户名/密码：`admin`/`admin123`
+- 登录后在左侧菜单栏找到`调度管理`菜单，即可使用后台调度管理功能
+  - 调度配置：查看、新增、修改、删除、触发、禁用等
+  - 调度实例：具体时间点的运行实例，一个实例拆分成多个task。第一个分页表格为`查询root实例并支持下钻`，鼠标向下滚动页面后看到的第二个分页表格为`查询所有实例`。
+
+4.链接地址
+- 管理后台演示地址：【 http://ponfee.cn:8000/ 】，用户名/密码：`disjob`/`disjob123`
+- 在线文档地址：`正在建设中，敬请期待！`
+
+## User guide
+
+1. 项目包含两个SQL脚本
+
+- [核心框架的SQL脚本](mysql-disjob.sql)
+- [管理后台的SQL脚本](disjob-admin/mysql-disjob_admin.sql)
+
+2. 在Maven pom文件中更改`注册中心disjob-registry-{xxx}`和`任务分发disjob-dispatch-{xxx}`的具体实现
+
+- [Samples项目](disjob-samples/disjob-samples-common/pom.xml)
+- [Admin项目](disjob-admin/ruoyi-disjob/pom.xml)
+- 默认使用`disjob-registry-redis`做注册中心，`disjob-dispatch-http`做任务分发
+
+3. Samples项目配置文件
+
+- [Supervisor角色Mysql配置](disjob-samples/conf-supervisor/application-mysql.yml)
+- [Supervisor角色核心配置](disjob-samples/conf-supervisor/application-supervisor.yml)
+- [Worker角色核心配置（Spring-boot应用）](disjob-samples/conf-worker/application-worker.yml)
+- [Worker角色核心配置（普通Java-main应用）](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)
+- [Redis配置（Worker与Supervisor共用）](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)，做注册中心或任务分发都使用该配置
+- [Spring-boot Web相关配置（Worker与Supervisor共用）](disjob-samples/disjob-samples-common/src/main/resources/application-web.yml)
+
+4. Admin项目配置文件
+- [Supervisor角色Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
+- [Redis配置（Worker与Supervisor共用）](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)，做注册中心或任务分发都使用该配置
+- [管理后台系统Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
+- [可加@EnableWorker启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)，管理后台必须启用Supervisor角色
+
+5. 各注册中心配置类参考（Redis使用Spring-boot自带的配置方式）
+- [Consul](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)
+- [Zookeeper](disjob-registry/disjob-registry-zookeeper/src/main/java/cn/ponfee/disjob/registry/zookeeper/configuration/ZookeeperRegistryProperties.java)
+- [Nacos](disjob-registry/disjob-registry-nacos/src/main/java/cn/ponfee/disjob/registry/nacos/configuration/NacosRegistryProperties.java)
+- [Etcd](disjob-registry/disjob-registry-etcd/src/main/java/cn/ponfee/disjob/registry/etcd/configuration/EtcdRegistryProperties.java)
+
+> 例如：若使用Consul做配置中心时，可加如下配置
+```yaml
+disjob.registry.consul:
+  namespace: consul_namespace
+  host: localhost
+  port: 8500
+  token:
 ```
-
-6. 修改管理后台disjob-admin的配置
-  - [pom.xml](disjob-admin/ruoyi-disjob/pom.xml)中更改maven依赖即可：disjob-registry-{xxx}、disjob-dispatch-{xxx}，默认是redis注册、http分发
-  - [disjob mysql](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)配置
-  - [redis](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)配置
-  - [disjob_admin mysql](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)配置（使用的是druid数据源）
-  - [可加@EnableWorker启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（disjob-admin必须启用Supervisor角色）
-
-7. 启动disjob-admin
-  - [启动java类](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
-  - 启动成功后浏览器访问 http://127.0.0.1:80/ 进入管理后台（用户名密码：admin/admin123）
-  - 登录后在左侧菜单栏找到`调度管理`菜单，即可使用后台管理功能
-    - 调度配置：查看、新增、修改、删除、触发、禁用等
-    - 调度实例：具体时间点的运行实例，一个实例拆分成多个task。(第一个分页表格为`查询root实例并支持下钻`，鼠标向下滚动页面后看到的第二个分页表格为`查询所有实例`)
-
-> **💡提示：若使用内置的mysql、redis，以上所有配置都无需修改即可启动各应用**
 
 # Example
 

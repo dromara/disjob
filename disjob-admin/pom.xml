@@ -34,7 +34,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
 
-    <spring-boot.version>2.7.14</spring-boot.version>
+    <spring-boot.version>2.7.15</spring-boot.version>
     <shiro-core.version>1.12.0</shiro-core.version>
     <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
     <druid-spring-boot-starter.version>1.2.18</druid-spring-boot-starter.version>
