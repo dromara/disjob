@@ -1,14 +1,6 @@
-[![Blog](https://img.shields.io/badge/blog-@Ponfee-informational.svg?logo=Pelican)](http://www.ponfee.cn)
-[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
-[![Build status](https://github.com/ponfee/disjob/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/disjob/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-2.0.2-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
+# <img src="docs/images/logo.png" width="122" height="39" alt="Logo" /> [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8) [![Maven Central](https://img.shields.io/badge/maven--central-2.0.2-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee) [![Build status](https://github.com/dromara/disjob/workflows/build/badge.svg)](https://github.com/dromara/disjob/actions)
 
 **`简体中文`** | [English](README.en.md)
-
-# Disjob
-
-## Introduction
 
 一个分布式的任务调度框架，除了具备常规的分布式任务调度功能外，还提供：暂停/取消运行中的任务、恢复执行被暂停的任务、任务拆分、失败重试、广播任务、任务依赖、工作流任务(DAG)、管理器与执行器分离部署、Web管理后台等能力。
 
@@ -133,16 +125,16 @@ disjob                                        # 主项目
 
 - [Supervisor角色Mysql配置](disjob-samples/conf-supervisor/application-mysql.yml)
 - [Supervisor角色核心配置](disjob-samples/conf-supervisor/application-supervisor.yml)
-- [Worker角色核心配置（Spring-boot应用）](disjob-samples/conf-worker/application-worker.yml)
-- [Worker角色核心配置（普通Java-main应用）](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)
-- [Redis配置（Worker与Supervisor共用）](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)，做注册中心或任务分发都使用该配置
-- [Spring-boot Web相关配置（Worker与Supervisor共用）](disjob-samples/disjob-samples-common/src/main/resources/application-web.yml)
+- [Worker角色核心配置](disjob-samples/conf-worker/application-worker.yml)（Spring-boot应用）
+- [Worker角色核心配置](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)（普通Java-main应用）
+- [Redis配置](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，做注册中心或任务分发都使用该配置）
+- [Spring-boot Web相关配置](disjob-samples/disjob-samples-common/src/main/resources/application-web.yml)（Worker与Supervisor共用）
 
 4. Admin项目配置文件
 - [Supervisor角色Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
-- [Redis配置（Worker与Supervisor共用）](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)，做注册中心或任务分发都使用该配置
+- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)（Worker与Supervisor共用，做注册中心或任务分发都使用该配置）
 - [管理后台系统Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
-- [可加@EnableWorker启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)，管理后台必须启用Supervisor角色
+- [可加@EnableWorker注解启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（管理后台必须启用Supervisor角色）
 
 5. 各注册中心配置类参考（Redis使用Spring-boot自带的配置方式）
 - [Consul](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)
@@ -159,6 +151,14 @@ disjob.registry.consul:
   port: 8500
   token:
 ```
+
+6. 一些内嵌的本地Server
+- [Mysql Server](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)
+- [Redis Server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
+- [Zookeeper Server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
+- [Consul Server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
+- [Nacos Server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)（依赖本地docker环境）
+- [Etcd Server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)（依赖本地docker环境）
 
 # Example
 
