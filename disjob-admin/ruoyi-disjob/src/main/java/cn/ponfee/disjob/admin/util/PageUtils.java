@@ -14,7 +14,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import java.util.List;
 
 /**
- * Disjob Utils
+ * Page utilities
  *
  * @author Ponfee
  */

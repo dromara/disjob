@@ -665,6 +665,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private boolean doStop(int sleepCount, long sleepMillis, long joinMillis) {
+            toStop();
             return Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
         }
 

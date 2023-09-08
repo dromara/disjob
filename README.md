@@ -180,7 +180,7 @@ disjob.registry.consul:
 
 在执行时我们可以使用分批次方式(通过代码循环)来统计，这里我们指定`task-1`在第一次循环统计`(0, 1亿]`，第二次循环统计`(10亿, 11亿]`，以此类推最后一次循环统计`(9990亿, 9991亿]`。同理其它的task也是按同样的方式分布式并行统计。
 
-> P.s. 黎曼猜想中可知质数分布是大体均匀的，判断一个数是否质数有很多方法，如埃氏筛法、欧拉筛法、Miller Rabin素性检验，我们可以使用Guava库提供的素性检验。
+> P.s. 黎曼猜想中可知质数分布是大体均匀的，判断一个数是否质数有很多方法，如埃氏筛法、欧拉筛法、Miller Rabin素性检验，这里我们可以使用Guava库提供的素性检验。
 
 5. **Checkpoint**
 
@@ -202,7 +202,7 @@ disjob.registry.consul:
 
 7. **自定义异常**
 
-当某个子任务在执行过程中抛出框架自定义的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括分发在不同机器中的任务)，同理如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它的异常时，只会`取消`当前子任务，其它的9个子任务不受影响。
+当某个子任务在执行过程中抛出框架自定义的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括分发在不同机器中的任务)，同理如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
 
 8. **任务编排**
 

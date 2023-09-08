@@ -23,7 +23,7 @@ import org.springframework.context.annotation.ComponentScans;
  */
 @ComponentScans(@ComponentScan("cn.ponfee.disjob.test.handler"))
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-@EnableJacksonDateConfigurer
+@EnableJacksonDateConfigurer // 解决日期反序列化报错的问题
 public abstract class AbstractSamplesApplication {
 
 }

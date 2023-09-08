@@ -29,9 +29,9 @@ public enum PrimitiveTypes {
     FLOAT  (Float.class    , (byte) 0B0_1_0_0_0_0_0_0, (byte) 0B1_1_0_0_0_0_0_0   ),
     LONG   (Long.class     , (byte) 0B0_0_1_0_0_0_0_0, (byte) 0B1_1_1_0_0_0_0_0   ),
     INT    (Integer.class  , (byte) 0B0_0_0_1_0_0_0_0, (byte) 0B1_1_1_1_0_0_0_0   ),
-    SHORT  (Short.class    , (byte) 0B0_0_0_0_1_0_0_0, (byte) 0B1_1_1_1_1_0_0_0   ), // short与char不能互相转换
-    CHAR   (Character.class, (byte) 0B0_0_0_0_0_1_0_0, (byte) 0B1_1_1_1_0_1_0_0   ), // short与char不能互相转换
-    BYTE   (Byte.class     , (byte) 0B0_0_0_0_0_0_1_0, (byte) 0B1_1_1_1_1_0_1_0   ), // byte不能转为char
+    SHORT  (Short.class    , (byte) 0B0_0_0_0_1_0_0_0, (byte) 0B1_1_1_1_1_0_0_0   ), // short与char不能互相自动转换
+    CHAR   (Character.class, (byte) 0B0_0_0_0_0_1_0_0, (byte) 0B1_1_1_1_0_1_0_0   ), // short与char不能互相自动转换
+    BYTE   (Byte.class     , (byte) 0B0_0_0_0_0_0_1_0, (byte) 0B1_1_1_1_1_0_1_0   ), // byte不能自动转为char
     BOOLEAN(Boolean.class  , (byte) 0B0_0_0_0_0_0_0_1, (byte) 0B0_0_0_0_0_0_0_1, 1), // boolean只能转boolean
 
     ;

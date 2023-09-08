@@ -38,7 +38,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
  */
 @Configuration
 @ComponentScan("cn.ponfee.disjob.test.handler")
-@EnableJacksonDateConfigurer
+@EnableJacksonDateConfigurer // 解决日期反序列化报错的问题
 @EnableSupervisor // job-admin必须启用Supervisor角色，即：@EnableSupervisor注解是必须加的
 @EnableWorker     // 若要取消worker角色可去掉@EnableWorker注解
 public class DisjobAdminConfiguration implements WebMvcConfigurer {
