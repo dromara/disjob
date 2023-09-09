@@ -244,7 +244,7 @@ INSERT INTO `sched_job` (
 
 如有发现bug、更优的实现方案、新特性等，可提交PR或新建[Issues](../../issues)。
 
-## communication group
+## Communication
 
 扫码添加微信好友，备注：disjob，邀您加入群聊
 
