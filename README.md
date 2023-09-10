@@ -188,7 +188,7 @@ disjob.registry.consul:
 
 如果在统计过程中机器宕机后怎么办？难道再从头开始统计吗？No No No！我们可以在每循环10次(或每隔执行超过1分钟)时使用`Checkpoint`保存当前`task-1`的执行快照。宕机异常后的重新启动任务时会读取这份快照数据，从上一次的状态中接着继续统计。以下是`task-1`任务保存的快照数据样例
 
-```javascript
+```json5
 {
   "next": 4000000001, // 下一次循环时要统计的区间为(40亿, 41亿]
   "count": 19819734,  // 已经统计到了 19819734 个质数
@@ -208,32 +208,21 @@ disjob.registry.consul:
 
 8. **任务编排**
 
-现在这个质数统计的总任务已经执行完了，共10个子任务，每个子任务都统计出了它的那部分结果。Disjob能自动帮我汇总结果吗？Yes！框架提供了非常强大且方便的表达式来编排任务，如：`A->B,C,(D->E)->D,F->G`，现在我们可以创建一个汇总任务，然后再把这两个任务编排在一起。以下是本例中质数统计的job数据，其中`job_handler`指定了编排的这两个任务处理器(代码在项目源码中)
+现在这个质数统计的总任务已经执行完了，共10个子任务，每个子任务都统计出了它的那部分结果。Disjob能自动帮我汇总结果吗？Yes！框架提供了非常强大且方便的表达式来编排任务，如：`A->B,C,(D->E)->D,F->G`，现在我们可以就创建一个汇总任务，然后再把这两个任务编排在一起。
 
-```sql
-INSERT INTO `sched_job` (
-  `job_id`,
-  `job_group`,
-  `job_name`,
-  `job_handler`,
-  `job_state`,
-  `job_type`,
-  `job_param`,
-  `trigger_type`,
-  `trigger_value`,
-  `next_trigger_time`
-) VALUES (
-  1003164910267351009,
-  'default',
-  'prime-count-dag',
-  'cn.ponfee.disjob.test.handler.PrimeCountJobHandler -> cn.ponfee.disjob.test.handler.PrimeAccumulateJobHandler',
-  1,
-  2,
-  '{\"m\":1,\"n\":10000000000,\"blockSize\":100000000,\"parallel\":10}',
-  2,
-  '2023-09-02 18:00:00',
-  unix_timestamp()*1000
-);
+以下是本例中质数统计的job数据，只列了部分主要字段，其中`job_handler`为这两个任务处理器的编排(代码在项目源码中)
+
+```json5
+{
+  "jobGroup": "default",
+  "jobName": "prime-count-dag",
+  "jobState": 1, // job状态：0-禁用；1-启用；
+  "jobType": 2,  // job类型：1-普通(Normal)；2-工作流(DAG)；
+  "jobHandler": "cn.ponfee.disjob.test.handler.PrimeCountJobHandler -> cn.ponfee.disjob.test.handler.PrimeAccumulateJobHandler",
+  "jobParam": "{\"m\":1,\"n\":10000000000,\"blockSize\":100000000,\"parallel\":10}",
+  "triggerType": 2,
+  "triggerValue": "2023-09-02 18:00:00"
+}
 ```
 
 > 本例中的质数统计流程图如下

@@ -145,16 +145,10 @@ public abstract class TaskDispatcher implements Startable {
             }
 
             try {
-                if (doDispatch(param)) {
-                    log.info("Dispatched task success {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
-                } else {
-                    // dispatch failed, delay retry
-                    retry(dispatchParam);
-                    log.error("Dispatched task failed " + dispatchParam);
-                    result = false;
-                }
+                doDispatch(param);
+                log.info("Dispatched task success {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
             } catch (Throwable t) {
-                // dispatch error, delay retry
+                // dispatch failed, delay retry
                 retry(dispatchParam);
                 log.error("Dispatch task error: " + dispatchParam, t);
                 result = false;
@@ -179,15 +173,19 @@ public abstract class TaskDispatcher implements Startable {
         param.setWorker(worker);
     }
 
-    private boolean doDispatch(ExecuteTaskParam param) throws Exception {
+    private void doDispatch(ExecuteTaskParam p) throws Exception {
         Worker current = Worker.current();
-        if (timingWheel != null && current != null && current.matchesWorker(param.getWorker())) {
+        boolean result;
+        if (timingWheel != null && current != null && current.matchesWorker(p.getWorker())) {
             // if the server both is supervisor & worker: dispatch to local worker
-            log.info("Dispatching task to local worker {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
-            return timingWheel.offer(param);
+            log.info("Dispatching task to local worker {} | {} | {}", p.getTaskId(), p.getOperation(), p.getWorker());
+            result = timingWheel.offer(p);
         } else {
             // dispatch to remote worker
-            return dispatch(param);
+            result = dispatch(p);
+        }
+        if (!result) {
+            throw new Exception("false");
         }
     }
 

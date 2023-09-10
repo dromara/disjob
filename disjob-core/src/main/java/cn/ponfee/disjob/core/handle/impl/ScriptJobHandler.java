@@ -38,7 +38,7 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
 public class ScriptJobHandler extends JobHandler<String> {
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http", "https", "ftp"};
-    private static final String WORKER_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";
+    private static final String WORKER_SCRIPT_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";
 
     @Override
     public Result<String> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
@@ -164,7 +164,7 @@ public class ScriptJobHandler extends JobHandler<String> {
 
     private static String prepareScriptFile(String script, String scriptFileName, Charset charset) throws IOException {
         Assert.hasText(script, "Script source cannot be empty.");
-        String scriptPath = WORKER_DIR + scriptFileName;
+        String scriptPath = WORKER_SCRIPT_DIR + scriptFileName;
 
         File scriptFile = new File(scriptPath);
         if (scriptFile.exists()) {
