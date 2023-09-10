@@ -1,5 +1,5 @@
 server.port: 8083
-spring.profiles.include: web,worker,redis,consul
+spring.profiles.include: web,worker,redis
 
 spring.boot.admin.client:
   url: http://localhost:8081

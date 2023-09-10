@@ -20,10 +20,10 @@ disjob                                        # 主项目
 ├── disjob-bom                                # Maven project bom module
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
-├── disjob-dispatch                           # 任务分发模块
-│   ├── disjob-dispatch-api                   # 任务分发的抽象接口层
-│   ├── disjob-dispatch-http                  # 任务分发的Http实现
-│   └── disjob-dispatch-redis                 # 任务分发的Redis实现
+├── disjob-dispatch                           # 任务派发模块
+│   ├── disjob-dispatch-api                   # 任务派发的抽象接口层
+│   ├── disjob-dispatch-http                  # 任务派发的Http实现
+│   └── disjob-dispatch-redis                 # 任务派发的Redis实现
 ├── disjob-id                                 # 分布式ID生成模块
 ├── disjob-registry                           # Server(Supervisor & Worker)注册模块
 │   ├── disjob-registry-api                   # Server注册的抽象接口层
@@ -48,13 +48,13 @@ disjob                                        # 主项目
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
 - Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
-- Supervisor负责生成任务，把任务分发给Worker执行，支持的任务分发方式有：Redis、Http
-- 需要指定Job的分组(job-group)，Job的任务只会分发给指定组的Worker执行
+- Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http
+- 需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行
 - 提供拆分任务的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(checkpoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
 - 任务在执行时若抛出[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，会暂停对应实例下的全部任务(包括分布在不同worker机器中的任务)
-- 支持广播任务，广播任务会分发给job-group下的所有worker执行
+- 支持广播任务，广播任务会派发给job-group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
 - 支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A->B,C,(D->E)->D,F->G
 - 提供Web管理后台，通过界面进行作业配置，任务监控等
@@ -117,11 +117,11 @@ disjob                                        # 主项目
 - [核心框架的SQL脚本](mysql-disjob.sql)
 - [管理后台的SQL脚本](disjob-admin/mysql-disjob_admin.sql)
 
-2. 在Maven pom文件中更改`注册中心disjob-registry-{xxx}`和`任务分发disjob-dispatch-{xxx}`的具体实现
+2. 在Maven pom文件中更改`注册中心disjob-registry-{xxx}`和`任务派发disjob-dispatch-{xxx}`的具体实现
 
 - [Samples项目](disjob-samples/disjob-samples-common/pom.xml)
 - [Admin项目](disjob-admin/ruoyi-disjob/pom.xml)
-- 默认使用`disjob-registry-redis`做注册中心，`disjob-dispatch-http`做任务分发
+- 默认使用`disjob-registry-redis`做注册中心，`disjob-dispatch-http`做任务派发
 
 3. Samples项目配置文件
 
@@ -129,12 +129,12 @@ disjob                                        # 主项目
 - [Supervisor角色核心配置](disjob-samples/conf-supervisor/application-supervisor.yml)
 - [Worker角色核心配置](disjob-samples/conf-worker/application-worker.yml)（Spring-boot应用）
 - [Worker角色核心配置](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)（普通Java-main应用）
-- [Redis配置](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，做注册中心或任务分发都使用该配置）
+- [Redis配置](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，做注册中心或任务派发都使用该配置）
 - [Spring-boot Web相关配置](disjob-samples/disjob-samples-common/src/main/resources/application-web.yml)（Worker与Supervisor共用）
 
 4. Admin项目配置文件
 - [Supervisor角色Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
-- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)（Worker与Supervisor共用，做注册中心或任务分发都使用该配置）
+- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)（Worker与Supervisor共用，做注册中心或任务派发都使用该配置）
 - [管理后台系统Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
 - [可加@EnableWorker注解启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（管理后台必须启用Supervisor角色）
 
@@ -170,9 +170,9 @@ disjob.registry.consul:
 
 先根据当前的机器资源情况来决定拆分任务的数量，比如我们有5台机器及每台2 core CPU(质数统计是CPU密集型)，决定拆分为10个任务。
 
-2. **分发任务**
+2. **派发任务**
 
-总任务被拆分成10个子任务后，框架会使用指定的路由算法把子任务分发给这些机器(Worker)。
+总任务被拆分成10个子任务后，框架会使用指定的路由算法把子任务派发给这些机器(Worker)。
 
 3. **接收任务**
 
@@ -204,7 +204,7 @@ disjob.registry.consul:
 
 7. **自定义异常**
 
-当某个子任务在执行过程中抛出框架自定义的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括分发在不同机器中的任务)，同理如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
+当某个子任务在执行过程中抛出框架自定义的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括派发在不同机器中的任务)，同理如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
 
 8. **任务编排**
 

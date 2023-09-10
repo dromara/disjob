@@ -33,9 +33,9 @@ public class RetryProperties extends ToJsonString implements Serializable {
     private int maxCount = 3;
 
     /**
-     * Backoff period milliseconds, default 5000.
+     * Backoff period milliseconds, default 3000.
      */
-    private int backoffPeriod = 5000;
+    private int backoffPeriod = 3000;
 
     public static RetryProperties of(int maxCount, int backoffPeriod) {
         RetryProperties retry = new RetryProperties();
