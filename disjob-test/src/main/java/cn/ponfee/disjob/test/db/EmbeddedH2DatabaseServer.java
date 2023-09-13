@@ -45,7 +45,7 @@ public class EmbeddedH2DatabaseServer {
         String username = "sa", password = "";
 
         System.out.println("Embedded h2 database starting...");
-        //new JakartaDbStarter(); // error
+        //new org.h2.server.web.JakartaDbStarter(); // error: need dependency servlet-api
         //new org.h2.server.web.DbStarter(); // error: need dependency servlet-api
         new org.h2.server.TcpServer().start();
         //new org.h2.server.web.WebServer().start();

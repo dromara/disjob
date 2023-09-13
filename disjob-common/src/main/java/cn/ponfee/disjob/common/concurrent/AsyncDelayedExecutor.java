@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
+ * <pre>
  * Async delayed executor
  *
  * 延时任务方案：
@@ -29,6 +32,7 @@ import java.util.function.Consumer;
  *   5、RocketMQ: Message#setDelayTimeLevel
  *   6、RabbitMQ: x-dead-letter-exchange
  *   7、Redisson: RDelayedQueue
+ * </pre>
  *
  * @param <E> the element type
  * @author Ponfee
@@ -114,9 +118,9 @@ public final class AsyncDelayedExecutor<E> extends Thread {
             if (delayed != null) {
                 E data = delayed.getData();
                 if (asyncExecutor != null) {
-                    asyncExecutor.submit(() -> processor.accept(data));
+                    asyncExecutor.submit(Throwables.caught(() -> processor.accept(data)));
                 } else {
-                    processor.accept(data);
+                    ThrowingRunnable.caught(() -> processor.accept(data));
                 }
             }
         }

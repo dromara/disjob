@@ -102,7 +102,7 @@ CREATE TABLE `sched_task` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `task_id`             BIGINT         UNSIGNED  NOT NULL                               COMMENT '全局唯一ID',
   `instance_id`         BIGINT         UNSIGNED  NOT NULL                               COMMENT 'sched_instance.instance_id',
-  `task_no`             INT            UNSIGNED  NOT NULL                               COMMENT '任务序号(从1开始)',
+  `task_no`             INT            UNSIGNED  NOT NULL                               COMMENT '当前任务序号(从1开始)',
   `task_count`          INT            UNSIGNED  NOT NULL                               COMMENT '任务总数量',
   `task_param`          TEXT                               DEFAULT NULL                 COMMENT 'job_handler执行task的参数(参考sched_job.job_param)',
   `execute_start_time`  DATETIME(3)                        DEFAULT NULL                 COMMENT '执行开始时间',

@@ -55,7 +55,7 @@ public abstract class TaskDispatcher implements Startable {
 
         this.retryMaxCount = retryProperties.getMaxCount();
         this.retryBackoffPeriod = retryProperties.getBackoffPeriod();
-        this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(3, e -> doDispatch(Collections.singletonList(e)));
+        this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(5, e -> doDispatch(Collections.singletonList(e)));
     }
 
     /**

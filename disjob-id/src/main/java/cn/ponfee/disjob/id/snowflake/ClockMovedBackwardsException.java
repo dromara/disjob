@@ -17,26 +17,14 @@ public class ClockMovedBackwardsException extends RuntimeException {
     private static final long serialVersionUID = 8109219010796537426L;
 
     public ClockMovedBackwardsException() {
-        super();
     }
 
     public ClockMovedBackwardsException(String message) {
         super(message);
     }
 
-    public ClockMovedBackwardsException(Throwable cause) {
-        super(cause);
-    }
-
     public ClockMovedBackwardsException(String message, Throwable cause) {
         super(message, cause);
-    }
-
-    protected ClockMovedBackwardsException(String message,
-                                           Throwable cause,
-                                           boolean enableSuppression,
-                                           boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
     }
 
 }

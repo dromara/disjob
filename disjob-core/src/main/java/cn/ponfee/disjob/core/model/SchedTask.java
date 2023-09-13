@@ -40,7 +40,7 @@ public class SchedTask extends BaseEntity implements Serializable {
     private Long instanceId;
 
     /**
-     * 任务序号(从1开始)
+     * 当前任务序号(从1开始)
      */
     private Integer taskNo;
 

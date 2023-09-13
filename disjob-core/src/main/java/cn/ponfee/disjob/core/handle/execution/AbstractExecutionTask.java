@@ -30,7 +30,7 @@ public abstract class AbstractExecutionTask extends ToJsonString implements Seri
     private Long taskId;
 
     /**
-     * 任务序号(从1开始)
+     * 当前任务序号(从1开始)
      */
     private Integer taskNo;
 
