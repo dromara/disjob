@@ -32,23 +32,22 @@ public final class Threads {
     }
 
     /**
-     * Stops the thread, and returns boolean value whether it was called java.lang.Thread#stop()
+     * Stops the thread
      *
      * @param thread      the thread
      * @param sleepCount  the sleepCount
      * @param sleepMillis the sleepMillis
      * @param joinMillis  the joinMillis
-     * @return {@code true} if called java.lang.Thread#stop()
      */
-    public static boolean stopThread(Thread thread, int sleepCount, long sleepMillis, long joinMillis) {
+    public static void stopThread(Thread thread, int sleepCount, long sleepMillis, long joinMillis) {
         if (isStopped(thread)) {
-            return false;
+            return;
         }
 
         if (Thread.currentThread() == thread) {
             LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), ObjectUtils.getStackTrace());
             thread.interrupt();
-            return stopThread(thread);
+            stopThread(thread);
         }
 
         // sleep for wait the tread run method block code execute finish
@@ -59,13 +58,13 @@ public final class Threads {
                 Thread.sleep(sleepMillis);
             } catch (InterruptedException e) {
                 LOG.error("Waiting thread terminal interrupted: " + thread.getName(), e);
-                thread.interrupt();
                 Thread.currentThread().interrupt();
+                break;
             }
         }
 
         if (isStopped(thread)) {
-            return false;
+            return;
         }
 
         // interrupt and wait joined
@@ -75,12 +74,11 @@ public final class Threads {
                 thread.join(joinMillis);
             } catch (InterruptedException e) {
                 LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
-                thread.interrupt();
                 Thread.currentThread().interrupt();
             }
         }
 
-        return stopThread(thread);
+        stopThread(thread);
     }
 
     public static void interruptIfNecessary(Throwable t) {
@@ -90,27 +88,21 @@ public final class Threads {
     }
 
     /**
-     * Stop the thread, and return boolean result of has called java.lang.Thread#stop()
+     * Stop the thread
      *
-     * @param thread      the thread
-     * @return {@code true} if called java.lang.Thread#stop()
+     * @param thread the thread
      */
-    private static boolean stopThread(Thread thread) {
+    private static void stopThread(Thread thread) {
         if (isStopped(thread)) {
-            return false;
+            return;
         }
-        synchronized (thread) {
-            if (isStopped(thread)) {
-                return false;
-            }
-            try {
-                // It maybe throws "java.lang.ThreadDeath: null", but cannot catch in Throwable code block.
-                thread.stop();
-                LOG.info("Invoke java.lang.Thread#stop() method finish: {}", thread.getName());
-            } catch (Throwable t) {
-                LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
-            }
-            return true;
+
+        try {
+            // It maybe throws "java.lang.ThreadDeath: null", but cannot catch in Throwable code block.
+            thread.stop();
+            LOG.info("Invoke java.lang.Thread#stop() method finish: {}", thread.getName());
+        } catch (Throwable t) {
+            LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
         }
     }
 

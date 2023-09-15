@@ -103,7 +103,7 @@ disjob                                        # 主项目
 - 登录后在左侧菜单栏找到`调度管理`菜单，即可使用调度管理功能
 - 调度配置：作业(job)配置，包括查看、新增、修改、删除、触发、禁用等
 - 调度实例：job具体时间点要触发执行的实例(instance)，一个实例被拆分成若干个任务(task)
-  - 第一个分页表格为`查询root实例并支持下钻`，root是指首次触发的实例，包括：普通的非重试实例、工作流(DAG)的lead实例、依赖关系的第一个实例
+  - 第一个分页表格为`查询root实例`并支持下钻，root是指首次触发的实例，包括：普通的非重试实例、工作流(DAG)的lead实例、依赖关系的第一个实例
   - 鼠标向下滚动页面后看到的第二个分页表格为`查询所有实例`
 
 4. 链接地址
@@ -176,7 +176,7 @@ disjob.registry.consul:
 
 3. **接收任务**
 
-机器(Worker)接收到子任务后，会提交到框架的自定义线程池中执行。
+机器(Worker)接收到子任务后，会提交到框架定义的线程池中执行。
 
 4. **分布式并行执行**
 
@@ -202,9 +202,9 @@ disjob.registry.consul:
 
 当其它事情处理完后，我们可以在管理后台的`调度实例`页面，找到被暂停的这个任务，点击`恢复`按钮，此时任务会从上一次保存的状态中恢复继续执行。
 
-7. **自定义异常**
+7. **异常中断**
 
-当某个子任务在执行过程中抛出框架自定义的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括派发在不同机器中的任务)，同理如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
+当某个子任务在执行过程中抛出框架的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括派发在不同机器中的任务)，同理如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
 
 8. **任务编排**
 

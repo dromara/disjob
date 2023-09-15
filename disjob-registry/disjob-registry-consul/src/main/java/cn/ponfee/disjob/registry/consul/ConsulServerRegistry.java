@@ -11,6 +11,7 @@ package cn.ponfee.disjob.registry.consul;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRegistry;
@@ -127,7 +128,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         ThrowingSupplier.caught(consulTtlCheckExecutor::shutdownNow);
         registered.forEach(this::deregister);
         registered.clear();
-        ThrowingSupplier.caught(() -> Threads.stopThread(consulSubscriberThread, 0, 0, 100));
+        ThrowingRunnable.caught(() -> Threads.stopThread(consulSubscriberThread, 0, 0, 100));
         super.close();
     }
 

@@ -194,7 +194,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         // 2、do close
         // 2.1、stop this boss thread
-        ThrowingSupplier.caught(() -> Threads.stopThread(this, 0, 0, 200));
+        ThrowingRunnable.caught(() -> Threads.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
         idlePool.forEach(e -> ThrowingRunnable.caught(() -> stopWorkerThread(e, true)));
@@ -664,9 +664,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             stopped = true;
         }
 
-        private boolean doStop(int sleepCount, long sleepMillis, long joinMillis) {
+        private void doStop(int sleepCount, long sleepMillis, long joinMillis) {
             toStop();
-            return Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
+            Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
         }
 
         private boolean updateExecuteParam(ExecuteTaskParam expect, ExecuteTaskParam update) {

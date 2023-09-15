@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.lock;
 
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.common.util.ObjectUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.ReturnType;
@@ -188,6 +189,7 @@ public class RedisLock implements Lock {
             } catch (InterruptedException e) {
                 LOG.error("Redis lock sleep occur interrupted exception.", e);
                 Thread.currentThread().interrupt();
+                ExceptionUtils.rethrow(e);
             }
         }
     }
