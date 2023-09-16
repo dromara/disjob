@@ -10,10 +10,10 @@ package cn.ponfee.disjob.id.snowflake.zk;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
@@ -38,8 +38,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -68,6 +66,8 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZkDistributedSnowflake.class);
 
+    private static final long HEARTBEAT_PERIOD_SECONDS = 30;
+
     private static final String SEP = "/";
 
     /**
@@ -81,17 +81,25 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
     private final String serverTagParentPath;
 
     /**
+     * /snowflake/{bizTag}/tag/{serverTag}
+     */
+    private final String serverTagPath;
+
+    /**
      * /snowflake/{bizTag}/id
      */
     private final String workerIdParentPath;
 
+    /**
+     * /snowflake/{bizTag}/id/{workerId}
+     */
+    private final String workerIdPath;
+
     private final CuratorFramework curator;
-
     private final int workerId;
-
     private final Snowflake snowflake;
-
-    private final ScheduledExecutorService heartbeatScheduler;
+    private volatile boolean stopped = false;
+    private final Thread heartbeatThread;
 
     public ZkDistributedSnowflake(ZkConfig zkConfig, String bizTag, String serverTag) {
         this(zkConfig, bizTag, serverTag, 14, 8);
@@ -110,6 +118,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
         String snowflakeRootPath = "/snowflake/" + bizTag;
         this.serverTagParentPath = snowflakeRootPath + "/tag";
         this.workerIdParentPath = snowflakeRootPath + "/id";
+        this.serverTagPath = serverTagParentPath + SEP + serverTag;
 
         try {
             this.curator = createCuratorFramework(zkConfig);
@@ -122,6 +131,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
 
         try {
             this.workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdBitLength), 5, 2000L);
+            this.workerIdPath = workerIdParentPath + SEP + workerId;
             this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
         } catch (Throwable e) {
             throw new Error("Zk snowflake server registry worker error.", e);
@@ -129,13 +139,23 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
 
         curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
-        this.heartbeatScheduler = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r, "zk_snowflake_worker_heartbeat");
-            thread.setDaemon(true);
-            thread.setPriority(Thread.MAX_PRIORITY);
-            return thread;
+        this.heartbeatThread = Threads.newThread("zk_snowflake_worker_heartbeat", true, Thread.MAX_PRIORITY, () -> {
+            while (!stopped) {
+                try {
+                    heartbeat();
+                } catch (Throwable e) {
+                    LOG.error("Zk snowflake server heartbeat error: " + workerIdPath, e);
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(HEARTBEAT_PERIOD_SECONDS);
+                } catch (InterruptedException e) {
+                    LOG.error("Thread interrupted.", e);
+                    close();
+                }
+            }
+            LOG.info("thread terminated.");
         });
-        heartbeatScheduler.scheduleWithFixedDelay(this::heartbeat, 1, 5, TimeUnit.SECONDS);
+        heartbeatThread.start();
     }
 
     @Override
@@ -145,7 +165,8 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
 
     @Override
     public void close() {
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(heartbeatScheduler, 3));
+        stopped = true;
+        Throwables.ThrowingRunnable.caught(heartbeatThread::interrupt);
     }
 
     // ------------------------------------------------------------------private methods
@@ -171,7 +192,11 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
         try {
             createEphemeral(path, data);
         } catch (KeeperException.NodeExistsException e) {
-            updateData(path, data);
+            try {
+                updateData(path, data);
+            } catch (KeeperException.NoNodeException ignored) {
+                createEphemeral(path, data);
+            }
         }
     }
 
@@ -180,6 +205,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             curator.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
             LOG.info("Deleted zk path: {}", path);
         } catch (KeeperException.NoNodeException ignored) {
+            // ignored
         }
     }
 
@@ -199,26 +225,20 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
         }
     }
 
-    private void heartbeat() {
-        String workerIdPath = workerIdParentPath + SEP + workerId;
-        try {
-            RetryTemplate.execute(() -> {
-                byte[] workerIdData = getData(workerIdPath);
-                if (workerIdData != null) {
-                    WorkerIdData data = WorkerIdData.deserialize(workerIdData);
-                    Assert.state(serverTag.equals(data.server), () -> "Inconsistent server tag: " + serverTag + " != " + data.server);
-                }
+    private void heartbeat() throws Throwable {
+        RetryTemplate.execute(() -> {
+            byte[] workerIdData = getData(workerIdPath);
+            if (workerIdData != null) {
+                WorkerIdData data = WorkerIdData.deserialize(workerIdData);
+                Assert.state(serverTag.equals(data.server), () -> "Inconsistent server tag: " + serverTag + " != " + data.server);
+            }
 
-                updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
-            }, 3, 1000L);
-        } catch (Throwable e) {
-            LOG.error("Zk snowflake server heartbeat error: " + workerIdPath, e);
-        }
+            updateData(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());
+        }, 3, 1000L);
     }
 
     private int registerWorkerId(int workerIdBitLength) throws Exception {
         int workerIdMaxCount = 1 << workerIdBitLength;
-        String serverTagPath = serverTagParentPath + SEP + serverTag;
         byte[] serverTagData = getData(serverTagPath);
 
         // 判断当前serverTag是否已经注册
@@ -272,7 +292,6 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                 throw new IllegalStateException("Invalid zk worker id: " + workerId);
             }
 
-            String workerIdPath = workerIdParentPath + SEP + workerId;
             byte[] workerIdData = getData(workerIdPath);
             if (workerIdData == null) {
                 WorkerIdData data = WorkerIdData.of(System.currentTimeMillis(), serverTag);
@@ -297,7 +316,6 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
     }
 
     private void onReconnected() throws Exception {
-        String serverTagPath = serverTagParentPath + SEP + serverTag;
         byte[] serverTagData = getData(serverTagPath);
         if (serverTagData == null) {
             createEphemeral(serverTagPath, Bytes.toBytes(workerId));
@@ -306,7 +324,6 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             Assert.isTrue(id == workerId, () -> "Reconnected worker id was changed, expect=" + workerId + ", actual=" + id);
         }
 
-        String workerIdPath = workerIdParentPath + SEP + workerId;
         byte[] workerIdData = getData(workerIdPath);
         if (workerIdData == null) {
             createEphemeral(workerIdPath, WorkerIdData.of(System.currentTimeMillis(), serverTag).serialize());

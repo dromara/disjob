@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 /**
  * Multi Thread executor
- * <p> {@code Thread#stop()} will occur "java.lang.ThreadDeath: null" if try...catch wrapped in Throwable
+ * <p> {@code Thread#stop()} will throw "java.lang.ThreadDeath: null"
  *
  * @author Ponfee
  */

@@ -110,7 +110,7 @@ disjob                                        # 主项目
 - 管理后台演示地址：【 http://ponfee.cn:8000/ 】，用户名/密码：`disjob`/`disjob123`
 - 在线文档地址：`正在建设中，敬请期待！`
 
-## User guide
+## User Guide
 
 1. 项目包含两个SQL脚本
 

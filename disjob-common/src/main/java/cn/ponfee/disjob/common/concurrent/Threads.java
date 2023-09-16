@@ -22,6 +22,23 @@ public final class Threads {
     private static final Logger LOG = LoggerFactory.getLogger(Threads.class);
 
     /**
+     * New thread
+     *
+     * @param name     the thread name
+     * @param daemon   the daemon
+     * @param priority the priority
+     * @param run      the runnable
+     * @return thread instance
+     */
+    public static Thread newThread(String name, boolean daemon, int priority, Runnable run) {
+        Thread thread = new Thread(run);
+        thread.setName(name);
+        thread.setDaemon(daemon);
+        thread.setPriority(priority);
+        return thread;
+    }
+
+    /**
      * Returns the thread is whether stopped
      *
      * @param thread the thread
@@ -98,7 +115,7 @@ public final class Threads {
         }
 
         try {
-            // It maybe throws "java.lang.ThreadDeath: null", but cannot catch in Throwable code block.
+            // It maybe throws "java.lang.ThreadDeath: null"
             thread.stop();
             LOG.info("Invoke java.lang.Thread#stop() method finish: {}", thread.getName());
         } catch (Throwable t) {

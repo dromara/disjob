@@ -12,8 +12,8 @@ import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -30,7 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,7 @@ public class TimingWheelRotator implements Startable {
     private final Discovery<Supervisor> discoverySupervisor;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
     private final WorkerThreadPool workerThreadPool;
-    private final ScheduledExecutorService scheduledExecutor;
+    private final Thread heartbeatThread;
     private final ExecutorService processExecutor;
     private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -70,11 +71,21 @@ public class TimingWheelRotator implements Startable {
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
 
-        this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r, "timing_wheel_rotate");
-            thread.setDaemon(true);
-            thread.setPriority(Thread.MAX_PRIORITY);
-            return thread;
+        this.heartbeatThread = Threads.newThread("timing_wheel_rotate", true, Thread.MAX_PRIORITY, () -> {
+            while (started.get()) {
+                try {
+                    process();
+                } catch (Throwable t) {
+                    LOG.error("Process error.", t);
+                }
+                try {
+                    Thread.sleep(timingWheel.getTickMs());
+                } catch (InterruptedException e) {
+                    LOG.error("Thread interrupted.", e);
+                    stop();
+                }
+            }
+            LOG.info("thread terminated.");
         });
 
         int actualProcessPoolSize = Math.max(1, processThreadPoolSize);
@@ -96,12 +107,7 @@ public class TimingWheelRotator implements Startable {
         }
 
         LOG.info("Timing wheel rotator started.");
-        scheduledExecutor.scheduleAtFixedRate(
-            Throwables.caught((ThrowingRunnable<?>) this::process),
-            timingWheel.getTickMs(),
-            timingWheel.getTickMs(),
-            TimeUnit.MILLISECONDS
-        );
+        heartbeatThread.start();
     }
 
     @Override
@@ -112,7 +118,7 @@ public class TimingWheelRotator implements Startable {
         }
 
         LOG.info("Timing wheel rotator stopped.");
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(scheduledExecutor, 3));
+        ThrowingRunnable.caught(heartbeatThread::interrupt);
         ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(processExecutor, 3));
     }
 

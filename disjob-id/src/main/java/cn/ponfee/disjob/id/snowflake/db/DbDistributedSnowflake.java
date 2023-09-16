@@ -10,7 +10,8 @@ package cn.ponfee.disjob.id.snowflake.db;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.util.Predicates;
@@ -30,8 +31,6 @@ import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -84,8 +83,9 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
     private final JdbcTemplateWrapper jdbcTemplateWrapper;
     private final String bizTag;
     private final String serverTag;
-    private final ScheduledExecutorService heartbeatScheduler;
     private final Snowflake snowflake;
+    private volatile boolean stopped = false;
+    private final Thread heartbeatThread;
 
     public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
         this(jdbcTemplate, bizTag, serverTag, 14, 8);
@@ -116,13 +116,25 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
             throw new Error("Db snowflake server initialize error.", e);
         }
 
-        this.heartbeatScheduler = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r, "db_snowflake_worker_heartbeat");
-            thread.setDaemon(true);
-            thread.setPriority(Thread.MAX_PRIORITY);
-            return thread;
+        this.heartbeatThread = Threads.newThread("db_snowflake_worker_heartbeat", true, Thread.MAX_PRIORITY, () -> {
+            // 使用 `while(!Thread.currentThread().isInterrupted()) {...}` 存在的问题：
+            // 可能会在循环体内部方法链的某段代码块中捕获 InterruptedException 并且中断标记位被清除，导致无法退出while循环
+            while (!stopped) {
+                try {
+                    heartbeat();
+                } catch (Throwable e) {
+                    LOG.error("Db snowflake server heartbeat error: " + bizTag + " | " + serverTag, e);
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(HEARTBEAT_PERIOD_SECONDS);
+                } catch (InterruptedException e) {
+                    LOG.error("Thread interrupted.", e);
+                    close();
+                }
+            }
+            LOG.info("thread terminated.");
         });
-        heartbeatScheduler.scheduleWithFixedDelay(this::heartbeat, 1, HEARTBEAT_PERIOD_SECONDS, TimeUnit.SECONDS);
+        heartbeatThread.start();
     }
 
     @Override
@@ -132,7 +144,8 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
 
     @Override
     public void close() {
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(heartbeatScheduler, 3));
+        stopped = true;
+        Throwables.ThrowingRunnable.caught(heartbeatThread::interrupt);
         ThrowingSupplier.caught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
     }
 
@@ -227,20 +240,16 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
         return Boolean.TRUE.equals(result);
     }
 
-    private void heartbeat() {
-        try {
-            RetryTemplate.execute(() -> {
-                long currentTimestamp = System.currentTimeMillis();
-                Object[] args = {currentTimestamp, bizTag, serverTag};
-                if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
-                    LOG.info("Heartbeat db worker id success: {} | {} | {}", args);
-                } else {
-                    LOG.error("Heartbeat db worker id failed: {} | {} | {}", args);
-                }
-            }, 5, 3000L);
-        } catch (Throwable e) {
-            LOG.error("Db snowflake server heartbeat error: " + bizTag + " | " + serverTag, e);
-        }
+    private void heartbeat() throws Throwable {
+        RetryTemplate.execute(() -> {
+            long currentTimestamp = System.currentTimeMillis();
+            Object[] args = {currentTimestamp, bizTag, serverTag};
+            if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
+                LOG.info("Heartbeat db worker id success: {} | {} | {}", args);
+            } else {
+                LOG.error("Heartbeat db worker id failed: {} | {} | {}", args);
+            }
+        }, 5, 3000L);
     }
 
 }
