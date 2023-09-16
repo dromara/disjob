@@ -105,7 +105,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     @Override
     public void close() {
         super.close();
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 3));
+        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 3));
     }
 
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {

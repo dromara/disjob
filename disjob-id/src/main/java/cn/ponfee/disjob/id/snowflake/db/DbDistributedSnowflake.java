@@ -11,7 +11,7 @@ package cn.ponfee.disjob.id.snowflake.db;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.util.Predicates;
@@ -143,8 +143,8 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
     @Override
     public void close() {
         stopped = true;
-        Throwables.ThrowingRunnable.caught(heartbeatThread::interrupt);
-        ThrowingSupplier.caught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
+        ThrowingRunnable.execute(heartbeatThread::interrupt);
+        ThrowingSupplier.execute(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
     }
 
     // -------------------------------------------------------private methods

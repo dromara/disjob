@@ -101,10 +101,10 @@ public class WorkerStartup implements Startable {
             LOG.warn("Worker startup already stopped.");
             return;
         }
-        ThrowingRunnable.caught(workerRegistry::close);
-        ThrowingRunnable.caught(taskReceiver::close);
-        ThrowingRunnable.caught(timingWheelRotator::close);
-        ThrowingRunnable.caught(workerThreadPool::close);
+        ThrowingRunnable.execute(workerRegistry::close);
+        ThrowingRunnable.execute(taskReceiver::close);
+        ThrowingRunnable.execute(timingWheelRotator::close);
+        ThrowingRunnable.execute(workerThreadPool::close);
     }
 
     private static SupervisorService createProxy(SupervisorService supervisorService,

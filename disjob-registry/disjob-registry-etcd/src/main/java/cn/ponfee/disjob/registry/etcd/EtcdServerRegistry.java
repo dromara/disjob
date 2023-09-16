@@ -145,14 +145,14 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             return;
         }
 
-        ThrowingSupplier.caught(keepAliveCheckScheduler::shutdownNow);
-        ThrowingSupplier.caught(() -> keepAliveCheckScheduler.awaitTermination(1, TimeUnit.SECONDS));
-        ThrowingRunnable.caught(keepAlive::close);
+        ThrowingSupplier.execute(keepAliveCheckScheduler::shutdownNow);
+        ThrowingSupplier.execute(() -> keepAliveCheckScheduler.awaitTermination(1, TimeUnit.SECONDS));
+        ThrowingRunnable.execute(keepAlive::close);
         registered.forEach(this::deregister);
         registered.clear();
-        ThrowingRunnable.caught(() -> client.revokeLease(leaseId));
-        ThrowingRunnable.caught(client::close);
-        ThrowingRunnable.caught(super::close);
+        ThrowingRunnable.execute(() -> client.revokeLease(leaseId));
+        ThrowingRunnable.execute(client::close);
+        ThrowingRunnable.execute(super::close);
     }
 
     // ------------------------------------------------------------------private method

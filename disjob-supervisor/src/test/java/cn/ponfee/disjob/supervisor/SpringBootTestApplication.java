@@ -30,7 +30,7 @@ public class SpringBootTestApplication {
             .redisMasterPort(26379)
             .redisSlavePort(26380)
             .start();
-        ThrowingRunnable.caught(() -> Thread.sleep(5000));
+        ThrowingRunnable.execute(() -> Thread.sleep(5000));
     }
 
     public static void main(String[] args) {

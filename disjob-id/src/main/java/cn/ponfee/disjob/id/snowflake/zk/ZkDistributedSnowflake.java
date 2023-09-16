@@ -11,7 +11,6 @@ package cn.ponfee.disjob.id.snowflake.zk;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Bytes;
@@ -164,7 +163,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
     @Override
     public void close() {
         stopped = true;
-        Throwables.ThrowingRunnable.caught(heartbeatThread::interrupt);
+        ThrowingRunnable.execute(heartbeatThread::interrupt);
     }
 
     // ------------------------------------------------------------------private methods
@@ -274,7 +273,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                     return usableWorkerId;
                 } catch (Throwable t) {
                     if (isCreatedWorkerIdPath) {
-                        ThrowingRunnable.caught(() -> deletePath(workerIdPath));
+                        ThrowingRunnable.execute(() -> deletePath(workerIdPath));
                     }
                     LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath, t.getMessage());
                 }
@@ -394,7 +393,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                     lastSessionId = sessionId;
                 }
 
-                ThrowingRunnable.caught(() -> RetryTemplate.execute(zkDistributedSnowflake::onReconnected, 3, 1000));
+                ThrowingRunnable.execute(() -> RetryTemplate.execute(zkDistributedSnowflake::onReconnected, 3, 1000));
             }
         }
     }

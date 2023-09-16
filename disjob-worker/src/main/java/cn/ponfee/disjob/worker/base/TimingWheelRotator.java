@@ -116,8 +116,8 @@ public class TimingWheelRotator implements Startable {
         }
 
         LOG.info("Timing wheel rotator stopped.");
-        ThrowingRunnable.caught(heartbeatThread::interrupt);
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(processExecutor, 3));
+        ThrowingRunnable.execute(heartbeatThread::interrupt);
+        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(processExecutor, 3));
     }
 
     private void process() {

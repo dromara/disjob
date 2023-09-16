@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,9 +117,9 @@ public final class AsyncDelayedExecutor<E> extends Thread {
             if (delayed != null) {
                 E data = delayed.getData();
                 if (asyncExecutor != null) {
-                    asyncExecutor.submit(Throwables.caught(() -> processor.accept(data)));
+                    asyncExecutor.submit(ThrowingRunnable.caught(() -> processor.accept(data)));
                 } else {
-                    ThrowingRunnable.caught(() -> processor.accept(data));
+                    ThrowingRunnable.execute(() -> processor.accept(data));
                 }
             }
         }

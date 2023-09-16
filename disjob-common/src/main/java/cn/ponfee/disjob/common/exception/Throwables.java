@@ -30,6 +30,8 @@ public final class Throwables {
 
     private static final Logger LOG = LoggerFactory.getLogger(Throwables.class);
 
+    private static final Supplier<String> EMPTY_MESSAGE = () -> "";
+
     /**
      * Gets the root cause throwable stack trace
      *
@@ -63,54 +65,6 @@ public final class Throwables {
         return "error: <" + ClassUtils.getName(throwable.getClass()) + ">";
     }
 
-    // ------------------------------------------------------------------------caught
-
-    public static Runnable caught(ThrowingRunnable<?> runnable) {
-        return () -> {
-            try {
-                runnable.run();
-            } catch (Throwable t) {
-                LOG.error("", t);
-                Threads.interruptIfNecessary(t);
-            }
-        };
-    }
-
-    public static <E> Consumer<E> caught(ThrowingConsumer<E, ?> consumer) {
-        return arg -> {
-            try {
-                consumer.accept(arg);
-            } catch (Throwable t) {
-                LOG.error("", t);
-                Threads.interruptIfNecessary(t);
-            }
-        };
-    }
-
-    public static <R> Supplier<R> caught(ThrowingSupplier<R, ?> supplier) {
-        return () -> {
-            try {
-                return supplier.get();
-            } catch (Throwable t) {
-                LOG.error("", t);
-                Threads.interruptIfNecessary(t);
-                return null;
-            }
-        };
-    }
-
-    public static <E, R> Function<E, R> caught(ThrowingFunction<E, R, ?> function) {
-        return arg -> {
-            try {
-                return function.apply(arg);
-            } catch (Throwable t) {
-                LOG.error("", t);
-                Threads.interruptIfNecessary(t);
-                return null;
-            }
-        };
-    }
-
     // -------------------------------------------------------------------------------interface definitions
 
     @FunctionalInterface
@@ -132,7 +86,20 @@ public final class Throwables {
             }
         }
 
-        static <T extends Throwable> Runnable checked(ThrowingRunnable<T> runnable) {
+        static void execute(ThrowingRunnable<?> runnable) {
+            execute(runnable, EMPTY_MESSAGE);
+        }
+
+        static void execute(ThrowingRunnable<?> runnable, Supplier<String> message) {
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+            }
+        }
+
+        static Runnable checked(ThrowingRunnable<?> runnable) {
             return () -> {
                 try {
                     runnable.run();
@@ -142,29 +109,19 @@ public final class Throwables {
             };
         }
 
-        static void ignored(ThrowingRunnable<?> runnable) {
-            try {
-                runnable.run();
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-            }
+        static Runnable caught(ThrowingRunnable<?> runnable) {
+            return caught(runnable, EMPTY_MESSAGE);
         }
 
-        static void caught(ThrowingRunnable<?> runnable) {
-            caught(runnable, "");
-        }
-
-        static void caught(ThrowingRunnable<?> runnable, String message) {
-            caught(runnable, () -> message);
-        }
-
-        static void caught(ThrowingRunnable<?> runnable, Supplier<String> message) {
-            try {
-                runnable.run();
-            } catch (Throwable t) {
-                LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
-            }
+        static Runnable caught(ThrowingRunnable<?> runnable, Supplier<String> message) {
+            return () -> {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    LOG.error(message.get(), t);
+                    Threads.interruptIfNecessary(t);
+                }
+            };
         }
     }
 
@@ -186,7 +143,21 @@ public final class Throwables {
             }
         }
 
-        static <R, T extends Throwable> Supplier<R> checked(ThrowingSupplier<R, T> supplier) {
+        static <R> R execute(ThrowingSupplier<R, ?> supplier) {
+            return execute(supplier, null, EMPTY_MESSAGE);
+        }
+
+        static <R> R execute(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
+            try {
+                return supplier.get();
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+                return defaultValue;
+            }
+        }
+
+        static <R> Supplier<R> checked(ThrowingSupplier<R, ?> supplier) {
             return () -> {
                 try {
                     return supplier.get();
@@ -196,31 +167,20 @@ public final class Throwables {
             };
         }
 
-        static <R> R ignored(ThrowingSupplier<R, ?> supplier) {
-            return ignored(supplier, null);
+        static <R> Supplier<R> caught(ThrowingSupplier<R, ?> supplier) {
+            return caught(supplier, null, EMPTY_MESSAGE);
         }
 
-        static <R> R ignored(ThrowingSupplier<R, ?> supplier, R defaultValue) {
-            try {
-                return supplier.get();
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                return defaultValue;
-            }
-        }
-
-        static <R> R caught(ThrowingSupplier<R, ?> supplier) {
-            return caught(supplier, null, () -> "");
-        }
-
-        static <R> R caught(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
-            try {
-                return supplier.get();
-            } catch (Throwable t) {
-                LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
-                return defaultValue;
-            }
+        static <R> Supplier<R> caught(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
+            return () -> {
+                try {
+                    return supplier.get();
+                } catch (Throwable t) {
+                    LOG.error(message.get(), t);
+                    Threads.interruptIfNecessary(t);
+                    return defaultValue;
+                }
+            };
         }
     }
 
@@ -242,7 +202,21 @@ public final class Throwables {
             }
         }
 
-        static <R, T extends Throwable> Callable<R> checked(ThrowingCallable<R, T> callable) {
+        static <R> R execute(ThrowingCallable<R, ?> callable) {
+            return execute(callable, null, EMPTY_MESSAGE);
+        }
+
+        static <R> R execute(ThrowingCallable<R, ?> callable, R defaultValue, Supplier<String> message) {
+            try {
+                return callable.call();
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+                return defaultValue;
+            }
+        }
+
+        static <R> Callable<R> checked(ThrowingCallable<R, ?> callable) {
             return () -> {
                 try {
                     return callable.call();
@@ -252,31 +226,20 @@ public final class Throwables {
             };
         }
 
-        static <R> R ignored(ThrowingCallable<R, ?> callable) {
-            return ignored(callable, null);
+        static <R> Callable<R> caught(ThrowingCallable<R, ?> supplier) {
+            return caught(supplier, null, EMPTY_MESSAGE);
         }
 
-        static <R> R ignored(ThrowingCallable<R, ?> callable, R defaultValue) {
-            try {
-                return callable.call();
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                return defaultValue;
-            }
-        }
-
-        static <R> R caught(ThrowingCallable<R, ?> callable, String message) {
-            return caught(callable, null, () -> message);
-        }
-
-        static <R> R caught(ThrowingCallable<R, ?> callable, R defaultValue, Supplier<String> message) {
-            try {
-                return callable.call();
-            } catch (Throwable t) {
-                LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
-                return defaultValue;
-            }
+        static <R> Callable<R> caught(ThrowingCallable<R, ?> supplier, R defaultValue, Supplier<String> message) {
+            return () -> {
+                try {
+                    return supplier.call();
+                } catch (Throwable t) {
+                    LOG.error(message.get(), t);
+                    Threads.interruptIfNecessary(t);
+                    return defaultValue;
+                }
+            };
         }
     }
 
@@ -298,7 +261,20 @@ public final class Throwables {
             }
         }
 
-        static <E, T extends Throwable> Consumer<E> checked(ThrowingConsumer<E, T> consumer) {
+        static <E> void execute(ThrowingConsumer<E, ?> consumer, E arg) {
+            execute(consumer, arg, EMPTY_MESSAGE);
+        }
+
+        static <E> void execute(ThrowingConsumer<E, ?> consumer, E arg, Supplier<String> message) {
+            try {
+                consumer.accept(arg);
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+            }
+        }
+
+        static <E> Consumer<E> checked(ThrowingConsumer<E, ?> consumer) {
             return e -> {
                 try {
                     consumer.accept(e);
@@ -308,25 +284,19 @@ public final class Throwables {
             };
         }
 
-        static <E> void ignored(ThrowingConsumer<E, ?> consumer, E arg) {
-            try {
-                consumer.accept(arg);
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-            }
+        static <E> Consumer<E> caught(ThrowingConsumer<E, ?> consumer) {
+            return caught(consumer, EMPTY_MESSAGE);
         }
 
-        static <E> void caught(ThrowingConsumer<E, ?> consumer, E arg) {
-            caught(consumer, arg, null);
-        }
-
-        static <E> void caught(ThrowingConsumer<E, ?> consumer, E arg, Supplier<String> message) {
-            try {
-                consumer.accept(arg);
-            } catch (Throwable t) {
-                LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
-            }
+        static <E> Consumer<E> caught(ThrowingConsumer<E, ?> consumer, Supplier<String> message) {
+            return arg -> {
+                try {
+                    consumer.accept(arg);
+                } catch (Throwable t) {
+                    LOG.error(message.get(), t);
+                    Threads.interruptIfNecessary(t);
+                }
+            };
         }
     }
 
@@ -349,7 +319,21 @@ public final class Throwables {
             }
         }
 
-        static <E, R, T extends Throwable> Function<E, R> checked(ThrowingFunction<E, R, T> function) {
+        static <E, R> R execute(ThrowingFunction<E, R, ?> function, E arg) {
+            return execute(function, arg, null, EMPTY_MESSAGE);
+        }
+
+        static <E, R> R execute(ThrowingFunction<E, R, ?> function, E arg, R defaultValue, Supplier<String> message) {
+            try {
+                return function.apply(arg);
+            } catch (Throwable t) {
+                LOG.error(message.get(), t);
+                Threads.interruptIfNecessary(t);
+                return defaultValue;
+            }
+        }
+
+        static <E, R> Function<E, R> checked(ThrowingFunction<E, R, ?> function) {
             return e -> {
                 try {
                     return function.apply(e);
@@ -359,31 +343,20 @@ public final class Throwables {
             };
         }
 
-        static <E, R> R ignored(ThrowingFunction<E, R, ?> function, E arg) {
-            return ignored(function, arg, null);
+        static <E, R> Function<E, R> caught(ThrowingFunction<E, R, ?> function) {
+            return caught(function, null, EMPTY_MESSAGE);
         }
 
-        static <E, R> R ignored(ThrowingFunction<E, R, ?> function, E arg, R defaultValue) {
-            try {
-                return function.apply(arg);
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                return defaultValue;
-            }
-        }
-
-        static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg) {
-            return caught(function, arg, null, () -> "");
-        }
-
-        static <E, R> R caught(ThrowingFunction<E, R, ?> function, E arg, R defaultValue, Supplier<String> message) {
-            try {
-                return function.apply(arg);
-            } catch (Throwable t) {
-                LOG.error(message.get(), t);
-                Threads.interruptIfNecessary(t);
-                return defaultValue;
-            }
+        static <E, R> Function<E, R> caught(ThrowingFunction<E, R, ?> function, R defaultValue, Supplier<String> message) {
+            return arg -> {
+                try {
+                    return function.apply(arg);
+                } catch (Throwable t) {
+                    LOG.error(message.get(), t);
+                    Threads.interruptIfNecessary(t);
+                    return defaultValue;
+                }
+            };
         }
     }
 

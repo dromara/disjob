@@ -247,7 +247,7 @@ public class EtcdClient implements Closeable {
     @Override
     public synchronized void close() {
         new ArrayList<>(childWatchers.keySet()).forEach(this::unwatchChildChanged);
-        ThrowingSupplier.caught(healthCheckScheduler::shutdownNow);
+        ThrowingSupplier.execute(healthCheckScheduler::shutdownNow);
         client.close();
     }
 
@@ -278,12 +278,12 @@ public class EtcdClient implements Closeable {
 
         @Override
         public void close() {
-            ThrowingSupplier.caught(asyncExecutor::shutdownNow);
+            ThrowingSupplier.execute(asyncExecutor::shutdownNow);
         }
 
         @Override
         public void accept(WatchResponse response) {
-            ThrowingRunnable.caught(latch::await);
+            ThrowingRunnable.execute(latch::await);
 
             List<WatchEvent> events = response.getEvents();
             if (events.stream().noneMatch(e -> CHANGED_EVENT_TYPES.contains(e.getEventType()))) {

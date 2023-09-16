@@ -187,28 +187,28 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         // 1、prepare close
         // 1.1、change executing pool thread state
-        ThrowingRunnable.caught(activePool::stopPool);
+        ThrowingRunnable.execute(activePool::stopPool);
 
         // 1.2、change idle pool thread state
-        idlePool.forEach(e -> ThrowingRunnable.caught(e::toStop));
+        idlePool.forEach(e -> ThrowingRunnable.execute(e::toStop));
 
         // 2、do close
         // 2.1、stop this boss thread
-        ThrowingRunnable.caught(() -> Threads.stopThread(this, 0, 0, 200));
+        ThrowingRunnable.execute(() -> Threads.stopThread(this, 0, 0, 200));
 
         // 2.2、stop idle pool thread
-        idlePool.forEach(e -> ThrowingRunnable.caught(() -> stopWorkerThread(e, true)));
-        ThrowingRunnable.caught(idlePool::clear);
+        idlePool.forEach(e -> ThrowingRunnable.execute(() -> stopWorkerThread(e, true)));
+        ThrowingRunnable.execute(idlePool::clear);
 
         // 2.3、stop executing pool thread
-        ThrowingRunnable.caught(activePool::closePool);
+        ThrowingRunnable.execute(activePool::closePool);
         workerThreadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        ThrowingSupplier.caught(() -> ThreadPoolExecutors.shutdown(stopTaskExecutor, 1));
+        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(stopTaskExecutor, 1));
 
         // 2.5、clear task execution param queue
-        ThrowingRunnable.caught(taskQueue::clear);
+        ThrowingRunnable.execute(taskQueue::clear);
 
         LOG.info("Close worker thread pool end.");
     }
@@ -764,7 +764,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     final List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
-                    ThrowingRunnable.caught(() -> supervisorServiceClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
+                    ThrowingRunnable.execute(() -> supervisorServiceClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 // discard task
                 return;

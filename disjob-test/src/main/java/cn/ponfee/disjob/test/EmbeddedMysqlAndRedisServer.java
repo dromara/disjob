@@ -31,7 +31,7 @@ public final class EmbeddedMysqlAndRedisServer {
 
     private EmbeddedMysqlAndRedisServer(int mysqlPort, int redisMasterPort, int redisSlavePort) {
         System.out.println("/*============================================================*\\");
-        this.mariaDBServer = ThrowingSupplier.caught(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
+        this.mariaDBServer = ThrowingSupplier.execute(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
         System.out.println("\\*============================================================*/");
 
         System.out.println("\n\n\n\n\n\n");
@@ -44,13 +44,13 @@ public final class EmbeddedMysqlAndRedisServer {
     }
 
     public synchronized void stop() {
-        ThrowingRunnable.caught(() -> Thread.sleep(10000));
+        ThrowingRunnable.execute(() -> Thread.sleep(10000));
         if (mariaDBServer != null) {
-            ThrowingRunnable.caught(mariaDBServer::stop);
+            ThrowingRunnable.execute(mariaDBServer::stop);
             mariaDBServer = null;
         }
         if (redisServer != null) {
-            ThrowingRunnable.caught(redisServer::stop);
+            ThrowingRunnable.execute(redisServer::stop);
             redisServer = null;
         }
     }

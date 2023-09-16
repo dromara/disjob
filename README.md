@@ -204,11 +204,11 @@ Worker接收到子任务后，会提交到框架定义的线程池中执行。
 
 7. **异常中断**
 
-当某个子任务在执行过程中抛出框架的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括派发在不同机器中的任务)，同理如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
+当某个子任务在执行过程中抛出框架的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括派发在不同机器中的任务)，同样如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
 
 8. **任务编排**
 
-现在这个质数统计的总任务已经执行完了，共10个子任务，每个子任务都统计出了它的那部分结果。Disjob能自动帮我汇总结果吗？Yes！框架提供了非常强大且方便的表达式来编排任务，如：`A->B,C,(D->E)->D,F->G`，现在我们可以就创建一个汇总任务，然后再把这两个任务编排在一起。
+现在这个质数统计的总任务已经执行完了，共10个子任务，每个子任务都统计出了它的那部分结果。Disjob能自动帮我汇总结果吗？Yes！框架提供了非常强大且方便的表达式来编排任务，如：`A->B,C,(D->E)->D,F->G`，现在我们就可以创建一个汇总任务，然后再把这两个任务编排在一起。
 
 以下是本例中质数统计的job数据，只列了部分主要字段，其中`job_handler`为这两个任务处理器的编排(代码在项目源码中)
 

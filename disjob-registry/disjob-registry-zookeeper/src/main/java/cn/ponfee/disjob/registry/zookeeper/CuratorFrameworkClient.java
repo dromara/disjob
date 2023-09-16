@@ -233,7 +233,7 @@ public class CuratorFrameworkClient implements Closeable {
 
         @Override
         public void process(WatchedEvent event) throws Exception {
-            ThrowingRunnable.caught(latch::await);
+            ThrowingRunnable.execute(latch::await);
             LOG.info("Watched event type: {}", event.getType());
 
             final Consumer<List<String>> action = processor;

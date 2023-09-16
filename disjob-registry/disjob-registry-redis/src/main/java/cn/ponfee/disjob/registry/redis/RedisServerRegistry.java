@@ -170,8 +170,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        ThrowingSupplier.caught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        ThrowingRunnable.caught(() -> publish(server, EventType.DEREGISTER));
+        ThrowingSupplier.execute(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
+        ThrowingRunnable.execute(() -> publish(server, EventType.DEREGISTER));
         log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 
@@ -184,8 +184,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        ThrowingRunnable.caught(redisMessageListenerContainer::stop);
-        ThrowingSupplier.caught(registryScheduledExecutor::shutdownNow);
+        ThrowingRunnable.execute(redisMessageListenerContainer::stop);
+        ThrowingSupplier.execute(registryScheduledExecutor::shutdownNow);
         registered.forEach(this::deregister);
         registered.clear();
         super.close();

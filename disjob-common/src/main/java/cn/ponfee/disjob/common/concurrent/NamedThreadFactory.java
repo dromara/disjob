@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.concurrent;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,10 +30,10 @@ public class NamedThreadFactory implements ThreadFactory {
     private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
     private final ThreadGroup group;
 
-    public NamedThreadFactory(String prefix,
-                              Boolean daemon,
-                              Integer priority,
-                              Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+    private NamedThreadFactory(String prefix,
+                               Boolean daemon,
+                               Integer priority,
+                               Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
         if (StringUtils.isBlank(prefix)) {
             prefix = "pool-" + POOL_SEQ.getAndIncrement();
         }
@@ -46,7 +47,7 @@ public class NamedThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable runnable) {
-        Thread thread = new Thread(group, runnable, prefix + threadNo.getAndIncrement(), 0);
+        Thread thread = new Thread(group, Objects.requireNonNull(runnable), prefix + threadNo.getAndIncrement(), 0);
         thread.setDaemon(daemon != null ? daemon : Thread.currentThread().isDaemon());
         if (priority != null) {
             thread.setPriority(priority);
