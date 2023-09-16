@@ -122,14 +122,12 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
             while (!stopped) {
                 try {
                     heartbeat();
-                } catch (Throwable e) {
-                    LOG.error("Db snowflake server heartbeat error: " + bizTag + " | " + serverTag, e);
-                }
-                try {
                     TimeUnit.SECONDS.sleep(HEARTBEAT_PERIOD_SECONDS);
                 } catch (InterruptedException e) {
                     LOG.error("Thread interrupted.", e);
                     close();
+                } catch (Throwable e) {
+                    LOG.error("Db snowflake server heartbeat error: " + bizTag + " | " + serverTag, e);
                 }
             }
             LOG.info("thread terminated.");

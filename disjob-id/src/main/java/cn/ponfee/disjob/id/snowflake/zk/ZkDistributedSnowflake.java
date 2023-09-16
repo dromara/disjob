@@ -143,14 +143,12 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             while (!stopped) {
                 try {
                     heartbeat();
-                } catch (Throwable e) {
-                    LOG.error("Zk snowflake server heartbeat error: " + workerIdPath, e);
-                }
-                try {
                     TimeUnit.SECONDS.sleep(HEARTBEAT_PERIOD_SECONDS);
                 } catch (InterruptedException e) {
                     LOG.error("Thread interrupted.", e);
                     close();
+                } catch (Throwable e) {
+                    LOG.error("Zk snowflake server heartbeat error: " + workerIdPath, e);
                 }
             }
             LOG.info("thread terminated.");

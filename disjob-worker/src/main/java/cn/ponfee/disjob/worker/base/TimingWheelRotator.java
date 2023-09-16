@@ -75,14 +75,12 @@ public class TimingWheelRotator implements Startable {
             while (started.get()) {
                 try {
                     process();
-                } catch (Throwable t) {
-                    LOG.error("Process error.", t);
-                }
-                try {
                     Thread.sleep(timingWheel.getTickMs());
                 } catch (InterruptedException e) {
                     LOG.error("Thread interrupted.", e);
                     stop();
+                } catch (Throwable t) {
+                    LOG.error("Process error.", t);
                 }
             }
             LOG.info("thread terminated.");
