@@ -137,7 +137,7 @@ public class RedisLock implements Lock {
     /**
      * Spring redis template.
      */
-    private final RedisTemplate<?, ?> redisTemplate;
+    private final transient RedisTemplate<?, ?> redisTemplate;
 
     /**
      * Lock key

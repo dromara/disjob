@@ -56,7 +56,7 @@ public class JdbcTemplateWrapper {
         return jdbcTemplate.update(sql, args);
     }
 
-    public <T> List<T> queryForList(String sql, RowMapper<T> rowMapper, Object... args) {
+    public <T> List<T> queryForList(RowMapper<T> rowMapper, String sql, Object... args) {
         Assert.isTrue(sql.startsWith("SELECT "), () -> "Invalid SELECT sql: " + sql);
         return jdbcTemplate.queryForStream(sql, rowMapper, args).collect(Collectors.toList());
     }

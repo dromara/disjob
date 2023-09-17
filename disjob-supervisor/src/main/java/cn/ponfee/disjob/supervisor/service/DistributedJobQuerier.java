@@ -104,7 +104,7 @@ public class DistributedJobQuerier {
         return taskMapper.getByTaskId(taskId);
     }
 
-    public List<WorkflowPredecessorNode> getWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+    public List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
         if (CollectionUtils.isEmpty(workflows)) {
             return null;

@@ -49,16 +49,16 @@ public class LazyLoader<T> implements Supplier<T> {
     }
 
     @Override
-    public T get() {
-        return holder().get();
+    public T get() throws NullPointerException {
+        return holder().orElseThrow(() -> new NullPointerException("Not load target object."));
     }
 
-    public void orElse(T defaultValue) {
-        holder().orElse(defaultValue);
+    public T orElse(T defaultValue) {
+        return holder().orElse(defaultValue);
     }
 
-    public void orElseGet(Supplier<? extends T> other) {
-        holder().orElseGet(other);
+    public T orElseGet(Supplier<? extends T> other) {
+        return holder().orElseGet(other);
     }
 
     public void ifPresent(Consumer<? super T> consumer) {

@@ -53,8 +53,8 @@ public class SupervisorServiceProvider implements SupervisorService, RpcControll
     }
 
     @Override
-    public List<WorkflowPredecessorNode> getWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
-        return jobQuerier.getWorkflowPredecessorNodes(wnstanceId, instanceId);
+    public List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+        return jobQuerier.findWorkflowPredecessorNodes(wnstanceId, instanceId);
     }
 
     @Override

@@ -116,7 +116,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 String reason = "Recompute has not next trigger time";
                 job.setRemark(reason);
                 log.info("{} | {}", reason, job);
-                jobManager.stopJob(job);
+                jobManager.disableJob(job);
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
                 jobManager.updateJobNextTriggerTime(job);
@@ -151,13 +151,13 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             log.error("Scan trigger job failed: " + job, e);
             job.setRemark(StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
             job.setNextTriggerTime(null);
-            jobManager.stopJob(job);
+            jobManager.disableJob(job);
         } catch (Throwable t) {
             log.error("Scan trigger job error: " + job, t);
             if (job.getFailedScanCount() >= FAILED_SCAN_COUNT_THRESHOLD) {
                 job.setRemark(StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
                 job.setNextTriggerTime(null);
-                jobManager.stopJob(job);
+                jobManager.disableJob(job);
             } else {
                 int failedScanCount = job.incrementAndGetFailedScanCount();
                 updateNextScanTime(job, now, IntMath.pow(failedScanCount, 2) * 5);

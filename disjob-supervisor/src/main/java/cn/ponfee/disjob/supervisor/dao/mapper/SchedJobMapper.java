@@ -54,12 +54,12 @@ public interface SchedJobMapper {
     int updateNextScanTime(SchedJob schedJob);
 
     /**
-     * Stop the job.
+     * Disable the job.
      *
      * @param job the job
      * @return update sql affected rows
      */
-    int stop(SchedJob job);
+    int disable(SchedJob job);
 
     /**
      * Update the job next trigger time.

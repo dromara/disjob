@@ -20,7 +20,7 @@ public class RedisLockFactory {
     /**
      * Spring redis template.
      */
-    private final transient RedisTemplate<?, ?> redisTemplate;
+    private final RedisTemplate<?, ?> redisTemplate;
 
     /**
      * Wait lock period sleep milliseconds.

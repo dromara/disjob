@@ -750,7 +750,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 // build executing task
                 List<WorkflowPredecessorNode> nodes = null;
                 if (param.getJobType() == JobType.WORKFLOW) {
-                    nodes = supervisorServiceClient.getWorkflowPredecessorNodes(param.getWnstanceId(), param.getInstanceId());
+                    nodes = supervisorServiceClient.findWorkflowPredecessorNodes(param.getWnstanceId(), param.getInstanceId());
                 }
                 executingTask = ExecutingTask.of(param.getJobId(), param.getWnstanceId(), task, nodes);
 
@@ -766,6 +766,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     final List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
                     ThrowingRunnable.execute(() -> supervisorServiceClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
+                Threads.interruptIfNecessary(t);
                 // discard task
                 return;
             }
@@ -788,6 +789,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             } catch (Throwable t) {
                 LOG.error("Task init error: " + param, t);
                 terminateTask(supervisorServiceClient, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
+                Threads.interruptIfNecessary(t);
                 return;
             }
 
@@ -834,6 +836,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.error("Task execute occur error: " + param, t);
                 }
                 terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                Threads.interruptIfNecessary(t);
             } finally {
                 // 5、destroy
                 try {

@@ -41,15 +41,15 @@ public interface SupervisorService extends Checkpoint {
     void updateTaskWorker(List<TaskWorkerParam> params) throws Exception;
 
     /**
-     * Gets workflow predecessor nodes
+     * Finds workflow predecessor nodes
      *
      * @param wnstanceId the workflow lead instance id
      * @param instanceId the current node instance id
      * @return list of predecessor nodes
      * @throws Exception if occur error
      */
-    @GetMapping("workflow/predecessor/nodes/get")
-    List<WorkflowPredecessorNode> getWorkflowPredecessorNodes(long wnstanceId, long instanceId) throws Exception;
+    @GetMapping("workflow/predecessor/nodes")
+    List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) throws Exception;
 
     @PostMapping("task/terminate")
     boolean terminateTask(TerminateTaskParam param) throws Exception;

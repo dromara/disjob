@@ -25,7 +25,7 @@ public class RetryTemplate {
     private static final Logger LOG = LoggerFactory.getLogger(RetryTemplate.class);
 
     public static void execute(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
-        execute(action.toThrowingSupplier(Boolean.TRUE), retryMaxCount, retryBackoffPeriod);
+        execute(action.toSupplier(Boolean.TRUE), retryMaxCount, retryBackoffPeriod);
     }
 
     public static <T> T execute(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
@@ -37,13 +37,11 @@ public class RetryTemplate {
         do {
             try {
                 return action.get();
+            } catch (InterruptedException e) {
+                LOG.error("Thread interrupted, skip retry.");
+                Thread.currentThread().interrupt();
+                throw e;
             } catch (Throwable e) {
-                if (e instanceof InterruptedException) {
-                    LOG.error("Thread interrupted, skip retry.");
-                    Thread.currentThread().interrupt();
-                    throw e;
-                }
-
                 ex = e;
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop

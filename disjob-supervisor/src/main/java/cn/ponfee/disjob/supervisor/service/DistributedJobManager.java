@@ -10,7 +10,6 @@ package cn.ponfee.disjob.supervisor.service;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.LazyLoader;
-import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.spring.TransactionUtils;
@@ -33,11 +32,9 @@ import cn.ponfee.disjob.supervisor.instance.NormalInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -51,7 +48,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
-import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_NAME_SUFFIX;
 import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.TX_TEMPLATE_NAME_SUFFIX;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
@@ -96,8 +92,6 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
 @Component
 public class DistributedJobManager extends AbstractJobManager {
 
-    private static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
-    private static final int AFFECTED_ONE_ROW = 1;
     private static final Interner<Long> INTERNER_POOL = Interners.newWeakInterner();
 
     private static final List<Integer> RUN_STATE_TERMINABLE = Collects.convert(RunState.TERMINABLE_LIST, RunState::value);
@@ -113,48 +107,28 @@ public class DistributedJobManager extends AbstractJobManager {
     private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
 
     private final TransactionTemplate transactionTemplate;
-    private final SchedJobMapper jobMapper;
     private final SchedInstanceMapper instanceMapper;
     private final SchedTaskMapper taskMapper;
-    private final SchedDependMapper dependMapper;
     private final SchedWorkflowMapper workflowMapper;
 
-    public DistributedJobManager(IdGenerator idGenerator,
+    public DistributedJobManager(SchedJobMapper jobMapper,
+                                 SchedDependMapper dependMapper,
+                                 SchedInstanceMapper instanceMapper,
+                                 SchedTaskMapper taskMapper,
+                                 SchedWorkflowMapper workflowMapper,
+                                 IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
                                  WorkerServiceClient workerServiceClient,
-                                 @Qualifier(DB_NAME + TX_TEMPLATE_NAME_SUFFIX) TransactionTemplate transactionTemplate,
-                                 SchedJobMapper jobMapper,
-                                 SchedInstanceMapper instanceMapper,
-                                 SchedTaskMapper taskMapper,
-                                 SchedDependMapper dependMapper,
-                                 SchedWorkflowMapper workflowMapper) {
-        super(idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
+                                 @Qualifier(DB_NAME + TX_TEMPLATE_NAME_SUFFIX) TransactionTemplate transactionTemplate) {
+        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
         this.transactionTemplate = transactionTemplate;
-        this.jobMapper = jobMapper;
         this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;
-        this.dependMapper = dependMapper;
         this.workflowMapper = workflowMapper;
     }
 
     // ------------------------------------------------------------------database single operation without transactional
-
-    public boolean stopJob(SchedJob job) {
-        return jobMapper.stop(job) == AFFECTED_ONE_ROW;
-    }
-
-    public boolean changeJobState(long jobId, JobState to) {
-        return jobMapper.updateState(jobId, to.value(), 1 ^ to.value()) == AFFECTED_ONE_ROW;
-    }
-
-    public boolean updateJobNextTriggerTime(SchedJob job) {
-        return jobMapper.updateNextTriggerTime(job) == AFFECTED_ONE_ROW;
-    }
-
-    public boolean updateJobNextScanTime(SchedJob schedJob) {
-        return jobMapper.updateNextScanTime(schedJob) == AFFECTED_ONE_ROW;
-    }
 
     public boolean renewInstanceUpdateTime(SchedInstance instance, Date updateTime) {
         return instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()) == AFFECTED_ONE_ROW;
@@ -169,58 +143,7 @@ public class DistributedJobManager extends AbstractJobManager {
         return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
     }
 
-    // ------------------------------------------------------------------operation within transactional
-
-    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void addJob(SchedJob job) throws JobException {
-        job.setUpdatedBy(job.getCreatedBy());
-        job.verifyBeforeAdd();
-        job.checkAndDefaultSetting();
-        super.verifyJob(job);
-        job.setJobId(generateId());
-        parseTriggerConfig(job);
-
-        jobMapper.insert(job);
-    }
-
-    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void updateJob(SchedJob job) throws JobException {
-        job.verifyBeforeUpdate();
-        job.checkAndDefaultSetting();
-        if (StringUtils.isEmpty(job.getJobHandler())) {
-            Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
-        } else {
-            super.verifyJob(job);
-        }
-
-        SchedJob dbJob = jobMapper.getByJobId(job.getJobId());
-        Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
-        job.setNextTriggerTime(dbJob.getNextTriggerTime());
-
-        if (job.getTriggerType() == null) {
-            Assert.isNull(job.getTriggerValue(), "Trigger value must be null if not set trigger type.");
-        } else {
-            Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
-            // update last trigger time or depends parent job id
-            dependMapper.deleteByChildJobId(job.getJobId());
-            parseTriggerConfig(job);
-        }
-
-        job.setUpdatedAt(new Date());
-        Assert.state(jobMapper.updateByJobId(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
-    }
-
-    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void deleteJob(long jobId) {
-        SchedJob job = jobMapper.getByJobId(jobId);
-        Assert.notNull(job, "Job id not found: " + jobId);
-        if (JobState.ENABLE.equals(job.getJobState())) {
-            throw new IllegalStateException("Please disable job before delete this job.");
-        }
-        Assert.isTrue(jobMapper.deleteByJobId(jobId) == AFFECTED_ONE_ROW, "Delete sched job fail or conflict.");
-        dependMapper.deleteByParentJobId(jobId);
-        dependMapper.deleteByChildJobId(jobId);
-    }
+    // ------------------------------------------------------------------database operation within transactional
 
     /**
      * Manual trigger the sched job
@@ -476,11 +399,14 @@ public class DistributedJobManager extends AbstractJobManager {
 
             if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot pause workflow node instance: " + instanceId);
+                // update sched_workflow waiting node to paused state
                 workflowMapper.update(instanceId, null, RunState.PAUSED.value(), null, RUN_STATE_WAITING, null);
+                // pause sched_workflow running node
                 instanceMapper.findWorkflowNode(instanceId)
                     .stream()
                     .filter(e -> RUN_STATE_PAUSABLE.contains(e.getRunState()))
                     .forEach(this::pauseInstance);
+                // update sched_workflow running lead
                 updateWorkflowLeadState(instance);
             } else {
                 pauseInstance(instance);
@@ -542,6 +468,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot resume workflow node instance: " + instanceId);
+                // update sched_instance paused lead to running state
                 int row = instanceMapper.updateState(instanceId, RunState.RUNNING.value(), RunState.PAUSED.value());
                 Assert.state(row == AFFECTED_ONE_ROW, () -> "Resume workflow lead instance failed: " + instanceId);
                 workflowMapper.resumeWaiting(instanceId);
@@ -998,41 +925,6 @@ public class DistributedJobManager extends AbstractJobManager {
             throw new IllegalStateException("Invalid dispatching tasks size: expect=" + expectTaskSize + ", actual=" + waitingTasks.size());
         }
         return Tuple3.of(job, instance, waitingTasks);
-    }
-
-    private void parseTriggerConfig(SchedJob job) {
-        TriggerType triggerType = TriggerType.of(job.getTriggerType());
-
-        if (triggerType == TriggerType.DEPEND) {
-            List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Str.COMMA))
-                .filter(StringUtils::isNotBlank)
-                .map(e -> Long.parseLong(e.trim()))
-                .distinct()
-                .collect(Collectors.toList());
-            Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + job.getTriggerValue());
-
-            Map<Long, SchedJob> parentJobMap = jobMapper.findByJobIds(parentJobIds)
-                .stream()
-                .collect(Collectors.toMap(SchedJob::getJobId, Function.identity()));
-            for (Long parentJobId : parentJobIds) {
-                SchedJob parentJob = parentJobMap.get(parentJobId);
-                Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
-                if (!job.getJobGroup().equals(parentJob.getJobGroup())) {
-                    throw new IllegalArgumentException("Invalid group: parent=" + parentJob.getJobGroup() + ", child=" + job.getJobGroup());
-                }
-            }
-            List<SchedDepend> list = new ArrayList<>(parentJobIds.size());
-            for (int i = 0; i < parentJobIds.size(); i++) {
-                list.add(new SchedDepend(parentJobIds.get(i), job.getJobId(), i + 1));
-            }
-            dependMapper.batchInsert(list);
-            job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
-            job.setNextTriggerTime(null);
-        } else {
-            Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), new Date());
-            Assert.notNull(nextTriggerTime, () -> "Has not next trigger time " + job.getTriggerValue());
-            job.setNextTriggerTime(nextTriggerTime.getTime());
-        }
     }
 
 }

@@ -71,7 +71,14 @@ public final class Throwables {
     public interface ThrowingRunnable<T extends Throwable> {
         void run() throws T;
 
-        default <E> ThrowingSupplier<E, Throwable> toThrowingSupplier(E result) {
+        default <E> ThrowingSupplier<E, Throwable> toSupplier(E result) {
+            return () -> {
+                run();
+                return result;
+            };
+        }
+
+        default <E> ThrowingCallable<E, Throwable> toCallable(E result) {
             return () -> {
                 run();
                 return result;

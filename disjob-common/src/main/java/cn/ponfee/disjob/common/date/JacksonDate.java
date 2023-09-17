@@ -22,7 +22,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 /**
- * The Jackson Money Serializer & Deserializer
+ * The jackson Serializer & Deserializer for {@link java.util.Date}
  *
  * @author Ponfee
  */

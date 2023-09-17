@@ -148,7 +148,7 @@
       AND is_deleted = 0
   </update>
 
-  <update id="stop" parameterType="cn.ponfee.disjob.core.model.SchedJob">
+  <update id="disable" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_state = 0,
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},

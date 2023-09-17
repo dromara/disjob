@@ -177,6 +177,7 @@ public class TimingWheelRotator implements Startable {
             } catch (Throwable t) {
                 // must do submit if occur exception
                 LOG.error("Update task worker error: " + Jsons.toJson(list), t);
+                Threads.interruptIfNecessary(t);
             }
             batchTasks.forEach(workerThreadPool::submit);
         }

@@ -125,6 +125,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             RetryTemplate.execute(() -> createPersistent(serverTagParentPath), 3, 1000L);
             RetryTemplate.execute(() -> createPersistent(workerIdParentPath), 3, 1000L);
         } catch (Throwable e) {
+            Threads.interruptIfNecessary(e);
             throw new Error("Zk snowflake server initialize error.", e);
         }
 
@@ -133,6 +134,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             this.workerIdPath = workerIdParentPath + SEP + workerId;
             this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
         } catch (Throwable e) {
+            Threads.interruptIfNecessary(e);
             throw new Error("Zk snowflake server registry worker error.", e);
         }
 
@@ -276,6 +278,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                         ThrowingRunnable.execute(() -> deletePath(workerIdPath));
                     }
                     LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath, t.getMessage());
+                    Threads.interruptIfNecessary(t);
                 }
             }
             throw new IllegalStateException("Cannot found usable zk worker id: " + serverTagParentPath);
@@ -377,6 +380,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             } catch (Throwable t) {
                 sessionId = UNKNOWN_SESSION_ID;
                 LOG.warn("Curator snowflake client state changed, get session instance error.", t);
+                Threads.interruptIfNecessary(t);
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;

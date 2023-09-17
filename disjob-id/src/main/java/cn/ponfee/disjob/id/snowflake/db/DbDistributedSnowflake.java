@@ -106,6 +106,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
         try {
             RetryTemplate.execute(this::createTableIfNotExists, 5, 1000L);
         } catch (Throwable e) {
+            Threads.interruptIfNecessary(e);
             throw new IllegalStateException("Create " + TABLE_NAME + " table failed.", e);
         }
 
@@ -113,6 +114,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
             int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdBitLength), 5, 1000L);
             this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
         } catch (Throwable e) {
+            Threads.interruptIfNecessary(e);
             throw new Error("Db snowflake server initialize error.", e);
         }
 
@@ -151,7 +153,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
 
     private int registerWorkerId(int workerIdBitLength) {
         int workerIdMaxCount = 1 << workerIdBitLength;
-        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.queryForList(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
+        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.queryForList(ROW_MAPPER, QUERY_ALL_SQL, bizTag);
         DbSnowflakeWorker current = registeredWorkers.stream().filter(e -> e.equals(bizTag, serverTag)).findAny().orElse(null);
 
         if (current == null) {
@@ -161,7 +163,7 @@ public class DbDistributedSnowflake implements IdGenerator, Closeable {
                 jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
 
                 // re-query
-                registeredWorkers = jdbcTemplateWrapper.queryForList(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
+                registeredWorkers = jdbcTemplateWrapper.queryForList(ROW_MAPPER, QUERY_ALL_SQL, bizTag);
             }
 
             Set<Integer> usedWorkIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());

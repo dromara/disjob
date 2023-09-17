@@ -128,15 +128,16 @@ disjob                                        # 主项目
 - [Supervisor角色Mysql配置](disjob-samples/conf-supervisor/application-mysql.yml)
 - [Supervisor角色核心配置](disjob-samples/conf-supervisor/application-supervisor.yml)
 - [Worker角色核心配置](disjob-samples/conf-worker/application-worker.yml)（Spring-boot应用）
-- [Worker角色核心配置](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)（普通Java-main应用）
-- [Redis配置](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，做注册中心或任务派发都使用该配置）
+- [Redis配置](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
 - [Spring-boot Web相关配置](disjob-samples/disjob-samples-common/src/main/resources/application-web.yml)（Worker与Supervisor共用）
+- [Worker角色普通Java-main应用配置](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)
 
 4. Admin项目配置文件
-- [Supervisor角色Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
-- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)（Worker与Supervisor共用，做注册中心或任务派发都使用该配置）
-- [管理后台系统Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
+- [Supervisor角色相关的Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
+- [Redis配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
 - [可加@EnableWorker注解启用Worker角色](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)（管理后台必须启用Supervisor角色）
+- [管理后台功能相关的Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
+- [RuoYi框架相关配置参考](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE) （disjob-admin中只新增了[ruoyi-disjob](disjob-admin/ruoyi-disjob)模块，其它模块都是RuoYi源码）
 
 5. 各注册中心配置类参考（Redis使用Spring-boot自带的配置方式）
 - [Consul](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)
@@ -204,7 +205,7 @@ Worker接收到子任务后，会提交到框架定义的线程池中执行。
 
 7. **异常中断**
 
-当某个子任务在执行过程中抛出框架的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)则会`暂停`全部的10个子任务(包括派发在不同机器中的任务)，同样如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下的其它子任务不受影响。
+子任务在执行过程中若抛出框架的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，则会`暂停`对应实例下全部的10个子任务(包括派发在不同机器中的任务)。同样如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`对应实例下全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下其它的子任务不受影响。
 
 8. **任务编排**
 
