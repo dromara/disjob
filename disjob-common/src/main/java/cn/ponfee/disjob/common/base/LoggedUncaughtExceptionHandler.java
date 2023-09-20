@@ -8,28 +8,22 @@
 
 package cn.ponfee.disjob.common.base;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * ClassSingletonInstanceTest
+ * Logged uncaught exception handler
  *
  * @author Ponfee
  */
-public class ClassSingletonInstanceTest {
+public class LoggedUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-    @Test
-    void test() {
-        Assertions.assertThat(new SingletonInstanceSample()).isNotNull();
-        for (int i = 0; i < 2; i++) {
-            Assertions.assertThatThrownBy(SingletonInstanceSample::new)
-                .isInstanceOf(Error.class)
-                .hasMessageMatching("^Class '.+' instance already created.$");
-        }
-    }
+    private final static Logger LOG = LoggerFactory.getLogger(LoggedUncaughtExceptionHandler.class);
+    public static final LoggedUncaughtExceptionHandler INSTANCE = new LoggedUncaughtExceptionHandler();
 
-    static class SingletonInstanceSample extends SingletonClassConstraint {
-
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        LOG.error("Logging thread uncaught exception [" + t.getName() + "]", e);
     }
 
 }

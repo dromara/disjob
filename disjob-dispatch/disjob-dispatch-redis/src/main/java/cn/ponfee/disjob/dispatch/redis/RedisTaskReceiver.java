@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.dispatch.redis;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
@@ -66,6 +67,7 @@ public class RedisTaskReceiver extends TaskReceiver {
                              TimingWheel<ExecuteTaskParam> timingWheel,
                              RedisTemplate<String, String> redisTemplate) {
         super(timingWheel);
+        SingletonClassConstraint.constrain(this);
 
         this.redisTemplate = redisTemplate;
         this.gropedWorkers = Collects.convert(currentWorker.splitGroup(), GroupedWorker::new);

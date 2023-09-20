@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
         super.setName("async_delayed_executor-" + Integer.toHexString(hashCode()));
         super.setDaemon(false);
+        super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
         super.start();
     }
 

@@ -848,7 +848,7 @@ var table = {
                 });
             },
             // 弹出层指定宽度
-            open: function (title, url, width, height, callback) {
+            open: function (title, url, width, height, callback, btn) {
                 // 如果是移动端，就使用自适应大小弹窗
                 if ($.common.isMobile()) {
                     width = 'auto';
@@ -869,7 +869,11 @@ var table = {
                 if ($.common.isEmpty(callback)) {
                     callback = function(index, layero) {
                         var iframeWin = layero.find('iframe')[0];
-                        iframeWin.contentWindow.submitHandler(index, layero);
+                        if (iframeWin.contentWindow.submitHandler) {
+                            iframeWin.contentWindow.submitHandler(index, layero);
+                        } else {
+                            $.modal.close(index);
+                        }
                     }
                 }
                 top.layer.open({
@@ -881,7 +885,7 @@ var table = {
                     shade: 0.3,
                     title: title,
                     content: url,
-                    btn: ['确定', '关闭'],
+                    btn: btn || ['确定', '关闭'],
                     // 弹层外区域关闭
                     shadeClose: true,
                     yes: callback,
@@ -946,7 +950,7 @@ var table = {
                 }
             },
             // 弹出层全屏
-            openFull: function (title, url, width, height) {
+            openFull: function (title, url, width, height, btn) {
                 // 如果是移动端，就使用自适应大小弹窗
                 if ($.common.isMobile()) {
                     width = 'auto';
@@ -973,12 +977,16 @@ var table = {
                     shade: 0.3,
                     title: title,
                     content: url,
-                    btn: ['确定', '关闭'],
+                    btn: btn || ['确定', '关闭'],
                     // 弹层外区域关闭
                     shadeClose: true,
                     yes: function(index, layero) {
                         var iframeWin = layero.find('iframe')[0];
-                        iframeWin.contentWindow.submitHandler(index, layero);
+                        if (iframeWin.contentWindow.submitHandler) {
+                            iframeWin.contentWindow.submitHandler(index, layero);
+                        } else {
+                            $.modal.close(index);
+                        }
                     },
                     cancel: function(index) {
                         return true;

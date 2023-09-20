@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.registry.consul;
 
+import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -206,6 +207,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             this.lastConsulIndex = initConsulIndex;
             super.setDaemon(true);
             super.setName("consul_subscriber_thread");
+            super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
         }
 
         @Override

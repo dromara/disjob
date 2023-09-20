@@ -8,10 +8,10 @@
 
 package cn.ponfee.disjob.id.snowflake.db;
 
-import cn.ponfee.disjob.common.base.AbstractClassSingletonInstance;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.LoopProcessThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
@@ -19,6 +19,8 @@ import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.id.snowflake.ClockMovedBackwardsException;
 import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,7 +41,8 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
-public class DbDistributedSnowflake extends AbstractClassSingletonInstance implements IdGenerator, Closeable {
+public class DbDistributedSnowflake extends SingletonClassConstraint implements IdGenerator, Closeable {
+    private static final Logger LOG = LoggerFactory.getLogger(DbDistributedSnowflake.class);
 
     private static final long EXPIRE_TIME_MILLIS = TimeUnit.HOURS.toMillis(12);
 
@@ -161,10 +164,10 @@ public class DbDistributedSnowflake extends AbstractClassSingletonInstance imple
                 Object[] args = {bizTag, serverTag, usableWorkerId, System.currentTimeMillis()};
                 try {
                     jdbcTemplateWrapper.insert(REGISTER_WORKER_SQL, args);
-                    log.info("Create snowflake db worker success: {} | {} | {} | {}", args);
+                    LOG.info("Create snowflake db worker success: {} | {} | {} | {}", args);
                     return usableWorkerId;
                 } catch (Throwable t) {
-                    log.warn("Registry snowflake db worker failed: " + t.getMessage() + ", args: {} | {} | {} | {}", args);
+                    LOG.warn("Registry snowflake db worker failed: " + t.getMessage() + ", args: {} | {} | {} | {}", args);
                 }
             }
             throw new IllegalStateException("Cannot found usable db worker id: " + bizTag + ", " + serverTag);
@@ -174,7 +177,7 @@ public class DbDistributedSnowflake extends AbstractClassSingletonInstance imple
             Integer workerId = current.getWorkerId();
             if (workerId < 0 || workerId >= workerIdMaxCount) {
                 if (jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizTag, serverTag) != AFFECTED_ONE_ROW) {
-                    log.error("Deleting invalid db worker id failed.");
+                    LOG.error("Deleting invalid db worker id failed.");
                 }
                 throw new IllegalStateException("Invalid db worker id: " + workerId);
             }
@@ -186,7 +189,7 @@ public class DbDistributedSnowflake extends AbstractClassSingletonInstance imple
             }
             Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
             if (jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
-                log.info("Reuse db worker id success: {} | {} | {} | {}", args);
+                LOG.info("Reuse db worker id success: {} | {} | {} | {}", args);
                 return workerId;
             }
 
@@ -202,10 +205,10 @@ public class DbDistributedSnowflake extends AbstractClassSingletonInstance imple
 
         try {
             jdbcTemplateWrapper.execute(CREATE_TABLE_SQL);
-            log.info("Created table {} success.", TABLE_NAME);
+            LOG.info("Created table {} success.", TABLE_NAME);
         } catch (Throwable t) {
             if (existsTable()) {
-                log.warn("Create table {} failed {}", TABLE_NAME, t.getMessage());
+                LOG.warn("Create table {} failed {}", TABLE_NAME, t.getMessage());
             } else {
                 throw new Error("Create table " + TABLE_NAME + " error.", t);
             }
@@ -226,9 +229,9 @@ public class DbDistributedSnowflake extends AbstractClassSingletonInstance imple
             long currentTimestamp = System.currentTimeMillis();
             Object[] args = {currentTimestamp, bizTag, serverTag};
             if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
-                log.info("Heartbeat db worker id success: {} | {} | {}", args);
+                LOG.info("Heartbeat db worker id success: {} | {} | {}", args);
             } else {
-                log.error("Heartbeat db worker id failed: {} | {} | {}", args);
+                LOG.error("Heartbeat db worker id failed: {} | {} | {}", args);
             }
         }, 5, 3000L);
     }

@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import com.google.common.base.CaseFormat;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
         super.setDaemon(true);
         super.setName(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, getClass().getSimpleName()) + "_thread");
         super.setPriority(Thread.MAX_PRIORITY);
+        super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
     }
 
     /**

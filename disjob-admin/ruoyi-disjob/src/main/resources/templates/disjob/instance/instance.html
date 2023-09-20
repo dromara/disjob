@@ -211,22 +211,23 @@
       title: '操作',
       align: 'left',
       formatter: function (value, row, index) {
-        var actions = [];
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
           // 非lead的工作流任务实例  ==>  不支持操作
           return '';
         }
+
+        var actions = [];
         if (row.runState === 20) {
-          actions.push('<a class="btn btn-warning btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i>暂停</a> ')
+          actions.push('<a class="btn btn-warning btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i> 暂停</a> ')
         }
         if (row.runState === 30) {
-          actions.push('<a class="btn btn-info btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="resume(\'' + row.instanceId + '\')"><i class="fa fa-play"></i>恢复</a> ')
+          actions.push('<a class="btn btn-info btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="resume(\'' + row.instanceId + '\')"><i class="fa fa-play"></i> 恢复</a> ')
         }
         if (row.runState < 40) {
-          actions.push('<a class="btn btn-danger btn-rounded btn-outline btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="cancel(\'' + row.instanceId + '\')"><i class="fa fa-remove"></i>取消</a> ')
+          actions.push('<a class="btn btn-danger btn-rounded btn-outline btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="cancel(\'' + row.instanceId + '\')"><i class="fa fa-remove"></i> 取消</a> ')
         }
         if (row.runState >= 40) {
-          actions.push('<a class="btn btn-danger btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.instanceId + '\')"><i class="fa fa-trash"></i>删除</a> ')
+          actions.push('<a class="btn btn-danger btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.instanceId + '\')"><i class="fa fa-trash"></i> 删除</a> ')
         }
         return actions.join('');
       }
@@ -333,12 +334,12 @@
 
   function tasks(instanceId) {
     var url = prefix + '/tasks/' + instanceId;
-    $.modal.openFull("调度任务", url);
+    $.modal.openFull("调度任务", url, null, null, ['关闭']);
   }
 
   function job(jobId) {
     var url = ctx + 'disjob/job/detail/' + jobId;
-    $.modal.open("调度配置详情", url);
+    $.modal.open("调度配置详情", url, null, null, null, ['关闭']);
   }
 
   function pause(instanceId) {

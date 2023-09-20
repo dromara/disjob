@@ -40,6 +40,7 @@ public class LoopProcessThread extends Thread {
         super.setName(name);
         super.setDaemon(daemon);
         super.setPriority(priority);
+        super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
         this.periodMs = periodMs;
         this.action = action;
     }

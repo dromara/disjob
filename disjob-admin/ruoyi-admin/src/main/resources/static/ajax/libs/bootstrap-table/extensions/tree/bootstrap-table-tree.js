@@ -263,6 +263,10 @@
                 });
                 $(target).attr('style','width:' + w +'px');
             }
+            var popover = $("[data-toggle='popover']");
+            if (popover) {
+                popover.popover();
+            }
         }
         // 初始化分页
         var initPagination = function (totalPage,currPage) {

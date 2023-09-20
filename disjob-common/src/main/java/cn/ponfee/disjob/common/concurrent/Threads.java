@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,20 @@ public final class Threads {
     /**
      * New thread
      *
+     * @param run the runnable
+     * @return thread instance
+     */
+    public static Thread newThread(Runnable run) {
+        Thread thread = new Thread(run);
+        String callerClassName = Thread.currentThread().getStackTrace()[2].getClassName();
+        thread.setName(callerClassName.substring(callerClassName.lastIndexOf(".") + 1));
+        thread.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+        return thread;
+    }
+
+    /**
+     * New thread
+     *
      * @param name     the thread name
      * @param daemon   the daemon
      * @param priority the priority
@@ -35,6 +50,7 @@ public final class Threads {
         thread.setName(name);
         thread.setDaemon(daemon);
         thread.setPriority(priority);
+        thread.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
         return thread;
     }
 
@@ -115,7 +131,8 @@ public final class Threads {
         }
 
         try {
-            // It maybe throws "java.lang.ThreadDeath: null"
+            // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
+            // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行
             thread.stop();
             LOG.info("Invoked java.lang.Thread#stop() method: {}", thread.getName());
         } catch (Throwable t) {

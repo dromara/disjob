@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.worker.base;
 
+import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -114,6 +116,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
                             SupervisorService supervisorServiceClient) {
+        SingletonClassConstraint.constrain(this);
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
         this.maximumPoolSize = maximumPoolSize;
@@ -123,6 +126,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
         super.setPriority(Thread.MAX_PRIORITY);
+        super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
     }
 
     /**
@@ -363,7 +367,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
         if (doStop) {
             LOG.info("Do stop the worker thread: {}", workerThread.getName());
-            workerThread.doStop(0, 0, 5000);
+            workerThread.doStop();
         }
     }
 
@@ -650,6 +654,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             super.setDaemon(true);
             super.setName(getClass().getSimpleName() + "-" + NAMED_SEQ.getAndIncrement());
+            this.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
             super.start();
         }
 
@@ -666,13 +671,13 @@ public class WorkerThreadPool extends Thread implements Closeable {
             stopped = true;
         }
 
-        private void doStop(int sleepCount, long sleepMillis, long joinMillis) {
+        private void doStop() {
             toStop();
             ExecuteTaskParam param = executingParam();
             if (param != null) {
                 param.stop();
             }
-            Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
+            Threads.stopThread(this, 0, 0, 2000);
         }
 
         private boolean updateExecuteParam(ExecuteTaskParam expect, ExecuteTaskParam update) {
@@ -804,9 +809,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 Result<?> result;
                 if (param.getExecuteTimeout() > 0) {
                     FutureTask<Result<?>> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, supervisorServiceClient));
-                    Thread futureTaskThread = new Thread(futureTask);
-                    futureTaskThread.setDaemon(true);
-                    futureTaskThread.setName(getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement());
+                    String threadName = getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
+                    Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask);
                     futureTaskThread.start();
                     try {
                         result = futureTask.get(param.getExecuteTimeout(), TimeUnit.MILLISECONDS);

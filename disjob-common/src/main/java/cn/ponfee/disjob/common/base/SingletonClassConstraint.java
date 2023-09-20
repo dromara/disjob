@@ -12,28 +12,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
- * Abstract class singleton instance
+ * Constrain class must be singleton instance.
  *
  * @author Ponfee
  */
-public abstract class AbstractClassSingletonInstance {
+public abstract class SingletonClassConstraint {
 
-    private static final Set<Class<? extends AbstractClassSingletonInstance>> MUTEX = new HashSet<>();
+    private static final Logger LOG = LoggerFactory.getLogger(SingletonClassConstraint.class);
+    private static final Set<Class<?>> MUTEX = new HashSet<>();
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected SingletonClassConstraint() {
+        constrain(this);
+    }
 
-    public AbstractClassSingletonInstance() {
-        synchronized (MUTEX) {
-            Class<? extends AbstractClassSingletonInstance> clazz = getClass();
-            if (MUTEX.contains(clazz)) {
-                throw new Error("Class '" + clazz + "' instance already created.");
-            }
-            log.info("Class '" + clazz + "' instance was created.");
-            MUTEX.add(clazz);
+    public static synchronized void constrain(Object instance) {
+        Objects.requireNonNull(instance, "Object instance cannot be null.");
+        Class<?> clazz = instance.getClass();
+        if (MUTEX.contains(clazz)) {
+            throw new Error("Class '" + clazz + "' instance already created.");
         }
+        LOG.info("Class '" + clazz + "' instance are created.");
+        MUTEX.add(clazz);
     }
 
 }

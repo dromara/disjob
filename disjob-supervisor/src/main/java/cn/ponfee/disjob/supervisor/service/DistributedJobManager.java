@@ -52,40 +52,7 @@ import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.TX_TEMPL
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
- * Manage Schedule job.
- *
- * <p>Spring事务提交后执行一些后置操作
- *
- * <pre>方案1: {@code
- *  TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
- *      @Override
- *      public void afterCommit() {
- *          dispatch(job, instance, tasks);
- *      }
- *  });
- * }</pre>
- *
- * <pre>方案2: {@code
- *  @Resource
- *  private ApplicationEventPublisher eventPublisher;
- *
- *  private static class DispatchTaskEvent extends ApplicationEvent {
- *      public DispatchTaskEvent(Runnable source) {
- *          super(source);
- *      }
- *  }
- *
- *  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
- *  private void handle(DispatchTaskEvent event) {
- *      ((Runnable) event.getSource()).run();
- *  }
- *
- *  {
- *    // some database operation code ...
- *    eventPublisher.publishEvent(new DispatchTaskEvent(() -> dispatch(job, instance, tasks)));
- *    // others operation code ...
- *  }
- * }</pre>
+ * Manage distributed schedule job.
  *
  * @author Ponfee
  */

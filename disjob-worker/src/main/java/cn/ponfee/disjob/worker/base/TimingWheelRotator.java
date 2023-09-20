@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.worker.base;
 
-import cn.ponfee.disjob.common.base.AbstractClassSingletonInstance;
 import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
@@ -27,6 +27,8 @@ import cn.ponfee.disjob.core.param.TaskWorkerParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -40,9 +42,10 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  *
  * @author Ponfee
  */
-public class TimingWheelRotator extends AbstractClassSingletonInstance implements Startable {
+public class TimingWheelRotator extends SingletonClassConstraint implements Startable {
 
     private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.DATEFULL_PATTERN);
+    private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
     private final Worker currentWorker;
     private final SupervisorService supervisorServiceClient;
@@ -94,13 +97,13 @@ public class TimingWheelRotator extends AbstractClassSingletonInstance implement
     private void process() {
         if (++round > 1024) {
             round = 0;
-            log.info("Timing wheel rotator heartbeat: worker-thread-pool={}, jvm-thread-count={}", workerThreadPool, Thread.activeCount());
+            LOG.info("Timing wheel rotator heartbeat: worker-thread-pool={}, jvm-thread-count={}", workerThreadPool, Thread.activeCount());
         }
 
         // check has available supervisors
         if (!discoverySupervisor.hasDiscoveredServers()) {
             if ((round & 0x1F) == 0) {
-                log.warn("Not found available supervisor.");
+                LOG.warn("Not found available supervisor.");
             }
             return;
         }
@@ -116,15 +119,15 @@ public class TimingWheelRotator extends AbstractClassSingletonInstance implement
             .filter(e -> {
                 Worker assignedWorker = e.getWorker();
                 if (!currentWorker.sameWorker(assignedWorker)) {
-                    log.error("Processed unmatched worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
+                    LOG.error("Processed unmatched worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
                     return false;
                 }
                 if (!currentWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
                     // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却Http方式派发给新的WorkerId(同机器同端口)
                     // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍；
-                    log.warn("Processed former worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
+                    LOG.warn("Processed former worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
                 }
-                log.info("Processed task {} | {} | {} | {}", e.getTaskId(), e.getOperation(), assignedWorker, DATE_FORMAT.format(e.getTriggerTime()));
+                LOG.info("Processed task {} | {} | {} | {}", e.getTaskId(), e.getOperation(), assignedWorker, DATE_FORMAT.format(e.getTriggerTime()));
                 return true;
             })
             .collect(Collectors.toList());
@@ -143,7 +146,7 @@ public class TimingWheelRotator extends AbstractClassSingletonInstance implement
                 supervisorServiceClient.updateTaskWorker(list);
             } catch (Throwable t) {
                 // must do submit if occur exception
-                log.error("Update task worker error: " + Jsons.toJson(list), t);
+                LOG.error("Update task worker error: " + Jsons.toJson(list), t);
                 Threads.interruptIfNecessary(t);
             }
             batchTasks.forEach(workerThreadPool::submit);

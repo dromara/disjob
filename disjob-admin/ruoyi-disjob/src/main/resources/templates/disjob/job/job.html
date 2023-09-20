@@ -182,7 +182,7 @@
 
     function detail(jobId) {
       var url = prefix + '/detail/' + jobId;
-      $.modal.open("调度配置详情", url);
+      $.modal.open("调度配置详情", url, null, null, null, ['关闭']);
     }
 
     function changeState(jobId, fromJobState) {

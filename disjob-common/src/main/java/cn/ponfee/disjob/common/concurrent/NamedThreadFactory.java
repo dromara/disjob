@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
@@ -70,7 +71,7 @@ public class NamedThreadFactory implements ThreadFactory {
         private String prefix;
         private Boolean daemon;
         private Integer priority;
-        private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+        private Thread.UncaughtExceptionHandler uncaughtExceptionHandler = LoggedUncaughtExceptionHandler.INSTANCE;
 
         private Builder() { }
 

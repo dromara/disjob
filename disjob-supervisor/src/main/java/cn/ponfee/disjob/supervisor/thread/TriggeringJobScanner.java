@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.thread;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
@@ -62,6 +63,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                                 DistributedJobManager jobManager,
                                 DistributedJobQuerier jobQuerier) {
         super(heartbeatPeriodMilliseconds);
+        SingletonClassConstraint.constrain(this);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;

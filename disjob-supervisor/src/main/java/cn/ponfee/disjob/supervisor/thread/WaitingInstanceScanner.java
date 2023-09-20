@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.thread;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.core.base.AbstractHeartbeatThread;
@@ -42,6 +43,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
                                   DistributedJobManager jobManager,
                                   DistributedJobQuerier jobQuerier) {
         super(heartbeatPeriodMilliseconds);
+        SingletonClassConstraint.constrain(this);
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
