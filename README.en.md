@@ -60,7 +60,7 @@ disjob                                                    # Main project
 - Supervisor sends tasks to Workers in the way of task distribution. The currently supported task distribution methods are: Redis, Http
 - Support task grouping (job-group), the task will be distributed to the specified group of Workers for execution
 - Custom split tasks, override [JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java) to split a job to many tasks
-- Provides automatic saving (checkpoint) of task execution snapshots, so that execution information is not lost, and tasks interrupted due to abnormalities can be continued to execute
+- Provides automatic saving (savepoint) of task execution snapshots, so that execution information is not lost, and tasks interrupted due to abnormalities can be continued to execute
 - Provides the ability to control tasks during execution, and can suspend/cancel the tasks in progress at any time, and can also resume the execution of suspended tasks
 - Provides the ability to execute tasks dependently. After multiple tasks build dependency relationship, the tasks will be executed sequentially according to the established dependency order
 - Supported DAG workflow task，set jobHandler to a dag expression, e.g. A->B,C,(D->E)->D,F->G
@@ -175,4 +175,4 @@ If you find bugs, or better implementation solutions, or new features, etc. you 
 - [ ] Monitor real-time executing logs of tasks online
 - [ ] alarm subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
 - [ ] visual monitoring BI(Dashboard)
-- [ ] Add support for multiple checkpoints: File System, Hadoop, RocksDB
+- [ ] Add support for multiple savepoint: File System, Hadoop, RocksDB

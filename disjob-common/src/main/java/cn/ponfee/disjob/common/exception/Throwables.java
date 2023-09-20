@@ -71,14 +71,14 @@ public final class Throwables {
     public interface ThrowingRunnable<T extends Throwable> {
         void run() throws T;
 
-        default <E> ThrowingSupplier<E, Throwable> toSupplier(E result) {
+        default <R> ThrowingSupplier<R, Throwable> toSupplier(R result) {
             return () -> {
                 run();
                 return result;
             };
         }
 
-        default <E> ThrowingCallable<E, Throwable> toCallable(E result) {
+        default <R> ThrowingCallable<R, Throwable> toCallable(R result) {
             return () -> {
                 run();
                 return result;
@@ -142,6 +142,10 @@ public final class Throwables {
     public interface ThrowingSupplier<R, T extends Throwable> {
         R get() throws T;
 
+        default ThrowingRunnable<Throwable> toRunnable() {
+            return this::get;
+        }
+
         static <R> R get(ThrowingSupplier<R, ?> supplier) {
             try {
                 return supplier.get();
@@ -200,6 +204,10 @@ public final class Throwables {
     @FunctionalInterface
     public interface ThrowingCallable<R, T extends Throwable> {
         R call() throws T;
+
+        default ThrowingRunnable<Throwable> toRunnable() {
+            return this::call;
+        }
 
         static <R> R call(ThrowingCallable<R, ?> callable) {
             try {
@@ -260,6 +268,13 @@ public final class Throwables {
     public interface ThrowingConsumer<E, T extends Throwable> {
         void accept(E e) throws T;
 
+        default <R> ThrowingFunction<E, R, Throwable> toFunction(R result) {
+            return (arg) -> {
+                accept(arg);
+                return result;
+            };
+        }
+
         static <E> void accept(ThrowingConsumer<E, ?> consumer, E arg) {
             try {
                 consumer.accept(arg);
@@ -317,6 +332,10 @@ public final class Throwables {
     @FunctionalInterface
     public interface ThrowingFunction<E, R, T extends Throwable> {
         R apply(E e) throws T;
+
+        default ThrowingConsumer<E, Throwable> toConsumer() {
+            return this::apply;
+        }
 
         static <E, R> R apply(ThrowingFunction<E, R, ?> function, E arg) {
             try {

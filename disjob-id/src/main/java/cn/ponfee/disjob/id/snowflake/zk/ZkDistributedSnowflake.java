@@ -8,7 +8,9 @@
 
 package cn.ponfee.disjob.id.snowflake.zk;
 
+import cn.ponfee.disjob.common.base.AbstractClassSingletonInstance;
 import cn.ponfee.disjob.common.base.IdGenerator;
+import cn.ponfee.disjob.common.base.LoopProcessThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
@@ -28,8 +30,6 @@ import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.Closeable;
@@ -61,11 +61,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author Ponfee
  */
-public class ZkDistributedSnowflake implements IdGenerator, Closeable {
+public class ZkDistributedSnowflake extends AbstractClassSingletonInstance implements IdGenerator, Closeable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ZkDistributedSnowflake.class);
-
-    private static final long HEARTBEAT_PERIOD_SECONDS = 30;
+    private static final long HEARTBEAT_PERIOD_MS = 30000;
 
     private static final String SEP = "/";
 
@@ -97,8 +95,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
     private final CuratorFramework curator;
     private final int workerId;
     private final Snowflake snowflake;
-    private volatile boolean stopped = false;
-    private final Thread heartbeatThread;
+    private final LoopProcessThread heartbeatThread;
 
     public ZkDistributedSnowflake(ZkConfig zkConfig, String bizTag, String serverTag) {
         this(zkConfig, bizTag, serverTag, 14, 8);
@@ -140,20 +137,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
 
         curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
-        this.heartbeatThread = Threads.newThread("zk_snowflake_worker_heartbeat", true, Thread.MAX_PRIORITY, () -> {
-            while (!stopped) {
-                try {
-                    heartbeat();
-                    TimeUnit.SECONDS.sleep(HEARTBEAT_PERIOD_SECONDS);
-                } catch (InterruptedException e) {
-                    LOG.error("Thread interrupted.", e);
-                    close();
-                } catch (Throwable e) {
-                    LOG.error("Zk snowflake server heartbeat error: " + workerIdPath, e);
-                }
-            }
-            LOG.info("thread terminated.");
-        });
+        this.heartbeatThread = new LoopProcessThread("zk_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, this::heartbeat);
         heartbeatThread.start();
     }
 
@@ -164,8 +148,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
 
     @Override
     public void close() {
-        stopped = true;
-        ThrowingRunnable.execute(heartbeatThread::interrupt);
+        heartbeatThread.terminate();
     }
 
     // ------------------------------------------------------------------private methods
@@ -173,7 +156,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
     private void createPersistent(String path) throws Exception {
         try {
             curator.create().creatingParentsIfNeeded().forPath(path);
-            LOG.info("Created zk persistent path: {}", path);
+            log.info("Created zk persistent path: {}", path);
         } catch (KeeperException.NodeExistsException ignored) {
             // ignored
         }
@@ -184,7 +167,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
             .creatingParentsIfNeeded()
             .withMode(CreateMode.EPHEMERAL)
             .forPath(path, data);
-        LOG.info("Created zk ephemeral path: {}", path);
+        log.info("Created zk ephemeral path: {}", path);
     }
 
     private void upsertEphemeral(String path, byte[] data) throws Exception {
@@ -202,7 +185,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
     private void deletePath(String path) throws Exception {
         try {
             curator.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
-            LOG.info("Deleted zk path: {}", path);
+            log.info("Deleted zk path: {}", path);
         } catch (KeeperException.NoNodeException ignored) {
             // ignored
         }
@@ -271,13 +254,13 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                     createEphemeral(workerIdPath, data.serialize());
                     isCreatedWorkerIdPath = true;
                     upsertEphemeral(serverTagPath, Bytes.toBytes(usableWorkerId));
-                    LOG.info("Created snowflake zk worker success: {} | {} | {}", serverTag, usableWorkerId, currentTime);
+                    log.info("Created snowflake zk worker success: {} | {} | {}", serverTag, usableWorkerId, currentTime);
                     return usableWorkerId;
                 } catch (Throwable t) {
                     if (isCreatedWorkerIdPath) {
                         ThrowingRunnable.execute(() -> deletePath(workerIdPath));
                     }
-                    LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath, t.getMessage());
+                    log.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath, t.getMessage());
                     Threads.interruptIfNecessary(t);
                 }
             }
@@ -308,7 +291,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                 updateData(workerIdPath, WorkerIdData.of(currentTime, serverTag).serialize());
             }
 
-            LOG.info("Reuse zk worker id success: {} | {}", serverTag, workerId);
+            log.info("Reuse zk worker id success: {} | {}", serverTag, workerId);
 
             return workerId;
 
@@ -362,7 +345,7 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
         return curatorFramework;
     }
 
-    private static class CuratorConnectionStateListener implements ConnectionStateListener {
+    private class CuratorConnectionStateListener implements ConnectionStateListener {
         private static final long UNKNOWN_SESSION_ID = -1L;
 
         private final ZkDistributedSnowflake zkDistributedSnowflake;
@@ -379,21 +362,21 @@ public class ZkDistributedSnowflake implements IdGenerator, Closeable {
                 sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
             } catch (Throwable t) {
                 sessionId = UNKNOWN_SESSION_ID;
-                LOG.warn("Curator snowflake client state changed, get session instance error.", t);
+                log.warn("Curator snowflake client state changed, get session instance error.", t);
                 Threads.interruptIfNecessary(t);
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;
-                LOG.info("Curator snowflake first connected, session={}", hex(sessionId));
+                log.info("Curator snowflake first connected, session={}", hex(sessionId));
             } else if (state == ConnectionState.LOST) {
-                LOG.warn("Curator snowflake session expired, session={}", hex(lastSessionId));
+                log.warn("Curator snowflake session expired, session={}", hex(lastSessionId));
             } else if (state == ConnectionState.SUSPENDED) {
-                LOG.warn("Curator snowflake connection lost, session={}", hex(sessionId));
+                log.warn("Curator snowflake connection lost, session={}", hex(sessionId));
             } else if (state == ConnectionState.RECONNECTED) {
                 if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
-                    LOG.warn("Curator snowflake recover connected, reuse old-session={}", hex(sessionId));
+                    log.warn("Curator snowflake recover connected, reuse old-session={}", hex(sessionId));
                 } else {
-                    LOG.warn("Curator snowflake recover connected, old-session={}, new-session={}", hex(lastSessionId), hex(sessionId));
+                    log.warn("Curator snowflake recover connected, old-session={}, new-session={}", hex(lastSessionId), hex(sessionId));
                     lastSessionId = sessionId;
                 }
 

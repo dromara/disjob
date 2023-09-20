@@ -73,8 +73,8 @@ public class SupervisorServiceProvider implements SupervisorService, RpcControll
     }
 
     @Override
-    public boolean checkpoint(long taskId, String executeSnapshot) {
-        return jobManager.checkpoint(taskId, executeSnapshot);
+    public boolean save(long taskId, String executeSnapshot) {
+        return jobManager.savepoint(taskId, executeSnapshot);
     }
 
 }

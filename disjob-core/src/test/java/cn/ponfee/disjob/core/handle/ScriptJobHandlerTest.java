@@ -38,7 +38,7 @@ public class ScriptJobHandlerTest {
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
 
-        Result<String> execute = scriptJobHandler.execute(executingTask, Checkpoint.DISCARD);
+        Result<String> execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
     }
 
@@ -55,7 +55,7 @@ public class ScriptJobHandlerTest {
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
 
-        Result<String> execute = scriptJobHandler.execute(executingTask, Checkpoint.DISCARD);
+        Result<String> execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
 

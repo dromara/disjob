@@ -48,8 +48,8 @@ public interface SchedTaskMapper {
     int changeState(@Param("instanceId") long instanceId,
                     @Param("toState") int toState);
 
-    int checkpoint(@Param("taskId") long taskId,
-                   @Param("executeSnapshot") String executeSnapshot);
+    int savepoint(@Param("taskId") long taskId,
+                  @Param("executeSnapshot") String executeSnapshot);
 
     /**
      * Delete the sched task.

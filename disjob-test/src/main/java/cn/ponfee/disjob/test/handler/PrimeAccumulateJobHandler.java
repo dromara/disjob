@@ -10,8 +10,8 @@ package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.AbstractExecutionTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 
@@ -23,7 +23,7 @@ import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 public class PrimeAccumulateJobHandler extends JobHandler<Void> {
 
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
+    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         long sum = executingTask.getWorkflowPredecessorNodes()
             .stream()
             .flatMap(e -> e.getExecutedTasks().stream())
@@ -31,7 +31,7 @@ public class PrimeAccumulateJobHandler extends JobHandler<Void> {
             .map(e -> Jsons.fromJson(e, PrimeCountJobHandler.ExecuteSnapshot.class))
             .mapToLong(PrimeCountJobHandler.ExecuteSnapshot::getCount)
             .sum();
-        checkpoint.checkpoint(executingTask.getTaskId(), Long.toString(sum));
+        savepoint.save(executingTask.getTaskId(), Long.toString(sum));
 
         return Result.success();
     }

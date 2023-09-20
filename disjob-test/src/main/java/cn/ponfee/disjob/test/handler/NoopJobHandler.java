@@ -10,8 +10,8 @@ package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.Result;
-import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import org.slf4j.Logger;
@@ -48,11 +48,11 @@ public class NoopJobHandler extends JobHandler<Void> {
     }
 
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
+    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         LOG.info("task execute start: {}", executingTask.getTaskId());
         Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
         LOG.info("task execute done: {}", executingTask.getTaskId());
-        checkpoint.checkpoint(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
+        savepoint.save(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return Result.success();
     }
 

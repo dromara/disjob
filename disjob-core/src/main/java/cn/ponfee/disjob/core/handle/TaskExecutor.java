@@ -21,10 +21,18 @@ public abstract class TaskExecutor<T> {
     private volatile boolean stopped = false;
 
     /**
-     * Stop execute.
+     * Stop execution.
      */
     public final void stop() {
         this.stopped = true;
+        onStop();
+    }
+
+    /**
+     * On stop
+     */
+    protected void onStop() {
+        // default noop
     }
 
     /**
@@ -48,11 +56,11 @@ public abstract class TaskExecutor<T> {
      * Executes task
      *
      * @param executingTask the executing task
-     * @param checkpoint    the checkpoint
+     * @param savepoint     the savepoint
      * @return executed result
      * @throws Exception if execute failed
      */
-    public abstract Result<T> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception;
+    public abstract Result<T> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception;
 
     /**
      * Destroy this task executor

@@ -14,7 +14,7 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.handle.Checkpoint;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
@@ -36,7 +36,7 @@ public class ExecuteParamTest {
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
             @Override
-            public Result execute(ExecutingTask executingTask, Checkpoint checkpoint) {
+            public Result execute(ExecutingTask executingTask, Savepoint savepoint) {
                 return null;
             }
         });
@@ -52,7 +52,7 @@ public class ExecuteParamTest {
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
             @Override
-            public Result execute(ExecutingTask executingTask, Checkpoint checkpoint) {
+            public Result execute(ExecutingTask executingTask, Savepoint savepoint) {
                 return null;
             }
         });

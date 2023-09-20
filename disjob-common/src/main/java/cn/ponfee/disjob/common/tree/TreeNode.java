@@ -53,15 +53,19 @@ import java.util.stream.Collectors;
 public final class TreeNode<T extends Serializable & Comparable<T>, A> extends BaseNode<T, A> {
     private static final long serialVersionUID = -9081626363752680404L;
 
-    public static final String DEFAULT_ROOT_ID = "__ROOT__";
-
-    // 用于比较兄弟节点次序
+    /**
+     * 用于比较兄弟节点次序
+     */
     private final Comparator<? super TreeNode<T, A>> siblingNodesComparator;
 
-    // 子节点列表（空列表则表示为叶子节点）
+    /**
+     * 子节点列表（空列表则表示为叶子节点）
+     */
     private final LinkedList<TreeNode<T, A>> children = new LinkedList<>();
 
-    // 是否构建path
+    /**
+     * 是否构建path
+     */
     private final boolean buildPath;
 
     /**

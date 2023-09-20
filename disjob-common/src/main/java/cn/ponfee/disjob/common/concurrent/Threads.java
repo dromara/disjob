@@ -117,7 +117,7 @@ public final class Threads {
         try {
             // It maybe throws "java.lang.ThreadDeath: null"
             thread.stop();
-            LOG.info("Invoke java.lang.Thread#stop() method finish: {}", thread.getName());
+            LOG.info("Invoked java.lang.Thread#stop() method: {}", thread.getName());
         } catch (Throwable t) {
             LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
         }

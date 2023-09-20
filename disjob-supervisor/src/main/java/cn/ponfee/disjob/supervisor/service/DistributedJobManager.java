@@ -139,8 +139,8 @@ public class DistributedJobManager extends AbstractJobManager {
         return taskMapper.terminate(taskId, ExecuteState.WAITING_CANCELED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
     }
 
-    public boolean checkpoint(long taskId, String executeSnapshot) {
-        return taskMapper.checkpoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
+    public boolean savepoint(long taskId, String executeSnapshot) {
+        return taskMapper.savepoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
     }
 
     // ------------------------------------------------------------------database operation within transactional

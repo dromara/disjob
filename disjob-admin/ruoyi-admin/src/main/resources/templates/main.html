@@ -197,7 +197,7 @@
                         <li>需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行</li>
                         <li>提供拆分任务的能力，重写拆分方法<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java">JobHandler#split</a>即可拆分为多个任务，实现分布式任务及并行执行</li>
                         <li>支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试</li>
-                        <li>支持任务保存(checkpoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行</li>
+                        <li>支持任务保存(savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行</li>
                         <li>任务在执行时若抛出<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java">PauseTaskException</a>，会暂停对应实例下的全部任务(包括分布在不同worker机器中的任务)</li>
                         <li>支持广播任务，广播任务会派发给job-group下的所有worker执行</li>
                         <li>支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行</li>
@@ -356,9 +356,9 @@
                         <p dir="auto">P.s. 黎曼猜想中可知质数分布是大体均匀的，判断一个数是否质数有很多方法，如埃氏筛法、欧拉筛法、Miller Rabin素性检验，这里我们可以使用Guava库提供的素性检验。</p>
                     </blockquote>
                     <ol start="5" dir="auto">
-                        <li><strong>Checkpoint</strong></li>
+                        <li><strong>Savepoint</strong></li>
                     </ol>
-                    <p dir="auto">如果在统计过程中机器宕机后怎么办？难道再从头开始统计吗？No No No！我们可以在每循环10次(或每隔执行超过1分钟)时使用<code>Checkpoint</code>保存当前<code>task-1</code>的执行快照。宕机异常后的重新启动任务时会读取这份快照数据，从上一次的状态中接着继续统计。以下是<code>task-1</code>任务保存的快照数据样例</p>
+                    <p dir="auto">如果在统计过程中机器宕机后怎么办？难道再从头开始统计吗？No No No！我们可以在每循环10次(或每隔执行超过1分钟)时使用<code>Savepoint</code>保存当前<code>task-1</code>的执行快照。宕机异常后的重新启动任务时会读取这份快照数据，从上一次的状态中接着继续统计。以下是<code>task-1</code>任务保存的快照数据样例</p>
                     <div class="highlight highlight-source-js notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="{
   &quot;next&quot;: 4000000001, // 下一次循环时要统计的区间为(40亿, 41亿]
   &quot;count&quot;: 19819734,  // 已经统计到了 19819734 个质数
@@ -371,7 +371,7 @@
                     <ol start="6" dir="auto">
                         <li><strong>暂停与恢复</strong></li>
                     </ol>
-                    <p dir="auto">假如我们的这几台机器资源需要临时做其它的事情，想把当前的统计任务暂停一段时间。No problem！框架是支持<code>暂停执行中的任务</code>，只需要在管理后台的<code>调度实例</code>页面，找到该任务点击<code>暂停</code>按钮即可。在暂停时任务会接收到一个中断信号，收到中断信号时同样可以在代码中使用<code>Checkpoint</code>保存当前的执行快照。</p>
+                    <p dir="auto">假如我们的这几台机器资源需要临时做其它的事情，想把当前的统计任务暂停一段时间。No problem！框架是支持<code>暂停执行中的任务</code>，只需要在管理后台的<code>调度实例</code>页面，找到该任务点击<code>暂停</code>按钮即可。在暂停时任务会接收到一个中断信号，收到中断信号时同样可以在代码中使用<code>Savepoint</code>保存当前的执行快照。</p>
                     <p dir="auto">当其它事情处理完后，我们可以在管理后台的<code>调度实例</code>页面，找到被暂停的这个任务，点击<code>恢复</code>按钮，此时任务会从上一次保存的状态中恢复继续执行。</p>
                     <ol start="7" dir="auto">
                         <li><strong>自定义异常</strong></li>
@@ -419,7 +419,7 @@
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 在线查看任务实时运行日志</li>
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 告警订阅：邮件、短信、电话、飞书、钉钉、微信</li>
                         <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 可视化监控BI(Dashboard)</li>
-                        <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 增加多种Checkpoint的支持：File System、Hadoop、RocksDB</li>
+                        <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox"> 增加多种Savepoint的支持：File System、Hadoop、RocksDB</li>
                     </ul>
                 </article>
             </div>

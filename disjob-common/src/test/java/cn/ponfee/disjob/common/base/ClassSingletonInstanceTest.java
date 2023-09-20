@@ -6,24 +6,30 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.id.snowflake;
+package cn.ponfee.disjob.common.base;
 
-import cn.ponfee.disjob.id.snowflake.db.DbDistributedSnowflake;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * DatabaseSnowflakeServerTest
+ * ClassSingletonInstanceTest
  *
  * @author Ponfee
  */
-public class DbDistributedSnowflakeTest {
+public class ClassSingletonInstanceTest {
 
     @Test
-    public void test() {
-        JdbcTemplate mock = Mockito.mock(JdbcTemplate.class);
-        DbDistributedSnowflake snowflake = new DbDistributedSnowflake(mock, "disjob", "app1:8080");
-        System.out.println(snowflake.generateId());
+    void test() {
+        Assertions.assertThat(new SingletonInstanceSample()).isNotNull();
+        for (int i = 0; i < 2; i++) {
+            Assertions.assertThatThrownBy(SingletonInstanceSample::new)
+                .isInstanceOf(Error.class)
+                .hasMessageMatching("^Class '.+' instance already created.$");
+        }
     }
+
+    static class SingletonInstanceSample extends AbstractClassSingletonInstance {
+
+    }
+
 }

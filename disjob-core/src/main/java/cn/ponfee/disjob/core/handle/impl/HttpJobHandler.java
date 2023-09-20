@@ -13,8 +13,8 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import lombok.Data;
 import org.apache.http.client.config.RequestConfig;
@@ -51,7 +51,7 @@ public class HttpJobHandler extends JobHandler<String> {
     );
 
     @Override
-    public Result<String> execute(ExecutingTask executingTask, Checkpoint checkpoint) {
+    public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) {
         HttpJobRequest req = Jsons.fromJson(executingTask.getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");

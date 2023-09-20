@@ -12,8 +12,8 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
-import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.test.util.Prime;
@@ -72,12 +72,12 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
     /**
      * 执行任务的逻辑实现
      *
-     * @param checkpoint the checkpoint
+     * @param savepoint the savepoint
      * @return execute result
      * @throws Exception if execute occur error
      */
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
+    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         TaskParam taskParam = Jsons.fromJson(executingTask.getTaskParam(), TaskParam.class);
         long start = taskParam.getStart();
         long blockSize = taskParam.getBlockSize();
@@ -103,7 +103,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
         long lastTime = System.currentTimeMillis(), currTime;
         while (next <= n) {
             if (super.isStopped() || Thread.currentThread().isInterrupted()) {
-                checkpoint.checkpoint(executingTask.getTaskId(), Jsons.toJson(execution));
+                savepoint.save(executingTask.getTaskId(), Jsons.toJson(execution));
                 throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_EXCEPTION);
             }
 
@@ -120,7 +120,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
 
             currTime = System.currentTimeMillis();
             if (execution.isFinished() || (currTime - lastTime) > 5000) {
-                checkpoint.checkpoint(executingTask.getTaskId(), Jsons.toJson(execution));
+                savepoint.save(executingTask.getTaskId(), Jsons.toJson(execution));
             }
             lastTime = currTime;
         }

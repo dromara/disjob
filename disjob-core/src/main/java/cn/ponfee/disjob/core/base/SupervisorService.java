@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.enums.Operations;
-import cn.ponfee.disjob.core.handle.Checkpoint;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.StartTaskParam;
@@ -29,7 +29,7 @@ import java.util.List;
  */
 @Hidden
 @RequestMapping("supervisor/service/")
-public interface SupervisorService extends Checkpoint {
+public interface SupervisorService extends Savepoint {
 
     @GetMapping("task/get")
     SchedTask getTask(long taskId) throws Exception;
@@ -60,10 +60,10 @@ public interface SupervisorService extends Checkpoint {
     @PostMapping("instance/cancel")
     boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) throws Exception;
 
-    // ---------------------------------------------------------------------------checkpoint
+    // ---------------------------------------------------------------------------savepoint
 
     @Override
-    @PostMapping("task/checkpoint")
-    boolean checkpoint(long taskId, String executeSnapshot) throws Exception;
+    @PostMapping("task/savepoint")
+    boolean save(long taskId, String executeSnapshot) throws Exception;
 
 }

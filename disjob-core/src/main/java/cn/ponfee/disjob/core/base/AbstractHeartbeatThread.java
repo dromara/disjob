@@ -45,6 +45,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
         // init thread parameters
         super.setDaemon(true);
         super.setName(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, getClass().getSimpleName()) + "_thread");
+        super.setPriority(Thread.MAX_PRIORITY);
     }
 
     /**

@@ -10,8 +10,8 @@ package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.Result;
-import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.test.util.Constants;
@@ -47,10 +47,10 @@ public class AJobHandler extends JobHandler<Void> {
     }
 
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
+    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
         LOG.info(this.getClass().getSimpleName() + " execution finished.");
-        checkpoint.checkpoint(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
+        savepoint.save(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return Result.success();
     }
 

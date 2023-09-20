@@ -49,7 +49,7 @@ public class LazyLoader<T> implements Supplier<T> {
     }
 
     @Override
-    public T get() throws NullPointerException {
+    public T get() {
         return holder().orElseThrow(() -> new NullPointerException("Not load target object."));
     }
 

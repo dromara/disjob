@@ -11,8 +11,8 @@ package cn.ponfee.disjob.core.handle.impl;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.handle.Checkpoint;
 import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.util.ProcessUtils;
 import lombok.Data;
@@ -37,7 +37,7 @@ import java.nio.charset.Charset;
 public class CommandJobHandler extends JobHandler<String> {
 
     @Override
-    public Result<String> execute(ExecutingTask executingTask, Checkpoint checkpoint) throws Exception {
+    public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         Assert.hasText(executingTask.getTaskParam(), "Command param cannot be empty.");
         CommandParam commandParam = Jsons.fromJson(executingTask.getTaskParam(), CommandParam.class);
         Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");

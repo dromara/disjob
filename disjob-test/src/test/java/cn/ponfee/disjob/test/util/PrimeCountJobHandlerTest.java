@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.test.util;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.handle.Checkpoint;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.model.SchedJob;
@@ -45,7 +45,7 @@ public class PrimeCountJobHandlerTest {
             ExecutingTask executingTask = new ExecutingTask();
             executingTask.setTaskId(System.nanoTime());
             executingTask.setTaskParam(splitTask.getTaskParam());
-            jobHandler.execute(executingTask, Checkpoint.DISCARD);
+            jobHandler.execute(executingTask, Savepoint.DISCARD);
             System.out.println("-------------------");
         }
     }

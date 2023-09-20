@@ -110,7 +110,7 @@
       AND #{toState,jdbcType=TINYINT} != 20
   </update>
 
-  <update id="checkpoint">
+  <update id="savepoint">
     UPDATE <include refid="Table_Name" />
     SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR},
         version = version+1

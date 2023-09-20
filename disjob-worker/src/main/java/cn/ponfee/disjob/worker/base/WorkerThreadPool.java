@@ -122,6 +122,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
+        super.setPriority(Thread.MAX_PRIORITY);
     }
 
     /**
@@ -168,7 +169,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         ExecuteTaskParam param = pair.getRight();
         LOG.info("Stop task: {} | {} | {}", taskId, ops, workerThread.getName());
         try {
-            param.stop();
             // stop the work thread
             stopWorkerThread(workerThread, true);
         } finally {
@@ -215,11 +215,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private WorkerThread takeWorkerThread() throws InterruptedException {
         while (true) {
-            if (super.isInterrupted()) {
-                throw new IllegalStateException("Boos thread take interrupted.");
-            }
-            if (closed.get()) {
-                throw new IllegalStateException("Take worker thread fail, worker thread pool closed.");
+            if (closed.get() || super.isInterrupted()) {
+                throw new IllegalStateException("Take worker thread interrupted.");
             }
             WorkerThread workerThread = createWorkerThreadIfNecessary();
             if (workerThread == null) {
@@ -366,7 +363,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
         if (doStop) {
             LOG.info("Do stop the worker thread: {}", workerThread.getName());
-            workerThread.doStop(0, 0, 2000);
+            workerThread.doStop(0, 0, 5000);
         }
     }
 
@@ -466,17 +463,19 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             WorkerThread exists = pool.get(param.getTaskId());
             if (exists != null) {
-                if (param.equals(exists.executingParam())) {
+                ExecuteTaskParam p = exists.executingParam();
+                if (param.equals(p)) {
                     // 同一个task re-dispatch，导致重复
                     throw new IllegalTaskException("Repeat execute task: " + param);
                 } else {
-                    // 如果task分表时，不同的task的task-id生成有重复(task不做分片表的不会存在该问题)
-                    throw new DuplicateTaskException("Duplicate task id: " + param + " | " + exists.executingParam());
+                    // 如果task分表时，不同task分表的task-id会有重复的可能性(task不做分片表时不会存在该问题)
+                    throw new DuplicateTaskException("Duplicate task id: " + param + " | " + p);
                 }
             }
 
             if (!workerThread.updateExecuteParam(null, param)) {
-                throw new BrokenThreadException("Execute worker thread conflict: " + workerThread.getName() + " | " + workerThread.executingParam());
+                ExecuteTaskParam p = workerThread.executingParam();
+                throw new BrokenThreadException("Execute worker thread conflict: " + workerThread.getName() + " | " + param + " | " + p);
             }
 
             try {
@@ -533,7 +532,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
         synchronized void stopPool() {
             pool.forEach((id, workerThread) -> {
                 workerThread.toStop();
-                workerThread.executingParam().stop();
+                ExecuteTaskParam param = workerThread.executingParam();
+                if (param != null) {
+                    param.stop();
+                }
             });
         }
 
@@ -546,7 +548,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     Operations ops = Operations.PAUSE;
 
                     // 1、first change the execution param operation
-                    boolean success = param.updateOperation(Operations.TRIGGER, ops);
+                    boolean success = (param == null) || param.updateOperation(Operations.TRIGGER, ops);
 
                     // 2、then stop the work thread
                     try {
@@ -666,6 +668,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void doStop(int sleepCount, long sleepMillis, long joinMillis) {
             toStop();
+            ExecuteTaskParam param = executingParam();
+            if (param != null) {
+                param.stop();
+            }
             Threads.stopThread(this, sleepCount, sleepMillis, joinMillis);
         }
 
@@ -810,15 +816,15 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } else {
                     result = taskExecutor.execute(executingTask, supervisorServiceClient);
                 }
-                LOG.info("Executed sched task {}", param.getTaskId());
 
                 // 4、execute end
-                if (result.isSuccess()) {
-                    LOG.info("Task executed finished {}", param.getTaskId());
+                if (result != null && result.isSuccess()) {
+                    LOG.info("Task execute finished {}", param.getTaskId());
                     terminateTask(supervisorServiceClient, param, Operations.TRIGGER, FINISHED, null);
                 } else {
-                    LOG.error("Task executed failed {} | {}", param, result);
-                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_FAILED, result.getMsg());
+                    LOG.error("Task execute failed {} | {}", param, result);
+                    String msg = (result == null) ? "null result" : result.getMsg();
+                    terminateTask(supervisorServiceClient, param, Operations.TRIGGER, EXECUTE_FAILED, msg);
                 }
             } catch (TimeoutException e) {
                 LOG.error("Task execute timeout: " + param, e);

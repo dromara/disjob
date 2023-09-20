@@ -18,7 +18,7 @@ import java.util.function.Function;
  */
 public class Functions {
 
-    public static <T, R> Function<T, R> convert(Consumer<T> consumer, final R result) {
+    public static <T, R> Function<T, R> convert(final Consumer<T> consumer, final R result) {
         return t -> {
             consumer.accept(t);
             return result;
