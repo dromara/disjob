@@ -181,7 +181,7 @@
       title: '已重试次数',
       width: '90',
       formatter: function (value, row, index) {
-          return value === 0 ? "-" : value;
+        return value === 0 ? "-" : value;
       }
     },
     {
@@ -209,7 +209,7 @@
     },
     {
       title: '操作',
-      align: 'left',
+      align: 'center',
       formatter: function (value, row, index) {
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
           // 非lead的工作流任务实例  ==>  不支持操作
@@ -217,6 +217,8 @@
         }
 
         var actions = [];
+
+        /*
         if (row.runState === 20) {
           actions.push('<a class="btn btn-warning btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i> 暂停</a> ')
         }
@@ -230,6 +232,21 @@
           actions.push('<a class="btn btn-danger btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.instanceId + '\')"><i class="fa fa-trash"></i> 删除</a> ')
         }
         return actions.join('');
+        */
+
+        if (row.runState === 20) {
+          actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='pause(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-pause'></i> 暂停</a> ");
+        }
+        if (row.runState === 30) {
+          actions.push("<a class='btn btn-info btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='resume(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-play'></i> 恢复</a> ");
+        }
+        if (row.runState < 40) {
+          actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='cancel(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-remove'></i> 取消</a> ");
+        }
+        if (row.runState >= 40) {
+          actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
+        }
+        return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
       }
     }]
   };

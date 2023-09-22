@@ -236,7 +236,7 @@ Worker接收到子任务后，会提交到框架定义的线程池中执行。
 
 ## Communication
 
-扫码添加微信好友，备注：disjob，邀您加入群聊
+扫码添加微信好友，备注`disjob`，邀您加入群聊
 
 <img src="docs/images/wechat.jpg" width="230" alt="Wechat group"/>
 

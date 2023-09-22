@@ -11,7 +11,15 @@ var table = {
     // 设置实例配置
     set: function(id) {
         if ($.common.getLength(table.config) > 1 && $.common.isNotEmpty(event)) {
-            var tableId = $.common.isEmpty(id) ? $(event.currentTarget).parents(".bootstrap-table").find("table.table").attr("id") || $(event.currentTarget).parents(".bootstrap-tree-table").find("table.table").attr("id") : id;
+            var tableId = id
+              || $(event.currentTarget).parents(".bootstrap-table").find("table.table").attr("id")
+              || $(event.currentTarget).parents(".bootstrap-tree-table").find("table.table").attr("id");
+            if (!tableId) {
+                var popoverId = $(event.currentTarget).parents("div.popover").attr("id");
+                var targetA = $("a[aria-describedby='" + popoverId + "']");
+                tableId = targetA.parents(".bootstrap-table").find("table.table").attr("id")
+                  || targetA.parents(".bootstrap-tree-table").find("table.table").attr("id");
+            }
             if ($.common.isNotEmpty(tableId)) {
                 table.options = table.get(tableId);
             }
@@ -277,7 +285,7 @@ var table = {
                         top.layer.alert(input.val() || "null", {
                             title: "信息内容",
                             shadeClose: true,
-                            btn: ['确认'],
+                            btn: ['关闭'],
                             btnclass: ['btn btn-primary'],
                         });
                     }
@@ -541,7 +549,8 @@ var table = {
                 $.each(datas, function(index, dict) {
                     if (dict.dictValue == ('' + value)) {
                         var listClass = $.common.equals("default", dict.listClass) || $.common.isEmpty(dict.listClass) ? "" : "badge badge-" + dict.listClass;
-                        actions.push($.common.sprintf("<span class='%s'>%s</span>", listClass, dict.dictLabel));
+                        var cssClass = $.common.isNotEmpty(dict.cssClass) ? dict.cssClass : listClass;
+                        actions.push($.common.sprintf("<span class='%s'>%s</span>", cssClass, dict.dictLabel));
                         return false;
                     }
                 });
@@ -783,7 +792,7 @@ var table = {
                 top.layer.alert(content || "null", {
                     icon: $.modal.icon(type),
                     title: "系统提示",
-                    btn: ['确认'],
+                    btn: ['关闭'],
                     btnclass: ['btn btn-primary'],
                 });
             },
