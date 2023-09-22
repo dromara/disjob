@@ -115,7 +115,8 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
-        return toAjax(supervisorOpenapi.pauseInstance(instanceId));
+        supervisorOpenapi.pauseInstance(instanceId);
+        return success();
     }
 
     /**
@@ -126,7 +127,8 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
-        return toAjax(supervisorOpenapi.resumeInstance(instanceId));
+        supervisorOpenapi.resumeInstance(instanceId);
+        return success();
     }
 
     /**
@@ -137,7 +139,8 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
-        return toAjax(supervisorOpenapi.cancelInstance(instanceId));
+        supervisorOpenapi.cancelInstance(instanceId);
+        return success();
     }
 
 }

@@ -13,7 +13,7 @@ import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.model.SchedDepend;
 import cn.ponfee.disjob.core.model.SchedInstance;
@@ -88,7 +88,7 @@ public abstract class AbstractJobManager {
     // ------------------------------------------------------------------database operation within transactional
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void addJob(SchedJob job) throws JobException {
+    public void addJob(SchedJob job) throws JobCheckedException {
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyBeforeAdd();
         job.checkAndDefaultSetting();
@@ -100,7 +100,7 @@ public abstract class AbstractJobManager {
     }
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void updateJob(SchedJob job) throws JobException {
+    public void updateJob(SchedJob job) throws JobCheckedException {
         job.verifyBeforeUpdate();
         job.checkAndDefaultSetting();
         if (StringUtils.isEmpty(job.getJobHandler())) {
@@ -144,11 +144,11 @@ public abstract class AbstractJobManager {
         return idGenerator.generateId();
     }
 
-    public List<SchedTask> splitTasks(JobHandlerParam param, long instanceId, Date date) throws JobException {
+    public List<SchedTask> splitTasks(JobHandlerParam param, long instanceId, Date date) throws JobCheckedException {
         if (RouteStrategy.BROADCAST == param.getRouteStrategy()) {
             List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getJobGroup());
             if (discoveredServers.isEmpty()) {
-                throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
+                throw new JobCheckedException(JobCodeMsg.NOT_DISCOVERED_WORKER);
             }
             int count = discoveredServers.size();
             return IntStream.range(0, count)

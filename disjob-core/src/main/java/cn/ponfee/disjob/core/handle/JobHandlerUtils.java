@@ -16,7 +16,7 @@ import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.util.Assert;
@@ -37,7 +37,7 @@ import static cn.ponfee.disjob.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
  */
 public class JobHandlerUtils {
 
-    public static void verify(JobHandlerParam param) throws JobException {
+    public static void verify(JobHandlerParam param) throws JobCheckedException {
         Assert.hasText(param.getJobHandler(), "Job handler cannot be blank.");
         Set<String> jobHandlers;
         if (param.getJobType() == JobType.WORKFLOW) {
@@ -58,19 +58,19 @@ public class JobHandlerUtils {
                 try {
                     JobHandler<?> handler = JobHandlerUtils.load(jobHandler);
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
-                } catch (JobException e) {
+                } catch (JobCheckedException e) {
                     throw e;
                 } catch (Throwable e) {
-                    throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
+                    throw new JobCheckedException(INVALID_JOB_HANDLER, e.getMessage());
                 }
             } else {
                 try {
                     param.setJobHandler(jobHandler);
                     Assert.notEmpty(split(param), () -> "Not split any task: " + jobHandler);
-                } catch (JobException e) {
+                } catch (JobCheckedException e) {
                     throw e;
                 } catch (Throwable e) {
-                    throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
+                    throw new JobCheckedException(INVALID_JOB_HANDLER, e.getMessage());
                 }
             }
         }
@@ -81,20 +81,20 @@ public class JobHandlerUtils {
      *
      * @param param the job handler parameter
      * @return list of SplitTask
-     * @throws JobException if split failed
+     * @throws JobCheckedException if split failed
      */
-    public static List<SplitTask> split(JobHandlerParam param) throws JobException {
+    public static List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
         try {
             JobSplitter jobSplitter = JobHandlerUtils.load(param.getJobHandler());
             List<SplitTask> splitTasks = jobSplitter.split(param.getJobParam());
             if (CollectionUtils.isEmpty(splitTasks)) {
-                throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
+                throw new JobCheckedException(SPLIT_JOB_FAILED, "Job split none tasks.");
             }
             return splitTasks;
-        } catch (JobException e) {
+        } catch (JobCheckedException e) {
             throw e;
         } catch (Throwable t) {
-            throw new JobException(SPLIT_JOB_FAILED, "Split job occur error", t);
+            throw new JobCheckedException(SPLIT_JOB_FAILED, "Split job occur error", t);
         }
     }
 
@@ -103,9 +103,9 @@ public class JobHandlerUtils {
      *
      * @param text qualified class name or source code
      * @return JobHandler instance object
-     * @throws JobException if new instance failed
+     * @throws JobCheckedException if new instance failed
      */
-    public static JobHandler<?> load(String text) throws JobException {
+    public static JobHandler<?> load(String text) throws JobCheckedException {
         JobHandler<?> handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);
         if (handler != null) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -114,12 +114,12 @@ public class JobHandlerUtils {
 
         Class<JobHandler<?>> type = ClassUtils.getClass(text);
         if (type == null) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal job handler: " + text);
+            throw new JobCheckedException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal job handler: " + text);
         }
 
         // interface type: Modifier.isAbstract(type.getModifiers()) -> true
         if (!JobHandler.class.isAssignableFrom(type) || Modifier.isAbstract(type.getModifiers())) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler: " + ClassUtils.getName(type) + ", " + text);
+            throw new JobCheckedException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler: " + ClassUtils.getName(type) + ", " + text);
         }
 
         handler = SpringContextHolder.getPrototypeBean(type);

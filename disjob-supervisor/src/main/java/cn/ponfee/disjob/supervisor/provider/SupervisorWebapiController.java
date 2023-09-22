@@ -11,7 +11,7 @@ package cn.ponfee.disjob.supervisor.provider;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.BaseController;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.openapi.supervisor.SupervisorOpenapi;
 import cn.ponfee.disjob.core.openapi.supervisor.request.AddSchedJobRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedInstancePageRequest;
@@ -44,13 +44,13 @@ public class SupervisorWebapiController extends BaseController {
     // ------------------------------------------------------------------job
 
     @PostMapping("job/add")
-    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) throws JobException {
+    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) throws JobCheckedException {
         supervisorOpenapi.addJob(req);
         return Result.success();
     }
 
     @PutMapping("job/update")
-    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) throws JobException {
+    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) throws JobCheckedException {
         supervisorOpenapi.updateJob(req);
         return Result.success();
     }
@@ -68,7 +68,7 @@ public class SupervisorWebapiController extends BaseController {
     }
 
     @PostMapping("job/trigger")
-    public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
+    public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobCheckedException {
         supervisorOpenapi.triggerJob(jobId);
         return Result.success();
     }
@@ -92,18 +92,21 @@ public class SupervisorWebapiController extends BaseController {
     // ------------------------------------------------------------------ sched instance
 
     @PostMapping("instance/pause")
-    public Result<Boolean> pauseInstance(@RequestParam("instanceId") long instanceId) {
-        return Result.success(supervisorOpenapi.pauseInstance(instanceId));
+    public Result<Void> pauseInstance(@RequestParam("instanceId") long instanceId) {
+        supervisorOpenapi.pauseInstance(instanceId);
+        return Result.success();
     }
 
     @PostMapping("instance/cancel")
-    public Result<Boolean> cancelInstance(@RequestParam("instanceId") long instanceId) {
-        return Result.success(supervisorOpenapi.cancelInstance(instanceId));
+    public Result<Void> cancelInstance(@RequestParam("instanceId") long instanceId) {
+        supervisorOpenapi.cancelInstance(instanceId);
+        return Result.success();
     }
 
     @PostMapping("instance/resume")
-    public Result<Boolean> resumeInstance(@RequestParam("instanceId") long instanceId) {
-        return Result.success(supervisorOpenapi.resumeInstance(instanceId));
+    public Result<Void> resumeInstance(@RequestParam("instanceId") long instanceId) {
+        supervisorOpenapi.resumeInstance(instanceId);
+        return Result.success();
     }
 
     @DeleteMapping("instance/delete")

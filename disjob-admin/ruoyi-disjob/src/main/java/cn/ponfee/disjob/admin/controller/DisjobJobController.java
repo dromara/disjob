@@ -12,7 +12,7 @@ import cn.ponfee.disjob.admin.domain.SchedJobExport;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Collects;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.openapi.supervisor.SupervisorOpenapi;
 import cn.ponfee.disjob.core.openapi.supervisor.request.AddSchedJobRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedJobPageRequest;
@@ -122,7 +122,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "调度配置", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult doAdd(AddSchedJobRequest req) throws JobException {
+    public AjaxResult doAdd(AddSchedJobRequest req) throws JobCheckedException {
         req.setCreatedBy(getLoginName());
         supervisorOpenapi.addJob(req);
         return success();
@@ -147,7 +147,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "调度配置", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
-    public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobException {
+    public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobCheckedException {
         req.setUpdatedBy(getLoginName());
         supervisorOpenapi.updateJob(req);
         return success();
@@ -192,7 +192,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "触发执行", businessType = BusinessType.OTHER)
     @PostMapping("/trigger")
     @ResponseBody
-    public AjaxResult trigger(@RequestParam("jobId") Long jobId) throws JobException {
+    public AjaxResult trigger(@RequestParam("jobId") Long jobId) throws JobCheckedException {
         supervisorOpenapi.triggerJob(jobId);
         return success();
     }

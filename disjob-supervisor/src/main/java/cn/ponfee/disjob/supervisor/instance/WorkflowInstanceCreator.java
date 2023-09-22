@@ -17,7 +17,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
@@ -42,7 +42,7 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
     }
 
     @Override
-    public WorkflowInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
+    public WorkflowInstance create(SchedJob job, RunType runType, long triggerTime) throws JobCheckedException {
         Date now = new Date();
         long wnstanceId = jobManager.generateId();
         SchedInstance leadInstance = SchedInstance.create(wnstanceId, job.getJobId(), runType, triggerTime, 0, now);

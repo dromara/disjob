@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.instance;
 
 import cn.ponfee.disjob.core.enums.RunType;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -32,7 +32,7 @@ public class NormalInstanceCreator extends TriggerInstanceCreator<NormalInstance
     }
 
     @Override
-    public NormalInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
+    public NormalInstance create(SchedJob job, RunType runType, long triggerTime) throws JobCheckedException {
         Date now = new Date();
         long instanceId = jobManager.generateId();
         SchedInstance instance = SchedInstance.create(instanceId, job.getJobId(), runType, triggerTime, 0, now);

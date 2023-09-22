@@ -117,6 +117,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                             long keepAliveTimeSeconds,
                             SupervisorService supervisorServiceClient) {
         SingletonClassConstraint.constrain(this);
+
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
         this.maximumPoolSize = maximumPoolSize;
@@ -431,20 +432,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
         terminateTask(client, param, ops, ops.toState(), errorMsg);
 
         try {
-            boolean success = true;
-            switch (ops) {
-                case PAUSE:
-                    success = client.pauseInstance(param.getInstanceId(), param.getWnstanceId());
-                    break;
-                case EXCEPTION_CANCEL:
-                    success = client.cancelInstance(param.getInstanceId(), param.getWnstanceId(), ops);
-                    break;
-                default:
-                    LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
-                    break;
-            }
-            if (!success) {
-                LOG.error("Stop instance failed: {} | {}", param.getTaskId(), ops);
+            if (ops == Operations.PAUSE) {
+                client.pauseInstance(param.getInstanceId(), param.getWnstanceId());
+            } else if (ops == Operations.EXCEPTION_CANCEL) {
+                client.cancelInstance(param.getInstanceId(), param.getWnstanceId(), ops);
+            } else {
+                LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
             }
         } catch (Throwable t) {
             LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, t);

@@ -13,7 +13,7 @@ import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobState;
 import cn.ponfee.disjob.core.enums.Operations;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -55,12 +55,12 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
     // ------------------------------------------------------------------ sched job
 
     @Override
-    public void addJob(AddSchedJobRequest req) throws JobException {
+    public void addJob(AddSchedJobRequest req) throws JobCheckedException {
         jobManager.addJob(req.tosSchedJob());
     }
 
     @Override
-    public void updateJob(UpdateSchedJobRequest req) throws JobException {
+    public void updateJob(UpdateSchedJobRequest req) throws JobCheckedException {
         LOG.info("Do updating sched job {}", req.getJobId());
         jobManager.updateJob(req.tosSchedJob());
     }
@@ -78,7 +78,7 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
     }
 
     @Override
-    public void triggerJob(long jobId) throws JobException {
+    public void triggerJob(long jobId) throws JobCheckedException {
         LOG.info("Do manual trigger the sched job {}", jobId);
         jobManager.triggerJob(jobId);
     }
@@ -97,21 +97,21 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
     // ------------------------------------------------------------------ sched instance
 
     @Override
-    public Boolean pauseInstance(long instanceId) {
+    public void pauseInstance(long instanceId) {
         LOG.info("Do pausing sched instance {}", instanceId);
-        return jobManager.pauseInstance(instanceId);
+        jobManager.pauseInstance(instanceId);
     }
 
     @Override
-    public Boolean cancelInstance(long instanceId) {
+    public void cancelInstance(long instanceId) {
         LOG.info("Do canceling sched instance {}", instanceId);
-        return jobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL);
+        jobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL);
     }
 
     @Override
-    public Boolean resumeInstance(long instanceId) {
+    public void resumeInstance(long instanceId) {
         LOG.info("Do resuming sched instance {}", instanceId);
-        return jobManager.resumeInstance(instanceId);
+        jobManager.resumeInstance(instanceId);
     }
 
     @Override

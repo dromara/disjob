@@ -10,7 +10,7 @@ package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerService;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
@@ -30,12 +30,12 @@ public class WorkerServiceClient {
 
     private static final WorkerService LOCAL_WORKER_SERVICE = new WorkerService() {
         @Override
-        public void verify(JobHandlerParam param) throws JobException {
+        public void verify(JobHandlerParam param) throws JobCheckedException {
             JobHandlerUtils.verify(param);
         }
 
         @Override
-        public List<SplitTask> split(JobHandlerParam param) throws JobException {
+        public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
             return JobHandlerUtils.split(param);
         }
     };
@@ -49,11 +49,11 @@ public class WorkerServiceClient {
         this.currentWorker = currentWorker;
     }
 
-    public void verify(JobHandlerParam param) throws JobException {
+    public void verify(JobHandlerParam param) throws JobCheckedException {
         get(param.getJobGroup()).verify(param);
     }
 
-    public List<SplitTask> split(JobHandlerParam param) throws JobException {
+    public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
         return get(param.getJobGroup()).split(param);
     }
 

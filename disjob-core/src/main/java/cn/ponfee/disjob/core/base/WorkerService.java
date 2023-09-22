@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -29,9 +29,9 @@ public interface WorkerService {
     String PREFIX_PATH = "worker/service/";
 
     @PostMapping("job/verify")
-    void verify(JobHandlerParam param) throws JobException;
+    void verify(JobHandlerParam param) throws JobCheckedException;
 
     @PostMapping("job/split")
-    List<SplitTask> split(JobHandlerParam param) throws JobException;
+    List<SplitTask> split(JobHandlerParam param) throws JobCheckedException;
 
 }

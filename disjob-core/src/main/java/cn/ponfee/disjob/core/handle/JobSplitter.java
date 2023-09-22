@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,9 +26,9 @@ public interface JobSplitter {
      *
      * @param jobParam the job param
      * @return list of SplitTask
-     * @throws JobException if split failed
+     * @throws JobCheckedException if split failed
      */
-    default List<SplitTask> split(String jobParam) throws JobException {
+    default List<SplitTask> split(String jobParam) throws JobCheckedException {
         return Collections.singletonList(new SplitTask(jobParam));
     }
 

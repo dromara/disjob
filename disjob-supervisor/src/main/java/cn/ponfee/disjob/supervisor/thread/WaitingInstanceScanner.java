@@ -44,6 +44,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
                                   DistributedJobQuerier jobQuerier) {
         super(heartbeatPeriodMilliseconds);
         SingletonClassConstraint.constrain(this);
+
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;

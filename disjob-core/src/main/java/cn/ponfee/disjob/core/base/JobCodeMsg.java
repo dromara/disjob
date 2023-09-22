@@ -29,6 +29,10 @@ public enum JobCodeMsg implements CodeMsg {
     PAUSE_TASK_EXCEPTION(2002, "Pause task exception."),
     CANCEL_TASK_EXCEPTION(2003, "Cancel task exception."),
 
+    NOT_PAUSABLE_INSTANCE(3005, "Not pausable instance state."),
+    NOT_CANCELABLE_INSTANCE(3006, "Not cancelable instance state."),
+    NOT_RESUMABLE_INSTANCE(3007, "Not resumable instance state."),
+
     ;
 
     private final int code;

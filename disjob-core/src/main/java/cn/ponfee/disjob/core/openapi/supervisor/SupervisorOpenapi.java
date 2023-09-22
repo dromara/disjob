@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.core.openapi.supervisor;
 
 import cn.ponfee.disjob.common.model.PageResponse;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.openapi.supervisor.request.AddSchedJobRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedJobPageRequest;
@@ -34,10 +34,10 @@ public interface SupervisorOpenapi {
     // ------------------------------------------------------------------job
 
     @PostMapping("job/add")
-    void addJob(AddSchedJobRequest req) throws JobException;
+    void addJob(AddSchedJobRequest req) throws JobCheckedException;
 
     @PutMapping("job/update")
-    void updateJob(UpdateSchedJobRequest req) throws JobException;
+    void updateJob(UpdateSchedJobRequest req) throws JobCheckedException;
 
     @DeleteMapping("job/delete")
     void deleteJob(long jobId);
@@ -46,7 +46,7 @@ public interface SupervisorOpenapi {
     Boolean changeJobState(long jobId, int jobState);
 
     @PostMapping("job/trigger")
-    void triggerJob(long jobId) throws JobException;
+    void triggerJob(long jobId) throws JobCheckedException;
 
     @GetMapping("job/get")
     SchedJobResponse getJob(long jobId);
@@ -57,13 +57,13 @@ public interface SupervisorOpenapi {
     // ------------------------------------------------------------------instance
 
     @PostMapping("instance/pause")
-    Boolean pauseInstance(long instanceId);
+    void pauseInstance(long instanceId);
 
     @PostMapping("instance/cancel")
-    Boolean cancelInstance(long instanceId);
+    void cancelInstance(long instanceId);
 
     @PostMapping("instance/resume")
-    Boolean resumeInstance(long instanceId);
+    void resumeInstance(long instanceId);
 
     @DeleteMapping("instance/delete")
     void deleteInstance(long instanceId);

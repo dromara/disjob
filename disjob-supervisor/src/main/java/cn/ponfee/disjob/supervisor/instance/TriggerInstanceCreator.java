@@ -10,7 +10,7 @@ package cn.ponfee.disjob.supervisor.instance;
 
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RunType;
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 
@@ -27,7 +27,7 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
         this.jobManager = jobManager;
     }
 
-    public final void createWithSaveAndDispatch(SchedJob job, RunType runType, long triggerTime) throws JobException {
+    public final void createWithSaveAndDispatch(SchedJob job, RunType runType, long triggerTime) throws JobCheckedException {
         T triggerInstance = create(job, runType, triggerTime);
         if (jobManager.createInstance(job, triggerInstance)) {
             dispatch(job, triggerInstance);
@@ -41,9 +41,9 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
      * @param runType     the run type
      * @param triggerTime the trigger time
      * @return TriggerInstance object
-     * @throws JobException if split task occur JobException
+     * @throws JobCheckedException if split task occur JobException
      */
-    public abstract T create(SchedJob job, RunType runType, long triggerTime) throws JobException;
+    public abstract T create(SchedJob job, RunType runType, long triggerTime) throws JobCheckedException;
 
     /**
      * Dispatch created task

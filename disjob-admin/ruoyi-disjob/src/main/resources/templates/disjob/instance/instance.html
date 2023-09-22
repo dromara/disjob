@@ -120,7 +120,7 @@
     {
       field: 'instanceId',
       title: 'InstanceId',
-      width: '250',
+      width: '240',
       formatter: function (value, row, index) {
         return value === row.wnstanceId ? value : '<a href="javascript:void(0)" onclick="tasks(\'' + value + '\')">' + value + '</a>';
       }
@@ -173,13 +173,13 @@
       title: '运行时长(秒)',
       width: '90',
       formatter: function (value, row, index) {
-        return value ? parseFloat((value / 1000).toFixed(3)) : "";
+        return value ? parseFloat((value / 1000).toFixed(2)) : "0";
       }
     },
     {
       field: 'retriedCount',
       title: '已重试次数',
-      width: '90',
+      width: '85',
       formatter: function (value, row, index) {
         return value === 0 ? "-" : value;
       }
@@ -187,7 +187,7 @@
     {
       field: 'attach',
       title: '附加信息',
-      width: '90',
+      width: '85',
       formatter: function (value, row, index) {
         return $.table.tooltip(value, 20, "open");
       }
@@ -213,7 +213,7 @@
       formatter: function (value, row, index) {
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
           // 非lead的工作流任务实例  ==>  不支持操作
-          return '';
+          return '<a style="pointer-events:none;" href="javascript:;" class="btn btn-default btn-rounded btn-xs disabled"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
         }
 
         var actions = [];
