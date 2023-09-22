@@ -200,10 +200,10 @@
         AND run_state = #{runState}
       </if>
       <if test="startTime != null">
-        AND trigger_time >= #{startTime}.getTime()
+        AND trigger_time >= #{startTime.time,javaType=_long}
       </if>
       <if test="endTime != null">
-        AND trigger_time &lt;= #{endTime}.getTime()
+        AND trigger_time &lt;= #{endTime.time,javaType=_long}
       </if>
       <if test="parent">
         AND pnstance_id IS NULL
