@@ -25,12 +25,12 @@ public class SpringContextHolder implements ApplicationContextAware {
     private static ApplicationContext applicationContext;
 
     @Override
-    public void setApplicationContext(ApplicationContext cxt) {
+    public void setApplicationContext(ApplicationContext ctx) {
         synchronized (SpringContextHolder.class) {
             if (applicationContext != null) {
                 throw new IllegalStateException("Spring context holder already initialized.");
             }
-            applicationContext = Objects.requireNonNull(cxt);
+            applicationContext = Objects.requireNonNull(ctx);
         }
     }
 
