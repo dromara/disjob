@@ -214,7 +214,7 @@
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
           // 非lead的工作流任务实例  ==>  不支持操作
           // return '<a style="pointer-events:none;" href="javascript:;" class="btn btn-default btn-rounded btn-xs disabled"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
-          return '<button class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="不支持操作工作流实例从节点"><i class="fa fa-chevron-circle-right"></i> 操作</button>'
+          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="请到工作流的Leader实例上操作"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
         }
 
         var actions = [];

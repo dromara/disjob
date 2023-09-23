@@ -16,14 +16,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author Ponfee
  */
-public class LoggedUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+public final class LoggedUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     private final static Logger LOG = LoggerFactory.getLogger(LoggedUncaughtExceptionHandler.class);
     public static final LoggedUncaughtExceptionHandler INSTANCE = new LoggedUncaughtExceptionHandler();
 
+    private LoggedUncaughtExceptionHandler() {
+    }
+
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        LOG.error("Logging thread uncaught exception [" + t.getName() + "]", e);
+        LOG.error("Thread run method uncaught exception [" + t.getName() + "]", e);
     }
 
 }

@@ -92,7 +92,7 @@
           title: 'Job状态',
           formatter: function (value, row, index) {
             var str = (row.jobState === 0) ? 'off' : 'on';
-            return '<i class=\"fa fa-toggle-' + str + ' text-info fa-2x\" onclick="changeState(\'' + row.jobId + '\', ' + value + ')"></i> ';
+            return '<i style="cursor:pointer;" class="fa fa-toggle-' + str + ' text-info fa-2x" onclick="changeState(\'' + row.jobId + '\', ' + value + ')"></i> ';
           }
         },
         {
@@ -113,7 +113,7 @@
           field: 'triggerValue',
           title: '触发器配置',
           formatter: function (value, row, index) {
-            return $.table.tooltip(value, 20, "open");
+            return $.table.tooltip(value, 19, "open");
           }
         },
         {
@@ -126,6 +126,7 @@
         {
           field: 'lastTriggerTime',
           title: '上一次触发时间',
+          width: '145',
           formatter: function (value, row, index) {
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
           }
@@ -133,6 +134,7 @@
         {
           field: 'nextTriggerTime',
           title: '下一次触发时间',
+          width: '145',
           formatter: function (value, row, index) {
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
           }
@@ -155,11 +157,13 @@
         {
           field: 'updatedAt',
           title: '更新时间',
+          width: '145',
           visible: false
         },
         {
           field: 'createdAt',
-          title: '创建时间'
+          title: '创建时间',
+          width: '145'
         },
         {
           title: '操作',

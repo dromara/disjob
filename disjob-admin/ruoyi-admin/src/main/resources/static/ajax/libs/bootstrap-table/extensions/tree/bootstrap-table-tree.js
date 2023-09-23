@@ -198,6 +198,12 @@
                 renderTable(options.data);
             }
         }
+        var initDataToggle = function () {
+            $('[data-toggle="popover"]').popover();
+            $('[data-toggle="tooltip"]').tooltip();
+            $('[data-toggle="dropdown"]').dropdown();
+            $('[data-toggle="collapse"]').collapse();
+        }
         // 加载完数据后渲染表格
         var renderTable = function(data) {
             var list, totalPage = 0, currPage = 0;
@@ -263,10 +269,8 @@
                 });
                 $(target).attr('style','width:' + w +'px');
             }
-            var popover = $("[data-toggle='popover']");
-            if (popover) {
-                popover.popover();
-            }
+
+            initDataToggle();
         }
         // 初始化分页
         var initPagination = function (totalPage,currPage) {
@@ -693,27 +697,27 @@
                     var _id = tr.attr("data-id");
                     var _ls = target.find("tbody").find("tr[id^='" + row_id + "_']");
                     if (!options.pagination) {
-	                    if (_isExpanded) {
-	                        $(this).removeClass(options.expanderExpandedClass);
-	                        $(this).addClass(options.expanderCollapsedClass);
-	                        if (_ls && _ls.length > 0) {
-	                            $.each(_ls, function(index, item) {
-	                                $(item).css("display", "none");
-	                            });
-	                        }
-	                    } else {
-	                        $(this).removeClass(options.expanderCollapsedClass);
-	                        $(this).addClass(options.expanderExpandedClass);
-	                        if (_ls && _ls.length > 0) {
-	                            $.each(_ls, function(index, item) {
-	                                var _p_icon = $("#" + $(item).attr("pid")).children().eq(options.expandColumn).find(".treetable-expander");
-	                                var _p_display = $("#" + $(item).attr("pid")).css('display');
-	                                if (_p_icon.hasClass(options.expanderExpandedClass) && _p_display == 'table') {
-	                                    $(item).css("display", "table");
-	                                }
-	                            });
-	                        }
-	                    }
+                        if (_isExpanded) {
+                            $(this).removeClass(options.expanderExpandedClass);
+                            $(this).addClass(options.expanderCollapsedClass);
+                            if (_ls && _ls.length > 0) {
+                                $.each(_ls, function (index, item) {
+                                    $(item).css("display", "none");
+                                });
+                            }
+                        } else {
+                            $(this).removeClass(options.expanderCollapsedClass);
+                            $(this).addClass(options.expanderExpandedClass);
+                            if (_ls && _ls.length > 0) {
+                                $.each(_ls, function (index, item) {
+                                    var _p_icon = $("#" + $(item).attr("pid")).children().eq(options.expandColumn).find(".treetable-expander");
+                                    var _p_display = $("#" + $(item).attr("pid")).css('display');
+                                    if (_p_icon.hasClass(options.expanderExpandedClass) && _p_display == 'table') {
+                                        $(item).css("display", "table");
+                                    }
+                                });
+                            }
+                        }
                     } else {
                         var _ls = target.find("tbody").find("tr[id^='" + row_id + "_']");
                         if (_ls && _ls.length > 0) {
@@ -743,9 +747,8 @@
                                         dataType: "json",
                                         success: function(data, textStatus, jqXHR) {
                                             $("#" + row_id + "_load").remove();
-                                            var list = data;
-                                            data = list;
-                                            target.appendData(data)
+                                            target.appendData(data);
+                                            initDataToggle();
                                         },
                                         error: function(xhr, textStatus) {
                                             var _errorMsg = '<tr><td colspan="' + options.columns.length + '"><div style="display: block;text-align: center;">' + xhr.responseText + '</div></td></tr>'
@@ -764,8 +767,11 @@
                         }
                     }
                 }
+
+                initDataToggle();
             });
         }
+
         // 刷新数据
         target.refresh = function(parms) {
             if(parms){
