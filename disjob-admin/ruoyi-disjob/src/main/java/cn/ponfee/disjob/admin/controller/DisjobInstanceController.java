@@ -10,6 +10,8 @@ package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.WaitForProcess;
+import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.openapi.supervisor.SupervisorOpenapi;
 import cn.ponfee.disjob.core.openapi.supervisor.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.core.openapi.supervisor.response.SchedInstanceResponse;
@@ -39,6 +41,8 @@ public class DisjobInstanceController extends BaseController {
     private static final String PERMISSION_VIEW = "disjob:instance:view";
     private static final String PERMISSION_QUERY = "disjob:instance:query";
     private static final String PERMISSION_OPERATE = "disjob:instance:operate";
+    private final static int WAIT_SLEEP_ROUND = 9;
+    private final static long[] WAIT_SLEEP_MILLIS = {2500, 500};
 
     private final SupervisorOpenapi supervisorOpenapi;
 
@@ -88,7 +92,7 @@ public class DisjobInstanceController extends BaseController {
     @RequiresPermissions(PERMISSION_QUERY)
     @GetMapping("/tasks/{instanceId}")
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
-        List<SchedTaskResponse> tasks = supervisorOpenapi.getInstanceTasks(instanceId);
+        List<SchedTaskResponse> tasks = supervisorOpenapi.getTasks(instanceId);
         mmap.put("tasks", Jsons.toJson(tasks));
         return PREFIX + "/tasks";
     }
@@ -100,7 +104,7 @@ public class DisjobInstanceController extends BaseController {
      */
     @RequiresPermissions(PERMISSION_OPERATE)
     @Log(title = "删除调度实例", businessType = BusinessType.DELETE)
-    @RequestMapping(value = "/remove/{instanceId}", method = {RequestMethod.GET, RequestMethod.POST})
+    @PostMapping("/remove/{instanceId}")
     @ResponseBody
     public AjaxResult remove(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenapi.deleteInstance(instanceId);
@@ -116,6 +120,10 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenapi.pauseInstance(instanceId);
+        WaitForProcess.process(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
+            SchedInstanceResponse instance = supervisorOpenapi.getInstance(instanceId);
+            return !RunState.PAUSABLE_LIST.contains(RunState.of(instance.getRunState()));
+        });
         return success();
     }
 
@@ -128,6 +136,10 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenapi.resumeInstance(instanceId);
+        WaitForProcess.process(WAIT_SLEEP_ROUND, new long[]{1000, 300}, () -> {
+            SchedInstanceResponse instance = supervisorOpenapi.getInstance(instanceId);
+            return !RunState.PAUSED.equals(instance.getRunState());
+        });
         return success();
     }
 
@@ -140,6 +152,10 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenapi.cancelInstance(instanceId);
+        WaitForProcess.process(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
+            SchedInstanceResponse instance = supervisorOpenapi.getInstance(instanceId);
+            return RunState.of(instance.getRunState()).isTerminal();
+        });
         return success();
     }
 

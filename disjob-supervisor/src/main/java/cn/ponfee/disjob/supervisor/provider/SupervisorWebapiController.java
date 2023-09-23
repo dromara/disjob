@@ -128,8 +128,13 @@ public class SupervisorWebapiController extends BaseController {
     }
 
     @GetMapping("instance/tasks")
-    public Result<List<SchedTaskResponse>> getInstanceTasks(@RequestParam("instanceId") long instanceId) {
+    public Result<SchedInstanceResponse> getInstanceTasks(@RequestParam("instanceId") long instanceId) {
         return Result.success(supervisorOpenapi.getInstanceTasks(instanceId));
+    }
+
+    @GetMapping("tasks/get")
+    public Result<List<SchedTaskResponse>> getTasks(@RequestParam("instanceId") long instanceId) {
+        return Result.success(supervisorOpenapi.getTasks(instanceId));
     }
 
     /**

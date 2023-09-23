@@ -140,6 +140,12 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
     @Override
     public SchedInstanceResponse getInstance(long instanceId) {
         SchedInstance instance = jobQuerier.getInstance(instanceId);
+        return instance == null ? null : SchedInstanceResponse.of(instance, null);
+    }
+
+    @Override
+    public SchedInstanceResponse getInstanceTasks(long instanceId) {
+        SchedInstance instance = jobQuerier.getInstance(instanceId);
         if (instance == null) {
             return null;
         }
@@ -149,7 +155,7 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
     }
 
     @Override
-    public List<SchedTaskResponse> getInstanceTasks(long instanceId) {
+    public List<SchedTaskResponse> getTasks(long instanceId) {
         List<SchedTask> tasks = jobQuerier.findLargeInstanceTasks(instanceId);
         if (tasks == null) {
             return null;

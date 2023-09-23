@@ -75,7 +75,10 @@ public interface SupervisorOpenapi {
     SchedInstanceResponse getInstance(long instanceId);
 
     @GetMapping("instance/tasks")
-    List<SchedTaskResponse> getInstanceTasks(long instanceId);
+    SchedInstanceResponse getInstanceTasks(long instanceId);
+
+    @GetMapping("tasks/get")
+    List<SchedTaskResponse> getTasks(long instanceId);
 
     @GetMapping("instance/page")
     PageResponse<SchedInstanceResponse> queryInstanceForPage(SchedInstancePageRequest pageRequest);

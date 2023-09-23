@@ -111,7 +111,7 @@
     expandFirst: false,
     expandColumn: 1,
     pagination: true,
-    removeUrl: prefix + "/remove/{id}",
+    // removeUrl: prefix + "/remove/{id}",
     modalName: "调度实例",
     columns: [{
       field: 'selectItem',
@@ -214,13 +214,13 @@
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
           // 非lead的工作流任务实例  ==>  不支持操作
           // return '<a style="pointer-events:none;" href="javascript:;" class="btn btn-default btn-rounded btn-xs disabled"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
-          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="请到工作流的Leader实例上操作"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
+          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="工作流请操作Leader实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
         }
 
         var actions = [];
 
         /*
-        if (row.runState === 20) {
+        if (row.runState <= 20) {
           actions.push('<a class="btn btn-warning btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i> 暂停</a> ')
         }
         if (row.runState === 30) {
@@ -235,17 +235,17 @@
         return actions.join('');
         */
 
-        if (row.runState === 20) {
-          actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='pause(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-pause'></i> 暂停</a> ");
+        if (row.runState <= 20) {
+          actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;pause&quot;, &quot;暂停&quot;)'><i class='fa fa-pause'></i> 暂停</a> ");
         }
         if (row.runState === 30) {
-          actions.push("<a class='btn btn-info btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='resume(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-play'></i> 恢复</a> ");
+          actions.push("<a class='btn btn-info btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;resume&quot;, &quot;恢复&quot;)'><i class='fa fa-play'></i> 恢复</a> ");
         }
         if (row.runState < 40) {
-          actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='cancel(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-remove'></i> 取消</a> ");
+          actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;cancel&quot;, &quot;取消&quot;)'><i class='fa fa-remove'></i> 取消</a> ");
         }
         if (row.runState >= 40) {
-          actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.instanceId + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
+          actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;remove&quot;, &quot;删除&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
         }
         return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
       }
@@ -360,21 +360,10 @@
     $.modal.open("调度配置详情", url, null, null, null, ['关闭']);
   }
 
-  function pause(instanceId) {
-    $.modal.confirm("确认要暂停吗？", function () {
-      $.operate.post(prefix + "/pause/" + instanceId);
-    });
-  }
-
-  function resume(instanceId) {
-    $.modal.confirm("确认要恢复吗？", function () {
-      $.operate.post(prefix + "/resume/" + instanceId);
-    });
-  }
-
-  function cancel(instanceId) {
-    $.modal.confirm("确认要取消吗？", function () {
-      $.operate.post(prefix + "/cancel/" + instanceId);
+  function operate(instanceId, type, message) {
+    table.set();
+    $.modal.confirm("确认要" + message + "吗？", function () {
+      $.operate.post(prefix + "/" + type + "/" + instanceId);
     });
   }
 </script>
