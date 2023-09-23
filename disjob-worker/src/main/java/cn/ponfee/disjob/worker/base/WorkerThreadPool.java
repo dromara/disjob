@@ -432,12 +432,16 @@ public class WorkerThreadPool extends Thread implements Closeable {
         terminateTask(client, param, ops, ops.toState(), errorMsg);
 
         try {
+            boolean res = true;
             if (ops == Operations.PAUSE) {
-                client.pauseInstance(param.getInstanceId(), param.getWnstanceId());
+                res = client.pauseInstance(param.getInstanceId(), param.getWnstanceId());
             } else if (ops == Operations.EXCEPTION_CANCEL) {
-                client.cancelInstance(param.getInstanceId(), param.getWnstanceId(), ops);
+                res = client.cancelInstance(param.getInstanceId(), param.getWnstanceId(), ops);
             } else {
                 LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
+            }
+            if (!res) {
+                LOG.error("Stop instance failed: {} | {} | {}", param.getInstanceId(), param.getTaskId(), ops);
             }
         } catch (Throwable t) {
             LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, t);

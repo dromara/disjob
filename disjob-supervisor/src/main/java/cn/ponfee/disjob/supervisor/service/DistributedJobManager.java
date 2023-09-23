@@ -18,11 +18,9 @@ import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.exception.JobUncheckedException;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.*;
@@ -348,8 +346,8 @@ public class DistributedJobManager extends AbstractJobManager {
         });
     }
 
-    public void pauseInstance(long instanceId) {
-        pauseInstance(instanceId, instanceMapper.getWnstanceId(instanceId));
+    public boolean pauseInstance(long instanceId) {
+        return pauseInstance(instanceId, instanceMapper.getWnstanceId(instanceId));
     }
 
     /**
@@ -357,12 +355,13 @@ public class DistributedJobManager extends AbstractJobManager {
      *
      * @param instanceId the instance id
      * @param wnstanceId the workflow instance id
+     * @return {@code true} if paused successfully
      */
-    public void pauseInstance(long instanceId, Long wnstanceId) {
-        doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+    public boolean pauseInstance(long instanceId, Long wnstanceId) {
+        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Pause instance not found: " + instanceId);
             if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
-                throw new JobUncheckedException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
+                return false;
             }
 
             if (instance.isWorkflow()) {
@@ -379,11 +378,13 @@ public class DistributedJobManager extends AbstractJobManager {
             } else {
                 pauseInstance(instance);
             }
+
+            return true;
         });
     }
 
-    public void cancelInstance(long instanceId, Operations ops) {
-        cancelInstance(instanceId, instanceMapper.getWnstanceId(instanceId), ops);
+    public boolean cancelInstance(long instanceId, Operations ops) {
+        return cancelInstance(instanceId, instanceMapper.getWnstanceId(instanceId), ops);
     }
 
     /**
@@ -392,13 +393,14 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param instanceId the instance id
      * @param wnstanceId the workflow instance id
      * @param ops        the operation
+     * @return {@code true} if canceled successfully
      */
-    public void cancelInstance(long instanceId, Long wnstanceId, Operations ops) {
+    public boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) {
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
-        doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel instance not found: " + instanceId);
             if (RunState.of(instance.getRunState()).isTerminal()) {
-                throw new JobUncheckedException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
+                return false;
             }
 
             if (instance.isWorkflow()) {
@@ -412,6 +414,8 @@ public class DistributedJobManager extends AbstractJobManager {
             } else {
                 cancelInstance(instance, ops);
             }
+
+            return true;
         });
     }
 
@@ -419,13 +423,14 @@ public class DistributedJobManager extends AbstractJobManager {
      * Resume the instance from paused to waiting state
      *
      * @param instanceId the instance id
+     * @return {@code true} if resumed successfully
      */
-    public void resumeInstance(long instanceId) {
+    public boolean resumeInstance(long instanceId) {
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
-        doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel failed, instance_id not found: " + instanceId);
             if (!RunState.PAUSED.equals(instance.getRunState())) {
-                throw new JobUncheckedException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
+                return false;
             }
 
             if (instance.isWorkflow()) {
@@ -445,6 +450,8 @@ public class DistributedJobManager extends AbstractJobManager {
             } else {
                 resumeInstance(instance);
             }
+
+            return true;
         });
     }
 

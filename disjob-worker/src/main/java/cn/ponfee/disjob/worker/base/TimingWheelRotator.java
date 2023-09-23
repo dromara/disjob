@@ -14,8 +14,8 @@ import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -142,13 +142,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
                 .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
                 .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
                 .collect(Collectors.toList());
-            try {
-                supervisorServiceClient.updateTaskWorker(list);
-            } catch (Throwable t) {
-                // must do submit if occur exception
-                LOG.error("Update task worker error: " + Jsons.toJson(list), t);
-                Threads.interruptIfNecessary(t);
-            }
+            ThrowingRunnable.execute(() -> supervisorServiceClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
             batchTasks.forEach(workerThreadPool::submit);
         }
     }

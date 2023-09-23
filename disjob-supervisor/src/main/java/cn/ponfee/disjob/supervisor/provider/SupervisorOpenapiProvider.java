@@ -10,10 +10,12 @@ package cn.ponfee.disjob.supervisor.provider;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.spring.RpcController;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobState;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobUncheckedException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -99,19 +101,25 @@ public class SupervisorOpenapiProvider implements SupervisorOpenapi, RpcControll
     @Override
     public void pauseInstance(long instanceId) {
         LOG.info("Do pausing sched instance {}", instanceId);
-        jobManager.pauseInstance(instanceId);
+        if (!jobManager.pauseInstance(instanceId)) {
+            throw new JobUncheckedException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
+        }
     }
 
     @Override
     public void cancelInstance(long instanceId) {
         LOG.info("Do canceling sched instance {}", instanceId);
-        jobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL);
+        if (!jobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL)) {
+            throw new JobUncheckedException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
+        }
     }
 
     @Override
     public void resumeInstance(long instanceId) {
         LOG.info("Do resuming sched instance {}", instanceId);
-        jobManager.resumeInstance(instanceId);
+        if (!jobManager.resumeInstance(instanceId)) {
+            throw new JobUncheckedException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
+        }
     }
 
     @Override
