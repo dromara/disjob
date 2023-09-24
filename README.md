@@ -34,11 +34,11 @@ disjob                                        # 主项目
 │   └── disjob-registry-zookeeper             # Server注册的Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                            # Samples项目
-│   ├── disjob-samples-common                 # 使用范例中用到的公共代码及公共配置文件
-│   ├── disjob-samples-merged-springboot      # Supervisor与Worker合并部署的范例（Spring-boot应用）
-│   ├── disjob-samples-supervisor-springboot  # Supervisor单独部署的范例（Spring-boot应用）
-│   ├── disjob-samples-worker-frameless       # Worker单独部署的范例（普通Java-main应用）
-│   └── disjob-samples-worker-springboot      # Worker单独部署的范例（Spring-boot应用）
+│   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
+│   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
+│   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）
+│   ├── disjob-samples-springboot-supervisor  # Supervisor单独部署的范例（Spring-boot应用）
+│   └── disjob-samples-springboot-worker      # Worker单独部署的范例（Spring-boot应用）
 ├── disjob-supervisor                         # Supervisor代码
 ├── disjob-test                               # 用于辅助测试
 └── disjob-worker                             # Worker代码
