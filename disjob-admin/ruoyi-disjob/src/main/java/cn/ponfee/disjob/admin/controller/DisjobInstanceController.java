@@ -136,7 +136,7 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenapi.resumeInstance(instanceId);
-        WaitForProcess.process(WAIT_SLEEP_ROUND, new long[]{1000, 300}, () -> {
+        WaitForProcess.process(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
             SchedInstanceResponse instance = supervisorOpenapi.getInstance(instanceId);
             return !RunState.PAUSED.equals(instance.getRunState());
         });

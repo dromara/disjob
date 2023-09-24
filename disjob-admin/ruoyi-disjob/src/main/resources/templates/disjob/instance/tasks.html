@@ -52,7 +52,10 @@
           field: 'executeDuration',
           title: '执行时长(秒)',
           formatter: function (value, row, index) {
-            return value ? parseFloat((value / 1000).toFixed(2)) : "0";
+            if (value === 0) {
+              return "0";
+            }
+            return value ? parseFloat((value / 1000).toFixed(2)) : "-";
           }
         },
         {

@@ -72,16 +72,9 @@
         <filtering>false</filtering>
       </resource>
       <resource>
-        <directory>../</directory>
+        <directory>../sql/</directory>
         <includes>
-          <include>mysql-disjob.sql</include>
-        </includes>
-        <filtering>false</filtering>
-      </resource>
-      <resource>
-        <directory>../disjob-admin/</directory>
-        <includes>
-          <include>mysql-disjob_admin.sql</include>
+          <include>**</include>
         </includes>
         <filtering>false</filtering>
       </resource>

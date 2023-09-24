@@ -114,8 +114,8 @@ disjob                                        # 主项目
 
 1. 项目包含两个SQL脚本
 
-- [核心框架的SQL脚本](mysql-disjob.sql)
-- [管理后台的SQL脚本](disjob-admin/mysql-disjob_admin.sql)
+- [核心框架的SQL脚本](sql/mysql-disjob.sql)
+- [管理后台的SQL脚本](sql/mysql-disjob_admin.sql)
 
 2. 在Maven pom文件中更改`注册中心disjob-registry-{xxx}`和`任务派发disjob-dispatch-{xxx}`的具体实现
 
