@@ -78,43 +78,49 @@ public class Collects {
     }
 
     /**
-     * Gets the first element for values
+     * Gets the first element from collection
      *
-     * @param values the values
-     * @param <T>    the values element type
-     * @return first element of values
+     * @param coll the coll
+     * @param <T>  the coll element type
+     * @return first element of coll
      */
-    public static <T> T getFirst(Collection<T> values) {
-        if (values == null || values.isEmpty()) {
+    public static <T> T getFirst(Collection<T> coll) {
+        if (coll == null || coll.isEmpty()) {
             return null;
         }
-        if (values instanceof Deque) {
-            return ((Deque<T>) values).getFirst();
+        if (coll instanceof Deque) {
+            return ((Deque<T>) coll).getFirst();
         }
-        if (values instanceof List) {
-            return ((List<T>) values).get(0);
+        if (coll instanceof SortedSet) {
+            return ((SortedSet<T>) coll).first();
         }
-        return values.iterator().next();
+        if (coll instanceof List) {
+            return ((List<T>) coll).get(0);
+        }
+        return coll.iterator().next();
     }
 
     /**
-     * Gets the last element for values
+     * Gets the last element from collection
      *
-     * @param values the values
-     * @param <T>    the values element type
-     * @return last element of values
+     * @param coll the coll
+     * @param <T>  the coll element type
+     * @return last element of coll
      */
-    public static <T> T getLast(Collection<T> values) {
-        if (values == null || values.isEmpty()) {
+    public static <T> T getLast(Collection<T> coll) {
+        if (coll == null || coll.isEmpty()) {
             return null;
         }
-        if (values instanceof Deque) {
-            return ((Deque<T>) values).getLast();
+        if (coll instanceof Deque) {
+            return ((Deque<T>) coll).getLast();
         }
-        if (values instanceof List) {
-            return ((List<T>) values).get(values.size() - 1);
+        if (coll instanceof SortedSet) {
+            return ((SortedSet<T>) coll).last();
         }
-        return values.stream().reduce((a, b) -> b).orElse(null);
+        if (coll instanceof List) {
+            return ((List<T>) coll).get(coll.size() - 1);
+        }
+        return coll.stream().reduce((a, b) -> b).orElse(null);
     }
 
     public static <T> T get(T[] array, int index) {

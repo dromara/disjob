@@ -113,7 +113,7 @@ mvn release:prepare release:perform \
 - 使用“mvnw”命令需要确认“~/.m2”目录下是否有settings.xml文件且正确配置<server>元素
 - release版本deploy完后还需要在“s01.oss.sonatype.org”页面上手动操作：“Staging Repositories” -> “Close” -> “Release”
 - deploy本地jar包到中央仓库：
-  - 含`-DpomFile=pom.xml`的deploy jar必须放在最后且名称为“pom.xml”
+  - deploy jar包的`-DpomFile`配置参数必须放在最后且值为`pom.xml`
   - javadoc/sources校验不通过，需要上传一个虚假(dummy)的javadoc/sources来通过验证
 ```bash
 mvn gpg:sign-and-deploy-file \

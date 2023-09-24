@@ -139,7 +139,7 @@ disjob                                        # 主项目
 - [管理后台功能相关的Mysql配置](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
 - [RuoYi框架相关配置参考](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE )（disjob-admin中只新增了[ruoyi-disjob](disjob-admin/ruoyi-disjob)模块，其它的RuoYi模块代码基本没有改动）
 
-5. 各注册中心配置类参考（Redis使用Spring-boot自带的配置方式）
+5. 各种注册中心配置类参考（Redis使用Spring-boot自带的配置方式）
 - [Consul](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)
 - [Zookeeper](disjob-registry/disjob-registry-zookeeper/src/main/java/cn/ponfee/disjob/registry/zookeeper/configuration/ZookeeperRegistryProperties.java)
 - [Nacos](disjob-registry/disjob-registry-nacos/src/main/java/cn/ponfee/disjob/registry/nacos/configuration/NacosRegistryProperties.java)
