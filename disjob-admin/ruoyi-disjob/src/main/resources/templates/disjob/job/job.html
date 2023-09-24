@@ -126,7 +126,6 @@
         {
           field: 'lastTriggerTime',
           title: '上一次触发时间',
-          width: '145',
           formatter: function (value, row, index) {
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
           }
@@ -134,7 +133,6 @@
         {
           field: 'nextTriggerTime',
           title: '下一次触发时间',
-          width: '145',
           formatter: function (value, row, index) {
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
           }
@@ -157,13 +155,11 @@
         {
           field: 'updatedAt',
           title: '更新时间',
-          width: '145',
           visible: false
         },
         {
           field: 'createdAt',
-          title: '创建时间',
-          width: '145'
+          title: '创建时间'
         },
         {
           title: '操作',
