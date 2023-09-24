@@ -14,11 +14,11 @@
   <description>Disjob范例</description>
 
   <modules>
-    <module>disjob-samples-common</module>
-    <module>disjob-samples-merged-springboot</module>
-    <module>disjob-samples-supervisor-springboot</module>
-    <module>disjob-samples-worker-frameless</module>
-    <module>disjob-samples-worker-springboot</module>
+    <module>disjob-samples-frameless-worker</module>
+    <module>disjob-samples-springboot-common</module>
+    <module>disjob-samples-springboot-merged</module>
+    <module>disjob-samples-springboot-supervisor</module>
+    <module>disjob-samples-springboot-worker</module>
   </modules>
 
   <properties>
@@ -32,12 +32,13 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
-    <!--<maven.install.skip>true</maven.install.skip>
-    <maven.deploy.skip>true</maven.deploy.skip>-->
+    <!--
+    <maven.install.skip>true</maven.install.skip>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    -->
 
-    <spring-boot.version>2.7.15</spring-boot.version>
-    <spring-boot-admin.version>2.7.10</spring-boot-admin.version>
-    <testcontainers.version>1.19.0</testcontainers.version>
+    <spring-boot.version>2.7.16</spring-boot.version>
+    <spring-boot-admin.version>2.7.11</spring-boot-admin.version>
 
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
     <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
@@ -54,39 +55,67 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>testcontainers-bom</artifactId>
-        <version>${testcontainers.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>disjob-bom</artifactId>
         <version>${disjob.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-samples-common</artifactId>
-        <version>${project.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
-      <scope>provided</scope>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-test</artifactId>
     </dependency>
+
+    <!-- Registry: select one implementation for server registry -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-redis</artifactId>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-redis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-consul</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-nacos</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-zookeeper</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-etcd</artifactId>
+    </dependency>
+    -->
+
+    <!-- Dispatching: select one implementation for task dispatching -->
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-dispatch-http</artifactId>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-dispatch-redis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-dispatch-http</artifactId>
+    </dependency>
+    -->
   </dependencies>
 
   <build>
-    <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

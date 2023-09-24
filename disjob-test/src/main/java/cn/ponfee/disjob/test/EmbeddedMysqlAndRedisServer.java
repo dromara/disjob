@@ -23,7 +23,11 @@ import redis.embedded.RedisServer;
 public final class EmbeddedMysqlAndRedisServer {
 
     public static void main(String[] args) {
-        EmbeddedMysqlAndRedisServer.starter().start();
+        EmbeddedMysqlAndRedisServer.starter()
+            .mysqlPort(3306)
+            .redisMasterPort(6379)
+            .redisSlavePort(6380)
+            .start();
     }
 
     private volatile DB mariaDBServer;

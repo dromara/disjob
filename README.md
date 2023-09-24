@@ -87,14 +87,14 @@ disjob                                        # 主项目
 
 > 已配置不同的端口可同时启动。可以在开发工具中运行Java类，也可通过`java -jar`命令运行构建好的jar包。
 
-- [启动内嵌的本地Mysql & Redis](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)
+- [启动内嵌的本地Mysql & Redis](disjob-test/src/main/java/cn/ponfee/disjob/test/EmbeddedMysqlAndRedisServer.java)
   - MacOS系统若报`MariaDB`的“[Library not loaded](disjob-test/src/main/DB/MariaDB/MariaDB.md)”错误时参考
   - 使用客户端工具连接mysql时，用户名为`root`，无需密码
   - 启动时已经自动执行了初始化的SQL脚本
-- [启动Worker单独部署的Spring-boot应用](disjob-samples/disjob-samples-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
-- [启动Worker单独部署的普通Java-main应用](disjob-samples/disjob-samples-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
-- [启动Supervisor+Worker合并部署的Spring-boot应用](disjob-samples/disjob-samples-merged-springboot/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
-- [启动Supervisor单独部署的Spring-boot应用](disjob-samples/disjob-samples-supervisor-springboot/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
+- [启动Worker单独部署的Spring-boot应用](disjob-samples/disjob-samples-springboot-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
+- [启动Worker单独部署的普通Java-main应用](disjob-samples/disjob-samples-frameless-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
+- [启动Supervisor+Worker合并部署的Spring-boot应用](disjob-samples/disjob-samples-springboot-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
+- [启动Supervisor单独部署的Spring-boot应用](disjob-samples/disjob-samples-springboot-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
 - [启动Admin管理后台的Spring-boot应用](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
 
 3. 登录管理后台
@@ -119,7 +119,7 @@ disjob                                        # 主项目
 
 2. 在Maven pom文件中更改`注册中心disjob-registry-{xxx}`和`任务派发disjob-dispatch-{xxx}`的具体实现
 
-- [Samples项目](disjob-samples/disjob-samples-common/pom.xml)
+- [Samples项目](disjob-samples/pom.xml)
 - [Admin项目](disjob-admin/ruoyi-disjob/pom.xml)
 - 默认使用`disjob-registry-redis`做注册中心，`disjob-dispatch-http`做任务派发
 
@@ -128,9 +128,9 @@ disjob                                        # 主项目
 - [Supervisor角色Mysql配置](disjob-samples/conf-supervisor/application-mysql.yml)
 - [Supervisor角色核心配置](disjob-samples/conf-supervisor/application-supervisor.yml)
 - [Worker角色核心配置](disjob-samples/conf-worker/application-worker.yml)（Spring-boot应用）
-- [Redis配置](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
-- [Spring-boot Web相关配置](disjob-samples/disjob-samples-common/src/main/resources/application-web.yml)（Worker与Supervisor共用）
-- [Worker角色普通Java-main应用配置](disjob-samples/disjob-samples-worker-frameless/src/main/resources/worker-conf.yml)
+- [Redis配置](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-redis.yml)（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）
+- [Spring-boot Web相关配置](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-web.yml)（Worker与Supervisor共用）
+- [Worker角色普通Java-main应用配置](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
 
 4. Admin项目配置文件
 - [Supervisor角色相关的Mysql配置](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
