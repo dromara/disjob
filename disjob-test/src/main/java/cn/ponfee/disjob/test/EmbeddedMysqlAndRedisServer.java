@@ -35,7 +35,7 @@ public final class EmbeddedMysqlAndRedisServer {
 
     private EmbeddedMysqlAndRedisServer(int mysqlPort, int redisMasterPort, int redisSlavePort) {
         System.out.println("/*============================================================*\\");
-        this.mariaDBServer = ThrowingSupplier.execute(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
+        this.mariaDBServer = ThrowingSupplier.get(() -> EmbeddedMysqlServerMariaDB.start(mysqlPort));
         System.out.println("\\*============================================================*/");
 
         System.out.println("\n\n\n\n\n\n");

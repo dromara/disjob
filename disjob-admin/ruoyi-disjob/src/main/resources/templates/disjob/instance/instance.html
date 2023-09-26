@@ -219,9 +219,9 @@
       align: 'center',
       formatter: function (value, row, index) {
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
-          // 非lead的工作流任务实例  ==>  不支持操作
+          // 工作流的非lead实例  ==>  不支持操作
           // return '<a style="pointer-events:none;" href="javascript:;" class="btn btn-default btn-rounded btn-xs disabled"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
-          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="工作流请操作Leader实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
+          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="工作流请操作Lead实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
         }
 
         var actions = [];

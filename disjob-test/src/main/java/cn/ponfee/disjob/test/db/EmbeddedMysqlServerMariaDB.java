@@ -64,6 +64,7 @@ public class EmbeddedMysqlServerMariaDB {
             .setDataDir(createDirectory("data"))
             .addArg("--user=root")
             .addArg("--character-set-server=utf8mb4")
+            .addArg("--collation-server=utf8mb4_bin")
             //.addArg("--default-character-set=utf8mb4")
             //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
             .build();

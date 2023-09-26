@@ -102,6 +102,7 @@ public final class NetUtils {
             return false;
         }
         try (ServerSocket ignored = new ServerSocket(port)) {
+            ignored.setReuseAddress(true);
             return true;
         } catch (IOException ignored) {
             USED_PORT.set(port);
@@ -190,6 +191,16 @@ public final class NetUtils {
 
     public static int findAvailablePort() {
         return findAvailablePort(getRandomPort());
+        /*
+        try (ServerSocket serverSocket = new ServerSocket(0)) {
+            int port = serverSocket.getLocalPort();
+            serverSocket.setReuseAddress(true);
+            USED_PORT.set(port);
+            return port;
+        } catch (IOException e) {
+            throw new IllegalStateException("Not found available socket port.", e);
+        }
+        */
     }
 
     /**
@@ -215,7 +226,7 @@ public final class NetUtils {
             }
         }
 
-        throw new IllegalStateException("Cannot found available socket port.");
+        throw new IllegalStateException("Not found available socket port.");
     }
 
     public static boolean isValidIpv4Address(InetAddress address) {

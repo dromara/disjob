@@ -22,43 +22,40 @@
       <artifactId>disjob-core</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-
+    <!-- mysql driver class-->
     <dependency>
       <groupId>com.mysql</groupId>
       <artifactId>mysql-connector-j</artifactId>
       <scope>runtime</scope>
     </dependency>
+    <!-- h2 server & h2 driver class-->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
     </dependency>
-
     <!-- embedded mysql-->
     <dependency>
       <groupId>ch.vorburger.mariaDB4j</groupId>
       <artifactId>mariaDB4j</artifactId>
       <version>${mariaDB4j.version}</version>
     </dependency>
-
     <!-- testcontainers mysql-->
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>mysql</artifactId>
     </dependency>
-
     <!-- embedded redis-->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>embedded-redis</artifactId>
       <version>${embedded-redis.version}</version>
     </dependency>
-
     <!-- testcontainers redis-->
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
     </dependency>
-
+    <!-- spring jdbc template -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>

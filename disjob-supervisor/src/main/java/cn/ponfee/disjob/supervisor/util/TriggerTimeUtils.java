@@ -31,11 +31,11 @@ public final class TriggerTimeUtils {
     /**
      * Returns the next trigger time
      *
-     * @param job     the SchedJob
-     * @param current the current date time
+     * @param job  the job data
+     * @param prev the previous date time
      * @return next trigger time milliseconds
      */
-    public static Long computeNextTriggerTime(SchedJob job, Date current) {
+    public static Long computeNextTriggerTime(SchedJob job, Date prev) {
         TriggerType triggerType;
         if (job == null || (triggerType = TriggerType.of(job.getTriggerType())) == TriggerType.DEPEND) {
             return null;
@@ -49,13 +49,13 @@ public final class TriggerTimeUtils {
                 // already executed once, none next time
                 return null;
             } else if (misfireStrategy == MisfireStrategy.DISCARD) {
-                next = triggerType.computeNextFireTime(job.getTriggerValue(), current);
+                next = triggerType.computeNextFireTime(job.getTriggerValue(), prev);
             } else {
                 next = triggerType.computeNextFireTime(job.getTriggerValue(), new Date(0));
             }
         } else if (misfireStrategy == MisfireStrategy.DISCARD || last == null) {
             // 2、如果misfire为丢失策略或这个Job从未触发执行过，则以初始化方式来计算
-            base = max(max(last, start), current);
+            base = max(max(last, start), prev);
             next = triggerType.computeNextFireTime(job.getTriggerValue(), base);
         } else {
             // 3、如果这个Job有触发执行记录，则基于最近一次调度时间(last_sched_time)来计算
@@ -68,7 +68,7 @@ public final class TriggerTimeUtils {
                     do {
                         recently = temp;
                         base = temp = triggerType.computeNextFireTime(job.getTriggerValue(), base);
-                    } while (temp != null && temp.before(current));
+                    } while (temp != null && temp.before(prev));
 
                     next = recently != null ? recently : temp;
                     break;
