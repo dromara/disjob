@@ -8,15 +8,15 @@
 
 ## Architecture
 
-- 整体流程图
+- 整体流程
 
 ![Architecture](docs/images/architecture.jpg)
 
-- 工程结构
+- 代码结构
 
 ```text
-disjob                                        # 主项目
-├── disjob-admin                              # 基于Ruoyi框架二次开发的Disjob管理后台
+disjob                                        # 主项目①
+├── disjob-admin                              # 管理后台项目②(基于Ruoyi框架二次开发)
 ├── disjob-bom                                # Maven project bom module
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
@@ -33,7 +33,7 @@ disjob                                        # 主项目
 │   ├── disjob-registry-redis                 # Server注册的Redis实现
 │   └── disjob-registry-zookeeper             # Server注册的Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
-├── disjob-samples                            # Samples项目
+├── disjob-samples                            # Samples项目③
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
 │   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
 │   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）
@@ -80,8 +80,8 @@ disjob                                        # 主项目
 1. 在开发工具中分别导入项目（分为三个独立的项目，共用一个`git`仓库）
 
 - [主项目—disjob](pom.xml)
-- [范例项目—disjob-samples](disjob-samples/pom.xml)
 - [管理后台—disjob-admin](disjob-admin/pom.xml)
+- [范例项目—disjob-samples](disjob-samples/pom.xml)
 
 2. 启动以下各应用组成分布式调度集群
 
