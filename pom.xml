@@ -32,6 +32,10 @@
     <url>https://github.com/dromara/disjob</url>
     <tag>HEAD</tag>
   </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/dromara/disjob/issues</url>
+  </issueManagement>
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>

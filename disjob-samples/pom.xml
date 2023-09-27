@@ -32,10 +32,6 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
-    <!--
-    <maven.install.skip>true</maven.install.skip>
-    <maven.deploy.skip>true</maven.deploy.skip>
-    -->
 
     <spring-boot.version>2.7.16</spring-boot.version>
     <spring-boot-admin.version>2.7.11</spring-boot-admin.version>
@@ -154,36 +150,6 @@
           </execution>
         </executions>
       </plugin>
-      <!--<plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
-        <inherited>true</inherited>
-        <executions>
-          <execution>
-            <id>deploy-none</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.13</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <id>staging-none</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
-        <configuration>
-          <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-        </configuration>
-      </plugin>-->
     </plugins>
   </build>
 
