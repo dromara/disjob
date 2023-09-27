@@ -15,7 +15,7 @@
   <packaging>pom</packaging>
   <name>${project.artifactId}</name>
   <description>Distributed job bom module</description>
-  <url>https://github.com/ponfee/disjob</url>
+  <url>https://github.com/dromara/disjob</url>
 
   <dependencyManagement>
     <dependencies>

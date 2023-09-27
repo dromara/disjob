@@ -628,7 +628,9 @@ public class Dates {
     }
 
     public static LocalDateTime endOfDay(LocalDateTime dateTime) {
-        // 当毫秒数大于499时，如果Mysql的datetime字段没有毫秒位数，数据会自动加1秒，所以此处毫秒为000
+        // 若Mysql的datetime字段没有指定毫秒位数：
+        //   1）当毫秒数<500时会向下取整到秒
+        //   2）当毫秒数>=500时会向上取整到秒
         return LocalDateTime.of(dateTime.toLocalDate(), LocalTime.of(23, 59, 59, /*999_999_999*/0));
     }
 

@@ -14,7 +14,7 @@
   <artifactId>disjob-dispatch-api</artifactId>
   <name>${project.artifactId}</name>
   <description>Distributed job dispatch api module</description>
-  <url>https://github.com/ponfee/disjob</url>
+  <url>https://github.com/dromara/disjob</url>
 
   <dependencies>
     <dependency>

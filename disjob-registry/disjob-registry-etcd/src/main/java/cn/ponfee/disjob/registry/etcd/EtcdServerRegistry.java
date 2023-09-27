@@ -188,9 +188,9 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         synchronized (keepAliveLock) {
             try {
                 if (this.keepAlive != null) {
-                    this.keepAlive.close();
+                    ThrowingRunnable.execute(this.keepAlive::close);
                     this.keepAlive = null;
-                    client.revokeLease(leaseId);
+                    ThrowingRunnable.execute(() -> client.revokeLease(leaseId));
                 }
                 createLeaseIdAndKeepAlive();
             } catch (Throwable t) {

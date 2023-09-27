@@ -14,7 +14,7 @@
   <artifactId>disjob-registry-etcd</artifactId>
   <name>${project.artifactId}</name>
   <description>Distributed job registry etcd module</description>
-  <url>https://github.com/ponfee/disjob</url>
+  <url>https://github.com/dromara/disjob</url>
 
   <properties>
     <jetcd.version>0.7.6</jetcd.version>

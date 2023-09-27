@@ -462,7 +462,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     /**
-     * 尽量避免对数据库锁的等待及数据连接超时
+     * 加JVM锁是为了避免单节点内对数据库锁的等待及数据连接超时
      *
      * @param instanceId the instance id
      * @param wnstanceId the workflow instance id

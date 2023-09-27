@@ -14,7 +14,7 @@
   <artifactId>disjob-common</artifactId>
   <name>${project.artifactId}</name>
   <description>Distributed job common module</description>
-  <url>https://github.com/ponfee/disjob</url>
+  <url>https://github.com/dromara/disjob</url>
 
   <dependencies>
     <dependency>

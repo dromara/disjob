@@ -14,7 +14,7 @@
   <artifactId>disjob-core</artifactId>
   <name>${project.artifactId}</name>
   <description>Distributed job core module</description>
-  <url>https://github.com/ponfee/disjob</url>
+  <url>https://github.com/dromara/disjob</url>
 
   <dependencies>
     <!-- https://mapstruct.org/documentation/1.5/reference/html/ -->

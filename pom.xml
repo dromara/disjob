@@ -11,7 +11,7 @@
 
   <name>${project.artifactId}</name>
   <description>A distributed job scheduling framework</description>
-  <url>https://github.com/ponfee/disjob</url>
+  <url>https://github.com/dromara/disjob</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -27,9 +27,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:https://github.com/ponfee/disjob.git</connection>
-    <developerConnection>scm:git:https://github.com/ponfee/disjob.git</developerConnection>
-    <url>https://github.com/ponfee/disjob</url>
+    <connection>scm:git:git://github.com/dromara/disjob.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/dromara/disjob.git</developerConnection>
+    <url>https://github.com/dromara/disjob</url>
     <tag>HEAD</tag>
   </scm>
   <distributionManagement>
