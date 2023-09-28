@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.samples.worker.vertx;
 
 import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -99,20 +100,19 @@ public class VertxWebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         //String[] args = ctx.body().asPojo(String[].class);
-        router.post(PATH_PREFIX + "job/verify").handler(ctx -> invoke(() -> {
+        router.post(PATH_PREFIX + "job/verify").handler(ctx -> handle(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
             WORKER_SERVICE_PROVIDER.verify(param);
-            return null;
         }, ctx, BAD_REQUEST));
 
-        router.post(PATH_PREFIX + "job/split").handler(ctx -> invoke(() -> {
+        router.post(PATH_PREFIX + "job/split").handler(ctx -> handle(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
             modifyJobHandler(param, "jobHandler");
             return WORKER_SERVICE_PROVIDER.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {
-            router.post(PATH_PREFIX + "task/receive").handler(ctx -> invoke(() -> {
+            router.post(PATH_PREFIX + "task/receive").handler(ctx -> handle(() -> {
                 ExecuteTaskParam param = parseArg(ctx, ExecuteTaskParam.class);
                 modifyJobHandler(param, "jobHandler");
                 return httpTaskReceiver.receive(param);
@@ -129,12 +129,20 @@ public class VertxWebServer extends AbstractVerticle {
             .listen(port);
     }
 
-    private static void invoke(ThrowingSupplier<?, ?> action, RoutingContext ctx, HttpResponseStatus failStatus) {
+    private static void handle(ThrowingRunnable<?> action, RoutingContext ctx, HttpResponseStatus failStatus) {
+        handle(action.toSupplier(null), ctx, failStatus);
+    }
+
+    private static void handle(ThrowingSupplier<?, ?> action, RoutingContext ctx, HttpResponseStatus failStatus) {
         HttpServerResponse resp = ctx.response().putHeader("Content-Type", "application/json; charset=utf-8");
         try {
             Object result = action.get();
-            resp.setStatusCode(OK.code())
-                .end(result == null ? null : Jsons.toJson(result));
+            if (result == null) {
+                resp.end();
+            } else {
+                resp.end(Jsons.toJson(result));
+            }
+            resp.setStatusCode(OK.code());
         } catch (Throwable e) {
             resp.setStatusCode(failStatus.code())
                 .end(Throwables.getRootCauseMessage(e));
