@@ -23,12 +23,12 @@ public class JsonsTest {
         Assertions.assertThat(Jsons.toJson(null)).isEqualTo("null");
         Assertions.assertThat(Jsons.toJson("null")).isEqualTo("\"null\"");
         Assertions.assertThat(Jsons.toJson(new StringBuilder("null"))).isEqualTo("\"null\"");
-        Assertions.assertThat(Jsons.toJson(new StringBuilder(""))).isEqualTo("\"\"");
         Assertions.assertThat(Jsons.toJson(new StringBuilder())).isEqualTo("\"\"");
+        Assertions.assertThat(new StringBuilder().toString().equals("")).isTrue();
 
         Assertions.assertThat(Jsons.toJson(new StringBuffer("null"))).isEqualTo("\"null\"");
-        Assertions.assertThat(Jsons.toJson(new StringBuffer(""))).isEqualTo("\"\"");
         Assertions.assertThat(Jsons.toJson(new StringBuffer())).isEqualTo("\"\"");
+        Assertions.assertThat(new StringBuffer().toString().equals("")).isTrue();
     }
 
 }

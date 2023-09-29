@@ -53,7 +53,7 @@
 			      <a class="menu-content" th:if="${#lists.isEmpty(cmenu.children)}" th:href="@{${cmenu.url}}" th:classappend="${#strings.isEmpty(cmenu.target)} ? |menuItem| : ${cmenu.target}" th:data-refresh="${cmenu.isRefresh == '0'}">
 			        <i th:class="${cmenu.icon} + ' fa-fw'"></i> <span class="nav-label">[[${cmenu.menuName}]]</span>
 			      </a>
-			      <a class="menu-content" th:if="${not #lists.isEmpty(cmenu.children)}" href="javascript:;">
+			      <a class="menu-content" th:if="${not #lists.isEmpty(cmenu.children)}" href="javascript:">
 			        <i th:class="${cmenu.icon} + ' fa-fw'"></i>
 			        <span class="nav-label">[[${cmenu.menuName}]]</span>
 			        <span class="fa arrow"></span>
@@ -64,7 +64,7 @@
 				        <i th:class="${emenu.icon} + ' fa-fw'"></i>
 				        [[${emenu.menuName}]]
 				      </a>
-				      <a th:if="${not #lists.isEmpty(emenu.children)}" href="javascript:;">
+				      <a th:if="${not #lists.isEmpty(emenu.children)}" href="javascript:">
 				        <i th:class="${emenu.icon} + ' fa-fw'"></i>
 				        [[${emenu.menuName}]]
 				        <span class="fa arrow"></span>
@@ -98,7 +98,7 @@
         <div class="row border-bottom">
             <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
                 <div class="navbar-header">
-                    <a class="navbar-minimalize minimalize-styl-2" style="color:#FFF;" href="javascript:;" title="收起菜单">
+                    <a class="navbar-minimalize minimalize-styl-2" style="color:#FFF;" href="javascript:" title="收起菜单">
                     	<i class="fa fa-bars"></i>
                     </a>
                 </div>
@@ -130,8 +130,8 @@
                 <ul class="nav navbar-top-links navbar-right welcome-message">
                     <li><a data-toggle="tooltip" data-trigger="hover" data-placement="bottom" title="github" href="https://github.com/ponfee/disjob" target="_blank"><i class="fa fa-github"></i> github</a></li>
                     <li><a data-toggle="tooltip" data-trigger="hover" data-placement="bottom" title="gitee" href="https://gitee.com/fupengfei/disjob" target="_blank"><i class="fa fa-git-square"></i> gitee</a></li>
-                    <li><a data-toggle="tooltip" data-trigger="hover" data-placement="bottom" title="锁定屏幕" href="javascript:;" id="lockScreen"><i class="fa fa-lock"></i> 锁屏</a></li>
-                    <li><a data-toggle="tooltip" data-trigger="hover" data-placement="bottom" title="全屏显示" href="javascript:;" id="fullScreen"><i class="fa fa-arrows-alt"></i> 全屏</a></li>
+                    <li><a data-toggle="tooltip" data-trigger="hover" data-placement="bottom" title="锁定屏幕" href="javascript:" id="lockScreen"><i class="fa fa-lock"></i> 锁屏</a></li>
+                    <li><a data-toggle="tooltip" data-trigger="hover" data-placement="bottom" title="全屏显示" href="javascript:" id="fullScreen"><i class="fa fa-arrows-alt"></i> 全屏</a></li>
                     <li class="dropdown user-menu">
 						<a href="javascript:void(0)" class="dropdown-toggle" data-hover="dropdown">
 							<img th:src="(${#strings.isEmpty(user.avatar)}) ? @{/img/profile.jpg} : @{${user.avatar}}" th:onerror="this.src='img/profile.jpg'" class="user-image">
@@ -179,7 +179,7 @@
             <a href="javascript:void(0);" class="roll-nav roll-right tabReload"><i class="fa fa-refresh"></i> 刷新</a>
         </div>
 
-        <a id="ax_close_max" class="ax_close_max" href="javascript:;" title="关闭全屏"> <i class="fa fa-times-circle-o"></i> </a>
+        <a id="ax_close_max" class="ax_close_max" href="javascript:" title="关闭全屏"> <i class="fa fa-times-circle-o"></i> </a>
 
         <div class="row mainContent" id="content-main" th:classappend="${mainClass}">
             <iframe class="RuoYi_iframe" name="iframe0" width="100%" height="100%" th:data-id="@{/system/main}"
