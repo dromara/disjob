@@ -13,7 +13,6 @@ import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -25,7 +24,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class JobHandlerParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -216622646271234535L;
 
@@ -34,6 +32,9 @@ public class JobHandlerParam extends ToJsonString implements Serializable {
     private String jobGroup;
     private JobType jobType;
     private RouteStrategy routeStrategy;
+
+    public JobHandlerParam() {
+    }
 
     public JobHandlerParam(String jobHandler, String jobParam, String jobGroup,
                            JobType jobType, RouteStrategy routeStrategy) {

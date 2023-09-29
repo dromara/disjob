@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * <pre>
- * WorkerServiceClient Test
+ * WorkerCoreRpcService Test
  *
  * Mock一般用在不依赖框架的单元测试
  * MockBean用在依赖Spring上下文环境，使用@MockBean替换Spring上下文中的Bean（这样会导致Spring上下文重启）
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Ponfee
  */
-public class WorkerServiceClientTest extends SpringBootTestBase<Object> {
+public class WorkerCoreRpcServiceTest extends SpringBootTestBase<Object> {
 
     @Test
     public void testSplit() throws JobCheckedException {
@@ -40,8 +40,7 @@ public class WorkerServiceClientTest extends SpringBootTestBase<Object> {
         //doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerCoreRpcService).split(any());
         when(workerCoreRpcService.split(any())).thenReturn(Collections.singletonList(new SplitTask(taskParam)));
 
-        WorkerServiceClient client = new WorkerServiceClient(workerCoreRpcService, null);
-        List<SplitTask> result = client.split(new JobHandlerParam(null, null, "group", null, null));
+        List<SplitTask> result = workerCoreRpcService.split(new JobHandlerParam(null, null, "group", null, null));
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(taskParam, result.get(0).getTaskParam());

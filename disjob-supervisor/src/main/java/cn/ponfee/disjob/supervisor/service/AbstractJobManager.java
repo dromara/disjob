@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -24,7 +25,6 @@ import cn.ponfee.disjob.core.param.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import com.google.common.base.Joiner;
@@ -65,7 +65,7 @@ public abstract class AbstractJobManager {
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
-    private final WorkerServiceClient workerServiceClient;
+    private final WorkerCoreRpcService workerCoreRpcClient;
 
     // ------------------------------------------------------------------database single operation without transactional
 
@@ -92,7 +92,7 @@ public abstract class AbstractJobManager {
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyBeforeAdd();
         job.checkAndDefaultSetting();
-        workerServiceClient.verify(JobHandlerParam.from(job));
+        workerCoreRpcClient.verify(JobHandlerParam.from(job));
         job.setJobId(generateId());
         parseTriggerConfig(job);
 
@@ -106,7 +106,7 @@ public abstract class AbstractJobManager {
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
         } else {
-            workerServiceClient.verify(JobHandlerParam.from(job));
+            workerCoreRpcClient.verify(JobHandlerParam.from(job));
         }
 
         SchedJob dbJob = jobMapper.getByJobId(job.getJobId());
@@ -155,7 +155,7 @@ public abstract class AbstractJobManager {
                 .mapToObj(i -> SchedTask.create(param.getJobParam(), generateId(), instanceId, i + 1, count, date, discoveredServers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
-            List<SplitTask> split = workerServiceClient.split(param);
+            List<SplitTask> split = workerCoreRpcClient.split(param);
             Assert.notEmpty(split, () -> "Not split any task: " + param);
             Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + param);
             int count = split.size();

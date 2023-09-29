@@ -11,6 +11,7 @@ package cn.ponfee.disjob.worker;
 import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
@@ -25,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -107,18 +107,18 @@ public class WorkerStartup implements Startable {
         ThrowingRunnable.execute(workerThreadPool::close);
     }
 
-    private static SupervisorCoreRpcService createProxy(SupervisorCoreRpcService supervisorCoreRpcService,
+    // ----------------------------------------------------------------------------------------builder
+
+    private static SupervisorCoreRpcService createProxy(SupervisorCoreRpcService local,
                                                         RetryProperties retry,
                                                         HttpProperties http,
                                                         WorkerRegistry workerRegistry,
                                                         ObjectMapper objectMapper) {
-        if (supervisorCoreRpcService != null) {
-            // 此Worker同时也是Supervisor身份，则本地调用，通过动态代理增加重试能力
-            // cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider
-            ClassLoader classLoader = supervisorCoreRpcService.getClass().getClassLoader();
-            Class<?>[] interfaces = {SupervisorCoreRpcService.class};
-            InvocationHandler ih = new RetryInvocationHandler(supervisorCoreRpcService, retry.getMaxCount(), retry.getBackoffPeriod());
-            return (SupervisorCoreRpcService) Proxy.newProxyInstance(classLoader, interfaces, ih);
+        if (local != null) {
+            // 此Worker同时也是Supervisor身份，则本地调用：cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider
+            // 使用动态代理增加重试能力
+            InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
+            return ProxyUtils.create(SupervisorCoreRpcService.class, ih);
         } else {
             DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
                 .httpConnectTimeout(http.getConnectTimeout())
@@ -131,8 +131,6 @@ public class WorkerStartup implements Startable {
             return DiscoveryRestProxy.create(false, SupervisorCoreRpcService.class, discoveryRestTemplate);
         }
     }
-
-    // ----------------------------------------------------------------------------------------builder
 
     public static Builder builder() {
         return new Builder();

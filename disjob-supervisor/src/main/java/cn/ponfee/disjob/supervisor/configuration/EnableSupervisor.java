@@ -16,12 +16,10 @@ import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.api.supervisor.SupervisorOpenRpcService;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
-import cn.ponfee.disjob.registry.DiscoveryRestProxy;
-import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
-import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
+import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
 import cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider;
 import cn.ponfee.disjob.supervisor.provider.SupervisorOpenRpcProvider;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
@@ -108,23 +106,14 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerServiceClient workerServiceClient(HttpProperties httpProperties,
+        public WorkerCoreRpcService WorkerCoreRpcClient(HttpProperties httpProperties,
                                                        RetryProperties retryProperties,
                                                        SupervisorRegistry supervisorRegistry,
                                                        @Nullable Worker currentWorker,
                                                        @Nullable ObjectMapper objectMapper) {
-            httpProperties.check();
-            retryProperties.check();
-            DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-                .httpConnectTimeout(httpProperties.getConnectTimeout())
-                .httpReadTimeout(httpProperties.getReadTimeout())
-                .retryMaxCount(retryProperties.getMaxCount())
-                .retryBackoffPeriod(retryProperties.getBackoffPeriod())
-                .objectMapper(objectMapper)
-                .discoveryServer(supervisorRegistry)
-                .build();
-            WorkerCoreRpcService workerCoreRpcClient = DiscoveryRestProxy.create(true, WorkerCoreRpcService.class, discoveryRestTemplate);
-            return new WorkerServiceClient(workerCoreRpcClient, currentWorker);
+            return new WorkerCoreRpcClient(
+                httpProperties, retryProperties, supervisorRegistry, currentWorker, objectMapper
+            );
         }
 
         @ConditionalOnMissingBean

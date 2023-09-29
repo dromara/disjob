@@ -19,6 +19,7 @@ import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
@@ -26,7 +27,6 @@ import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.*;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.base.WorkerServiceClient;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
 import cn.ponfee.disjob.supervisor.instance.NormalInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
@@ -86,9 +86,9 @@ public class DistributedJobManager extends AbstractJobManager {
                                  IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
-                                 WorkerServiceClient workerServiceClient,
+                                 WorkerCoreRpcService WorkerCoreRpcClient,
                                  @Qualifier(DB_NAME + TX_TEMPLATE_NAME_SUFFIX) TransactionTemplate transactionTemplate) {
-        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerServiceClient);
+        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, WorkerCoreRpcClient);
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;
