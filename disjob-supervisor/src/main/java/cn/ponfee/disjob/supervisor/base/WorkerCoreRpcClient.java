@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class WorkerCoreRpcClient implements WorkerCoreRpcService {
+public class WorkerCoreRpcClient {
 
     private final Worker currentWorker;
     private final WorkerCoreRpcService local;
@@ -56,17 +56,15 @@ public class WorkerCoreRpcClient implements WorkerCoreRpcService {
         this.remote = DiscoveryRestProxy.create(true, WorkerCoreRpcService.class, discoveryRestTemplate);
     }
 
-    @Override
     public void verify(JobHandlerParam param) throws JobCheckedException {
         grouped(param.getJobGroup()).verify(param);
     }
 
-    @Override
     public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
         return grouped(param.getJobGroup()).split(param);
     }
 
-    // ------------------------------------------------------------private class
+    // ------------------------------------------------------------private methods & class
 
     private WorkerCoreRpcService grouped(String group) {
         if (currentWorker != null && currentWorker.matchesGroup(group)) {
@@ -78,7 +76,6 @@ public class WorkerCoreRpcClient implements WorkerCoreRpcService {
     }
 
     private static class WorkerCoreRpcLocal implements WorkerCoreRpcService {
-
         private static final WorkerCoreRpcLocal INSTANCE = new WorkerCoreRpcLocal();
 
         @Override

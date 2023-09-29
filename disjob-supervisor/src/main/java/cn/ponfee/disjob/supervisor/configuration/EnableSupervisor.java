@@ -106,7 +106,7 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerCoreRpcService WorkerCoreRpcClient(HttpProperties httpProperties,
+        public WorkerCoreRpcClient WorkerCoreRpcClient(HttpProperties httpProperties,
                                                        RetryProperties retryProperties,
                                                        SupervisorRegistry supervisorRegistry,
                                                        @Nullable Worker currentWorker,

@@ -12,7 +12,6 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -25,6 +24,7 @@ import cn.ponfee.disjob.core.param.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import com.google.common.base.Joiner;
@@ -65,7 +65,7 @@ public abstract class AbstractJobManager {
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
-    private final WorkerCoreRpcService workerCoreRpcClient;
+    private final WorkerCoreRpcClient workerCoreRpcClient;
 
     // ------------------------------------------------------------------database single operation without transactional
 
