@@ -33,11 +33,11 @@ import java.util.List;
 @Tag(name = "Supervisor web api")
 @RestController
 @RequestMapping("supervisor/web")
-public class SupervisorRpcApiController extends BaseController {
+public class SupervisorWebApiController extends BaseController {
 
     private final SupervisorRpcApi supervisorRpcApi;
 
-    public SupervisorRpcApiController(SupervisorRpcApi supervisorRpcApi) {
+    public SupervisorWebApiController(SupervisorRpcApi supervisorRpcApi) {
         this.supervisorRpcApi = supervisorRpcApi;
     }
 
