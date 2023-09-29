@@ -6,32 +6,32 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.worker.provider;
+package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.spring.RpcController;
-import cn.ponfee.disjob.core.base.WorkerService;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
-import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
+import io.swagger.v3.oas.annotations.Hidden;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
 /**
- * Worker service provider.
+ * Worker core rpc service, provides for supervisor communication.
  *
  * @author Ponfee
  */
-public class WorkerServiceProvider implements WorkerService, RpcController {
+@Hidden
+@RequestMapping(WorkerCoreRpcService.PREFIX_PATH)
+public interface WorkerCoreRpcService {
 
-    @Override
-    public void verify(JobHandlerParam param) throws JobCheckedException {
-        JobHandlerUtils.verify(param);
-    }
+    String PREFIX_PATH = "worker/core/rpc/";
 
-    @Override
-    public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
-        return JobHandlerUtils.split(param);
-    }
+    @PostMapping("job/verify")
+    void verify(JobHandlerParam param) throws JobCheckedException;
+
+    @PostMapping("job/split")
+    List<SplitTask> split(JobHandlerParam param) throws JobCheckedException;
 
 }

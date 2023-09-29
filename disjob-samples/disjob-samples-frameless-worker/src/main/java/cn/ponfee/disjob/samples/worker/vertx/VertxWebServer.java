@@ -13,13 +13,13 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.WorkerService;
+import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.samples.worker.util.JobHandlerHolder;
-import cn.ponfee.disjob.worker.provider.WorkerServiceProvider;
+import cn.ponfee.disjob.worker.provider.WorkerCoreRpcProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -52,8 +52,8 @@ public class VertxWebServer extends AbstractVerticle {
 
     private static final Logger LOG = LoggerFactory.getLogger(VertxWebServer.class);
 
-    private static final String PATH_PREFIX = "/" + WorkerService.PREFIX_PATH;
-    private static final WorkerServiceProvider WORKER_SERVICE_PROVIDER = new WorkerServiceProvider();
+    private static final String PATH_PREFIX = "/" + WorkerCoreRpcService.PREFIX_PATH;
+    private static final WorkerCoreRpcService WORKER_SERVICE_PROVIDER = new WorkerCoreRpcProvider();
 
     private final int port;
     private final TaskReceiver httpTaskReceiver;
@@ -137,12 +137,12 @@ public class VertxWebServer extends AbstractVerticle {
         HttpServerResponse resp = ctx.response().putHeader("Content-Type", "application/json; charset=utf-8");
         try {
             Object result = action.get();
+            resp.setStatusCode(OK.code());
             if (result == null) {
                 resp.end();
             } else {
-                resp.end(Jsons.toJson(result));
+                resp.end(toJson(result));
             }
-            resp.setStatusCode(OK.code());
         } catch (Throwable e) {
             resp.setStatusCode(failStatus.code())
                 .end(Throwables.getRootCauseMessage(e));
@@ -152,6 +152,16 @@ public class VertxWebServer extends AbstractVerticle {
     private static <T> T parseArg(RoutingContext ctx, Class<T> type) {
         Object[] args = Jsons.parseArray(ctx.body().asString(), type);
         return args == null ? null : (T) args[0];
+    }
+
+    private static String toJson(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof CharSequence) {
+            return ((CharSequence) obj).toString();
+        }
+        return Jsons.toJson(obj);
     }
 
     /**

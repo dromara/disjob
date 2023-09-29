@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.dispatch.http;
 
-import cn.ponfee.disjob.core.base.WorkerService;
+import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 
 /**
  * Http task dispatching constants.
@@ -17,6 +17,6 @@ import cn.ponfee.disjob.core.base.WorkerService;
  */
 final class Constants {
 
-    public static final String WORKER_RECEIVE_PATH = WorkerService.PREFIX_PATH + "task/receive";
+    public static final String WORKER_RECEIVE_PATH = WorkerCoreRpcService.PREFIX_PATH + "task/receive";
 
 }

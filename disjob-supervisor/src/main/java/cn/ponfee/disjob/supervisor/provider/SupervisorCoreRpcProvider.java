@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.provider;
 
 import cn.ponfee.disjob.common.spring.RpcController;
-import cn.ponfee.disjob.core.base.SupervisorService;
+import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -22,16 +22,16 @@ import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import java.util.List;
 
 /**
- * Supervisor service provider.
+ * Supervisor core rpc service provider.
  *
  * @author Ponfee
  */
-public class SupervisorServiceProvider implements SupervisorService, RpcController {
+public class SupervisorCoreRpcProvider implements SupervisorCoreRpcService, RpcController {
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
 
-    public SupervisorServiceProvider(DistributedJobManager jobManager,
+    public SupervisorCoreRpcProvider(DistributedJobManager jobManager,
                                      DistributedJobQuerier jobQuerier) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;

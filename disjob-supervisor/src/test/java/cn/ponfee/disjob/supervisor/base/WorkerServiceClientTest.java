@@ -37,10 +37,10 @@ public class WorkerServiceClientTest extends SpringBootTestBase<Object> {
     @Test
     public void testSplit() throws JobCheckedException {
         String taskParam = "taskParam";
-        //doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerService).split(any());
-        when(workerService.split(any())).thenReturn(Collections.singletonList(new SplitTask(taskParam)));
+        //doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerCoreRpcService).split(any());
+        when(workerCoreRpcService.split(any())).thenReturn(Collections.singletonList(new SplitTask(taskParam)));
 
-        WorkerServiceClient client = new WorkerServiceClient(workerService, null);
+        WorkerServiceClient client = new WorkerServiceClient(workerCoreRpcService, null);
         List<SplitTask> result = client.split(new JobHandlerParam(null, null, "group", null, null));
         assertNotNull(result);
         assertEquals(1, result.size());

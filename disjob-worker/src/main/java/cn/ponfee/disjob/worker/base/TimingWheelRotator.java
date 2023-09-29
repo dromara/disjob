@@ -19,7 +19,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.SupervisorService;
+import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
@@ -48,7 +48,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
     private final Worker currentWorker;
-    private final SupervisorService supervisorServiceClient;
+    private final SupervisorCoreRpcService supervisorCoreRpcClient;
     private final Discovery<Supervisor> discoverySupervisor;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
     private final WorkerThreadPool workerThreadPool;
@@ -58,13 +58,13 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private volatile int round = 0;
 
     public TimingWheelRotator(Worker currentWorker,
-                              SupervisorService supervisorServiceClient,
+                              SupervisorCoreRpcService supervisorCoreRpcClient,
                               Discovery<Supervisor> discoverySupervisor,
                               TimingWheel<ExecuteTaskParam> timingWheel,
                               WorkerThreadPool threadPool,
                               int processThreadPoolSize) {
         this.currentWorker = currentWorker;
-        this.supervisorServiceClient = supervisorServiceClient;
+        this.supervisorCoreRpcClient = supervisorCoreRpcClient;
         this.discoverySupervisor = discoverySupervisor;
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
@@ -142,7 +142,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
                 .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
                 .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
                 .collect(Collectors.toList());
-            ThrowingRunnable.execute(() -> supervisorServiceClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
+            ThrowingRunnable.execute(() -> supervisorCoreRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
             batchTasks.forEach(workerThreadPool::submit);
         }
     }

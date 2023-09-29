@@ -23,13 +23,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 /**
- * Supervisor service api, for the worker communication.
+ * Supervisor core rpc service, provides for worker communication.
  *
  * @author Ponfee
  */
 @Hidden
-@RequestMapping("supervisor/service/")
-public interface SupervisorService extends Savepoint {
+@RequestMapping("supervisor/core/rpc/")
+public interface SupervisorCoreRpcService extends Savepoint {
 
     @GetMapping("task/get")
     SchedTask getTask(long taskId) throws Exception;

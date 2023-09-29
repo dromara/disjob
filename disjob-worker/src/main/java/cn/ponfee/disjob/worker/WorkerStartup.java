@@ -52,7 +52,7 @@ public class WorkerStartup implements Startable {
                           HttpProperties httpProperties,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver,
-                          @Nullable SupervisorService supervisorService,
+                          @Nullable SupervisorCoreRpcService supervisorCoreRpcService,
                           @Nullable ObjectMapper objectMapper) {
         Objects.requireNonNull(currentWorker, "Current worker cannot null.");
         Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
@@ -61,19 +61,19 @@ public class WorkerStartup implements Startable {
         Objects.requireNonNull(workerRegistry, "Server registry cannot null.");
         Objects.requireNonNull(taskReceiver, "Task receiver cannot null.");
 
-        SupervisorService supervisorServiceClient = createProxy(
-            supervisorService, retryProperties, httpProperties, workerRegistry, objectMapper
+        SupervisorCoreRpcService supervisorCoreRpcClient = createProxy(
+            supervisorCoreRpcService, retryProperties, httpProperties, workerRegistry, objectMapper
         );
 
         this.currentWorker = currentWorker;
         this.workerThreadPool = new WorkerThreadPool(
             workerProperties.getMaximumPoolSize(),
             workerProperties.getKeepAliveTimeSeconds(),
-            supervisorServiceClient
+            supervisorCoreRpcClient
         );
         this.timingWheelRotator = new TimingWheelRotator(
             currentWorker,
-            supervisorServiceClient,
+            supervisorCoreRpcClient,
             workerRegistry,
             taskReceiver.getTimingWheel(),
             workerThreadPool,
@@ -107,18 +107,18 @@ public class WorkerStartup implements Startable {
         ThrowingRunnable.execute(workerThreadPool::close);
     }
 
-    private static SupervisorService createProxy(SupervisorService supervisorService,
-                                                 RetryProperties retry,
-                                                 HttpProperties http,
-                                                 WorkerRegistry workerRegistry,
-                                                 ObjectMapper objectMapper) {
-        if (supervisorService != null) {
+    private static SupervisorCoreRpcService createProxy(SupervisorCoreRpcService supervisorCoreRpcService,
+                                                        RetryProperties retry,
+                                                        HttpProperties http,
+                                                        WorkerRegistry workerRegistry,
+                                                        ObjectMapper objectMapper) {
+        if (supervisorCoreRpcService != null) {
             // 此Worker同时也是Supervisor身份，则本地调用，通过动态代理增加重试能力
-            // cn.ponfee.disjob.supervisor.provider.SupervisorServiceProvider
-            ClassLoader classLoader = supervisorService.getClass().getClassLoader();
-            Class<?>[] interfaces = {SupervisorService.class};
-            InvocationHandler ih = new RetryInvocationHandler(supervisorService, retry.getMaxCount(), retry.getBackoffPeriod());
-            return (SupervisorService) Proxy.newProxyInstance(classLoader, interfaces, ih);
+            // cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider
+            ClassLoader classLoader = supervisorCoreRpcService.getClass().getClassLoader();
+            Class<?>[] interfaces = {SupervisorCoreRpcService.class};
+            InvocationHandler ih = new RetryInvocationHandler(supervisorCoreRpcService, retry.getMaxCount(), retry.getBackoffPeriod());
+            return (SupervisorCoreRpcService) Proxy.newProxyInstance(classLoader, interfaces, ih);
         } else {
             DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
                 .httpConnectTimeout(http.getConnectTimeout())
@@ -128,7 +128,7 @@ public class WorkerStartup implements Startable {
                 .objectMapper(objectMapper)
                 .discoveryServer(workerRegistry)
                 .build();
-            return DiscoveryRestProxy.create(false, SupervisorService.class, discoveryRestTemplate);
+            return DiscoveryRestProxy.create(false, SupervisorCoreRpcService.class, discoveryRestTemplate);
         }
     }
 
@@ -145,7 +145,7 @@ public class WorkerStartup implements Startable {
         private HttpProperties httpProperties;
         private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
-        private SupervisorService supervisorService;
+        private SupervisorCoreRpcService supervisorCoreRpcService;
         private ObjectMapper objectMapper;
 
         private Builder() {
@@ -181,8 +181,8 @@ public class WorkerStartup implements Startable {
             return this;
         }
 
-        public Builder supervisorService(SupervisorService supervisorService) {
-            this.supervisorService = supervisorService;
+        public Builder supervisorCoreRpcService(SupervisorCoreRpcService supervisorCoreRpcService) {
+            this.supervisorCoreRpcService = supervisorCoreRpcService;
             return this;
         }
 
@@ -199,7 +199,7 @@ public class WorkerStartup implements Startable {
                 httpProperties,
                 workerRegistry,
                 taskReceiver,
-                supervisorService,
+                supervisorCoreRpcService,
                 objectMapper
             );
         }

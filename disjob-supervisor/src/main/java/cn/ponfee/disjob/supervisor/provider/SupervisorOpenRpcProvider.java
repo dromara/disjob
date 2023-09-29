@@ -10,6 +10,15 @@ package cn.ponfee.disjob.supervisor.provider;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.spring.RpcController;
+import cn.ponfee.disjob.core.api.supervisor.SupervisorOpenRpcService;
+import cn.ponfee.disjob.core.api.supervisor.converter.SchedJobConverter;
+import cn.ponfee.disjob.core.api.supervisor.request.AddSchedJobRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.SchedJobPageRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.core.api.supervisor.response.SchedInstanceResponse;
+import cn.ponfee.disjob.core.api.supervisor.response.SchedJobResponse;
+import cn.ponfee.disjob.core.api.supervisor.response.SchedTaskResponse;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobState;
@@ -19,15 +28,6 @@ import cn.ponfee.disjob.core.exception.JobUncheckedException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.rpc.supervisor.SupervisorRpcApi;
-import cn.ponfee.disjob.core.rpc.supervisor.converter.SchedJobConverter;
-import cn.ponfee.disjob.core.rpc.supervisor.request.AddSchedJobRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.SchedJobPageRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.response.SchedInstanceResponse;
-import cn.ponfee.disjob.core.rpc.supervisor.response.SchedJobResponse;
-import cn.ponfee.disjob.core.rpc.supervisor.response.SchedTaskResponse;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import org.slf4j.Logger;
@@ -37,19 +37,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Supervisor rpc api provider
+ * Supervisor open rpc service provider.
  *
  * @author Ponfee
  */
-public class SupervisorRpcApiProvider implements SupervisorRpcApi, RpcController {
+public class SupervisorOpenRpcProvider implements SupervisorOpenRpcService, RpcController {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(SupervisorRpcApiProvider.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(SupervisorOpenRpcProvider.class);
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
 
-    public SupervisorRpcApiProvider(DistributedJobManager jobManager,
-                                    DistributedJobQuerier jobQuerier) {
+    public SupervisorOpenRpcProvider(DistributedJobManager jobManager,
+                                     DistributedJobQuerier jobQuerier) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
     }

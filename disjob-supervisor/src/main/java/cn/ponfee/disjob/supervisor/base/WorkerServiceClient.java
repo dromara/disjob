@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerService;
+import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -28,24 +28,14 @@ import java.util.Objects;
  */
 public class WorkerServiceClient {
 
-    private static final WorkerService LOCAL_WORKER_SERVICE = new WorkerService() {
-        @Override
-        public void verify(JobHandlerParam param) throws JobCheckedException {
-            JobHandlerUtils.verify(param);
-        }
+    private static final WorkerCoreRpcService WORKER_CORE_RPC_LOCAL = new WorkerCoreRpcLocal();
 
-        @Override
-        public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
-            return JobHandlerUtils.split(param);
-        }
-    };
-
-    private final WorkerService remoteWorkerService;
+    private final WorkerCoreRpcService workerCoreRpcClient;
     private final Worker currentWorker;
 
-    public WorkerServiceClient(@Nonnull WorkerService remoteWorkerService,
+    public WorkerServiceClient(@Nonnull WorkerCoreRpcService workerCoreRpcClient,
                                @Nullable Worker currentWorker) {
-        this.remoteWorkerService = Objects.requireNonNull(remoteWorkerService);
+        this.workerCoreRpcClient = Objects.requireNonNull(workerCoreRpcClient);
         this.currentWorker = currentWorker;
     }
 
@@ -59,15 +49,28 @@ public class WorkerServiceClient {
 
     // ------------------------------------------------------------private methods
 
-    private WorkerService get(String group) {
+    private WorkerCoreRpcService get(String group) {
         if (currentWorker != null && currentWorker.matchesGroup(group)) {
-            return LOCAL_WORKER_SERVICE;
+            return WORKER_CORE_RPC_LOCAL;
         }
 
-        if (remoteWorkerService instanceof DiscoveryRestProxy.GroupedServer) {
-            ((DiscoveryRestProxy.GroupedServer) remoteWorkerService).group(group);
+        if (workerCoreRpcClient instanceof DiscoveryRestProxy.GroupedServer) {
+            ((DiscoveryRestProxy.GroupedServer) workerCoreRpcClient).group(group);
         }
-        return remoteWorkerService;
+        return workerCoreRpcClient;
+    }
+
+    private static class WorkerCoreRpcLocal implements WorkerCoreRpcService {
+
+        @Override
+        public void verify(JobHandlerParam param) throws JobCheckedException {
+            JobHandlerUtils.verify(param);
+        }
+
+        @Override
+        public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
+            return JobHandlerUtils.split(param);
+        }
     }
 
 }

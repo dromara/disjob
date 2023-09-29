@@ -10,7 +10,7 @@ package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.GenericUtils;
-import cn.ponfee.disjob.core.base.WorkerService;
+import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.*;
@@ -98,7 +98,7 @@ public abstract class SpringBootTestBase<T> {
     // --------------------------------------mock bean definition
 
     @MockBean
-    protected WorkerService workerService;
+    protected WorkerCoreRpcService workerCoreRpcService;
 
     // --------------------------------------member fields definition
 

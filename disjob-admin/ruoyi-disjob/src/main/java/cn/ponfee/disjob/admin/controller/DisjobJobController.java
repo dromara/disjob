@@ -12,12 +12,12 @@ import cn.ponfee.disjob.admin.domain.SchedJobExport;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.core.api.supervisor.SupervisorOpenRpcService;
+import cn.ponfee.disjob.core.api.supervisor.request.AddSchedJobRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.SchedJobPageRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.core.api.supervisor.response.SchedJobResponse;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
-import cn.ponfee.disjob.core.rpc.supervisor.SupervisorRpcApi;
-import cn.ponfee.disjob.core.rpc.supervisor.request.AddSchedJobRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.SchedJobPageRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.response.SchedJobResponse;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -50,10 +50,10 @@ public class DisjobJobController extends BaseController {
     private static final String PERMISSION_QUERY = "disjob:job:query";
     private static final String PERMISSION_OPERATE = "disjob:job:operate";
 
-    private final SupervisorRpcApi supervisorRpcApi;
+    private final SupervisorOpenRpcService supervisorOpenRpcService;
 
-    public DisjobJobController(SupervisorRpcApi supervisorRpcApi) {
-        this.supervisorRpcApi = supervisorRpcApi;
+    public DisjobJobController(SupervisorOpenRpcService supervisorOpenRpcService) {
+        this.supervisorOpenRpcService = supervisorOpenRpcService;
     }
 
     // -------------------------------------------------------查询
@@ -73,7 +73,7 @@ public class DisjobJobController extends BaseController {
     public TableDataInfo list(SchedJobPageRequest request) {
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        PageResponse<SchedJobResponse> response = supervisorRpcApi.queryJobForPage(request);
+        PageResponse<SchedJobResponse> response = supervisorOpenRpcService.queryJobForPage(request);
         return PageUtils.toTableDataInfo(response);
     }
 
@@ -83,7 +83,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_QUERY)
     @GetMapping("/detail/{jobId}")
     public String detail(@PathVariable("jobId") Long jobId, ModelMap mmap) {
-        SchedJobResponse job = supervisorRpcApi.getJob(jobId);
+        SchedJobResponse job = supervisorOpenRpcService.getJob(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
         return PREFIX + "/detail";
@@ -98,7 +98,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult export(SchedJobPageRequest request) {
         request.setPaged(false);
-        List<SchedJobResponse> rows = supervisorRpcApi.queryJobForPage(request).getRows();
+        List<SchedJobResponse> rows = supervisorOpenRpcService.queryJobForPage(request).getRows();
         List<SchedJobExport> list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
         return excel.exportExcel(list, "调度配置数据");
@@ -124,7 +124,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult doAdd(AddSchedJobRequest req) throws JobCheckedException {
         req.setCreatedBy(getLoginName());
-        supervisorRpcApi.addJob(req);
+        supervisorOpenRpcService.addJob(req);
         return success();
     }
 
@@ -134,7 +134,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/edit/{id}")
     public String edit(@PathVariable("id") Long jobId, ModelMap mmap) {
-        SchedJobResponse job = supervisorRpcApi.getJob(jobId);
+        SchedJobResponse job = supervisorOpenRpcService.getJob(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
         return PREFIX + "/edit";
@@ -149,7 +149,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobCheckedException {
         req.setUpdatedBy(getLoginName());
-        supervisorRpcApi.updateJob(req);
+        supervisorOpenRpcService.updateJob(req);
         return success();
     }
 
@@ -168,7 +168,7 @@ public class DisjobJobController extends BaseController {
         if (jobIds.isEmpty()) {
             return error("Job id不能为空");
         }
-        jobIds.parallelStream().forEach(supervisorRpcApi::deleteJob);
+        jobIds.parallelStream().forEach(supervisorOpenRpcService::deleteJob);
         return success();
     }
 
@@ -181,7 +181,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult changeState(@RequestParam("jobId") Long jobId,
                                   @RequestParam("toState") Integer toState) {
-        boolean result = supervisorRpcApi.changeJobState(jobId, toState);
+        boolean result = supervisorOpenRpcService.changeJobState(jobId, toState);
         return toAjax(result);
     }
 
@@ -193,7 +193,7 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/trigger")
     @ResponseBody
     public AjaxResult trigger(@RequestParam("jobId") Long jobId) throws JobCheckedException {
-        supervisorRpcApi.triggerJob(jobId);
+        supervisorOpenRpcService.triggerJob(jobId);
         return success();
     }
 

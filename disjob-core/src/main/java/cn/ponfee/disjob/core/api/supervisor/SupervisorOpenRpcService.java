@@ -6,30 +6,30 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.rpc.supervisor;
+package cn.ponfee.disjob.core.api.supervisor;
 
 import cn.ponfee.disjob.common.model.PageResponse;
+import cn.ponfee.disjob.core.api.supervisor.request.AddSchedJobRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.SchedJobPageRequest;
+import cn.ponfee.disjob.core.api.supervisor.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.core.api.supervisor.response.SchedInstanceResponse;
+import cn.ponfee.disjob.core.api.supervisor.response.SchedJobResponse;
+import cn.ponfee.disjob.core.api.supervisor.response.SchedTaskResponse;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
-import cn.ponfee.disjob.core.rpc.supervisor.request.AddSchedJobRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.SchedJobPageRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.core.rpc.supervisor.response.SchedInstanceResponse;
-import cn.ponfee.disjob.core.rpc.supervisor.response.SchedJobResponse;
-import cn.ponfee.disjob.core.rpc.supervisor.response.SchedTaskResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
- * Supervisor rpc api
+ * Supervisor open rpc service
  *
  * @author Ponfee
  */
-@Tag(name = "Supervisor rpc api")
-@RequestMapping("supervisor/rpc/")
-public interface SupervisorRpcApi {
+@Hidden
+@RequestMapping("supervisor/open/rpc/")
+public interface SupervisorOpenRpcService {
 
     // ------------------------------------------------------------------job
 
