@@ -6,29 +6,30 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.openapi.supervisor.request;
+package cn.ponfee.disjob.core.rpc.supervisor.request;
 
-import cn.ponfee.disjob.common.model.PageRequest;
+import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.core.rpc.supervisor.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
-
 /**
- * Sched instance page request
+ * Update sched job request parameter structure.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SchedInstancePageRequest extends PageRequest {
-    private static final long serialVersionUID = 2550102303488212001L;
+public class UpdateSchedJobRequest extends AddSchedJobRequest {
+    private static final long serialVersionUID = -1481890923435762900L;
 
+    private String updatedBy;
     private Long jobId;
-    private Integer runType;
-    private Integer runState;
-    private Date startTime;
-    private Date endTime;
-    private boolean parent;
+    private Integer version;
+
+    @Override
+    public SchedJob tosSchedJob() {
+        return SchedJobConverter.INSTANCE.convert(this);
+    }
 
 }

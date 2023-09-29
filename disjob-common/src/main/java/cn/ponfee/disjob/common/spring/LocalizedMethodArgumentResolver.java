@@ -11,11 +11,11 @@ package cn.ponfee.disjob.common.spring;
 import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -32,8 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import static org.springframework.web.bind.annotation.RequestMethod.*;
+import java.util.stream.Collectors;
 
 /**
  * Localized method parameter for spring web {@code org.springframework.stereotype.Controller} methods.
@@ -45,9 +44,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
 
     //private final WeakHashMap<NativeWebRequest, Map<String, Object>> resolvedCache = new WeakHashMap<>();
 
-    private static final Set<String> QUERY_PARAM_METHODS = ImmutableSet.of(
-        GET.name(), DELETE.name(), HEAD.name(), OPTIONS.name()
-    );
+    private static final Set<String> QUERY_PARAM_METHODS = RestTemplateUtils.QUERY_PARAM_METHODS.stream().map(HttpMethod::name).collect(Collectors.toSet());
 
     private static final String CACHE_ATTRIBUTE_KEY = "LOCALIZED_METHOD_ARGUMENTS";
 

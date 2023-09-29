@@ -19,9 +19,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
@@ -111,22 +109,26 @@ public class DiscoveryRestTemplate<D extends Server> {
             String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
             try {
                 URI uri;
-                HttpEntity<?> httpEntity;
+                HttpEntity<?> requestEntity = null;
                 if (RestTemplateUtils.QUERY_PARAM_METHODS.contains(httpMethod)) {
                     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
                     if (ArrayUtils.isNotEmpty(arguments)) {
                         builder.queryParams(buildQueryParams(arguments));
                     }
                     uri = builder.build().encode().toUri();
-                    httpEntity = null;
                 } else {
                     uri = restTemplate.getUriTemplateHandler().expand(url, EMPTY);
-                    httpEntity = ArrayUtils.isEmpty(arguments) ? null : new HttpEntity<>(arguments);
+                    if (ArrayUtils.isNotEmpty(arguments)) {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        requestEntity = new HttpEntity<>(arguments, headers);
+                    }
                 }
 
-                RequestCallback requestCallback = restTemplate.httpEntityCallback(httpEntity, returnType);
+                RequestCallback requestCallback = restTemplate.httpEntityCallback(requestEntity, returnType);
                 ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
-                return restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor).getBody();
+                ResponseEntity<T> responseEntity = restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor);
+                return responseEntity.getBody();
             } catch (Throwable e) {
                 if (e instanceof InterruptedException) {
                     LOG.error("Thread interrupted, skip rest retry.");

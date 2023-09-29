@@ -69,16 +69,16 @@ public class HttpJobHandler extends JobHandler<String> {
         URI uri = builder.build().encode().toUri();
 
         MultiValueMap<String, String> headersMap = RestTemplateUtils.toMultiValueMap(req.headers);
-        HttpEntity<?> httpEntity = (req.body == null && headersMap == null) ? null : new HttpEntity<>(req.body, headersMap);
+        HttpEntity<?> requestEntity = (req.body == null && headersMap == null) ? null : new HttpEntity<>(req.body, headersMap);
 
         Class<String> responseType = String.class;
-        RequestCallback requestCallback = REST_TEMPLATE.httpEntityCallback(httpEntity, responseType);
+        RequestCallback requestCallback = REST_TEMPLATE.httpEntityCallback(requestEntity, responseType);
         ResponseExtractor<ResponseEntity<String>> responseExtractor = REST_TEMPLATE.responseEntityExtractor(responseType);
 
         try {
-            ResponseEntity<String> res;
+            ResponseEntity<String> responseEntity;
             if (equals(req.connectionTimeout, DEFAULT_CONNECT_TIMEOUT) && equals(req.readTimeout, DEFAULT_READ_TIMEOUT)) {
-                res = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);
+                responseEntity = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);
             } else {
                 RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
                 if (req.connectionTimeout != null) {
@@ -89,16 +89,16 @@ public class HttpJobHandler extends JobHandler<String> {
                 }
                 RestTemplateUtils.HttpContextHolder.bind(requestConfigBuilder.build());
                 try {
-                    res = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);
+                    responseEntity = REST_TEMPLATE.execute(uri, method, requestCallback, responseExtractor);
                 } finally {
                     RestTemplateUtils.HttpContextHolder.unbind();
                 }
             }
 
-            if (res.getStatusCode().is2xxSuccessful()) {
-                return Result.success(res.getBody());
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                return Result.success(responseEntity.getBody());
             } else {
-                return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + res.getStatusCode() + ", response: " + res.getBody());
+                return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + responseEntity.getStatusCode() + ", response: " + responseEntity.getBody());
             }
         } catch (Throwable t) {
             log.error("Http request failed: " + executingTask, t);

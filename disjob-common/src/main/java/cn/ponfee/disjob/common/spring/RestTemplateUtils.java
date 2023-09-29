@@ -55,7 +55,18 @@ import static org.springframework.http.HttpMethod.*;
  * @author Ponfee
  */
 public class RestTemplateUtils {
-    public static final Set<HttpMethod> QUERY_PARAM_METHODS = ImmutableSet.of(GET, DELETE, HEAD, OPTIONS);
+
+    /**
+     * <pre>
+     * HttpComponentsClientHttpRequestFactory#createHttpUriRequest中，继承HttpRequestBase的method都不支持传body
+     *
+     * 可以自定义一个HttpComponentsClientHttpRequestFactory子类，
+     * 重写createHttpUriRequest方法并返回HttpEntityEnclosingRequestBase子类来支持传body
+     *
+     * 以下是不支持传body的http method（注：HttpMethod.DELETE可以传body）
+     * </pre>
+     */
+    public static final Set<HttpMethod> QUERY_PARAM_METHODS = ImmutableSet.of(GET, HEAD, OPTIONS, TRACE);
 
     public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         if (objectMapper == null) {

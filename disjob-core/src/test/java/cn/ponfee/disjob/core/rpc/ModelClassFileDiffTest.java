@@ -6,17 +6,17 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.openapi;
+package cn.ponfee.disjob.core.rpc;
 
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.openapi.supervisor.request.AddSchedJobRequest;
-import cn.ponfee.disjob.core.openapi.supervisor.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.core.openapi.supervisor.response.SchedInstanceResponse;
-import cn.ponfee.disjob.core.openapi.supervisor.response.SchedJobResponse;
-import cn.ponfee.disjob.core.openapi.supervisor.response.SchedTaskResponse;
+import cn.ponfee.disjob.core.rpc.supervisor.request.AddSchedJobRequest;
+import cn.ponfee.disjob.core.rpc.supervisor.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.core.rpc.supervisor.response.SchedInstanceResponse;
+import cn.ponfee.disjob.core.rpc.supervisor.response.SchedJobResponse;
+import cn.ponfee.disjob.core.rpc.supervisor.response.SchedTaskResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
