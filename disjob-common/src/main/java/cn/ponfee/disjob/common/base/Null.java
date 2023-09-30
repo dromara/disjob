@@ -34,11 +34,11 @@ public final class Null implements Serializable {
     }
 
     private Null() {
-        throw new AssertionError("Null cannot create instance.");
+        throw new Error("Null cannot create instance.");
     }
 
     private void broken() {
-        throw new AssertionError("Forbid invoke this method.");
+        throw new Error("Forbid invoke this method.");
     }
 
     private Object readResolve() {

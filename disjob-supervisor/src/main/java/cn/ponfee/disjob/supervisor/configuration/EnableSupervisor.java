@@ -98,7 +98,7 @@ public @interface EnableSupervisor {
                 ClassUtils.invoke(Class.forName(Supervisor.class.getName() + "$Current"), "set", new Object[]{currentSupervisor});
             } catch (ClassNotFoundException e) {
                 // cannot happen
-                throw new AssertionError("Setting as current supervisor occur error.", e);
+                throw new Error("Setting as current supervisor occur error.", e);
             }
             return currentSupervisor;
         }
@@ -106,7 +106,7 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerCoreRpcClient WorkerCoreRpcClient(HttpProperties httpProperties,
+        public WorkerCoreRpcClient workerCoreRpcClient(HttpProperties httpProperties,
                                                        RetryProperties retryProperties,
                                                        SupervisorRegistry supervisorRegistry,
                                                        @Nullable Worker currentWorker,

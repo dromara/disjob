@@ -83,7 +83,7 @@ public @interface EnableWorker {
                 ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
             } catch (ClassNotFoundException e) {
                 // cannot happen
-                throw new AssertionError("Setting as current worker occur error.", e);
+                throw new Error("Setting as current worker occur error.", e);
             }
             return currentWorker;
         }

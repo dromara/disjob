@@ -109,29 +109,6 @@ public class WorkerStartup implements Startable {
 
     // ----------------------------------------------------------------------------------------builder
 
-    private static SupervisorCoreRpcService createProxy(SupervisorCoreRpcService local,
-                                                        RetryProperties retry,
-                                                        HttpProperties http,
-                                                        WorkerRegistry workerRegistry,
-                                                        ObjectMapper objectMapper) {
-        if (local != null) {
-            // 此Worker同时也是Supervisor身份，则本地调用：cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider
-            // 使用动态代理增加重试能力
-            InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
-            return ProxyUtils.create(SupervisorCoreRpcService.class, ih);
-        } else {
-            DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-                .httpConnectTimeout(http.getConnectTimeout())
-                .httpReadTimeout(http.getReadTimeout())
-                .retryMaxCount(retry.getMaxCount())
-                .retryBackoffPeriod(retry.getBackoffPeriod())
-                .objectMapper(objectMapper)
-                .discoveryServer(workerRegistry)
-                .build();
-            return DiscoveryRestProxy.create(false, SupervisorCoreRpcService.class, discoveryRestTemplate);
-        }
-    }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -200,6 +177,31 @@ public class WorkerStartup implements Startable {
                 supervisorCoreRpcService,
                 objectMapper
             );
+        }
+    }
+
+    // ----------------------------------------------------------------------------------------private methods
+
+    private static SupervisorCoreRpcService createProxy(SupervisorCoreRpcService local,
+                                                        RetryProperties retry,
+                                                        HttpProperties http,
+                                                        WorkerRegistry workerRegistry,
+                                                        ObjectMapper objectMapper) {
+        if (local != null) {
+            // 此Worker同时也是Supervisor身份，则本地调用：cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider
+            // 使用动态代理增加重试能力
+            InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
+            return ProxyUtils.create(SupervisorCoreRpcService.class, ih);
+        } else {
+            DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
+                .httpConnectTimeout(http.getConnectTimeout())
+                .httpReadTimeout(http.getReadTimeout())
+                .retryMaxCount(retry.getMaxCount())
+                .retryBackoffPeriod(retry.getBackoffPeriod())
+                .objectMapper(objectMapper)
+                .discoveryServer(workerRegistry)
+                .build();
+            return DiscoveryRestProxy.create(false, SupervisorCoreRpcService.class, discoveryRestTemplate);
         }
     }
 

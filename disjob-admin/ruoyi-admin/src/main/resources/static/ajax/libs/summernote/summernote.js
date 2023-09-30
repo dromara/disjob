@@ -4971,30 +4971,26 @@ var Table_Table = /*#__PURE__*/function () {
           case TableResultAction.resultAction.Ignore:
             continue;
 
-          case TableResultAction.resultAction.AddCell:
-            {
-              var nextRow = row.next('tr')[0];
-
-              if (!nextRow) {
-                continue;
-              }
-
-              var cloneRow = row[0].cells[cellPos];
-
-              if (hasRowspan) {
-                if (rowspanNumber > 2) {
-                  rowspanNumber--;
-                  nextRow.insertBefore(cloneRow, nextRow.cells[cellPos]);
-                  nextRow.cells[cellPos].setAttribute('rowSpan', rowspanNumber);
-                  nextRow.cells[cellPos].innerHTML = '';
-                } else if (rowspanNumber === 2) {
-                  nextRow.insertBefore(cloneRow, nextRow.cells[cellPos]);
-                  nextRow.cells[cellPos].removeAttribute('rowSpan');
-                  nextRow.cells[cellPos].innerHTML = '';
-                }
+          case TableResultAction.resultAction.AddCell: {
+            var nextRow = row.next('tr')[0];
+            if (!nextRow) {
+              continue;
+            }
+            var cloneRow = row[0].cells[cellPos];
+            if (hasRowspan) {
+              if (rowspanNumber > 2) {
+                rowspanNumber--;
+                nextRow.insertBefore(cloneRow, nextRow.cells[cellPos]);
+                nextRow.cells[cellPos].setAttribute('rowSpan', rowspanNumber);
+                nextRow.cells[cellPos].innerHTML = '';
+              } else if (rowspanNumber === 2) {
+                nextRow.insertBefore(cloneRow, nextRow.cells[cellPos]);
+                nextRow.cells[cellPos].removeAttribute('rowSpan');
+                nextRow.cells[cellPos].innerHTML = '';
               }
             }
-            continue;
+          }
+          continue;
 
           case TableResultAction.resultAction.SubtractSpanCount:
             if (hasRowspan) {
@@ -5013,17 +5009,20 @@ var Table_Table = /*#__PURE__*/function () {
                 }
               }
             }
-
             continue;
 
           case TableResultAction.resultAction.RemoveCell:
             // Do not need remove cell because row will be deleted.
-            continue;
+            if (hasRowspan) {
+              // not thing to do
+            }
         }
+
       }
 
       row.remove();
     }
+
     /**
      * Delete current col
      *
@@ -5050,26 +5049,24 @@ var Table_Table = /*#__PURE__*/function () {
             continue;
 
           case TableResultAction.resultAction.SubtractSpanCount:
-            {
-              var baseCell = actions[actionIndex].baseCell;
-              var hasColspan = baseCell.colSpan && baseCell.colSpan > 1;
+            var baseCell = actions[actionIndex].baseCell;
+            var hasColspan = baseCell.colSpan && baseCell.colSpan > 1;
 
-              if (hasColspan) {
-                var colspanNumber = baseCell.colSpan ? parseInt(baseCell.colSpan, 10) : 0;
+            if (hasColspan) {
+              var colspanNumber = baseCell.colSpan ? parseInt(baseCell.colSpan, 10) : 0;
 
-                if (colspanNumber > 2) {
-                  colspanNumber--;
-                  baseCell.setAttribute('colSpan', colspanNumber);
+              if (colspanNumber > 2) {
+                colspanNumber--;
+                baseCell.setAttribute('colSpan', colspanNumber);
 
-                  if (baseCell.cellIndex === cellPos) {
-                    baseCell.innerHTML = '';
-                  }
-                } else if (colspanNumber === 2) {
-                  baseCell.removeAttribute('colSpan');
+                if (baseCell.cellIndex === cellPos) {
+                  baseCell.innerHTML = '';
+                }
+              } else if (colspanNumber === 2) {
+                baseCell.removeAttribute('colSpan');
 
-                  if (baseCell.cellIndex === cellPos) {
-                    baseCell.innerHTML = '';
-                  }
+                if (baseCell.cellIndex === cellPos) {
+                  baseCell.innerHTML = '';
                 }
               }
             }
@@ -5077,10 +5074,11 @@ var Table_Table = /*#__PURE__*/function () {
 
           case TableResultAction.resultAction.RemoveCell:
             dom.remove(actions[actionIndex].baseCell, true);
-            continue;
         }
+
       }
     }
+
     /**
      * create empty table element
      *
