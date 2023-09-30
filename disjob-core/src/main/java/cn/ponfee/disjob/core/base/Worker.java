@@ -154,7 +154,7 @@ public final class Worker extends Server {
     }
 
     /**
-     * 判断是否同一台机器：worker-id可以不相等(机器重启)
+     * 判断是否同一台机器：worker-id可以不相等(机器重后，Supervisor缓存的仍是旧的Worker，http派发任务时会出现该情况)
      *
      * @param other the other worker
      * @return {@code true} if same worker

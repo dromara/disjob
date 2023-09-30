@@ -8,24 +8,17 @@
 
 package cn.ponfee.disjob.registry;
 
-import cn.ponfee.disjob.common.base.ImmutableHashList;
 import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
-import org.apache.commons.collections4.CollectionUtils;
+import cn.ponfee.disjob.registry.discovery.DiscoveryServer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * Registry and discovery server.
@@ -45,7 +38,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
     protected final ServerRole discoveryRole;
     protected final String discoveryRootPath;
-
     private final DiscoveryServer<D> discoveryServer;
 
     protected final Set<R> registered = ConcurrentHashMap.newKeySet();
@@ -66,15 +58,8 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         this.discoveryRole = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 1));
         this.discoveryRootPath = prefix + discoveryRole.key();
 
-        this.discoveryServer = createDiscoveryServer(discoveryRole);
+        this.discoveryServer = DiscoveryServer.of(discoveryRole);
     }
-
-    /**
-     * Returns is connected registry center.
-     *
-     * @return {@code true} if available
-     */
-    public abstract boolean isConnected();
 
     /**
      * Refresh discovery servers.
@@ -85,6 +70,13 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         discoveryServer.refreshServers(servers);
         log.debug("Refreshed discovery servers: {} | {}", discoveryRole.name(), servers);
     }
+
+    /**
+     * Returns is connected registry center.
+     *
+     * @return {@code true} if available
+     */
+    public abstract boolean isConnected();
 
     @Override
     public List<D> getDiscoveredServers(String group) {
@@ -129,101 +121,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
             throw new IllegalArgumentException("Namespace cannot contains separator symbol '" + separator + "'");
         }
         return namespace.trim() + separator;
-    }
-
-    private static <S extends Server> DiscoveryServer<S> createDiscoveryServer(ServerRole discoveryRole) {
-        switch (discoveryRole) {
-            case WORKER:
-                return (DiscoveryServer<S>) new DiscoveryWorker();
-            case SUPERVISOR:
-                return (DiscoveryServer<S>) new DiscoverySupervisor();
-            default:
-                throw new UnsupportedOperationException("Unsupported discovery server '" + discoveryRole.name() + "'");
-        }
-    }
-
-    /**
-     * Discovery server.
-     * <p>Java language not support class multiple inheritance, so use composite pattern
-     *
-     * @param <S> the server type
-     */
-    private static abstract class DiscoveryServer<S extends Server> {
-
-        abstract void refreshServers(List<S> servers);
-
-        abstract List<S> getServers(String group);
-
-        abstract boolean hasServers();
-
-        abstract boolean isAlive(S server);
-    }
-
-    /**
-     * Discovery supervisor.
-     */
-    private static final class DiscoverySupervisor extends DiscoveryServer<Supervisor> {
-        private volatile ImmutableHashList<String, Supervisor> supervisors = ImmutableHashList.empty();
-
-        @Override
-        void refreshServers(List<Supervisor> discoveredSupervisors) {
-            this.supervisors = ImmutableHashList.of(discoveredSupervisors, Supervisor::serialize);
-        }
-
-        @Override
-        List<Supervisor> getServers(String group) {
-            Assert.isNull(group, "Discovery supervisor not support grouping.");
-            return supervisors.values();
-        }
-
-        @Override
-        boolean hasServers() {
-            return !supervisors.isEmpty();
-        }
-
-        @Override
-        boolean isAlive(Supervisor supervisor) {
-            return supervisors.contains(supervisor);
-        }
-    }
-
-    /**
-     * Discovery worker.
-     */
-    private static final class DiscoveryWorker extends DiscoveryServer<Worker> {
-        private volatile Map<String, ImmutableHashList<String, Worker>> groupedWorkers = Collections.emptyMap();
-
-        @Override
-        void refreshServers(List<Worker> discoveredWorkers) {
-            if (CollectionUtils.isEmpty(discoveredWorkers)) {
-                this.groupedWorkers = Collections.emptyMap();
-            } else {
-                this.groupedWorkers = discoveredWorkers.stream()
-                    .flatMap(e -> e.splitGroup().stream())
-                    .collect(Collectors.groupingBy(Worker::getGroup))
-                    .entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> ImmutableHashList.of(e.getValue(), Worker::serialize)));
-            }
-        }
-
-        @Override
-        List<Worker> getServers(String group) {
-            Assert.hasText(group, "Discovery worker must be grouping.");
-            ImmutableHashList<String, Worker> workers = groupedWorkers.get(group);
-            return workers == null ? Collections.emptyList() : workers.values();
-        }
-
-        @Override
-        boolean hasServers() {
-            return !groupedWorkers.isEmpty();
-        }
-
-        @Override
-        boolean isAlive(Worker worker) {
-            ImmutableHashList<String, Worker> workers = groupedWorkers.get(worker.getGroup());
-            return workers != null && workers.contains(worker);
-        }
     }
 
 }
