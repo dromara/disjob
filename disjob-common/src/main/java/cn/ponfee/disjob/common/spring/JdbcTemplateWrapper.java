@@ -8,11 +8,15 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +27,10 @@ import java.util.stream.Collectors;
  */
 public class JdbcTemplateWrapper {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcTemplateWrapper.class);
+
+    public static final int AFFECTED_ONE_ROW = 1;
+
     private final JdbcTemplate jdbcTemplate;
 
     private JdbcTemplateWrapper(JdbcTemplate jdbcTemplate) {
@@ -31,6 +39,10 @@ public class JdbcTemplateWrapper {
 
     public static JdbcTemplateWrapper of(JdbcTemplate jdbcTemplate) {
         return new JdbcTemplateWrapper(jdbcTemplate);
+    }
+
+    public JdbcTemplate jdbcTemplate() {
+        return jdbcTemplate;
     }
 
     public void execute(String sql) {
@@ -59,6 +71,32 @@ public class JdbcTemplateWrapper {
     public <T> List<T> queryForList(RowMapper<T> rowMapper, String sql, Object... args) {
         Assert.isTrue(sql.startsWith("SELECT "), () -> "Invalid SELECT sql: " + sql);
         return jdbcTemplate.queryForStream(sql, rowMapper, args).collect(Collectors.toList());
+    }
+
+    public void createTableIfNotExists(String tableName, String createTableDdl) {
+        if (existsTable(tableName)) {
+            return;
+        }
+
+        try {
+            execute(createTableDdl);
+            LOG.info("Created table {} success.", tableName);
+        } catch (Throwable t) {
+            if (existsTable(tableName)) {
+                LOG.warn("Create table {} failed {}", tableName, t.getMessage());
+            } else {
+                throw new Error("Create table " + tableName + " error.", t);
+            }
+        }
+    }
+
+    public boolean existsTable(String tableName) {
+        Boolean result = execute(conn -> {
+            DatabaseMetaData meta = conn.getMetaData();
+            ResultSet rs = meta.getTables(null, null, tableName, null);
+            return rs.next();
+        });
+        return Boolean.TRUE.equals(result);
     }
 
 }

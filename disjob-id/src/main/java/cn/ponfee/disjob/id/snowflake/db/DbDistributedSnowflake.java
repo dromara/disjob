@@ -27,14 +27,14 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
 import java.io.Closeable;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static cn.ponfee.disjob.common.spring.JdbcTemplateWrapper.AFFECTED_ONE_ROW;
 
 /**
  * Snowflake server based database
@@ -50,11 +50,9 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
     private static final RowMapper<DbSnowflakeWorker> ROW_MAPPER = new BeanPropertyRowMapper<>(DbSnowflakeWorker.class);
 
-    private static final int AFFECTED_ONE_ROW = 1;
-
     private static final String TABLE_NAME = "snowflake_worker";
 
-    private static final String CREATE_TABLE_SQL =
+    private static final String CREATE_TABLE_DDL =
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                    \n" +
         "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',                   \n" +
         "  `biz_tag`         VARCHAR(60)             NOT NULL                  COMMENT 'biz tag',                             \n" +
@@ -103,7 +101,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         this.serverTag = serverTag;
 
         try {
-            RetryTemplate.execute(this::createTableIfNotExists, 5, 1000L);
+            RetryTemplate.execute(() -> jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL), 3, 1000L);
         } catch (Throwable e) {
             Threads.interruptIfNecessary(e);
             throw new IllegalStateException("Create " + TABLE_NAME + " table failed.", e);
@@ -198,36 +196,9 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         }
     }
 
-    private void createTableIfNotExists() {
-        if (existsTable()) {
-            return;
-        }
-
-        try {
-            jdbcTemplateWrapper.execute(CREATE_TABLE_SQL);
-            LOG.info("Created table {} success.", TABLE_NAME);
-        } catch (Throwable t) {
-            if (existsTable()) {
-                LOG.warn("Create table {} failed {}", TABLE_NAME, t.getMessage());
-            } else {
-                throw new Error("Create table " + TABLE_NAME + " error.", t);
-            }
-        }
-    }
-
-    private boolean existsTable() {
-        Boolean result = jdbcTemplateWrapper.execute(conn -> {
-            DatabaseMetaData meta = conn.getMetaData();
-            ResultSet rs = meta.getTables(null, null, TABLE_NAME, null);
-            return rs.next();
-        });
-        return Boolean.TRUE.equals(result);
-    }
-
     private void heartbeat() throws Throwable {
         RetryTemplate.execute(() -> {
-            long currentTimestamp = System.currentTimeMillis();
-            Object[] args = {currentTimestamp, bizTag, serverTag};
+            Object[] args = {System.currentTimeMillis(), bizTag, serverTag};
             if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
                 LOG.info("Heartbeat db worker id success: {} | {} | {}", args);
             } else {

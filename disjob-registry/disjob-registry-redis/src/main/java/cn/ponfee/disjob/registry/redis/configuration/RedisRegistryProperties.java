@@ -33,6 +33,6 @@ public class RedisRegistryProperties extends AbstractRegistryProperties {
     /**
      * Registry period milliseconds
      */
-    private long registryPeriodMs = 3 * 1000;
+    private long registryPeriodMs = 10 * 1000;
 
 }
