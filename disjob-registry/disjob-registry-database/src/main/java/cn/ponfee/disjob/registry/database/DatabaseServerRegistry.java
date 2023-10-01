@@ -13,7 +13,6 @@ import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.util.ObjectUtils;
@@ -28,13 +27,12 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.Assert;
 
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.spring.JdbcTemplateWrapper.AFFECTED_ONE_ROW;
@@ -84,13 +82,14 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     // -------------------------------------------------Registry
 
     private final String registerRoleName;
-    private final LoopProcessThread heartbeatThread;
+    private final LoopProcessThread registerHeartbeatThread;
 
     // -------------------------------------------------Discovery
 
     private final long sessionTimeoutMs;
     private final String discoveryRoleName;
     private final ThreadPoolExecutor asyncRefreshExecutor;
+    private final Lock asyncRefreshLock = new ReentrantLock();
     private volatile long nextRefreshTimeMillis = 0;
 
     protected DatabaseServerRegistry(JdbcTemplate jdbcTemplate,
@@ -117,8 +116,9 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             log.error("Remove dead server failed: " + Arrays.toString(args), e);
         }
 
-        this.heartbeatThread = new LoopProcessThread("database_registry_heartbeat", config.getRegistryPeriodMs(), this::heartbeat);
-        heartbeatThread.start();
+        long periodMs = config.getRegistryPeriodMs();
+        this.registerHeartbeatThread = new LoopProcessThread("database_register_heartbeat", periodMs, periodMs, this::heartbeatRegister);
+        registerHeartbeatThread.start();
 
         // discovery
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
@@ -129,7 +129,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(300)
             .rejectedHandler(ThreadPoolExecutors.DISCARD)
-            .threadFactory(NamedThreadFactory.builder().prefix("database_discovery_async").priority(Thread.MAX_PRIORITY).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("database_async_discovery").priority(Thread.MAX_PRIORITY).build())
             .build();
 
         try {
@@ -145,8 +145,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     public boolean isConnected() {
         return jdbcTemplateWrapper != null;
     }
-
-    // ------------------------------------------------------------------redis的pub/sub并不是很可靠，所以这里去定时刷新
 
     @Override
     public final List<D> getDiscoveredServers(String group) {
@@ -174,22 +172,14 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             return;
         }
 
-        List<R> servers = new ArrayList<>();
-        if (server instanceof Worker) {
-            for (Worker worker : ((Worker) server).splitGroup()) {
-                servers.add((R) worker);
-            }
-        } else {
-            servers.add(server);
-        }
-
+        final Set<R> servers = splitServer(server);
         jdbcTemplateWrapper.executeInTransaction(action -> {
             for (R svr : servers) {
                 PreparedStatement update = action.apply(HEARTBEAT_SQL);
                 update.setLong(1, System.currentTimeMillis());
                 update.setString(2, namespace);
                 update.setString(3, registerRoleName);
-                update.setString(4, server.serialize());
+                update.setString(4, svr.serialize());
                 int updateRowsAffected = update.executeUpdate();
                 Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + updateRowsAffected);
                 if (updateRowsAffected == AFFECTED_ONE_ROW) {
@@ -209,14 +199,19 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
             return null;
         });
+
+        registered.addAll(servers);
     }
 
     @Override
     public final void deregister(R server) {
-        registered.remove(server);
-        Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
-        ThrowingSupplier.execute(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
-        log.info("Server deregister: {} | {}", registryRole.name(), server);
+        Set<R> servers = splitServer(server);
+        for (R svr : servers) {
+            registered.remove(svr);
+            Object[] args = new Object[]{namespace, registerRoleName, svr.serialize()};
+            ThrowingSupplier.execute(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
+            log.info("Server deregister: {} | {}", registryRole.name(), svr);
+        }
     }
 
     // ------------------------------------------------------------------Close
@@ -228,7 +223,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             return;
         }
 
-        heartbeatThread.terminate();
+        registerHeartbeatThread.terminate();
         registered.forEach(this::deregister);
         registered.clear();
         ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(asyncRefreshExecutor, 1));
@@ -237,40 +232,64 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     // ------------------------------------------------------------------private methods
 
-    private void heartbeat() {
-        for (R svr : registered) {
+    private Set<R> splitServer(R server) {
+        if (!(server instanceof Worker)) {
+            return Collections.singleton(server);
+        }
+
+        Set<R> servers = new HashSet<>();
+        for (Worker worker : ((Worker) server).splitGroup()) {
+            servers.add((R) worker);
+        }
+        return servers;
+    }
+
+    private void heartbeatRegister() {
+        for (R server : registered) {
             try {
-                RetryTemplate.execute(() -> doHeartbeat(svr), 3, 3000L);
+                RetryTemplate.execute(() -> doHeartbeatRegister(server), 3, 2000L);
             } catch (Throwable t) {
                 Threads.interruptIfNecessary(t);
-                log.error("Do database registry heartbeat occur error: " + svr.serialize(), t);
+                log.error("Do database registry heartbeat occur error: " + server.serialize(), t);
             }
         }
     }
 
-    public void doHeartbeat(R server) {
+    private void doHeartbeatRegister(R server) {
         Object[] updateArgs = {System.currentTimeMillis(), namespace, registerRoleName, server.serialize()};
         if (jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs) == AFFECTED_ONE_ROW) {
-            log.info("Database registry heartbeat insert: {} | {} | {} | {}", updateArgs);
+            log.info("Database heartbeat register insert: {} | {} | {} | {}", updateArgs);
             return;
         }
 
         Object[] insertArgs = {namespace, registerRoleName, server.serialize(), System.currentTimeMillis()};
         jdbcTemplateWrapper.insert(REGISTER_SQL, insertArgs);
-        log.info("Database registry heartbeat update: {} | {} | {} | {}", insertArgs);
+        log.info("Database heartbeat register update: {} | {} | {} | {}", insertArgs);
     }
 
     private void asyncRefreshDiscoveryServers() {
-        if (requireRefresh()) {
-            asyncRefreshExecutor.execute(ThrowingRunnable.caught(this::doRefreshDiscoveryServers));
+        if (!requireRefresh()) {
+            return;
         }
+        asyncRefreshExecutor.execute(() -> {
+            if (!requireRefresh()) {
+                return;
+            }
+            if (!asyncRefreshLock.tryLock()) {
+                return;
+            }
+            try {
+                doRefreshDiscoveryServers();
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
+                log.error("Database async refresh discovery servers occur error.", t);
+            } finally {
+                asyncRefreshLock.unlock();
+            }
+        });
     }
 
     private void doRefreshDiscoveryServers() throws Throwable {
-        if (closed.get() || !requireRefresh()) {
-            return;
-        }
-
         RetryTemplate.execute(() -> {
             Object[] args = {namespace, discoveryRoleName, System.currentTimeMillis() - sessionTimeoutMs};
             List<String> discovered = jdbcTemplateWrapper.queryForList(ROW_MAPPER, DISCOVER_SQL, args);
@@ -288,7 +307,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     }
 
     private boolean requireRefresh() {
-        return nextRefreshTimeMillis < System.currentTimeMillis();
+        return !closed.get() && nextRefreshTimeMillis < System.currentTimeMillis();
     }
 
     private void updateRefresh() {

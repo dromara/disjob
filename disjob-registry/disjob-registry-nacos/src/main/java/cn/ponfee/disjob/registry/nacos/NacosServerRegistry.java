@@ -115,9 +115,9 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        ThrowingRunnable.execute(() -> namingService.unsubscribe(discoveryRootPath, groupName, eventListener));
         registered.forEach(this::deregister);
         registered.clear();
+        ThrowingRunnable.execute(() -> namingService.unsubscribe(discoveryRootPath, groupName, eventListener));
         ThrowingRunnable.execute(namingService::shutDown);
         super.close();
     }

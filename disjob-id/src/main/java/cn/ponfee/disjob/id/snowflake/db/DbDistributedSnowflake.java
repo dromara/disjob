@@ -115,7 +115,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
             throw new Error("Db snowflake server initialize error.", e);
         }
 
-        this.heartbeatThread = new LoopProcessThread("db_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, this::heartbeat);
+        this.heartbeatThread = new LoopProcessThread("db_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
         heartbeatThread.start();
     }
 

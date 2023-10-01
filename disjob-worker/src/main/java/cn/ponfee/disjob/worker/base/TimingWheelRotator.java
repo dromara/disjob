@@ -69,7 +69,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
 
-        this.heartbeatThread = new LoopProcessThread("timing_wheel_rotate", timingWheel.getTickMs(), this::process);
+        this.heartbeatThread = new LoopProcessThread("timing_wheel_rotate", timingWheel.getTickMs(), 0, this::process);
 
         int actualProcessPoolSize = Math.max(1, processThreadPoolSize);
         this.processExecutor = ThreadPoolExecutors.builder()

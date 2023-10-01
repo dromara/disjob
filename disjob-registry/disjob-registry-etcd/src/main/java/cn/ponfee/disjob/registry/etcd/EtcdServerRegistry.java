@@ -8,10 +8,9 @@
 
 package cn.ponfee.disjob.registry.etcd;
 
+import cn.ponfee.disjob.common.base.LoopProcessThread;
 import cn.ponfee.disjob.common.base.Symbol.Char;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ConnectionStateListener;
@@ -27,9 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -54,9 +50,9 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     private final EtcdClient client;
 
     /**
-     * check keep alive available
+     * Keep alive check thread
      */
-    private final ScheduledExecutorService keepAliveCheckScheduler;
+    private final LoopProcessThread keepAliveCheckThread;
 
     /**
      * Etcd lease id
@@ -76,16 +72,14 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         CountDownLatch latch = new CountDownLatch(1);
         try {
             this.client = new EtcdClient(config);
-            this.keepAliveCheckScheduler = new ScheduledThreadPoolExecutor(
-                1, NamedThreadFactory.builder().prefix("keep_alive_check_scheduler").daemon(true).build()
-            );
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
             createLeaseIdAndKeepAlive();
             client.watchChildChanged(discoveryRootPath, latch, this::doRefreshDiscoveryServers);
 
-            long period = Math.max(ttl / 4, 1);
-            keepAliveCheckScheduler.scheduleWithFixedDelay(this::keepAliveCheck, period, period, TimeUnit.SECONDS);
+            long periodMs = Math.max(ttl / 4, 1) * 1000;
+            this.keepAliveCheckThread = new LoopProcessThread("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
+            keepAliveCheckThread.start();
 
             client.addConnectionStateListener(
                 ConnectionStateListener.<EtcdClient>builder().onConnected(c -> keepAliveRecover()).build()
@@ -145,11 +139,10 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             return;
         }
 
-        ThrowingSupplier.execute(keepAliveCheckScheduler::shutdownNow);
-        ThrowingSupplier.execute(() -> keepAliveCheckScheduler.awaitTermination(1, TimeUnit.SECONDS));
-        ThrowingRunnable.execute(keepAlive::close);
+        keepAliveCheckThread.terminate();
         registered.forEach(this::deregister);
         registered.clear();
+        ThrowingRunnable.execute(keepAlive::close);
         ThrowingRunnable.execute(() -> client.revokeLease(leaseId));
         ThrowingRunnable.execute(client::close);
         ThrowingRunnable.execute(super::close);

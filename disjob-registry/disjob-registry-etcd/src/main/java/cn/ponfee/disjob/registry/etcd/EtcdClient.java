@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.etcd;
 
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
+import cn.ponfee.disjob.common.base.LoopProcessThread;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
@@ -77,9 +77,10 @@ public class EtcdClient implements Closeable {
      */
     private final Client client;
 
-    private final ScheduledExecutorService healthCheckScheduler = new ScheduledThreadPoolExecutor(
-        1, NamedThreadFactory.builder().prefix("health_check_scheduler").daemon(true).build()
-    );
+    /**
+     * Health check thread
+     */
+    private final LoopProcessThread healthCheckThread;
 
     private final Map<String, Pair<Watch.Watcher, ChildChangedListener>> childWatchers = new HashMap<>();
 
@@ -95,7 +96,8 @@ public class EtcdClient implements Closeable {
             .build();
         this.lastConnectState = isConnected();
 
-        healthCheckScheduler.scheduleWithFixedDelay(() -> {
+        long periodMs = 3000;
+        this.healthCheckThread = new LoopProcessThread("etcd_health_check", periodMs, periodMs, () -> {
             boolean currConnectState = isConnected();
             if (lastConnectState == currConnectState) {
                 return;
@@ -112,7 +114,8 @@ public class EtcdClient implements Closeable {
                 }
             }
             this.lastConnectState = currConnectState;
-        }, 3, 3, TimeUnit.SECONDS);
+        });
+        healthCheckThread.start();
     }
 
     public void addConnectionStateListener(ConnectionStateListener<EtcdClient> listener) {
@@ -247,7 +250,7 @@ public class EtcdClient implements Closeable {
     @Override
     public synchronized void close() {
         new ArrayList<>(childWatchers.keySet()).forEach(this::unwatchChildChanged);
-        ThrowingSupplier.execute(healthCheckScheduler::shutdownNow);
+        healthCheckThread.terminate();
         client.close();
     }
 

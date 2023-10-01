@@ -8,8 +8,9 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -71,7 +72,7 @@ public final class JdbcTemplateWrapper {
 
     public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {
         return jdbcTemplate.execute((ConnectionCallback<T>) con -> {
-            Boolean autoCommit = null;
+            Boolean previousAutoCommit = null;
             final List<PreparedStatement> preparedStatements = new ArrayList<>();
             ThrowingFunction<String, PreparedStatement, ?> function = sql -> {
                 PreparedStatement preparedStatement = con.prepareStatement(sql);
@@ -79,30 +80,28 @@ public final class JdbcTemplateWrapper {
                 return preparedStatement;
             };
             try {
-                autoCommit = con.getAutoCommit();
+                previousAutoCommit = con.getAutoCommit();
                 con.setAutoCommit(false);
                 return action.apply(function);
             } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                LOG.error("Execute in transaction occur error.", t);
-                return null;
+                return ExceptionUtils.rethrow(t);
             } finally {
                 try {
                     con.commit();
                 } catch (Throwable t) {
                     LOG.error("Commit connection occur error.", t);
                 }
-                if (autoCommit != null) {
+                if (previousAutoCommit != null) {
                     try {
                         // restore the auto-commit config
-                        con.setAutoCommit(autoCommit);
+                        con.setAutoCommit(previousAutoCommit);
                     } catch (Throwable t) {
                         LOG.error("Restore connection auto-commit occur error.", t);
                     }
                 }
-                for (PreparedStatement preparedStatement : preparedStatements) {
+                for (PreparedStatement each : Lists.reverse(preparedStatements)) {
                     try {
-                        preparedStatement.close();
+                        each.close();
                     } catch (Throwable t) {
                         LOG.error("Close prepare statement occur error.", t);
                     }

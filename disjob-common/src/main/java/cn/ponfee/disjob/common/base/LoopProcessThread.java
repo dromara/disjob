@@ -29,25 +29,30 @@ public class LoopProcessThread extends Thread {
 
     private final AtomicInteger state = new AtomicInteger(NEW);
     private final long periodMs;
+    private final long delayMs;
     private final ThrowingRunnable<?> action;
 
-    public LoopProcessThread(String name, long periodMs, ThrowingRunnable<?> action) {
-        this(name, true, Thread.MAX_PRIORITY, periodMs, action);
+    public LoopProcessThread(String name, long periodMs, long delayMs, ThrowingRunnable<?> action) {
+        this(name, true, Thread.MAX_PRIORITY, periodMs, delayMs, action);
     }
 
     public LoopProcessThread(String name, boolean daemon, int priority,
-                             long periodMs, ThrowingRunnable<?> action) {
+                             long periodMs, long delayMs, ThrowingRunnable<?> action) {
         super.setName(name);
         super.setDaemon(daemon);
         super.setPriority(priority);
         super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
         this.periodMs = periodMs;
+        this.delayMs = delayMs;
         this.action = action;
     }
 
     @Override
     public void run() {
         LOG.info("Loop process thread begin.");
+        if (delayMs > 0) {
+            ThrowingRunnable.checked(() -> Thread.sleep(delayMs));
+        }
         while (state.get() == RUNNABLE) {
             try {
                 action.run();

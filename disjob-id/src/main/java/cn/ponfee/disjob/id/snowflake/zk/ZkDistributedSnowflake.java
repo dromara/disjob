@@ -140,7 +140,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
         curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
-        this.heartbeatThread = new LoopProcessThread("zk_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, this::heartbeat);
+        this.heartbeatThread = new LoopProcessThread("zk_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
         heartbeatThread.start();
     }
 

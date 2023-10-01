@@ -9,10 +9,9 @@
 package cn.ponfee.disjob.registry.consul;
 
 import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
+import cn.ponfee.disjob.common.base.LoopProcessThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRegistry;
@@ -29,9 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -58,9 +54,12 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
      */
     private final String token;
 
-    private final ScheduledExecutorService consulTtlCheckExecutor;
+    /**
+     * Consul ttl check thread
+     */
+    private final LoopProcessThread consulTtlCheckThread;
 
-    private final ConsulSubscriberThread   consulSubscriberThread;
+    private final ConsulSubscriberThread consulSubscriberThread;
 
     protected ConsulServerRegistry(ConsulRegistryProperties config) {
         super(config.getNamespace(), ':');
@@ -68,11 +67,9 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         this.client = new ConsulClient(config.getHost(), config.getPort());
         this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();
 
-        int period = Math.max(CHECK_PASS_INTERVAL_SECONDS, 1);
-        this.consulTtlCheckExecutor = new ScheduledThreadPoolExecutor(
-            1, NamedThreadFactory.builder().prefix("consul_server_registry").daemon(true).build()
-        );
-        consulTtlCheckExecutor.scheduleWithFixedDelay(this::checkPass, period, period, TimeUnit.SECONDS);
+        int periodMs = Math.max(CHECK_PASS_INTERVAL_SECONDS, 1) * 1000;
+        this.consulTtlCheckThread = new LoopProcessThread("consul_ttl_check", periodMs, periodMs, this::checkPass);
+        consulTtlCheckThread.start();
 
         this.consulSubscriberThread = new ConsulSubscriberThread(-1);
         consulSubscriberThread.start();
@@ -126,7 +123,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             return;
         }
 
-        ThrowingSupplier.execute(consulTtlCheckExecutor::shutdownNow);
+        consulTtlCheckThread.terminate();
         registered.forEach(this::deregister);
         registered.clear();
         ThrowingRunnable.execute(() -> Threads.stopThread(consulSubscriberThread, 0, 0, 100));
@@ -206,6 +203,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         private ConsulSubscriberThread(long initConsulIndex) {
             this.lastConsulIndex = initConsulIndex;
             super.setDaemon(true);
+            super.setPriority(Thread.MAX_PRIORITY);
             super.setName("consul_subscriber_thread");
             super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
         }
