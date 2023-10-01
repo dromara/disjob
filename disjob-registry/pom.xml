@@ -24,6 +24,7 @@
     <module>disjob-registry-nacos</module>
     <module>disjob-registry-zookeeper</module>
     <module>disjob-registry-etcd</module>
+    <module>disjob-registry-database</module>
   </modules>
 
 </project>

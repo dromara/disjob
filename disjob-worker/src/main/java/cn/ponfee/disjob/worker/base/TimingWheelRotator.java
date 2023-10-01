@@ -78,7 +78,6 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
             .workQueue(new LinkedBlockingQueue<>(Integer.MAX_VALUE))
             .keepAliveTimeSeconds(300)
             .threadFactory(NamedThreadFactory.builder().prefix("timing_wheel_process").build())
-            .prestartCoreThreadType(ThreadPoolExecutors.PrestartCoreThreadType.ONE)
             .build();
     }
 

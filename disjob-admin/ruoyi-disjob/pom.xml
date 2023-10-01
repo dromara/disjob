@@ -74,6 +74,10 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-etcd</artifactId>
     </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-database</artifactId>
+    </dependency>
     -->
 
     <!-- Dispatching: select one implementation for task dispatching -->

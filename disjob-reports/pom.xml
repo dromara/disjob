@@ -78,6 +78,11 @@
       <artifactId>disjob-registry-etcd</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-registry-database</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>cn.ponfee</groupId>

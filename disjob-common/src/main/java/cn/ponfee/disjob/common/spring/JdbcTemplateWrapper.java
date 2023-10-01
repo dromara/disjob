@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -16,16 +18,18 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Wrapped jdbc template.
+ * Wrapped spring jdbc template.
  *
  * @author Ponfee
  */
-public class JdbcTemplateWrapper {
+public final class JdbcTemplateWrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcTemplateWrapper.class);
 
@@ -43,14 +47,6 @@ public class JdbcTemplateWrapper {
 
     public JdbcTemplate jdbcTemplate() {
         return jdbcTemplate;
-    }
-
-    public void execute(String sql) {
-        jdbcTemplate.execute(sql);
-    }
-
-    public <T> T execute(ConnectionCallback<T> action) {
-        return jdbcTemplate.execute(action);
     }
 
     public int insert(String sql, Object... args) {
@@ -73,13 +69,55 @@ public class JdbcTemplateWrapper {
         return jdbcTemplate.queryForStream(sql, rowMapper, args).collect(Collectors.toList());
     }
 
+    public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {
+        return jdbcTemplate.execute((ConnectionCallback<T>) con -> {
+            Boolean autoCommit = null;
+            final List<PreparedStatement> preparedStatements = new ArrayList<>();
+            ThrowingFunction<String, PreparedStatement, ?> function = sql -> {
+                PreparedStatement preparedStatement = con.prepareStatement(sql);
+                preparedStatements.add(preparedStatement);
+                return preparedStatement;
+            };
+            try {
+                autoCommit = con.getAutoCommit();
+                con.setAutoCommit(false);
+                return action.apply(function);
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
+                LOG.error("Execute in transaction occur error.", t);
+                return null;
+            } finally {
+                try {
+                    con.commit();
+                } catch (Throwable t) {
+                    LOG.error("Commit connection occur error.", t);
+                }
+                if (autoCommit != null) {
+                    try {
+                        // restore the auto-commit config
+                        con.setAutoCommit(autoCommit);
+                    } catch (Throwable t) {
+                        LOG.error("Restore connection auto-commit occur error.", t);
+                    }
+                }
+                for (PreparedStatement preparedStatement : preparedStatements) {
+                    try {
+                        preparedStatement.close();
+                    } catch (Throwable t) {
+                        LOG.error("Close prepare statement occur error.", t);
+                    }
+                }
+            }
+        });
+    }
+
     public void createTableIfNotExists(String tableName, String createTableDdl) {
         if (existsTable(tableName)) {
             return;
         }
 
         try {
-            execute(createTableDdl);
+            jdbcTemplate.execute(createTableDdl);
             LOG.info("Created table {} success.", tableName);
         } catch (Throwable t) {
             if (existsTable(tableName)) {
@@ -91,7 +129,7 @@ public class JdbcTemplateWrapper {
     }
 
     public boolean existsTable(String tableName) {
-        Boolean result = execute(conn -> {
+        Boolean result = jdbcTemplate.execute((ConnectionCallback<Boolean>) conn -> {
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet rs = meta.getTables(null, null, tableName, null);
             return rs.next();

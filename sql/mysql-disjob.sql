@@ -177,18 +177,6 @@ CREATE TABLE `sched_group` (
   KEY `ix_updatedat` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分组表';
 
-CREATE TABLE `sched_registry` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
-  `group`               VARCHAR(60)              NOT NULL                               COMMENT '分组名',
-  `server_address`      VARCHAR(128)             NOT NULL                               COMMENT '服务器地址(hostname或ip)',
-  `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
-  `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_group_serveraddress` (`group`, `server_address`),
-  KEY `ix_createdat` (`created_at`),
-  KEY `ix_updatedat` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='worker注册表(database作为注册中心时使用)';
-
 CREATE TABLE `sched_user` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `username`            VARCHAR(60)              NOT NULL                               COMMENT '用户名',

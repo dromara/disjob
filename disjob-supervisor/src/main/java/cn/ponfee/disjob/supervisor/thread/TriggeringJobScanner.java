@@ -76,7 +76,6 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             .keepAliveTimeSeconds(300)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
             .threadFactory(NamedThreadFactory.builder().prefix("triggering_job_scanner").priority(Thread.MAX_PRIORITY).build())
-            .prestartCoreThreadType(ThreadPoolExecutors.PrestartCoreThreadType.ONE)
             .build();
     }
 
