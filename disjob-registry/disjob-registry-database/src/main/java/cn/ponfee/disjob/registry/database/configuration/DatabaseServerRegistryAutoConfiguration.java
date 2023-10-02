@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.database.configuration;
 
-import cn.ponfee.disjob.common.base.Releasable;
+import cn.ponfee.disjob.common.base.Destroyable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.core.base.JobConstants;
@@ -99,10 +99,10 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
         }
 
         @Override
-        public void destroy() throws Exception {
+        public void destroy() {
             DataSource dataSource = wrapper.jdbcTemplate().getDataSource();
             if (dataSource != null) {
-                ThrowingRunnable.execute(() -> Releasable.release(dataSource), () -> "Database registry datasource destroy error.");
+                ThrowingRunnable.execute(() -> Destroyable.destroy(dataSource), () -> "Database registry datasource destroy error.");
                 log.info("Database registry datasource destroy finished.");
             }
         }

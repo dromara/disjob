@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -126,9 +126,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.asyncRefreshExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
             .maximumPoolSize(1)
-            .workQueue(new ArrayBlockingQueue<>(1))
-            .keepAliveTimeSeconds(300)
-            .rejectedHandler(ThreadPoolExecutors.DISCARD_OLDEST)
+            .workQueue(new LinkedBlockingQueue<>())
+            .keepAliveTimeSeconds(600)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
             .threadFactory(NamedThreadFactory.builder().prefix("redis_async_discovery").priority(Thread.MAX_PRIORITY).build())
             .build();
 
@@ -343,6 +343,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void resetRefresh() {
+        log.debug("Reset redis refresh time millis.");
         this.nextRefreshTimeMillis = 0;
     }
 

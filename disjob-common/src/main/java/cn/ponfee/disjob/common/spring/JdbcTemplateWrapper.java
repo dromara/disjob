@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -72,7 +72,7 @@ public final class JdbcTemplateWrapper {
     public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {
         return jdbcTemplate.execute((ConnectionCallback<T>) con -> {
             Boolean previousAutoCommit = null;
-            final List<PreparedStatement> psList = new ArrayList<>();
+            final List<PreparedStatement> psList = new LinkedList<>();
             ThrowingFunction<String, PreparedStatement, ?> function = sql -> {
                 PreparedStatement ps = con.prepareStatement(sql);
                 psList.add(ps);

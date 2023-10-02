@@ -9,35 +9,49 @@
 package cn.ponfee.disjob.common.base;
 
 /**
- * Initialize resources
+ * Destroy resources
  *
  * @author Ponfee
  */
 @FunctionalInterface
-public interface Initializable {
+public interface Destroyable {
 
-    NoArgMethodInvoker DEFAULT = new NoArgMethodInvoker("init", "initialize", "open");
+    NoArgMethodInvoker DEFAULT = new NoArgMethodInvoker("destroy", "close", "release");
 
     /**
-     * Initialize resources
+     * Destroy resources
      */
-    void init();
+    void destroy();
 
     /**
-     * Initialize target resources
+     * Destroy target resources
      *
      * @param target the target object
      */
-    static void init(Object target) {
+    static void destroy(Object target) throws Exception {
         if (target == null) {
             return;
         }
 
-        if (target instanceof Initializable) {
-            ((Initializable) target).init();
+        if (target instanceof AutoCloseable) {
+            ((AutoCloseable) target).close();
+        } else if (target instanceof Destroyable) {
+            Destroyable destroyable = (Destroyable) target;
+            if (!destroyable.isDestroyed()) {
+                ((Destroyable) target).destroy();
+            }
         } else {
             DEFAULT.invoke(target);
         }
+    }
+
+    /**
+     * Returns is whether destroyed.
+     *
+     * @return {@code true} destroyed
+     */
+    default boolean isDestroyed() {
+        return false;
     }
 
 }
