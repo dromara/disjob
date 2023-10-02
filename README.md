@@ -26,13 +26,13 @@ disjob                                        # 主项目①
 │   └── disjob-dispatch-redis                 # 任务派发的Redis实现
 ├── disjob-id                                 # 分布式ID生成模块
 ├── disjob-registry                           # Server(Supervisor & Worker)注册模块
-│   ├── disjob-registry-api                   # Server注册的抽象接口层
-│   ├── disjob-registry-consul                # Server注册的Consul实现
-│   ├── disjob-registry-database              # Server注册的Database实现
-│   ├── disjob-registry-etcd                  # Server注册的Etcd实现
-│   ├── disjob-registry-nacos                 # Server注册的Nacos实现
-│   ├── disjob-registry-redis                 # Server注册的Redis实现
-│   └── disjob-registry-zookeeper             # Server注册的Zookeeper实现
+│   ├── disjob-registry-api                   # Server注册中心的抽象接口层
+│   ├── disjob-registry-consul                # Server注册中心：Consul实现
+│   ├── disjob-registry-database              # Server注册中心：Database实现
+│   ├── disjob-registry-etcd                  # Server注册中心：Etcd实现
+│   ├── disjob-registry-nacos                 # Server注册中心：Nacos实现
+│   ├── disjob-registry-redis                 # Server注册中心：Redis实现
+│   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                            # Samples项目③
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
