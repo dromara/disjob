@@ -33,7 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -99,6 +100,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     // -------------------------------------------------Discovery
 
     private final ThreadPoolExecutor asyncRefreshExecutor;
+    private final ThreadPoolExecutor redisSubscribeExecutor;
     private final Lock asyncRefreshLock = new ReentrantLock();
     private final List<String> discoveryRedisKey;
     private volatile long nextRefreshTimeMillis = 0;
@@ -126,16 +128,25 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.asyncRefreshExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
             .maximumPoolSize(1)
-            .workQueue(new LinkedBlockingQueue<>())
+            .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(600)
-            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
+            .rejectedHandler(ThreadPoolExecutors.DISCARD)
             .threadFactory(NamedThreadFactory.builder().prefix("redis_async_discovery").priority(Thread.MAX_PRIORITY).build())
+            .build();
+
+        this.redisSubscribeExecutor = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(1)
+            .workQueue(new ArrayBlockingQueue<>(1))
+            .keepAliveTimeSeconds(600)
+            .rejectedHandler(ThreadPoolExecutors.DISCARD)
+            .threadFactory(NamedThreadFactory.builder().prefix("redis_async_subscribe").priority(Thread.MAX_PRIORITY).build())
             .build();
 
         // redis pub/sub
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(Objects.requireNonNull(stringRedisTemplate.getConnectionFactory()));
-        container.setTaskExecutor(asyncRefreshExecutor);
+        container.setTaskExecutor(redisSubscribeExecutor);
         // validate “handleMessage” method is valid
         String listenerMethod = ThrowingSupplier.get(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
         MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, listenerMethod);
@@ -216,6 +227,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         registered.forEach(this::deregister);
         ThrowingRunnable.execute(redisMessageListenerContainer::stop);
         ThrowingRunnable.execute(() -> ThreadPoolExecutors.shutdown(asyncRefreshExecutor, 2));
+        ThrowingRunnable.execute(() -> ThreadPoolExecutors.shutdown(redisSubscribeExecutor, 2));
         registered.clear();
         super.close();
     }
@@ -249,9 +261,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void subscribe(EventType eventType, D server) {
-        // refresh the discovery
-        resetRefresh();
-        asyncRefreshDiscoveryServers();
+        tryRefreshDiscoveryServers();
     }
 
     /**
@@ -294,25 +304,23 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void asyncRefreshDiscoveryServers() {
-        if (!requireRefresh()) {
+        if (requireRefresh()) {
+            asyncRefreshExecutor.execute(this::tryRefreshDiscoveryServers);
+        }
+    }
+
+    private void tryRefreshDiscoveryServers() {
+        if (!asyncRefreshLock.tryLock()) {
             return;
         }
-        asyncRefreshExecutor.execute(() -> {
-            if (!requireRefresh()) {
-                return;
-            }
-            if (!asyncRefreshLock.tryLock()) {
-                return;
-            }
-            try {
-                doRefreshDiscoveryServers();
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                log.error("Redis async refresh discovery servers occur error.", t);
-            } finally {
-                asyncRefreshLock.unlock();
-            }
-        });
+        try {
+            doRefreshDiscoveryServers();
+        } catch (Throwable t) {
+            Threads.interruptIfNecessary(t);
+            log.error("Redis async refresh discovery servers occur error.", t);
+        } finally {
+            asyncRefreshLock.unlock();
+        }
     }
 
     private void doRefreshDiscoveryServers() throws Throwable {
@@ -329,7 +337,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             List<D> servers = discovered.stream().<D>map(discoveryRole::deserialize).collect(Collectors.toList());
             refreshDiscoveredServers(servers);
 
-            updateRefresh();
+            updateRefreshTimeMillis();
             log.debug("Redis refreshed discovery {} servers.", discoveryRole.name());
         }, 3, 1000L);
     }
@@ -338,13 +346,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         return !closed.get() && nextRefreshTimeMillis < System.currentTimeMillis();
     }
 
-    private void updateRefresh() {
+    private void updateRefreshTimeMillis() {
         this.nextRefreshTimeMillis = System.currentTimeMillis() + registryPeriodMs;
-    }
-
-    private void resetRefresh() {
-        log.debug("Reset redis refresh time millis.");
-        this.nextRefreshTimeMillis = 0;
     }
 
 }

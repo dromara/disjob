@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -137,7 +137,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         this.asyncRefreshExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
             .maximumPoolSize(1)
-            .workQueue(new ArrayBlockingQueue<>(1))
+            .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.DISCARD)
             .threadFactory(NamedThreadFactory.builder().prefix("database_async_discovery").priority(Thread.MAX_PRIORITY).build())
@@ -294,9 +294,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             return;
         }
         asyncRefreshExecutor.execute(() -> {
-            if (!requireRefresh()) {
-                return;
-            }
             if (!asyncRefreshLock.tryLock()) {
                 return;
             }
