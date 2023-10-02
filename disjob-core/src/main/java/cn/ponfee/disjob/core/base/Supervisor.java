@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
-import static cn.ponfee.disjob.common.util.Collects.get;
+import static cn.ponfee.disjob.common.collect.Collects.get;
 
 /**
  * Supervisor definition

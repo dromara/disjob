@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.tuple.Tuple2;
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.URLCodes;
 import cn.ponfee.disjob.core.enums.JobType;

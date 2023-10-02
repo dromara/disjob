@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.spring.TransactionUtils;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;

@@ -14,7 +14,7 @@ import cn.ponfee.disjob.common.tree.BaseNode;
 import cn.ponfee.disjob.common.tree.PlainNode;
 import cn.ponfee.disjob.common.tree.TreeNode;
 import cn.ponfee.disjob.common.tuple.Tuple2;
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Predicates;
 import com.fasterxml.jackson.core.type.TypeReference;

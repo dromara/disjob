@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.base;
+package cn.ponfee.disjob.common.collect;
 
 import org.apache.commons.lang3.builder.CompareToBuilder;
 

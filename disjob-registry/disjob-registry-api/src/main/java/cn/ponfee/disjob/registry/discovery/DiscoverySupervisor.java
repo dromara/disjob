@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.discovery;
 
-import cn.ponfee.disjob.common.base.ImmutableHashList;
+import cn.ponfee.disjob.common.collect.ImmutableHashList;
 import cn.ponfee.disjob.core.base.Supervisor;
 import org.springframework.util.Assert;
 

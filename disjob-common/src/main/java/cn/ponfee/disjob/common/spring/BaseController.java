@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.base.TypedKeyValue;
+import cn.ponfee.disjob.common.collect.TypedKeyValue;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateTimeFormat;

@@ -12,7 +12,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.base.AbstractHeartbeatThread;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;

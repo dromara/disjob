@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.apache.commons.io.IOUtils;

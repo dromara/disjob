@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

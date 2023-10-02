@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.common.tree;
 
 import cn.ponfee.disjob.common.tree.print.MultiwayTreePrinter;
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Fields;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

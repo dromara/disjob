@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.base;
+package cn.ponfee.disjob.common.collect;
 
 import java.util.Comparator;
 import java.util.Spliterator;

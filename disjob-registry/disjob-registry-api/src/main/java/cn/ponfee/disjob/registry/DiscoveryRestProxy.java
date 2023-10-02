@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.ExtendMethodHandles;
 import cn.ponfee.disjob.common.util.Files;
 import org.apache.commons.lang3.ArrayUtils;

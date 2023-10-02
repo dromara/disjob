@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.common.tree;
 
-import cn.ponfee.disjob.common.base.ImmutableArrayList;
+import cn.ponfee.disjob.common.collect.ImmutableArrayList;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;

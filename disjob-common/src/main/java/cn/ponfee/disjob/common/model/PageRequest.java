@@ -8,9 +8,9 @@
 
 package cn.ponfee.disjob.common.model;
 
-import cn.ponfee.disjob.common.base.RemovableTypedKeyValue;
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.collect.RemovableTypedKeyValue;
+import cn.ponfee.disjob.common.collect.Collects;
 import lombok.Getter;
 import lombok.Setter;
 

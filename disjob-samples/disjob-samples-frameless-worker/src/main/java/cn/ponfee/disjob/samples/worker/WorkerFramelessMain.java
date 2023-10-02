@@ -9,10 +9,10 @@
 package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Collects;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.HttpProperties;
@@ -168,7 +168,6 @@ public class WorkerFramelessMain {
         RedisRegistryProperties config = new RedisRegistryProperties();
         config.setNamespace(props.getString(keyPrefix + ".namespace"));
         config.setSessionTimeoutMs(props.getLong(keyPrefix + ".session-timeout-ms", 30000));
-        config.setRegistryPeriodMs(props.getLong(keyPrefix + ".registry-period-ms", 3000));
         return new RedisWorkerRegistry(stringRedisTemplate(props), config);
     }
 

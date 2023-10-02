@@ -8,8 +8,9 @@
 
 package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.base.ArrayHashKey;
 import cn.ponfee.disjob.common.base.Null;
+import cn.ponfee.disjob.common.collect.ArrayHashKey;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;

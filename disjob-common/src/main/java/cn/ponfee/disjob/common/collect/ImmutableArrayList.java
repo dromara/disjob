@@ -6,9 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.base;
+package cn.ponfee.disjob.common.collect;
 
-import cn.ponfee.disjob.common.util.Collects;
+import cn.ponfee.disjob.common.base.ToJsonString;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ArrayUtils;
 

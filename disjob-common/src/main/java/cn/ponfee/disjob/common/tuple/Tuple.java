@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.common.tuple;
 
-import cn.ponfee.disjob.common.base.DelegatedIntSpliterator;
-import cn.ponfee.disjob.common.base.ImmutableArrayList;
+import cn.ponfee.disjob.common.collect.DelegatedIntSpliterator;
+import cn.ponfee.disjob.common.collect.ImmutableArrayList;
 import cn.ponfee.disjob.common.util.Comparators;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 

@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.base.Symbol.Char;
-import cn.ponfee.disjob.common.base.TypedMap;
+import cn.ponfee.disjob.common.collect.TypedMap;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.ObjectUtils;
