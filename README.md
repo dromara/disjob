@@ -48,7 +48,7 @@ disjob                                        # 主项目①
 ## Features
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
-- Supervisor与Worker通过注册中心相互发现，注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd
+- Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http
 - 需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行
 - 提供拆分任务的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
