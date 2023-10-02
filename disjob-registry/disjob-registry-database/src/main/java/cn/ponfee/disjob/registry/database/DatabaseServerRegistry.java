@@ -10,8 +10,6 @@ package cn.ponfee.disjob.registry.database;
 
 import cn.ponfee.disjob.common.base.LoopProcessThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
@@ -31,11 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.spring.JdbcTemplateWrapper.AFFECTED_ONE_ROW;
@@ -52,15 +46,15 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private static final String TABLE_NAME = "disjob_registry";
 
     private static final String CREATE_TABLE_DDL =
-        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                    \n" +
-        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',                   \n" +
-        "  `namespace`       VARCHAR(60)             NOT NULL                  COMMENT 'registry namespace',                  \n" +
-        "  `role`            VARCHAR(30)             NOT NULL                  COMMENT 'server role',                         \n" +
-        "  `server`          VARCHAR(255)            NOT NULL                  COMMENT 'server serialization',                \n" +
-        "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',                 \n" +
-        "  PRIMARY KEY (`id`),                                                                                                \n" +
-        "  UNIQUE KEY `uk_namespace_role_server` (`namespace`, `role`, `server`)                                              \n" +
-        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Registry center for database'; \n" ;
+        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                         \n" +
+        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',        \n" +
+        "  `namespace`       VARCHAR(60)             NOT NULL                  COMMENT 'registry namespace',       \n" +
+        "  `role`            VARCHAR(30)             NOT NULL                  COMMENT 'server role',              \n" +
+        "  `server`          VARCHAR(255)            NOT NULL                  COMMENT 'server serialization',     \n" +
+        "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',      \n" +
+        "  PRIMARY KEY (`id`),                                                                                     \n" +
+        "  UNIQUE KEY `uk_namespace_role_server` (`namespace`, `role`, `server`)                                   \n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Database registry'; \n" ;
 
     private static final String REMOVE_DEAD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time<?";
 
@@ -87,11 +81,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
      */
     private final long sessionTimeoutMs;
 
-    /**
-     * Register period milliseconds
-     */
-    private final long registryPeriodMs;
-
     // -------------------------------------------------Registry
 
     private final String registerRoleName;
@@ -100,18 +89,17 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     // -------------------------------------------------Discovery
 
     private final String discoveryRoleName;
-    private final ThreadPoolExecutor asyncRefreshExecutor;
-    private final Lock asyncRefreshLock = new ReentrantLock();
-    private volatile long nextRefreshTimeMillis = 0;
+    private final LoopProcessThread discoverHeartbeatThread;
 
     protected DatabaseServerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper wrapper) {
         super(config.getNamespace(), ':');
         this.namespace = config.getNamespace().trim();
         this.jdbcTemplateWrapper = wrapper;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
-        this.registryPeriodMs = config.getSessionTimeoutMs() / 3;
 
-        // ---------------------------registry---------------------------
+        long periodMs = config.getSessionTimeoutMs() / 3;
+
+        // -------------------------------------------------registry
         this.registerRoleName = registryRole.name().toLowerCase();
 
         // create table
@@ -126,30 +114,24 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         Object[] args = {namespace, registerRoleName, System.currentTimeMillis() - DEAD_TIME_MILLIS};
         RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, args), 3, 1000L);
 
-        // heartbeat register server
-        this.registerHeartbeatThread = new LoopProcessThread(
-            "database_register_heartbeat", registryPeriodMs, registryPeriodMs, this::doHeartbeatRegister
-        );
+        // heartbeat register servers
+        this.registerHeartbeatThread = new LoopProcessThread("database_register_heartbeat", periodMs, periodMs, this::registerServers);
         registerHeartbeatThread.start();
 
-        // ---------------------------discovery---------------------------
+        // -------------------------------------------------discovery
         this.discoveryRoleName = discoveryRole.name().toLowerCase();
-        this.asyncRefreshExecutor = ThreadPoolExecutors.builder()
-            .corePoolSize(1)
-            .maximumPoolSize(1)
-            .workQueue(new SynchronousQueue<>())
-            .keepAliveTimeSeconds(600)
-            .rejectedHandler(ThreadPoolExecutors.DISCARD)
-            .threadFactory(NamedThreadFactory.builder().prefix("database_async_discovery").priority(Thread.MAX_PRIORITY).build())
-            .build();
 
-        // initialize discovery server
+        // heartbeat discover servers
+        this.discoverHeartbeatThread = new LoopProcessThread("database_discover_heartbeat", periodMs, periodMs, this::discoverServers);
+        discoverHeartbeatThread.start();
+
+        // initialize discover server
         try {
-            doRefreshDiscoveryServers();
+            discoverServers();
         } catch (Throwable e) {
             Threads.interruptIfNecessary(e);
             close();
-            throw new Error("Database registry init discovery error.", e);
+            throw new Error("Database init discover error.", e);
         }
     }
 
@@ -162,24 +144,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             Threads.interruptIfNecessary(t);
             return false;
         }
-    }
-
-    @Override
-    public final List<D> getDiscoveredServers(String group) {
-        asyncRefreshDiscoveryServers();
-        return super.getDiscoveredServers(group);
-    }
-
-    @Override
-    public final boolean hasDiscoveredServers() {
-        asyncRefreshDiscoveryServers();
-        return super.hasDiscoveredServers();
-    }
-
-    @Override
-    public final boolean isDiscoveredServer(D server) {
-        asyncRefreshDiscoveryServers();
-        return super.isDiscoveredServer(server);
     }
 
     // ------------------------------------------------------------------Registry
@@ -251,7 +215,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         registerHeartbeatThread.terminate();
         registered.forEach(this::deregister);
         registered.clear();
-        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(asyncRefreshExecutor, 1));
+        discoverHeartbeatThread.terminate();
         super.close();
     }
 
@@ -272,7 +236,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     /**
      * 心跳注册，不需要原子性
      */
-    private void doHeartbeatRegister() {
+    private void registerServers() {
         for (R server : registered) {
             final String serialize = server.serialize();
             RetryTemplate.executeQuietly(() -> {
@@ -289,26 +253,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         }
     }
 
-    private void asyncRefreshDiscoveryServers() {
-        if (!requireRefresh()) {
-            return;
-        }
-        asyncRefreshExecutor.execute(() -> {
-            if (!asyncRefreshLock.tryLock()) {
-                return;
-            }
-            try {
-                doRefreshDiscoveryServers();
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                log.error("Database async refresh discovery servers occur error.", t);
-            } finally {
-                asyncRefreshLock.unlock();
-            }
-        });
-    }
-
-    private void doRefreshDiscoveryServers() throws Throwable {
+    private void discoverServers() throws Throwable {
         RetryTemplate.execute(() -> {
             Object[] args = {namespace, discoveryRoleName, System.currentTimeMillis() - sessionTimeoutMs};
             List<String> discovered = jdbcTemplateWrapper.query(DISCOVER_SQL, ROW_MAPPER, args);
@@ -321,17 +266,8 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             List<D> servers = discovered.stream().<D>map(discoveryRole::deserialize).collect(Collectors.toList());
             refreshDiscoveredServers(servers);
 
-            updateRefresh();
-            log.debug("Database refreshed discovery {} servers.", discoveryRole.name());
+            log.debug("Database discovered {} servers.", discoveryRole.name());
         }, 3, 1000L);
-    }
-
-    private boolean requireRefresh() {
-        return !closed.get() && nextRefreshTimeMillis < System.currentTimeMillis();
-    }
-
-    private void updateRefresh() {
-        this.nextRefreshTimeMillis = System.currentTimeMillis() + registryPeriodMs;
     }
 
 }

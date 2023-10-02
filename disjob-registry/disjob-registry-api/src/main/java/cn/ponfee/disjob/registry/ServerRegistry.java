@@ -79,17 +79,17 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     public abstract boolean isConnected();
 
     @Override
-    public List<D> getDiscoveredServers(String group) {
+    public final List<D> getDiscoveredServers(String group) {
         return discoveryServer.getServers(group);
     }
 
     @Override
-    public boolean hasDiscoveredServers() {
+    public final boolean hasDiscoveredServers() {
         return discoveryServer.hasServers();
     }
 
     @Override
-    public boolean isDiscoveredServer(D server) {
+    public final boolean isDiscoveredServer(D server) {
         return discoveryServer.isAlive(server);
     }
 

@@ -12,7 +12,6 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.core.base.AbstractHeartbeatThread;
 import cn.ponfee.disjob.core.enums.*;
@@ -109,7 +108,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     @Override
     public void close() {
         super.close();
-        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 1));
+        ThreadPoolExecutors.shutdown(processJobExecutor, 1);
     }
 
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {

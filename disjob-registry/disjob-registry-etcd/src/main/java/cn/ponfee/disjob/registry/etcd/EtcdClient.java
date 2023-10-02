@@ -11,7 +11,6 @@ package cn.ponfee.disjob.registry.etcd;
 import cn.ponfee.disjob.common.base.LoopProcessThread;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.registry.ConnectionStateListener;
@@ -283,7 +282,7 @@ public class EtcdClient implements Closeable {
         @PreDestroy
         @Override
         public void close() {
-            ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(asyncExecutor, 1));
+            ThreadPoolExecutors.shutdown(asyncExecutor, 1);
         }
 
         @Override

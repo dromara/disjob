@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,15 +198,15 @@ public final class ThreadPoolExecutors {
      * @return is safe shutdown
      */
     public static boolean shutdown(ExecutorService executorService) {
-        executorService.shutdown();
         try {
+            executorService.shutdown();
             while (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
                 // do nothing
             }
             return true;
         } catch (Throwable t) {
             LOG.error("Shutdown ExecutorService occur error.", t);
-            executorService.shutdownNow();
+            ThrowingRunnable.execute(executorService::shutdownNow);
             Threads.interruptIfNecessary(t);
             return false;
         }
@@ -219,9 +220,10 @@ public final class ThreadPoolExecutors {
      * @return {@code true} if safe terminate
      */
     public static boolean shutdown(ExecutorService executorService, int awaitSeconds) {
-        executorService.shutdown();
-        boolean isSafeTerminated = false, hasCallShutdownNow = false;
+        boolean isSafeTerminated = false;
+        boolean hasCallShutdownNow = false;
         try {
+            executorService.shutdown();
             isSafeTerminated = executorService.awaitTermination(awaitSeconds, TimeUnit.SECONDS);
             if (!isSafeTerminated) {
                 hasCallShutdownNow = true;
@@ -230,7 +232,7 @@ public final class ThreadPoolExecutors {
         } catch (Throwable t) {
             LOG.error("Shutdown ExecutorService occur error.", t);
             if (!hasCallShutdownNow) {
-                executorService.shutdownNow();
+                ThrowingRunnable.execute(executorService::shutdownNow);
             }
             Threads.interruptIfNecessary(t);
         }

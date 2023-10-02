@@ -15,7 +15,6 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
@@ -212,7 +211,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         workerThreadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
-        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(stopTaskExecutor, 1));
+        ThreadPoolExecutors.shutdown(stopTaskExecutor, 1);
 
         // 2.5、clear task execution param queue
         ThrowingRunnable.execute(taskQueue::clear);

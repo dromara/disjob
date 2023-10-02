@@ -16,7 +16,6 @@ import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
@@ -89,7 +88,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     @Override
     public void stop() {
         if (heartbeatThread.terminate()) {
-            ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(processExecutor, 3));
+            ThreadPoolExecutors.shutdown(processExecutor, 3);
         }
     }
 

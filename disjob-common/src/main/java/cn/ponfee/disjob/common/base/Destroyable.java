@@ -27,6 +27,7 @@ public interface Destroyable {
      * Destroy target resources
      *
      * @param target the target object
+     * @throws Exception if occur error
      */
     static void destroy(Object target) throws Exception {
         if (target == null) {

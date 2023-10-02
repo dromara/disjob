@@ -73,7 +73,7 @@ public class LoopProcessThread extends Thread {
         if (state.compareAndSet(NEW, RUNNABLE)) {
             super.start();
         } else {
-            LOG.warn("Loop process thread start failed.");
+            throw new IllegalStateException("Loop process thread already started.");
         }
     }
 
@@ -81,8 +81,9 @@ public class LoopProcessThread extends Thread {
         if (state.compareAndSet(RUNNABLE, TERMINATED)) {
             ThrowingRunnable.execute(super::interrupt);
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
 }
