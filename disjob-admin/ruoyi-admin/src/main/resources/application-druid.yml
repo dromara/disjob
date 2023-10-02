@@ -14,9 +14,9 @@ spring.datasource:
       username:
       password:
     # 初始连接数
-    initialSize: 5
+    initialSize: 2
     # 最小连接池数量
-    minIdle: 10
+    minIdle: 2
     # 最大连接池数量
     maxActive: 20
     # 配置获取连接等待超时的时间

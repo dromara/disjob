@@ -137,7 +137,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
     private int registerWorkerId(int workerIdBitLength) {
         int workerIdMaxCount = 1 << workerIdBitLength;
-        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.queryForList(ROW_MAPPER, QUERY_ALL_SQL, bizTag);
+        List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.query(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
         DbSnowflakeWorker current = registeredWorkers.stream().filter(e -> e.equals(bizTag, serverTag)).findAny().orElse(null);
 
         if (current == null) {
@@ -147,7 +147,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
                 jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
 
                 // re-query
-                registeredWorkers = jdbcTemplateWrapper.queryForList(ROW_MAPPER, QUERY_ALL_SQL, bizTag);
+                registeredWorkers = jdbcTemplateWrapper.query(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
             }
 
             Set<Integer> usedWorkIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());

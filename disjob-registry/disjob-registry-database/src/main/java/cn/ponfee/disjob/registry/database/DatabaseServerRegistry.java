@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.util.ObjectUtils;
@@ -20,9 +21,7 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
-import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.Assert;
@@ -254,6 +253,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         registered.forEach(this::deregister);
         registered.clear();
         ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(asyncRefreshExecutor, 1));
+        ThrowingRunnable.execute(jdbcTemplateWrapper::close);
         super.close();
     }
 
@@ -316,7 +316,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private void doRefreshDiscoveryServers() throws Throwable {
         RetryTemplate.execute(() -> {
             Object[] args = {namespace, discoveryRoleName, System.currentTimeMillis() - sessionTimeoutMs};
-            List<String> discovered = jdbcTemplateWrapper.queryForList(ROW_MAPPER, DISCOVER_SQL, args);
+            List<String> discovered = jdbcTemplateWrapper.query(DISCOVER_SQL, ROW_MAPPER, args);
 
             if (CollectionUtils.isEmpty(discovered)) {
                 log.warn("Not discovered available {} from database.", discoveryRole.name());

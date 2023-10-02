@@ -47,4 +47,5 @@ public class SupervisorApplication extends AbstractSamplesApplication {
                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
         return new DbDistributedSnowflake(jdbcTemplate, "disjob", JobUtils.getLocalHost(boundHost) + Char.COLON + port);
     }
+
 }

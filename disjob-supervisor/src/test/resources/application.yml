@@ -6,8 +6,8 @@ disjob.datasource:
   jdbc-url: jdbc:mysql://localhost:23306/disjob?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
   username: disjob
   password: disjob$123456
-  minimum-idle: 10
-  maximum-pool-size: 100
+  minimum-idle: 2
+  maximum-pool-size: 20
   connection-timeout: 2000
   pool-name: disjob
 

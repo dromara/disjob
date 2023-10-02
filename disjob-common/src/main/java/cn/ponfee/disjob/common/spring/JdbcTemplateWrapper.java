@@ -22,13 +22,11 @@ import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
-import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Wrapped spring jdbc template.
@@ -70,19 +68,19 @@ public final class JdbcTemplateWrapper implements Closeable {
         return jdbcTemplate.update(sql, args);
     }
 
-    public <T> List<T> queryForList(RowMapper<T> rowMapper, String sql, Object... args) {
+    public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) {
         Assert.isTrue(sql.startsWith("SELECT "), () -> "Invalid SELECT sql: " + sql);
-        return jdbcTemplate.queryForStream(sql, rowMapper, args).collect(Collectors.toList());
+        return jdbcTemplate.query(sql, rowMapper, args);
     }
 
     public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {
         return jdbcTemplate.execute((ConnectionCallback<T>) con -> {
             Boolean previousAutoCommit = null;
-            final List<PreparedStatement> preparedStatements = new ArrayList<>();
+            final List<PreparedStatement> psList = new ArrayList<>();
             ThrowingFunction<String, PreparedStatement, ?> function = sql -> {
-                PreparedStatement preparedStatement = con.prepareStatement(sql);
-                preparedStatements.add(preparedStatement);
-                return preparedStatement;
+                PreparedStatement ps = con.prepareStatement(sql);
+                psList.add(ps);
+                return ps;
             };
             try {
                 previousAutoCommit = con.getAutoCommit();
@@ -102,9 +100,9 @@ public final class JdbcTemplateWrapper implements Closeable {
                         LOG.error("Restore connection auto-commit occur error.", t);
                     }
                 }
-                for (PreparedStatement each : Lists.reverse(preparedStatements)) {
+                for (PreparedStatement ps : Lists.reverse(psList)) {
                     try {
-                        each.close();
+                        ps.close();
                     } catch (Throwable t) {
                         LOG.error("Close prepare statement occur error.", t);
                     }
@@ -140,7 +138,7 @@ public final class JdbcTemplateWrapper implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         DataSource dataSource = jdbcTemplate.getDataSource();
         if (dataSource != null) {
             ThrowingRunnable.execute(() -> Releasable.release(dataSource));
