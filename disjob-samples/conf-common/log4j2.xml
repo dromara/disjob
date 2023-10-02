@@ -49,6 +49,8 @@
   <Loggers>
     <!-- additivity指定是否同时输出日志到父类的appender，缺省为true -->
     <Logger name="cn.ponfee.disjob" level="INFO" />
+    <Logger name="com.zaxxer.hikari" level="INFO" />
+
     <!--
     <Logger name="cn.ponfee.disjob.registry" level="DEBUG" />
     <Logger name="cn.ponfee.disjob.supervisor" level="DEBUG" />
