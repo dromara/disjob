@@ -13,7 +13,6 @@ import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.common.util.ObjectUtils;
@@ -253,7 +252,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         registered.forEach(this::deregister);
         registered.clear();
         ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(asyncRefreshExecutor, 1));
-        ThrowingRunnable.execute(jdbcTemplateWrapper::close);
         super.close();
     }
 

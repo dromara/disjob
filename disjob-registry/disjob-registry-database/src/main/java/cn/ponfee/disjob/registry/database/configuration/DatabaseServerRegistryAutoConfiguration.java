@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.registry.database.configuration;
 
+import cn.ponfee.disjob.common.base.Releasable;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -19,6 +21,7 @@ import cn.ponfee.disjob.registry.database.DatabaseSupervisorRegistry;
 import cn.ponfee.disjob.registry.database.DatabaseWorkerRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -78,6 +81,31 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     public WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
                                          @Qualifier(SPRING_BEAN_NAME_JTW) JdbcTemplateWrapper wrapper) {
         return new DatabaseWorkerRegistry(config, wrapper);
+    }
+
+    // -------------------------------------------------------------------------destroy datasource
+
+    @ConditionalOnMissingBean
+    @Bean
+    private DatabaseRegistryDataSourceDestroy databaseRegistryDataSourceDestroy(@Qualifier(SPRING_BEAN_NAME_JTW) JdbcTemplateWrapper wrapper) {
+        return new DatabaseRegistryDataSourceDestroy(wrapper);
+    }
+
+    private class DatabaseRegistryDataSourceDestroy implements DisposableBean {
+        final JdbcTemplateWrapper wrapper;
+
+        DatabaseRegistryDataSourceDestroy(JdbcTemplateWrapper wrapper) {
+            this.wrapper = wrapper;
+        }
+
+        @Override
+        public void destroy() throws Exception {
+            DataSource dataSource = wrapper.jdbcTemplate().getDataSource();
+            if (dataSource != null) {
+                ThrowingRunnable.execute(() -> Releasable.release(dataSource), () -> "Database registry datasource destroy error.");
+                log.info("Database registry datasource destroy finished.");
+            }
+        }
     }
 
 }
