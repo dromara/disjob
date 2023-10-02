@@ -106,10 +106,10 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private final Lock asyncRefreshLock = new ReentrantLock();
     private volatile long nextRefreshTimeMillis = 0;
 
-    protected DatabaseServerRegistry(DatabaseRegistryProperties config) {
+    protected DatabaseServerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper wrapper) {
         super(config.getNamespace(), ':');
         this.namespace = config.getNamespace().trim();
-        this.jdbcTemplateWrapper = createJdbcTemplateWrapper(config.getDatasource());
+        this.jdbcTemplateWrapper = wrapper;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
         this.registryPeriodMs = config.getSessionTimeoutMs() / 3;
 
@@ -337,19 +337,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     private void updateRefresh() {
         this.nextRefreshTimeMillis = System.currentTimeMillis() + registryPeriodMs;
-    }
-
-    private static JdbcTemplateWrapper createJdbcTemplateWrapper(DatabaseRegistryProperties.DataSourceProperties config) {
-        HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setDriverClassName(config.getDriverClassName());
-        dataSource.setJdbcUrl(config.getJdbcUrl());
-        dataSource.setUsername(config.getUsername());
-        dataSource.setPassword(config.getPassword());
-        dataSource.setMinimumIdle(config.getMinimumIdle());
-        dataSource.setMaximumPoolSize(config.getMaximumPoolSize());
-        dataSource.setConnectionTimeout(config.getConnectionTimeout());
-        dataSource.setPoolName(config.getPoolName());
-        return JdbcTemplateWrapper.of(new JdbcTemplate(dataSource));
     }
 
 }

@@ -8,7 +8,9 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.base.Releasable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -18,6 +20,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
+import javax.sql.DataSource;
+import java.io.Closeable;
+import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public final class JdbcTemplateWrapper {
+public final class JdbcTemplateWrapper implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcTemplateWrapper.class);
 
@@ -132,6 +137,14 @@ public final class JdbcTemplateWrapper {
             return rs.next();
         });
         return Boolean.TRUE.equals(result);
+    }
+
+    @Override
+    public void close() throws IOException {
+        DataSource dataSource = jdbcTemplate.getDataSource();
+        if (dataSource != null) {
+            ThrowingRunnable.execute(() -> Releasable.release(dataSource));
+        }
     }
 
 }

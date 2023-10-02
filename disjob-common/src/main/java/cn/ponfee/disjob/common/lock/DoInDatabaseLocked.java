@@ -9,8 +9,6 @@
 package cn.ponfee.disjob.common.lock;
 
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.PreparedStatement;
@@ -23,8 +21,6 @@ import java.util.concurrent.Callable;
  * @author Ponfee
  */
 public final class DoInDatabaseLocked implements DoInLocked {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DoInDatabaseLocked.class);
 
     /**
      * Spring jdbc template wrapper.

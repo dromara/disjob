@@ -69,7 +69,7 @@ public class JobConstants {
     /**
      * Spring container bean name prefix.
      */
-    private static final String SPRING_BEAN_NAME_PREFIX = DISJOB_KEY_PREFIX + ".bean";
+    public static final String SPRING_BEAN_NAME_PREFIX = DISJOB_KEY_PREFIX + ".bean";
 
     /**
      * Current supervisor spring bean name
