@@ -28,6 +28,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 
+import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -104,10 +105,11 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         return result != null && result;
     }
 
+    @PreDestroy
     @Override
     public void close() {
         super.close();
-        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 3));
+        ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(processJobExecutor, 1));
     }
 
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {

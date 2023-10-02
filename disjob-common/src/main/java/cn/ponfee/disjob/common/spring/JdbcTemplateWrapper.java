@@ -82,15 +82,13 @@ public final class JdbcTemplateWrapper {
             try {
                 previousAutoCommit = con.getAutoCommit();
                 con.setAutoCommit(false);
-                return action.apply(function);
+                T result = action.apply(function);
+                con.commit();
+                return result;
             } catch (Throwable t) {
+                con.rollback();
                 return ExceptionUtils.rethrow(t);
             } finally {
-                try {
-                    con.commit();
-                } catch (Throwable t) {
-                    LOG.error("Commit connection occur error.", t);
-                }
                 if (previousAutoCommit != null) {
                     try {
                         // restore the auto-commit config

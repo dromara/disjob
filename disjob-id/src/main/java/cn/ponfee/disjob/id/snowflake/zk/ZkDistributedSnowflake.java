@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
@@ -149,6 +150,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
         return snowflake.generateId();
     }
 
+    @PreDestroy
     @Override
     public void close() {
         heartbeatThread.terminate();

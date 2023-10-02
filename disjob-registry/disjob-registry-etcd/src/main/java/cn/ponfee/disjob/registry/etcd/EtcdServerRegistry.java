@@ -22,6 +22,7 @@ import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.support.CloseableClient;
 import org.apache.commons.collections4.CollectionUtils;
 
+import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -132,6 +133,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     // ------------------------------------------------------------------Close
 
+    @PreDestroy
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {

@@ -28,11 +28,6 @@ public class RedisRegistryProperties extends AbstractRegistryProperties {
     /**
      * Session timeout milliseconds
      */
-    private long sessionTimeoutMs = 30 * 1000;
-
-    /**
-     * Registry period milliseconds
-     */
-    private long registryPeriodMs = 10 * 1000;
+    private long sessionTimeoutMs = 60 * 1000;
 
 }

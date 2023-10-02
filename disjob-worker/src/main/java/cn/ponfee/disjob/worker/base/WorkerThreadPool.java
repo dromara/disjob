@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -181,6 +182,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
     }
 
+    @PreDestroy
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {

@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
+import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
@@ -104,7 +105,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
             RetryTemplate.execute(() -> jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL), 3, 1000L);
         } catch (Throwable e) {
             Threads.interruptIfNecessary(e);
-            throw new IllegalStateException("Create " + TABLE_NAME + " table failed.", e);
+            throw new Error("Create " + TABLE_NAME + " table failed.", e);
         }
 
         try {
@@ -124,6 +125,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         return snowflake.generateId();
     }
 
+    @PreDestroy
     @Override
     public void close() {
         if (heartbeatThread.terminate()) {

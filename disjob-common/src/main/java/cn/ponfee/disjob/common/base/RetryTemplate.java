@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.base;
 
+import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.util.ObjectUtils;
@@ -57,6 +58,19 @@ public class RetryTemplate {
         } while (++i <= retryMaxCount);
 
         throw ex;
+    }
+
+    public static void executeQuietly(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
+        executeQuietly(action.toSupplier(Boolean.TRUE), retryMaxCount, retryBackoffPeriod);
+    }
+
+    public static <T> T executeQuietly(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
+        try {
+            return execute(action, retryMaxCount, retryBackoffPeriod);
+        } catch (Throwable t) {
+            Threads.interruptIfNecessary(t);
+            return null;
+        }
     }
 
 }

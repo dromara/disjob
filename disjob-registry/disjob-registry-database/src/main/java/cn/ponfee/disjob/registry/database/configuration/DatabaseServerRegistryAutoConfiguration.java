@@ -19,7 +19,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Spring autoconfiguration for database server registry
@@ -35,9 +34,8 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnBean(Supervisor.class)
     @ConditionalOnMissingBean
     @Bean
-    public SupervisorRegistry supervisorRegistry(JdbcTemplate jdbcTemplate,
-                                                 DatabaseRegistryProperties config) {
-        return new DatabaseSupervisorRegistry(jdbcTemplate, config);
+    public SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config) {
+        return new DatabaseSupervisorRegistry(config);
     }
 
     /**
@@ -46,9 +44,8 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnBean(Worker.class)
     @ConditionalOnMissingBean
     @Bean
-    public WorkerRegistry workerRegistry(JdbcTemplate jdbcTemplate,
-                                         DatabaseRegistryProperties config) {
-        return new DatabaseWorkerRegistry(jdbcTemplate, config);
+    public WorkerRegistry workerRegistry(DatabaseRegistryProperties config) {
+        return new DatabaseWorkerRegistry(config);
     }
 
 }

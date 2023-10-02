@@ -28,6 +28,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 
+import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -80,9 +81,18 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      */
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * Session timeout milliseconds
+     */
+    private final long sessionTimeoutMs;
+
+    /**
+     * Register period milliseconds
+     */
+    private final long registryPeriodMs;
+
     // -------------------------------------------------Registry
 
-    private final long sessionTimeoutMs;
     private final LoopProcessThread registerHeartbeatThread;
     private final List<String> registryRedisKey;
 
@@ -103,13 +113,13 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
+        this.registryPeriodMs = config.getSessionTimeoutMs() / 3;
         this.registryRedisKey = Collections.singletonList(registryRootPath);
         this.discoveryRedisKey = Collections.singletonList(discoveryRootPath);
 
-        long periodMs = config.getRegistryPeriodMs();
+        ThrowingRunnable<?> action = () -> RetryTemplate.execute(() -> doRegister(registered), 3, 1000);
         this.registerHeartbeatThread = new LoopProcessThread(
-            "redis_register_heartbeat", periodMs, periodMs,
-            () -> RetryTemplate.execute(() -> doRegister(registered), 3, 1000)
+            "redis_register_heartbeat", registryPeriodMs, registryPeriodMs, action
         );
         registerHeartbeatThread.start();
 
@@ -194,6 +204,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     // ------------------------------------------------------------------Close
 
+    @PreDestroy
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
@@ -319,6 +330,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             refreshDiscoveredServers(servers);
 
             updateRefresh();
+            log.debug("Redis refreshed discovery {} servers.", discoveryRole.name());
         }, 3, 1000L);
     }
 
@@ -327,7 +339,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void updateRefresh() {
-        this.nextRefreshTimeMillis = System.currentTimeMillis() + sessionTimeoutMs;
+        this.nextRefreshTimeMillis = System.currentTimeMillis() + registryPeriodMs;
     }
 
     private void resetRefresh() {

@@ -25,6 +25,7 @@ import com.ecwid.consul.v1.health.model.HealthService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -116,6 +117,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     // ------------------------------------------------------------------Close
 
+    @PreDestroy
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {

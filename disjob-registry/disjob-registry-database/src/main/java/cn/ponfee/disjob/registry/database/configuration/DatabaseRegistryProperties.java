@@ -14,6 +14,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.io.Serializable;
+
 /**
  * Database registry configuration properties.
  *
@@ -28,11 +30,26 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
     /**
      * Session timeout milliseconds
      */
-    private long sessionTimeoutMs = 30 * 1000;
+    private long sessionTimeoutMs = 60 * 1000;
 
     /**
-     * Registry period milliseconds
+     * Datasource configuration.
      */
-    private long registryPeriodMs = 10 * 1000;
+    private DataSourceProperties datasource;
+
+    @Getter
+    @Setter
+    public static class DataSourceProperties implements Serializable {
+        private static final long serialVersionUID = 6995495113012945438L;
+
+        private String driverClassName = "com.mysql.cj.jdbc.Driver";
+        private String jdbcUrl;
+        private String username;
+        private String password;
+        private int minimumIdle = 1;
+        private int maximumPoolSize = 20;
+        private long connectionTimeout = 3000;
+        private String poolName = "disjob_registry_database";
+    }
 
 }

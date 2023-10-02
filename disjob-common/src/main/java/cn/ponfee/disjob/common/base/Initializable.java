@@ -6,22 +6,38 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.registry.database;
-
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
+package cn.ponfee.disjob.common.base;
 
 /**
- * Registry supervisor based database.
+ * Initialize resources
  *
  * @author Ponfee
  */
-public class DatabaseSupervisorRegistry extends DatabaseServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
+@FunctionalInterface
+public interface Initializable {
 
-    public DatabaseSupervisorRegistry(DatabaseRegistryProperties config) {
-        super(config);
+    NoArgMethodInvoker INITIATOR = new NoArgMethodInvoker("open", "init", "initialize");
+
+    /**
+     * Initialize resources
+     */
+    void init();
+
+    /**
+     * Initialize target resources
+     *
+     * @param target the target object
+     */
+    static void init(Object target) {
+        if (target == null) {
+            return;
+        }
+
+        if (target instanceof Initializable) {
+            ((Initializable) target).init();
+        } else {
+            INITIATOR.invoke(target);
+        }
     }
 
 }

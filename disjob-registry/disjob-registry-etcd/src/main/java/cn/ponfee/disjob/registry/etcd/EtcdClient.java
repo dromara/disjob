@@ -36,6 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.*;
@@ -279,9 +280,10 @@ public class EtcdClient implements Closeable {
             this.processor = processor;
         }
 
+        @PreDestroy
         @Override
         public void close() {
-            ThrowingSupplier.execute(asyncExecutor::shutdownNow);
+            ThrowingSupplier.execute(() -> ThreadPoolExecutors.shutdown(asyncExecutor, 1));
         }
 
         @Override

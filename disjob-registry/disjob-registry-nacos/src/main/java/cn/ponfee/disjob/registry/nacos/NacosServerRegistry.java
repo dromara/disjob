@@ -24,6 +24,7 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -108,6 +109,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
     // ------------------------------------------------------------------Close
 
+    @PreDestroy
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {

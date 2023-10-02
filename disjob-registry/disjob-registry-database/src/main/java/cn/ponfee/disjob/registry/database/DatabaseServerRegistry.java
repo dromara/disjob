@@ -20,14 +20,19 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.Assert;
 
+import javax.annotation.PreDestroy;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +61,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         "  `server`          VARCHAR(255)            NOT NULL                  COMMENT 'server serialization',                \n" +
         "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',                 \n" +
         "  PRIMARY KEY (`id`),                                                                                                \n" +
-        "  UNIQUE KEY `uk_namespace_role_server` (`namespace`, `role`, `server`),                                             \n" +
+        "  UNIQUE KEY `uk_namespace_role_server` (`namespace`, `role`, `server`)                                              \n" +
         ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Registry center for database'; \n" ;
 
     private static final String REMOVE_DEAD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time<?";
@@ -79,6 +84,16 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
      */
     private final JdbcTemplateWrapper jdbcTemplateWrapper;
 
+    /**
+     * Session timeout milliseconds
+     */
+    private final long sessionTimeoutMs;
+
+    /**
+     * Register period milliseconds
+     */
+    private final long registryPeriodMs;
+
     // -------------------------------------------------Registry
 
     private final String registerRoleName;
@@ -86,42 +101,40 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     // -------------------------------------------------Discovery
 
-    private final long sessionTimeoutMs;
     private final String discoveryRoleName;
     private final ThreadPoolExecutor asyncRefreshExecutor;
     private final Lock asyncRefreshLock = new ReentrantLock();
     private volatile long nextRefreshTimeMillis = 0;
 
-    protected DatabaseServerRegistry(JdbcTemplate jdbcTemplate,
-                                     DatabaseRegistryProperties config) {
+    protected DatabaseServerRegistry(DatabaseRegistryProperties config) {
         super(config.getNamespace(), ':');
         this.namespace = config.getNamespace().trim();
-        this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
+        this.jdbcTemplateWrapper = createJdbcTemplateWrapper(config.getDatasource());
+        this.sessionTimeoutMs = config.getSessionTimeoutMs();
+        this.registryPeriodMs = config.getSessionTimeoutMs() / 3;
 
-        // registry
+        // ---------------------------registry---------------------------
         this.registerRoleName = registryRole.name().toLowerCase();
 
+        // create table
         try {
             RetryTemplate.execute(() -> jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL), 3, 1000L);
         } catch (Throwable e) {
             Threads.interruptIfNecessary(e);
-            throw new IllegalStateException("Create " + TABLE_NAME + " table failed.", e);
+            throw new Error("Create " + TABLE_NAME + " table failed.", e);
         }
 
+        // remove dead server
         Object[] args = {namespace, registerRoleName, System.currentTimeMillis() - DEAD_TIME_MILLIS};
-        try {
-            RetryTemplate.execute(() -> jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, args), 3, 1000L);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            log.error("Remove dead server failed: " + Arrays.toString(args), e);
-        }
+        RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, args), 3, 1000L);
 
-        long periodMs = config.getRegistryPeriodMs();
-        this.registerHeartbeatThread = new LoopProcessThread("database_register_heartbeat", periodMs, periodMs, this::heartbeatRegister);
+        // heartbeat register server
+        this.registerHeartbeatThread = new LoopProcessThread(
+            "database_register_heartbeat", registryPeriodMs, registryPeriodMs, this::doHeartbeatRegister
+        );
         registerHeartbeatThread.start();
 
-        // discovery
-        this.sessionTimeoutMs = config.getSessionTimeoutMs();
+        // ---------------------------discovery---------------------------
         this.discoveryRoleName = discoveryRole.name().toLowerCase();
         this.asyncRefreshExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
@@ -132,6 +145,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             .threadFactory(NamedThreadFactory.builder().prefix("database_async_discovery").priority(Thread.MAX_PRIORITY).build())
             .build();
 
+        // initialize discovery server
         try {
             doRefreshDiscoveryServers();
         } catch (Throwable e) {
@@ -143,7 +157,13 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     @Override
     public boolean isConnected() {
-        return jdbcTemplateWrapper != null;
+        try {
+            jdbcTemplateWrapper.existsTable(TABLE_NAME);
+            return true;
+        } catch (Throwable t) {
+            Threads.interruptIfNecessary(t);
+            return false;
+        }
     }
 
     @Override
@@ -166,6 +186,11 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     // ------------------------------------------------------------------Registry
 
+    /**
+     * Server注册，需要加事务保持原子性
+     *
+     * @param server the registering server
+     */
     @Override
     public final void register(R server) {
         if (closed.get()) {
@@ -175,26 +200,27 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         final Set<R> servers = splitServer(server);
         jdbcTemplateWrapper.executeInTransaction(action -> {
             for (R svr : servers) {
+                String serialize = svr.serialize();
                 PreparedStatement update = action.apply(HEARTBEAT_SQL);
                 update.setLong(1, System.currentTimeMillis());
                 update.setString(2, namespace);
                 update.setString(3, registerRoleName);
-                update.setString(4, svr.serialize());
+                update.setString(4, serialize);
                 int updateRowsAffected = update.executeUpdate();
                 Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + updateRowsAffected);
                 if (updateRowsAffected == AFFECTED_ONE_ROW) {
-                    log.info("Database registry register update: {} | {} | {}", namespace, registerRoleName, svr.serialize());
+                    log.info("Database register update: {} | {} | {}", namespace, registerRoleName, serialize);
                     continue;
                 }
 
                 PreparedStatement insert = action.apply(REGISTER_SQL);
                 insert.setString(1, namespace);
                 insert.setString(2, registerRoleName);
-                insert.setString(3, svr.serialize());
+                insert.setString(3, serialize);
                 insert.setLong(4, System.currentTimeMillis());
                 int insertRowsAffected = insert.executeUpdate();
                 Assert.isTrue(insertRowsAffected == AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + insertRowsAffected);
-                log.info("Database registry register insert: {} | {} | {}", namespace, insertRowsAffected, svr.serialize());
+                log.info("Database register insert: {} | {} | {}", namespace, insertRowsAffected, serialize);
             }
 
             return null;
@@ -216,6 +242,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     // ------------------------------------------------------------------Close
 
+    @PreDestroy
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
@@ -244,27 +271,24 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         return servers;
     }
 
-    private void heartbeatRegister() {
+    /**
+     * 心跳注册，不需要原子性
+     */
+    private void doHeartbeatRegister() {
         for (R server : registered) {
-            try {
-                RetryTemplate.execute(() -> doHeartbeatRegister(server), 3, 2000L);
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                log.error("Do database registry heartbeat occur error: " + server.serialize(), t);
-            }
-        }
-    }
+            final String serialize = server.serialize();
+            RetryTemplate.executeQuietly(() -> {
+                Object[] updateArgs = {System.currentTimeMillis(), namespace, registerRoleName, serialize};
+                if (jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs) == AFFECTED_ONE_ROW) {
+                    log.debug("Database heartbeat register update: {} | {} | {} | {}", updateArgs);
+                    return;
+                }
 
-    private void doHeartbeatRegister(R server) {
-        Object[] updateArgs = {System.currentTimeMillis(), namespace, registerRoleName, server.serialize()};
-        if (jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs) == AFFECTED_ONE_ROW) {
-            log.info("Database heartbeat register insert: {} | {} | {} | {}", updateArgs);
-            return;
+                Object[] insertArgs = {namespace, registerRoleName, serialize, System.currentTimeMillis()};
+                jdbcTemplateWrapper.insert(REGISTER_SQL, insertArgs);
+                log.debug("Database heartbeat register insert: {} | {} | {} | {}", insertArgs);
+            }, 3, 1000L);
         }
-
-        Object[] insertArgs = {namespace, registerRoleName, server.serialize(), System.currentTimeMillis()};
-        jdbcTemplateWrapper.insert(REGISTER_SQL, insertArgs);
-        log.info("Database heartbeat register update: {} | {} | {} | {}", insertArgs);
     }
 
     private void asyncRefreshDiscoveryServers() {
@@ -303,6 +327,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             refreshDiscoveredServers(servers);
 
             updateRefresh();
+            log.debug("Database refreshed discovery {} servers.", discoveryRole.name());
         }, 3, 1000L);
     }
 
@@ -311,7 +336,20 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     }
 
     private void updateRefresh() {
-        this.nextRefreshTimeMillis = System.currentTimeMillis() + sessionTimeoutMs;
+        this.nextRefreshTimeMillis = System.currentTimeMillis() + registryPeriodMs;
+    }
+
+    private static JdbcTemplateWrapper createJdbcTemplateWrapper(DatabaseRegistryProperties.DataSourceProperties config) {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setDriverClassName(config.getDriverClassName());
+        dataSource.setJdbcUrl(config.getJdbcUrl());
+        dataSource.setUsername(config.getUsername());
+        dataSource.setPassword(config.getPassword());
+        dataSource.setMinimumIdle(config.getMinimumIdle());
+        dataSource.setMaximumPoolSize(config.getMaximumPoolSize());
+        dataSource.setConnectionTimeout(config.getConnectionTimeout());
+        dataSource.setPoolName(config.getPoolName());
+        return JdbcTemplateWrapper.of(new JdbcTemplate(dataSource));
     }
 
 }

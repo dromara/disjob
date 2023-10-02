@@ -30,4 +30,3 @@ spring.redis:
 disjob.registry.redis:
   namespace: redis_namespace
   session-timeout-ms: 60000
-  registry-period-ms: 4000

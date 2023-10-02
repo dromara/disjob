@@ -28,6 +28,7 @@ disjob                                        # 主项目①
 ├── disjob-registry                           # Server(Supervisor & Worker)注册模块
 │   ├── disjob-registry-api                   # Server注册的抽象接口层
 │   ├── disjob-registry-consul                # Server注册的Consul实现
+│   ├── disjob-registry-database              # Server注册的Database实现
 │   ├── disjob-registry-etcd                  # Server注册的Etcd实现
 │   ├── disjob-registry-nacos                 # Server注册的Nacos实现
 │   ├── disjob-registry-redis                 # Server注册的Redis实现
@@ -47,7 +48,7 @@ disjob                                        # 主项目①
 ## Features
 
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
-- Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd
+- Supervisor与Worker通过注册中心相互发现，注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http
 - 需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行
 - 提供拆分任务的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
@@ -141,6 +142,7 @@ disjob                                        # 主项目①
 
 5. 各种注册中心配置类参考（Redis使用Spring-boot自带的配置方式）
 - [Consul](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)
+- [Database](disjob-registry/disjob-registry-database/src/main/java/cn/ponfee/disjob/registry/database/configuration/DatabaseRegistryProperties.java)
 - [Zookeeper](disjob-registry/disjob-registry-zookeeper/src/main/java/cn/ponfee/disjob/registry/zookeeper/configuration/ZookeeperRegistryProperties.java)
 - [Nacos](disjob-registry/disjob-registry-nacos/src/main/java/cn/ponfee/disjob/registry/nacos/configuration/NacosRegistryProperties.java)
 - [Etcd](disjob-registry/disjob-registry-etcd/src/main/java/cn/ponfee/disjob/registry/etcd/configuration/EtcdRegistryProperties.java)

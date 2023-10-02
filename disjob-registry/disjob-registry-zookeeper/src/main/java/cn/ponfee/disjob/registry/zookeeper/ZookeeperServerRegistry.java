@@ -17,6 +17,7 @@ import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
 
+import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -101,6 +102,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     // ------------------------------------------------------------------Close
 
+    @PreDestroy
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
