@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.etcd;
 
-import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
@@ -53,7 +53,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     /**
      * Keep alive check thread
      */
-    private final LoopProcessThread keepAliveCheckThread;
+    private final LoopThread keepAliveCheckThread;
 
     /**
      * Etcd lease id
@@ -79,8 +79,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             client.watchChildChanged(discoveryRootPath, latch, this::doRefreshDiscoveryServers);
 
             long periodMs = Math.max(ttl / 4, 1) * 1000;
-            this.keepAliveCheckThread = new LoopProcessThread("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
-            keepAliveCheckThread.start();
+            this.keepAliveCheckThread = LoopThread.createStarted("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
 
             client.addConnectionStateListener(
                 ConnectionStateListener.<EtcdClient>builder().onConnected(c -> keepAliveRecover()).build()

@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.redis;
 
-import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
@@ -93,12 +93,12 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     // -------------------------------------------------Registry
 
-    private final LoopProcessThread registerHeartbeatThread;
+    private final LoopThread registerHeartbeatThread;
     private final List<String> registryRedisKey;
 
     // -------------------------------------------------Discovery
 
-    private final LoopProcessThread discoverHeartbeatThread;
+    private final LoopThread discoverHeartbeatThread;
     private final ThreadPoolExecutor redisSubscribeExecutor;
     private final Lock asyncRefreshLock = new ReentrantLock();
     private final List<String> discoveryRedisKey;
@@ -120,13 +120,11 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         // -------------------------------------------------registry
         ThrowingRunnable<?> registerAction = () -> RetryTemplate.execute(() -> doRegisterServers(registered), 3, 1000);
-        this.registerHeartbeatThread = new LoopProcessThread("redis_register_heartbeat", periodMs, periodMs, registerAction);
-        registerHeartbeatThread.start();
+        this.registerHeartbeatThread = LoopThread.createStarted("redis_register_heartbeat", periodMs, periodMs, registerAction);
 
         // -------------------------------------------------discovery
         ThrowingRunnable<?> discoverAction = () -> { if (requireDiscoverServers()) { tryDiscoverServers(); } };
-        this.discoverHeartbeatThread = new LoopProcessThread("redis_discover_heartbeat", periodMs, periodMs, discoverAction);
-        discoverHeartbeatThread.start();
+        this.discoverHeartbeatThread = LoopThread.createStarted("redis_discover_heartbeat", periodMs, periodMs, discoverAction);
 
         this.redisSubscribeExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)

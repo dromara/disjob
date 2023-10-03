@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.id.snowflake.db;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -83,7 +83,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     private final String bizTag;
     private final String serverTag;
     private final Snowflake snowflake;
-    private final LoopProcessThread heartbeatThread;
+    private final LoopThread heartbeatThread;
 
     public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
         this(jdbcTemplate, bizTag, serverTag, 14, 8);
@@ -116,8 +116,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
             throw new Error("Db snowflake server initialize error.", e);
         }
 
-        this.heartbeatThread = new LoopProcessThread("db_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
-        heartbeatThread.start();
+        this.heartbeatThread = LoopThread.createStarted("db_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
     }
 
     @Override

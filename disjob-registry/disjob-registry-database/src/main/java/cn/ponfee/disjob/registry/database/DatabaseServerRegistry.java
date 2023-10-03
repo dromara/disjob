@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.database;
 
-import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
@@ -84,12 +84,12 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     // -------------------------------------------------Registry
 
     private final String registerRoleName;
-    private final LoopProcessThread registerHeartbeatThread;
+    private final LoopThread registerHeartbeatThread;
 
     // -------------------------------------------------Discovery
 
     private final String discoveryRoleName;
-    private final LoopProcessThread discoverHeartbeatThread;
+    private final LoopThread discoverHeartbeatThread;
 
     protected DatabaseServerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper wrapper) {
         super(config.getNamespace(), ':');
@@ -115,15 +115,13 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, args), 3, 1000L);
 
         // heartbeat register servers
-        this.registerHeartbeatThread = new LoopProcessThread("database_register_heartbeat", periodMs, periodMs, this::registerServers);
-        registerHeartbeatThread.start();
+        this.registerHeartbeatThread = LoopThread.createStarted("database_register_heartbeat", periodMs, periodMs, this::registerServers);
 
         // -------------------------------------------------discovery
         this.discoveryRoleName = discoveryRole.name().toLowerCase();
 
         // heartbeat discover servers
-        this.discoverHeartbeatThread = new LoopProcessThread("database_discover_heartbeat", periodMs, periodMs, this::discoverServers);
-        discoverHeartbeatThread.start();
+        this.discoverHeartbeatThread = LoopThread.createStarted("database_discover_heartbeat", periodMs, periodMs, this::discoverServers);
 
         // initialize discover server
         try {

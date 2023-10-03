@@ -15,13 +15,13 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Loop process thread
+ * Loop thread
  *
  * @author Ponfee
  */
-public class LoopProcessThread extends Thread {
+public class LoopThread extends Thread {
 
-    private final static Logger LOG = LoggerFactory.getLogger(LoopProcessThread.class);
+    private final static Logger LOG = LoggerFactory.getLogger(LoopThread.class);
 
     private static final int NEW = 0;
     private static final int RUNNABLE = 1;
@@ -32,12 +32,12 @@ public class LoopProcessThread extends Thread {
     private final long delayMs;
     private final ThrowingRunnable<?> action;
 
-    public LoopProcessThread(String name, long periodMs, long delayMs, ThrowingRunnable<?> action) {
+    public LoopThread(String name, long periodMs, long delayMs, ThrowingRunnable<?> action) {
         this(name, true, Thread.MAX_PRIORITY, periodMs, delayMs, action);
     }
 
-    public LoopProcessThread(String name, boolean daemon, int priority,
-                             long periodMs, long delayMs, ThrowingRunnable<?> action) {
+    public LoopThread(String name, boolean daemon, int priority,
+                      long periodMs, long delayMs, ThrowingRunnable<?> action) {
         super.setName(name);
         super.setDaemon(daemon);
         super.setPriority(priority);
@@ -45,6 +45,17 @@ public class LoopProcessThread extends Thread {
         this.periodMs = periodMs;
         this.delayMs = delayMs;
         this.action = action;
+    }
+
+    public static LoopThread createStarted(String name, long periodMs, long delayMs, ThrowingRunnable<?> action) {
+        return createStarted(name, true, Thread.MAX_PRIORITY, periodMs, delayMs, action);
+    }
+
+    public static LoopThread createStarted(String name, boolean daemon, int priority,
+                                           long periodMs, long delayMs, ThrowingRunnable<?> action) {
+        LoopThread thread = new LoopThread(name, daemon, priority, periodMs, delayMs, action);
+        thread.start();
+        return thread;
     }
 
     @Override

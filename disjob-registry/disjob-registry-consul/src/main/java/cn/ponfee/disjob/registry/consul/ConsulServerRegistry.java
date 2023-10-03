@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.registry.consul;
 
 import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
-import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
@@ -58,7 +58,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     /**
      * Consul ttl check thread
      */
-    private final LoopProcessThread consulTtlCheckThread;
+    private final LoopThread consulTtlCheckThread;
 
     private final ConsulSubscriberThread consulSubscriberThread;
 
@@ -69,8 +69,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();
 
         int periodMs = Math.max(CHECK_PASS_INTERVAL_SECONDS, 1) * 1000;
-        this.consulTtlCheckThread = new LoopProcessThread("consul_ttl_check", periodMs, periodMs, this::checkPass);
-        consulTtlCheckThread.start();
+        this.consulTtlCheckThread = LoopThread.createStarted("consul_ttl_check", periodMs, periodMs, this::checkPass);
 
         this.consulSubscriberThread = new ConsulSubscriberThread(-1);
         consulSubscriberThread.start();

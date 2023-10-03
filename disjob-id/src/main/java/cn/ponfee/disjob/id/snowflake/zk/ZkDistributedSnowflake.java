@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.id.snowflake.zk;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -99,7 +99,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     private final CuratorFramework curator;
     private final int workerId;
     private final Snowflake snowflake;
-    private final LoopProcessThread heartbeatThread;
+    private final LoopThread heartbeatThread;
 
     public ZkDistributedSnowflake(ZkConfig zkConfig, String bizTag, String serverTag) {
         this(zkConfig, bizTag, serverTag, 14, 8);
@@ -141,8 +141,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
         curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
-        this.heartbeatThread = new LoopProcessThread("zk_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
-        heartbeatThread.start();
+        this.heartbeatThread = LoopThread.createStarted("zk_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
     }
 
     @Override

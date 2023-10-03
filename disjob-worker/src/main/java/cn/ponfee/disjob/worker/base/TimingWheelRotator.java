@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.worker.base;
 
-import cn.ponfee.disjob.common.base.LoopProcessThread;
+import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
@@ -51,7 +51,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private final Discovery<Supervisor> discoverySupervisor;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
     private final WorkerThreadPool workerThreadPool;
-    private final LoopProcessThread heartbeatThread;
+    private final LoopThread heartbeatThread;
     private final ExecutorService processExecutor;
 
     private volatile int round = 0;
@@ -68,7 +68,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
 
-        this.heartbeatThread = new LoopProcessThread("timing_wheel_rotate", timingWheel.getTickMs(), 0, this::process);
+        this.heartbeatThread = new LoopThread("timing_wheel_rotate", timingWheel.getTickMs(), 0, this::process);
 
         int actualProcessPoolSize = Math.max(1, processThreadPoolSize);
         this.processExecutor = ThreadPoolExecutors.builder()
