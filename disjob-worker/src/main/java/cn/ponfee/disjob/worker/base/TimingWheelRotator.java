@@ -88,7 +88,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     @Override
     public void stop() {
         if (heartbeatThread.terminate()) {
-            ThreadPoolExecutors.shutdown(processExecutor, 3);
+            ThreadPoolExecutors.shutdown(processExecutor, 2);
         }
     }
 
