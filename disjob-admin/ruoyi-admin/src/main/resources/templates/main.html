@@ -35,14 +35,6 @@
 
 
 
-
-
-
-
-
-
-
-
   <readme-toc>
 
     <div id="readme" class="Box md js-code-block-container js-code-nav-container js-tagsearch-file Box--responsive"
@@ -111,14 +103,14 @@
           <p dir="auto">轻量级，简单易用，特别适合长任务的执行。有较好的伸缩性、扩展性、稳定性，历经生产检验。</p>
           <h2 tabindex="-1" id="user-content-architecture" dir="auto"><a class="heading-link" href="#architecture">Architecture<svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></h2>
           <ul dir="auto">
-            <li>整体流程图</li>
+            <li>整体流程</li>
           </ul>
           <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://github.com/dromara/disjob/blob/master/docs/images/architecture.jpg"><img src="https://raw.githubusercontent.com/dromara/disjob/master/docs/images/architecture.jpg" alt="Architecture" style="max-width: 100%;"></a></p>
           <ul dir="auto">
-            <li>工程结构</li>
+            <li>代码结构</li>
           </ul>
-          <div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="disjob                                        # 主项目
-├── disjob-admin                              # 基于Ruoyi框架二次开发的Disjob管理后台
+          <div class="snippet-clipboard-content notranslate position-relative overflow-auto" data-snippet-clipboard-copy-content="disjob                                        # 主项目①
+├── disjob-admin                              # 管理后台项目②(基于Ruoyi框架二次开发)
 ├── disjob-bom                                # Maven project bom module
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
@@ -128,14 +120,15 @@
 │   └── disjob-dispatch-redis                 # 任务派发的Redis实现
 ├── disjob-id                                 # 分布式ID生成模块
 ├── disjob-registry                           # Server(Supervisor &amp; Worker)注册模块
-│   ├── disjob-registry-api                   # Server注册的抽象接口层
-│   ├── disjob-registry-consul                # Server注册的Consul实现
-│   ├── disjob-registry-etcd                  # Server注册的Etcd实现
-│   ├── disjob-registry-nacos                 # Server注册的Nacos实现
-│   ├── disjob-registry-redis                 # Server注册的Redis实现
-│   └── disjob-registry-zookeeper             # Server注册的Zookeeper实现
+│   ├── disjob-registry-api                   # Server注册中心的抽象接口层
+│   ├── disjob-registry-consul                # Server注册中心：Consul实现
+│   ├── disjob-registry-database              # Server注册中心：Database实现
+│   ├── disjob-registry-etcd                  # Server注册中心：Etcd实现
+│   ├── disjob-registry-nacos                 # Server注册中心：Nacos实现
+│   ├── disjob-registry-redis                 # Server注册中心：Redis实现
+│   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
-├── disjob-samples                            # Samples项目
+├── disjob-samples                            # Samples项目③
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
 │   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
 │   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）
@@ -143,8 +136,8 @@
 │   └── disjob-samples-springboot-worker      # Worker单独部署的范例（Spring-boot应用）
 ├── disjob-supervisor                         # Supervisor代码
 ├── disjob-test                               # 用于辅助测试
-└── disjob-worker                             # Worker代码"><pre lang="text" class="notranslate"><code>disjob                                        # 主项目
-├── disjob-admin                              # 基于Ruoyi框架二次开发的Disjob管理后台
+└── disjob-worker                             # Worker代码"><pre lang="text" class="notranslate"><code>disjob                                        # 主项目①
+├── disjob-admin                              # 管理后台项目②(基于Ruoyi框架二次开发)
 ├── disjob-bom                                # Maven project bom module
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
@@ -154,14 +147,15 @@
 │   └── disjob-dispatch-redis                 # 任务派发的Redis实现
 ├── disjob-id                                 # 分布式ID生成模块
 ├── disjob-registry                           # Server(Supervisor &amp; Worker)注册模块
-│   ├── disjob-registry-api                   # Server注册的抽象接口层
-│   ├── disjob-registry-consul                # Server注册的Consul实现
-│   ├── disjob-registry-etcd                  # Server注册的Etcd实现
-│   ├── disjob-registry-nacos                 # Server注册的Nacos实现
-│   ├── disjob-registry-redis                 # Server注册的Redis实现
-│   └── disjob-registry-zookeeper             # Server注册的Zookeeper实现
+│   ├── disjob-registry-api                   # Server注册中心的抽象接口层
+│   ├── disjob-registry-consul                # Server注册中心：Consul实现
+│   ├── disjob-registry-database              # Server注册中心：Database实现
+│   ├── disjob-registry-etcd                  # Server注册中心：Etcd实现
+│   ├── disjob-registry-nacos                 # Server注册中心：Nacos实现
+│   ├── disjob-registry-redis                 # Server注册中心：Redis实现
+│   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
-├── disjob-samples                            # Samples项目
+├── disjob-samples                            # Samples项目③
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
 │   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
 │   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）
@@ -174,7 +168,7 @@
           <h2 tabindex="-1" id="user-content-features" dir="auto"><a class="heading-link" href="#features">Features<svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></h2>
           <ul dir="auto">
             <li>分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署</li>
-            <li>Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Redis、Consul、Nacos、Zookeeper、Etcd</li>
+            <li>Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd</li>
             <li>Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http</li>
             <li>需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行</li>
             <li>提供拆分任务的能力，重写拆分方法<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java">JobHandler#split</a>即可拆分为多个任务，实现分布式任务及并行执行</li>
@@ -204,8 +198,8 @@
           </ol>
           <ul dir="auto">
             <li><a href="https://github.com/dromara/disjob/blob/master/pom.xml">主项目—disjob</a></li>
-            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/pom.xml">范例项目—disjob-samples</a></li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/pom.xml">管理后台—disjob-admin</a></li>
+            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/pom.xml">范例项目—disjob-samples</a></li>
           </ul>
           <ol start="2" dir="auto">
             <li>启动以下各应用组成分布式调度集群</li>
@@ -283,13 +277,14 @@
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml">Redis配置</a>（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）</li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java">可加@EnableWorker注解启用Worker角色</a>（管理后台必须启用Supervisor角色）</li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml">管理后台功能相关的Mysql配置</a></li>
-            <li><a href="http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE" rel="nofollow">RuoYi框架相关配置参考</a>（disjob-admin中只新增了<a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob">ruoyi-disjob</a>模块，其它的RuoYi模块代码基本没有改动）</li>
+            <li><a href="http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE" rel="nofollow">RuoYi框架相关配置参考</a>（disjob-admin中只新增了<a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-disjob">ruoyi-disjob</a>模块，其它RuoYi原有的模块基本没有改动）</li>
           </ul>
           <ol start="5" dir="auto">
             <li>各种注册中心配置类参考（Redis使用Spring-boot自带的配置方式）</li>
           </ol>
           <ul dir="auto">
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java">Consul</a></li>
+            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-registry/disjob-registry-database/src/main/java/cn/ponfee/disjob/registry/database/configuration/DatabaseRegistryProperties.java">Database</a></li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-registry/disjob-registry-zookeeper/src/main/java/cn/ponfee/disjob/registry/zookeeper/configuration/ZookeeperRegistryProperties.java">Zookeeper</a></li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-registry/disjob-registry-nacos/src/main/java/cn/ponfee/disjob/registry/nacos/configuration/NacosRegistryProperties.java">Nacos</a></li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-registry/disjob-registry-etcd/src/main/java/cn/ponfee/disjob/registry/etcd/configuration/EtcdRegistryProperties.java">Etcd</a></li>
@@ -409,13 +404,6 @@
     </div>
 
   </readme-toc>
-
-
-
-
-
-
-
 
 
 

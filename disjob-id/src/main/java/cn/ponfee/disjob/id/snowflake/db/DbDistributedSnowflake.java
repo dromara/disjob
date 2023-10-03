@@ -201,7 +201,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         RetryTemplate.execute(() -> {
             Object[] args = {System.currentTimeMillis(), bizTag, serverTag};
             if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
-                LOG.info("Heartbeat db worker id success: {} | {} | {}", args);
+                LOG.debug("Heartbeat db worker id success: {} | {} | {}", args);
             } else {
                 LOG.error("Heartbeat db worker id failed: {} | {} | {}", args);
             }

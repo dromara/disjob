@@ -43,10 +43,14 @@ public final class GroovyUtils {
         return (Class<T>) CLASS_CACHE.computeIfAbsent(sha1, key -> CLASS_LOADER.parseClass(sourceCode));
     }
 
+    /**
+     * 通用方法调用方式：InvokerHelper.invokeMethod(object, methodName, arguments);
+     */
     public enum Evaluator {
 
         /**
          * Groovy script based GroovyShell
+         * <p>方法调用：GroovyShell.invokeMethod(methodName, args);
          */
         SHELL() {
             @Override
@@ -58,14 +62,15 @@ public final class GroovyUtils {
 
         /**
          * Groovy script based ScriptEngine
+         * <p>javax方式：new javax.script.ScriptEngineManager().getEngineByExtension("groovy");
+         * <p>方法调用方式一：((Invocable) scriptEngine).invokeFunction(methodName, args);
+         * <p>方法调用方式二：((Invocable) scriptEngine).invokeMethod(null, methodName, args);
          */
         SCRIPT() {
             final GroovyScriptEngineFactory SCRIPT_ENGINE_FACTORY = new GroovyScriptEngineFactory();
-            //final ScriptEngineManager SCRIPT_ENGINE_MANAGER = new javax.script.ScriptEngineManager();
 
             @Override
             protected <T> T eval0(String scriptText, Map<String, Object> params) throws Exception {
-                //ScriptEngine scriptEngine = SCRIPT_ENGINE_MANAGER.getEngineByExtension("groovy");
                 ScriptEngine scriptEngine = SCRIPT_ENGINE_FACTORY.getScriptEngine();
                 return (T) scriptEngine.eval(scriptText, new SimpleBindings(params));
             }
@@ -73,6 +78,7 @@ public final class GroovyUtils {
 
         /**
          * Groovy script based JavaClass
+         * <p>方法调用：Script.invokeMethod(methodName, args);
          */
         CLASS() {
             @Override
