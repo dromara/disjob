@@ -14,8 +14,6 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
-import groovy.lang.GroovyClassLoader;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -47,9 +45,6 @@ public final class ClassUtils {
 
     private static final Map<Object, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
     private static final Map<Object, Method>              METHOD_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, Class<?>>             CLASS_CACHE = new ConcurrentHashMap<>();
-
-    private static final GroovyClassLoader GROOVY_CLASS_LOADER = new GroovyClassLoader();
 
     /**
      * Returns class object for text, can be class qualifier name or source code
@@ -58,23 +53,19 @@ public final class ClassUtils {
      * @return class object
      */
     public static <T> Class<T> getClass(String text) {
-        String key = DigestUtils.md5Hex(text);
-        Class<?> clazz = CLASS_CACHE.computeIfAbsent(key, k -> {
-            if (QUALIFIED_CLASS_NAME_PATTERN.matcher(text).matches()) {
-                try {
-                    return Class.forName(text);
-                } catch (Exception ignored) {
-                    // ignored
-                }
-            }
+        if (QUALIFIED_CLASS_NAME_PATTERN.matcher(text).matches()) {
             try {
-                return GROOVY_CLASS_LOADER.parseClass(text);
-            } catch (Exception e) {
-                LOG.warn("Parse source class code occur error.", e);
-                return Null.class;
+                return (Class<T>) Class.forName(text);
+            } catch (Exception ignored) {
+                // ignored
             }
-        });
-        return clazz == Null.class ? null : (Class<T>) clazz;
+        }
+        try {
+            return GroovyUtils.parseClass(text);
+        } catch (Exception e) {
+            LOG.warn("Parse source class code occur error.", e);
+            return null;
+        }
     }
 
     /**
