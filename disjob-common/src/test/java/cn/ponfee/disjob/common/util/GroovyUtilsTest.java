@@ -23,25 +23,50 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class GroovyUtilsTest {
 
+    private static final String SCRIPT_TEXT =
+        "package cn.ponfee.disjob;                     \n" +
+        "import cn.ponfee.disjob.common.util.Jsons;    \n" +
+        "return Jsons.toJson(list)+(a+b)+str.length(); \n" ;
+
+    private static final Map<String, Object> PARAMS = ImmutableMap.of(
+        "list", Arrays.asList("x", "y"),
+        "a", 1,
+        "b", 2,
+        "str", "string"
+    );
+
+    private static final String RESULT = "[\"x\",\"y\"]36";
+
     @Test
     public void test() throws Exception {
-        String scriptText =
-            "package cn.ponfee.disjob;                    \n" +
-            "import cn.ponfee.disjob.common.util.Jsons;   \n" +
-            "return Jsons.toJson(list)+(a+b)+str.length(); \n";
+        assertThat(GroovyUtils.Evaluator.SHELL .eval(SCRIPT_TEXT, PARAMS).toString()).isEqualTo(RESULT);
+        assertThat(GroovyUtils.Evaluator.SCRIPT.eval(SCRIPT_TEXT, PARAMS).toString()).isEqualTo(RESULT);
+        assertThat(GroovyUtils.Evaluator.CLASS .eval(SCRIPT_TEXT, PARAMS).toString()).isEqualTo(RESULT);
+    }
 
-        Map<String, Object> params = ImmutableMap.of(
-            "list", Arrays.asList("x", "y"),
-            "a", 1,
-            "b", 2,
-            "str", "string"
-        );
+    @Test
+    public void testPooledGroovyShell() throws Exception {
+        Thread[] threads = new Thread[20];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread(() -> {
+                for (int x = 0; x < 5; x++) {
+                    try {
+                        GroovyUtils.Evaluator.SHELL.eval(SCRIPT_TEXT, PARAMS);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        for (Thread thread : threads) {
+            thread.start();
+        }
 
-        String result = "[\"x\",\"y\"]36";
-
-        assertThat(GroovyUtils.Evaluator.SHELL.eval(scriptText, params).toString()).isEqualTo(result);
-        assertThat(GroovyUtils.Evaluator.SCRIPT.eval(scriptText, params).toString()).isEqualTo(result);
-        assertThat(GroovyUtils.Evaluator.CLASS.eval(scriptText, params).toString()).isEqualTo(result);
+        Thread.sleep(1000);
+        for (Thread thread : threads) {
+            thread.join();
+        }
+        System.out.println("end");
     }
 
 }

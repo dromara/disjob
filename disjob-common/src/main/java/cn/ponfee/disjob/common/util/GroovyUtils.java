@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.collect.PooledObjectProcessor;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
@@ -49,35 +50,45 @@ public final class GroovyUtils {
     public enum Evaluator {
 
         /**
-         * Groovy script based GroovyShell
+         * Groovy script based GroovyShell，使用自定义对象池处理器
+         *
          * <p>方法调用：GroovyShell.invokeMethod(methodName, args);
          */
         SHELL() {
+            final GroovyShell groovyShell = new GroovyShell();
+            final PooledObjectProcessor<String, Script> processor = new PooledObjectProcessor<>(10, groovyShell::parse);
+
             @Override
-            protected <T> T eval0(String scriptText, Map<String, Object> params) {
-                GroovyShell shell = new GroovyShell(new Binding(params));
-                return (T) shell.evaluate(scriptText);
+            protected <T> T eval0(String scriptText, Map<String, Object> params) throws Exception {
+                 // return (T) new GroovyShell(new Binding(params)).evaluate(scriptText);
+                return processor.process(scriptText, script -> {
+                    script.setBinding(new Binding(params));
+                    return (T) script.run();
+                });
             }
         },
 
         /**
-         * Groovy script based ScriptEngine
-         * <p>javax方式：new javax.script.ScriptEngineManager().getEngineByExtension("groovy");
+         * Groovy script based ScriptEngine，在GroovyScriptEngineImpl内部有classMap来缓存script
+         *
+         * <p>javax方式创建：new javax.script.ScriptEngineManager().getEngineByExtension("groovy");
+         *
          * <p>方法调用方式一：((Invocable) scriptEngine).invokeFunction(methodName, args);
          * <p>方法调用方式二：((Invocable) scriptEngine).invokeMethod(null, methodName, args);
          */
         SCRIPT() {
-            final GroovyScriptEngineFactory SCRIPT_ENGINE_FACTORY = new GroovyScriptEngineFactory();
+            final GroovyScriptEngineFactory scriptEngineFactory = new GroovyScriptEngineFactory();
 
             @Override
             protected <T> T eval0(String scriptText, Map<String, Object> params) throws Exception {
-                ScriptEngine scriptEngine = SCRIPT_ENGINE_FACTORY.getScriptEngine();
+                ScriptEngine scriptEngine = scriptEngineFactory.getScriptEngine();
                 return (T) scriptEngine.eval(scriptText, new SimpleBindings(params));
             }
         },
 
         /**
-         * Groovy script based JavaClass
+         * Groovy script based JavaClass，在#parseClass时会缓存class
+         *
          * <p>方法调用：Script.invokeMethod(methodName, args);
          */
         CLASS() {
