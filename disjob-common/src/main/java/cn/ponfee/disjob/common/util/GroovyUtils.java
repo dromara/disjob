@@ -52,7 +52,8 @@ public final class GroovyUtils {
         /**
          * Groovy script based GroovyShell，使用自定义对象池处理器
          *
-         * <p>方法调用：GroovyShell.invokeMethod(methodName, args);
+         * <p>方法调用方式一：groovyShell.invokeMethod(methodName, args);
+         * <p>方法调用方式二：script.invokeMethod(methodName, args);
          */
         SHELL() {
             final GroovyShell groovyShell = new GroovyShell();
@@ -89,7 +90,7 @@ public final class GroovyUtils {
         /**
          * Groovy script based JavaClass，在#parseClass时会缓存class
          *
-         * <p>方法调用：Script.invokeMethod(methodName, args);
+         * <p>方法调用：script.invokeMethod(methodName, args);
          */
         CLASS() {
             @Override

@@ -19,7 +19,16 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ *
  * The job handler for executes groovy script.
+ * <p>
+ *
+ * <pre>job_params example: {@code
+ *  import java.util.*
+ *  def uuid = UUID.randomUUID().toString()
+ *  savepoint.save(executingTask.taskId, uuid)
+ *  return "execute at: " + new Date() + ", " + jobHandler.toString()
+ * }</pre>
  *
  * @author Ponfee
  */

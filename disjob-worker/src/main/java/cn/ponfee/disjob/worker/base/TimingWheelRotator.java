@@ -95,7 +95,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private void process() {
         if (++round > 1024) {
             round = 0;
-            LOG.info("Timing wheel rotator heartbeat: worker-thread-pool={}, jvm-thread-count={}", workerThreadPool, Thread.activeCount());
+            LOG.info("Timing wheel rotator heartbeat, worker-thread-pool: {}, jvm-thread-count: {}", workerThreadPool, Thread.activeCount());
         }
 
         // check has available supervisors

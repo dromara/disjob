@@ -29,7 +29,7 @@ public class PooledObjectProcessor<K, V> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PooledObjectProcessor.class);
 
-    private final Map<K, Wrapper> cache = new ConcurrentHashMap<>();
+    private final Map<K, SubPool> pool = new ConcurrentHashMap<>();
     private final int size;
     private final Function<K, V> creator;
 
@@ -39,21 +39,21 @@ public class PooledObjectProcessor<K, V> {
     }
 
     public <R> R process(K key, Function<V, R> function) throws InterruptedException {
-        Wrapper wrapper = cache.computeIfAbsent(key, Wrapper::new);
-        V value = wrapper.borrowObject();
+        SubPool subPool = pool.computeIfAbsent(key, SubPool::new);
+        V value = subPool.borrowObject();
         try {
             return function.apply(value);
         } finally {
-            wrapper.returnObject(value);
+            subPool.returnObject(value);
         }
     }
 
-    private class Wrapper {
+    private class SubPool {
         final K key;
         final BlockingQueue<V> queue;
         final AtomicInteger counter;
 
-        Wrapper(K key) {
+        SubPool(K key) {
             this.key = key;
             this.queue = new ArrayBlockingQueue<>(size);
             this.counter = new AtomicInteger(size);

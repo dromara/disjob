@@ -35,6 +35,14 @@ import java.util.Map;
 
 /**
  * The job handler for execute http request.
+ * <p>
+ *
+ * <pre>job_params example: {@code
+ *  {
+ *    "method":"GET",
+ *    "url":"https://www.baidu.com"
+ *  }
+ * }</pre>
  *
  * @author Ponfee
  */

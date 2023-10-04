@@ -1,4 +1,4 @@
-# 以database作为注册中心时，使用以下配置
+# 当使用database作为注册中心时需要配置
 disjob.registry.database:
   namespace: mysql_namespace
   session-timeout-ms: 30000

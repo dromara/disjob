@@ -32,6 +32,14 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
 
 /**
  * Script job handler.
+ * <p>
+ *
+ * <pre>job_params example: {@code
+ *  {
+ *    "type":"SHELL",
+ *    "script":"#!/bin/sh\\necho \\\"hello shell!\\\""
+ *  }
+ * }</pre>
  *
  * @author Ponfee
  */
