@@ -34,10 +34,13 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  * Script job handler.
  * <p>
  *
- * <pre>job_params example: {@code
+ * <pre>job_param example: {@code
  *  {
- *    "type":"SHELL",
- *    "script":"#!/bin/sh\\necho \\\"hello shell!\\\""
+ *   "type": "SHELL",
+ *   "script": '
+ *     #!/bin/sh
+ *     echo "hello \' shell!"
+ *   '
  *  }
  * }</pre>
  *
@@ -50,7 +53,7 @@ public class ScriptJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        ScriptParam scriptParam = Jsons.fromJson(executingTask.getTaskParam(), ScriptParam.class);
+        ScriptParam scriptParam = Jsons.JSON5.readValue(executingTask.getTaskParam(), ScriptParam.class);
         Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
@@ -159,13 +162,6 @@ public class ScriptJobHandler extends JobHandler<String> {
 
         private ScriptType type;
         private String charset;
-        /**
-         * 脚本原文需要先做如下转换后，再转为json
-         *
-         * StringUtils.replaceEach(script, new String[]{"\r", "\n", "\""}, new String[]{"\\r", "\\n", "\\\""})
-         *
-         * @see org.apache.commons.lang3.StringUtils#replaceEach(String, String[], String[])
-         */
         private String script;
         private String[] envp;
     }

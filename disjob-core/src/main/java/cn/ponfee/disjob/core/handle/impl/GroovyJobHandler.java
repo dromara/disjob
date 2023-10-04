@@ -23,7 +23,7 @@ import java.util.Objects;
  * The job handler for executes groovy script.
  * <p>
  *
- * <pre>job_params example: {@code
+ * <pre>job_param example: {@code
  *  import java.util.*
  *  def uuid = UUID.randomUUID().toString()
  *  savepoint.save(executingTask.taskId, uuid)

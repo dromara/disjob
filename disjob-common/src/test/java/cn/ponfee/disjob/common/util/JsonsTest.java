@@ -8,8 +8,11 @@
 
 package cn.ponfee.disjob.common.util;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Jsons Test
@@ -20,15 +23,37 @@ public class JsonsTest {
 
     @Test
     public void test() {
-        Assertions.assertThat(Jsons.toJson(null)).isEqualTo("null");
-        Assertions.assertThat(Jsons.toJson("null")).isEqualTo("\"null\"");
-        Assertions.assertThat(Jsons.toJson(new StringBuilder("null"))).isEqualTo("\"null\"");
-        Assertions.assertThat(Jsons.toJson(new StringBuilder())).isEqualTo("\"\"");
-        Assertions.assertThat(new StringBuilder().toString().equals("")).isTrue();
+        assertThat(Jsons.toJson(null)).isEqualTo("null");
+        assertThat(Jsons.toJson("null")).isEqualTo("\"null\"");
+        assertThat(Jsons.toJson(new StringBuilder("null"))).isEqualTo("\"null\"");
+        assertThat(Jsons.toJson(new StringBuilder())).isEqualTo("\"\"");
+        assertThat(new StringBuilder().toString().equals("")).isTrue();
 
-        Assertions.assertThat(Jsons.toJson(new StringBuffer("null"))).isEqualTo("\"null\"");
-        Assertions.assertThat(Jsons.toJson(new StringBuffer())).isEqualTo("\"\"");
-        Assertions.assertThat(new StringBuffer().toString().equals("")).isTrue();
+        assertThat(Jsons.toJson(new StringBuffer("null"))).isEqualTo("\"null\"");
+        assertThat(Jsons.toJson(new StringBuffer())).isEqualTo("\"\"");
+        assertThat(new StringBuffer().toString().equals("")).isTrue();
+    }
+
+
+    @Test
+    public void testJson2() throws Exception {
+        String json =
+            "{\n" +
+                "    \"type\": 'SHELL',\n" +
+                "    \"script\": '\n" +
+                "      #!/bin/sh \n" +
+                "      echo \"hello shell!\"\n" +
+                "    ',\n" +
+                "}\n";
+
+        System.out.println(json);
+        Map<String, Object> map = Jsons.JSON5.readValue(json, Map.class);
+        System.out.println(map);
+
+        assertThat(map.get("script")).isEqualTo("\n" +
+            "      #!/bin/sh \n" +
+            "      echo \"hello shell!\"\n" +
+            "    ");
     }
 
 }

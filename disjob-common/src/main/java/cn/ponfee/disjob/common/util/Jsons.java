@@ -11,6 +11,7 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.date.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
@@ -39,6 +40,8 @@ import java.util.Map;
 
 /**
  * The json utility based jackson
+ * <p><a href="https://json-5.com/">json5</a>
+ * <p><a href="https://stackoverflow.com/questions/68312227/can-the-jackson-parser-be-used-to-parse-json5">json5-QA</a>
  * <p>线程安全
  *
  * @author Ponfee
@@ -56,6 +59,16 @@ public final class Jsons {
      * 不排除任何属性
      */
     public static final Jsons ALL = new Jsons(null);
+
+    /**
+     * Object mapper support json5
+     */
+    public static final ObjectMapper JSON5 = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL)
+        .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES.mappedFeature())                    // 键和值：可以用单引号
+        .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER.mappedFeature()) // 字符串值：可以通过转义换行符来跨越多行
+        .enable(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature())                   // 对象或数组：可以有一个尾随逗号
+        .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())          // 允许有未转义的控制符
+        .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS.mappedFeature());                   // 允许单行和多行注释
 
     /**
      * Jackson ObjectMapper(thread safe)
@@ -283,6 +296,22 @@ public final class Jsons {
         return NORMAL.parse(json, type);
     }
 
+    /**
+     * <pre>也可以使用JsonMapper.Builder来构建：{@code
+     *  ObjectMapper objectMapper = JsonMapper.builder()
+     *    .serializationInclusion(JsonInclude.Include.NON_NULL)           // 序列化时忽略值为null的字段
+     *    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)     // 反序列化时忽略未知字段
+     *    .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)                    // 键和值：可以用单引号
+     *    .enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER) // 字符串值：可以通过转义换行符来跨越多行
+     *    .enable(JsonReadFeature.ALLOW_TRAILING_COMMA)                   // 对象或数组：可以有一个尾随逗号
+     *    .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)          // 允许有未转义的控制符
+     *    .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)                    // 允许单行和多行注释
+     *    .build();
+     * }</pre>
+     *
+     * @param include the JsonInclude
+     * @return ObjectMapper instance
+     */
     public static ObjectMapper createObjectMapper(JsonInclude.Include include) {
         JsonFactory jsonFactory = new JsonFactoryBuilder()
             .disable(JsonFactory.Feature.INTERN_FIELD_NAMES)
@@ -297,14 +326,15 @@ public final class Jsons {
     }
 
     public static void configObjectMapper(ObjectMapper mapper) {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 反序列化时忽略未知属性
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);    // Date不序列化为时间戳
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);          // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
-        mapper.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);    // BigDecimal禁用科学计数格式输出
-        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, false);     // 禁止无双引号字段
-        mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, false);            // 禁止单引号字段
-        mapper.configure(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature(), true); // 字段加双引号
+        // 1、Common config
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES); // 反序列化时忽略未知属性
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);    // Date不序列化为时间戳
+        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);          // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
+        mapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);    // BigDecimal禁用科学计数格式输出
+        mapper.disable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES);     // 禁止无双引号字段
+        mapper.enable(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature()); // 字段加双引号
 
+        // 2、java.util.Date config
         // java.util.Date：registerModule > JsonFormat(会使用setTimeZone) > setDateFormat(会使用setTimeZone)
         //   1）如果同时配置了setDateFormat和registerModule，则使用registerModule
         //   2）如果设置了setTimeZone，则会调用setDateFormat#setTimeZone(注：setTimeZone对registerModule无影响)
@@ -315,6 +345,7 @@ public final class Jsons {
         //mapper.setConfig(mapper.getDeserializationConfig().with(mapper.getDateFormat()));
         //mapper.setConfig(mapper.getSerializationConfig().with(mapper.getDateFormat()));
 
+        // 3、java.util.Date module config
         SimpleModule module = new SimpleModule();
         module.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
         module.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
@@ -322,7 +353,7 @@ public final class Jsons {
         //module.addDeserializer(Money.class, JacksonMoney.INSTANCE.deserializer());
         mapper.registerModule(module);
 
-        // java.time.LocalDateTime
+        // 4、java.time.LocalDateTime module config
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Dates.DATE_PATTERN);
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         JavaTimeModule javaTimeModule = new JavaTimeModule();
@@ -334,6 +365,7 @@ public final class Jsons {
         javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
         mapper.registerModule(javaTimeModule);
 
+        // 5、Others config
         //mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
     }
 

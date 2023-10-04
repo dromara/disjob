@@ -32,7 +32,7 @@ import java.nio.charset.Charset;
  *  /bin/bash 后面接 执行的脚本
  * </pre>
  *
- * <pre>job_params example: {@code
+ * <pre>job_param example: {@code
  *  {
  *    "cmdarray":[
  *      "/bin/sh",

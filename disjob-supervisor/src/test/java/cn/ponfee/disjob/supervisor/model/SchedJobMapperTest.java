@@ -46,9 +46,9 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     }
 
     @Test
-    public void testQuerySql() {
+    public void testQuerySql() throws Exception {
         String jobParam = jobMapper.getByJobId(1003164910267351003L).getJobParam();
-        ScriptJobHandler.ScriptParam scriptParam = Jsons.fromJson(jobParam, ScriptJobHandler.ScriptParam.class);
+        ScriptJobHandler.ScriptParam scriptParam = Jsons.JSON5.readValue(jobParam, ScriptJobHandler.ScriptParam.class);
         System.out.println("----------------------");
         System.out.println(scriptParam.getScript());
         System.out.println("----------------------");
