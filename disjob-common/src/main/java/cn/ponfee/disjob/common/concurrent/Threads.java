@@ -64,15 +64,19 @@ public final class Threads {
         return thread.getState() == Thread.State.TERMINATED;
     }
 
+    public static void stopThread(Thread thread, long joinMillis) {
+        stopThread(thread, joinMillis, 0, 0);
+    }
+
     /**
      * Stops the thread
      *
      * @param thread      the thread
+     * @param joinMillis  the joinMillis
      * @param sleepCount  the sleepCount
      * @param sleepMillis the sleepMillis
-     * @param joinMillis  the joinMillis
      */
-    public static void stopThread(Thread thread, int sleepCount, long sleepMillis, long joinMillis) {
+    public static void stopThread(Thread thread, long joinMillis, int sleepCount, long sleepMillis) {
         if (isStopped(thread)) {
             return;
         }

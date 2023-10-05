@@ -96,7 +96,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
     public void doStop() {
         toStop();
-        Threads.stopThread(this, 0, 0, 1000);
+        Threads.stopThread(this, 1000);
     }
 
     @Override

@@ -41,7 +41,7 @@ public class RateLimiterTest {
         thread.start();
         Thread.sleep(2000);
         Assertions.assertFalse(Threads.isStopped(thread));
-        Threads.stopThread(thread, 1, 100, 0);
+        Threads.stopThread(thread, 1000, 2, 500);
         Thread.sleep(100);
         Assertions.assertTrue(Threads.isStopped(thread));
         thread.join();

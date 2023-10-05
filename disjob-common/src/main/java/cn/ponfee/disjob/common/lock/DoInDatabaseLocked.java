@@ -39,8 +39,8 @@ public final class DoInDatabaseLocked implements DoInLocked {
 
     @Override
     public <T> T action(Callable<T> caller) {
-        return jdbcTemplateWrapper.executeInTransaction(action -> {
-            PreparedStatement preparedStatement = action.apply(lockSql);
+        return jdbcTemplateWrapper.executeInTransaction(psCreator -> {
+            PreparedStatement preparedStatement = psCreator.apply(lockSql);
             preparedStatement.execute();
             return caller.call();
         });

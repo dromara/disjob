@@ -158,10 +158,10 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         }
 
         final Set<R> servers = splitServer(server);
-        jdbcTemplateWrapper.executeInTransaction(action -> {
+        jdbcTemplateWrapper.executeInTransaction(psCreator -> {
             for (R svr : servers) {
                 String serialize = svr.serialize();
-                PreparedStatement update = action.apply(HEARTBEAT_SQL);
+                PreparedStatement update = psCreator.apply(HEARTBEAT_SQL);
                 update.setLong(1, System.currentTimeMillis());
                 update.setString(2, namespace);
                 update.setString(3, registerRoleName);
@@ -173,7 +173,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
                     continue;
                 }
 
-                PreparedStatement insert = action.apply(REGISTER_SQL);
+                PreparedStatement insert = psCreator.apply(REGISTER_SQL);
                 insert.setString(1, namespace);
                 insert.setString(2, registerRoleName);
                 insert.setString(3, serialize);

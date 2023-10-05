@@ -200,7 +200,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         // 2、do close
         // 2.1、stop this boss thread
-        ThrowingRunnable.execute(() -> Threads.stopThread(this, 0, 0, 200));
+        ThrowingRunnable.execute(() -> Threads.stopThread(this, 200));
 
         // 2.2、stop idle pool thread
         idlePool.forEach(e -> ThrowingRunnable.execute(() -> stopWorkerThread(e, true)));
@@ -675,7 +675,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (param != null) {
                 param.stop();
             }
-            Threads.stopThread(this, 0, 0, 2000);
+            Threads.stopThread(this, 2000);
         }
 
         private boolean updateExecuteParam(ExecuteTaskParam expect, ExecuteTaskParam update) {
@@ -813,7 +813,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     try {
                         result = futureTask.get(param.getExecuteTimeout(), TimeUnit.MILLISECONDS);
                     } finally {
-                        Threads.stopThread(futureTaskThread, 0, 0, 0);
+                        Threads.stopThread(futureTaskThread, 0);
                     }
                 } else {
                     result = taskExecutor.execute(executingTask, supervisorCoreRpcClient);
