@@ -48,8 +48,9 @@ public class CommandJobHandler extends JobHandler<String> {
 
     @Override
     public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        Assert.hasText(executingTask.getTaskParam(), "Command param cannot be empty.");
-        CommandParam commandParam = Jsons.JSON5.readValue(executingTask.getTaskParam(), CommandParam.class);
+        String taskParam = executingTask.getTaskParam();
+        Assert.hasText(taskParam, "Command param cannot be empty.");
+        CommandParam commandParam = Jsons.JSON5.readValue(taskParam, CommandParam.class);
         Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");
         Charset charset = Files.charset(commandParam.charset);
 

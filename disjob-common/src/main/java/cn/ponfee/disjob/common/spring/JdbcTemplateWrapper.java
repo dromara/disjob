@@ -18,6 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.util.Assert;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -72,16 +73,12 @@ public final class JdbcTemplateWrapper {
     public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {
         return jdbcTemplate.execute((ConnectionCallback<T>) con -> {
             Boolean previousAutoCommit = null;
-            final List<PreparedStatement> psList = new LinkedList<>();
-            ThrowingFunction<String, PreparedStatement, ?> function = sql -> {
-                PreparedStatement ps = con.prepareStatement(sql);
-                psList.add(ps);
-                return ps;
-            };
+            List<PreparedStatement> psList = new LinkedList<>();
+            PreparedStatementCreator psCreator = new PreparedStatementCreator(con, psList);
             try {
                 previousAutoCommit = con.getAutoCommit();
                 con.setAutoCommit(false);
-                T result = action.apply(function);
+                T result = action.apply(psCreator);
                 con.commit();
                 return result;
             } catch (Throwable t) {
@@ -131,6 +128,23 @@ public final class JdbcTemplateWrapper {
             return rs.next();
         });
         return Boolean.TRUE.equals(result);
+    }
+
+    private static class PreparedStatementCreator implements ThrowingFunction<String, PreparedStatement, Throwable> {
+        private final Connection con;
+        private final List<PreparedStatement> psList;
+
+        private PreparedStatementCreator(Connection con, List<PreparedStatement> psList) {
+            this.con = con;
+            this.psList = psList;
+        }
+
+        @Override
+        public PreparedStatement apply(String sql) throws Throwable {
+            PreparedStatement ps = con.prepareStatement(sql);
+            psList.add(ps);
+            return ps;
+        }
     }
 
 }

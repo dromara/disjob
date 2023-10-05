@@ -36,11 +36,11 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  *
  * <pre>job_param example: {@code
  *  {
- *   "type": "SHELL",
- *   "script": '
- *     #!/bin/sh
- *     echo "hello \' shell!"
- *   '
+ *    "type": "SHELL",
+ *    "script":'
+ *      #!/bin/sh
+ *      echo "hi\'\\" sh!"
+ *    '
  *  }
  * }</pre>
  *
