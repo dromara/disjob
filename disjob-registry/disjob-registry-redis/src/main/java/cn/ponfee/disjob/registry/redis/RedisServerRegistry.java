@@ -191,7 +191,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
-            log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
 

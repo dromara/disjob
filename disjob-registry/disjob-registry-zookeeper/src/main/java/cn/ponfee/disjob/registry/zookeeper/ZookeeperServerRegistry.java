@@ -106,7 +106,6 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
-            log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
 

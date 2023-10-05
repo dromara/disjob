@@ -26,7 +26,13 @@ public final class LoggedUncaughtExceptionHandler implements Thread.UncaughtExce
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        LOG.error("Thread run method uncaught exception [" + t.getName() + "]", e);
+        if (e instanceof java.lang.ThreadDeath) {
+            LOG.warn("Task execute thread death: {} | {}", t.getName(), e.getMessage());
+        } else if (e instanceof InterruptedException) {
+            LOG.warn("Task executed interrupted: {} | {}", t.getName(), e.getMessage());
+        } else {
+            LOG.error("Thread run method uncaught exception [" + t.getName() + "]", e);
+        }
     }
 
 }

@@ -120,7 +120,6 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
-            log.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
             return;
         }
 

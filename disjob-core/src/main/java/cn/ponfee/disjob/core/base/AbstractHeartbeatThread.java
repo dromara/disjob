@@ -94,7 +94,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 }
             }
         } catch (InterruptedException e) {
-            log.error("Sleep occur error in loop, stopped=" + stopped, e);
+            log.warn("Sleep occur error in loop, stopped={}, error={}", stopped, e.getMessage());
             Thread.currentThread().interrupt();
         }
 

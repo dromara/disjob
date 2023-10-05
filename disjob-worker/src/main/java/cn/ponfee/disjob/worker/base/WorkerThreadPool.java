@@ -185,7 +185,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
-            LOG.warn("Repeat call close method\n{}", ObjectUtils.getStackTrace());
+            LOG.warn("Repeat call close method"/* + "\n" + ObjectUtils.getStackTrace()*/);
             return;
         }
 
@@ -290,7 +290,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
             }
         } catch (InterruptedException e) {
-            LOG.error("Thread pool running interrupted.", e);
+            LOG.warn("Thread pool running interrupted: " + e.getMessage());
             Thread.currentThread().interrupt();
         } catch (Throwable t) {
             LOG.error("Thread pool running occur error.", t);
@@ -563,7 +563,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     if (success) {
                         terminateTask(supervisorCoreRpcClient, param, ops, ops.toState(), null);
                     } else {
-                        LOG.error("Change execution param ops failed on thread pool close: {} | {}", param, ops);
+                        LOG.warn("Change execution param ops failed on thread pool close: {} | {}", param, ops);
                     }
 
                     workerThread.updateExecuteParam(param, null);
@@ -710,7 +710,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 try {
                     param = workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS);
                 } catch (InterruptedException e) {
-                    LOG.error("Poll execution param block interrupted.", e);
+                    LOG.warn("Poll execution param block interrupted: " + e.getMessage());
                     Thread.currentThread().interrupt();
                     break;
                 }
@@ -832,14 +832,16 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.error("Task execute timeout: " + param, e);
                 terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
-                LOG.error("Task exception do pause: " + param, e);
+                LOG.error("Task exception do pause: {} | {}", param, e.getMessage());
                 stopInstance(supervisorCoreRpcClient, param, Operations.PAUSE, toErrorMsg(e));
             } catch (CancelTaskException e) {
-                LOG.error("Task exception do cancel: " + param, e);
+                LOG.error("Task exception do cancel:  {} | {}", param, e.getMessage());
                 stopInstance(supervisorCoreRpcClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
-                    LOG.error("Task execute thread death: {} | {}", param, t.getMessage());
+                    LOG.warn("Task execute thread death: {} | {}", param, t.getMessage());
+                } else if (t instanceof InterruptedException) {
+                    LOG.warn("Task executed interrupted: {} | {}", param, t.getMessage());
                 } else {
                     LOG.error("Task execute occur error: " + param, t);
                 }
