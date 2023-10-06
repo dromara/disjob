@@ -331,7 +331,7 @@ public final class ClassUtils {
                 return (tuple.b.equals(Modifier.isStatic(m.getModifiers())) && !m.isSynthetic()) ? m : null;
             } catch (Exception e) {
                 // No such method, use placeholder
-                LOG.warn("Get method occur error: {}", e.getMessage());
+                LOG.info("Get method failed: {}", e.getMessage());
                 return Null.BROKEN_METHOD;
             }
         });

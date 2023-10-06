@@ -346,19 +346,14 @@ public class DistributedJobManager extends AbstractJobManager {
         });
     }
 
-    public boolean pauseInstance(long instanceId) {
-        return pauseInstance(instanceId, instanceMapper.getWnstanceId(instanceId));
-    }
-
     /**
      * Pause instance
      *
-     * @param instanceId the instance id
-     * @param wnstanceId the workflow instance id
+     * @param instanceId the instance id, if workflow then lead instance id
      * @return {@code true} if paused successfully
      */
-    public boolean pauseInstance(long instanceId, Long wnstanceId) {
-        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+    public boolean pauseInstance(long instanceId) {
+        return doTransactionLockInSynchronized(instanceId, instanceId, instance -> {
             Assert.notNull(instance, () -> "Pause instance not found: " + instanceId);
             if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
                 return false;
@@ -383,21 +378,16 @@ public class DistributedJobManager extends AbstractJobManager {
         });
     }
 
-    public boolean cancelInstance(long instanceId, Operations ops) {
-        return cancelInstance(instanceId, instanceMapper.getWnstanceId(instanceId), ops);
-    }
-
     /**
      * Cancel instance
      *
-     * @param instanceId the instance id
-     * @param wnstanceId the workflow instance id
+     * @param instanceId the sched_instance.instance_id, if workflow then is sched_instance.wnstance_id
      * @param ops        the operation
      * @return {@code true} if canceled successfully
      */
-    public boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) {
+    public boolean cancelInstance(long instanceId, Operations ops) {
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
-        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+        return doTransactionLockInSynchronized(instanceId, instanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel instance not found: " + instanceId);
             if (RunState.of(instance.getRunState()).isTerminal()) {
                 return false;
@@ -474,9 +464,9 @@ public class DistributedJobManager extends AbstractJobManager {
         Long lockInstanceId = wnstanceId == null ? instanceId : wnstanceId;
         synchronized (INTERNER_POOL.intern(lockInstanceId)) {
             Boolean result = transactionTemplate.execute(status -> {
-                SchedInstance lockInstance = instanceMapper.lock(lockInstanceId);
-                Assert.notNull(lockInstance, () -> "Lock instance not found: " + lockInstanceId);
-                SchedInstance instance = (instanceId == lockInstanceId) ? lockInstance : instanceMapper.getByInstanceId(instanceId);
+                SchedInstance lockedInstance = instanceMapper.lock(lockInstanceId);
+                Assert.notNull(lockedInstance, () -> "Lock instance not found: " + lockInstanceId);
+                SchedInstance instance = (instanceId == lockInstanceId) ? lockedInstance : instanceMapper.getByInstanceId(instanceId);
                 Assert.notNull(instance, () -> "Instance not found: " + instance);
                 if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
                     throw new IllegalArgumentException("Invalid workflow instance id: " + wnstanceId + ", " + instance);

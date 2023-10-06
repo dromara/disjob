@@ -219,7 +219,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 } else {
                     // all workers are dead
                     log.info("All worker dead, terminate collided sched instance: {}", instanceId);
-                    jobManager.cancelInstance(instanceId, lastInstance.getWnstanceId(), Operations.COLLIDED_CANCEL);
+                    jobManager.cancelInstance(lastInstance.obtainLockInstanceId(), Operations.COLLIDED_CANCEL);
                     return false;
                 }
             case CANCELED:
@@ -259,7 +259,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                instances.forEach(e -> jobManager.cancelInstance(e.getInstanceId(), e.getWnstanceId(), Operations.COLLIDED_CANCEL));
+                instances.forEach(e -> jobManager.cancelInstance(e.obtainLockInstanceId(), Operations.COLLIDED_CANCEL));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collided strategy: " + collidedStrategy.name());

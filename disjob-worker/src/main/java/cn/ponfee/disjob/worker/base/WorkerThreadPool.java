@@ -40,10 +40,7 @@ import org.springframework.util.Assert;
 
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -434,10 +431,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         try {
             boolean res = true;
+            long lockInstanceId = Optional.ofNullable(param.getWnstanceId()).orElse(param.getInstanceId());
             if (ops == Operations.PAUSE) {
-                res = client.pauseInstance(param.getInstanceId(), param.getWnstanceId());
+                res = client.pauseInstance(lockInstanceId);
             } else if (ops == Operations.EXCEPTION_CANCEL) {
-                res = client.cancelInstance(param.getInstanceId(), param.getWnstanceId(), ops);
+                res = client.cancelInstance(lockInstanceId, ops);
             } else {
                 LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
             }

@@ -63,13 +63,13 @@ public class SupervisorCoreRpcProvider implements SupervisorCoreRpcService, RpcC
     }
 
     @Override
-    public boolean pauseInstance(long instanceId, Long wnstanceId) {
-        return jobManager.pauseInstance(instanceId, wnstanceId);
+    public boolean pauseInstance(long instanceId) {
+        return jobManager.pauseInstance(instanceId);
     }
 
     @Override
-    public boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) {
-        return jobManager.cancelInstance(instanceId, wnstanceId, ops);
+    public boolean cancelInstance(long instanceId, Operations ops) {
+        return jobManager.cancelInstance(instanceId, ops);
     }
 
     @Override

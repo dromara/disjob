@@ -55,10 +55,10 @@ public interface SupervisorCoreRpcService extends Savepoint {
     boolean terminateTask(TerminateTaskParam param) throws Exception;
 
     @PostMapping("instance/pause")
-    boolean pauseInstance(long instanceId, Long wnstanceId) throws Exception;
+    boolean pauseInstance(long instanceId) throws Exception;
 
     @PostMapping("instance/cancel")
-    boolean cancelInstance(long instanceId, Long wnstanceId, Operations ops) throws Exception;
+    boolean cancelInstance(long instanceId, Operations ops) throws Exception;
 
     // ---------------------------------------------------------------------------savepoint
 
