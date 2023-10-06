@@ -353,7 +353,11 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if paused successfully
      */
     public boolean pauseInstance(long instanceId) {
-        return doTransactionLockInSynchronized(instanceId, instanceId, instance -> {
+        Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
+        if (wnstanceId != null) {
+            Assert.isTrue(instanceId == wnstanceId, () -> "Must pause lead workflow instance: " + instanceId);
+        }
+        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Pause instance not found: " + instanceId);
             if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
                 return false;
@@ -387,7 +391,11 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     public boolean cancelInstance(long instanceId, Operations ops) {
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
-        return doTransactionLockInSynchronized(instanceId, instanceId, instance -> {
+        Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
+        if (wnstanceId != null) {
+            Assert.isTrue(instanceId == wnstanceId, () -> "Must pause lead workflow instance: " + instanceId);
+        }
+        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel instance not found: " + instanceId);
             if (RunState.of(instance.getRunState()).isTerminal()) {
                 return false;

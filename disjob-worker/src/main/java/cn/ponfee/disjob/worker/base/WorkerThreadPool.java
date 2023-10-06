@@ -182,7 +182,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
-            LOG.warn("Repeat call close method"/* + "\n" + ObjectUtils.getStackTrace()*/);
+            LOG.warn("Repeat call close method." + "\n" + ObjectUtils.getStackTrace());
             return;
         }
 
@@ -422,7 +422,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private static void stopInstance(SupervisorCoreRpcService client, ExecuteTaskParam param, Operations ops, String errorMsg) {
         if (!param.updateOperation(Operations.TRIGGER, ops)) {
-            LOG.error("Stop instance conflict: {} | {}", param, ops);
+            LOG.info("Stop instance conflict: {} | {}", param, ops);
             return;
         }
 
@@ -440,7 +440,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
             }
             if (!res) {
-                LOG.error("Stop instance failed: {} | {} | {}", param.getInstanceId(), param.getTaskId(), ops);
+                LOG.info("Stop instance conflict: {} | {} | {}", param.getInstanceId(), param.getTaskId(), ops);
             }
         } catch (Throwable t) {
             LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, t);
@@ -830,10 +830,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.error("Task execute timeout: " + param, e);
                 terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
-                LOG.error("Task exception do pause: {} | {}", param, e.getMessage());
+                LOG.error("Pause task exception: {} | {}", param, e.getMessage());
                 stopInstance(supervisorCoreRpcClient, param, Operations.PAUSE, toErrorMsg(e));
             } catch (CancelTaskException e) {
-                LOG.error("Task exception do cancel:  {} | {}", param, e.getMessage());
+                LOG.error("Cancel task exception:  {} | {}", param, e.getMessage());
                 stopInstance(supervisorCoreRpcClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
