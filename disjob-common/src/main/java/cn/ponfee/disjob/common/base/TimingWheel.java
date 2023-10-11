@@ -91,8 +91,8 @@ import java.util.PriorityQueue;
  */
 public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements java.io.Serializable {
     private static final long serialVersionUID = 4500377208898808026L;
+    private final static Logger LOG = LoggerFactory.getLogger(TimingWheel.class);
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
     private static final int PROCESS_SLOTS_SIZE = 2;
 
     /**
@@ -165,9 +165,9 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
 
         boolean res = wheel[ringIndex].offer(timing);
         if (res) {
-            log.info("Timing wheel task success {}", timing);
+            LOG.info("Timing wheel task success {}", timing);
         } else {
-            log.error("Timing wheel task failed " + timing);
+            LOG.error("Timing wheel task failed " + timing);
         }
         return res;
     }

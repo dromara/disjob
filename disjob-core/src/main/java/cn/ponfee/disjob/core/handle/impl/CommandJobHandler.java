@@ -16,6 +16,8 @@ import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.util.ProcessUtils;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
@@ -45,6 +47,7 @@ import java.nio.charset.Charset;
  * @author Ponfee
  */
 public class CommandJobHandler extends JobHandler<String> {
+    private final static Logger LOG = LoggerFactory.getLogger(CommandJobHandler.class);
 
     @Override
     public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
@@ -55,7 +58,7 @@ public class CommandJobHandler extends JobHandler<String> {
         Charset charset = Files.charset(commandParam.charset);
 
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
-        return ProcessUtils.complete(process, charset, executingTask, log);
+        return ProcessUtils.complete(process, charset, executingTask, LOG);
     }
 
     @Data

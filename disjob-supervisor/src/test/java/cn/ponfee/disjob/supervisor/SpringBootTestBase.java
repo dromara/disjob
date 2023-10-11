@@ -80,6 +80,7 @@ import java.util.stream.Collectors;
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"DEV"})
 public abstract class SpringBootTestBase<T> {
+    private final static Logger LOG = LoggerFactory.getLogger(SpringBootTestBase.class);
 
     // Only reset mock bean which is defined on SpringBootTestBase
     private static final List<Field> MOCK_BEAN_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestBase.class)
@@ -92,8 +93,6 @@ public abstract class SpringBootTestBase<T> {
             }
         })
         .collect(Collectors.toList());
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     // --------------------------------------mock bean definition
 
@@ -132,13 +131,13 @@ public abstract class SpringBootTestBase<T> {
      */
     @BeforeAll
     public final void beforeAll0() {
-        log.info("before test all: " + getClass());
+        LOG.info("before test all: " + getClass());
         beforeAll();
     }
 
     @BeforeEach
     public final void beforeEach0() {
-        log.info("before test each");
+        LOG.info("before test each");
         Class<T> type = GenericUtils.getActualTypeArgument(getClass(), 0);
         if (!Arrays.asList(Void.class, Object.class).contains(type)) {
             this.bean = StringUtils.isBlank(beanName)
@@ -153,14 +152,14 @@ public abstract class SpringBootTestBase<T> {
 
     @AfterEach
     public final void afterEach0() {
-        log.info("after test each");
+        LOG.info("after test each");
         afterEach();
         resetMock();
     }
 
     @AfterAll
     public final void afterAll0() {
-        log.info("after test all: " + getClass());
+        LOG.info("after test all: " + getClass());
         afterAll();
     }
 
@@ -197,12 +196,12 @@ public abstract class SpringBootTestBase<T> {
             try {
                 Object mockBean = field.get(this);
                 if (mockBean == null) {
-                    log.error("Mock bean is null: " + field.toGenericString());
+                    LOG.error("Mock bean is null: " + field.toGenericString());
                 } else {
                     Mockito.reset(mockBean);
                 }
             } catch (Exception ex) {
-                log.error("Mock bean reset error: " + field.toGenericString(), ex);
+                LOG.error("Mock bean reset error: " + field.toGenericString(), ex);
             }
         }
     }

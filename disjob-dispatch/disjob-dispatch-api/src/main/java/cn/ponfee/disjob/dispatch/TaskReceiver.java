@@ -22,7 +22,6 @@ import java.util.Objects;
  * @author Ponfee
  */
 public abstract class TaskReceiver implements Startable {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final TimingWheel<ExecuteTaskParam> timingWheel;

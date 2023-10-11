@@ -31,8 +31,6 @@ import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -56,8 +54,6 @@ public abstract class AbstractJobManager {
 
     protected static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
     protected static final int AFFECTED_ONE_ROW = 1;
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;

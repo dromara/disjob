@@ -18,6 +18,8 @@ import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import lombok.Data;
 import org.apache.http.client.config.RequestConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +49,7 @@ import java.util.Map;
  * @author Ponfee
  */
 public class HttpJobHandler extends JobHandler<String> {
+    private final static Logger LOG = LoggerFactory.getLogger(HttpJobHandler.class);
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
     private static final int DEFAULT_READ_TIMEOUT = 5000;
@@ -109,7 +112,7 @@ public class HttpJobHandler extends JobHandler<String> {
                 return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + responseEntity.getStatusCode() + ", response: " + responseEntity.getBody());
             }
         } catch (Throwable t) {
-            log.error("Http request failed: " + executingTask, t);
+            LOG.error("Http request failed: " + executingTask, t);
             return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), Throwables.getRootCauseMessage(t));
         }
     }

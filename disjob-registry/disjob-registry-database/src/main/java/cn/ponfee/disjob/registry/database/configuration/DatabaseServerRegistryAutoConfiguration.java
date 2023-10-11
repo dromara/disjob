@@ -21,6 +21,8 @@ import cn.ponfee.disjob.registry.database.DatabaseSupervisorRegistry;
 import cn.ponfee.disjob.registry.database.DatabaseWorkerRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -38,6 +40,7 @@ import javax.sql.DataSource;
  */
 @EnableConfigurationProperties(DatabaseRegistryProperties.class)
 public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration {
+    private static final Logger LOG = LoggerFactory.getLogger(DatabaseServerRegistryAutoConfiguration.class);
 
     private static final String SPRING_BEAN_NAME_JTW = JobConstants.SPRING_BEAN_NAME_PREFIX + ".database-registry-jtw";
 
@@ -103,7 +106,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
             DataSource dataSource = wrapper.jdbcTemplate().getDataSource();
             if (dataSource != null) {
                 ThrowingRunnable.execute(() -> Destroyable.destroy(dataSource), () -> "Database registry datasource destroy error.");
-                log.info("Database registry datasource destroy finished.");
+                LOG.info("Database registry datasource destroy finished.");
             }
         }
     }

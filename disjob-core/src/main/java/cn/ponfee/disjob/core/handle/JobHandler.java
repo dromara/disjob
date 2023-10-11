@@ -8,9 +8,6 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Schedule job handler base class.
  *
@@ -21,6 +18,5 @@ import org.slf4j.LoggerFactory;
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#SCOPE_PROTOTYPE
  */
 public abstract class JobHandler<T> extends TaskExecutor<T> implements JobSplitter {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
 }

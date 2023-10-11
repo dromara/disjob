@@ -19,13 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Ponfee
  */
 public abstract class BaseServerRegistryAutoConfiguration {
+    private static final Logger LOG = LoggerFactory.getLogger(BaseServerRegistryAutoConfiguration.class);
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public BaseServerRegistryAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
-            log.info("Enabled registry center '{}'", getClass());
+            LOG.info("Enabled registry center '{}'", getClass());
         } else {
             throw new Error("Enable registry center '" + getClass() + "' failed, imported more than one registry center.");
         }

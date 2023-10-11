@@ -19,13 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Ponfee
  */
 public abstract class BaseTaskDispatchingAutoConfiguration {
+    private final static Logger LOG = LoggerFactory.getLogger(BaseTaskDispatchingAutoConfiguration.class);
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public BaseTaskDispatchingAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
-            log.info("Enabled task dispatching '{}'", getClass());
+            LOG.info("Enabled task dispatching '{}'", getClass());
         } else {
             throw new Error("Enable task dispatching '" + getClass() + "' failed, imported more than one task dispatching.");
         }

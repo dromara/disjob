@@ -12,6 +12,8 @@ import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -24,6 +26,7 @@ import java.util.function.Supplier;
  * @author Ponfee
  */
 public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?, I>, I> extends SpringBootTestBase<S> {
+    private final static Logger LOG = LoggerFactory.getLogger(TxManagerTestBase.class);
 
     private final I id1, id2;
 
@@ -48,7 +51,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        log.info("-------------testWithoutTxHasError done " + before + ", " + after);
+        LOG.info("-------------testWithoutTxHasError done " + before + ", " + after);
     }
 
     @Test
@@ -61,7 +64,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        log.info("-------------testWithAnnotationTxHasError done" + before + ", " + after);
+        LOG.info("-------------testWithAnnotationTxHasError done" + before + ", " + after);
     }
 
     @Test
@@ -74,7 +77,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertEquals(before.get(id1), after.get(id1));
         Assertions.assertEquals(before.get(id2), after.get(id2));
-        log.info("-------------testWithTemplateTxHasError done" + before + ", " + after);
+        LOG.info("-------------testWithTemplateTxHasError done" + before + ", " + after);
     }
 
     @Test
@@ -84,7 +87,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        log.info("-------------testWithoutTxNoneError done" + before + ", " + after);
+        LOG.info("-------------testWithoutTxNoneError done" + before + ", " + after);
     }
 
     @Test
@@ -94,7 +97,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        log.info("-------------testWithAnnotationTxNoneError done" + before + ", " + after);
+        LOG.info("-------------testWithAnnotationTxNoneError done" + before + ", " + after);
     }
 
     @Test
@@ -104,7 +107,7 @@ public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?
         Map<I, String> after = bean.queryData(id1, id2);
         Assertions.assertNotEquals(before.get(id1), after.get(id1));
         Assertions.assertNotEquals(before.get(id2), after.get(id2));
-        log.info("-------------testWithTemplateTxNoneError done" + before + ", " + after);
+        LOG.info("-------------testWithTemplateTxNoneError done" + before + ", " + after);
     }
 
 }

@@ -12,8 +12,6 @@ import cn.ponfee.disjob.common.collect.TypedKeyValue;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -36,8 +34,6 @@ import java.util.Date;
  * @author Ponfee
  */
 public abstract class BaseController implements TypedKeyValue<String, String> {
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {

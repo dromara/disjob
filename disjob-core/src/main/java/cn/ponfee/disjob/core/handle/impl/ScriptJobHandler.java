@@ -19,6 +19,8 @@ import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -47,6 +49,7 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  * @author Ponfee
  */
 public class ScriptJobHandler extends JobHandler<String> {
+    private final static Logger LOG = LoggerFactory.getLogger(ScriptJobHandler.class);
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http://", "https://", "ftp://"};
     private static final String WORKER_SCRIPT_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";
@@ -63,7 +66,7 @@ public class ScriptJobHandler extends JobHandler<String> {
         String scriptPath = prepareScriptFile(scriptParam.script, scriptFileName, charset);
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
-        return ProcessUtils.complete(process, charset, executingTask, log);
+        return ProcessUtils.complete(process, charset, executingTask, LOG);
     }
 
     public enum ScriptType {
