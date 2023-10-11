@@ -104,7 +104,7 @@ public class DAGExpressionParser {
      *   2、(?m)^\s*\[\s*\{(\s*\S+\s*)+}\s*]\s*$
      * </pre>
      */
-    private static final Pattern JSON_GRAPH_PATTERN = Pattern.compile("(?s)^\\s*\\[\\s*\\{.+}\\s*]\\s*$");
+    private static final Pattern JSON_ARRAY_PATTERN = Pattern.compile("(?s)^\\s*\\[\\s*\\{.+}\\s*]\\s*$");
 
     private static final String SEP_STAGE = "->";
     private static final String SEP_UNION = Str.COMMA;
@@ -138,7 +138,7 @@ public class DAGExpressionParser {
         ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
 
         List<DAGEdge> edges;
-        if (JSON_GRAPH_PATTERN.matcher(expression).matches() && (edges = GraphEdge.fromJson(expression)) != null) {
+        if (JSON_ARRAY_PATTERN.matcher(expression).matches() && (edges = GraphEdge.fromJson(expression)) != null) {
             parseJsonGraph(graphBuilder, edges);
         } else {
             parsePlainExpr(graphBuilder);
@@ -153,7 +153,7 @@ public class DAGExpressionParser {
     }
 
     /**
-     * Parse graph from json
+     * Parse graph from json array
      *
      * <pre>
      * [

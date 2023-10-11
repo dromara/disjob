@@ -23,8 +23,8 @@ public class LoopThread extends Thread {
 
     private final static Logger LOG = LoggerFactory.getLogger(LoopThread.class);
 
-    private static final int NEW = 0;
-    private static final int RUNNABLE = 1;
+    private static final int NEW        = 0;
+    private static final int RUNNABLE   = 1;
     private static final int TERMINATED = 2;
 
     private final AtomicInteger state = new AtomicInteger(NEW);

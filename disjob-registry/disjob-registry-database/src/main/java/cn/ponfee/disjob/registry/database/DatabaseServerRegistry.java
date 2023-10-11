@@ -13,7 +13,6 @@ import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
-import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.ServerRegistry;
@@ -49,7 +48,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                         \n" +
         "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',        \n" +
         "  `namespace`       VARCHAR(60)             NOT NULL                  COMMENT 'registry namespace',       \n" +
-        "  `role`            VARCHAR(30)             NOT NULL                  COMMENT 'server role',              \n" +
+        "  `role`            VARCHAR(30)             NOT NULL                  COMMENT 'role(worker, supervisor)', \n" +
         "  `server`          VARCHAR(255)            NOT NULL                  COMMENT 'server serialization',     \n" +
         "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',      \n" +
         "  PRIMARY KEY (`id`),                                                                                     \n" +
@@ -64,7 +63,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     private static final String DEREGISTER_SQL = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND server=?";
 
-    private static final String DISCOVER_SQL = "SELECT server FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time>=?";
+    private static final String DISCOVER_SQL = "SELECT server FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time>?";
 
     /**
      * Registry namespace
@@ -167,23 +166,20 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
                 update.setString(3, registerRoleName);
                 update.setString(4, serialize);
                 int updateRowsAffected = update.executeUpdate();
-                Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + updateRowsAffected);
+                Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid update rows affected: " + updateRowsAffected);
                 if (updateRowsAffected == AFFECTED_ONE_ROW) {
                     log.info("Database register update: {} | {} | {}", namespace, registerRoleName, serialize);
-                    continue;
+                } else {
+                    PreparedStatement insert = psCreator.apply(REGISTER_SQL);
+                    insert.setString(1, namespace);
+                    insert.setString(2, registerRoleName);
+                    insert.setString(3, serialize);
+                    insert.setLong(4, System.currentTimeMillis());
+                    int insertRowsAffected = insert.executeUpdate();
+                    Assert.isTrue(insertRowsAffected == AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + insertRowsAffected);
+                    log.info("Database register insert: {} | {} | {}", namespace, insertRowsAffected, serialize);
                 }
-
-                PreparedStatement insert = psCreator.apply(REGISTER_SQL);
-                insert.setString(1, namespace);
-                insert.setString(2, registerRoleName);
-                insert.setString(3, serialize);
-                insert.setLong(4, System.currentTimeMillis());
-                int insertRowsAffected = insert.executeUpdate();
-                Assert.isTrue(insertRowsAffected == AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + insertRowsAffected);
-                log.info("Database register insert: {} | {} | {}", namespace, insertRowsAffected, serialize);
             }
-
-            return null;
         });
 
         registered.addAll(servers);

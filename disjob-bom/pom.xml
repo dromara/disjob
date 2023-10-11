@@ -39,16 +39,6 @@
         <artifactId>disjob-test</artifactId>
         <version>${project.parent.version}</version>
       </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-supervisor</artifactId>
-        <version>${project.parent.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>cn.ponfee</groupId>
-        <artifactId>disjob-worker</artifactId>
-        <version>${project.parent.version}</version>
-      </dependency>
 
       <dependency>
         <groupId>cn.ponfee</groupId>
@@ -99,6 +89,17 @@
       <dependency>
         <groupId>cn.ponfee</groupId>
         <artifactId>disjob-dispatch-http</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-supervisor</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.ponfee</groupId>
+        <artifactId>disjob-worker</artifactId>
         <version>${project.parent.version}</version>
       </dependency>
     </dependencies>

@@ -52,10 +52,10 @@
     <module>disjob-core</module>
     <module>disjob-id</module>
     <module>disjob-test</module>
-    <module>disjob-supervisor</module>
-    <module>disjob-worker</module>
     <module>disjob-registry</module>
     <module>disjob-dispatch</module>
+    <module>disjob-supervisor</module>
+    <module>disjob-worker</module>
     <module>disjob-bom</module>
     <module>disjob-reports</module>
   </modules>

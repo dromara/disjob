@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -68,6 +69,10 @@ public final class JdbcTemplateWrapper {
     public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) {
         Assert.isTrue(sql.startsWith("SELECT "), () -> "Invalid SELECT sql: " + sql);
         return jdbcTemplate.query(sql, rowMapper, args);
+    }
+
+    public void executeInTransaction(ThrowingConsumer<ThrowingFunction<String, PreparedStatement, ?>, ?> action) {
+        executeInTransaction(action.toFunction(null));
     }
 
     public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {

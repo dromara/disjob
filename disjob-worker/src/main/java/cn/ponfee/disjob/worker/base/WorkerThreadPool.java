@@ -62,9 +62,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * This jdk thread pool for asynchronous to stop(pause or cancel) task
      */
     private final ThreadPoolExecutor stopTaskExecutor = ThreadPoolExecutors.builder()
-        .corePoolSize(50)
-        .maximumPoolSize(50)
-        .workQueue(new LinkedBlockingQueue<>(500))
+        .corePoolSize(10)
+        .maximumPoolSize(30)
+        .workQueue(new LinkedBlockingQueue<>(200))
         .keepAliveTimeSeconds(300)
         .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
         .threadFactory(NamedThreadFactory.builder().prefix("stop_task_operation").priority(Thread.MAX_PRIORITY).build())
