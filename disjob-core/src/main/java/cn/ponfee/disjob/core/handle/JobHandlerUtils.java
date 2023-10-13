@@ -56,7 +56,7 @@ public class JobHandlerUtils {
         for (String jobHandler : jobHandlers) {
             if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
                 try {
-                    JobHandler<?> handler = JobHandlerUtils.load(jobHandler);
+                    JobHandler<?> handler = load(jobHandler);
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
                 } catch (JobCheckedException e) {
                     throw e;
@@ -85,7 +85,7 @@ public class JobHandlerUtils {
      */
     public static List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
         try {
-            JobSplitter jobSplitter = JobHandlerUtils.load(param.getJobHandler());
+            JobSplitter jobSplitter = load(param.getJobHandler());
             List<SplitTask> splitTasks = jobSplitter.split(param.getJobParam());
             if (CollectionUtils.isEmpty(splitTasks)) {
                 throw new JobCheckedException(SPLIT_JOB_FAILED, "Job split none tasks.");

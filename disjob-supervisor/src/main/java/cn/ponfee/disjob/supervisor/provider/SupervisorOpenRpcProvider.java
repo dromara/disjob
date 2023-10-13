@@ -138,24 +138,21 @@ public class SupervisorOpenRpcProvider implements SupervisorOpenRpcService, RpcC
     }
 
     @Override
-    public SchedInstanceResponse getInstance(long instanceId) {
-        SchedInstance instance = jobQuerier.getInstance(instanceId);
-        return instance == null ? null : SchedInstanceResponse.of(instance, null);
-    }
-
-    @Override
-    public SchedInstanceResponse getInstanceTasks(long instanceId) {
+    public SchedInstanceResponse getInstance(long instanceId, boolean withTasks) {
         SchedInstance instance = jobQuerier.getInstance(instanceId);
         if (instance == null) {
             return null;
         }
 
-        List<SchedTask> tasks = jobQuerier.findLargeInstanceTasks(instanceId);
+        List<SchedTask> tasks = null;
+        if (withTasks) {
+            tasks = jobQuerier.findLargeInstanceTasks(instanceId);
+        }
         return SchedInstanceResponse.of(instance, tasks);
     }
 
     @Override
-    public List<SchedTaskResponse> getTasks(long instanceId) {
+    public List<SchedTaskResponse> getInstanceTasks(long instanceId) {
         List<SchedTask> tasks = jobQuerier.findLargeInstanceTasks(instanceId);
         if (tasks == null) {
             return null;

@@ -100,8 +100,10 @@ public class RestTemplateUtils {
         } catch (Exception e) {
             throw new SecurityException(e);
         }
-        SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslConnectionSocketFactory).build();
+
+        CloseableHttpClient httpClient = HttpClients.custom()
+            .setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE))
+            .build();
 
         //SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();

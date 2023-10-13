@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.date;
 
 import cn.ponfee.disjob.common.base.Symbol.Char;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -27,6 +28,7 @@ import static cn.ponfee.disjob.common.date.JavaUtilDateFormat.*;
  * @author Ponfee
  * @see JavaUtilDateFormat#parseToLocalDateTime(String)
  */
+@ThreadSafe
 public class LocalDateTimeFormat {
 
     static final DateTimeFormatter PATTERN_01 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");

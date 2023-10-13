@@ -40,6 +40,11 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
     private static final long DEFAULT_BLOCK_SIZE = 100_000_000L;
 
     /**
+     * Savepoint任务执行状态时间间隔
+     */
+    private static final long SAVEPOINT_INTERVAL_MS = 10 * 1000;
+
+    /**
      * 拆分任务，自定义控制任务的拆分数量
      *
      * @param jobParamString the job param
@@ -99,15 +104,15 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
             }
         }
 
-        long blockStep = blockSize - 1, next = execution.getNext();
-        long lastTime = System.currentTimeMillis(), currTime;
+        long delta = blockSize - 1, next = execution.getNext();
+        long nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
         while (next <= n) {
             if (super.isStopped() || Thread.currentThread().isInterrupted()) {
                 savepoint.save(executingTask.getTaskId(), Jsons.toJson(execution));
                 throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_EXCEPTION);
             }
 
-            long count = Prime.MillerRabin.countPrimes(next, Math.min(next + blockStep, n));
+            long count = Prime.MillerRabin.countPrimes(next, Math.min(next + delta, n));
             execution.increment(count);
 
             next += step;
@@ -118,11 +123,10 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
                 execution.setNext(next);
             }
 
-            currTime = System.currentTimeMillis();
-            if (execution.isFinished() || (currTime - lastTime) > 5000) {
+            if (execution.isFinished() || nextSavepointTimeMillis < System.currentTimeMillis()) {
                 savepoint.save(executingTask.getTaskId(), Jsons.toJson(execution));
+                nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
             }
-            lastTime = currTime;
         }
         return Result.success();
     }

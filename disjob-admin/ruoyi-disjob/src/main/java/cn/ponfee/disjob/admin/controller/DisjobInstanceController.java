@@ -92,7 +92,7 @@ public class DisjobInstanceController extends BaseController {
     @RequiresPermissions(PERMISSION_QUERY)
     @GetMapping("/tasks/{instanceId}")
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
-        List<SchedTaskResponse> tasks = supervisorOpenRpcService.getTasks(instanceId);
+        List<SchedTaskResponse> tasks = supervisorOpenRpcService.getInstanceTasks(instanceId);
         mmap.put("tasks", Jsons.toJson(tasks));
         return PREFIX + "/tasks";
     }
@@ -121,7 +121,7 @@ public class DisjobInstanceController extends BaseController {
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenRpcService.pauseInstance(instanceId);
         WaitForProcess.process(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
-            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId);
+            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
             return !RunState.PAUSABLE_LIST.contains(RunState.of(instance.getRunState()));
         });
         return success();
@@ -137,7 +137,7 @@ public class DisjobInstanceController extends BaseController {
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenRpcService.resumeInstance(instanceId);
         WaitForProcess.process(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
-            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId);
+            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
             return !RunState.PAUSED.equals(instance.getRunState());
         });
         return success();
@@ -153,7 +153,7 @@ public class DisjobInstanceController extends BaseController {
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenRpcService.cancelInstance(instanceId);
         WaitForProcess.process(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
-            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId);
+            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
             return RunState.of(instance.getRunState()).isTerminal();
         });
         return success();

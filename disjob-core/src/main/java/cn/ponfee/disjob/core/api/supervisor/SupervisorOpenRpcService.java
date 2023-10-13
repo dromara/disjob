@@ -72,13 +72,10 @@ public interface SupervisorOpenRpcService {
     void changeInstanceState(long instanceId, int targetExecuteState);
 
     @GetMapping("instance/get")
-    SchedInstanceResponse getInstance(long instanceId);
+    SchedInstanceResponse getInstance(long instanceId, boolean withTasks);
 
     @GetMapping("instance/tasks")
-    SchedInstanceResponse getInstanceTasks(long instanceId);
-
-    @GetMapping("tasks/get")
-    List<SchedTaskResponse> getTasks(long instanceId);
+    List<SchedTaskResponse> getInstanceTasks(long instanceId);
 
     @GetMapping("instance/page")
     PageResponse<SchedInstanceResponse> queryInstanceForPage(SchedInstancePageRequest pageRequest);

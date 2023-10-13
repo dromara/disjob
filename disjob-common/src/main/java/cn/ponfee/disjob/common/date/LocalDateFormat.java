@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.date;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +19,7 @@ import java.time.format.DateTimeFormatter;
  *
  * @author Ponfee
  */
+@ThreadSafe
 public class LocalDateFormat {
 
     /**

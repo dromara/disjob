@@ -79,10 +79,12 @@ public class SupervisorOpenApiProvider extends BaseController {
     }
 
     /**
-     * Form data
+     * Http request Content-Type: Http form-data or application/x-www-form-urlencoded
      *
      * @param pageRequest the page request
      * @return page result
+     * @see org.springframework.http.MediaType#APPLICATION_FORM_URLENCODED
+     * @see org.springframework.http.MediaType#MULTIPART_FORM_DATA
      */
     @GetMapping("job/page")
     public Result<PageResponse<SchedJobResponse>> queryJobForPage(SchedJobPageRequest pageRequest) {
@@ -123,25 +125,23 @@ public class SupervisorOpenApiProvider extends BaseController {
     }
 
     @GetMapping("instance/get")
-    public Result<SchedInstanceResponse> getInstance(@RequestParam("instanceId") long instanceId) {
-        return Result.success(supervisorOpenRpcService.getInstance(instanceId));
+    public Result<SchedInstanceResponse> getInstance(@RequestParam(value = "instanceId") long instanceId,
+                                                     @RequestParam(value = "withTasks", defaultValue = "false") boolean withTasks) {
+        return Result.success(supervisorOpenRpcService.getInstance(instanceId, withTasks));
     }
 
     @GetMapping("instance/tasks")
-    public Result<SchedInstanceResponse> getInstanceTasks(@RequestParam("instanceId") long instanceId) {
+    public Result<List<SchedTaskResponse>> getInstanceTasks(@RequestParam("instanceId") long instanceId) {
         return Result.success(supervisorOpenRpcService.getInstanceTasks(instanceId));
     }
 
-    @GetMapping("tasks/get")
-    public Result<List<SchedTaskResponse>> getTasks(@RequestParam("instanceId") long instanceId) {
-        return Result.success(supervisorOpenRpcService.getTasks(instanceId));
-    }
-
     /**
-     * Form data
+     * Http request Content-Type: Http form-data or application/x-www-form-urlencoded
      *
      * @param pageRequest the page request
-     * @return result page
+     * @return page result
+     * @see org.springframework.http.MediaType#APPLICATION_FORM_URLENCODED
+     * @see org.springframework.http.MediaType#MULTIPART_FORM_DATA
      */
     @GetMapping("instance/page")
     public Result<PageResponse<SchedInstanceResponse>> queryInstanceForPage(SchedInstancePageRequest pageRequest) {

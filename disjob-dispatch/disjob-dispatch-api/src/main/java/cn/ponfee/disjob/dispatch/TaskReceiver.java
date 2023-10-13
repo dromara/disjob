@@ -22,7 +22,7 @@ import java.util.Objects;
  * @author Ponfee
  */
 public abstract class TaskReceiver implements Startable {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    private final static Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
 
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
@@ -37,15 +37,15 @@ public abstract class TaskReceiver implements Startable {
      */
     public boolean receive(ExecuteTaskParam param) {
         if (param == null) {
-            log.error("Received task cannot be null.");
+            LOG.error("Received task cannot be null.");
             return false;
         }
 
         boolean res = timingWheel.offer(param);
         if (res) {
-            log.info("Received task success {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+            LOG.info("Received task success {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         } else {
-            log.error("Received task failed " + param);
+            LOG.error("Received task failed " + param);
         }
         return res;
     }

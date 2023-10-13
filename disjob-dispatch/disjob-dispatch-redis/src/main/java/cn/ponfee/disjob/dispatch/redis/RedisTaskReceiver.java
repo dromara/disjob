@@ -19,6 +19,8 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -31,9 +33,24 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Task receiver based redis.
  *
+ * <p>
+ * <pre>Redis list queue: {@code
+ * lrange list_queue 0 -1
+ *
+ * rpush list_queue a b c d e f g
+ * lrange list_queue 0 -1
+ *
+ * lrange list_queue 0 2
+ * lrange list_queue 0 -1
+ *
+ * ltrim  list_queue 3 -1
+ * lrange list_queue 0 -1
+ * }</pre>
+ *
  * @author Ponfee
  */
 public class RedisTaskReceiver extends TaskReceiver {
+    private final static Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
 
     /**
      * List Batch pop lua script
@@ -77,7 +94,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
-            log.warn("Repeat call start method.");
+            LOG.warn("Repeat call start method.");
             return;
         }
         this.receiveHeartbeatThread.start();
@@ -86,7 +103,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     @Override
     public void stop() {
         if (!started.compareAndSet(true, false)) {
-            log.warn("Repeat call stop method.");
+            LOG.warn("Repeat call stop method.");
             return;
         }
         this.receiveHeartbeatThread.close();

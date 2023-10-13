@@ -13,6 +13,7 @@ import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.text.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +27,7 @@ import java.util.regex.Pattern;
  *
  * @author Ponfee
  */
+@ThreadSafe
 public class JavaUtilDateFormat extends DateFormat {
 
     private static final long serialVersionUID = 6837172676882367405L;
