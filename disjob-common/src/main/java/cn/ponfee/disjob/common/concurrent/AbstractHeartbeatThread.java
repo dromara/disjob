@@ -6,10 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.base;
+package cn.ponfee.disjob.common.concurrent;
 
 import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
-import cn.ponfee.disjob.common.concurrent.Threads;
 import com.google.common.base.CaseFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

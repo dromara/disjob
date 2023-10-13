@@ -11,9 +11,9 @@ package cn.ponfee.disjob.dispatch.redis;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
-import cn.ponfee.disjob.core.base.AbstractHeartbeatThread;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
@@ -124,7 +124,7 @@ public class RedisTaskReceiver extends TaskReceiver {
                     gropedWorker.skipNext = false;
                     continue;
                 }
-                List<byte[]> received = RedisTemplateUtils.executeScript(
+                List<byte[]> received = RedisTemplateUtils.evalScript(
                     redisTemplate, BATCH_POP_SCRIPT, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
 
                 gropedWorker.redisKeyRenewal.renewIfNecessary();

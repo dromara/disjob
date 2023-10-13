@@ -64,7 +64,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private final ThreadPoolExecutor stopTaskExecutor = ThreadPoolExecutors.builder()
         .corePoolSize(2)
         .maximumPoolSize(10)
-        .workQueue(new LinkedBlockingQueue<>(200))
+        .workQueue(new LinkedBlockingQueue<>(20))
         .keepAliveTimeSeconds(300)
         .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
         .threadFactory(NamedThreadFactory.builder().prefix("stop_task_operation").priority(Thread.MAX_PRIORITY).build())

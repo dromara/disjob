@@ -236,7 +236,7 @@ public class ImmutableArrayList<E> extends ToJsonString
     public final E[] join(E last) {
         if (isEmpty()) {
             // t.getClass().getComponentType()
-            return last == null ? (E[]) new Object[]{null} : Collects.toArray(last);
+            return last == null ? (E[]) new Object[]{null} : ArrayUtils.toArray(last);
         }
 
         Class<? extends E[]> arrayType = (Class<? extends E[]>) elements.getClass();

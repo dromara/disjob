@@ -10,10 +10,10 @@ package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.base.Null;
 import cn.ponfee.disjob.common.collect.ArrayHashKey;
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -102,7 +102,7 @@ public final class ClassUtils {
     public static Set<String> fieldDiff(Class<?> a, Class<?> b) {
         Set<String> set1 = ClassUtils.listFields(a).stream().map(Field::getName).collect(Collectors.toSet());
         Set<String> set2 = ClassUtils.listFields(b).stream().map(Field::getName).collect(Collectors.toSet());
-        return Collects.different(set1, set2);
+        return Sets.symmetricDifference(set1, set2);
     }
 
     /**

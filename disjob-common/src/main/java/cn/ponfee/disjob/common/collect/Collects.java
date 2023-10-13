@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.common.collect;
 
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.common.util.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -35,26 +34,7 @@ public class Collects {
         return list;
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T[] toArray(T... args) {
-        return args;
-    }
-
-    /**
-     * The two set different elements
-     *
-     * @param set1
-     * @param set2
-     * @return
-     */
-    public static <T> Set<T> different(Set<T> set1, Set<T> set2) {
-        Set<T> res = new HashSet<>();
-        set1.stream().filter(Predicates.not(set2::contains)).forEach(res::add);
-        set2.stream().filter(Predicates.not(set1::contains)).forEach(res::add);
-        return res;
-    }
-
-    public static <T> List<T> duplicate(Collection<T> list) {
+    public static <T> List<T> duplicate(List<T> list) {
         return duplicate(list, Function.identity());
     }
 
@@ -64,7 +44,7 @@ public class Collects {
      * @param list the list
      * @return a set of duplicates elements for list
      */
-    public static <T, R> List<R> duplicate(Collection<T> list, Function<T, R> mapper) {
+    public static <T, R> List<R> duplicate(List<T> list, Function<T, R> mapper) {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
@@ -144,10 +124,7 @@ public class Collects {
         if (list.size() <= batchSize) {
             processor.accept(list);
         } else {
-            List<List<T>> partition = Lists.partition(list, batchSize);
-            for (List<T> part : partition) {
-                processor.accept(part);
-            }
+            Lists.partition(list, batchSize).forEach(processor);
         }
     }
 

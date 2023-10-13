@@ -21,6 +21,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Redis template utils
+ * <p>redis.call：抛出异常给调用方
+ * <p>redis.pcall：捕获异常并以Lua表的形式返回给调用方
  *
  * @author Ponfee
  */
@@ -29,7 +31,14 @@ public class RedisTemplateUtils {
     private static final Logger LOG = LoggerFactory.getLogger(RedisTemplateUtils.class);
 
     /**
+     * <pre>
      * Execute lua script for redis
+     *
+     * 为了保证脚本里面的所有操作都在相同slot进行，云数据库Redis集群版本会对Lua脚本做如下限制：
+     * 1、所有key都应该由KEYS数组来传递，脚本中执行命令`redis.call/pcall`的参数必须是KEYS[i]，不能使用本地变量（如`local key1 = KEY[i]; redis.call('get', key1)`）
+     * 2、所有key必须在一个slot上，否则报错：ERR eval/evalsha command keys must be in same slot
+     * 3、调用必须要带有key，否则报错：ERR for redis cluster, eval/evalsha number of keys can't be negative or zero
+     * </pre>
      *
      * @param redisTemplate the redis template
      * @param script        the lua script
@@ -39,8 +48,8 @@ public class RedisTemplateUtils {
      * @param <T>           the return type
      * @return scrip executed result
      */
-    public static <T> T executeScript(RedisTemplate<?, ?> redisTemplate,
-                                      RedisScript<T> script, ReturnType returnType, int numKeys, byte[][] keysAndArgs) {
+    public static <T> T evalScript(RedisTemplate<?, ?> redisTemplate,
+                                   RedisScript<T> script, ReturnType returnType, int numKeys, byte[][] keysAndArgs) {
         return redisTemplate.execute((RedisCallback<T>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
                 // 在exec/closePipeline中会添加lua script sha1，所以这里只需要使用eval

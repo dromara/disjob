@@ -320,7 +320,7 @@ public class RedisLock implements Lock {
         final byte[][] keysAndArgs = {lockKey, timeoutMillis, getLockValue()};
 
         // ret: null-获取锁成功；x-锁被其它线程持有(pttl的返回值)；
-        Long ret = RedisTemplateUtils.executeScript(redisTemplate, LOCK_SCRIPT, ReturnType.INTEGER, 1, keysAndArgs);
+        Long ret = RedisTemplateUtils.evalScript(redisTemplate, LOCK_SCRIPT, ReturnType.INTEGER, 1, keysAndArgs);
 
         return ret == null;
     }
@@ -334,7 +334,7 @@ public class RedisLock implements Lock {
         final byte[][] keysAndArgs = {lockKey, timeoutMillis, getLockValue()};
 
         // ret: null-当前线程未持有锁；0-当前线程有重入且非最后一次释放锁；1-当前线程最后一次释放锁成功；
-        Long ret = RedisTemplateUtils.executeScript(redisTemplate, UNLOCK_SCRIPT, ReturnType.INTEGER, 1, keysAndArgs);
+        Long ret = RedisTemplateUtils.evalScript(redisTemplate, UNLOCK_SCRIPT, ReturnType.INTEGER, 1, keysAndArgs);
 
         return ret != null && ret == 1;
     }

@@ -9,11 +9,11 @@
 package cn.ponfee.disjob.supervisor.thread;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.lock.DoInLocked;
-import cn.ponfee.disjob.core.base.AbstractHeartbeatThread;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;

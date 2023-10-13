@@ -9,8 +9,13 @@
 package cn.ponfee.disjob.common.spring;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -167,6 +172,47 @@ public class SpringContextHolder implements ApplicationContextAware {
             return null;
         }
         return applicationContext.getAliases(beanName);
+    }
+
+    /**
+     * Removes bean from spring container.
+     *
+     * @param beanName the bean name
+     */
+    public static void removeBean(String beanName) {
+        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
+            return;
+        }
+
+        ConfigurableApplicationContext cac = (ConfigurableApplicationContext) applicationContext;
+        BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) cac.getBeanFactory();
+        beanFactory.removeBeanDefinition(beanName);
+    }
+
+    /**
+     * Registers bean definition to spring container.
+     *
+     * @param beanName the bean name
+     * @param beanType the bean type
+     * @param args     the bean type constructor arguments
+     * @param <T>      bean type
+     * @return spring container bean instance
+     */
+    public static <T> T registerBean(String beanName, Class<T> beanType, Object... args) {
+        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
+            throw new BeanDefinitionValidationException("Register bean failed: not ConfigurableApplicationContext.");
+        }
+
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(beanType);
+        for (Object arg : args) {
+            beanDefinitionBuilder.addConstructorArgValue(arg);
+        }
+        BeanDefinition beanDefinition = beanDefinitionBuilder.getRawBeanDefinition();
+
+        ConfigurableApplicationContext cac = (ConfigurableApplicationContext) applicationContext;
+        BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) cac.getBeanFactory();
+        beanFactory.registerBeanDefinition(beanName, beanDefinition);
+        return cac.getBean(beanName, beanType);
     }
 
     /**
