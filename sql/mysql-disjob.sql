@@ -218,3 +218,9 @@ INSERT INTO `sched_job` (`job_id`, `job_group`, `job_name`, `job_handler`, `job_
 -- depend job config
 INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (1003164910267351007, 1003164910267351000, 1);
 INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (1003164910267351007, 1003164910267351001, 2);
+
+
+-- ----------------------------
+-- COMMIT
+-- ----------------------------
+COMMIT;
