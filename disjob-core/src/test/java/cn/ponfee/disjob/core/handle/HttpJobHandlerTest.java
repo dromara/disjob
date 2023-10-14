@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.impl.HttpJobHandler;
@@ -30,7 +29,7 @@ public class HttpJobHandlerTest {
         executingTask.setTaskParam(Jsons.toJson(req));
         HttpJobHandler httpJobHandler = new HttpJobHandler();
 
-        Result<String> result = httpJobHandler.execute(executingTask, Savepoint.DISCARD);
+        ExecuteResult result = httpJobHandler.execute(executingTask, Savepoint.DISCARD);
         System.out.println(Jsons.toJson(result));
         Assertions.assertTrue(result.isSuccess());
     }

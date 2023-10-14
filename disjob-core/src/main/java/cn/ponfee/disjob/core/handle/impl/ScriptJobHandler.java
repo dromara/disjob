@@ -8,9 +8,9 @@
 
 package cn.ponfee.disjob.core.handle.impl;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
@@ -48,14 +48,14 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  *
  * @author Ponfee
  */
-public class ScriptJobHandler extends JobHandler<String> {
+public class ScriptJobHandler extends JobHandler {
     private final static Logger LOG = LoggerFactory.getLogger(ScriptJobHandler.class);
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http://", "https://", "ftp://"};
     private static final String WORKER_SCRIPT_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";
 
     @Override
-    public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         ScriptParam scriptParam = Jsons.JSON5.readValue(executingTask.getTaskParam(), ScriptParam.class);
         Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);

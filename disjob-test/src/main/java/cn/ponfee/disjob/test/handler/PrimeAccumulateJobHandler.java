@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.test.handler;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.AbstractExecutionTask;
@@ -20,10 +20,10 @@ import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
  *
  * @author Ponfee
  */
-public class PrimeAccumulateJobHandler extends JobHandler<Void> {
+public class PrimeAccumulateJobHandler extends JobHandler {
 
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         long sum = executingTask.getWorkflowPredecessorNodes()
             .stream()
             .flatMap(e -> e.getExecutedTasks().stream())
@@ -33,7 +33,7 @@ public class PrimeAccumulateJobHandler extends JobHandler<Void> {
             .sum();
         savepoint.save(executingTask.getTaskId(), Long.toString(sum));
 
-        return Result.success();
+        return ExecuteResult.success();
     }
 
 }

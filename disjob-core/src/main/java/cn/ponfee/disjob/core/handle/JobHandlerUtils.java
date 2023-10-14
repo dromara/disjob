@@ -56,7 +56,7 @@ public class JobHandlerUtils {
         for (String jobHandler : jobHandlers) {
             if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
                 try {
-                    JobHandler<?> handler = load(jobHandler);
+                    JobHandler handler = load(jobHandler);
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
                 } catch (JobCheckedException e) {
                     throw e;
@@ -105,14 +105,14 @@ public class JobHandlerUtils {
      * @return JobHandler instance object
      * @throws JobCheckedException if new instance failed
      */
-    public static JobHandler<?> load(String text) throws JobCheckedException {
-        JobHandler<?> handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);
+    public static JobHandler load(String text) throws JobCheckedException {
+        JobHandler handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);
         if (handler != null) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
             return handler;
         }
 
-        Class<JobHandler<?>> type = ClassUtils.getClass(text);
+        Class<JobHandler> type = ClassUtils.getClass(text);
         if (type == null) {
             throw new JobCheckedException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal job handler: " + text);
         }

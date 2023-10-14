@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.core.handle.impl;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.GroovyUtils;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
@@ -32,10 +32,10 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
-public class GroovyJobHandler extends JobHandler<String> {
+public class GroovyJobHandler extends JobHandler {
 
     @Override
-    public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         String scriptText = executingTask.getTaskParam();
         Map<String, Object> params = ImmutableMap.of(
             "jobHandler", this,
@@ -44,7 +44,11 @@ public class GroovyJobHandler extends JobHandler<String> {
         );
 
         Object result = GroovyUtils.Evaluator.SCRIPT.eval(scriptText, params);
-        return Result.success(Objects.toString(result, null));
+        if (result instanceof ExecuteResult) {
+            return (ExecuteResult) result;
+        } else {
+            return ExecuteResult.success(Objects.toString(result, null));
+        }
     }
 
 }

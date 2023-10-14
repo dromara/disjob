@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.core.handle;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.impl.CommandJobHandler;
@@ -39,9 +38,9 @@ public class CommandJobHandlerTest {
 
         CommandJobHandler commandJobHandler = new CommandJobHandler();
 
-        Result<String> result = commandJobHandler.execute(executingTask, Savepoint.DISCARD);
+        ExecuteResult result = commandJobHandler.execute(executingTask, Savepoint.DISCARD);
 
-        String expect = "{\"code\":0,\"msg\":\"OK\",\"data\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
+        String expect = "{\"code\":0,\"msg\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
         Assertions.assertEquals(expect, Jsons.toJson(result));
     }
 

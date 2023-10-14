@@ -8,9 +8,9 @@
 
 package cn.ponfee.disjob.core.handle.impl;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
@@ -46,11 +46,11 @@ import java.nio.charset.Charset;
  *
  * @author Ponfee
  */
-public class CommandJobHandler extends JobHandler<String> {
+public class CommandJobHandler extends JobHandler {
     private final static Logger LOG = LoggerFactory.getLogger(CommandJobHandler.class);
 
     @Override
-    public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         String taskParam = executingTask.getTaskParam();
         Assert.hasText(taskParam, "Command param cannot be empty.");
         CommandParam commandParam = Jsons.JSON5.readValue(taskParam, CommandParam.class);

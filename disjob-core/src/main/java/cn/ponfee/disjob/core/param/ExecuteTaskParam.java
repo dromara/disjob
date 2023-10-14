@@ -69,7 +69,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     /**
      * 任务执行处理器
      */
-    private volatile transient TaskExecutor<?> taskExecutor;
+    private volatile transient TaskExecutor taskExecutor;
 
     /**
      * Constructor
@@ -186,12 +186,12 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         return this.operation.get();
     }
 
-    public void taskExecutor(TaskExecutor<?> taskExecutor) {
+    public void taskExecutor(TaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
     }
 
     public void stop() {
-        final TaskExecutor<?> executor = this.taskExecutor;
+        final TaskExecutor executor = this.taskExecutor;
         if (executor != null) {
             executor.stop();
         }

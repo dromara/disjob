@@ -10,10 +10,10 @@ package cn.ponfee.disjob.core.util;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
@@ -56,23 +56,21 @@ public final class ProcessUtils {
         }
     }
 
-    public static Result<String> complete(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
+    public static ExecuteResult complete(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
             // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
             String verbose = IOUtils.toString(is, charset);
             String error = IOUtils.toString(es, charset);
             int code = process.waitFor();
             if (code == 0) {
-                log.info("Execute success: {} | {}", executingTask.getTaskId(), verbose);
-                return Result.success(verbose);
+                return ExecuteResult.success(verbose);
             } else {
-                log.error("Execute failed: {} | {} | {} | {}", executingTask, code, verbose, error);
-                return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Execute failed: code=" + code + ", error=" + error);
+                return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
             }
         } catch (Throwable t) {
-            log.error("Execute error: " + executingTask, t);
+            log.error("Process execute error: " + executingTask, t);
             Threads.interruptIfNecessary(t);
-            return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Execute error: " + Throwables.getRootCauseMessage(t));
+            return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         } finally {
             if (process != null) {
                 try {
@@ -95,7 +93,7 @@ public final class ProcessUtils {
         try {
             return process.waitFor();
         } catch (InterruptedException e) {
-            error.accept("Execute error: " + ExceptionUtils.getStackTrace(e));
+            error.accept("Process execute interrupted: " + ExceptionUtils.getStackTrace(e));
             Thread.currentThread().interrupt();
             // return error code: -1
             return -1;

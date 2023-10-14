@@ -25,15 +25,15 @@ import java.util.Map;
  */
 public class JobHandlerHolder {
 
-    private static final Map<String, Class<? extends JobHandler<?>>> JOB_HANDLER_MAP;
+    private static final Map<String, Class<? extends JobHandler>> JOB_HANDLER_MAP;
 
     static {
-        Map<String, Class<? extends JobHandler<?>>> map = new HashMap<>();
+        Map<String, Class<? extends JobHandler>> map = new HashMap<>();
         for (Class<?> clazz : new ResourceScanner("**/*.class").scan4class(new Class<?>[]{JobHandler.class}, null)) {
             if (Modifier.isAbstract(clazz.getModifiers())) {
                 continue;
             }
-            Class<? extends JobHandler<?>> type = (Class<? extends JobHandler<?>>) clazz;
+            Class<? extends JobHandler> type = (Class<? extends JobHandler>) clazz;
             map.put(type.getName(), type);
             map.put(CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, type.getSimpleName()), type);
             Component component = AnnotatedElementUtils.findMergedAnnotation(clazz, Component.class);
@@ -44,7 +44,7 @@ public class JobHandlerHolder {
         JOB_HANDLER_MAP = map;
     }
 
-    public static Class<? extends JobHandler<?>> getJobHandler(String jobHandler) {
+    public static Class<? extends JobHandler> getJobHandler(String jobHandler) {
         return JOB_HANDLER_MAP.get(jobHandler);
     }
 

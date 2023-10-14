@@ -17,6 +17,6 @@ package cn.ponfee.disjob.core.handle;
  * @see org.springframework.context.annotation.Scope
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#SCOPE_PROTOTYPE
  */
-public abstract class JobHandler<T> extends TaskExecutor<T> implements JobSplitter {
+public abstract class JobHandler extends TaskExecutor implements JobSplitter {
 
 }

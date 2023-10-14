@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.impl.ScriptJobHandler;
@@ -38,8 +37,8 @@ public class ScriptJobHandlerTest {
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
 
-        Result<String> execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
-        Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
+        ExecuteResult execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
+        Assertions.assertEquals("{\"code\":0,\"msg\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
     }
 
     @Disabled
@@ -55,7 +54,7 @@ public class ScriptJobHandlerTest {
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
 
-        Result<String> execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
+        ExecuteResult execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
 

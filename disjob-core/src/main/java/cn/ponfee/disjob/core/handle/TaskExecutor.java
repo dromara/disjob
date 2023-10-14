@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 
 /**
@@ -16,7 +15,7 @@ import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
  *
  * @author Ponfee
  */
-public abstract class TaskExecutor<T> {
+public abstract class TaskExecutor {
 
     private volatile boolean stopped = false;
 
@@ -57,10 +56,10 @@ public abstract class TaskExecutor<T> {
      *
      * @param executingTask the executing task
      * @param savepoint     the savepoint
-     * @return executed result
+     * @return execute result
      * @throws Exception if execute failed
      */
-    public abstract Result<T> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception;
+    public abstract ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception;
 
     /**
      * Destroy this task executor

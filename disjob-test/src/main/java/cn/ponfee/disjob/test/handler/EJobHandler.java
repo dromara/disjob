@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.model.Result;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
  */
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Service("EJobHandler")
-public class EJobHandler extends JobHandler<Void> {
+public class EJobHandler extends JobHandler {
 
     private final static Logger LOG = LoggerFactory.getLogger(EJobHandler.class);
 
@@ -47,11 +47,11 @@ public class EJobHandler extends JobHandler<Void> {
     }
 
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
         LOG.info(this.getClass().getSimpleName() + " execution finished.");
         savepoint.save(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
-        return Result.success();
+        return ExecuteResult.success();
     }
 
 }

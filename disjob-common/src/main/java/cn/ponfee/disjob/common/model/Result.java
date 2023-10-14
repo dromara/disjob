@@ -66,11 +66,11 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
     // -----------------------------------------------static success methods
 
     public static Result<Void> success() {
-        return Success.INSTANCE;
+        return SuccessResult.INSTANCE;
     }
 
     public static <T> Result<T> success(T data) {
-        return new Result<>(Success.CODE, Success.MSG, data);
+        return new Result<>(SuccessResult.CODE, SuccessResult.MSG, data);
     }
 
     // -----------------------------------------------static failure methods
@@ -84,8 +84,8 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
     }
 
     public static <T> Result<T> failure(int code, String msg) {
-        if (code == Success.CODE) {
-            throw new IllegalStateException("Failure code '" + code + "' cannot be '" + Success.CODE + "'.");
+        if (code == SuccessResult.CODE) {
+            throw new IllegalStateException("Result failure code '" + code + "' cannot be '" + SuccessResult.CODE + "'.");
         }
         return new Result<>(code, msg, null);
     }
@@ -104,7 +104,7 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         return new Result<>(code, msg, null);
     }
 
-    public static <T> Result<T> of(int code,String msg, T data) {
+    public static <T> Result<T> of(int code, String msg, T data) {
         return new Result<>(code, msg, data);
     }
 
@@ -138,7 +138,7 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
 
     @Transient
     public boolean isSuccess() {
-        return code != null && code == Success.CODE;
+        return code != null && code == SuccessResult.CODE;
     }
 
     @Transient
@@ -149,17 +149,15 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
     // -----------------------------------------------static class
 
     /**
-     * Success Result
+     * Immutable result
+     *
+     * @param <T> the data type
      */
-    private static final class Success extends Result<Void> {
+    public static abstract class ImmutableResult<T> extends Result<T> {
         private static final long serialVersionUID = -8356385235924100622L;
-        private static final int CODE = 0;
-        private static final String MSG = "OK";
 
-        public static final Result<Void> INSTANCE = new Success();
-
-        private Success() {
-            super(CODE, MSG, null);
+        public ImmutableResult(int code, String msg, T data) {
+            super(code, msg, data);
         }
 
         @Override
@@ -173,10 +171,31 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         }
 
         @Override
-        public void setData(Void data) {
+        public void setData(T data) {
             throw new UnsupportedOperationException();
         }
+    }
 
+    /**
+     * Success result
+     */
+    private static final class SuccessResult extends ImmutableResult<Void> {
+        private static final long serialVersionUID = -8356385235924100622L;
+
+        private static final int   CODE = 0;
+        private static final String MSG = "OK";
+
+        public static final Result<Void> INSTANCE = new SuccessResult();
+
+        private SuccessResult() {
+            super(CODE, MSG, null);
+        }
+
+        /**
+         * Singleton support
+         *
+         * @return singleton instance
+         */
         private Object readResolve() {
             return INSTANCE;
         }

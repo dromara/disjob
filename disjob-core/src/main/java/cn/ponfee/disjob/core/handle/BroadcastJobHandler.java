@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public abstract class BroadcastJobHandler<T> extends JobHandler<T> {
+public abstract class BroadcastJobHandler extends JobHandler {
 
     @Override
     public final List<SplitTask> split(String jobParam) throws JobCheckedException {

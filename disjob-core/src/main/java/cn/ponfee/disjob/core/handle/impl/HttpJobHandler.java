@@ -9,10 +9,10 @@
 package cn.ponfee.disjob.core.handle.impl;
 
 import cn.ponfee.disjob.common.exception.Throwables;
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
@@ -48,7 +49,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public class HttpJobHandler extends JobHandler<String> {
+public class HttpJobHandler extends JobHandler {
     private final static Logger LOG = LoggerFactory.getLogger(HttpJobHandler.class);
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
@@ -62,7 +63,7 @@ public class HttpJobHandler extends JobHandler<String> {
     );
 
     @Override
-    public Result<String> execute(ExecutingTask executingTask, Savepoint savepoint) {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) {
         HttpJobRequest req = Jsons.fromJson(executingTask.getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");
@@ -106,14 +107,20 @@ public class HttpJobHandler extends JobHandler<String> {
                 }
             }
 
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                return Result.success(responseEntity.getBody());
+            if (responseEntity != null && responseEntity.getStatusCode().is2xxSuccessful()) {
+                return ExecuteResult.success(responseEntity.getBody());
             } else {
-                return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), "Code: " + responseEntity.getStatusCode() + ", response: " + responseEntity.getBody());
+                HttpStatus status = null;
+                String body = null;
+                if (responseEntity != null) {
+                    status = responseEntity.getStatusCode();
+                    body = responseEntity.getBody();
+                }
+                return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
             }
         } catch (Throwable t) {
-            LOG.error("Http request failed: " + executingTask, t);
-            return Result.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), Throwables.getRootCauseMessage(t));
+            LOG.error("Http request error: " + executingTask, t);
+            return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         }
     }
 

@@ -9,8 +9,8 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.handle.BroadcastJobHandler;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author Ponfee
  */
-public class TestBroadcastJobHandler extends BroadcastJobHandler<Void> {
+public class TestBroadcastJobHandler extends BroadcastJobHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestBroadcastJobHandler.class);
 
@@ -34,11 +34,11 @@ public class TestBroadcastJobHandler extends BroadcastJobHandler<Void> {
     }
 
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         Thread.sleep(5000 + ThreadLocalRandom.current().nextLong(10000));
         LOG.info("Broadcast job execute done: {}", executingTask.getTaskId());
         savepoint.save(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
-        return Result.success();
+        return ExecuteResult.success();
     }
 
 }

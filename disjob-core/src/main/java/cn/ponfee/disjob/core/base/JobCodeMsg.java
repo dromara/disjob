@@ -26,8 +26,9 @@ public enum JobCodeMsg implements CodeMsg {
     NOT_DISCOVERED_WORKER(1004, "Not Discovered worker."),
 
     JOB_EXECUTE_FAILED(2001, "Job execute failed."),
-    PAUSE_TASK_EXCEPTION(2002, "Pause task exception."),
-    CANCEL_TASK_EXCEPTION(2003, "Cancel task exception."),
+    JOB_EXECUTE_ERROR(2002, "Job execute failed."),
+    PAUSE_TASK_EXCEPTION(2003, "Pause task exception."),
+    CANCEL_TASK_EXCEPTION(2004, "Cancel task exception."),
 
     NOT_PAUSABLE_INSTANCE(3005, "Not pausable instance state."),
     NOT_CANCELABLE_INSTANCE(3006, "Not cancelable instance state."),

@@ -15,7 +15,6 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
 import cn.ponfee.disjob.core.enums.ExecuteState;
@@ -24,6 +23,7 @@ import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.CancelTaskException;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
@@ -779,7 +779,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
 
             // 1、prepare
-            TaskExecutor<?> taskExecutor;
+            TaskExecutor taskExecutor;
             try {
                 taskExecutor = JobHandlerUtils.load(param.getJobHandler());
                 param.taskExecutor(taskExecutor);
@@ -802,9 +802,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             // 3、execute
             try {
-                Result<?> result;
+                ExecuteResult result;
                 if (param.getExecuteTimeout() > 0) {
-                    FutureTask<Result<?>> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, supervisorCoreRpcClient));
+                    FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, supervisorCoreRpcClient));
                     String threadName = getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
                     Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask);
                     futureTaskThread.start();
@@ -819,10 +819,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
                 // 4、execute end
                 if (result != null && result.isSuccess()) {
-                    LOG.info("Task execute finished {}", param.getTaskId());
+                    LOG.info("Task execute finished: {} | {}", param.getTaskId(), result.getMsg());
                     terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, FINISHED, null);
                 } else {
-                    LOG.error("Task execute failed {} | {}", param, result);
+                    LOG.error("Task execute failed: {} | {}", param, result);
                     String msg = (result == null) ? "null result" : result.getMsg();
                     terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, EXECUTE_FAILED, msg);
                 }

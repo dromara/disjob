@@ -8,12 +8,12 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
@@ -36,7 +36,7 @@ public class ExecuteParamTest {
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
             @Override
-            public Result execute(ExecutingTask executingTask, Savepoint savepoint) {
+            public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) {
                 return null;
             }
         });
@@ -52,7 +52,7 @@ public class ExecuteParamTest {
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
             @Override
-            public Result execute(ExecutingTask executingTask, Savepoint savepoint) {
+            public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) {
                 return null;
             }
         });

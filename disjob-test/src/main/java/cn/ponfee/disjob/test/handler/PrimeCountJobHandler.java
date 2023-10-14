@@ -8,10 +8,10 @@
 
 package cn.ponfee.disjob.test.handler;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -32,7 +32,7 @@ import java.util.Optional;
  *
  * @author Ponfee
  */
-public class PrimeCountJobHandler extends JobHandler<Void> {
+public class PrimeCountJobHandler extends JobHandler {
 
     /**
      * 默认以每块1亿分批统计
@@ -82,7 +82,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
      * @throws Exception if execute occur error
      */
     @Override
-    public Result<Void> execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         TaskParam taskParam = Jsons.fromJson(executingTask.getTaskParam(), TaskParam.class);
         long start = taskParam.getStart();
         long blockSize = taskParam.getBlockSize();
@@ -100,7 +100,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
             execution = Jsons.fromJson(executingTask.getExecuteSnapshot(), ExecuteSnapshot.class);
             if (execution.getNext() == null || execution.isFinished()) {
                 Assert.isTrue(execution.isFinished() && execution.getNext() == null, "Invalid execute snapshot data.");
-                return Result.success();
+                return ExecuteResult.success();
             }
         }
 
@@ -128,7 +128,7 @@ public class PrimeCountJobHandler extends JobHandler<Void> {
                 nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
             }
         }
-        return Result.success();
+        return ExecuteResult.success();
     }
 
     @Data
