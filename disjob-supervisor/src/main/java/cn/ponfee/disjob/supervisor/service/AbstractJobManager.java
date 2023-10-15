@@ -267,9 +267,9 @@ public abstract class AbstractJobManager {
                 }
             }
 
-            // 环状依赖校验
+            // 校验是否有循环依赖
             if (isUpdate) {
-                checkCycleDepends(jobId, new HashSet<>(parentJobIds));
+                checkCircularDepends(jobId, new HashSet<>(parentJobIds));
             }
 
             List<SchedDepend> list = new ArrayList<>(parentJobIds.size());
@@ -287,7 +287,7 @@ public abstract class AbstractJobManager {
         }
     }
 
-    private void checkCycleDepends(Long jobId, Set<Long> parentJobIds) {
+    private void checkCircularDepends(Long jobId, Set<Long> parentJobIds) {
         for (; ; ) {
             Map<Long, SchedDepend> map = dependMapper.findByChildJobIds(parentJobIds)
                 .stream()
