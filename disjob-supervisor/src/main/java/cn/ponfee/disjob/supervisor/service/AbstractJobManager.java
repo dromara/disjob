@@ -296,7 +296,7 @@ public abstract class AbstractJobManager {
                 return;
             }
             if (map.containsKey(jobId)) {
-                throw new IllegalArgumentException("Cycle depends job: " + map.get(jobId));
+                throw new IllegalArgumentException("Circular depends job: " + map.get(jobId));
             }
             parentJobIds = map.keySet();
         }
