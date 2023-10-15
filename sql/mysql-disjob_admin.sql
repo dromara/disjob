@@ -713,7 +713,4 @@ create table gen_table_column (
 ) engine=innodb auto_increment=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin comment = '代码生成业务表字段';
 
 
--- ----------------------------
--- COMMIT
--- ----------------------------
 COMMIT;

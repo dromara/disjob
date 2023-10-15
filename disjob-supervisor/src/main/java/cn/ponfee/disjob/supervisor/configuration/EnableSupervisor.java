@@ -160,19 +160,19 @@ public @interface EnableSupervisor {
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
         public DoInLocked scanTriggeringJobLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_TRIGGERING_JOB);
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
         public DoInLocked scanWaitingInstanceLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_WAITING_INSTANCE);
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_WAITING_INSTANCE);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
         public DoInLocked scanRunningInstanceLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SQL_SCAN_RUNNING_INSTANCE);
+            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_RUNNING_INSTANCE);
         }
     }
 

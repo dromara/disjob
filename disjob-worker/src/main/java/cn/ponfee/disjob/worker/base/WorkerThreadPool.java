@@ -217,7 +217,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     private WorkerThread takeWorkerThread() throws InterruptedException {
-        while (true) {
+        for (; ; ) {
             if (closed.get() || super.isInterrupted()) {
                 throw new IllegalStateException("Take worker thread interrupted.");
             }

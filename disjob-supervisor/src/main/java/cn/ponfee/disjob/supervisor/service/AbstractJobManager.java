@@ -30,6 +30,7 @@ import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -90,7 +91,7 @@ public abstract class AbstractJobManager {
         job.checkAndDefaultSetting();
         workerCoreRpcClient.verify(JobHandlerParam.from(job));
         job.setJobId(generateId());
-        parseTriggerConfig(job);
+        parseTriggerConfig(job, false);
 
         jobMapper.insert(job);
     }
@@ -115,7 +116,7 @@ public abstract class AbstractJobManager {
             Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
             // update last trigger time or depends parent job id
             dependMapper.deleteByChildJobId(job.getJobId());
-            parseTriggerConfig(job);
+            parseTriggerConfig(job, true);
         }
 
         job.setUpdatedAt(new Date());
@@ -242,8 +243,9 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private void parseTriggerConfig(SchedJob job) {
+    private void parseTriggerConfig(SchedJob job, boolean isUpdate) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
+        Long jobId = job.getJobId();
 
         if (triggerType == TriggerType.DEPEND) {
             List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Str.COMMA))
@@ -252,6 +254,7 @@ public abstract class AbstractJobManager {
                 .distinct()
                 .collect(Collectors.toList());
             Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + job.getTriggerValue());
+            Assert.isTrue(!parentJobIds.contains(jobId), () -> "Cannot depends self: " + jobId + ", " + parentJobIds);
 
             Map<Long, SchedJob> parentJobMap = jobMapper.findByJobIds(parentJobIds)
                 .stream()
@@ -263,10 +266,17 @@ public abstract class AbstractJobManager {
                     throw new IllegalArgumentException("Invalid group: parent=" + parentJob.getJobGroup() + ", child=" + job.getJobGroup());
                 }
             }
+
+            // 环状依赖校验
+            if (isUpdate) {
+                checkCycleDepends(jobId, new HashSet<>(parentJobIds));
+            }
+
             List<SchedDepend> list = new ArrayList<>(parentJobIds.size());
             for (int i = 0; i < parentJobIds.size(); i++) {
-                list.add(new SchedDepend(parentJobIds.get(i), job.getJobId(), i + 1));
+                list.add(new SchedDepend(parentJobIds.get(i), jobId, i + 1));
             }
+
             dependMapper.batchInsert(list);
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
@@ -274,6 +284,21 @@ public abstract class AbstractJobManager {
             Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), new Date());
             Assert.notNull(nextTriggerTime, () -> "Has not next trigger time " + job.getTriggerValue());
             job.setNextTriggerTime(nextTriggerTime.getTime());
+        }
+    }
+
+    private void checkCycleDepends(Long jobId, Set<Long> parentJobIds) {
+        for (; ; ) {
+            Map<Long, SchedDepend> map = dependMapper.findByChildJobIds(parentJobIds)
+                .stream()
+                .collect(Collectors.toMap(SchedDepend::getParentJobId, Function.identity(), (v1, v2) -> v1));
+            if (MapUtils.isEmpty(map)) {
+                return;
+            }
+            if (map.containsKey(jobId)) {
+                throw new IllegalArgumentException("Cycle depends job: " + map.get(jobId));
+            }
+            parentJobIds = map.keySet();
         }
     }
 

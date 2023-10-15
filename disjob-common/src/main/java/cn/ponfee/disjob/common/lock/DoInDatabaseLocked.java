@@ -8,19 +8,39 @@
 
 package cn.ponfee.disjob.common.lock;
 
+import cn.ponfee.disjob.common.base.RetryTemplate;
+import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.Assert;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
- * Distributed lock based jdbc database.<br/>
- * {@code SELECT * FROM xxx FOR UPDATE}
+ * Distributed lock based jdbc database.
  *
  * @author Ponfee
  */
 public final class DoInDatabaseLocked implements DoInLocked {
+
+    private static final String TABLE_NAME = "distributed_lock";
+
+    private static final String CREATE_TABLE_DDL =
+        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                     \n" +
+        "  `id`    BIGINT       UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',               \n" +
+        "  `name`  VARCHAR(50)            NOT NULL                  COMMENT 'lock name',                       \n" +
+        "  PRIMARY KEY (`id`),                                                                                 \n" +
+        "  UNIQUE KEY `uk_name` (`name`)                                                                       \n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='database lock'; \n" ;
+
+    private static final String INSERT_SQL = "INSERT INTO " + TABLE_NAME + " (name) VALUES (?)";
+
+    private static final String GET_SQL    = "SELECT id FROM " + TABLE_NAME + " WHERE name=?";
+
+    private static final String LOCK_SQL   = GET_SQL + " FOR UPDATE";
 
     /**
      * Spring jdbc template wrapper.
@@ -28,22 +48,54 @@ public final class DoInDatabaseLocked implements DoInLocked {
     private final JdbcTemplateWrapper jdbcTemplateWrapper;
 
     /**
-     * Execution lockable sql(use: select * from xxx for update)
+     * Lock name
      */
-    private final String lockSql;
+    private final String lockName;
 
-    public DoInDatabaseLocked(JdbcTemplate jdbcTemplate, String lockSql) {
+    public DoInDatabaseLocked(JdbcTemplate jdbcTemplate, String lockName) {
         this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
-        this.lockSql = lockSql;
+        this.lockName = lockName;
+
+        // create table
+        try {
+            RetryTemplate.execute(() -> jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL), 3, 1000L);
+        } catch (Throwable e) {
+            Threads.interruptIfNecessary(e);
+            throw new Error("Create " + TABLE_NAME + " table failed.", e);
+        }
+
+        // initialize lock
+        try {
+            RetryTemplate.execute(this::initializeLockIfNecessary, 3, 1000L);
+        } catch (Throwable e) {
+            Threads.interruptIfNecessary(e);
+            throw new Error("Initialize lock '" + lockName + "' failed.", e);
+        }
     }
 
     @Override
     public <T> T action(Callable<T> caller) {
         return jdbcTemplateWrapper.executeInTransaction(psCreator -> {
-            PreparedStatement preparedStatement = psCreator.apply(lockSql);
-            preparedStatement.execute();
+            PreparedStatement preparedStatement = psCreator.apply(LOCK_SQL);
+            preparedStatement.setString(1, lockName);
+            // 关闭一个Statement对象同时也会使得该对象创建的所有ResultSet对象被关闭，即：可以不显示关闭ResultSet
+            // ResultSet所持有的资源不会立刻被释放，直到GC执行，因此明确地关闭ResultSet是一个更好的做法
+            ResultSet resultSet = preparedStatement.executeQuery();
+            Assert.state(resultSet.next(), () -> "Lock Not found '" + lockName + "'.");
             return caller.call();
         });
+    }
+
+    private void initializeLockIfNecessary() {
+        if (getLockId() != null) {
+            return;
+        }
+        jdbcTemplateWrapper.insert(INSERT_SQL, lockName);
+        Objects.requireNonNull(getLockId());
+    }
+
+    private Long getLockId() {
+        return jdbcTemplateWrapper.get(GET_SQL, JdbcTemplateWrapper.LONG_ROW_MAPPER, lockName);
     }
 
 }

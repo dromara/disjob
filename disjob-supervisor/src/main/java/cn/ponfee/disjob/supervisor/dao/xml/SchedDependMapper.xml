@@ -29,6 +29,12 @@
     WHERE parent_job_id = #{parentJobId,jdbcType=BIGINT}
   </select>
 
+  <select id="findByChildJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedDepend">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE child_job_id IN (<foreach collection="collection" separator="," item="cid">#{cid,jdbcType=BIGINT}</foreach>)
+  </select>
+
   <delete id="deleteByParentJobId" parameterType="_long">
     DELETE FROM <include refid="Table_Name" />
     WHERE parent_job_id = #{parentJobId,jdbcType=BIGINT}

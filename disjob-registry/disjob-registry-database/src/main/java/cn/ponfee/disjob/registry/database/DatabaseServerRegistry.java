@@ -18,8 +18,6 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.util.Assert;
 
 import javax.annotation.PreDestroy;
@@ -41,7 +39,6 @@ import static cn.ponfee.disjob.common.spring.JdbcTemplateWrapper.AFFECTED_ONE_RO
 public abstract class DatabaseServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
     private static final long DEAD_TIME_MILLIS = TimeUnit.HOURS.toMillis(12);
-    private static final RowMapper<String> ROW_MAPPER = new SingleColumnRowMapper<>(String.class);
     private static final String TABLE_NAME = "disjob_registry";
 
     private static final String CREATE_TABLE_DDL =
@@ -249,7 +246,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private void discoverServers() throws Throwable {
         RetryTemplate.execute(() -> {
             Object[] args = {namespace, discoveryRoleName, System.currentTimeMillis() - sessionTimeoutMs};
-            List<String> discovered = jdbcTemplateWrapper.query(DISCOVER_SQL, ROW_MAPPER, args);
+            List<String> discovered = jdbcTemplateWrapper.list(DISCOVER_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
 
             if (CollectionUtils.isEmpty(discovered)) {
                 log.warn("Not discovered available {} from database.", discoveryRole.name());
