@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import com.google.common.collect.Lists;
@@ -29,6 +30,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Wrapped spring jdbc template.
@@ -41,6 +44,7 @@ public final class JdbcTemplateWrapper {
     public static final int AFFECTED_ONE_ROW = 1;
     public static final RowMapper<String> STRING_ROW_MAPPER = new SingleColumnRowMapper<>(String.class);
     public static final RowMapper<Long> LONG_ROW_MAPPER = new SingleColumnRowMapper<>(Long.class);
+    private static final Set<String> EXISTS_TABLE = ConcurrentHashMap.newKeySet();
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -120,18 +124,25 @@ public final class JdbcTemplateWrapper {
     }
 
     public void createTableIfNotExists(String tableName, String createTableDdl) {
-        if (existsTable(tableName)) {
+        if (EXISTS_TABLE.contains(tableName)) {
             return;
         }
-
-        try {
-            jdbcTemplate.execute(createTableDdl);
-            LOG.info("Created table {} success.", tableName);
-        } catch (Throwable t) {
-            if (existsTable(tableName)) {
-                LOG.warn("Create table {} failed {}", tableName, t.getMessage());
-            } else {
-                throw new Error("Create table " + tableName + " error.", t);
+        synchronized (tableName.intern()) {
+            if (EXISTS_TABLE.contains(tableName)) {
+                return;
+            }
+            try {
+                RetryTemplate.execute(() -> {
+                    if (existsTable(tableName)) {
+                        return;
+                    }
+                    jdbcTemplate.execute(createTableDdl);
+                    Assert.state(existsTable(tableName), () -> "Create table " + tableName + " failed.");
+                    EXISTS_TABLE.add(tableName);
+                    LOG.info("Created table {} success.", tableName);
+                }, 3, 1000L);
+            } catch (Throwable e) {
+                ExceptionUtils.rethrow(e);
             }
         }
     }
@@ -140,11 +151,9 @@ public final class JdbcTemplateWrapper {
         Boolean result = jdbcTemplate.execute((ConnectionCallback<Boolean>) conn -> {
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet rs = meta.getTables(null, null, tableName, null);
-            try {
-                return rs.next();
-            } finally {
-                JdbcUtils.closeResultSet(rs);
-            }
+            boolean exists = rs.next();
+            JdbcUtils.closeResultSet(rs);
+            return exists;
         });
         return Boolean.TRUE.equals(result);
     }

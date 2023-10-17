@@ -101,12 +101,8 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         this.bizTag = bizTag;
         this.serverTag = serverTag;
 
-        try {
-            RetryTemplate.execute(() -> jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL), 3, 1000L);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            throw new Error("Create " + TABLE_NAME + " table failed.", e);
-        }
+        // create table
+        jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL);
 
         try {
             int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdBitLength), 5, 1000L);

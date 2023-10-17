@@ -99,12 +99,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         this.registerRoleName = registryRole.name().toLowerCase();
 
         // create table
-        try {
-            RetryTemplate.execute(() -> jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL), 3, 1000L);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            throw new Error("Create " + TABLE_NAME + " table failed.", e);
-        }
+        jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL);
 
         // remove dead server
         Object[] args = {namespace, registerRoleName, System.currentTimeMillis() - DEAD_TIME_MILLIS};

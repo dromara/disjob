@@ -57,12 +57,7 @@ public final class DoInDatabaseLocked implements DoInLocked {
         this.lockName = lockName;
 
         // create table
-        try {
-            RetryTemplate.execute(() -> jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL), 3, 1000L);
-        } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
-            throw new Error("Create " + TABLE_NAME + " table failed.", e);
-        }
+        jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL);
 
         // initialize lock
         try {
