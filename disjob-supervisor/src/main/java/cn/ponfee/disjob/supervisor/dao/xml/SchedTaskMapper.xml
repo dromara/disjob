@@ -41,7 +41,7 @@
     </foreach>
   </insert>
 
-  <select id="getByTaskId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
+  <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE task_id = #{taskId,jdbcType=BIGINT}

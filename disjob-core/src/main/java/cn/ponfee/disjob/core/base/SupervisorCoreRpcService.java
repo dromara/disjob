@@ -64,6 +64,6 @@ public interface SupervisorCoreRpcService extends Savepoint {
 
     @Override
     @PostMapping("task/savepoint")
-    boolean save(long taskId, String executeSnapshot) throws Exception;
+    void save(long taskId, String executeSnapshot) throws Exception;
 
 }

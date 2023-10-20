@@ -106,7 +106,7 @@ public abstract class AbstractJobManager {
             workerCoreRpcClient.verify(JobHandlerParam.from(job));
         }
 
-        SchedJob dbJob = jobMapper.getByJobId(job.getJobId());
+        SchedJob dbJob = jobMapper.get(job.getJobId());
         Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
         job.setNextTriggerTime(dbJob.getNextTriggerTime());
 
@@ -120,17 +120,17 @@ public abstract class AbstractJobManager {
         }
 
         job.setUpdatedAt(new Date());
-        Assert.state(jobMapper.updateByJobId(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
+        Assert.state(jobMapper.update(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
     }
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void deleteJob(long jobId) {
-        SchedJob job = jobMapper.getByJobId(jobId);
+        SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, "Job id not found: " + jobId);
         if (JobState.ENABLE.equals(job.getJobState())) {
             throw new IllegalStateException("Please disable job before delete this job.");
         }
-        Assert.isTrue(jobMapper.deleteByJobId(jobId) == AFFECTED_ONE_ROW, "Delete sched job fail or conflict.");
+        Assert.isTrue(jobMapper.softDelete(jobId) == AFFECTED_ONE_ROW, "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
         dependMapper.deleteByChildJobId(jobId);
     }

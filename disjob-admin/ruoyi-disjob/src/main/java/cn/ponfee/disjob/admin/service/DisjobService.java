@@ -37,13 +37,20 @@ public class DisjobService {
         .collect(Collectors.toMap(Class::getSimpleName, e -> (Class<IntValueEnum<?>>) e));
 
     public List<IntValueDesc> enums(String enumName) {
-        Class<IntValueEnum<?>> enumClass = Objects.requireNonNull(ENUM_MAP.get(enumName), () -> "Enum name not found: " + enumName);
-        return IntValueEnum.values(enumClass);
+        return values(enumName);
     }
 
     public String desc(String enumName, int value) {
-        Class<IntValueEnum<?>> enumClass = Objects.requireNonNull(ENUM_MAP.get(enumName), () -> "Enum name not found: " + enumName);
-        return IntValueEnum.values(enumClass).stream().filter(e -> e.getValue() == value).findAny().get().getDesc();
+        return values(enumName).stream()
+            .filter(e -> e.getValue() == value)
+            .findAny()
+            .orElseThrow(() -> new IllegalArgumentException("Enum value not found: " + enumName + "#" + value))
+            .getDesc();
+    }
+
+    private static List<IntValueDesc> values(String enumName) {
+        Class<IntValueEnum<?>> clazz = Objects.requireNonNull(ENUM_MAP.get(enumName), () -> "Enum name not found: " + enumName);
+        return IntValueEnum.values(clazz);
     }
 
 }

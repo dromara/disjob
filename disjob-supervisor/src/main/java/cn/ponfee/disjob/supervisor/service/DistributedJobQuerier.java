@@ -62,11 +62,11 @@ public class DistributedJobQuerier {
     }
 
     public SchedJob getJob(long jobId) {
-        return jobMapper.getByJobId(jobId);
+        return jobMapper.get(jobId);
     }
 
     public SchedInstance getInstance(long instanceId) {
-        return instanceMapper.getByInstanceId(instanceId);
+        return instanceMapper.get(instanceId);
     }
 
     public SchedInstance getInstance(long jobId, long triggerTime, int runType) {
@@ -101,7 +101,7 @@ public class DistributedJobQuerier {
     }
 
     public SchedTask getTask(long taskId) {
-        return taskMapper.getByTaskId(taskId);
+        return taskMapper.get(taskId);
     }
 
     public List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
@@ -171,7 +171,7 @@ public class DistributedJobQuerier {
     }
 
     public List<SchedInstanceResponse> listInstanceChildren(long pnstanceId) {
-        List<SchedInstanceResponse> rows = instanceMapper.selectByPnstanceId(pnstanceId)
+        List<SchedInstanceResponse> rows = instanceMapper.queryByPnstanceId(pnstanceId)
             .stream()
             .map(SchedJobConverter.INSTANCE::convert)
             .collect(Collectors.toList());

@@ -109,8 +109,8 @@ public class DistributedJobManager extends AbstractJobManager {
         return taskMapper.terminate(taskId, ExecuteState.WAITING_CANCELED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
     }
 
-    public boolean savepoint(long taskId, String executeSnapshot) {
-        return taskMapper.savepoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW;
+    public void savepoint(long taskId, String executeSnapshot) {
+        Assert.state(taskMapper.savepoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW, () -> "Save point failed: " + taskId + " | " + executeSnapshot);
     }
 
     // ------------------------------------------------------------------database operation within transactional
@@ -123,7 +123,7 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void triggerJob(long jobId) throws JobCheckedException {
-        SchedJob job = jobMapper.getByJobId(jobId);
+        SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, () -> "Sched job not found: " + jobId);
 
         TriggerInstanceCreator creator = TriggerInstanceCreator.of(job.getJobType(), this);
@@ -171,7 +171,7 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean startTask(StartTaskParam param) {
-        SchedInstance instance = instanceMapper.getByInstanceId(param.getInstanceId());
+        SchedInstance instance = instanceMapper.get(param.getInstanceId());
         Assert.notNull(instance, () -> "Sched instance not found: " + param);
         // sched_instance.run_state must in (WAITING, RUNNING)
         if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
@@ -289,7 +289,7 @@ public class DistributedJobManager extends AbstractJobManager {
                     afterTerminateTask(instance);
                 } else if (instance.isWorkflowNode()) {
                     updateWorkflowEdgeState(instance, tuple.a.value(), RUN_STATE_TERMINABLE);
-                    updateWorkflowLeadState(instanceMapper.getByInstanceId(param.getWnstanceId()));
+                    updateWorkflowLeadState(instanceMapper.get(param.getWnstanceId()));
                 }
             }
 
@@ -477,7 +477,7 @@ public class DistributedJobManager extends AbstractJobManager {
             Boolean result = transactionTemplate.execute(status -> {
                 SchedInstance lockedInstance = instanceMapper.lock(lockInstanceId);
                 Assert.notNull(lockedInstance, () -> "Lock instance not found: " + lockInstanceId);
-                SchedInstance instance = (instanceId == lockInstanceId) ? lockedInstance : instanceMapper.getByInstanceId(instanceId);
+                SchedInstance instance = (instanceId == lockInstanceId) ? lockedInstance : instanceMapper.get(instanceId);
                 Assert.notNull(instance, () -> "Instance not found: " + instance);
                 if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
                     throw new IllegalArgumentException("Invalid workflow instance id: " + wnstanceId + ", " + instance);
@@ -626,7 +626,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void createWorkflowNode(SchedInstance leadInstance, WorkflowGraph graph, Map<DAGEdge, SchedWorkflow> map, Function<Throwable, Boolean> failHandler) {
-        SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::getByJobId, leadInstance.getJobId());
+        SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::get, leadInstance.getJobId());
         long wnstanceId = leadInstance.getWnstanceId();
         Date now = new Date();
         Set<DAGNode> duplicates = new HashSet<>();
@@ -715,7 +715,7 @@ public class DistributedJobManager extends AbstractJobManager {
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.FINISHED;
             int row = instanceMapper.terminate(wnstanceId, state.value(), RUN_STATE_TERMINABLE, new Date());
             Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Terminate workflow lead instance failed: " + nodeInstance + " | " + state);
-            afterTerminateTask(instanceMapper.getByInstanceId(wnstanceId));
+            afterTerminateTask(instanceMapper.get(wnstanceId));
             return;
         }
 
@@ -724,7 +724,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         createWorkflowNode(
-            instanceMapper.getByInstanceId(wnstanceId),
+            instanceMapper.get(wnstanceId),
             graph,
             graph.successors(DAGNode.fromString(nodeInstance.parseAttach().getCurNode())),
             throwable -> {
@@ -737,7 +737,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void retryJob(SchedInstance prev) {
-        SchedJob schedJob = jobMapper.getByJobId(prev.getJobId());
+        SchedJob schedJob = jobMapper.get(prev.getJobId());
         if (schedJob == null) {
             LOG.error("Sched job not found {}", prev.getJobId());
             processWorkflow(prev);
@@ -821,7 +821,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         for (SchedDepend depend : schedDepends) {
-            SchedJob childJob = jobMapper.getByJobId(depend.getChildJobId());
+            SchedJob childJob = jobMapper.get(depend.getChildJobId());
             if (childJob == null) {
                 LOG.error("Child sched job not found: {} | {}", depend.getParentJobId(), depend.getChildJobId());
                 continue;
@@ -857,7 +857,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operations ops) {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
-        ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, jobMapper::getByJobId);
+        ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, jobMapper::get);
         // immediate trigger
         long triggerTime = 0L;
         for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId())) {
@@ -883,8 +883,8 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParams(long instanceId, int expectTaskSize) {
-        SchedInstance instance = instanceMapper.getByInstanceId(instanceId);
-        SchedJob job = jobMapper.getByJobId(instance.getJobId());
+        SchedInstance instance = instanceMapper.get(instanceId);
+        SchedJob job = jobMapper.get(instance.getJobId());
         List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceId(instanceId)
             .stream()
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))

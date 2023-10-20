@@ -43,7 +43,7 @@
     )
   </insert>
 
-  <select id="getByInstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -175,7 +175,7 @@
     LIMIT #{offset}, #{pageSize}
   </select>
 
-  <select id="selectByPnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="queryByPnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE pnstance_id = #{pnstanceId}

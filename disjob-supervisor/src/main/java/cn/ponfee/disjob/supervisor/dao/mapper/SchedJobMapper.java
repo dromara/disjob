@@ -31,7 +31,7 @@ public interface SchedJobMapper {
 
     int insert(SchedJob record);
 
-    int updateByJobId(SchedJob record);
+    int update(SchedJob record);
 
     /**
      * Gets sched job by job_id
@@ -39,7 +39,7 @@ public interface SchedJobMapper {
      * @param jobId the job id
      * @return SchedJob
      */
-    SchedJob getByJobId(long jobId);
+    SchedJob get(long jobId);
 
     /**
      * Finds job witch will be triggering
@@ -82,12 +82,12 @@ public interface SchedJobMapper {
                     @Param("fromState") int fromState);
 
     /**
-     * Delete the job.
+     * Soft delete the job.
      *
      * @param jobId the job id
      * @return delete sql affected rows
      */
-    int deleteByJobId(long jobId);
+    int softDelete(long jobId);
 
     // -------------------------------------------------query for page
 

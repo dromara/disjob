@@ -24,7 +24,7 @@ public interface SchedTaskMapper {
 
     int batchInsert(List<SchedTask> records);
 
-    SchedTask getByTaskId(long taskId);
+    SchedTask get(long taskId);
 
     List<SchedTask> findBaseByInstanceId(long instanceId);
 

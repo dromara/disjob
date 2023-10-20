@@ -21,10 +21,9 @@ public interface Savepoint {
      *
      * @param taskId          the task id
      * @param executeSnapshot the execution snapshot data
-     * @return {@code true} if saved successfully
      * @throws Exception if saved occur exception
      */
-    boolean save(long taskId, String executeSnapshot) throws Exception;
+    void save(long taskId, String executeSnapshot) throws Exception;
 
-    Savepoint DISCARD = (taskId, executeSnapshot) -> true;
+    Savepoint DISCARD = (taskId, executeSnapshot) -> {};
 }

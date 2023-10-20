@@ -31,7 +31,7 @@ public interface SchedInstanceMapper {
      * @param instanceId the instance id
      * @return SchedInstance
      */
-    SchedInstance getByInstanceId(long instanceId);
+    SchedInstance get(long instanceId);
 
     Long getWnstanceId(long instanceId);
 
@@ -85,7 +85,7 @@ public interface SchedInstanceMapper {
 
     List<SchedInstance> queryPageRecords(SchedInstancePageRequest request);
 
-    List<SchedInstance> selectByPnstanceId(long pinstanceId);
+    List<SchedInstance> queryByPnstanceId(long pinstanceId);
 
     List<Map<String, Object>> queryChildCount(List<Long> pinstanceIds);
 }

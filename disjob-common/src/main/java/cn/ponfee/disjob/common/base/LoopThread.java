@@ -24,7 +24,7 @@ public class LoopThread extends Thread {
     private final static Logger LOG = LoggerFactory.getLogger(LoopThread.class);
 
     private static final int NEW        = 0;
-    private static final int RUNNABLE   = 1;
+    private static final int RUNNING    = 1;
     private static final int TERMINATED = 2;
 
     private final AtomicInteger state = new AtomicInteger(NEW);
@@ -64,7 +64,7 @@ public class LoopThread extends Thread {
         if (delayMs > 0) {
             ThrowingRunnable.checked(() -> Thread.sleep(delayMs));
         }
-        while (state.get() == RUNNABLE) {
+        while (state.get() == RUNNING) {
             try {
                 action.run();
                 Thread.sleep(periodMs);
@@ -81,7 +81,7 @@ public class LoopThread extends Thread {
 
     @Override
     public synchronized void start() {
-        if (state.compareAndSet(NEW, RUNNABLE)) {
+        if (state.compareAndSet(NEW, RUNNING)) {
             super.start();
         } else {
             throw new IllegalStateException("Loop process thread already started.");
@@ -89,7 +89,7 @@ public class LoopThread extends Thread {
     }
 
     public boolean terminate() {
-        if (state.compareAndSet(RUNNABLE, TERMINATED)) {
+        if (state.compareAndSet(RUNNING, TERMINATED)) {
             ThrowingRunnable.execute(super::interrupt);
             return true;
         } else {

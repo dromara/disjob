@@ -60,8 +60,8 @@ public final class GroovyUtils {
             final PooledObjectProcessor<String, Script> processor = new PooledObjectProcessor<>(10, groovyShell::parse);
 
             @Override
-            protected <T> T eval0(String scriptText, Map<String, Object> params) throws Exception {
-                 // return (T) new GroovyShell(new Binding(params)).evaluate(scriptText);
+            protected <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception {
+                // return (T) new GroovyShell(new Binding(params)).evaluate(scriptText);
                 return processor.process(scriptText, script -> {
                     script.setBinding(new Binding(params));
                     return (T) script.run();
@@ -81,7 +81,7 @@ public final class GroovyUtils {
             final GroovyScriptEngineFactory scriptEngineFactory = new GroovyScriptEngineFactory();
 
             @Override
-            protected <T> T eval0(String scriptText, Map<String, Object> params) throws Exception {
+            protected <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception {
                 ScriptEngine scriptEngine = scriptEngineFactory.getScriptEngine();
                 return (T) scriptEngine.eval(scriptText, new SimpleBindings(params));
             }
@@ -94,7 +94,7 @@ public final class GroovyUtils {
          */
         CLASS() {
             @Override
-            protected <T> T eval0(String scriptText, Map<String, Object> params) throws Exception {
+            protected <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception {
                 Class<?> clazz = parseClass(scriptText);
                 Script script = (Script) clazz.newInstance();
                 script.setBinding(new Binding(params));
@@ -105,10 +105,10 @@ public final class GroovyUtils {
         ;
 
         public final <T> T eval(String scriptText, Map<String, Object> params) throws Exception {
-            return eval0(scriptText, params == null ? Collections.emptyMap() : params);
+            return evaluate(scriptText, params == null ? Collections.emptyMap() : params);
         }
 
-        protected abstract <T> T eval0(String scriptText, Map<String, Object> params) throws Exception;
+        protected abstract <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception;
     }
 
 }
