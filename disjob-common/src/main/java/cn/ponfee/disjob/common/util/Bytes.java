@@ -14,8 +14,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * byte array utilities
@@ -336,32 +334,23 @@ public final class Bytes {
     }
 
     // ----------------------------------------------------------others
+
     /**
-     * merge byte arrays
-     * @param first  first byte array of args
-     * @param rest   others byte array
+     * Concat many byte arrays
+     *
+     * @param arrays the byte arrays
      * @return a new byte array of them
      */
-    public static byte[] concat(byte[] first, byte[]... rest) {
-        Objects.requireNonNull(first, "the first array arg cannot be null");
-        if (rest == null || rest.length == 0) {
-            return first;
+    public static byte[] concat(byte[]... arrays) {
+        int length = 0;
+        for (byte[] array : arrays) {
+            length += array.length;
         }
-
-        int totalLength = first.length;
-        for (byte[] array : rest) {
-            if (array != null) {
-                totalLength += array.length;
-            }
-        }
-
-        byte[] result = Arrays.copyOf(first, totalLength);
-        int offset = first.length;
-        for (byte[] array : rest) {
-            if (array != null) {
-                System.arraycopy(array, 0, result, offset, array.length);
-                offset += array.length;
-            }
+        byte[] result = new byte[length];
+        int pos = 0;
+        for (byte[] array : arrays) {
+            System.arraycopy(array, 0, result, pos, array.length);
+            pos += array.length;
         }
         return result;
     }

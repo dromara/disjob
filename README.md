@@ -17,7 +17,7 @@
 ```text
 disjob                                        # 主项目①
 ├── disjob-admin                              # 管理后台项目②(基于Ruoyi框架二次开发)
-├── disjob-bom                                # Maven project bom module
+├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
 ├── disjob-dispatch                           # 任务派发模块

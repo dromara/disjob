@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.common.lock;
 
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
+import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -26,13 +27,20 @@ import java.util.concurrent.locks.Lock;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Distributes lock based redis(unlock使用redis lua script)
- * <p>可重入锁的一般场景：当前线程多次调用含有锁操作的函数、当前线程含有锁操作的函数自身调用
- *
  * <pre>
+ * Distributes lock based redis(unlock使用redis lua script)
+ * 可重入锁的一般场景：当前线程多次调用含有锁操作的函数、当前线程含有锁操作的函数自身调用
+ * 待完善:
+ *   1、获取锁成功的线程 A 定时续期锁：WatchDog
+ *   2、获取锁失败的线程 B 阻塞等待并监听(订阅)队列：subscribe
+ *   3、线程 A 释放锁时发送消息通知等待锁的线程B：publish
+ *
+ * {@code
+ * RedisLockFactory factory = new RedisLockFactory(redisTemplate);
+ *
  * class X {
  *   public void m() {
- *     Lock lock = new RedisLock(redisTemplate, "lockKey", 5000, 30);
+ *     Lock lock = factory.create("lockKey", 3000);
  *     lock.lock();  // block until acquire lock or timeout
  *     try {
  *       // ... method body
@@ -44,7 +52,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * class Y {
  *   public void m() {
- *     Lock lock = new RedisLock(redisTemplate, "lockKey", 5000, 30);
+ *     Lock lock = factory.create("lockKey", 3000);
  *     if (!lock.tryLock()) return;
  *     try {
  *       // ... method body
@@ -56,7 +64,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * class Z {
  *   public void m() {
- *     Lock lock = new RedisLock(redisTemplate, "lockKey", 5000, 30);
+ *     Lock lock = factory.create("lockKey", 3000);
  *     // auto timeout release lock
  *     if (!lock.tryLock(100, TimeUnit.MILLISECONDS)) return;
  *     try {
@@ -66,7 +74,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *     }
  *   }
  * }
- * </pre>
+ * }</pre>
  *
  * @author Ponfee
  * @see <a href="https://redisson.org">better implementation: redisson</a>
@@ -77,15 +85,20 @@ public class RedisLock implements Lock {
 
     /**
      * <pre>
+     * Redis HSET data structure
+     * key: lock key
+     * field: lock value
+     * value: increment value, start 1
+     *
      * Reentrant lock lua script
-     *   KEYS[1]=key
+     *   KEYS[1]=lock key
      *   ARGV[1]=pexpire milliseconds
      *   ARGV[2]=lock value
      * </pre>
      */
     private static final RedisScript<Long> LOCK_SCRIPT = RedisScript.of(
-        "if (   redis.call('exists',  KEYS[1]         )==0         \n" +
-        "    or redis.call('hexists', KEYS[1], ARGV[2])==1  ) then \n" +
+        "if (    redis.call('exists',  KEYS[1]         )==0        \n" +
+        "     or redis.call('hexists', KEYS[1], ARGV[2])==1 ) then \n" +
         "  redis.call('hincrby', KEYS[1], ARGV[2], 1);             \n" +
         "  redis.call('pexpire', KEYS[1], ARGV[1]);                \n" +
         "  return nil;                                             \n" +
@@ -97,7 +110,7 @@ public class RedisLock implements Lock {
     /**
      * <pre>
      * Unlock lua script
-     *   KEYS[1]=key
+     *   KEYS[1]=lock key
      *   ARGV[1]=pexpire milliseconds
      *   ARGV[2]=lock value
      * </pre>
@@ -120,7 +133,7 @@ public class RedisLock implements Lock {
     /**
      * <pre>
      * Renew lock lua script
-     *   KEYS[1]=key
+     *   KEYS[1]=lock key
      *   ARGV[1]=pexpire milliseconds
      *   ARGV[2]=lock value
      * </pre>
@@ -147,7 +160,7 @@ public class RedisLock implements Lock {
     /**
      * Lock uuid value
      */
-    private final String lockUuid;
+    private final byte[] lockUuid;
 
     /**
      * Lock timeout, prevent deadlock.
@@ -173,7 +186,7 @@ public class RedisLock implements Lock {
 
         this.redisTemplate = redisTemplate;
         this.lockKey = ("lock:" + lockKey).getBytes(UTF_8);
-        this.lockUuid = ObjectUtils.uuid32() + ":";
+        this.lockUuid = ObjectUtils.uuid();
         this.timeoutMillis = Long.toString(timeoutMillis).getBytes(UTF_8);
         this.sleepMillis = Math.min(sleepMillis, timeoutMillis);
     }
@@ -340,11 +353,11 @@ public class RedisLock implements Lock {
     }
 
     private byte[] getLockValue() {
-        return (lockUuid + Thread.currentThread().getId()).getBytes(UTF_8);
+        return Bytes.concat(lockUuid, Bytes.toBytes(Thread.currentThread().getId()));
     }
 
     private long computeSleepMillis(int round) {
-        return round < 10 ? sleepMillis : Math.min(sleepMillis * round, 200);
+        return round < 5 ? sleepMillis : Math.min(sleepMillis * (round - 3), 5000);
     }
 
 }

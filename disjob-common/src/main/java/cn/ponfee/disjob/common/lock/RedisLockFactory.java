@@ -28,15 +28,15 @@ public class RedisLockFactory {
     private final long sleepMillis;
 
     public RedisLockFactory(RedisTemplate<?, ?> redisTemplate) {
-        this(redisTemplate, 50);
+        this(redisTemplate, 100);
     }
 
     public RedisLockFactory(RedisTemplate<?, ?> redisTemplate, long sleepMillis) {
         this.redisTemplate = redisTemplate;
-        this.sleepMillis = Math.max(10, sleepMillis);
+        this.sleepMillis = Math.max(50, sleepMillis);
     }
 
-    public RedisLock getLock(String lockKey, int timeoutMillis) {
+    public RedisLock create(String lockKey, int timeoutMillis) {
         return new RedisLock(redisTemplate, lockKey, timeoutMillis, sleepMillis);
     }
 

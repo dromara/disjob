@@ -54,7 +54,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void test0() throws InterruptedException {
         String key = "test:" + ObjectUtils.uuid32();
-        RedisLock redisLock = factory.getLock(key, 10000);
+        RedisLock redisLock = factory.create(key, 10000);
         Assertions.assertTrue(redisLock.tryLock());
 
         Thread.sleep(55);
@@ -98,7 +98,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void test1() throws IOException, InterruptedException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file())));
-        final Printer printer = new Printer(factory.getLock("test:lock:1", 30000));
+        final Printer printer = new Printer(factory.create("test:lock:1", 30000));
         final AtomicInteger num = new AtomicInteger(0);
         String line;
         List<Thread> threads = new ArrayList<>();
@@ -122,7 +122,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void test2() throws IOException, InterruptedException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file())));
-        final Lock lock = factory.getLock("test:lock:2", 30000);
+        final Lock lock = factory.create("test:lock:2", 30000);
         final AtomicInteger num = new AtomicInteger(0);
         String line;
         List<Thread> threads = new ArrayList<>();
@@ -156,7 +156,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
             final String line0 = line;
             if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
                 threads.add(new Thread(
-                    () -> new Printer(factory.getLock("test:lock:3", 30000)).output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")
+                    () -> new Printer(factory.create("test:lock:3", 30000)).output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")
                 ));
             }
         }
@@ -172,7 +172,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void test4() throws IOException {
-        Printer printer = new Printer(factory.getLock("test:lock:4", 30000));
+        Printer printer = new Printer(factory.create("test:lock:4", 30000));
         AtomicInteger num = new AtomicInteger(RATIO);
         System.out.println("\n=========================START========================");
         List<Map<Integer, String>> lines = Files.readLines(file(), StandardCharsets.UTF_8)
@@ -201,7 +201,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         String lockKey = "test:lock:" + ObjectUtils.uuid32();
         String actualKey = "lock:" + lockKey;
 
-        RedisLock redisLock = factory.getLock(lockKey, expire);
+        RedisLock redisLock = factory.create(lockKey, expire);
         Assertions.assertTrue(redisLock.tryLock());
 
         Assertions.assertTrue(bean.hasKey(actualKey));
