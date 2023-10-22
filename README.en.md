@@ -1,69 +1,64 @@
-[![Blog](https://img.shields.io/badge/blog-@ponfee-informational.svg)](http://www.ponfee.cn)
-[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8)
-[![Build status](https://github.com/ponfee/disjob/workflows/build-with-maven/badge.svg)](https://github.com/ponfee/disjob/actions)
-[![Maven Central](https://img.shields.io/badge/maven--central-2.0.4-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee)
+# <img src="docs/images/logo.png" width="125" alt="Logo" /> [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8) [![Maven Central](https://img.shields.io/badge/maven--central-2.0.4-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee) [![Build status](https://github.com/dromara/disjob/workflows/build/badge.svg)](https://github.com/dromara/disjob/actions)
 
 **`English`** | [简体中文](README.md)
 
-# Disjob
+A distributed task scheduling framework, in addition to having regular task scheduling functions, also provides: pausing/cancelling running tasks, resuming paused tasks, task splitting, failure retries, broadcast tasks, task dependencies, workflow tasks (DAG), separate deployment of managers and executors, Web management backend, and other capabilities.
 
-## Introduction
-
-A distributed job scheduling framework, in addition to the conventional distributed task scheduling function, it also provides splitting subtasks, control of tasks in execution, task dependency, broadcast execution, workflow task(DAG), supervisor and worker separate deployment, and so on.
-
-Lightweight, easy to use, especially suitable for the execution of long tasks. Scalability, extensibility, and stability, and has been run in production.
+Lightweight, easy to use, especially suitable for long task execution. It has good scalability, extensibility, and stability, and has been tested in production.
 
 ## Architecture
 
-- architecture diagram
+- Overall Process
 
-![Architecture](docs/images/architecture.jpg)
+![Overall Process](docs/images/architecture.jpg)
 
-- code structure
+- Code Structure
 
-```Plain Text
-disjob                                                    # Main project
-├── disjob-admin                                          # Disjob backend admin system based Ruoyi framework
-├── disjob-bom                                            # Maven project bom module
-├── disjob-common                                         # Tools
-├── disjob-core                                           # Core classes code of task scheduling
-├── disjob-dispatch                                       # Task dispatch module
-│   ├── disjob-dispatch-api                               # Abstract interface layer for task dispatch
-│   ├── disjob-dispatch-http                              # Http implementation of task dispatch
-│   └── disjob-dispatch-redis                             # Redis implementation of task dispatch
-├── disjob-id                                             # Distributed ID generator
-├── disjob-registry                                       # Server(supervisor & worker) registry module
-│   ├── disjob-registry-api                               # Server registry abstract interface layer
-│   ├── disjob-registry-consul                            # Server registry implementation based consul
-│   ├── disjob-registry-etcd                              # Server registry implementation based etcd
-│   ├── disjob-registry-nacos                             # Server registry implementation based nacos
-│   ├── disjob-registry-redis                             # Server registry implementation based redis
-│   └── disjob-registry-zookeeper                         # Server registry implementation based zookeeper
-├── disjob-reports                                        # aggregate code coverage report
-├── disjob-samples                                        # Samples project
-│   ├── disjob-samples-common                             # Common configuration and codes of samples
-│   ├── disjob-samples-merged                             # Sample of merged deployment supervisor and worker(spring boot application)
-│   └── disjob-samples-separately                         # Sample of separated deployment supervisor and worker
-│       ├── disjob-samples-separately-supervisor          # Sample of only deployment supervisor(spring boot application)
-│       ├── disjob-samples-separately-worker-frameless    # Sample of only deployment worker(start by java main class)
-│       └── disjob-samples-separately-worker-springboot   # Sample of only deployment worker(spring boot application)
-├── disjob-supervisor                                     # Supervisor code(run in spring container environment)
-├── disjob-test                                           # use for testing
-└── disjob-worker                                         # Worker code
+```text
+disjob                                        # Main project①
+├── disjob-admin                              # Management backend project② (Based on RuoYi framework secondary development)
+├── disjob-bom                                # Maven project bom module
+├── disjob-common                             # Common utility class module
+├── disjob-core                               # Task scheduling related core classes (such as data models, enumeration classes, abstract layer interfaces, etc.)
+├── disjob-dispatch                           # Task dispatch module
+│   ├── disjob-dispatch-api                   # Abstract interface layer of task dispatch
+│   ├── disjob-dispatch-http                  # Http implementation of task dispatch
+│   └── disjob-dispatch-redis                 # Redis implementation of task dispatch
+├── disjob-id                                 # Distributed ID generation module
+├── disjob-registry                           # Server (Supervisor & Worker) registration module
+│   ├── disjob-registry-api                   # Abstract interface layer of Server registration center
+│   ├── disjob-registry-consul                # Server registry center: Consul implementation
+│   ├── disjob-registry-database              # Server registry center: Database implementation
+│   ├── disjob-registry-etcd                  # Server registry center: Etcd implementation
+│   ├── disjob-registry-nacos                 # Server registry center: Nacos implementation
+│   ├── disjob-registry-redis                 # Server registry center: Redis implementation
+│   └── disjob-registry-zookeeper             # Server registry center: Zookeeper implementation
+├── disjob-reports                            # Aggregate test coverage reports of various modules
+├── disjob-samples                            # Samples project③
+│   ├── disjob-samples-frameless-worker       # Example of Worker deployed separately (ordinary Java-main application)
+│   ├── disjob-samples-springboot-common      # Samples Spring-boot common module
+│   ├── disjob-samples-springboot-merged      # Example of Supervisor and Worker deployed together (Spring-boot application)
+│   ├── disjob-samples-springboot-supervisor  # Example of Supervisor deployed separately (Spring-boot application)
+│   └── disjob-samples-springboot-worker      # Example of Worker deployed separately (Spring-boot application)
+├── disjob-supervisor                         # Supervisor code
+├── disjob-test                               # Used for auxiliary testing
+└── disjob-worker                             # Worker code
 ```
 
 ## Features
 
-- Defined two server roles: Supervisor and Worker, they can be deployed separately
-- Supervisor and Worker are decoupled through the registration center. The currently supported registration centers are: Redis, Consul, Nacos, Zookeeper, Etcd
-- Supervisor sends tasks to Workers in the way of task distribution. The currently supported task distribution methods are: Redis, Http
-- Support task grouping (job-group), the task will be distributed to the specified group of Workers for execution
-- Custom split tasks, override [JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java) to split a job to many tasks
-- Provides automatic saving (savepoint) of task execution snapshots, so that execution information is not lost, and tasks interrupted due to abnormalities can be continued to execute
-- Provides the ability to control tasks during execution, and can suspend/cancel the tasks in progress at any time, and can also resume the execution of suspended tasks
-- Provides the ability to execute tasks dependently. After multiple tasks build dependency relationship, the tasks will be executed sequentially according to the established dependency order
-- Supported DAG workflow task，set jobHandler to a dag expression, e.g. A->B,C,(D->E)->D,F->G
+- Divided into two roles: Manager (Supervisor) and Executor (Worker), Supervisor and Worker can be deployed separately
+- Supervisor and Worker discover each other through the registry center, supported: Database, Redis, Consul, Nacos, Zookeeper, Etcd
+- Supervisor is responsible for generating tasks and dispatching them to Worker for execution, supported: Redis, Http
+- Need to specify the Job group, Job tasks will only be dispatched to the specified group of Workers for execution
+- Provides the ability to split tasks, override the method [JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java) to split many tasks, then distributed and parallel execution
+- Supports pausing and cancelling running tasks, paused tasks can be resumed for execution, failed tasks support retry
+- Supports savepoint task execution snapshot, so that manually or abnormally paused tasks can be resumed from the savepoint
+- If a task throw [PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java) at executing, then will pause all instance tasks (even if dispatched other worker machine tasks)
+- Supports broadcast tasks, broadcast tasks will be dispatched to all workers under the job-group for execution
+- Supports dependencies jobs, multiple Jobs configured with dependencies will be executed in the established dependency order
+- Supports DAG workflows, can configure jobHandler as a complex DAG expression, such as: A->B,C,(D->E)->D,F->G
+- Provides a Web management backend, job configuration, task monitoring, etc.
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)
 
@@ -77,102 +72,114 @@ disjob                                                    # Main project
 
 ## Build From Source
 
-```bash
-./mvnw clean install -DskipTests -Dcheckstyle.skip=true -U
+```shell
+./mvnw clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U
 ```
 
 ## Quick Start
 
-1. Imports project to IDE (Contains two projects, shared the git repository)
-  - [main project](pom.xml)
-  - [samples project](disjob-samples/pom.xml)
+1. Import the projects to IDE (three independent projects all in one `git` repository)
 
-2. Run the SQL script file[mysql-schema.sql](mysql-disjob.sql) to create database table(Also can direct run [embed mysql-server](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java), auto init sql script on startup)
-- [MacBook M1 error "Library not loaded" ref](disjob-test/src/main/DB/MariaDB/MariaDB.md)
+- Primary project: [disjob](pom.xml)
+- Admin project: [disjob-admin](disjob-admin/pom.xml)
+- Sample project: [disjob-samples](disjob-samples/pom.xml)
 
-3. Modify configuration files such as [Mysql](disjob-samples/conf-supervisor/application-mysql.yml), [Redis](disjob-samples/disjob-samples-common/src/main/resources/application-redis.yml), [Consul](disjob-samples/disjob-samples-common/src/main/resources/application-consul.yml) and so on.
-- if use default localhost configuration([e.g consul localhost:8500](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)), you can not add the resource config file(same as Nacos/Zookeeper/Etcd)
-- non spring-boot application of worker configuration: [worker-conf.yml](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/resources/worker-conf.yml)
+2. Start the following applications to form a distributed scheduling cluster
 
-4. Create a job handler class [PrimeCountJobHandler](disjob-samples/disjob-samples-common/src/main/java/cn/ponfee/disjob/samples/common/handler/PrimeCountJobHandler.java), and extends [JobHandler](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobHandler.java)
+> Configured different ports, run the java main class in IDE, or run the built jar package with the `java -jar` command.
 
-5. Startup these [sample applications](disjob-samples)
-  - [Spring boot application of merged Supervisor&Worker](disjob-samples/disjob-samples-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
-  - [Spring boot application of Supervisor](disjob-samples/disjob-samples-separately/disjob-samples-separately-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
-  - [Spring boot application of Worker](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-springboot/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
-  - [Frameless application of Worker, direct run main](disjob-samples/disjob-samples-separately/disjob-samples-separately-worker-frameless/src/main/java/cn/ponfee/disjob/samples/worker/Main.java)
-  - Notes:
-    - Different ports have been configured and can be started at the same time
-    - You can run the startup class in the development tool, or directly run the built jar package
-    - select registry center and dispatch mode [use by pom](disjob-samples/disjob-samples-common/pom.xml) import
-  - Embedded same servers can direct startup on local: 
-    - [embedded redis-server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
-    - [embedded consul-server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
-    - [embedded nacos-server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)(depends on local docker)
-    - [embedded etcd-server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)(depends on local docker)
-    - [embedded zookeeper-server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
-    - [embedded Mysql & Redis](disjob-samples/disjob-samples-common/src/test/java/cn/ponfee/disjob/samples/MysqlAndRedisServerStarter.java)
+- [Start the embedded local Mysql & Redis](disjob-test/src/main/java/cn/ponfee/disjob/test/EmbeddedMysqlAndRedisServer.java)
+    - Refer to this document if reports MariaDB "[Library not loaded](disjob-test/src/main/DB/MariaDB/MariaDB.md)" error on MacOSX
+    - When connecting to mysql with a client tool, the username is `root`, no password is required
+    - The initialization SQL script has been automatically executed at startup
+- [Start the Worker Java-main application](disjob-samples/disjob-samples-frameless-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
+- [Start the Worker Spring-boot application](disjob-samples/disjob-samples-springboot-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
+- [Start the Supervisor+Worker Spring-boot application](disjob-samples/disjob-samples-springboot-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
+- [Start the Supervisor Spring-boot application](disjob-samples/disjob-samples-springboot-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
+- [Start the Admin Spring-boot application](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
 
-```java
-@EnableSupervisor
-@EnableWorker
-public class MergedApplication extends AbstractSamplesApplication {
-  public static void main(String[] args) {
-    SpringApplication.run(MergedApplication.class, args);
-  }
-}
+3. Login to the Admin
+
+- Open【 http://127.0.0.1:80/ 】in your browser and login with username/password: `admin`/`admin123`
+- Find the Scheduling Management menu in the left sidebar to use the `scheduling management` function
+- Scheduling Configuration: Job configuration, including viewing, adding, modifying, deleting, triggering, disabling, etc.
+- Scheduling Instances: job trigger time generate an instance, the instance split to many tasks.
+
+4. Link Address
+- Admin demo:【 http://ponfee.cn:8000/ 】, username/password: `disjob`/`disjob123`
+- Online documentation: **Under construction, please stay tuned!**
+
+## User Guide
+
+1. The project includes two SQL scripts
+
+- [Core framework SQL script](sql/mysql-disjob.sql)
+- [Admin console SQL script](sql/mysql-disjob_admin.sql)
+
+2. Change the specific implementation of `disjob-registry-{xxx}` and `disjob-dispatch-{xxx}` in the maven pom file
+
+- [Samples project](disjob-samples/pom.xml)
+- [Admin project](disjob-admin/ruoyi-disjob/pom.xml)
+- By default, `disjob-registry-redis` is used as the server registry and `disjob-dispatch-http` is used for task dispatch
+
+3. Samples project configuration files
+
+- [Supervisor role Mysql configuration](disjob-samples/conf-supervisor/application-mysql.yml)
+- [Supervisor role core configuration](disjob-samples/conf-supervisor/application-supervisor.yml)
+- [Worker role core configuration](disjob-samples/conf-worker/application-worker.yml)
+- [Redis configuration](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-redis.yml)
+- [Spring-boot Web configuration](disjob-samples/disjob-samples-springboot-common/src/main/resources/application-web.yml)
+- [Worker Java-main application configuration](disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml)
+
+4. Admin project configuration files
+- [Supervisor role related Mysql configuration](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-mysql.yml)
+- [Redis configuration](disjob-admin/ruoyi-disjob/src/main/resources/application-disjob-redis.yml)
+- [Enable Worker role with @EnableWorker annotation](disjob-admin/ruoyi-disjob/src/main/java/cn/ponfee/disjob/admin/DisjobAdminConfiguration.java)
+- [Admin Mysql configuration](disjob-admin/ruoyi-admin/src/main/resources/application-druid.yml)
+- [RuoYi framework configuration](http://doc.ruoyi.vip/ruoyi/document/hjbs.html#%E5%BF%85%E8%A6%81%E9%85%8D%E7%BD%AE )
+
+5. Reference for various registry configuration classes (Redis uses the configuration method provided by Spring-boot)
+- [Consul](disjob-registry/disjob-registry-consul/src/main/java/cn/ponfee/disjob/registry/consul/configuration/ConsulRegistryProperties.java)
+- [Database](disjob-registry/disjob-registry-database/src/main/java/cn/ponfee/disjob/registry/database/configuration/DatabaseRegistryProperties.java)
+- [Zookeeper](disjob-registry/disjob-registry-zookeeper/src/main/java/cn/ponfee/disjob/registry/zookeeper/configuration/ZookeeperRegistryProperties.java)
+- [Nacos](disjob-registry/disjob-registry-nacos/src/main/java/cn/ponfee/disjob/registry/nacos/configuration/NacosRegistryProperties.java)
+- [Etcd](disjob-registry/disjob-registry-etcd/src/main/java/cn/ponfee/disjob/registry/etcd/configuration/EtcdRegistryProperties.java)
+
+> For example, if using Consul as the registry center, you can add the following configuration
+
+```yaml
+disjob.registry.consul:
+  namespace: consul_namespace
+  host: localhost
+  port: 8500
+  token:
 ```
 
-6. Execute the following curl command to add tasks (select any running Supervisor application to replace `localhost:8081`)
-- `triggerValue` modified to  next minute of the current time
-- `jobHandler` supported: the fully qualified class name, spring bean name, DAG Expression, source code
-
-```bash
-curl --location --request POST 'http://localhost:8081/api/job/add' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "jobGroup": "default",
-    "jobName": "prime-counter",
-    "jobHandler": "cn.ponfee.disjob.test.handler.PrimeCountJobHandler",
-    "jobState": 1,
-    "jobParam": "{\"m\":1,\"n\":6000000000,\"blockSize\":100000000,\"parallel\":7}",
-    "triggerType": 2,
-    "triggerValue": "2022-10-06 12:00:00"
-}'
-```
-
-7. Query the database table to verify whether the task is added successfully, and view the execution information of the task
-
-```sql
--- Query the sched_job data added by curl  
-SELECT * FROM sched_job;
-
--- Query the job execution data
-SELECT * from sched_instance;
-SELECT * from sched_task;
-
--- The following SQL can be executed to trigger the execution of the Job again
-UPDATE sched_job SET job_state=1, last_trigger_time=NULL, next_trigger_time=(unix_timestamp()*1000+2000) WHERE job_name='prime-counter';
-```
-
-- You can also execute the following CURL command to manually trigger execution (select a supervisor to replace `localhost:8081`)
-
-```bash
-curl --location --request POST 'http://localhost:8081/api/job/trigger?jobId=1003164910267351004' \
---header 'Content-Type: application/json'
-```
+6. Some embedded local servers
+- [Mysql Server](disjob-test/src/main/java/cn/ponfee/disjob/test/db/EmbeddedMysqlServerMariaDB.java)
+- [Redis Server](disjob-test/src/main/java/cn/ponfee/disjob/test/redis/EmbeddedRedisServerKstyrc.java)
+- [Zookeeper Server](disjob-registry/disjob-registry-zookeeper/src/test/java/cn/ponfee/disjob/registry/zookeeper/EmbeddedZookeeperServer.java)
+- [Consul Server](disjob-registry/disjob-registry-consul/src/test/java/cn/ponfee/disjob/registry/consul/EmbeddedConsulServerPszymczyk.java)
+- [Nacos Server](disjob-registry/disjob-registry-nacos/src/test/java/cn/ponfee/disjob/registry/nacos/EmbeddedNacosServerTestcontainers.java)
+- [Etcd Server](disjob-registry/disjob-registry-etcd/src/test/java/cn/ponfee/disjob/registry/etcd/EmbeddedEtcdServerTestcontainers.java)
 
 ## Contributing
 
-If you find bugs, or better implementation solutions, or new features, etc. you can submit PR or create [Issues](../../issues).
+If you find bugs, have better implementation solutions, new features and so on, you can submit a PR or create new[Issues](../../issues)
+
+## Communication
+
+Scan the QR code to add WeChat friends, note `disjob`, and invite you to join the group WeChat.
+
+<img src="docs/images/wechat.jpg" width="230" alt="Wechat group"/>
 
 ## Todo List
 
-- [x] Extended registry: Zookeeper, Etcd, Nacos
-- [x] Workflow task(Workflow DAG)
-- [x] Task management background system, account and authority
+- [x] Extend registry: Zookeeper, Etcd, Nacos
+- [x] Workflow tasks (DAG)
+- [x] Admin console: accounting, authority, permission and task manage
 - [ ] Build a project document web site
 - [ ] Monitor real-time executing logs of tasks online
-- [ ] alarm subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
-- [ ] visual monitoring BI(Dashboard)
-- [ ] Add support for multiple savepoint: File System, Hadoop, RocksDB
+- [ ] Alarm subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
+- [ ] Visual monitoring BI dashboard
+- [ ] Support more savepoint implementation: File System, Hadoop, RocksDB, OSS
