@@ -82,6 +82,9 @@
       </if>
         version = version + 1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
+      <if test="worker != null and worker != ''">
+        AND worker = #{worker,jdbcType=VARCHAR}
+      </if>
       AND execute_state = #{fromState,jdbcType=TINYINT}
       AND execute_state != #{toState,jdbcType=TINYINT}
       AND execute_state IN (10, 20, 30)

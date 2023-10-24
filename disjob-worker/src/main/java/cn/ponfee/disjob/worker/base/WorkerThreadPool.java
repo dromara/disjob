@@ -17,6 +17,7 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -164,6 +165,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         Pair<WorkerThread, ExecuteTaskParam> pair = activePool.stopTask(taskId, ops);
         if (pair == null) {
             LOG.info("Not found stoppable task {} | {}", taskId, ops);
+            // task在调用stopTask之前已经是EXECUTING状态，所以不会存在terminate之前从WAITING到EXECUTING的情况
+            terminateTask(supervisorCoreRpcClient, stopParam, ops, ops.toState(), null);
             return;
         }
 
@@ -408,7 +411,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         TerminateTaskParam terminateTaskParam = new TerminateTaskParam(
-            param.getInstanceId(), param.getWnstanceId(), param.getTaskId(), ops, toState, errorMsg
+            param.getInstanceId(), param.getWnstanceId(), param.getTaskId(),
+            Worker.current().serialize(), ops, toState, errorMsg
         );
         try {
             if (!client.terminateTask(terminateTaskParam)) {

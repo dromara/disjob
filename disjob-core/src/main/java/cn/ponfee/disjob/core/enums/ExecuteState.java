@@ -100,6 +100,13 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
      */
     public static final List<ExecuteState> EXECUTABLE_LIST = ImmutableList.of(WAITING, PAUSED);
 
+    /**
+     * State list of can transit to terminated
+     *
+     * @see #isTerminal()
+     */
+    public static final List<ExecuteState> TERMINABLE_LIST = ImmutableList.of(WAITING, EXECUTING, PAUSED);
+
     private static final Map<Integer, ExecuteState> MAPPING = Enums.toMap(ExecuteState.class, ExecuteState::value);
 
     private final int value;

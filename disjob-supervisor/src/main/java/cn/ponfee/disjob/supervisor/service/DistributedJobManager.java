@@ -106,7 +106,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     @Override
     protected boolean cancelWaitingTask(long taskId) {
-        return taskMapper.terminate(taskId, ExecuteState.WAITING_CANCELED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
+        return taskMapper.terminate(taskId, null, ExecuteState.WAITING_CANCELED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
     }
 
     public void savepoint(long taskId, String executeSnapshot) {
@@ -262,6 +262,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if terminated task successful
      */
     public boolean terminateTask(TerminateTaskParam param) {
+        Assert.hasText(param.getWorker(), "Terminate task worker cannot be blank.");
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
         Assert.isTrue(!ExecuteState.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
@@ -274,7 +275,7 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             Date executeEndTime = toState.isTerminal() ? new Date() : null;
-            int row = taskMapper.terminate(param.getTaskId(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
+            int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
             if (row != AFFECTED_ONE_ROW) {
                 // usual is worker invoke http timeout, then retry
                 LOG.warn("Conflict terminate executing task: {} | {}", param.getTaskId(), toState);
@@ -339,7 +340,10 @@ public class DistributedJobManager extends AbstractJobManager {
 
             tasks.stream()
                 .filter(e -> EXECUTE_STATE_PAUSABLE.contains(e.getExecuteState()))
-                .forEach(e -> taskMapper.terminate(e.getTaskId(), ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null));
+                .forEach(e -> {
+                    String worker = ExecuteState.EXECUTING.equals(e.getExecuteState()) ? Objects.requireNonNull(e.getWorker()) : null;
+                    taskMapper.terminate(e.getTaskId(), worker, ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null);
+                });
 
             instance.setRunState(tuple.a.value());
             afterTerminateTask(instance);
@@ -870,7 +874,7 @@ public class DistributedJobManager extends AbstractJobManager {
             } else {
                 // update dead task
                 Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
-                int row = taskMapper.terminate(task.getTaskId(), ops.toState().value(), ExecuteState.EXECUTING.value(), executeEndTime, null);
+                int row = taskMapper.terminate(task.getTaskId(), task.getWorker(), ops.toState().value(), ExecuteState.EXECUTING.value(), executeEndTime, null);
                 if (row != AFFECTED_ONE_ROW) {
                     LOG.error("Cancel the dead task failed: {}", task);
                     executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));

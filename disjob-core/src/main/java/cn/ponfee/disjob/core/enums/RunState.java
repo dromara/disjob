@@ -9,8 +9,8 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Enums;
-import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
@@ -52,21 +52,21 @@ public enum RunState implements IntValueEnum<RunState> {
     ;
 
     /**
+     * State list of can transit to PAUSED
+     */
+    public static final List<RunState> PAUSABLE_LIST = Collects.convert(ExecuteState.PAUSABLE_LIST, ExecuteState::runState);
+
+    /**
      * State list of can transit to RUNNING
      */
-    public static final List<RunState> RUNNABLE_LIST = ImmutableList.of(WAITING, PAUSED);
+    public static final List<RunState> RUNNABLE_LIST = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::runState);
 
     /**
      * State list of can transit to terminated
      *
      * @see #isTerminal()
      */
-    public static final List<RunState> TERMINABLE_LIST = ImmutableList.of(WAITING, RUNNING, PAUSED);
-
-    /**
-     * State list of can transit to PAUSED
-     */
-    public static final List<RunState> PAUSABLE_LIST = ImmutableList.of(WAITING, RUNNING);
+    public static final List<RunState> TERMINABLE_LIST = Collects.convert(ExecuteState.TERMINABLE_LIST, ExecuteState::runState);
 
     private static final Map<Integer, RunState> MAPPING = Enums.toMap(RunState.class, RunState::value);
 

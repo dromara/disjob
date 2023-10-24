@@ -35,6 +35,7 @@ public interface SchedTaskMapper {
               @Param("executeStartTime") Date executeStartTime);
 
     int terminate(@Param("taskId") long taskId,
+                  @Param("worker") String worker,
                   @Param("toState") int toState,
                   @Param("fromState") int fromState,
                   @Param("executeEndTime") Date executeEndTime,
