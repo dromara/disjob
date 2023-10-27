@@ -19,7 +19,6 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.core.param.TaskWorkerParam;
@@ -46,7 +45,6 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.DATEFULL_PATTERN);
     private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
-    private final Worker currentWorker;
     private final SupervisorCoreRpcService supervisorCoreRpcClient;
     private final Discovery<Supervisor> discoverySupervisor;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
@@ -56,13 +54,11 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
     private volatile int round = 0;
 
-    public TimingWheelRotator(Worker currentWorker,
-                              SupervisorCoreRpcService supervisorCoreRpcClient,
+    public TimingWheelRotator(SupervisorCoreRpcService supervisorCoreRpcClient,
                               Discovery<Supervisor> discoverySupervisor,
                               TimingWheel<ExecuteTaskParam> timingWheel,
                               WorkerThreadPool threadPool,
                               int processThreadPoolSize) {
-        this.currentWorker = currentWorker;
         this.supervisorCoreRpcClient = supervisorCoreRpcClient;
         this.discoverySupervisor = discoverySupervisor;
         this.timingWheel = timingWheel;
@@ -113,35 +109,20 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     }
 
     private void process(List<ExecuteTaskParam> tasks) {
-        List<ExecuteTaskParam> matchedTasks = tasks.stream()
-            .filter(e -> {
-                Worker assignedWorker = e.getWorker();
-                if (!currentWorker.sameWorker(assignedWorker)) {
-                    LOG.error("Processed unmatched worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
-                    return false;
-                }
-                if (!currentWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
-                    // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却Http方式派发给新的workerId(同机器同端口)
-                    // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍(注册中心还存有旧workerId)；
-                    LOG.warn("Processed former worker: {} | '{}' | '{}'", e.getTaskId(), currentWorker, assignedWorker);
-                }
-                LOG.info("Processed task {} | {} | {} | {}", e.getTaskId(), e.getOperation(), assignedWorker, DATE_FORMAT.format(e.getTriggerTime()));
-                return true;
-            })
-            .collect(Collectors.toList());
-
-        if (matchedTasks.isEmpty()) {
-            return;
-        }
-
-        List<List<ExecuteTaskParam>> partitions = Lists.partition(matchedTasks, PROCESS_BATCH_SIZE);
-        for (List<ExecuteTaskParam> batchTasks : partitions) {
-            List<TaskWorkerParam> list = batchTasks.stream()
+        for (List<ExecuteTaskParam> subs : Lists.partition(tasks, PROCESS_BATCH_SIZE)) {
+            List<TaskWorkerParam> list = subs.stream()
+                // 广播任务分派的worker不可修改，需要排除
                 .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
                 .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
                 .collect(Collectors.toList());
+            // 更新task的worker信息
             ThrowingRunnable.execute(() -> supervisorCoreRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
-            batchTasks.forEach(workerThreadPool::submit);
+
+            // 触发执行
+            subs.forEach(e -> {
+                LOG.info("Task trace [triggered]: {} | {} | {} | {}", e.getTaskId(), e.getOperation(), e.getWorker(), DATE_FORMAT.format(e.getTriggerTime()));
+                workerThreadPool.submit(e);
+            });
         }
     }
 

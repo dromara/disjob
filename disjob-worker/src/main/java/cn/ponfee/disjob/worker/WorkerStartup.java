@@ -72,7 +72,6 @@ public class WorkerStartup implements Startable {
             supervisorCoreRpcClient
         );
         this.timingWheelRotator = new TimingWheelRotator(
-            currentWorker,
             supervisorCoreRpcClient,
             workerRegistry,
             taskReceiver.getTimingWheel(),

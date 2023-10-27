@@ -113,7 +113,7 @@ public class WorkerFramelessMain {
             //vertxWebServer = new VertxWebServer(port, null);
 
             // http dispatching
-            taskReceiver = new HttpTaskReceiver(timingWheel);
+            taskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
             vertxWebServer = new VertxWebServer(port, taskReceiver);
         }
         // --------------------- create registry(select redis or http) --------------------- //

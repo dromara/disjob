@@ -17,7 +17,6 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -139,7 +138,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return false;
         }
 
-        LOG.info("Submitted task {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+        LOG.info("Task trace [submitted]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         if (param.operation().isTrigger()) {
             return taskQueue.offerLast(param);
         } else {
@@ -164,9 +163,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
         long taskId = stopParam.getTaskId();
         Pair<WorkerThread, ExecuteTaskParam> pair = activePool.stopTask(taskId, ops);
         if (pair == null) {
-            LOG.info("Not found stoppable task {} | {}", taskId, ops);
-            // task在调用stopTask之前已经是EXECUTING状态，所以不会存在terminate之前从WAITING到EXECUTING的情况
-            terminateTask(supervisorCoreRpcClient, stopParam, ops, ops.toState(), null);
+            LOG.warn("Not found executing task: {} | {}", taskId, ops);
+            // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
+            // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
+            terminateTask(supervisorCoreRpcClient, stopParam, ops, ops.toState(), ops.name() + " aborted EXECUTING state task");
             return;
         }
 
@@ -404,6 +404,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private static void terminateTask(SupervisorCoreRpcService client, ExecuteTaskParam param, Operations ops, ExecuteState toState, String errorMsg) {
         Assert.notNull(ops, "Terminate task operation cannot be null.");
+        Assert.notNull(param.getWorker(), "Execute task param worker cannot be null.");
         if (!param.updateOperation(ops, null)) {
             // already terminated
             LOG.warn("Terminate task conflict: {} | {} | {}", param.getTaskId(), ops, toState);
@@ -412,7 +413,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         TerminateTaskParam terminateTaskParam = new TerminateTaskParam(
             param.getInstanceId(), param.getWnstanceId(), param.getTaskId(),
-            Worker.current().serialize(), ops, toState, errorMsg
+            param.getWorker().serialize(), ops, toState, errorMsg
         );
         try {
             if (!client.terminateTask(terminateTaskParam)) {
@@ -728,6 +729,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
 
                 try {
+                    LOG.info("Task trace [readied]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
                     runTask(param);
                 } catch (Throwable t) {
                     LOG.error("Worker thread execute failed: " + param, t);

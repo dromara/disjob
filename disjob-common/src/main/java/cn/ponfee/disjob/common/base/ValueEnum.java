@@ -32,18 +32,18 @@ public interface ValueEnum<V, T extends Enum<T> & ValueEnum<V, T>> {
     String desc();
 
     static <V, T extends Enum<T> & ValueEnum<V, T>> T of(Class<T> type, V value) {
-        if (type == null || !type.isEnum()) {
-            throw new IllegalArgumentException("Not enum type: " + type);
+        if (type == null) {
+            throw new IllegalArgumentException("Enum type cannot be null: " + type);
         }
         if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null.");
+            throw new IllegalArgumentException("Enum value cannot be null.");
         }
         for (T e : type.getEnumConstants()) {
             if (value.equals(e.value())) {
                 return e;
             }
         }
-        throw new IllegalArgumentException("Invalid value: " + value);
+        throw new IllegalArgumentException("Invalid enum value: " + value);
     }
 
 }

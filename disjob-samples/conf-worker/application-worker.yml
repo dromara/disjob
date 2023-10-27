@@ -1,6 +1,6 @@
 # Disjob worker configuration
 disjob.worker:
-  group: default,test
+  group: default
   timing-wheel-tick-ms: 100
   timing-wheel-ring-size: 60
   maximum-pool-size: 100

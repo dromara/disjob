@@ -94,7 +94,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
         return new DatabaseRegistryDataSourceDestroy(wrapper);
     }
 
-    private class DatabaseRegistryDataSourceDestroy implements DisposableBean {
+    private static class DatabaseRegistryDataSourceDestroy implements DisposableBean {
         final JdbcTemplateWrapper wrapper;
 
         DatabaseRegistryDataSourceDestroy(JdbcTemplateWrapper wrapper) {

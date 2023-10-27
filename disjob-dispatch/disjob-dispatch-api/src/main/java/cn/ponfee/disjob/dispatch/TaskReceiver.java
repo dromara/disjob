@@ -10,6 +10,7 @@ package cn.ponfee.disjob.dispatch;
 
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,12 @@ import java.util.Objects;
 public abstract class TaskReceiver implements Startable {
     private final static Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
 
+    private final Worker currentWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
-    public TaskReceiver(TimingWheel<ExecuteTaskParam> timingWheel) {
+    public TaskReceiver(Worker currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
         this.timingWheel = Objects.requireNonNull(timingWheel, "Timing wheel cannot be null.");
+        this.currentWorker = Objects.requireNonNull(currentWorker, "Current worker cannot be null.");
     }
 
     /**
@@ -41,9 +44,20 @@ public abstract class TaskReceiver implements Startable {
             return false;
         }
 
+        Worker assignedWorker = param.getWorker();
+        if (!currentWorker.sameWorker(assignedWorker)) {
+            LOG.error("Received unmatched worker: {} | '{}' | '{}'", param.getTaskId(), currentWorker, assignedWorker);
+            return false;
+        }
+        if (!currentWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
+            // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却Http方式派发给新的workerId(同机器同端口)
+            // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍(注册中心还存有旧workerId)；
+            LOG.warn("Received former worker: {} | '{}' | '{}'", param.getTaskId(), currentWorker, assignedWorker);
+        }
+
         boolean res = timingWheel.offer(param);
         if (res) {
-            LOG.info("Received task success {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+            LOG.info("Task trace [received]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         } else {
             LOG.error("Received task failed " + param);
         }

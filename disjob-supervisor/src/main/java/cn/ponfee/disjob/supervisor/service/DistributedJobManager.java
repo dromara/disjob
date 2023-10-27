@@ -18,6 +18,7 @@ import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dag.WorkflowGraph;
 import cn.ponfee.disjob.core.enums.*;
@@ -341,7 +342,7 @@ public class DistributedJobManager extends AbstractJobManager {
             tasks.stream()
                 .filter(e -> EXECUTE_STATE_PAUSABLE.contains(e.getExecuteState()))
                 .forEach(e -> {
-                    String worker = ExecuteState.EXECUTING.equals(e.getExecuteState()) ? Objects.requireNonNull(e.getWorker()) : null;
+                    String worker = ExecuteState.EXECUTING.equals(e.getExecuteState()) ? Strings.requireNonBlank(e.getWorker()) : null;
                     taskMapper.terminate(e.getTaskId(), worker, ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null);
                 });
 

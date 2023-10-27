@@ -39,18 +39,18 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
     }
 
     static <T extends Enum<T> & IntValueEnum<T>> T of(Class<T> type, Integer value) {
-        if (type == null || !type.isEnum()) {
-            throw new IllegalArgumentException("Not enum type: " + type);
+        if (type == null) {
+            throw new IllegalArgumentException("Enum int type cannot be null: " + type);
         }
         if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null.");
+            throw new IllegalArgumentException("Enum int value cannot be null.");
         }
         for (T e : type.getEnumConstants()) {
             if (e.value() == value) {
                 return e;
             }
         }
-        throw new IllegalArgumentException("Invalid value: " + value);
+        throw new IllegalArgumentException("Invalid enum int value: " + value);
     }
 
     static List<IntValueDesc> values(Class<? extends IntValueEnum<?>> clazz) {

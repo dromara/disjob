@@ -14,7 +14,6 @@ import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,9 +22,7 @@ import org.springframework.util.Assert;
 import javax.annotation.PreDestroy;
 import java.sql.PreparedStatement;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -148,44 +145,38 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             return;
         }
 
-        final Set<R> servers = splitServer(server);
         jdbcTemplateWrapper.executeInTransaction(psCreator -> {
-            for (R svr : servers) {
-                String serialize = svr.serialize();
-                PreparedStatement update = psCreator.apply(HEARTBEAT_SQL);
-                update.setLong(1, System.currentTimeMillis());
-                update.setString(2, namespace);
-                update.setString(3, registerRoleName);
-                update.setString(4, serialize);
-                int updateRowsAffected = update.executeUpdate();
-                Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid update rows affected: " + updateRowsAffected);
-                if (updateRowsAffected == AFFECTED_ONE_ROW) {
-                    log.info("Database register update: {} | {} | {}", namespace, registerRoleName, serialize);
-                } else {
-                    PreparedStatement insert = psCreator.apply(REGISTER_SQL);
-                    insert.setString(1, namespace);
-                    insert.setString(2, registerRoleName);
-                    insert.setString(3, serialize);
-                    insert.setLong(4, System.currentTimeMillis());
-                    int insertRowsAffected = insert.executeUpdate();
-                    Assert.isTrue(insertRowsAffected == AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + insertRowsAffected);
-                    log.info("Database register insert: {} | {} | {}", namespace, insertRowsAffected, serialize);
-                }
+            String serialize = server.serialize();
+            PreparedStatement update = psCreator.apply(HEARTBEAT_SQL);
+            update.setLong(1, System.currentTimeMillis());
+            update.setString(2, namespace);
+            update.setString(3, registerRoleName);
+            update.setString(4, serialize);
+            int updateRowsAffected = update.executeUpdate();
+            Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid update rows affected: " + updateRowsAffected);
+            if (updateRowsAffected == AFFECTED_ONE_ROW) {
+                log.info("Database register update: {} | {} | {}", namespace, registerRoleName, serialize);
+            } else {
+                PreparedStatement insert = psCreator.apply(REGISTER_SQL);
+                insert.setString(1, namespace);
+                insert.setString(2, registerRoleName);
+                insert.setString(3, serialize);
+                insert.setLong(4, System.currentTimeMillis());
+                int insertRowsAffected = insert.executeUpdate();
+                Assert.isTrue(insertRowsAffected == AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + insertRowsAffected);
+                log.info("Database register insert: {} | {} | {}", namespace, insertRowsAffected, serialize);
             }
         });
 
-        registered.addAll(servers);
+        registered.add(server);
     }
 
     @Override
     public final void deregister(R server) {
-        Set<R> servers = splitServer(server);
-        for (R svr : servers) {
-            registered.remove(svr);
-            Object[] args = new Object[]{namespace, registerRoleName, svr.serialize()};
-            ThrowingSupplier.execute(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
-            log.info("Server deregister: {} | {}", registryRole.name(), svr);
-        }
+        registered.remove(server);
+        Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
+        ThrowingSupplier.execute(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
+        log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 
     // ------------------------------------------------------------------Close
@@ -205,18 +196,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     }
 
     // ------------------------------------------------------------------private methods
-
-    private Set<R> splitServer(R server) {
-        if (!(server instanceof Worker)) {
-            return Collections.singleton(server);
-        }
-
-        Set<R> servers = new HashSet<>();
-        for (Worker worker : ((Worker) server).splitGroup()) {
-            servers.add((R) worker);
-        }
-        return servers;
-    }
 
     /**
      * 心跳注册，不需要原子性

@@ -10,7 +10,6 @@ package cn.ponfee.disjob.dispatch.redis;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
@@ -25,6 +24,7 @@ import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -83,11 +83,11 @@ public class RedisTaskReceiver extends TaskReceiver {
     public RedisTaskReceiver(Worker currentWorker,
                              TimingWheel<ExecuteTaskParam> timingWheel,
                              RedisTemplate<String, String> redisTemplate) {
-        super(timingWheel);
+        super(currentWorker, timingWheel);
         SingletonClassConstraint.constrain(this);
 
         this.redisTemplate = redisTemplate;
-        this.gropedWorkers = Collects.convert(currentWorker.splitGroup(), GroupedWorker::new);
+        this.gropedWorkers = Collections.singletonList(new GroupedWorker(currentWorker));
         this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000);
     }
 

@@ -142,4 +142,10 @@ public final class Strings {
         return false;
     }
 
+    public static String requireNonBlank(String str) {
+        if (StringUtils.isBlank(str)) {
+            throw new IllegalArgumentException("Text require non blank.");
+        }
+        return str;
+    }
 }

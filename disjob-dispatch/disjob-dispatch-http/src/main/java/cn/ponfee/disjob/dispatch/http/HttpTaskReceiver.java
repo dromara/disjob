@@ -10,6 +10,7 @@ package cn.ponfee.disjob.dispatch.http;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RpcController;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -23,8 +24,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Hidden
 public class HttpTaskReceiver extends TaskReceiver implements RpcController {
 
-    public HttpTaskReceiver(TimingWheel<ExecuteTaskParam> timingWheel) {
-        super(timingWheel);
+    public HttpTaskReceiver(Worker currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+        super(currentWorker, timingWheel);
     }
 
     @PostMapping(Constants.WORKER_RECEIVE_PATH)

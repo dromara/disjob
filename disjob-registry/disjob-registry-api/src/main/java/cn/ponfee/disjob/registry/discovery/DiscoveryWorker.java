@@ -36,7 +36,6 @@ public final class DiscoveryWorker implements DiscoveryServer<Worker> {
             this.groupedWorkers = Collections.emptyMap();
         } else {
             this.groupedWorkers = discoveredWorkers.stream()
-                .flatMap(e -> e.splitGroup().stream())
                 .collect(Collectors.groupingBy(Worker::getGroup))
                 .entrySet()
                 .stream()

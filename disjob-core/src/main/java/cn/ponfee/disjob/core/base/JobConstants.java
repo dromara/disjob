@@ -21,12 +21,6 @@ public class JobConstants {
     public static final int PROCESS_BATCH_SIZE = 200;
 
     /**
-     * Worker multiple group separator, such as "default,test1-group,test2-group"
-     * configured "disjob.worker.group"
-     */
-    public static final String WORKER_MULTIPLE_GROUP_SEPARATOR = ",";
-
-    /**
      * Spring web server port
      */
     public static final String SPRING_WEB_SERVER_PORT = "server.port";
