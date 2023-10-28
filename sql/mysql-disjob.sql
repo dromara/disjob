@@ -32,7 +32,7 @@ FLUSH PRIVILEGES;
 CREATE TABLE `sched_job` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `job_id`              BIGINT         UNSIGNED  NOT NULL                               COMMENT '全局唯一ID',
-  `job_group`           VARCHAR(60)              NOT NULL                               COMMENT 'Job分组(用于分配给同组下的Worker执行)',
+  `job_group`           VARCHAR(60)              NOT NULL                               COMMENT 'Job分组(用于分派给同组下的Worker执行)',
   `job_name`            VARCHAR(60)              NOT NULL                               COMMENT 'Job名称',
   `job_type`            TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT 'Job类型：1-普通(Normal)；2-工作流(DAG)；',
   `job_state`           TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT 'Job状态：0-禁用；1-启用；',
@@ -48,7 +48,7 @@ CREATE TABLE `sched_job` (
   `execute_timeout`     INT            UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '执行超时时间(毫秒)，若大于0则执行超时会中断任务',
   `collided_strategy`   TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务（丢弃本次任务，继续执行上次任务）；',
   `misfire_strategy`    TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '过期策略：1-触发最近一次；2-丢弃；3-触发所有；',
-  `route_strategy`      TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '任务分配给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；',
+  `route_strategy`      TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '任务分派给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；',
   `last_trigger_time`   BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '最近一次的触发时间(毫秒时间戳)',
   `next_trigger_time`   BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '下一次的触发时间(毫秒时间戳)',
   `next_scan_time`      DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '下一次的扫描时间',

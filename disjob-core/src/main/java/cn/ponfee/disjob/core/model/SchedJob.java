@@ -39,7 +39,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Long jobId;
 
     /**
-     * Job分组(用于分配给同组下的Worker执行)
+     * Job分组(用于分派给同组下的Worker执行)
      */
     private String jobGroup;
 
@@ -131,7 +131,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer misfireStrategy;
 
     /**
-     * 任务分配给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；
+     * 任务分派给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；
      *
      * @see RouteStrategy
      */

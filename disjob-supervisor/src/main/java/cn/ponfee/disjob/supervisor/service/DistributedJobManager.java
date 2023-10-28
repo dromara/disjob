@@ -107,7 +107,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     @Override
     protected boolean cancelWaitingTask(long taskId) {
-        return taskMapper.terminate(taskId, null, ExecuteState.WAITING_CANCELED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
+        return taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
     }
 
     public void savepoint(long taskId, String executeSnapshot) {

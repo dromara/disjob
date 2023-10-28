@@ -118,7 +118,7 @@ public final class Worker extends Server {
     }
 
     /**
-     * 判断当前Worker机器的group是否匹配任务分配的group
+     * 判断当前Worker的group是否匹配任务分派的Worker的group
      *
      * @param taskGroup the task group
      * @return {@code true} if matched
