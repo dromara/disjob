@@ -99,7 +99,7 @@ public class DistributedJobManager extends AbstractJobManager {
         this.workflowMapper = workflowMapper;
     }
 
-    // ------------------------------------------------------------------database single operation without transactional
+    // ------------------------------------------------------------------database single operation without spring transactional
 
     public boolean renewInstanceUpdateTime(SchedInstance instance, Date updateTime) {
         return instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()) == AFFECTED_ONE_ROW;
@@ -114,7 +114,7 @@ public class DistributedJobManager extends AbstractJobManager {
         Assert.state(taskMapper.savepoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW, () -> "Save point failed: " + taskId + " | " + executeSnapshot);
     }
 
-    // ------------------------------------------------------------------database operation within transactional
+    // ------------------------------------------------------------------database operation within spring transactional
 
     /**
      * Manual trigger the sched job

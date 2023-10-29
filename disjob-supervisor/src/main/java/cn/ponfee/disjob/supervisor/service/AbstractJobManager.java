@@ -64,7 +64,7 @@ public abstract class AbstractJobManager {
     private final TaskDispatcher taskDispatcher;
     private final WorkerCoreRpcClient workerCoreRpcClient;
 
-    // ------------------------------------------------------------------database single operation without transactional
+    // ------------------------------------------------------------------database single operation without spring transactional
 
     public boolean disableJob(SchedJob job) {
         return jobMapper.disable(job) == AFFECTED_ONE_ROW;
@@ -82,7 +82,7 @@ public abstract class AbstractJobManager {
         return jobMapper.updateNextScanTime(schedJob) == AFFECTED_ONE_ROW;
     }
 
-    // ------------------------------------------------------------------database operation within transactional
+    // ------------------------------------------------------------------database operation within spring transactional
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) throws JobCheckedException {
