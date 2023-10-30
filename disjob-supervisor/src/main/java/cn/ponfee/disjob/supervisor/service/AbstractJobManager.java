@@ -20,7 +20,6 @@ import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-import cn.ponfee.disjob.core.param.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -198,7 +197,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, job);
+        ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job);
         List<ExecuteTaskParam> list;
         if (RouteStrategy.BROADCAST.equals(job.getRouteStrategy())) {
             list = new ArrayList<>(tasks.size());

@@ -9,10 +9,7 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.PooledObjectProcessor;
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
+import groovy.lang.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineFactory;
 
@@ -39,6 +36,11 @@ public final class GroovyUtils {
      */
     private static final Map<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
 
+    /**
+     * Groovy shell
+     */
+    private static final GroovyShell GROOVY_SHELL = new GroovyShell();
+
     public static <T> Class<T> parseClass(String sourceCode) {
         String sha1 = DigestUtils.sha1Hex(sourceCode);
         return (Class<T>) CLASS_CACHE.computeIfAbsent(sha1, key -> CLASS_LOADER.parseClass(sourceCode));
@@ -50,19 +52,32 @@ public final class GroovyUtils {
     public enum Evaluator {
 
         /**
+         * Groovy scrip closure
+         */
+        CLOSURE() {
+            final Map<String, Script> scripCache = new ConcurrentHashMap<>();
+
+            @Override
+            protected <T> T evaluate(String scriptText, Map<String, Object> params) {
+                Script script = scripCache.computeIfAbsent(scriptText, GROOVY_SHELL::parse);
+                Closure<?> closure = (Closure<?>) script.run();
+                return (T) closure.call(params);
+            }
+        },
+
+        /**
          * Groovy script based GroovyShell，使用自定义对象池处理器
          *
          * <p>方法调用方式一：groovyShell.invokeMethod(methodName, args);
          * <p>方法调用方式二：script.invokeMethod(methodName, args);
          */
         SHELL() {
-            final GroovyShell groovyShell = new GroovyShell();
-            final PooledObjectProcessor<String, Script> processor = new PooledObjectProcessor<>(10, groovyShell::parse);
+            final PooledObjectProcessor<String, Script> pool = new PooledObjectProcessor<>(10, GROOVY_SHELL::parse);
 
             @Override
             protected <T> T evaluate(String scriptText, Map<String, Object> params) throws Exception {
                 // return (T) new GroovyShell(new Binding(params)).evaluate(scriptText);
-                return processor.process(scriptText, script -> {
+                return pool.process(scriptText, script -> {
                     script.setBinding(new Binding(params));
                     return (T) script.run();
                 });

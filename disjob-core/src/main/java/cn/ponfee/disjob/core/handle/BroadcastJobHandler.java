@@ -21,7 +21,7 @@ public abstract class BroadcastJobHandler extends JobHandler {
 
     @Override
     public final List<SplitTask> split(String jobParam) throws JobCheckedException {
-        throw new UnsupportedOperationException("Broadcast job handler unsupported split.");
+        throw new UnsupportedOperationException("Broadcast job handler unsupported split operation.");
     }
 
 }

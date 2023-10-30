@@ -38,7 +38,7 @@ public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
     OVERRIDE(3, "覆盖上次任务"),
 
     /**
-     * 丢弃本次任务（丢弃本次任务，继续执行上次任务）
+     * 丢弃本次任务
      */
     DISCARD(4, "丢弃本次任务"),
 

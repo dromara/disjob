@@ -8,7 +8,6 @@ SET NAMES utf8mb4;
 -- ----------------------------
 -- CREATE DATABASE
 -- ----------------------------
--- DROP DATABASE IF EXISTS disjob_admin;
 CREATE DATABASE IF NOT EXISTS disjob_admin DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 USE disjob_admin;
 

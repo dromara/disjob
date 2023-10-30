@@ -46,7 +46,7 @@ CREATE TABLE `sched_job` (
   `trigger_type`        TINYINT        UNSIGNED  NOT NULL                               COMMENT '触发器类型：1-Cron表达式；2-指定时间；3-固定周期；4-任务依赖；',
   `trigger_value`       VARCHAR(255)             NOT NULL                               COMMENT '触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-父任务job_id(多个逗号分隔)；',
   `execute_timeout`     INT            UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '执行超时时间(毫秒)，若大于0则执行超时会中断任务',
-  `collided_strategy`   TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务（丢弃本次任务，继续执行上次任务）；',
+  `collided_strategy`   TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；',
   `misfire_strategy`    TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '过期策略：1-触发最近一次；2-丢弃；3-触发所有；',
   `route_strategy`      TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '任务分派给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；',
   `last_trigger_time`   BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '最近一次的触发时间(毫秒时间戳)',
@@ -67,6 +67,20 @@ CREATE TABLE `sched_job` (
   KEY `ix_createdat` (`created_at`),
   KEY `ix_updatedat` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度配置表';
+
+CREATE TABLE `sched_depend` (
+  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
+  `parent_job_id`       BIGINT         UNSIGNED  NOT NULL                               COMMENT '父job_id',
+  `child_job_id`        BIGINT         UNSIGNED  NOT NULL                               COMMENT '子job_id',
+  `sequence`            INT            UNSIGNED  NOT NULL                               COMMENT '序号(从1开始)',
+  `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
+  `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_parentjobid_childjobid` (`parent_job_id`, `child_job_id`),
+  UNIQUE KEY `uk_childjobid_sequence` (`child_job_id`, `sequence`),
+  KEY `ix_createdat` (`created_at`),
+  KEY `ix_updatedat` (`updated_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度依赖表';
 
 CREATE TABLE `sched_instance` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
@@ -121,20 +135,6 @@ CREATE TABLE `sched_task` (
   KEY `ix_createdat` (`created_at`),
   KEY `ix_updatedat` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度任务表';
-
-CREATE TABLE `sched_depend` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
-  `parent_job_id`       BIGINT         UNSIGNED  NOT NULL                               COMMENT '父job_id',
-  `child_job_id`        BIGINT         UNSIGNED  NOT NULL                               COMMENT '子job_id',
-  `sequence`            INT            UNSIGNED  NOT NULL                               COMMENT '序号(从1开始)',
-  `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
-  `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_parentjobid_childjobid` (`parent_job_id`, `child_job_id`),
-  UNIQUE KEY `uk_childjobid_sequence` (`child_job_id`, `sequence`),
-  KEY `ix_createdat` (`created_at`),
-  KEY `ix_updatedat` (`updated_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度依赖表';
 
 CREATE TABLE `sched_workflow` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',

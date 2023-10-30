@@ -11,6 +11,7 @@ package cn.ponfee.disjob.core.param;
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.util.Bytes;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;
@@ -18,6 +19,7 @@ import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
+import cn.ponfee.disjob.core.model.InstanceAttach;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import com.fasterxml.jackson.core.JsonParser;
@@ -110,13 +112,12 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         this.jobHandler = jobHandler;
     }
 
-    public static ExecuteTaskParamBuilder builder(SchedInstance instance,
-                                                  Function<Long, SchedJob> jobLoader) {
+    public static Builder builder(SchedInstance instance, Function<Long, SchedJob> jobLoader) {
         return builder(instance, LazyLoader.of(SchedJob.class, jobLoader, instance.getJobId()));
     }
 
-    public static ExecuteTaskParamBuilder builder(SchedInstance instance, SchedJob schedJob) {
-        return new ExecuteTaskParamBuilder(instance, schedJob);
+    public static Builder builder(SchedInstance instance, SchedJob schedJob) {
+        return new Builder(instance, schedJob);
     }
 
     // ---------------------------------------------------------getter/setter
@@ -311,6 +312,43 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         );
         param.setWorker(worker);
         return param;
+    }
+
+    public static class Builder {
+        private final SchedInstance instance;
+        private final SchedJob job;
+
+        private Builder(SchedInstance instance, SchedJob schedJob) {
+            this.instance = instance;
+            this.job = schedJob;
+        }
+
+        public ExecuteTaskParam build(Operations ops, long taskId, long triggerTime, Worker worker) {
+            String jobHandler;
+            if (instance.getWnstanceId() != null) {
+                Assert.hasText(instance.getAttach(), () -> "Workflow node instance attach cannot be null: " + instance.getInstanceId());
+                InstanceAttach attach = Jsons.fromJson(instance.getAttach(), InstanceAttach.class);
+                jobHandler = DAGNode.fromString(attach.getCurNode()).getName();
+            } else {
+                jobHandler = job.getJobHandler();
+            }
+
+            ExecuteTaskParam param = new ExecuteTaskParam(
+                ops,
+                taskId,
+                instance.getInstanceId(),
+                instance.getWnstanceId(),
+                triggerTime,
+                job.getJobId(),
+                JobType.of(job.getJobType()),
+                RouteStrategy.of(job.getRouteStrategy()),
+                job.getExecuteTimeout(),
+                jobHandler
+            );
+            param.setWorker(worker);
+
+            return param;
+        }
     }
 
 }

@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.common.util;
 
 import com.google.common.collect.ImmutableMap;
+import groovy.lang.GroovyShell;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -39,9 +40,41 @@ public class GroovyUtilsTest {
 
     @Test
     public void test() throws Exception {
-        assertThat(GroovyUtils.Evaluator.SHELL .eval(SCRIPT_TEXT, PARAMS).toString()).isEqualTo(RESULT);
-        assertThat(GroovyUtils.Evaluator.SCRIPT.eval(SCRIPT_TEXT, PARAMS).toString()).isEqualTo(RESULT);
-        assertThat(GroovyUtils.Evaluator.CLASS .eval(SCRIPT_TEXT, PARAMS).toString()).isEqualTo(RESULT);
+        assertThat((String) GroovyUtils.Evaluator. SHELL.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
+        assertThat((String) GroovyUtils.Evaluator.SCRIPT.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
+        assertThat((String) GroovyUtils.Evaluator. CLASS.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
+
+        String closureScript =
+            "import cn.ponfee.disjob.common.util.Jsons; " +
+            "{it -> Jsons.toJson(it.get('list')) + (it.get('a') + it.get('b')) + it.get('str').length()}";
+        assertThat((String) GroovyUtils.Evaluator.CLOSURE.eval(closureScript, PARAMS)).isEqualTo(RESULT);
+    }
+
+    @Test
+    public void testClosureAdd() {
+        GroovyShell groovyShell = new GroovyShell();
+        // Math::sqrt
+        groovy.lang.Closure<?> closure = (groovy.lang.Closure<?>) groovyShell.parse("{a,b -> a+b}").run();
+        Object result = closure.call(2, 3);
+        System.out.println("type: " + result.getClass() + ", value: " + result);
+    }
+
+    @Test
+    public void testClosureReduce() {
+        GroovyShell groovyShell = new GroovyShell();
+        // Math::sqrt
+        groovy.lang.Closure<?> closure = (groovy.lang.Closure<?>) groovyShell.parse("{it -> it.stream().reduce(0, Integer::sum)}").run();
+        Object result = closure.call(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        System.out.println("type: " + result.getClass() + ", value: " + result);
+    }
+
+    @Test
+    public void testClosureSqrt() {
+        GroovyShell groovyShell = new GroovyShell();
+        // {it -> Math.sqrt(it)}
+        groovy.lang.Closure<?> closure = (groovy.lang.Closure<?>) groovyShell.parse("Math::sqrt").run();
+        Object result = closure.call(2);
+        System.out.println("type: " + result.getClass() + ", value: " + result);
     }
 
     @Test

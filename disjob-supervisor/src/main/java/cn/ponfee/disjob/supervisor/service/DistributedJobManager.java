@@ -862,7 +862,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operations ops) {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
-        ExecuteTaskParamBuilder builder = ExecuteTaskParam.builder(instance, jobMapper::get);
+        ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, jobMapper::get);
         // immediate trigger
         long triggerTime = 0L;
         for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId())) {
