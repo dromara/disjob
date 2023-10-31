@@ -14,7 +14,8 @@ import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import cn.ponfee.disjob.core.util.ProcessUtils;
+import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.common.util.ProcessUtils;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,19 +55,31 @@ public class ScriptJobHandler extends JobHandler {
     private static final String[] DOWNLOAD_PROTOCOL = {"http://", "https://", "ftp://"};
     private static final String WORKER_SCRIPT_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";
 
+    private Charset charset;
+    private Long pid;
+
+    @Override
+    protected void onStop() {
+        if (pid != null) {
+            ProcessUtils.killProcess(pid, charset);
+        }
+    }
+
     @Override
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         ScriptParam scriptParam = Jsons.JSON5.readValue(executingTask.getTaskParam(), ScriptParam.class);
         Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
-        Charset charset = Files.charset(scriptParam.charset);
+        this.charset = Files.charset(scriptParam.charset);
 
         String scriptFileName = scriptParam.type.buildFileName(executingTask.getTaskId());
         String scriptPath = prepareScriptFile(scriptParam.script, scriptFileName, charset);
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
-        return ProcessUtils.complete(process, charset, executingTask, LOG);
+        this.pid = ProcessUtils.getProcessId(process);
+        LOG.info("Script process id: {} | {}", executingTask.getTaskId(), pid);
+        return JobUtils.completeProcess(process, charset, executingTask, LOG);
     }
 
     public enum ScriptType {

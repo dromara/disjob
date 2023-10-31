@@ -33,12 +33,6 @@
       <artifactId>spring-boot-starter-data-redis</artifactId>
       <optional>true</optional>
     </dependency>
-    <!-- OS process operation -->
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>${jna-platform.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-ui</artifactId>

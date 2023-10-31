@@ -14,7 +14,8 @@ import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import cn.ponfee.disjob.core.util.ProcessUtils;
+import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.common.util.ProcessUtils;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,16 +50,28 @@ import java.nio.charset.Charset;
 public class CommandJobHandler extends JobHandler {
     private final static Logger LOG = LoggerFactory.getLogger(CommandJobHandler.class);
 
+    private Charset charset;
+    private Long pid;
+
+    @Override
+    protected void onStop() {
+        if (pid != null) {
+            ProcessUtils.killProcess(pid, charset);
+        }
+    }
+
     @Override
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         String taskParam = executingTask.getTaskParam();
         Assert.hasText(taskParam, "Command param cannot be empty.");
         CommandParam commandParam = Jsons.JSON5.readValue(taskParam, CommandParam.class);
         Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");
-        Charset charset = Files.charset(commandParam.charset);
+        this.charset = Files.charset(commandParam.charset);
 
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
-        return ProcessUtils.complete(process, charset, executingTask, LOG);
+        this.pid = ProcessUtils.getProcessId(process);
+        LOG.info("Command process id: {} | {}", executingTask.getTaskId(), pid);
+        return JobUtils.completeProcess(process, charset, executingTask, LOG);
     }
 
     @Data

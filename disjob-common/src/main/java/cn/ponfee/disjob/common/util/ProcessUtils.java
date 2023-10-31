@@ -6,15 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.util;
+package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.exception.Throwables;
-import cn.ponfee.disjob.common.util.Fields;
-import cn.ponfee.disjob.common.util.Files;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.handle.ExecuteResult;
-import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
@@ -30,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
@@ -53,32 +46,6 @@ public final class ProcessUtils {
             process.destroy();
         } catch (Throwable t) {
             LOG.error("Destroy process " + process.getClass().getName() + " error.", t);
-        }
-    }
-
-    public static ExecuteResult complete(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
-        try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
-            // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
-            String verbose = IOUtils.toString(is, charset);
-            String error = IOUtils.toString(es, charset);
-            int code = process.waitFor();
-            if (code == 0) {
-                return ExecuteResult.success(verbose);
-            } else {
-                return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
-            }
-        } catch (Throwable t) {
-            log.error("Process execute error: " + executingTask, t);
-            Threads.interruptIfNecessary(t);
-            return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
-        } finally {
-            if (process != null) {
-                try {
-                    process.destroy();
-                } catch (Throwable t) {
-                    log.error("Destroy process error: " + executingTask, t);
-                }
-            }
         }
     }
 
@@ -145,31 +112,27 @@ public final class ProcessUtils {
     public static void killProcess(Long pid, Charset charset) {
         try {
             if (SystemUtils.IS_OS_WINDOWS) {
-                List<String> killCommand = Arrays.asList("taskkill", "/PID", String.valueOf(pid), "/F", "/T");
-                Process process = new ProcessBuilder(killCommand).start();
-                try (InputStream input = process.getInputStream()) {
-                    String verbose = IOUtils.toString(input, charset);
-                    LOG.info("Stop windows process verbose: {}", verbose);
-                }
-                destroy(process);
+                Process killProcess = new ProcessBuilder("taskkill", "/PID", String.valueOf(pid), "/F", "/T").start();
+                killProcess.waitFor();
+                LOG.info("Stop windows process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                destroy(killProcess);
             } else if (SystemUtils.IS_OS_UNIX) {
-                // find child process id
-                List<String> killCommand = Arrays.asList("/bin/sh", "-c", String.format("ps axo pid,ppid| awk '{ if($2==%d) print$1}'", pid));
-                Process process = new ProcessBuilder(killCommand).start();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), charset))) {
+                // 1、find child process id
+                String findChildPidCommand = String.format("ps axo pid,ppid | awk '{ if($2==%d) print$1}'", pid);
+                Process findChildPidProcess = new ProcessBuilder("/bin/sh", "-c", findChildPidCommand).start();
+                findChildPidProcess.waitFor();
+                try (InputStream inputStream = findChildPidProcess.getInputStream()) {
                     // stop all child process
-                    String childPid;
-                    while ((childPid = reader.readLine()) != null) {
-                        if (StringUtils.isNotBlank(childPid)) {
-                            killProcess(Long.valueOf(childPid.trim()), charset);
-                        }
-                    }
+                    List<String> childPidList = IOUtils.readLines(inputStream, charset);
+                    childPidList.stream().filter(StringUtils::isNotBlank).forEach(e -> killProcess(Long.parseLong(e.trim()), charset));
                 }
-                // kill current process id
-                ProcessBuilder killProcessBuilder = new ProcessBuilder("kill", "-9", String.valueOf(pid));
-                killProcessBuilder.start().waitFor();
-                LOG.info("Stop unix process id: {}", pid);
-                destroy(process);
+                destroy(findChildPidProcess);
+
+                // 2、kill current process id
+                Process killProcess = new ProcessBuilder("kill", "-9", String.valueOf(pid)).start();
+                killProcess.waitFor();
+                LOG.info("Stop unix process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                destroy(killProcess);
             } else {
                 LOG.error("Stop process id unknown os name: {}, {}", SystemUtils.OS_NAME, pid);
             }
@@ -190,6 +153,12 @@ public final class ProcessUtils {
             }
         } catch (IOException e) {
             consumer.accept("Read output error: " + ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    private static String processVerbose(Process process, Charset charset) throws IOException {
+        try (InputStream input = process.getInputStream()) {
+            return IOUtils.toString(input, charset);
         }
     }
 

@@ -60,6 +60,13 @@
       <artifactId>groovy-jsr223</artifactId>
     </dependency>
 
+    <!-- OS process operation -->
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>${jna-platform.version}</version>
+    </dependency>
+
     <!-- spring dependencies -->
     <dependency>
       <groupId>org.springframework</groupId>
