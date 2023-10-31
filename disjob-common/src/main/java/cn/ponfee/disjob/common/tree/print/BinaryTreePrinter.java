@@ -144,6 +144,62 @@ public class BinaryTreePrinter<T> {
         }
     }
 
+    public static <T> Builder<T> builder(Function<T, String> nodeLabel, Function<T, T> leftChild, Function<T, T> rightChild) {
+        return new Builder<>(nodeLabel, leftChild, rightChild);
+    }
+
+    public static class Builder<T> {
+        private final Function<T, String> nodeLabel;
+        private final Function<T, T> leftChild;
+        private final Function<T, T> rightChild;
+
+        private Appendable output = System.out;
+        private Branch branch = Branch.RECTANGLE;
+        private boolean directed = true;
+        private int nodeSpace = 2;
+        private int treeSpace = 5;
+
+        private Builder(Function<T, String> nodeLabel, Function<T, T> leftChild, Function<T, T> rightChild) {
+            this.nodeLabel = nodeLabel;
+            this.leftChild = leftChild;
+            this.rightChild = rightChild;
+        }
+
+        public Builder<T> output(Appendable output) {
+            this.output = output;
+            return this;
+        }
+
+        public Builder<T> branch(Branch branch) {
+            this.branch = branch;
+            return this;
+        }
+
+        public Builder<T> directed(boolean directed) {
+            this.directed = directed;
+            return this;
+        }
+
+        public Builder<T> nodeSpace(int nodeSpace) {
+            this.nodeSpace = nodeSpace;
+            return this;
+        }
+
+        public Builder<T> treeSpace(int treeSpace) {
+            this.treeSpace = treeSpace;
+            return this;
+        }
+
+        public BinaryTreePrinter<T> build() {
+            return new BinaryTreePrinter<>(
+                output, nodeLabel, leftChild, rightChild,
+                branch, directed, nodeSpace, treeSpace
+            );
+        }
+    }
+
+    // --------------------------------------------------------------------private methods
+
     private void printTreeLines(List<TreeLine> treeLines) throws IOException {
         if (treeLines.size() <= 0) {
             return;

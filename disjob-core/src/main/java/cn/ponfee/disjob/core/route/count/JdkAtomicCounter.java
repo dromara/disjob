@@ -39,7 +39,8 @@ public class JdkAtomicCounter extends AtomicCounter {
     }
 
     @Override
-    public long getAndAdd(long delta) {
-        return counter.getAndAdd(delta);
+    public long addAndGet(long delta) {
+        return counter.addAndGet(delta);
     }
+
 }

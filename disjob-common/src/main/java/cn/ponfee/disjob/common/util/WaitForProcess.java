@@ -24,8 +24,9 @@ public class WaitForProcess {
     }
 
     public static boolean process(int round, long[] sleepMillis, boolean caught, BooleanSupplier processor) {
+        int lastIndex = sleepMillis.length - 1;
         for (int i = 0; i < round; i++) {
-            long sleepTime = get(sleepMillis, i);
+            long sleepTime = sleepMillis[Math.min(i, lastIndex)];
             if (sleepTime > 0) {
                 if (caught) {
                     ThrowingRunnable.execute(() -> Thread.sleep(sleepTime));
@@ -39,10 +40,6 @@ public class WaitForProcess {
         }
 
         return false;
-    }
-
-    private static long get(long[] array, int index) {
-        return index < array.length ? array[index] : array[array.length - 1];
     }
 
 }

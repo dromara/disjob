@@ -11,6 +11,7 @@ package cn.ponfee.disjob.core.util;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.util.NetUtils;
+import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
@@ -35,7 +36,7 @@ public class JobUtils {
             String verbose = IOUtils.toString(is, charset);
             String error = IOUtils.toString(es, charset);
             int code = process.waitFor();
-            if (code == 0) {
+            if (code == ProcessUtils.SUCCESS_CODE) {
                 return ExecuteResult.success(verbose);
             } else {
                 return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);

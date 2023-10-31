@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.core.route.count;
 
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
-import cn.ponfee.disjob.common.util.Numbers;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
@@ -25,21 +25,19 @@ public class RedisAtomicCounter extends AtomicCounter {
 
     public RedisAtomicCounter(String redisCounterKey,
                               StringRedisTemplate stringRedisTemplate) {
-        this.counterRedisKey = "route:counter:" + redisCounterKey;
+        this.counterRedisKey = "disjob:route:counter:" + redisCounterKey;
         this.stringRedisTemplate = stringRedisTemplate;
         this.redisKeyRenewal = new RedisKeyRenewal(stringRedisTemplate, counterRedisKey);
-
-        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(counterRedisKey))) {
-            // initialize
-            set(1);
-        }
     }
 
     @Override
     public long get() {
         String ret = stringRedisTemplate.opsForValue().get(counterRedisKey);
+        if (StringUtils.isBlank(ret)) {
+            return 0;
+        }
         redisKeyRenewal.renewIfNecessary();
-        return Numbers.toLong(ret);
+        return Long.parseLong(ret);
     }
 
     @Override
@@ -49,7 +47,7 @@ public class RedisAtomicCounter extends AtomicCounter {
     }
 
     @Override
-    public long getAndAdd(long delta) {
+    public long addAndGet(long delta) {
         Long value = stringRedisTemplate.opsForValue().increment(counterRedisKey, delta);
         redisKeyRenewal.renewIfNecessary();
         return value == null ? 0 : value;

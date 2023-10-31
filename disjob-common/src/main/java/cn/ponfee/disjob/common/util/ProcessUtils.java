@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Process execute utility.
@@ -37,6 +38,7 @@ public final class ProcessUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
     private static final long INVALID_PID = -1L;
+    public static final int SUCCESS_CODE = 0;
 
     public static void destroy(Process process) {
         if (process == null) {
@@ -113,14 +115,14 @@ public final class ProcessUtils {
         try {
             if (SystemUtils.IS_OS_WINDOWS) {
                 Process killProcess = new ProcessBuilder("taskkill", "/PID", String.valueOf(pid), "/F", "/T").start();
-                killProcess.waitFor();
+                waitFor(killProcess, () -> "kill process id " + pid);
                 LOG.info("Stop windows process verbose: {} | {}", pid, processVerbose(killProcess, charset));
                 destroy(killProcess);
             } else if (SystemUtils.IS_OS_UNIX) {
                 // 1、find child process id
                 String findChildPidCommand = String.format("ps axo pid,ppid | awk '{ if($2==%d) print$1}'", pid);
                 Process findChildPidProcess = new ProcessBuilder("/bin/sh", "-c", findChildPidCommand).start();
-                findChildPidProcess.waitFor();
+                waitFor(findChildPidProcess, () -> "find child process id for " + pid);
                 try (InputStream inputStream = findChildPidProcess.getInputStream()) {
                     // stop all child process
                     List<String> childPidList = IOUtils.readLines(inputStream, charset);
@@ -130,7 +132,7 @@ public final class ProcessUtils {
 
                 // 2、kill current process id
                 Process killProcess = new ProcessBuilder("kill", "-9", String.valueOf(pid)).start();
-                killProcess.waitFor();
+                waitFor(killProcess, () -> "kill process id " + pid);
                 LOG.info("Stop unix process verbose: {} | {}", pid, processVerbose(killProcess, charset));
                 destroy(killProcess);
             } else {
@@ -159,6 +161,13 @@ public final class ProcessUtils {
     private static String processVerbose(Process process, Charset charset) throws IOException {
         try (InputStream input = process.getInputStream()) {
             return IOUtils.toString(input, charset);
+        }
+    }
+
+    private static void waitFor(Process process,  Supplier<String> messageSupplier) throws InterruptedException {
+        int code = process.waitFor();
+        if (code != SUCCESS_CODE) {
+            LOG.error("Process execute failed[{}]: {}", code, messageSupplier.get());
         }
     }
 

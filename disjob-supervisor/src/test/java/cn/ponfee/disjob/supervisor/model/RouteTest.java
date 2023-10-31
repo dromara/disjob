@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.util.Numbers;
+import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.route.count.AtomicCounter;
 import cn.ponfee.disjob.core.route.count.JdkAtomicCounter;
 import cn.ponfee.disjob.core.route.count.RedisAtomicCounter;
@@ -27,7 +28,7 @@ public class RouteTest extends SpringBootTestBase<StringRedisTemplate> {
         AtomicCounter counter = new JdkAtomicCounter(10);
         Assertions.assertEquals(10, counter.get());
         Assertions.assertEquals(10, counter.getAndIncrement());
-        Assertions.assertEquals(11, counter.getAndAdd(5));
+        Assertions.assertEquals(16, counter.addAndGet(5));
         Assertions.assertEquals(16, counter.get());
         counter.set(100);
         Assertions.assertEquals(100, counter.get());
@@ -35,17 +36,23 @@ public class RouteTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void testRedisAtomicCounter() {
-        String key = "key_counter";
-        bean.opsForValue().set(key, "10");
-        Assertions.assertEquals(10, Numbers.toLong(bean.opsForValue().get(key)));
-        Assertions.assertEquals(11, bean.opsForValue().increment(key));
-        Assertions.assertEquals(12, bean.opsForValue().increment(key));
+        String key1 = "disjob:counter1:" + ObjectUtils.uuid32();
+        bean.opsForValue().set(key1, "10");
+        Assertions.assertEquals(10, Numbers.toLong(bean.opsForValue().get(key1)));
+        Assertions.assertEquals(11, bean.opsForValue().increment(key1));
+        Assertions.assertEquals(12, bean.opsForValue().increment(key1));
 
-        RedisAtomicCounter counter = new RedisAtomicCounter("test", bean);
-        long init = counter.get();
-        Assertions.assertEquals(1 + init, counter.getAndIncrement());
-        Assertions.assertEquals(6 + init, counter.getAndAdd(5));
-        Assertions.assertEquals(6 + init, counter.get());
+        String key2 = "disjob:counter2:" + ObjectUtils.uuid32();
+        Assertions.assertNull(bean.opsForValue().get(key2));
+        Assertions.assertEquals(1, bean.opsForValue().increment(key2));
+        Assertions.assertEquals(2, bean.opsForValue().increment(key2));
+
+        RedisAtomicCounter counter = new RedisAtomicCounter("disjob:counter3:" + ObjectUtils.uuid32(), bean);
+        long initValue = counter.get();
+        Assertions.assertEquals(initValue, counter.getAndIncrement());
+        Assertions.assertEquals(1, counter.get());
+        Assertions.assertEquals(6 + initValue, counter.addAndGet(5));
+        Assertions.assertEquals(6 + initValue, counter.get());
         counter.set(100);
         Assertions.assertEquals(100, counter.get());
     }

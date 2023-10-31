@@ -23,27 +23,45 @@ public abstract class AtomicCounter {
     public abstract long get();
 
     /**
-     * Sets a new value to count.
+     * Sets a new value.
      *
-     * @param newValue the new value
+     * @param newValue newly value
      */
     public abstract void set(long newValue);
 
     /**
-     * Gets the current count value and then add one.
+     * Gets the current value and then add one.
      *
-     * @return current count value
+     * @return current value
      */
     public final long getAndIncrement() {
-        return getAndAdd(1);
+        return addAndGet(1) - 1;
     }
 
     /**
-     * Gets the current count value and then add specified number of delta.
+     * Add one and get the new value.
+     *
+     * @return newly value
+     */
+    public final long incrementAndGet() {
+        return addAndGet(1);
+    }
+
+    /**
+     * Gets the current value and then add delta number.
+     *
+     * @return current value
+     */
+    public final long getAndAdd(long delta) {
+        return addAndGet(delta) - delta;
+    }
+
+    /**
+     * Add specified delta number and get the new value.
      *
      * @param delta the number of delta
-     * @return current count value
+     * @return newly value
      */
-    public abstract long getAndAdd(long delta);
+    public abstract long addAndGet(long delta);
 
 }
