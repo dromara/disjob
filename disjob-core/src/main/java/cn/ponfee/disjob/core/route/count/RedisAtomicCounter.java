@@ -12,6 +12,8 @@ import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.util.function.Function;
+
 /**
  * Atomic counter based redis INCRBY command.
  *
@@ -23,9 +25,16 @@ public class RedisAtomicCounter extends AtomicCounter {
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisKeyRenewal redisKeyRenewal;
 
-    public RedisAtomicCounter(String redisCounterKey,
+    /**
+     * Function<String, AtomicCounter>: group -> new RedisAtomicCounter(group, stringRedisTemplate)
+     *
+     * @param group               the job group
+     * @param stringRedisTemplate the StringRedisTemplate
+     * @see cn.ponfee.disjob.core.route.RoundRobinExecutionRouter#RoundRobinExecutionRouter(Function)
+     */
+    public RedisAtomicCounter(String group,
                               StringRedisTemplate stringRedisTemplate) {
-        this.counterRedisKey = "disjob:route:counter:" + redisCounterKey;
+        this.counterRedisKey = "disjob:route:counter:" + group;
         this.stringRedisTemplate = stringRedisTemplate;
         this.redisKeyRenewal = new RedisKeyRenewal(stringRedisTemplate, counterRedisKey);
     }

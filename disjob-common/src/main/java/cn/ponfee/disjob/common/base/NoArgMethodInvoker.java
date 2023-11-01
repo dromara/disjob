@@ -11,7 +11,6 @@ package cn.ponfee.disjob.common.base;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -29,7 +28,7 @@ public final class NoArgMethodInvoker {
      *
      * @param methodNames the no-arg method list
      */
-    public NoArgMethodInvoker(@Nonnull String... methodNames) {
+    public NoArgMethodInvoker(String... methodNames) {
         if (methodNames == null || methodNames.length == 0) {
             throw new IllegalArgumentException("Must be specified least once no-arg method name.");
         }

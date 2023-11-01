@@ -43,7 +43,7 @@ public abstract class AtomicCounter {
      * @return current value
      */
     public final long getAndIncrement() {
-        return addAndGet(1) - 1;
+        return getAndAdd(1);
     }
 
     /**

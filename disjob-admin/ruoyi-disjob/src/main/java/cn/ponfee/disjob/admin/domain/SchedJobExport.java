@@ -53,7 +53,7 @@ public class SchedJobExport {
     private Integer jobState;
 
     /**
-     * Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)
+     * Job处理器(支持：处理器类的全限定名、Spring bean name、DAG表达式、处理器源码等)
      */
     @Excel(name = "Job处理器")
     private String jobHandler;

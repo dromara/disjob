@@ -129,6 +129,8 @@ public abstract class TaskDispatcher implements Startable {
         // No-op
     }
 
+    // ------------------------------------------------------------private methods
+
     private boolean doDispatch(List<DispatchParam> params) {
         params.stream()
             .filter(e -> e.executeTaskParam().operation().isTrigger())

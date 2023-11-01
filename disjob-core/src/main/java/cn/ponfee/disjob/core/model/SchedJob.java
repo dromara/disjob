@@ -63,7 +63,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer jobState;
 
     /**
-     * Job处理器(实现处理器接口类的全限定名、Spring bean name、DAG表达式、源码)
+     * Job处理器(支持：处理器类的全限定名、Spring bean name、DAG表达式、处理器源码等)
      */
     private String jobHandler;
 
@@ -153,7 +153,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Date nextScanTime;
 
     /**
-     * 连续失败的扫描次数，连续失败次数达到域值自动禁用(set job_state=0)
+     * 连续失败的扫描次数，连续失败次数达到阈值后自动禁用(set job_state=0)
      */
     private Integer failedScanCount;
 
