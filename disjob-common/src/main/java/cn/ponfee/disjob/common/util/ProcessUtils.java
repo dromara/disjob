@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.util;
 
-import cn.ponfee.disjob.common.concurrent.Threads;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
@@ -138,9 +137,11 @@ public final class ProcessUtils {
             } else {
                 LOG.error("Stop process id unknown os name: {}, {}", SystemUtils.OS_NAME, pid);
             }
+        } catch (InterruptedException e) {
+            LOG.error("Kill process id '" + pid + "' interrupted.");
+            ExceptionUtils.rethrow(e);
         } catch (Throwable t) {
             LOG.error("Kill process id '" + pid + "' error.", t);
-            Threads.interruptIfNecessary(t);
         }
     }
 
@@ -164,7 +165,7 @@ public final class ProcessUtils {
         }
     }
 
-    private static void waitFor(Process process,  Supplier<String> messageSupplier) throws InterruptedException {
+    private static void waitFor(Process process, Supplier<String> messageSupplier) throws InterruptedException {
         int code = process.waitFor();
         if (code != SUCCESS_CODE) {
             LOG.error("Process execute failed[{}]: {}", code, messageSupplier.get());

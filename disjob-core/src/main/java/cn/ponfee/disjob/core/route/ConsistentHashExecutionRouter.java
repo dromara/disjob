@@ -14,9 +14,9 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Consistent hash algorithm for execution router
@@ -25,13 +25,13 @@ import java.util.Map;
  */
 public class ConsistentHashExecutionRouter extends ExecutionRouter {
 
-    private final Map<String, Pair<List<Worker>, ConsistentHash<Worker>>> cache = new HashMap<>();
+    private final ConcurrentMap<String, Pair<List<Worker>, ConsistentHash<Worker>>> cache = new ConcurrentHashMap<>();
 
     private final int virtualCount;
     private final ConsistentHash.HashFunction hashFunction;
 
     public ConsistentHashExecutionRouter() {
-        this(47, ConsistentHash.HashFunction.FNV);
+        this(7, ConsistentHash.HashFunction.FNV);
     }
 
     public ConsistentHashExecutionRouter(int virtualCount,
@@ -46,25 +46,35 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
-        ConsistentHash<Worker> consistentHashRouter = getConsistentHash(group, workers);
-        return consistentHashRouter.routeNode(Long.toString(param.getInstanceId()));
+    protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
+        ConsistentHash<Worker> consistentHashRouter = getConsistentHash(workers);
+        tasks.forEach(task -> {
+            String key = Long.toString(task.getTaskId());
+            task.setWorker(consistentHashRouter.routeNode(key));
+        });
     }
 
-    private ConsistentHash<Worker> getConsistentHash(String group, List<Worker> workers) {
+    // ------------------------------------------------------private methods
+
+    private ConsistentHash<Worker> getConsistentHash(List<Worker> workers) {
+        String group = workers.get(0).getGroup();
         Pair<List<Worker>, ConsistentHash<Worker>> pair = cache.get(group);
         if (pair != null && pair.getLeft() == workers) {
             return pair.getRight();
         }
 
-        synchronized (this) {
-            if ((pair = cache.get(group)) != null && pair.getLeft() == workers) {
-                return pair.getRight();
+        synchronized (group.intern()) {
+            if ((pair = cache.get(group)) == null) {
+                pair = Pair.of(workers, new ConsistentHash<>(workers, virtualCount, Worker::serialize, hashFunction));
+                cache.put(group, pair);
+            } else if (pair.getLeft() != workers) {
+                ConsistentHash<Worker> router = pair.getRight();
+                List<Worker> oldWorkers = pair.getLeft();
+                List<Worker> newWorkers = workers;
+                oldWorkers.stream().filter(e -> !newWorkers.contains(e)).forEach(router::removeNode);
+                newWorkers.stream().filter(e -> !oldWorkers.contains(e)).forEach(e -> router.addNode(e, virtualCount));
             }
-            int vc = workers.size() == 1 ? 1 : virtualCount;
-            ConsistentHash<Worker> router = new ConsistentHash<>(workers, vc, Worker::serialize, hashFunction);
-            cache.put(group, Pair.of(workers, router));
-            return router;
+            return pair.getRight();
         }
     }
 

@@ -30,6 +30,14 @@ public abstract class AtomicCounter {
     public abstract void set(long newValue);
 
     /**
+     * Add specified delta number and get the new value.
+     *
+     * @param delta the number of delta
+     * @return newly value
+     */
+    public abstract long addAndGet(long delta);
+
+    /**
      * Gets the current value and then add one.
      *
      * @return current value
@@ -55,13 +63,5 @@ public abstract class AtomicCounter {
     public final long getAndAdd(long delta) {
         return addAndGet(delta) - delta;
     }
-
-    /**
-     * Add specified delta number and get the new value.
-     *
-     * @param delta the number of delta
-     * @return newly value
-     */
-    public abstract long addAndGet(long delta);
 
 }

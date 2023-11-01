@@ -15,6 +15,9 @@ import cn.ponfee.disjob.core.route.count.AtomicCounter;
 import cn.ponfee.disjob.core.route.count.JdkAtomicCounter;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 /**
  * RoundRobin algorithm for execution router
@@ -23,14 +26,15 @@ import java.util.List;
  */
 public class RoundRobinExecutionRouter extends ExecutionRouter {
 
-    private final AtomicCounter counter;
+    private final ConcurrentMap<String, AtomicCounter> groupedCounterMap = new ConcurrentHashMap<>();
+    private final Function<String, AtomicCounter> counterFactory;
 
     public RoundRobinExecutionRouter() {
-        this(new JdkAtomicCounter());
+        this(group -> new JdkAtomicCounter());
     }
 
-    public RoundRobinExecutionRouter(AtomicCounter counter) {
-        this.counter = counter;
+    public RoundRobinExecutionRouter(Function<String, AtomicCounter> counterFactory) {
+        this.counterFactory = counterFactory;
     }
 
     @Override
@@ -39,8 +43,14 @@ public class RoundRobinExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
-        return workers.get((int) (counter.getAndIncrement() % workers.size()));
+    protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
+        String group = workers.get(0).getGroup();
+        AtomicCounter counter = groupedCounterMap.computeIfAbsent(group, counterFactory);
+        long value = counter.getAndAdd(tasks.size());
+        for (ExecuteTaskParam task : tasks) {
+            int index = (int) (value++ % workers.size());
+            task.setWorker(workers.get(index));
+        }
     }
 
 }

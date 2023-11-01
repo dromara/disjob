@@ -11,6 +11,7 @@ package cn.ponfee.disjob.core.route;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 
@@ -29,27 +30,27 @@ public abstract class ExecutionRouter {
     public abstract RouteStrategy routeStrategy();
 
     /**
-     * Routes one worker
+     * Routes worker for task
      *
-     * @param group   the task job group
-     * @param param   the task execution param
-     * @param workers the list of worker
-     * @return routed worker
+     * @param tasks   the task list
+     * @param workers the worker list
      */
-    public final Worker route(String group, ExecuteTaskParam param, List<Worker> workers) {
-        if (workers == null || workers.isEmpty()) {
-            return null;
+    public final void route(List<ExecuteTaskParam> tasks, List<Worker> workers) {
+        if (CollectionUtils.isEmpty(tasks)) {
+            return;
         }
-        return doRoute(group, param, workers);
+        if (CollectionUtils.isEmpty(workers)) {
+            throw new ExecutionRouterException("Execution route worker list cannot be empty.");
+        }
+        doRoute(tasks, workers);
     }
 
     /**
-     * Routes one worker
+     * Routes worker for task
      *
-     * @param group   the task job group
-     * @param param   the task execution param
-     * @param workers the list of worker
-     * @return routed worker
+     * @param tasks   the task list
+     * @param workers the worker list
      */
-    protected abstract Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers);
+    protected abstract void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers);
+
 }

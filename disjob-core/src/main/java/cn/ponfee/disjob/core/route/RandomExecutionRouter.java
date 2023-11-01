@@ -14,6 +14,7 @@ import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Random algorithm for execution router
@@ -38,8 +39,12 @@ public class RandomExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
-        return workers.get(random.nextInt(workers.size()));
+    protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
+        tasks.forEach(task -> {
+            Random rd = (random != null) ? random : ThreadLocalRandom.current();
+            int index = rd.nextInt(workers.size());
+            task.setWorker(workers.get(index));
+        });
     }
 
 }

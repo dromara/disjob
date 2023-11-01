@@ -32,7 +32,7 @@ public class BroadcastExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
+    protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
         throw new UnsupportedOperationException("Broadcast route strategy must be pre-assign worker.");
     }
 

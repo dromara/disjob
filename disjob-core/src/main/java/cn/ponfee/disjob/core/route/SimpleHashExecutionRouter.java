@@ -25,7 +25,7 @@ public class SimpleHashExecutionRouter extends ExecutionRouter {
     private final ToLongFunction<ExecuteTaskParam> hashFunction;
 
     public SimpleHashExecutionRouter() {
-        this(param -> Math.abs(param.getInstanceId()));
+        this(task -> Math.abs(task.getTaskId()));
     }
 
     public SimpleHashExecutionRouter(ToLongFunction<ExecuteTaskParam> hashFunction) {
@@ -38,8 +38,11 @@ public class SimpleHashExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
-        return workers.get((int) (hashFunction.applyAsLong(param) % workers.size()));
+    protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
+        tasks.forEach(task -> {
+            int index = (int) (hashFunction.applyAsLong(task) % workers.size());
+            task.setWorker(workers.get(index));
+        });
     }
 
 }

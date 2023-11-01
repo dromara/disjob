@@ -22,10 +22,10 @@ import java.util.Objects;
  */
 public class LocalPriorityExecutionRouter extends ExecutionRouter {
 
-    private final ExecutionRouter otherExecutionRouter;
+    private final ExecutionRouter backupRouter;
 
-    public LocalPriorityExecutionRouter(ExecutionRouter otherExecutionRouter) {
-        this.otherExecutionRouter = Objects.requireNonNull(otherExecutionRouter, "Other execution router cannot be null.");
+    public LocalPriorityExecutionRouter(ExecutionRouter backupRouter) {
+        this.backupRouter = Objects.requireNonNull(backupRouter, "Backup router cannot be null.");
     }
 
     @Override
@@ -34,10 +34,14 @@ public class LocalPriorityExecutionRouter extends ExecutionRouter {
     }
 
     @Override
-    protected Worker doRoute(String group, ExecuteTaskParam param, List<Worker> workers) {
+    protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
         // 查找workers列表中是否有当前的jvm worker
         Worker worker = find(workers, Worker.current());
-        return worker != null ? worker : otherExecutionRouter.route(group, param, workers);
+        if (worker != null) {
+            tasks.forEach(task -> task.setWorker(worker));
+        } else {
+            backupRouter.route(tasks, workers);
+        }
     }
 
     private static Worker find(List<Worker> workers, Worker current) {
