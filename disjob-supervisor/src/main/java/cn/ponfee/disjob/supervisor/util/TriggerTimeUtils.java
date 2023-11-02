@@ -12,8 +12,10 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.enums.MisfireStrategy;
 import cn.ponfee.disjob.core.enums.TriggerType;
 import cn.ponfee.disjob.core.model.SchedJob;
+import com.google.common.collect.ImmutableList;
 
 import java.util.Date;
+import java.util.List;
 
 import static cn.ponfee.disjob.common.date.Dates.max;
 
@@ -24,9 +26,7 @@ import static cn.ponfee.disjob.common.date.Dates.max;
  */
 public final class TriggerTimeUtils {
 
-    public static Long computeNextTriggerTime(SchedJob job) {
-        return computeNextTriggerTime(job, new Date());
-    }
+    private static final List<TriggerType> NONE_TYPES = ImmutableList.of(TriggerType.DEPEND, TriggerType.FIXED_DELAY);
 
     /**
      * Returns the next trigger time
@@ -37,7 +37,7 @@ public final class TriggerTimeUtils {
      */
     public static Long computeNextTriggerTime(SchedJob job, Date prev) {
         TriggerType triggerType;
-        if (job == null || (triggerType = TriggerType.of(job.getTriggerType())) == TriggerType.DEPEND) {
+        if (job == null || NONE_TYPES.contains(triggerType = TriggerType.of(job.getTriggerType()))) {
             return null;
         }
 
@@ -46,7 +46,7 @@ public final class TriggerTimeUtils {
         if (triggerType == TriggerType.ONCE) {
             // 1、如果是ONCE则要特殊处理(只执行一次)
             if (last != null) {
-                // already executed once, none next time
+                // already executed once, not has next time
                 return null;
             } else if (misfireStrategy == MisfireStrategy.DISCARD) {
                 next = triggerType.computeNextFireTime(job.getTriggerValue(), prev);

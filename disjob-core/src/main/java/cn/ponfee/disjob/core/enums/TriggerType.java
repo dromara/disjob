@@ -51,7 +51,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     CRON(1, "0/10 * * * * ?", "Cron表达式") {
         @Override
-        public boolean validate(String triggerValue) {
+        public boolean validate0(String triggerValue) {
             return CronExpression.isValidExpression(triggerValue);
         }
 
@@ -87,7 +87,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     ONCE(2, "2000-01-01 00:00:00", "指定时间") {
         @Override
-        public boolean validate(String triggerValue) {
+        public boolean validate0(String triggerValue) {
             try {
                 Dates.DATETIME_FORMAT.parse(triggerValue);
                 return true;
@@ -108,6 +108,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
         @Override
         public List<Date> computeNextFireTimes(String triggerValue, Date startTime, int count) {
+            Assert.isTrue(count == 1, () -> name() + " unsupported compute multiple next fire time: " + count);
             Date nextFireTime = computeNextFireTime(triggerValue, startTime);
             return nextFireTime == null ? Collections.emptyList() : Collections.singletonList(nextFireTime);
         }
@@ -120,7 +121,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     PERIOD(3, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}", "固定周期") {
         @Override
-        public boolean validate(String triggerValue) {
+        public boolean validate0(String triggerValue) {
             try {
                 PeriodTriggerValue conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
                 return conf != null && conf.isValid();
@@ -131,7 +132,12 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
         @Override
         public Date computeNextFireTime(String triggerValue, Date startTime) {
-            return getOne(computeNextFireTimes(triggerValue, startTime, 1));
+            List<Date> list = computeNextFireTimes(triggerValue, startTime, 1);
+            if (CollectionUtils.isEmpty(list)) {
+                return null;
+            }
+            Assert.isTrue(list.size() == 1, () -> name() + " compute too many next fire time.");
+            return list.get(0);
         }
 
         @Override
@@ -163,14 +169,56 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     },
 
     /**
+     * 固定频率：以上一个任务实例的触发时间开始计算，固定在triggerValue毫秒后触发执行下一个任务实例
+     */
+    FIXED_RATE(4, "60000", "固定频率(毫秒)") {
+        @Override
+        public boolean validate0(String triggerValue) {
+            return Long.parseLong(triggerValue) > 0;
+        }
+
+        @Override
+        public Date computeNextFireTime(String triggerValue, Date previousFireTime) {
+            return Dates.plusMillis(previousFireTime, Long.parseLong(triggerValue));
+        }
+
+        @Override
+        public List<Date> computeNextFireTimes(String triggerValue, Date previousFireTime, int count) {
+            List<Date> result = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                result.add(previousFireTime = Dates.plusMillis(previousFireTime, Long.parseLong(triggerValue)));
+            }
+            return result;
+        }
+    },
+
+    /**
+     * 固定延时：以上一个任务实例执行完成时间开始计算，延后triggerValue毫秒后触发执行下一个任务实例
+     */
+    FIXED_DELAY(5, "60000", "固定延时(毫秒)") {
+        @Override
+        public boolean validate0(String triggerValue) {
+            return Long.parseLong(triggerValue) > 0;
+        }
+
+        @Override
+        public Date computeNextFireTime(String triggerValue, Date previousFinishedTime) {
+            return Dates.plusMillis(previousFinishedTime, Long.parseLong(triggerValue));
+        }
+
+        @Override
+        public List<Date> computeNextFireTimes(String triggerValue, Date previousFinishedTime, int count) {
+            Assert.isTrue(count == 1, () -> name() + " unsupported compute multiple next fire time: " + count);
+            return Collections.singletonList(computeNextFireTime(triggerValue, previousFinishedTime));
+        }
+    },
+
+    /**
      * 任务依赖：依赖父任务执行完再触发执行子任务(trigger_value为父任务job_id，多个逗号分隔)
      */
-    DEPEND(4, "1003164910267351000,1003164910267351001", "任务依赖") {
+    DEPEND(6, "1003164910267351000,1003164910267351001", "任务依赖") {
         @Override
-        public boolean validate(String triggerValue) {
-            if (StringUtils.isBlank(triggerValue)) {
-                return false;
-            }
+        public boolean validate0(String triggerValue) {
             try {
                 long count = Arrays.stream(triggerValue.split(Str.COMMA))
                     .filter(StringUtils::isNotBlank)
@@ -186,12 +234,12 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
         @Override
         public Date computeNextFireTime(String triggerValue, Date startTime) {
-            throw new UnsupportedOperationException("Trigger type 'DEPEND' unsupported.");
+            throw new UnsupportedOperationException(name() + " unsupported compute one next fire time.");
         }
 
         @Override
         public List<Date> computeNextFireTimes(String triggerValue, Date startTime, int count) {
-            throw new UnsupportedOperationException("Trigger type 'DEPEND' unsupported.");
+            throw new UnsupportedOperationException(name() + " unsupported compute multiple next fire time.");
         }
     },
 
@@ -223,7 +271,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         return example;
     }
 
-    public abstract boolean validate(String triggerValue);
+    public final boolean validate(String triggerValue) {
+        return StringUtils.isNotBlank(triggerValue) && validate0(triggerValue);
+    }
+
+    protected abstract boolean validate0(String triggerValue);
 
     public abstract Date computeNextFireTime(String triggerValue, Date startTime);
 
@@ -231,14 +283,6 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
     public static TriggerType of(Integer value) {
         return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid trigger type value: " + value);
-    }
-
-    private static <T> T getOne(List<T> list) {
-        if (CollectionUtils.isEmpty(list)) {
-            return null;
-        }
-        Assert.isTrue(list.size() == 1, () -> "The list expect one size, but actual is " + list.size());
-        return list.get(0);
     }
 
 }

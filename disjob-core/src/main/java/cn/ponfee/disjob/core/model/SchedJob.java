@@ -100,14 +100,14 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Date endTime;
 
     /**
-     * 触发器类型：1-Cron表达式；2-指定时间；3-固定周期；4-任务依赖；
+     * 触发器类型：1-Cron表达式；2-指定时间；3-固定周期；4-固定频率；5-固定延时；6-任务依赖；
      *
      * @see TriggerType
      */
     private Integer triggerType;
 
     /**
-     * 触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-父任务job_id(多个逗号分隔)；
+     * 触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-毫秒数；5-毫秒数；6-父任务job_id(多个逗号分隔)；
      */
     private String triggerValue;
 
@@ -253,8 +253,8 @@ public class SchedJob extends BaseEntity implements Serializable {
         CollidedStrategy.of(collidedStrategy);
         MisfireStrategy.of(misfireStrategy);
         RouteStrategy.of(routeStrategy);
-        if (startTime != null && endTime != null) {
-            Assert.isTrue(!startTime.after(endTime), () -> "Invalid time: " + format(startTime) + ">=" + format(endTime));
+        if (startTime != null && endTime != null && startTime.after(endTime)) {
+            throw new IllegalArgumentException("Invalid time range: [" + format(startTime) + " ~ " + format(endTime) + "]");
         }
         if (jobParam == null) {
             this.jobParam = "";

@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.service;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
@@ -27,6 +28,7 @@ import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -51,6 +53,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
 public abstract class AbstractJobManager {
 
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
+    private static final List<TriggerType> FIXED_TYPES = ImmutableList.of(TriggerType.FIXED_RATE, TriggerType.FIXED_DELAY);
 
     protected static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
     protected static final int AFFECTED_ONE_ROW = 1;
@@ -111,7 +114,7 @@ public abstract class AbstractJobManager {
 
         if (job.getTriggerType() == null) {
             Assert.isNull(job.getTriggerValue(), "Trigger value must be null if not set trigger type.");
-        } else {
+        } else if (!dbJob.getTriggerType().equals(job.getTriggerType()) || !dbJob.getTriggerValue().equals(job.getTriggerValue())) {
             Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
             // update last trigger time or depends parent job id
             dependMapper.deleteByChildJobId(job.getJobId());
@@ -280,8 +283,21 @@ public abstract class AbstractJobManager {
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
-            Date nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), new Date());
-            Assert.notNull(nextTriggerTime, () -> "Has not next trigger time " + job.getTriggerValue());
+            Date nextTriggerTime;
+            if (FIXED_TYPES.contains(triggerType)) {
+                // initial delay 30 seconds
+                nextTriggerTime = Dates.max(Dates.plusSeconds(new Date(), 30), job.getStartTime());
+            } else {
+                Date baseTime = Dates.max(new Date(), job.getStartTime());
+                nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), baseTime);
+            }
+
+            if (nextTriggerTime == null) {
+                throw new IllegalArgumentException("Not next trigger time: " + job.getTriggerType() + ", " + job.getTriggerValue());
+            }
+            if (job.getEndTime() != null && nextTriggerTime.after(job.getEndTime())) {
+                throw new IllegalArgumentException("Expire next trigger time: " + job.getTriggerType() + ", " + job.getTriggerValue());
+            }
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }
     }
