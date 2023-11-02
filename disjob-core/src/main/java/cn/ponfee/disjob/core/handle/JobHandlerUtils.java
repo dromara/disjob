@@ -17,6 +17,7 @@ import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobUncheckedException;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.util.Assert;
@@ -58,7 +59,7 @@ public class JobHandlerUtils {
                 try {
                     JobHandler handler = load(jobHandler);
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
-                } catch (JobCheckedException e) {
+                } catch (JobCheckedException | JobUncheckedException e) {
                     throw e;
                 } catch (Throwable e) {
                     throw new JobCheckedException(INVALID_JOB_HANDLER, e.getMessage());
@@ -67,7 +68,7 @@ public class JobHandlerUtils {
                 try {
                     param.setJobHandler(jobHandler);
                     Assert.notEmpty(split(param), () -> "Not split any task: " + jobHandler);
-                } catch (JobCheckedException e) {
+                } catch (JobCheckedException | JobUncheckedException e) {
                     throw e;
                 } catch (Throwable e) {
                     throw new JobCheckedException(INVALID_JOB_HANDLER, e.getMessage());
@@ -91,7 +92,7 @@ public class JobHandlerUtils {
                 throw new JobCheckedException(SPLIT_JOB_FAILED, "Job split none tasks.");
             }
             return splitTasks;
-        } catch (JobCheckedException e) {
+        } catch (JobCheckedException | JobUncheckedException e) {
             throw e;
         } catch (Throwable t) {
             throw new JobCheckedException(SPLIT_JOB_FAILED, "Split job occur error", t);

@@ -31,12 +31,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Ponfee
  */
 @Ignore
-public class CopyrightTest {
+public class CopyrightVerifyTest {
 
     private static final String COPYRIGHT_KEYWORD = " Copyright (c) 2017-2023 Ponfee ";
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir();
-    private static final String COPYRIGHT = ThrowingSupplier.get(() -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightTest.class.getClassLoader()));
+    private static final String COPYRIGHT = ThrowingSupplier.get(() -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightVerifyTest.class.getClassLoader()));
 
     @Test
     public void upsertCopyright() {

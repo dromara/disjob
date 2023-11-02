@@ -8,8 +8,6 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import cn.ponfee.disjob.core.exception.JobCheckedException;
-
 import java.util.List;
 
 /**
@@ -20,7 +18,7 @@ import java.util.List;
 public abstract class BroadcastJobHandler extends JobHandler {
 
     @Override
-    public final List<SplitTask> split(String jobParam) throws JobCheckedException {
+    public final List<SplitTask> split(String jobParam) {
         throw new UnsupportedOperationException("Broadcast job handler unsupported split operation.");
     }
 

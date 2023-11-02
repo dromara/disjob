@@ -6,18 +6,23 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
+import cn.ponfee.disjob.common.base.ConsistentHash;
+import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +41,12 @@ public class ConsistentHashExecutionRouterTest {
     }
 
     @Test
+    public void testRegisterRouter() {
+        ExecutionRouterRegistrar.register(new RandomExecutionRouter(null));
+        ExecutionRouterRegistrar.register(new ConsistentHashExecutionRouter(11, ConsistentHash.HashFunction.MD5));
+    }
+
+    @Test
     public void testRouter() {
         List<ExecuteTaskParam> tasks = Arrays.asList(
             createExecuteTaskParam(1L),
@@ -50,7 +61,6 @@ public class ConsistentHashExecutionRouterTest {
             createWorker("c")
         );
 
-
         tasks.forEach(e -> Assertions.assertNull(e.getWorker()));
 
         ConsistentHashExecutionRouter router = new ConsistentHashExecutionRouter();
@@ -64,6 +74,38 @@ public class ConsistentHashExecutionRouterTest {
             createWorker("d")
         );
         router.route(tasks, workers);
+    }
+
+    @Test
+    public void test() {
+        String key = ObjectUtils.uuid32();
+        String[] array = new String[ThreadLocalRandom.current().nextInt(17) + 3];
+        array[0] = key;
+        for (int i = 1; i < array.length; i++) {
+            array[i] = RandomStringUtils.randomAlphanumeric(ThreadLocalRandom.current().nextInt(5) + 1);
+        }
+        List<String> workers = Arrays.asList(array);
+        Collections.shuffle(workers);
+
+        ConsistentHash<String> consistentHash = new ConsistentHash<>(workers, 11);
+        Assertions.assertEquals(key, consistentHash.routeNode("SHARD-" + key + "-NODE-0"));
+        Assertions.assertEquals(key, consistentHash.routeNode("SHARD-" + key + "-NODE-1"));
+        Assertions.assertEquals(key, consistentHash.routeNode("SHARD-" + key + "-NODE-2"));
+        Assertions.assertEquals(key, consistentHash.routeNode("SHARD-" + key + "-NODE-3"));
+        Assertions.assertEquals(key, consistentHash.routeNode("SHARD-" + key + "-NODE-9"));
+        Assertions.assertEquals(key, consistentHash.routeNode("SHARD-" + key + "-NODE-10"));
+
+        Assertions.assertEquals(11, consistentHash.getExistingReplicas(key));
+        Assertions.assertEquals(0, consistentHash.getExistingReplicas(key.toUpperCase()));
+        Assertions.assertEquals(0, consistentHash.getExistingReplicas(key + "1"));
+
+        Assertions.assertEquals(0, consistentHash.getExistingReplicas("a"));
+        consistentHash.removeNode("a");
+        Assertions.assertEquals(0, consistentHash.getExistingReplicas("a"));
+
+        Assertions.assertEquals(11, consistentHash.getExistingReplicas(key));
+        consistentHash.removeNode(key);
+        Assertions.assertEquals(0, consistentHash.getExistingReplicas(key));
     }
 
     private static ExecuteTaskParam createExecuteTaskParam(long taskId) {

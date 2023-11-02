@@ -6,49 +6,43 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.function.ToLongFunction;
 
 /**
- * Local priority execution router.
+ * Simple hash algorithm for execution router
  *
  * @author Ponfee
  */
-public class LocalPriorityExecutionRouter extends ExecutionRouter {
+public class SimpleHashExecutionRouter extends ExecutionRouter {
 
-    private final ExecutionRouter backupRouter;
+    private final ToLongFunction<ExecuteTaskParam> hashFunction;
 
-    public LocalPriorityExecutionRouter(ExecutionRouter backupRouter) {
-        this.backupRouter = Objects.requireNonNull(backupRouter, "Backup router cannot be null.");
+    public SimpleHashExecutionRouter() {
+        this(task -> Math.abs(task.getTaskId()));
+    }
+
+    public SimpleHashExecutionRouter(ToLongFunction<ExecuteTaskParam> hashFunction) {
+        this.hashFunction = hashFunction;
     }
 
     @Override
     public RouteStrategy routeStrategy() {
-        return RouteStrategy.LOCAL_PRIORITY;
+        return RouteStrategy.SIMPLE_HASH;
     }
 
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
-        // 查找workers列表中是否有当前的jvm worker
-        Worker worker = find(workers, Worker.current());
-        if (worker != null) {
-            tasks.forEach(task -> task.setWorker(worker));
-        } else {
-            backupRouter.route(tasks, workers);
-        }
-    }
-
-    private static Worker find(List<Worker> workers, Worker current) {
-        if (current == null) {
-            return null;
-        }
-        return workers.stream().filter(current::equals).findAny().orElse(null);
+        tasks.forEach(task -> {
+            int index = (int) (hashFunction.applyAsLong(task) % workers.size());
+            task.setWorker(workers.get(index));
+        });
     }
 
 }

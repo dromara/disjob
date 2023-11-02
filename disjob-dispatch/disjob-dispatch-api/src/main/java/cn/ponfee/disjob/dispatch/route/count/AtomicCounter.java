@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route.count;
+package cn.ponfee.disjob.dispatch.route.count;
 
 /**
  * Atomic counter

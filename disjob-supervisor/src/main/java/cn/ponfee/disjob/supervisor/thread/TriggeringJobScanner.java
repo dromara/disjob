@@ -128,7 +128,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
             // check has available workers
             if (jobManager.hasNotDiscoveredWorkers(job.getJobGroup())) {
-                updateNextScanTime(job, now, 15);
+                updateNextScanTime(job, now, 30);
                 log.warn("Scan job not discovered worker: {} | {}", job.getJobId(), job.getJobGroup());
                 return;
             }

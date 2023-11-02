@@ -17,8 +17,7 @@ import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-import cn.ponfee.disjob.core.route.ExecutionRouter;
-import cn.ponfee.disjob.core.route.ExecutionRouterRegistrar;
+import cn.ponfee.disjob.dispatch.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -173,8 +172,7 @@ public abstract class TaskDispatcher implements Startable {
         }
 
         List<ExecuteTaskParam> tasks = Collects.convert(params, DispatchParam::executeTaskParam);
-        ExecutionRouter executionRouter = ExecutionRouterRegistrar.get(first.executeTaskParam().getRouteStrategy());
-        executionRouter.route(tasks, workers);
+        ExecutionRouterRegistrar.route(first.executeTaskParam().getRouteStrategy(), tasks, workers);
     }
 
     private void doDispatch(ExecuteTaskParam task) throws Exception {

@@ -100,6 +100,16 @@ public final class Symbol {
          * Close symbol
          */
         String CLOSE = ")";
+
+        /**
+         * String of boolean true
+         */
+        String TRUE = "true";
+
+        /**
+         * String of boolean false
+         */
+        String FALSE = "false";
     }
 
     public interface Char {

@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
 /**
  * Execution router exception

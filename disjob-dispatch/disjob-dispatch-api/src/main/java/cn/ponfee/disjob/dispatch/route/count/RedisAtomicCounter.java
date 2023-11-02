@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route.count;
+package cn.ponfee.disjob.dispatch.route.count;
 
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +30,7 @@ public class RedisAtomicCounter extends AtomicCounter {
      *
      * @param group               the job group
      * @param stringRedisTemplate the StringRedisTemplate
-     * @see cn.ponfee.disjob.core.route.RoundRobinExecutionRouter#RoundRobinExecutionRouter(Function)
+     * @see cn.ponfee.disjob.dispatch.route.RoundRobinExecutionRouter#RoundRobinExecutionRouter(Function)
      */
     public RedisAtomicCounter(String group,
                               StringRedisTemplate stringRedisTemplate) {

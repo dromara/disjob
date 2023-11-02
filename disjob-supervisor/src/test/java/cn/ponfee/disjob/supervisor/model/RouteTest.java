@@ -10,9 +10,9 @@ package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import cn.ponfee.disjob.core.route.count.AtomicCounter;
-import cn.ponfee.disjob.core.route.count.JdkAtomicCounter;
-import cn.ponfee.disjob.core.route.count.RedisAtomicCounter;
+import cn.ponfee.disjob.dispatch.route.count.AtomicCounter;
+import cn.ponfee.disjob.dispatch.route.count.JdkAtomicCounter;
+import cn.ponfee.disjob.dispatch.route.count.RedisAtomicCounter;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

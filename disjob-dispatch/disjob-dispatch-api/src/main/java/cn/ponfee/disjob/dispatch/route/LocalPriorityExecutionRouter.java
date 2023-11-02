@@ -6,45 +6,49 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Objects;
 
 /**
- * Random algorithm for execution router
+ * Local priority execution router.
  *
  * @author Ponfee
  */
-public class RandomExecutionRouter extends ExecutionRouter {
+public class LocalPriorityExecutionRouter extends ExecutionRouter {
 
-    private final Random random;
+    private final ExecutionRouter backupRouter;
 
-    public RandomExecutionRouter() {
-        this(new Random());
-    }
-
-    public RandomExecutionRouter(Random random) {
-        this.random = random;
+    public LocalPriorityExecutionRouter(ExecutionRouter backupRouter) {
+        this.backupRouter = Objects.requireNonNull(backupRouter, "Backup router cannot be null.");
     }
 
     @Override
     public RouteStrategy routeStrategy() {
-        return RouteStrategy.RANDOM;
+        return RouteStrategy.LOCAL_PRIORITY;
     }
 
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
-        tasks.forEach(task -> {
-            Random rd = (random != null) ? random : ThreadLocalRandom.current();
-            int index = rd.nextInt(workers.size());
-            task.setWorker(workers.get(index));
-        });
+        // 查找workers列表中是否有当前的jvm worker
+        Worker worker = find(workers, Worker.current());
+        if (worker != null) {
+            tasks.forEach(task -> task.setWorker(worker));
+        } else {
+            backupRouter.route(tasks, workers);
+        }
+    }
+
+    private static Worker find(List<Worker> workers, Worker current) {
+        if (current == null) {
+            return null;
+        }
+        return workers.stream().filter(current::equals).findAny().orElse(null);
     }
 
 }

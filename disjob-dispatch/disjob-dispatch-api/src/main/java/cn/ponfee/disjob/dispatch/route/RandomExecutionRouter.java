@@ -6,34 +6,45 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Broadcast execution router
+ * Random algorithm for execution router
  *
  * @author Ponfee
  */
-public class BroadcastExecutionRouter extends ExecutionRouter {
+public class RandomExecutionRouter extends ExecutionRouter {
 
-    public static final BroadcastExecutionRouter INSTANCE = new BroadcastExecutionRouter();
+    private final Random random;
 
-    private BroadcastExecutionRouter() {
+    public RandomExecutionRouter() {
+        this(new Random());
+    }
+
+    public RandomExecutionRouter(Random random) {
+        this.random = random;
     }
 
     @Override
     public RouteStrategy routeStrategy() {
-        return RouteStrategy.BROADCAST;
+        return RouteStrategy.RANDOM;
     }
 
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
-        throw new UnsupportedOperationException("Broadcast route strategy must be pre-assign worker.");
+        tasks.forEach(task -> {
+            Random rd = (random != null) ? random : ThreadLocalRandom.current();
+            int index = rd.nextInt(workers.size());
+            task.setWorker(workers.get(index));
+        });
     }
 
 }

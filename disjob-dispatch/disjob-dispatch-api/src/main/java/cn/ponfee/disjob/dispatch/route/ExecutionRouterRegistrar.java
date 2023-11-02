@@ -6,11 +6,14 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import org.springframework.util.Assert;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,6 +34,12 @@ public class ExecutionRouterRegistrar {
         register0(new ConsistentHashExecutionRouter());
         register0(new LocalPriorityExecutionRouter(new RoundRobinExecutionRouter()));
         register0(BroadcastExecutionRouter.INSTANCE);
+
+        for (int i = 0; i < REGISTERED_ROUTES.length; i++) {
+            if (REGISTERED_ROUTES[i] == null) {
+                throw new Error("Unset build-in route strategy: " + RouteStrategy.values()[i]);
+            }
+        }
     }
 
     private static synchronized void register0(ExecutionRouter executionRouter) {
@@ -44,9 +53,10 @@ public class ExecutionRouterRegistrar {
         register0(executionRouter);
     }
 
-    public static ExecutionRouter get(RouteStrategy routeStrategy) {
+    public static void route(RouteStrategy routeStrategy, List<ExecuteTaskParam> tasks, List<Worker> workers) {
         Objects.requireNonNull(routeStrategy, "Route strategy cannot be null.");
-        return REGISTERED_ROUTES[routeStrategy.ordinal()];
+        ExecutionRouter router = REGISTERED_ROUTES[routeStrategy.ordinal()];
+        router.route(tasks, workers);
     }
 
 }

@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
 import cn.ponfee.disjob.common.base.ConsistentHash;
 import cn.ponfee.disjob.core.base.Worker;

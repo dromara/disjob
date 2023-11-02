@@ -6,43 +6,34 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.route;
+package cn.ponfee.disjob.dispatch.route;
 
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 
 import java.util.List;
-import java.util.function.ToLongFunction;
 
 /**
- * Simple hash algorithm for execution router
+ * Broadcast execution router
  *
  * @author Ponfee
  */
-public class SimpleHashExecutionRouter extends ExecutionRouter {
+public class BroadcastExecutionRouter extends ExecutionRouter {
 
-    private final ToLongFunction<ExecuteTaskParam> hashFunction;
+    public static final BroadcastExecutionRouter INSTANCE = new BroadcastExecutionRouter();
 
-    public SimpleHashExecutionRouter() {
-        this(task -> Math.abs(task.getTaskId()));
-    }
-
-    public SimpleHashExecutionRouter(ToLongFunction<ExecuteTaskParam> hashFunction) {
-        this.hashFunction = hashFunction;
+    private BroadcastExecutionRouter() {
     }
 
     @Override
     public RouteStrategy routeStrategy() {
-        return RouteStrategy.SIMPLE_HASH;
+        return RouteStrategy.BROADCAST;
     }
 
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
-        tasks.forEach(task -> {
-            int index = (int) (hashFunction.applyAsLong(task) % workers.size());
-            task.setWorker(workers.get(index));
-        });
+        throw new UnsupportedOperationException("Broadcast route strategy must be pre-assign worker.");
     }
 
 }
