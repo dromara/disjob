@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.dispatch.route.count;
 
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
+import cn.ponfee.disjob.core.base.JobConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -34,7 +35,7 @@ public class RedisAtomicCounter extends AtomicCounter {
      */
     public RedisAtomicCounter(String group,
                               StringRedisTemplate stringRedisTemplate) {
-        this.counterRedisKey = "disjob:route:counter:" + group;
+        this.counterRedisKey = JobConstants.DISJOB_KEY_PREFIX + ":route:counter:" + group;
         this.stringRedisTemplate = stringRedisTemplate;
         this.redisKeyRenewal = new RedisKeyRenewal(stringRedisTemplate, counterRedisKey);
     }
