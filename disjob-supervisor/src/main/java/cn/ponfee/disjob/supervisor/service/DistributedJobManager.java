@@ -102,16 +102,16 @@ public class DistributedJobManager extends AbstractJobManager {
     // ------------------------------------------------------------------database single operation without spring transactional
 
     public boolean renewInstanceUpdateTime(SchedInstance instance, Date updateTime) {
-        return instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()) == AFFECTED_ONE_ROW;
+        return isOneAffectedRow(instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()));
     }
 
     @Override
     protected boolean cancelWaitingTask(long taskId) {
-        return taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED.value(), ExecuteState.WAITING.value(), null, null) == AFFECTED_ONE_ROW;
+        return isOneAffectedRow(taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED.value(), ExecuteState.WAITING.value(), null, null));
     }
 
     public void savepoint(long taskId, String executeSnapshot) {
-        Assert.state(taskMapper.savepoint(taskId, executeSnapshot) == AFFECTED_ONE_ROW, () -> "Save point failed: " + taskId + " | " + executeSnapshot);
+        assertOneAffectedRow(taskMapper.savepoint(taskId, executeSnapshot), () -> "Save point failed: " + taskId + " | " + executeSnapshot);
     }
 
     // ------------------------------------------------------------------database operation within spring transactional
@@ -228,27 +228,27 @@ public class DistributedJobManager extends AbstractJobManager {
 
                 // delete workflow lead instance
                 int row = instanceMapper.deleteByInstanceId(instanceId);
-                Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete workflow lead instance conflict: " + instanceId);
+                assertOneAffectedRow(row, () -> "Delete workflow lead instance conflict: " + instanceId);
 
                 // delete task
                 for (SchedInstance e : instanceMapper.findWorkflowNode(instance.getWnstanceId())) {
                     row = taskMapper.deleteByInstanceId(e.getInstanceId());
-                    Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched task conflict: " + instanceId);
+                    assertManyAffectedRow(row, () -> "Delete sched task conflict: " + instanceId);
                 }
 
                 // delete workflow node instance
                 row = instanceMapper.deleteByWnstanceId(instanceId);
-                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete workflow node instance conflict: " + instanceId);
+                assertManyAffectedRow(row, () -> "Delete workflow node instance conflict: " + instanceId);
 
                 // delete workflow config
                 row = workflowMapper.deleteByWnstanceId(instanceId);
-                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched workflow conflict: " + instanceId);
+                assertManyAffectedRow(row, () -> "Delete sched workflow conflict: " + instanceId);
             } else {
                 int row = instanceMapper.deleteByInstanceId(instanceId);
-                Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Delete sched instance conflict: " + instanceId);
+                assertOneAffectedRow(row, () -> "Delete sched instance conflict: " + instanceId);
 
                 row = taskMapper.deleteByInstanceId(instanceId);
-                Assert.isTrue(row >= AFFECTED_ONE_ROW, () -> "Delete sched task conflict: " + instanceId);
+                assertManyAffectedRow(row, () -> "Delete sched task conflict: " + instanceId);
             }
             LOG.info("Delete sched instance success {}", instanceId);
         });
@@ -277,7 +277,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             Date executeEndTime = toState.isTerminal() ? new Date() : null;
             int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
-            if (row != AFFECTED_ONE_ROW) {
+            if (!isOneAffectedRow(row)) {
                 // usual is worker invoke http timeout, then retry
                 LOG.warn("Conflict terminate executing task: {} | {}", param.getTaskId(), toState);
                 return false;
@@ -335,7 +335,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 // cannot be paused
                 Assert.isTrue(tuple.a.isTerminal(), () -> "Purge instance state must be terminal state: " + instance);
             }
-            if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) != AFFECTED_ONE_ROW) {
+            if (!isOneAffectedRow(instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b))) {
                 return false;
             }
 
@@ -443,7 +443,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot resume workflow node instance: " + instanceId);
                 // update sched_instance paused lead to running state
                 int row = instanceMapper.updateState(instanceId, RunState.RUNNING.value(), RunState.PAUSED.value());
-                Assert.state(row == AFFECTED_ONE_ROW, () -> "Resume workflow lead instance failed: " + instanceId);
+                assertOneAffectedRow(row, () -> "Resume workflow lead instance failed: " + instanceId);
                 workflowMapper.resumeWaiting(instanceId);
                 for (SchedInstance nodeInstance : instanceMapper.findWorkflowNode(instanceId)) {
                     if (RunState.PAUSED.equals(nodeInstance.getRunState())) {
@@ -540,7 +540,7 @@ public class DistributedJobManager extends AbstractJobManager {
             // must be paused or terminate
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
             int row = instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_PAUSABLE, tuple.b);
-            Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Pause instance failed: " + instance + " | " + tuple.a);
+            assertOneAffectedRow(row, () -> "Pause instance failed: " + instance + " | " + tuple.a);
             if (instance.isWorkflowNode()) {
                 updateWorkflowEdgeState(instance, tuple.a.value(), RUN_STATE_PAUSABLE);
             }
@@ -568,7 +568,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             RunState toState = tuple.a;
             int row = instanceMapper.terminate(instanceId, toState.value(), RUN_STATE_TERMINABLE, tuple.b);
-            Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Cancel instance failed: " + instance + " | " + toState);
+            assertOneAffectedRow(row, () -> "Cancel instance failed: " + instance + " | " + toState);
             if (instance.isWorkflowNode()) {
                 updateWorkflowEdgeState(instance, tuple.a.value(), RUN_STATE_TERMINABLE);
             }
@@ -581,10 +581,10 @@ public class DistributedJobManager extends AbstractJobManager {
     private void resumeInstance(SchedInstance instance) {
         long instanceId = instance.getInstanceId();
         int row = instanceMapper.updateState(instanceId, RunState.WAITING.value(), RunState.PAUSED.value());
-        Assert.state(row == AFFECTED_ONE_ROW, "Resume sched instance failed.");
+        assertOneAffectedRow(row, "Resume sched instance failed.");
 
         row = taskMapper.updateStateByInstanceId(instanceId, ExecuteState.WAITING.value(), EXECUTE_STATE_PAUSED, null);
-        Assert.state(row >= AFFECTED_ONE_ROW, "Resume sched task failed.");
+        assertManyAffectedRow(row, "Resume sched task failed.");
 
         // dispatch task
         Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, row);
@@ -602,11 +602,11 @@ public class DistributedJobManager extends AbstractJobManager {
         if (graph.allMatch(e -> e.getValue().isTerminal())) {
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.FINISHED;
             int row = instanceMapper.terminate(instance.getWnstanceId(), state.value(), RUN_STATE_TERMINABLE, new Date());
-            Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Update workflow lead instance state failed: " + instance + " | " + state);
+            assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + " | " + state);
         } else if (workflows.stream().noneMatch(e -> RunState.RUNNING.equals(e.getRunState()))) {
             RunState state = RunState.PAUSED;
             int row = instanceMapper.updateState(instance.getWnstanceId(), state.value(), instance.getRunState());
-            Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Update workflow lead instance state failed: " + instance + " | " + state);
+            assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + " | " + state);
         }
     }
 
@@ -739,7 +739,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (graph.allMatch(e -> e.getValue().isTerminal())) {
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.FINISHED;
             int row = instanceMapper.terminate(wnstanceId, state.value(), RUN_STATE_TERMINABLE, new Date());
-            Assert.isTrue(row == AFFECTED_ONE_ROW, () -> "Terminate workflow lead instance failed: " + nodeInstance + " | " + state);
+            assertOneAffectedRow(row, () -> "Terminate workflow lead instance failed: " + nodeInstance + " | " + state);
             afterTerminateTask(instanceMapper.get(wnstanceId));
             return;
         }
@@ -887,7 +887,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 // update dead task
                 Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
                 int row = taskMapper.terminate(task.getTaskId(), task.getWorker(), ops.toState().value(), ExecuteState.EXECUTING.value(), executeEndTime, null);
-                if (row != AFFECTED_ONE_ROW) {
+                if (!isOneAffectedRow(row)) {
                     LOG.error("Cancel the dead task failed: {}", task);
                     executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));
                 } else {

@@ -38,6 +38,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -54,9 +55,9 @@ public abstract class AbstractJobManager {
 
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
     private static final List<TriggerType> FIXED_TYPES = ImmutableList.of(TriggerType.FIXED_RATE, TriggerType.FIXED_DELAY);
+    private static final int AFFECTED_ONE_ROW = 1;
 
     protected static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
-    protected static final int AFFECTED_ONE_ROW = 1;
 
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
@@ -69,11 +70,11 @@ public abstract class AbstractJobManager {
     // ------------------------------------------------------------------database single operation without spring transactional
 
     public boolean disableJob(SchedJob job) {
-        return jobMapper.disable(job) == AFFECTED_ONE_ROW;
+        return isOneAffectedRow(jobMapper.disable(job));
     }
 
     public boolean changeJobState(long jobId, JobState to) {
-        boolean flag = jobMapper.updateState(jobId, to.value(), 1 ^ to.value()) == AFFECTED_ONE_ROW;
+        boolean flag = isOneAffectedRow(jobMapper.updateState(jobId, to.value(), 1 ^ to.value()));
         SchedJob job;
         if (flag && to == JobState.ENABLE && TriggerType.FIXED_DELAY.equals((job = jobMapper.get(jobId)).getTriggerType())) {
             Date date = null;
@@ -87,11 +88,11 @@ public abstract class AbstractJobManager {
     }
 
     public boolean updateJobNextTriggerTime(SchedJob job) {
-        return jobMapper.updateNextTriggerTime(job) == AFFECTED_ONE_ROW;
+        return isOneAffectedRow(jobMapper.updateNextTriggerTime(job));
     }
 
     public boolean updateJobNextScanTime(SchedJob schedJob) {
-        return jobMapper.updateNextScanTime(schedJob) == AFFECTED_ONE_ROW;
+        return isOneAffectedRow(jobMapper.updateNextScanTime(schedJob));
     }
 
     // ------------------------------------------------------------------database operation within spring transactional
@@ -132,7 +133,7 @@ public abstract class AbstractJobManager {
         }
 
         job.setUpdatedAt(new Date());
-        Assert.state(jobMapper.update(job) == AFFECTED_ONE_ROW, "Update sched job fail or conflict.");
+        assertOneAffectedRow(jobMapper.update(job), "Update sched job fail or conflict.");
     }
 
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
@@ -142,12 +143,44 @@ public abstract class AbstractJobManager {
         if (JobState.ENABLE.equals(job.getJobState())) {
             throw new IllegalStateException("Please disable job before delete this job.");
         }
-        Assert.isTrue(jobMapper.softDelete(jobId) == AFFECTED_ONE_ROW, "Delete sched job fail or conflict.");
+        assertOneAffectedRow(jobMapper.softDelete(jobId), "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
         dependMapper.deleteByChildJobId(jobId);
     }
 
     // ------------------------------------------------------------------others operation
+
+    protected boolean isOneAffectedRow(int totalAffectedRow) {
+        return totalAffectedRow == AFFECTED_ONE_ROW;
+    }
+
+    protected boolean isManyAffectedRow(int totalAffectedRow) {
+        return totalAffectedRow >= AFFECTED_ONE_ROW;
+    }
+
+    protected void assertOneAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (totalAffectedRow != AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsgSupplier.get());
+        }
+    }
+
+    protected void assertOneAffectedRow(int totalAffectedRow, String errorMsg) {
+        if (totalAffectedRow != AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsg);
+        }
+    }
+
+    protected void assertManyAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (totalAffectedRow < AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsgSupplier.get());
+        }
+    }
+
+    protected void assertManyAffectedRow(int totalAffectedRow, String errorMsg) {
+        if (totalAffectedRow < AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsg);
+        }
+    }
 
     public long generateId() {
         return idGenerator.generateId();
@@ -295,8 +328,7 @@ public abstract class AbstractJobManager {
         } else {
             Date nextTriggerTime;
             if (FIXED_TYPES.contains(triggerType)) {
-                // initial delay 30 seconds
-                nextTriggerTime = Dates.max(Dates.plusSeconds(new Date(), 30), job.getStartTime());
+                nextTriggerTime = Dates.max(new Date(), job.getStartTime());
             } else {
                 Date baseTime = Dates.max(new Date(), job.getStartTime());
                 nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), baseTime);
