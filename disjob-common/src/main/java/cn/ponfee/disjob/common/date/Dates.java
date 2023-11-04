@@ -603,6 +603,10 @@ public class Dates {
         return a == null ? b : (b == null || a.after(b)) ? a : b;
     }
 
+    public static Date max(Date a, Date b, Date c) {
+        return max(max(a, b), c);
+    }
+
     // ----------------------------------------------------------------java 8 date
 
     public static LocalDateTime toLocalDateTime(Date date) {

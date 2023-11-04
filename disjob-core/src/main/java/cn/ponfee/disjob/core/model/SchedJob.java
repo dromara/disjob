@@ -107,7 +107,7 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Integer triggerType;
 
     /**
-     * 触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-毫秒数；5-毫秒数；6-父任务job_id(多个逗号分隔)；
+     * 触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-周期秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；
      */
     private String triggerValue;
 
@@ -263,6 +263,10 @@ public class SchedJob extends BaseEntity implements Serializable {
 
     public int incrementAndGetFailedScanCount() {
         return ++this.failedScanCount;
+    }
+
+    public boolean retryable(int retriedCount) {
+        return !RetryType.NONE.equals(retryType) && retriedCount < retryCount;
     }
 
     /**

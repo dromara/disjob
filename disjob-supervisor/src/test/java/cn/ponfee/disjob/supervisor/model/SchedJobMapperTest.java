@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
+import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.*;
@@ -162,4 +163,15 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         int insert = bean.insert(job);
         Assertions.assertEquals(1, insert);
     }
+
+    @Test
+    public void testLazyLoader() {
+        long job1Id = 1003164910267351000L;
+        SchedJob job1 = LazyLoader.of(SchedJob.class, jobMapper::get, job1Id);
+        Assertions.assertEquals(job1Id, job1.getJobId());
+
+        SchedJob job2 = LazyLoader.of(SchedJob.class, jobMapper::get, 0L);
+        Assertions.assertThrows(NullPointerException.class, job2::getJobId);
+    }
+
 }

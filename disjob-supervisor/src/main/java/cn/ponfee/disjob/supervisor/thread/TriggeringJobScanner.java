@@ -31,6 +31,7 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -113,8 +114,15 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {
         try {
+            // check has available workers
+            if (jobManager.hasNotDiscoveredWorkers(job.getJobGroup())) {
+                updateNextScanTime(job, now, 30);
+                log.warn("Scan job not discovered worker: {} | {}", job.getJobId(), job.getJobGroup());
+                return;
+            }
+
             // 重新再计算一次nextTriggerTime
-            job.setNextTriggerTime(recomputeNextTriggerTime(job, now));
+            job.setNextTriggerTime(reComputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
                 String reason = "Recompute has not next trigger time";
                 job.setRemark(reason);
@@ -122,14 +130,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 jobManager.disableJob(job);
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
+                // 更新next_trigger_time，等待下次扫描
                 jobManager.updateJobNextTriggerTime(job);
-                return;
-            }
-
-            // check has available workers
-            if (jobManager.hasNotDiscoveredWorkers(job.getJobGroup())) {
-                updateNextScanTime(job, now, 30);
-                log.warn("Scan job not discovered worker: {} | {}", job.getJobId(), job.getJobGroup());
                 return;
             }
 
@@ -169,20 +171,38 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     /**
-     * Recompute the job next trigger time.
+     * 因为可能会有Misfire，这里需要重新计算本次的触发时间
      *
      * @param job the job
      * @param now the current date
      * @return accurate next trigger time milliseconds
      */
-    private Long recomputeNextTriggerTime(SchedJob job, Date now) {
-        if (now.getTime() <= (job.getNextTriggerTime() + afterMilliseconds)) {
-            // 1、如果没有过期：保持原有的nextTriggerTime
+    private Long reComputeNextTriggerTime(SchedJob job, Date now) {
+        if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
+            // 固定延时类型不重新计算nextTriggerTime
             return job.getNextTriggerTime();
-        } else {
-            // 2、其它情况：基于原来的lastTriggerTime重新再计算一次nextTriggerTime
-            return TriggerTimeUtils.computeNextTriggerTime(job, now);
         }
+        if (now.getTime() <= (job.getNextTriggerTime() + afterMilliseconds)) {
+            // 没有过期不重新计算nextTriggerTime
+            return job.getNextTriggerTime();
+        }
+        // 其它情况则基于原来的lastTriggerTime重新再计算一次nextTriggerTime
+        return TriggerTimeUtils.computeNextTriggerTime(job, now);
+    }
+
+    /**
+     * 计算下一次的触发时间
+     *
+     * @param job the job
+     * @param now the current date
+     * @return newly next trigger time milliseconds
+     */
+    private static Long doComputeNextTriggerTime(SchedJob job, Date now) {
+        if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
+            // 固定延时类型的nextTriggerTime：先更新为long最大值，当任务实例运行完成时去主动计算并更新
+            return Long.MAX_VALUE;
+        }
+        return TriggerTimeUtils.computeNextTriggerTime(job, now);
     }
 
     /**
@@ -235,13 +255,17 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     private boolean checkBlockCollidedTrigger(SchedJob job, List<SchedInstance> instances, CollidedStrategy collidedStrategy, Date now) {
+        if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
+            SchedInstance first = instances.get(0);
+            log.error("Fixed delay trigger type cannot happen run collided: {} | {}", first.obtainRnstanceId(), job.getNextTriggerTime());
+        }
         switch (collidedStrategy) {
             case DISCARD:
                 // 丢弃执行：基于当前时间来更新下一次的执行时间
                 Integer misfireStrategy = job.getMisfireStrategy();
                 try {
                     job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
-                    job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, now));
+                    job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
                 } finally {
                     // restore
                     job.setMisfireStrategy(misfireStrategy);
@@ -280,7 +304,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      */
     private static void refreshNextTriggerTime(SchedJob job, Long lastTriggerTime, Date now) {
         job.setLastTriggerTime(lastTriggerTime);
-        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, now));
+        job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
         if (job.getNextTriggerTime() == null) {
             // It has not next triggered time, then stop the job
             job.setRemark("Disable refresh reason: has not next trigger time");

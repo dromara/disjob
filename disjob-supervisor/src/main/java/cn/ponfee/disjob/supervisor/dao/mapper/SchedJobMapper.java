@@ -72,6 +72,16 @@ public interface SchedJobMapper {
     /**
      * Updates job state
      *
+     * @param jobId           the job id
+     * @param nextTriggerTime the next trigger time
+     * @return update sql affected rows
+     */
+    int updateFixedDelayNextTriggerTime(@Param("jobId") long jobId,
+                                        @Param("nextTriggerTime") long nextTriggerTime);
+
+    /**
+     * Updates job state
+     *
      * @param jobId     the job id
      * @param toState   the target state
      * @param fromState the source state

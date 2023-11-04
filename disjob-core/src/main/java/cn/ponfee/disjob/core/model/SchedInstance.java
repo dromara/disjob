@@ -15,6 +15,7 @@ import cn.ponfee.disjob.core.enums.RunType;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.beans.Transient;
 import java.io.Serializable;
@@ -173,6 +174,17 @@ public class SchedInstance extends BaseEntity implements Serializable {
             return null;
         }
         return Jsons.fromJson(attach, InstanceAttach.class);
+    }
+
+    public void markTerminated(RunState runState, Date runEndTime) {
+        Assert.state(runState.isTerminal(), () -> "Invalid terminal run state: " + instanceId + ", " + runState);
+        Assert.state(runEndTime != null, () -> "Run end time cannot be null: " + instanceId);
+        this.runState = runState.value();
+        this.runEndTime = runEndTime;
+    }
+
+    public int obtainRetriedCount() {
+        return retriedCount != null ? retriedCount : 0;
     }
 
 }

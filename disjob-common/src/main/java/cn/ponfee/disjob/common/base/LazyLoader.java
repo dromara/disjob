@@ -74,6 +74,17 @@ public class LazyLoader<T> implements Supplier<T> {
         return holder;
     }
 
+    /**
+     * 注意：
+     *   1、调用目标类的final方法时，此时的调用对象是代理对象，其所有成员变量都会是null
+     *   2、用的是lazyLoader.get()，如果延时加载到null则会抛`NullPointerException("Not load target object.")`
+     *
+     * @param type       目标类
+     * @param lazyLoader 延时加载器
+     * @param <T>        目标类型
+     * @param <R>        代理对象(目标类的子类)
+     * @return 代理对象
+     */
     private static <T, R extends T> R of(Class<T> type, final LazyLoader<R> lazyLoader) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(type);

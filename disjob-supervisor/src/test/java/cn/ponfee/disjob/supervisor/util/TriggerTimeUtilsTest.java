@@ -118,6 +118,16 @@ public class TriggerTimeUtilsTest {
 
     @Test
     public void testComputeNextFireTimeONCE() throws ParseException {
+        Date max = new Date(Long.MAX_VALUE);
+        Assertions.assertEquals(Long.MAX_VALUE, max.getTime());
+
+        Date min = new Date(Long.MIN_VALUE);
+        Assertions.assertEquals(Long.MIN_VALUE, min.getTime());
+
+        Date zero = new Date(0);
+        Assertions.assertEquals(0, zero.getTime());
+
+        System.out.println();
         Date now = new Date();
         SchedJob job = new SchedJob();
         job.setStartTime(null);

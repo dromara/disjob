@@ -182,6 +182,17 @@
       AND is_deleted = 0
   </update>
 
+  <update id="updateFixedDelayNextTriggerTime">
+    UPDATE <include refid="Table_Name" />
+    SET next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+        version = version+1
+    WHERE job_id = #{jobId,jdbcType=BIGINT}
+      AND is_deleted = 0
+      AND job_state = 1
+      AND trigger_type = 5
+      AND next_trigger_time = 9223372036854775807
+  </update>
+
   <update id="softDelete" parameterType="_long">
     UPDATE <include refid="Table_Name" />
     SET is_deleted = NULL,

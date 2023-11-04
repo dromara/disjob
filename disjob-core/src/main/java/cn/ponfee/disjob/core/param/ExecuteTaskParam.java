@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.core.param;
 
-import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.dag.DAGNode;
@@ -36,7 +35,6 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 import static cn.ponfee.disjob.common.util.Numbers.nullZero;
 import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
@@ -110,10 +108,6 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         this.routeStrategy = routeStrategy;
         this.executeTimeout = executeTimeout;
         this.jobHandler = jobHandler;
-    }
-
-    public static Builder builder(SchedInstance instance, Function<Long, SchedJob> jobLoader) {
-        return builder(instance, LazyLoader.of(SchedJob.class, jobLoader, instance.getJobId()));
     }
 
     public static Builder builder(SchedInstance instance, SchedJob schedJob) {

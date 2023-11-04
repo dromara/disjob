@@ -103,7 +103,7 @@ public class SchedJobExport {
     private Integer triggerType;
 
     /**
-     * 触发器配置(对应trigger_type)：1-Crontab表达式；2-时间格式；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-父任务job_id(多个逗号分隔)；
+     * 触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-周期秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；
      */
     @Excel(name = "触发器配置")
     private String triggerValue;

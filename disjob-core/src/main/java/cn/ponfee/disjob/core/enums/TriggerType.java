@@ -171,7 +171,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     /**
      * 固定频率：以上一个任务实例的触发时间开始计算，固定在triggerValue毫秒后触发执行下一个任务实例
      */
-    FIXED_RATE(4, "60000", "固定频率(毫秒)") {
+    FIXED_RATE(4, "60", "固定频率(秒)") {
         @Override
         public boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
@@ -179,14 +179,16 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
         @Override
         public Date computeNextFireTime(String triggerValue, Date previousFireTime) {
-            return Dates.plusMillis(previousFireTime, Long.parseLong(triggerValue));
+            return computeNextFireTimes(triggerValue, previousFireTime, 1).get(0);
         }
 
         @Override
         public List<Date> computeNextFireTimes(String triggerValue, Date previousFireTime, int count) {
+            long period = Long.parseLong(triggerValue);
+            Assert.isTrue(period > 0, () -> name() + " invalid trigger value: " + triggerValue);
             List<Date> result = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
-                result.add(previousFireTime = Dates.plusMillis(previousFireTime, Long.parseLong(triggerValue)));
+                result.add(previousFireTime = Dates.plusSeconds(previousFireTime, period));
             }
             return result;
         }
@@ -195,21 +197,23 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     /**
      * 固定延时：以上一个任务实例执行完成时间开始计算，延后triggerValue毫秒后触发执行下一个任务实例
      */
-    FIXED_DELAY(5, "60000", "固定延时(毫秒)") {
+    FIXED_DELAY(5, "60", "固定延时(秒)") {
         @Override
         public boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
         }
 
         @Override
-        public Date computeNextFireTime(String triggerValue, Date previousFinishedTime) {
-            return Dates.plusMillis(previousFinishedTime, Long.parseLong(triggerValue));
+        public Date computeNextFireTime(String triggerValue, Date previousCompletedTime) {
+            long delay = Long.parseLong(triggerValue);
+            Assert.isTrue(delay > 0, () -> name() + " invalid trigger value: " + triggerValue);
+            return Dates.plusSeconds(previousCompletedTime, delay);
         }
 
         @Override
-        public List<Date> computeNextFireTimes(String triggerValue, Date previousFinishedTime, int count) {
+        public List<Date> computeNextFireTimes(String triggerValue, Date previousCompletedTime, int count) {
             Assert.isTrue(count == 1, () -> name() + " unsupported compute multiple next fire time: " + count);
-            return Collections.singletonList(computeNextFireTime(triggerValue, previousFinishedTime));
+            return Collections.singletonList(computeNextFireTime(triggerValue, previousCompletedTime));
         }
     },
 

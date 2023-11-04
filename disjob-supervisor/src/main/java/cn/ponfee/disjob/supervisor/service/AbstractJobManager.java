@@ -73,7 +73,17 @@ public abstract class AbstractJobManager {
     }
 
     public boolean changeJobState(long jobId, JobState to) {
-        return jobMapper.updateState(jobId, to.value(), 1 ^ to.value()) == AFFECTED_ONE_ROW;
+        boolean flag = jobMapper.updateState(jobId, to.value(), 1 ^ to.value()) == AFFECTED_ONE_ROW;
+        SchedJob job;
+        if (flag && to == JobState.ENABLE && TriggerType.FIXED_DELAY.equals((job = jobMapper.get(jobId)).getTriggerType())) {
+            Date date = null;
+            if (job.getLastTriggerTime() != null) {
+                date = TriggerType.FIXED_DELAY.computeNextFireTime(job.getTriggerValue(), new Date(job.getLastTriggerTime()));
+            }
+            Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
+            jobMapper.updateFixedDelayNextTriggerTime(jobId, nextTriggerTime.getTime());
+        }
+        return flag;
     }
 
     public boolean updateJobNextTriggerTime(SchedJob job) {
