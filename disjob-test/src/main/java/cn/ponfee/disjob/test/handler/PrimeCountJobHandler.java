@@ -45,7 +45,7 @@ public class PrimeCountJobHandler extends JobHandler {
     private static final long SAVEPOINT_INTERVAL_MS = 10 * 1000;
 
     /**
-     * 拆分任务，自定义控制任务的拆分数量
+     * 任务分片，自定义控制任务的拆分数量
      *
      * @param jobParamString the job param
      * @return task list

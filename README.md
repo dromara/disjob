@@ -51,7 +51,7 @@ disjob                                        # 主项目①
 - Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http
 - 需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行
-- 提供拆分任务的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
+- 提供任务分片的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
 - 任务在执行时若抛出[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，会暂停对应实例下的全部任务(包括分布在不同worker机器中的任务)
@@ -169,7 +169,7 @@ disjob.registry.consul:
 
 举个简单的例子：统计在`(0，1万亿]`区间内质数的个数。如果是单机单线程CPU的话要统计很长时间，这里我们就可以使用`Disjob`框架提供的分布式并行执行的能力来解决该类问题。
 
-1. **拆分任务**
+1. **任务分片**
 
 先根据当前的机器资源情况来决定拆分任务的数量，比如我们有5台机器及每台2 core CPU(质数统计是CPU密集型)，决定拆分为10个任务。
 
@@ -240,8 +240,8 @@ Worker接收到子任务后，会提交到框架自定义的线程池中执行�
 |  任务分片     |    不支持   |    静态分片      |     广播         | 广播、动态分片                   |
 |  保存执行快照  |    不支持   |    不支持        |     不支持      | 支持                            |
 |  停止及恢复    |    不支持   |     不支持       | 终止运行中的任务  | 暂停执行中的任务、恢复已暂停的任务  |
-|  后台管理     |    不支持   |     支持         |     支持        | 支持                           |
 |  失败重试     |    不支持   |     支持         |     支持        | 支持                           |
+|  后台管理     |    不支持   |     支持         |     支持        | 支持                           |
 |  监控告警     |    不支持   |      邮件        |     邮件        | 暂不支持                        |
 |  查看执行日志  |    不支持   |     支持         |     支持        | 暂不支持                        |
 
