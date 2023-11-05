@@ -134,6 +134,9 @@
           field: 'nextTriggerTime',
           title: '下一次触发时间',
           formatter: function (value, row, index) {
+            if (value === "9223372036854775807" || value === 9223372036854775807) {
+              return "-"
+            }
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
           }
         },

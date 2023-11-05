@@ -22,10 +22,10 @@ import java.util.Objects;
  */
 public class LocalPriorityExecutionRouter extends ExecutionRouter {
 
-    private final ExecutionRouter backupRouter;
+    private final ExecutionRouter outsiderRouter;
 
-    public LocalPriorityExecutionRouter(ExecutionRouter backupRouter) {
-        this.backupRouter = Objects.requireNonNull(backupRouter, "Backup router cannot be null.");
+    public LocalPriorityExecutionRouter(ExecutionRouter outsiderRouter) {
+        this.outsiderRouter = Objects.requireNonNull(outsiderRouter, "Outsider router cannot be null.");
     }
 
     @Override
@@ -40,7 +40,7 @@ public class LocalPriorityExecutionRouter extends ExecutionRouter {
         if (worker != null) {
             tasks.forEach(task -> task.setWorker(worker));
         } else {
-            backupRouter.route(tasks, workers);
+            outsiderRouter.route(tasks, workers);
         }
     }
 

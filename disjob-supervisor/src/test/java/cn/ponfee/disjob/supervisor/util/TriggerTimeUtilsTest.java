@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * TriggerTimeUtils test
@@ -29,7 +30,7 @@ import java.util.Date;
 public class TriggerTimeUtilsTest {
 
     @Test
-    public void testComputeNextFireTimeCRON_DISCARD() {
+    public void testComputeNextTriggerTimeCRON_DISCARD() {
         SchedJob job = new SchedJob();
         job.setStartTime(null);
         job.setEndTime(null);
@@ -49,7 +50,7 @@ public class TriggerTimeUtilsTest {
     }
 
     @Test
-    public void testComputeNextFireTimeCRON_LAST() throws ParseException {
+    public void testComputeNextTriggerTimeCRON_LAST() throws ParseException {
         Date now = new Date();
         SchedJob job = new SchedJob();
         job.setStartTime(null);
@@ -82,7 +83,7 @@ public class TriggerTimeUtilsTest {
     }
 
     @Test
-    public void testComputeNextFireTimeCRON_EVERY() throws ParseException {
+    public void testComputeNextTriggerTimeCRON_EVERY() throws ParseException {
         Date now = new Date();
         SchedJob job = new SchedJob();
         job.setStartTime(null);
@@ -117,7 +118,7 @@ public class TriggerTimeUtilsTest {
     }
 
     @Test
-    public void testComputeNextFireTimeONCE() throws ParseException {
+    public void testComputeNextTriggerTimeONCE() throws ParseException {
         Date max = new Date(Long.MAX_VALUE);
         Assertions.assertEquals(Long.MAX_VALUE, max.getTime());
 
@@ -175,7 +176,7 @@ public class TriggerTimeUtilsTest {
     }
 
     @Test
-    public void testComputeNextFireTimePERIOD() throws ParseException {
+    public void testComputeNextTriggerTimePERIOD() throws ParseException {
         Date now = new Date();
         SchedJob job = new SchedJob();
         job.setStartTime(null);
@@ -200,9 +201,9 @@ public class TriggerTimeUtilsTest {
         Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         System.out.println("---------------");
-        TriggerType.PERIOD.computeNextFireTimes(job.getTriggerValue(), now, 4)
-            .stream()
-            .forEach(e -> System.out.println(Dates.format(e)));
+        List<Date> triggerTimes = TriggerType.PERIOD.computeNextTriggerTimes(job.getTriggerValue(), now, 4);
+        Assertions.assertEquals(4, triggerTimes.size());
+        triggerTimes.forEach(e -> System.out.println(Dates.format(e)));
 
         // LAST
         job.setMisfireStrategy(MisfireStrategy.LAST.value());

@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractHeartbeatThread extends Thread implements Closeable {
 
     private static final long MILLIS_PER_SECOND = 1000;
-    private static final int MAX_BUSY_COUNT = 47;
+    private static final int MAX_PROCESSED_COUNT = 997;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -84,12 +84,9 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 if (isBusyLoop) {
                     processedCount = 0;
                     // gap period milliseconds(with fixed delay)
-                    doSleep(heartbeatPeriodMs - (end % heartbeatPeriodMs));
-                } else {
-                    processedCount++;
-                    if (processedCount > MAX_BUSY_COUNT) {
-                        doSleep(MILLIS_PER_SECOND - (end % MILLIS_PER_SECOND));
-                    }
+                    doSleep(heartbeatPeriodMs);
+                } else if (++processedCount > MAX_PROCESSED_COUNT) {
+                    doSleep(MILLIS_PER_SECOND - (end % MILLIS_PER_SECOND));
                 }
             }
         } catch (InterruptedException e) {

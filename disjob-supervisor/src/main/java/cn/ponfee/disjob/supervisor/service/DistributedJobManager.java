@@ -630,7 +630,8 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
-    private void createWorkflowNode(SchedInstance leadInstance, WorkflowGraph graph, Map<DAGEdge, SchedWorkflow> map, Function<Throwable, Boolean> failHandler) {
+    private void createWorkflowNode(SchedInstance leadInstance, WorkflowGraph graph,
+                                    Map<DAGEdge, SchedWorkflow> map, Function<Throwable, Boolean> failHandler) {
         SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::get, leadInstance.getJobId());
         long wnstanceId = leadInstance.getWnstanceId();
         Date now = new Date();
@@ -703,18 +704,16 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void updateFixedDelayNextTriggerTime(SchedInstance prev, LazyLoader<SchedJob> lazyJob) {
-        if (prev.isWorkflowNode()) {
-            return;
-        }
-
-        int retriedCount = Optional.ofNullable(prev.getRetriedCount()).orElse(0);
-        SchedJob job = lazyJob.orElse(null);
-        if (job == null || !TriggerType.FIXED_DELAY.equals(job.getTriggerType()) || job.retryable(retriedCount)) {
+        SchedJob job;
+        if (prev.isWorkflowNode()
+            || (job = lazyJob.orElse(null)) == null
+            || job.retryable(RunState.of(prev.getRunState()), prev.obtainRetriedCount())
+            || !TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
             // 如果是可重试，则要等到最后的那次重试完时来计算下次的延时执行时间
             return;
         }
 
-        Date nextTriggerTime = TriggerType.FIXED_DELAY.computeNextFireTime(job.getTriggerValue(), prev.getRunEndTime());
+        Date nextTriggerTime = TriggerType.FIXED_DELAY.computeNextTriggerTime(job.getTriggerValue(), prev.getRunEndTime());
         jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime());
     }
 
@@ -767,7 +766,7 @@ public class DistributedJobManager extends AbstractJobManager {
             return null;
         });
         int retriedCount = prev.obtainRetriedCount();
-        if (schedJob == null || !schedJob.retryable(retriedCount)) {
+        if (schedJob == null || !schedJob.retryable(RunState.of(prev.getRunState()), retriedCount)) {
             processWorkflow(prev);
             return;
         }

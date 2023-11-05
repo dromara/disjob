@@ -26,7 +26,7 @@ public class RandomExecutionRouter extends ExecutionRouter {
     private final Random random;
 
     public RandomExecutionRouter() {
-        this(new Random());
+        this(null);
     }
 
     public RandomExecutionRouter(Random random) {

@@ -265,7 +265,11 @@ public class SchedJob extends BaseEntity implements Serializable {
         return ++this.failedScanCount;
     }
 
-    public boolean retryable(int retriedCount) {
+    public boolean retryable(RunState runState, int retriedCount) {
+        Assert.state(runState.isTerminal(), "Run state must be terminated.");
+        if (!runState.isFailure()) {
+            return false;
+        }
         return !RetryType.NONE.equals(retryType) && retriedCount < retryCount;
     }
 

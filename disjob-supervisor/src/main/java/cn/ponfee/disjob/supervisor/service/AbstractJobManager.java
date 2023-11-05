@@ -79,7 +79,7 @@ public abstract class AbstractJobManager {
         if (flag && to == JobState.ENABLE && TriggerType.FIXED_DELAY.equals((job = jobMapper.get(jobId)).getTriggerType())) {
             Date date = null;
             if (job.getLastTriggerTime() != null) {
-                date = TriggerType.FIXED_DELAY.computeNextFireTime(job.getTriggerValue(), new Date(job.getLastTriggerTime()));
+                date = TriggerType.FIXED_DELAY.computeNextTriggerTime(job.getTriggerValue(), new Date(job.getLastTriggerTime()));
             }
             Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
             jobMapper.updateFixedDelayNextTriggerTime(jobId, nextTriggerTime.getTime());
@@ -293,11 +293,7 @@ public abstract class AbstractJobManager {
         Long jobId = job.getJobId();
 
         if (triggerType == TriggerType.DEPEND) {
-            List<Long> parentJobIds = Arrays.stream(job.getTriggerValue().split(Str.COMMA))
-                .filter(StringUtils::isNotBlank)
-                .map(e -> Long.parseLong(e.trim()))
-                .distinct()
-                .collect(Collectors.toList());
+            List<Long> parentJobIds = SchedDepend.parseTriggerValue(job.getTriggerValue());
             Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + job.getTriggerValue());
             Assert.isTrue(!parentJobIds.contains(jobId), () -> "Cannot depends self: " + jobId + ", " + parentJobIds);
 
@@ -331,7 +327,7 @@ public abstract class AbstractJobManager {
                 nextTriggerTime = Dates.max(new Date(), job.getStartTime());
             } else {
                 Date baseTime = Dates.max(new Date(), job.getStartTime());
-                nextTriggerTime = triggerType.computeNextFireTime(job.getTriggerValue(), baseTime);
+                nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), baseTime);
             }
 
             if (nextTriggerTime == null) {

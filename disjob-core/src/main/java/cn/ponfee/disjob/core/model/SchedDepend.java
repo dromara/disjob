@@ -8,12 +8,17 @@
 
 package cn.ponfee.disjob.core.model;
 
+import cn.ponfee.disjob.common.base.Symbol;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The schedule job entity, mapped database table sched_depend
@@ -47,4 +52,13 @@ public class SchedDepend extends BaseEntity implements Serializable {
         this.childJobId = childJobId;
         this.sequence = sequence;
     }
+
+    public static List<Long> parseTriggerValue(String triggerValue) {
+        return Arrays.stream(triggerValue.split(Symbol.Str.COMMA))
+            .filter(StringUtils::isNotBlank)
+            .map(e -> Long.parseLong(e.trim()))
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
 }

@@ -19,7 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Consistent hash algorithm for execution router
+ * Consistent hash algorithm for execution router.
+ *
+ * <p><a href="https://www.jianshu.com/p/fadbff6d222e">replicas</a>
  *
  * @author Ponfee
  */
@@ -31,7 +33,7 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
     private final ConsistentHash.HashFunction hashFunction;
 
     public ConsistentHashExecutionRouter() {
-        this(7, ConsistentHash.HashFunction.FNV);
+        this(17, ConsistentHash.HashFunction.FNV);
     }
 
     public ConsistentHashExecutionRouter(int virtualCount,

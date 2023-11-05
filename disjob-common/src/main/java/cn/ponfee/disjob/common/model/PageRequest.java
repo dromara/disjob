@@ -82,7 +82,7 @@ public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<
         P this0 = (P) this;
         long total;
         List<A> list;
-        if (isPaged()) {
+        if (paged) {
             total = queryCount.applyAsLong(this0);
             correctPageNumber(total);
             list = (total == 0) ? Collections.emptyList() : queryRecords.apply(this0);

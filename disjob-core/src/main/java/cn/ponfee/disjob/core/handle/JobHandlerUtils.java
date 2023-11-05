@@ -123,9 +123,9 @@ public class JobHandlerUtils {
             throw new JobCheckedException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler: " + ClassUtils.getName(type) + ", " + text);
         }
 
+        // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
         handler = SpringContextHolder.getPrototypeBean(type);
         if (handler != null) {
-            // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
             return handler;
         }
 

@@ -25,7 +25,7 @@ public class SimpleHashExecutionRouter extends ExecutionRouter {
     private final ToLongFunction<ExecuteTaskParam> hashFunction;
 
     public SimpleHashExecutionRouter() {
-        this(task -> Math.abs(task.getTaskId()));
+        this(ExecuteTaskParam::getTaskId);
     }
 
     public SimpleHashExecutionRouter(ToLongFunction<ExecuteTaskParam> hashFunction) {
