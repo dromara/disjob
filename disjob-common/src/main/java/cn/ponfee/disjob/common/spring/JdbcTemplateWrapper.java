@@ -44,6 +44,7 @@ public final class JdbcTemplateWrapper {
     public static final int AFFECTED_ONE_ROW = 1;
     public static final RowMapper<String> STRING_ROW_MAPPER = new SingleColumnRowMapper<>(String.class);
     public static final RowMapper<Long> LONG_ROW_MAPPER = new SingleColumnRowMapper<>(Long.class);
+    public static final RowMapper<Integer> INT_ROW_MAPPER = new SingleColumnRowMapper<>(Integer.class);
     private static final Set<String> EXISTS_TABLE = ConcurrentHashMap.newKeySet();
 
     private final JdbcTemplate jdbcTemplate;

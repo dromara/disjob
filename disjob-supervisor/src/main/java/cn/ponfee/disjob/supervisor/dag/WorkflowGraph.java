@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.dag;
+package cn.ponfee.disjob.supervisor.dag;
 
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;

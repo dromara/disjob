@@ -110,7 +110,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         return discoveryRole;
     }
 
-    // -------------------------------------------------------------------------------------private method & class definitions
+    // -------------------------------------------------------------------------------------private method
 
     private static String prune(String namespace, char separator) {
         if (StringUtils.isBlank(namespace)) {

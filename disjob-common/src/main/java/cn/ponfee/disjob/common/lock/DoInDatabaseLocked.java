@@ -29,16 +29,13 @@ public final class DoInDatabaseLocked implements DoInLocked {
     private static final String TABLE_NAME = "distributed_lock";
 
     private static final String CREATE_TABLE_DDL =
-        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                     \n" +
-        "  `id`    BIGINT       UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',               \n" +
-        "  `name`  VARCHAR(50)            NOT NULL                  COMMENT 'lock name',                       \n" +
-        "  PRIMARY KEY (`id`),                                                                                 \n" +
-        "  UNIQUE KEY `uk_name` (`name`)                                                                       \n" +
-        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='database lock'; \n" ;
+        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                    \n" +
+        "  `name`    VARCHAR(50)    PRIMARY KEY    NOT NULL    COMMENT 'lock name'            \n" +
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='database lock'; \n" ;
 
     private static final String INSERT_SQL = "INSERT INTO " + TABLE_NAME + " (name) VALUES (?)";
 
-    private static final String GET_SQL    = "SELECT id FROM " + TABLE_NAME + " WHERE name=?";
+    private static final String GET_SQL    = "SELECT 1 FROM " + TABLE_NAME + " WHERE name=?";
 
     private static final String LOCK_SQL   = GET_SQL + " FOR UPDATE";
 
@@ -89,8 +86,8 @@ public final class DoInDatabaseLocked implements DoInLocked {
         Objects.requireNonNull(getLockId());
     }
 
-    private Long getLockId() {
-        return jdbcTemplateWrapper.get(GET_SQL, JdbcTemplateWrapper.LONG_ROW_MAPPER, lockName);
+    private Integer getLockId() {
+        return jdbcTemplateWrapper.get(GET_SQL, JdbcTemplateWrapper.INT_ROW_MAPPER, lockName);
     }
 
 }
