@@ -333,7 +333,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
                 instance.getInstanceId(),
                 instance.getWnstanceId(),
                 triggerTime,
-                job.getJobId(),
+                instance.getJobId(),
                 JobType.of(job.getJobType()),
                 RouteStrategy.of(job.getRouteStrategy()),
                 job.getExecuteTimeout(),

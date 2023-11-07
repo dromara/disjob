@@ -703,17 +703,28 @@ public class DistributedJobManager extends AbstractJobManager {
         updateFixedDelayNextTriggerTime(instance, lazyJob);
     }
 
-    private void updateFixedDelayNextTriggerTime(SchedInstance prev, LazyLoader<SchedJob> lazyJob) {
-        SchedJob job;
-        if (prev.isWorkflowNode()
-            || (job = lazyJob.orElse(null)) == null
-            || job.retryable(RunState.of(prev.getRunState()), prev.obtainRetriedCount())
-            || !TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
-            // 如果是可重试，则要等到最后的那次重试完时来计算下次的延时执行时间
+    private void updateFixedDelayNextTriggerTime(SchedInstance curr, LazyLoader<SchedJob> lazyJob) {
+        // 1、不能为工作流任务从节点实例
+        if (curr.isWorkflowNode()) {
             return;
         }
 
-        Date nextTriggerTime = TriggerType.FIXED_DELAY.computeNextTriggerTime(job.getTriggerValue(), prev.getRunEndTime());
+        // 2、必须是SCHEDULE方式运行的实例：不会存在`A -> ... -> A`问题，因为在添加Job时做了不能循环依赖的校验
+        long rnstanceId = curr.obtainRnstanceId();
+        SchedInstance root = (rnstanceId == curr.getInstanceId()) ? curr : instanceMapper.get(rnstanceId);
+        if (!root.getJobId().equals(curr.getJobId()) || !RunType.SCHEDULE.equals(root.getRunType())) {
+            return;
+        }
+
+        // 3、如果是可重试，则要等到最后的那次重试完时来计算下次的延时执行时间
+        SchedJob job = lazyJob.orElse(null);
+        if (   job == null
+            || !TriggerType.FIXED_DELAY.equals(job.getTriggerType())
+            || job.retryable(RunState.of(curr.getRunState()), curr.obtainRetriedCount())) {
+            return;
+        }
+
+        Date nextTriggerTime = TriggerType.FIXED_DELAY.computeNextTriggerTime(job.getTriggerValue(), curr.getRunEndTime());
         jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime());
     }
 
@@ -900,6 +911,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParams(long instanceId, int expectTaskSize) {
         SchedInstance instance = instanceMapper.get(instanceId);
         SchedJob job = jobMapper.get(instance.getJobId());
+        Assert.notNull(job, "Not found job: " + instance.getJobId());
         List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceId(instanceId)
             .stream()
             .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
