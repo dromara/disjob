@@ -8,12 +8,12 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import com.google.common.base.CaseFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractHeartbeatThread extends Thread implements Closeable {
 
     private static final long MILLIS_PER_SECOND = 1000;
-    private static final int MAX_PROCESSED_COUNT = 47;
+    private static final int MAX_PROCESSED_COUNT = 17;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -40,7 +40,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
 
     public AbstractHeartbeatThread(long heartbeatPeriodMs) {
         log.info("Heartbeat thread init {}", getClass());
-        this.heartbeatPeriodMs = heartbeatPeriodMs;
+        this.heartbeatPeriodMs = Math.floorDiv(2 * heartbeatPeriodMs, 3);
 
         // init thread parameters
         super.setDaemon(true);
@@ -83,12 +83,13 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 // if busy loop, need sleep a moment
                 if (isBusyLoop) {
                     processedCount = 0;
-                    // gap period milliseconds(with fixed delay)
-                    doSleep(heartbeatPeriodMs);
+                    doSleep(heartbeatPeriodMs + ThreadLocalRandom.current().nextLong(heartbeatPeriodMs));
                 } else if (++processedCount > MAX_PROCESSED_COUNT) {
                     processedCount = 0;
                     long sleepTime = end % MILLIS_PER_SECOND;
-                    doSleep(sleepTime != 0 ? sleepTime : MILLIS_PER_SECOND);
+                    sleepTime = sleepTime != 0 ? sleepTime : MILLIS_PER_SECOND;
+                    log.info("Max processed count, will sleep time milliseconds: {}", sleepTime);
+                    doSleep(sleepTime);
                 }
             }
         } catch (InterruptedException e) {

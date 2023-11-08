@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.base;
+package cn.ponfee.disjob.common.concurrent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

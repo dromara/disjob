@@ -54,6 +54,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
 public abstract class AbstractJobManager {
 
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
+    private static final int MAX_DEPENDS_LEVEL = 20;
     private static final List<TriggerType> FIXED_TYPES = ImmutableList.of(TriggerType.FIXED_RATE, TriggerType.FIXED_DELAY);
     private static final int AFFECTED_ONE_ROW = 1;
 
@@ -104,7 +105,7 @@ public abstract class AbstractJobManager {
         job.checkAndDefaultSetting();
         workerCoreRpcClient.verify(JobHandlerParam.from(job));
         job.setJobId(generateId());
-        parseTriggerConfig(job, false);
+        parseTriggerConfig(job);
 
         jobMapper.insert(job);
     }
@@ -129,7 +130,7 @@ public abstract class AbstractJobManager {
             Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
             // update last trigger time or depends parent job id
             dependMapper.deleteByChildJobId(job.getJobId());
-            parseTriggerConfig(job, true);
+            parseTriggerConfig(job);
         }
 
         job.setUpdatedAt(new Date());
@@ -288,7 +289,7 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private void parseTriggerConfig(SchedJob job, boolean isUpdate) {
+    private void parseTriggerConfig(SchedJob job) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
         Long jobId = job.getJobId();
 
@@ -308,10 +309,8 @@ public abstract class AbstractJobManager {
                 }
             }
 
-            // 校验是否有循环依赖
-            if (isUpdate) {
-                checkCircularDepends(jobId, new HashSet<>(parentJobIds));
-            }
+            // 校验是否有循环依赖 以及 依赖层级是否太深
+            checkCircularDepends(jobId, new HashSet<>(parentJobIds));
 
             List<SchedDepend> list = new ArrayList<>(parentJobIds.size());
             for (int i = 0; i < parentJobIds.size(); i++) {
@@ -341,7 +340,8 @@ public abstract class AbstractJobManager {
     }
 
     private void checkCircularDepends(Long jobId, Set<Long> parentJobIds) {
-        for (; ; ) {
+        Set<Long> outerDepends = parentJobIds;
+        for (int i = 1; ; i++) {
             Map<Long, SchedDepend> map = dependMapper.findByChildJobIds(parentJobIds)
                 .stream()
                 .collect(Collectors.toMap(SchedDepend::getParentJobId, Function.identity(), (v1, v2) -> v1));
@@ -350,6 +350,9 @@ public abstract class AbstractJobManager {
             }
             if (map.containsKey(jobId)) {
                 throw new IllegalArgumentException("Circular depends job: " + map.get(jobId));
+            }
+            if (i >= MAX_DEPENDS_LEVEL) {
+                throw new IllegalArgumentException("Too many depends level: " + outerDepends);
             }
             parentJobIds = map.keySet();
         }

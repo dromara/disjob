@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.worker.base;
 
-import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -208,7 +208,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         // 2.3、stop executing pool thread
         ThrowingRunnable.execute(activePool::closePool);
-        workerThreadCounter.set(0);
 
         // 2.4、shutdown jdk thread pool
         ThreadPoolExecutors.shutdown(stopTaskExecutor, 1);
@@ -216,6 +215,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         // 2.5、clear task execution param queue
         ThrowingRunnable.execute(taskQueue::clear);
 
+        workerThreadCounter.set(0);
         LOG.info("Close worker thread pool end.");
     }
 

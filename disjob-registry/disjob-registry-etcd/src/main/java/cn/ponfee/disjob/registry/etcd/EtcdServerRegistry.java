@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.registry.etcd;
 
-import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.Symbol.Char;
+import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ConnectionStateListener;

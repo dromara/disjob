@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.registry.database;
 
-import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
+import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;

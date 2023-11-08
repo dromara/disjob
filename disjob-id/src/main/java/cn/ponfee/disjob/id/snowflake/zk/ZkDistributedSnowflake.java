@@ -9,9 +9,9 @@
 package cn.ponfee.disjob.id.snowflake.zk;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;

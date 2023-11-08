@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.registry.consul;
 
-import cn.ponfee.disjob.common.base.LoggedUncaughtExceptionHandler;
-import cn.ponfee.disjob.common.base.LoopThread;
+import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
+import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.Server;

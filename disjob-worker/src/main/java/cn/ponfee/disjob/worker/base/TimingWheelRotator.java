@@ -8,10 +8,10 @@
 
 package cn.ponfee.disjob.worker.base;
 
-import cn.ponfee.disjob.common.base.LoopThread;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;

@@ -82,7 +82,7 @@ public class DisjobJobController extends BaseController {
      */
     @RequiresPermissions(PERMISSION_QUERY)
     @GetMapping("/detail/{jobId}")
-    public String detail(@PathVariable("jobId") Long jobId, ModelMap mmap) {
+    public String detail(@PathVariable("jobId") long jobId, ModelMap mmap) {
         SchedJobResponse job = supervisorOpenRpcService.getJob(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
@@ -111,7 +111,21 @@ public class DisjobJobController extends BaseController {
      */
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/add")
-    public String add() {
+    public String add(ModelMap mmap) {
+        return toAdd(new SchedJobResponse(), mmap);
+    }
+
+    /**
+     * 复制调度配置
+     */
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @GetMapping("/copy/{id}")
+    public String copy(@PathVariable("id") long jobId, ModelMap mmap) {
+        return toAdd(supervisorOpenRpcService.getJob(jobId), mmap);
+    }
+
+    private String toAdd(SchedJobResponse job, ModelMap mmap) {
+        mmap.put("job", job);
         return PREFIX + "/add";
     }
 
@@ -133,7 +147,7 @@ public class DisjobJobController extends BaseController {
      */
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") Long jobId, ModelMap mmap) {
+    public String edit(@PathVariable("id") long jobId, ModelMap mmap) {
         SchedJobResponse job = supervisorOpenRpcService.getJob(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
@@ -179,7 +193,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "修改调度配置状态", businessType = BusinessType.UPDATE)
     @PostMapping("/changeState")
     @ResponseBody
-    public AjaxResult changeState(@RequestParam("jobId") Long jobId,
+    public AjaxResult changeState(@RequestParam("jobId") long jobId,
                                   @RequestParam("toState") Integer toState) {
         boolean result = supervisorOpenRpcService.changeJobState(jobId, toState);
         return toAjax(result);
@@ -192,7 +206,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "触发执行", businessType = BusinessType.OTHER)
     @PostMapping("/trigger")
     @ResponseBody
-    public AjaxResult trigger(@RequestParam("jobId") Long jobId) throws JobCheckedException {
+    public AjaxResult trigger(@RequestParam("jobId") long jobId) throws JobCheckedException {
         supervisorOpenRpcService.triggerJob(jobId);
         return success();
     }
