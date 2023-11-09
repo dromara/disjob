@@ -29,7 +29,7 @@ import java.util.List;
  */
 @Hidden
 @RequestMapping("supervisor/core/rpc/")
-public interface SupervisorCoreRpcService extends Savepoint {
+public interface SupervisorCoreRpcService {
 
     @GetMapping("task/get")
     SchedTask getTask(long taskId) throws Exception;
@@ -62,8 +62,7 @@ public interface SupervisorCoreRpcService extends Savepoint {
 
     // ---------------------------------------------------------------------------savepoint
 
-    @Override
     @PostMapping("task/savepoint")
-    void save(long taskId, String executeSnapshot) throws Exception;
+    void savepoint(long taskId, String executeSnapshot) throws Exception;
 
 }

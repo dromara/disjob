@@ -51,13 +51,13 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     private static final String REMOVE_DEAD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time<?";
 
-    private static final String REGISTER_SQL = "INSERT INTO " + TABLE_NAME + " (namespace, role, server, heartbeat_time) VALUES (?, ?, ?, ?)";
+    private static final String REGISTER_SQL    = "INSERT INTO " + TABLE_NAME + " (namespace, role, server, heartbeat_time) VALUES (?, ?, ?, ?)";
 
-    private static final String HEARTBEAT_SQL = "UPDATE " + TABLE_NAME + " SET heartbeat_time=? WHERE namespace=? AND role=? AND server=?";
+    private static final String HEARTBEAT_SQL   = "UPDATE " + TABLE_NAME + " SET heartbeat_time=? WHERE namespace=? AND role=? AND server=?";
 
-    private static final String DEREGISTER_SQL = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND server=?";
+    private static final String DEREGISTER_SQL  = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND server=?";
 
-    private static final String DISCOVER_SQL = "SELECT server FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time>?";
+    private static final String DISCOVER_SQL    = "SELECT server FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time>?";
 
     /**
      * Registry namespace

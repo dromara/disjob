@@ -19,11 +19,10 @@ public interface Savepoint {
     /**
      * Save the task execution snapshot
      *
-     * @param taskId          the task id
-     * @param executeSnapshot the execution snapshot data
+     * @param executeSnapshot the task execution snapshot data
      * @throws Exception if saved occur exception
      */
-    void save(long taskId, String executeSnapshot) throws Exception;
+    void save(String executeSnapshot) throws Exception;
 
-    Savepoint DISCARD = (taskId, executeSnapshot) -> {};
+    Savepoint DISCARD = executeSnapshot -> {};
 }

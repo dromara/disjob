@@ -108,7 +108,7 @@ public class PrimeCountJobHandler extends JobHandler {
         long nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
         while (next <= n) {
             if (super.isStopped() || Thread.currentThread().isInterrupted()) {
-                savepoint.save(executingTask.getTaskId(), Jsons.toJson(execution));
+                savepoint.save(Jsons.toJson(execution));
                 throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_EXCEPTION);
             }
 
@@ -124,7 +124,7 @@ public class PrimeCountJobHandler extends JobHandler {
             }
 
             if (execution.isFinished() || nextSavepointTimeMillis < System.currentTimeMillis()) {
-                savepoint.save(executingTask.getTaskId(), Jsons.toJson(execution));
+                savepoint.save(Jsons.toJson(execution));
                 nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
             }
         }

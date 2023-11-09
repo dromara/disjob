@@ -37,7 +37,7 @@ public class TestBroadcastJobHandler extends BroadcastJobHandler {
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         Thread.sleep(5000 + ThreadLocalRandom.current().nextLong(10000));
         LOG.info("Broadcast job execute done: {}", executingTask.getTaskId());
-        savepoint.save(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
+        savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecuteResult.success();
     }
 

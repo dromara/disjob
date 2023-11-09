@@ -9,11 +9,13 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.AbstractExecutionTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
+import org.springframework.util.Assert;
 
 /**
  * 质数计数后的累加器
@@ -26,12 +28,13 @@ public class PrimeAccumulateJobHandler extends JobHandler {
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         long sum = executingTask.getWorkflowPredecessorNodes()
             .stream()
+            .peek(e -> Assert.state(RunState.FINISHED.equals(e.getRunState()), "Previous instance unfinished: " + e.getInstanceId()))
             .flatMap(e -> e.getExecutedTasks().stream())
             .map(AbstractExecutionTask::getExecuteSnapshot)
             .map(e -> Jsons.fromJson(e, PrimeCountJobHandler.ExecuteSnapshot.class))
             .mapToLong(PrimeCountJobHandler.ExecuteSnapshot::getCount)
             .sum();
-        savepoint.save(executingTask.getTaskId(), Long.toString(sum));
+        savepoint.save(Long.toString(sum));
 
         return ExecuteResult.success();
     }

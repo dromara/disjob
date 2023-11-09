@@ -718,14 +718,12 @@ public class DistributedJobManager extends AbstractJobManager {
 
         // 3、如果是可重试，则要等到最后的那次重试完时来计算下次的延时执行时间
         SchedJob job = lazyJob.orElse(null);
-        if (   job == null
-            || !TriggerType.FIXED_DELAY.equals(job.getTriggerType())
-            || job.retryable(RunState.of(curr.getRunState()), curr.obtainRetriedCount())) {
+        if (job == null || job.retryable(RunState.of(curr.getRunState()), curr.obtainRetriedCount())) {
             return;
         }
 
-        Date nextTriggerTime = TriggerType.FIXED_DELAY.computeNextTriggerTime(job.getTriggerValue(), curr.getRunEndTime());
-        jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime());
+        // 4、do update nextTriggerTime
+        super.updateFixedDelayNextTriggerTime(job, curr.getRunEndTime());
     }
 
     private void processWorkflow(SchedInstance nodeInstance) {

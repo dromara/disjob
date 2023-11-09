@@ -25,6 +25,7 @@ import cn.ponfee.disjob.core.exception.CancelTaskException;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
@@ -604,6 +605,21 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
     }
 
+    private static class TaskSavepoint implements Savepoint {
+        private final SupervisorCoreRpcService client;
+        private final long taskId;
+
+        public TaskSavepoint(SupervisorCoreRpcService client, long taskId) {
+            this.client = client;
+            this.taskId = taskId;
+        }
+
+        @Override
+        public void save(String executeSnapshot) throws Exception {
+            client.savepoint(taskId, executeSnapshot);
+        }
+    }
+
     /**
      * Worker thread
      */
@@ -619,7 +635,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         /**
          * Supervisor core rpc client
          */
-        private final SupervisorCoreRpcService supervisorCoreRpcClient;
+        private final SupervisorCoreRpcService client;
 
         /**
          * Thread keep alive time
@@ -647,10 +663,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private final AtomicReference<ExecuteTaskParam> executingParam = new AtomicReference<>();
 
         private WorkerThread(WorkerThreadPool threadPool,
-                             SupervisorCoreRpcService supervisorCoreRpcClient,
+                             SupervisorCoreRpcService client,
                              long keepAliveTimeSeconds) {
             this.threadPool = threadPool;
-            this.supervisorCoreRpcClient = supervisorCoreRpcClient;
+            this.client = client;
             this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
 
             super.setDaemon(true);
@@ -733,7 +749,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     runTask(param);
                 } catch (Throwable t) {
                     LOG.error("Worker thread execute failed: " + param, t);
-                    terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                    terminateTask(client, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                 }
 
                 // return this to idle thread pool
@@ -749,7 +765,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             SchedTask task;
             ExecutingTask executingTask;
             try {
-                if ((task = supervisorCoreRpcClient.getTask(param.getTaskId())) == null) {
+                if ((task = client.getTask(param.getTaskId())) == null) {
                     LOG.error("Sched task not found {}", param);
                     return;
                 }
@@ -763,12 +779,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 // build executing task
                 List<WorkflowPredecessorNode> nodes = null;
                 if (param.getJobType() == JobType.WORKFLOW) {
-                    nodes = supervisorCoreRpcClient.findWorkflowPredecessorNodes(param.getWnstanceId(), param.getInstanceId());
+                    nodes = client.findWorkflowPredecessorNodes(param.getWnstanceId(), param.getInstanceId());
                 }
                 executingTask = ExecutingTask.of(param.getJobId(), param.getWnstanceId(), task, nodes);
 
                 // update database records start state(sched_instance, sched_task)
-                if (!supervisorCoreRpcClient.startTask(StartTaskParam.from(param))) {
+                if (!client.startTask(StartTaskParam.from(param))) {
                     LOG.warn("Task start conflicted {}", param);
                     return;
                 }
@@ -777,7 +793,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     final List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
-                    ThrowingRunnable.execute(() -> supervisorCoreRpcClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
+                    ThrowingRunnable.execute(() -> client.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 Threads.interruptIfNecessary(t);
                 // discard task
@@ -791,7 +807,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 param.taskExecutor(taskExecutor);
             } catch (Throwable t) {
                 LOG.error("Load job handler error: " + param, t);
-                terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
+                terminateTask(client, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
                 return;
             }
 
@@ -801,7 +817,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.info("Initiated sched task {}", param.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Task init error: " + param, t);
-                terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
+                terminateTask(client, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
                 return;
             }
@@ -809,8 +825,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             // 3、execute
             try {
                 ExecuteResult result;
+                Savepoint savepoint = new TaskSavepoint(client, executingTask.getTaskId());
                 if (param.getExecuteTimeout() > 0) {
-                    FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, supervisorCoreRpcClient));
+                    FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, savepoint));
                     String threadName = getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
                     Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask);
                     futureTaskThread.start();
@@ -820,27 +837,27 @@ public class WorkerThreadPool extends Thread implements Closeable {
                         Threads.stopThread(futureTaskThread, 0);
                     }
                 } else {
-                    result = taskExecutor.execute(executingTask, supervisorCoreRpcClient);
+                    result = taskExecutor.execute(executingTask, savepoint);
                 }
 
                 // 4、execute end
                 if (result != null && result.isSuccess()) {
                     LOG.info("Task execute finished: {} | {}", param.getTaskId(), result.getMsg());
-                    terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, FINISHED, null);
+                    terminateTask(client, param, Operations.TRIGGER, FINISHED, null);
                 } else {
                     LOG.error("Task execute failed: {} | {}", param, result);
                     String msg = (result == null) ? "null result" : result.getMsg();
-                    terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, EXECUTE_FAILED, msg);
+                    terminateTask(client, param, Operations.TRIGGER, EXECUTE_FAILED, msg);
                 }
             } catch (TimeoutException e) {
                 LOG.error("Task execute timeout: " + param, e);
-                terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
+                terminateTask(client, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
                 LOG.error("Pause task exception: {} | {}", param, e.getMessage());
-                stopInstance(supervisorCoreRpcClient, param, Operations.PAUSE, toErrorMsg(e));
+                stopInstance(client, param, Operations.PAUSE, toErrorMsg(e));
             } catch (CancelTaskException e) {
                 LOG.error("Cancel task exception:  {} | {}", param, e.getMessage());
-                stopInstance(supervisorCoreRpcClient, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
+                stopInstance(client, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     LOG.warn("Task execute thread death: {} | {}", param, t.getMessage());
@@ -849,7 +866,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } else {
                     LOG.error("Task execute occur error: " + param, t);
                 }
-                terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                terminateTask(client, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
             } finally {
                 // 5、destroy

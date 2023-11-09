@@ -52,7 +52,7 @@ public class NoopJobHandler extends JobHandler {
         LOG.info("task execute start: {}", executingTask.getTaskId());
         Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
         LOG.info("task execute done: {}", executingTask.getTaskId());
-        savepoint.save(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
+        savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecuteResult.success();
     }
 

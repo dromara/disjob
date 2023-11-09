@@ -50,7 +50,7 @@ public class EJobHandler extends JobHandler {
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
         LOG.info(this.getClass().getSimpleName() + " execution finished.");
-        savepoint.save(executingTask.getTaskId(), Dates.format(new Date()) + ": " + getClass().getSimpleName());
+        savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecuteResult.success();
     }
 

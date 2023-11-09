@@ -182,6 +182,13 @@ public class SchedJob extends BaseEntity implements Serializable {
      */
     private String createdBy;
 
+    public Long obtainNextTriggerTime() {
+        if (nextTriggerTime == null || endTime == null) {
+            return nextTriggerTime;
+        }
+        return nextTriggerTime > endTime.getTime() ? null : nextTriggerTime;
+    }
+
     public void verifyBeforeAdd() {
         TriggerType type = TriggerType.of(triggerType);
         if (!type.validate(triggerValue)) {

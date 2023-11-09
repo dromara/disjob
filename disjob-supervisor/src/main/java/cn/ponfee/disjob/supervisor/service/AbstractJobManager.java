@@ -76,14 +76,9 @@ public abstract class AbstractJobManager {
 
     public boolean changeJobState(long jobId, JobState to) {
         boolean flag = isOneAffectedRow(jobMapper.updateState(jobId, to.value(), 1 ^ to.value()));
-        SchedJob job;
-        if (flag && to == JobState.ENABLE && TriggerType.FIXED_DELAY.equals((job = jobMapper.get(jobId)).getTriggerType())) {
-            Date date = null;
-            if (job.getLastTriggerTime() != null) {
-                date = TriggerType.FIXED_DELAY.computeNextTriggerTime(job.getTriggerValue(), new Date(job.getLastTriggerTime()));
-            }
-            Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
-            jobMapper.updateFixedDelayNextTriggerTime(jobId, nextTriggerTime.getTime());
+        if (flag && to == JobState.ENABLE) {
+            SchedJob job = jobMapper.get(jobId);
+            updateFixedDelayNextTriggerTime(job, Dates.ofTimeMillis(job.getLastTriggerTime()));
         }
         return flag;
     }
@@ -150,6 +145,16 @@ public abstract class AbstractJobManager {
     }
 
     // ------------------------------------------------------------------others operation
+
+    protected boolean updateFixedDelayNextTriggerTime(SchedJob job, Date baseTime) {
+        TriggerType fixedDelay = TriggerType.FIXED_DELAY;
+        if (!fixedDelay.equals(job.getTriggerType())) {
+            return false;
+        }
+        Date date = baseTime == null ? null : fixedDelay.computeNextTriggerTime(job.getTriggerValue(), baseTime);
+        Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
+        return isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime()));
+    }
 
     protected boolean isOneAffectedRow(int totalAffectedRow) {
         return totalAffectedRow == AFFECTED_ONE_ROW;

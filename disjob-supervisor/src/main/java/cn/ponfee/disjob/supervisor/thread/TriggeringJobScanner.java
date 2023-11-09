@@ -179,7 +179,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private Long reComputeNextTriggerTime(SchedJob job, Date now) {
         if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
             // 固定延时类型不重新计算nextTriggerTime
-            return job.getNextTriggerTime();
+            return job.obtainNextTriggerTime();
         }
         if (now.getTime() <= (job.getNextTriggerTime() + afterMilliseconds)) {
             // 没有过期不重新计算nextTriggerTime
@@ -199,6 +199,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private static Long doComputeNextTriggerTime(SchedJob job, Date now) {
         if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
             // 固定延时类型的nextTriggerTime：先更新为long最大值，当任务实例运行完成时去主动计算并更新
+            // null值已被用作表示没有下次触发时间
             return Long.MAX_VALUE;
         }
         return TriggerTimeUtils.computeNextTriggerTime(job, now);
