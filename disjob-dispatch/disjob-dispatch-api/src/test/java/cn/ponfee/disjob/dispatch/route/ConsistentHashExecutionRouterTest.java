@@ -109,7 +109,7 @@ public class ConsistentHashExecutionRouterTest {
     }
 
     private static ExecuteTaskParam createExecuteTaskParam(long taskId) {
-        return new ExecuteTaskParam(Operations.TRIGGER, taskId, 1L, 1L, 0, 1L, JobType.NORMAL, RouteStrategy.CONSISTENT_HASH, 0, "");
+        return new ExecuteTaskParam(Operations.TRIGGER, taskId, 1L, 1L, 0, 1L, JobType.GENERAL, RouteStrategy.CONSISTENT_HASH, 0, "");
     }
 
     private static Worker createWorker(String workerId) {

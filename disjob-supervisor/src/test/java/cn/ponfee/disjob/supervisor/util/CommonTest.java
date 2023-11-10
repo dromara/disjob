@@ -85,7 +85,7 @@ public class CommonTest {
             1L,
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
-            JobType.NORMAL,
+            JobType.GENERAL,
             RouteStrategy.ROUND_ROBIN,
             1,
             "JobHandler测试中文乱码。"

@@ -50,12 +50,12 @@ import java.util.Map;
  * @author Ponfee
  */
 public class HttpJobHandler extends JobHandler {
-    private final static Logger LOG = LoggerFactory.getLogger(HttpJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpJobHandler.class);
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
     private static final int DEFAULT_READ_TIMEOUT = 5000;
 
-    private final static RestTemplate REST_TEMPLATE = RestTemplateUtils.buildRestTemplate(
+    private static final RestTemplate REST_TEMPLATE = RestTemplateUtils.buildRestTemplate(
         DEFAULT_CONNECT_TIMEOUT,
         DEFAULT_READ_TIMEOUT,
         StandardCharsets.UTF_8,

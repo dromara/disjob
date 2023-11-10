@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  */
 public final class ClassUtils {
 
-    private final static Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
 
     public static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 

@@ -111,7 +111,7 @@
         },
         {
           field: 'triggerValue',
-          title: '触发器配置',
+          title: '触发器值',
           formatter: function (value, row, index) {
             return $.table.tooltip(value, 19, "open");
           }
@@ -138,13 +138,6 @@
               return "-"
             }
             return $.common.dateFormat(parseInt(value), 'yyyy-MM-dd HH:mm:ss');
-          }
-        },
-        {
-          field: 'remark',
-          title: '备注',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 30, "open");
           }
         },
         {

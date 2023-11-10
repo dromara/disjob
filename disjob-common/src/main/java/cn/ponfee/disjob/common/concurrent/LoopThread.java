@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LoopThread extends Thread {
 
-    private final static Logger LOG = LoggerFactory.getLogger(LoopThread.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoopThread.class);
 
     private static final int NEW        = 0;
     private static final int RUNNING    = 1;

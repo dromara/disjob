@@ -56,8 +56,8 @@ import static cn.ponfee.disjob.core.enums.ExecuteState.*;
  */
 public class WorkerThreadPool extends Thread implements Closeable {
 
-    private final static Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
-    private final static int ERROR_MSG_MAX_LENGTH = 1024;
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
+    private static final int ERROR_MSG_MAX_LENGTH = 1024;
 
     /**
      * This jdk thread pool for asynchronous to stop(pause or cancel) task
@@ -606,6 +606,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     private static class TaskSavepoint implements Savepoint {
+        private static final int SNAPSHOT_MAX_LENGTH = 65535;
         private final SupervisorCoreRpcService client;
         private final long taskId;
 
@@ -616,6 +617,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         @Override
         public void save(String executeSnapshot) throws Exception {
+            if (executeSnapshot != null && executeSnapshot.length() > SNAPSHOT_MAX_LENGTH) {
+                throw new IllegalArgumentException("Execution snapshot too large: " + executeSnapshot.length() + " > " + SNAPSHOT_MAX_LENGTH);
+            }
             client.savepoint(taskId, executeSnapshot);
         }
     }

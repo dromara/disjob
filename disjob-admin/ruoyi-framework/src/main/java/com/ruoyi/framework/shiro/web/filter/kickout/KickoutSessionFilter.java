@@ -31,7 +31,7 @@ import java.util.Deque;
  */
 public class KickoutSessionFilter extends AccessControlFilter
 {
-    private final static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 同一个用户最大会话数

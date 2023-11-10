@@ -41,7 +41,7 @@ public class SchedJobExport {
     private String jobName;
 
     /**
-     * Job类型：1-普通(Normal)；2-工作流(Workflow)；
+     * Job类型：1-常规；2-工作流(Workflow)；
      */
     @Excel(name = "Job类型")
     private Integer jobType;
@@ -103,9 +103,9 @@ public class SchedJobExport {
     private Integer triggerType;
 
     /**
-     * 触发器配置(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-周期秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；
+     * 触发器值(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-周期秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；
      */
-    @Excel(name = "触发器配置")
+    @Excel(name = "触发器值")
     private String triggerValue;
 
     /**

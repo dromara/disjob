@@ -55,7 +55,7 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
 
     public static TriggerInstanceCreator<?> of(Integer jobType, DistributedJobManager jobManager) {
         switch (JobType.of(jobType)) {
-            case NORMAL:
+            case GENERAL:
                 return new NormalInstanceCreator(jobManager);
             case WORKFLOW:
                 return new WorkflowInstanceCreator(jobManager);

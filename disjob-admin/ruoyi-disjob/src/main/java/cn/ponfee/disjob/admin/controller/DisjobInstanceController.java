@@ -41,8 +41,8 @@ public class DisjobInstanceController extends BaseController {
     private static final String PERMISSION_VIEW = "disjob:instance:view";
     private static final String PERMISSION_QUERY = "disjob:instance:query";
     private static final String PERMISSION_OPERATE = "disjob:instance:operate";
-    private final static int WAIT_SLEEP_ROUND = 9;
-    private final static long[] WAIT_SLEEP_MILLIS = {2500, 500};
+    private static final int WAIT_SLEEP_ROUND = 9;
+    private static final long[] WAIT_SLEEP_MILLIS = {2500, 500};
 
     private final SupervisorOpenRpcService supervisorOpenRpcService;
 

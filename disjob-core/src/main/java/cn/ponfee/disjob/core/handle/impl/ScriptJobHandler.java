@@ -50,7 +50,7 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  * @author Ponfee
  */
 public class ScriptJobHandler extends JobHandler {
-    private final static Logger LOG = LoggerFactory.getLogger(ScriptJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptJobHandler.class);
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http://", "https://", "ftp://"};
     private static final String WORKER_SCRIPT_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";

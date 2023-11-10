@@ -36,7 +36,7 @@ import java.util.stream.IntStream;
 @Service("BJobHandler")
 public class BJobHandler extends JobHandler {
 
-    private final static Logger LOG = LoggerFactory.getLogger(BJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BJobHandler.class);
 
     @Override
     public List<SplitTask> split(String jobParamString) {

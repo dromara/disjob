@@ -23,9 +23,9 @@ import java.util.Objects;
 public enum JobType implements IntValueEnum<JobType> {
 
     /**
-     * 普通
+     * 常规
      */
-    NORMAL(1, "普通(Normal)"),
+    GENERAL(1, "常规"),
 
     /**
      * 工作流(DAG)

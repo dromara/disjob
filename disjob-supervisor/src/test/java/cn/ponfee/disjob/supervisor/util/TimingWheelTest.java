@@ -165,7 +165,7 @@ public class TimingWheelTest {
         TimingQueue<ExecuteTaskParam> timingQueue = new TimingQueue<>();
         for (int i = 0; i < 100; i++) {
             long triggerTime = ThreadLocalRandom.current().nextLong(100);
-            timingQueue.offer(new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
+            timingQueue.offer(new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
         }
 
         System.out.println("-------------\n");
@@ -191,7 +191,7 @@ public class TimingWheelTest {
 
         for (int i = 0; i < 100000; i++) {
             long triggerTime = System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour);
-            timingWheel.offer(new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.NORMAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
+            timingWheel.offer(new ExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
         }
     }
 

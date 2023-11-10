@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Ponfee
  */
 public abstract class BaseTaskDispatchingAutoConfiguration {
-    private final static Logger LOG = LoggerFactory.getLogger(BaseTaskDispatchingAutoConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BaseTaskDispatchingAutoConfiguration.class);
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
 
     public BaseTaskDispatchingAutoConfiguration() {

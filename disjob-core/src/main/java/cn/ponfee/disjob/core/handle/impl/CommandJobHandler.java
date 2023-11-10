@@ -48,7 +48,7 @@ import java.nio.charset.Charset;
  * @author Ponfee
  */
 public class CommandJobHandler extends JobHandler {
-    private final static Logger LOG = LoggerFactory.getLogger(CommandJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CommandJobHandler.class);
 
     private Charset charset;
     private Long pid;

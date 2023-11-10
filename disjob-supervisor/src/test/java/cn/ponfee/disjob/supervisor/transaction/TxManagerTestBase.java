@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * @author Ponfee
  */
 public abstract class TxManagerTestBase<S extends AbstractTxManagerTestService<?, I>, I> extends SpringBootTestBase<S> {
-    private final static Logger LOG = LoggerFactory.getLogger(TxManagerTestBase.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TxManagerTestBase.class);
 
     private final I id1, id2;
 

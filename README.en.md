@@ -182,4 +182,4 @@ Scan the QR code to add WeChat friends, note `disjob`, and invite you to join th
 - [ ] Monitor real-time executing logs of tasks online
 - [ ] Alarm subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
 - [ ] Visual monitoring BI dashboard
-- [ ] Support more savepoint implementation: File System, Hadoop, RocksDB, OSS
+- [ ] Support more Savepoint implementation: File System, Hadoop, RocksDB, OSS

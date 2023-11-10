@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
  */
 public final class ThreadPoolExecutors {
 
-    private final static Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
 
     /**
      * max #workers - 1

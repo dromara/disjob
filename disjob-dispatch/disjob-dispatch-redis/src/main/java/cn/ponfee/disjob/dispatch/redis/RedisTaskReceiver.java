@@ -50,7 +50,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Ponfee
  */
 public class RedisTaskReceiver extends TaskReceiver {
-    private final static Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
 
     /**
      * List Batch pop lua script

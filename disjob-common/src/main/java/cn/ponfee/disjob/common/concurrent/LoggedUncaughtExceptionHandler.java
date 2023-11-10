@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * @author Ponfee
  */
 public final class LoggedUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-    private final static Logger LOG = LoggerFactory.getLogger(LoggedUncaughtExceptionHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoggedUncaughtExceptionHandler.class);
 
     public static final LoggedUncaughtExceptionHandler INSTANCE = new LoggedUncaughtExceptionHandler();
 

@@ -61,7 +61,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
  */
 @Component
 public class DistributedJobManager extends AbstractJobManager {
-    private final static Logger LOG = LoggerFactory.getLogger(DistributedJobManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DistributedJobManager.class);
 
     private static final Interner<Long> INTERNER_POOL = Interners.newWeakInterner();
 
@@ -762,11 +762,21 @@ public class DistributedJobManager extends AbstractJobManager {
             graph.successors(DAGNode.fromString(nodeInstance.parseAttach().getCurNode())),
             throwable -> {
                 LOG.error("Split workflow job task error: " + nodeInstance, throwable);
-                nodeInstance.setRunState(RunState.CANCELED.value());
-                processWorkflow(nodeInstance);
+                onCreateWorkflowNodeFailed(nodeInstance.getWnstanceId());
                 return false;
             }
         );
+    }
+
+    private void onCreateWorkflowNodeFailed(Long wnstanceId) {
+        Integer canceled = RunState.CANCELED.value();
+        workflowMapper.update(wnstanceId, null, canceled, null, RUN_STATE_RUNNABLE, null);
+        WorkflowGraph graph = new WorkflowGraph(workflowMapper.findByWnstanceId(wnstanceId));
+        updateWorkflowEndState(graph);
+        Assert.state(graph.allMatch(e -> e.getValue().isTerminal()), "Workflow not all terminal.");
+        int row = instanceMapper.terminate(wnstanceId, canceled, RUN_STATE_TERMINABLE, new Date());
+        assertOneAffectedRow(row, () -> "Cancel workflow failed: " + wnstanceId);
+        afterTerminateTask(instanceMapper.get(wnstanceId));
     }
 
     private void retryJob(SchedInstance prev, LazyLoader<SchedJob> lazyJob) {

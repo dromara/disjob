@@ -38,7 +38,7 @@ import java.util.function.Consumer;
  */
 public final class AsyncDelayedExecutor<E> extends Thread {
 
-    private final static Logger LOG = LoggerFactory.getLogger(AsyncDelayedExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AsyncDelayedExecutor.class);
 
     private final Consumer<E> processor;            // 数据处理器
     private final ThreadPoolExecutor asyncExecutor; // 异步执行器

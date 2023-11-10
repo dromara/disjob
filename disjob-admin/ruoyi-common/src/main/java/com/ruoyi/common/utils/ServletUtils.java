@@ -24,7 +24,7 @@ public class ServletUtils
     /**
      * 定义移动端请求的所有可能类型
      */
-    private final static String[] agent = { "Android", "iPhone", "iPod", "iPad", "Windows Phone", "MQQBrowser" };
+    private static final String[] agent = { "Android", "iPhone", "iPod", "iPad", "Windows Phone", "MQQBrowser" };
 
     /**
      * 获取String参数

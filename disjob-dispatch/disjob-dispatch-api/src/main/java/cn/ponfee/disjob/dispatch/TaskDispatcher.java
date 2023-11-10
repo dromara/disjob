@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 public abstract class TaskDispatcher implements Startable {
-    private final static Logger LOG = LoggerFactory.getLogger(TaskDispatcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TaskDispatcher.class);
 
     private final Discovery<Worker> discoveryWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;

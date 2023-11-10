@@ -23,7 +23,7 @@ import java.util.Objects;
  * @author Ponfee
  */
 public abstract class TaskReceiver implements Startable {
-    private final static Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
 
     private final Worker currentWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;

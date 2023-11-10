@@ -13,9 +13,13 @@ import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
+import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.handle.execution.AbstractExecutionTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import org.springframework.util.Assert;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 质数计数后的累加器
@@ -23,6 +27,11 @@ import org.springframework.util.Assert;
  * @author Ponfee
  */
 public class PrimeAccumulateJobHandler extends JobHandler {
+
+    @Override
+    public List<SplitTask> split(String jobParamString) {
+        return Collections.singletonList(null);
+    }
 
     @Override
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {

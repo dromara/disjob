@@ -80,7 +80,7 @@ import java.util.stream.Collectors;
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"DEV"})
 public abstract class SpringBootTestBase<T> {
-    private final static Logger LOG = LoggerFactory.getLogger(SpringBootTestBase.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SpringBootTestBase.class);
 
     // Only reset mock bean which is defined on SpringBootTestBase
     private static final List<Field> MOCK_BEAN_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestBase.class)
