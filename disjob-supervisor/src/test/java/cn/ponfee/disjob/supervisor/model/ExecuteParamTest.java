@@ -30,7 +30,7 @@ public class ExecuteParamTest {
     @Test
     public void test1() {
         ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 3, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
-        Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"NORMAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\"}", Jsons.toJson(param));
+        Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\"}", Jsons.toJson(param));
 
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
@@ -42,7 +42,7 @@ public class ExecuteParamTest {
         });
         String json = param.toString();
         System.out.println(json);
-        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"NORMAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"workerId\":\"i\"}}");
+        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"workerId\":\"i\"}}");
     }
 
     @Test
@@ -58,7 +58,7 @@ public class ExecuteParamTest {
         });
         String json = param.toString();
         System.out.println(json);
-        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":4,\"jobId\":5,\"jobType\":\"NORMAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"workerId\":\"i\"}}");
+        Assertions.assertEquals(json, "{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":4,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":{\"host\":\"h\",\"port\":8081,\"group\":\"g\",\"workerId\":\"i\"}}");
         Assertions.assertEquals(json, Jsons.fromJson(json, ExecuteTaskParam.class).toString());
     }
 
