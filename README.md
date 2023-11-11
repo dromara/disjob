@@ -1,4 +1,4 @@
-# <img src="docs/images/logo.png" width="125" alt="Logo" /> [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8) [![Maven Central](https://img.shields.io/badge/maven--central-2.0.4-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee) [![Build status](https://github.com/dromara/disjob/workflows/build/badge.svg)](https://github.com/dromara/disjob/actions)
+# <img src="docs/images/logo.png" width="125" alt="Logo" /> [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8) [![Maven Central](https://img.shields.io/badge/maven--central-2.0.5-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee) [![Build status](https://github.com/dromara/disjob/workflows/build/badge.svg)](https://github.com/dromara/disjob/actions)
 
 **`简体中文`** | [English](README.en.md)
 
@@ -62,7 +62,7 @@ disjob                                        # 主项目①
 
 ## Comparison
 
-|   **Feature**    | **Quartz** | **Elastic-Job** |     **Xxl-Job**      |               **Disjob**               |
+|                  | **Quartz** | **Elastic-Job** |     **Xxl-Job**      |               **Disjob**               |
 | ---------------- | ---------- |-----------------|----------------------|----------------------------------------|
 |  **触发类型**     |    Cron    |     Cron        | Cron、固定频率、父子依赖 | Cron、指定时间、固定频率、固定延时、父子依赖 |
 |  **任务编排**     |    不支持   |     不支持       |     不支持            | DAG表达式                               |
@@ -80,7 +80,7 @@ disjob                                        # 主项目①
 <dependency>
   <groupId>cn.ponfee</groupId>
   <artifactId>disjob-{xxx}</artifactId>
-  <version>2.0.4</version>
+  <version>2.0.5</version>
 </dependency>
 ```
 
