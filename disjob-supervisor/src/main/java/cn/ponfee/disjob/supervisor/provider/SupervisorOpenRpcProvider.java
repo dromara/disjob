@@ -23,8 +23,8 @@ import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobState;
 import cn.ponfee.disjob.core.enums.Operations;
-import cn.ponfee.disjob.core.exception.JobCheckedException;
-import cn.ponfee.disjob.core.exception.JobUncheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -57,12 +57,12 @@ public class SupervisorOpenRpcProvider implements SupervisorOpenRpcService, RpcC
     // ------------------------------------------------------------------ sched job
 
     @Override
-    public void addJob(AddSchedJobRequest req) throws JobCheckedException {
+    public void addJob(AddSchedJobRequest req) throws JobException {
         jobManager.addJob(req.tosSchedJob());
     }
 
     @Override
-    public void updateJob(UpdateSchedJobRequest req) throws JobCheckedException {
+    public void updateJob(UpdateSchedJobRequest req) throws JobException {
         LOG.info("Do updating sched job {}", req.getJobId());
         jobManager.updateJob(req.tosSchedJob());
     }
@@ -80,7 +80,7 @@ public class SupervisorOpenRpcProvider implements SupervisorOpenRpcService, RpcC
     }
 
     @Override
-    public void triggerJob(long jobId) throws JobCheckedException {
+    public void triggerJob(long jobId) throws JobException {
         LOG.info("Do manual trigger the sched job {}", jobId);
         jobManager.triggerJob(jobId);
     }
@@ -102,7 +102,7 @@ public class SupervisorOpenRpcProvider implements SupervisorOpenRpcService, RpcC
     public void pauseInstance(long instanceId) {
         LOG.info("Do pausing sched instance {}", instanceId);
         if (!jobManager.pauseInstance(instanceId)) {
-            throw new JobUncheckedException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
+            throw new JobRuntimeException(JobCodeMsg.NOT_PAUSABLE_INSTANCE);
         }
     }
 
@@ -110,7 +110,7 @@ public class SupervisorOpenRpcProvider implements SupervisorOpenRpcService, RpcC
     public void cancelInstance(long instanceId) {
         LOG.info("Do canceling sched instance {}", instanceId);
         if (!jobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL)) {
-            throw new JobUncheckedException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
+            throw new JobRuntimeException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
         }
     }
 
@@ -118,7 +118,7 @@ public class SupervisorOpenRpcProvider implements SupervisorOpenRpcService, RpcC
     public void resumeInstance(long instanceId) {
         LOG.info("Do resuming sched instance {}", instanceId);
         if (!jobManager.resumeInstance(instanceId)) {
-            throw new JobUncheckedException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
+            throw new JobRuntimeException(JobCodeMsg.NOT_RESUMABLE_INSTANCE);
         }
     }
 

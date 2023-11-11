@@ -19,7 +19,7 @@ import cn.ponfee.disjob.core.api.supervisor.request.UpdateSchedJobRequest;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedInstanceResponse;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedJobResponse;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedTaskResponse;
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,13 +44,13 @@ public class SupervisorOpenApiProvider extends BaseController {
     // ------------------------------------------------------------------job
 
     @PostMapping("job/add")
-    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) throws JobCheckedException {
+    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) throws JobException {
         supervisorOpenRpcService.addJob(req);
         return Result.success();
     }
 
     @PutMapping("job/update")
-    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) throws JobCheckedException {
+    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) throws JobException {
         supervisorOpenRpcService.updateJob(req);
         return Result.success();
     }
@@ -68,7 +68,7 @@ public class SupervisorOpenApiProvider extends BaseController {
     }
 
     @PostMapping("job/trigger")
-    public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobCheckedException {
+    public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
         supervisorOpenRpcService.triggerJob(jobId);
         return Result.success();
     }

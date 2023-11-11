@@ -11,11 +11,11 @@ package cn.ponfee.disjob.common.exception;
 import cn.ponfee.disjob.common.model.CodeMsg;
 
 /**
- * Base unchecked exception definition(运行时异常)
+ * Base unchecked(runtime) exception definition(运行时异常)
  *
  * @author Ponfee
  */
-public abstract class BaseUncheckedException extends RuntimeException {
+public abstract class BaseRuntimeException extends RuntimeException {
     private static final long serialVersionUID = 5960744547215706709L;
 
     /**
@@ -23,11 +23,11 @@ public abstract class BaseUncheckedException extends RuntimeException {
      */
     private final int code;
 
-    public BaseUncheckedException(int code) {
+    public BaseRuntimeException(int code) {
         this(code, null, null);
     }
 
-    public BaseUncheckedException(CodeMsg codeMsg) {
+    public BaseRuntimeException(CodeMsg codeMsg) {
         this(codeMsg.getCode(), codeMsg.getMsg(), null);
     }
 
@@ -35,11 +35,11 @@ public abstract class BaseUncheckedException extends RuntimeException {
      * @param code    error code
      * @param message error message
      */
-    public BaseUncheckedException(int code, String message) {
+    public BaseRuntimeException(int code, String message) {
         this(code, message, null);
     }
 
-    public BaseUncheckedException(CodeMsg codeMsg, Throwable cause) {
+    public BaseRuntimeException(CodeMsg codeMsg, Throwable cause) {
         this(codeMsg.getCode(), codeMsg.getMsg(), cause);
     }
 
@@ -48,7 +48,7 @@ public abstract class BaseUncheckedException extends RuntimeException {
      * @param message error message
      * @param cause   root cause
      */
-    public BaseUncheckedException(int code, String message, Throwable cause) {
+    public BaseRuntimeException(int code, String message, Throwable cause) {
         super(message, cause);
         this.code = code;
     }
@@ -60,11 +60,11 @@ public abstract class BaseUncheckedException extends RuntimeException {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace then writableStackTrace
      */
-    public BaseUncheckedException(int code,
-                                  String message,
-                                  Throwable cause,
-                                  boolean enableSuppression,
-                                  boolean writableStackTrace) {
+    public BaseRuntimeException(int code,
+                                String message,
+                                Throwable cause,
+                                boolean enableSuppression,
+                                boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
     }

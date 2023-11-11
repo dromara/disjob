@@ -10,7 +10,7 @@ package cn.ponfee.disjob.worker.provider;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
@@ -25,12 +25,12 @@ import java.util.List;
 public class WorkerCoreRpcProvider implements WorkerCoreRpcService, RpcController {
 
     @Override
-    public void verify(JobHandlerParam param) throws JobCheckedException {
+    public void verify(JobHandlerParam param) throws JobException {
         JobHandlerUtils.verify(param);
     }
 
     @Override
-    public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
+    public List<SplitTask> split(JobHandlerParam param) throws JobException {
         return JobHandlerUtils.split(param);
     }
 

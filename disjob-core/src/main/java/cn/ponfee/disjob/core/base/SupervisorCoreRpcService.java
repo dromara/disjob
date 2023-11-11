@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.enums.Operations;
-import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.StartTaskParam;

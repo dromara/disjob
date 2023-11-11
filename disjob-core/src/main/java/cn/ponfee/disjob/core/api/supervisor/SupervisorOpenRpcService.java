@@ -16,7 +16,7 @@ import cn.ponfee.disjob.core.api.supervisor.request.UpdateSchedJobRequest;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedInstanceResponse;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedJobResponse;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedTaskResponse;
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,10 +34,10 @@ public interface SupervisorOpenRpcService {
     // ------------------------------------------------------------------job
 
     @PostMapping("job/add")
-    void addJob(AddSchedJobRequest req) throws JobCheckedException;
+    void addJob(AddSchedJobRequest req) throws JobException;
 
     @PutMapping("job/update")
-    void updateJob(UpdateSchedJobRequest req) throws JobCheckedException;
+    void updateJob(UpdateSchedJobRequest req) throws JobException;
 
     @DeleteMapping("job/delete")
     void deleteJob(long jobId);
@@ -46,7 +46,7 @@ public interface SupervisorOpenRpcService {
     Boolean changeJobState(long jobId, int jobState);
 
     @PostMapping("job/trigger")
-    void triggerJob(long jobId) throws JobCheckedException;
+    void triggerJob(long jobId) throws JobException;
 
     @GetMapping("job/get")
     SchedJobResponse getJob(long jobId);

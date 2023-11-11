@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.exception;
 
-import cn.ponfee.disjob.common.exception.BaseCheckedException;
+import cn.ponfee.disjob.common.exception.BaseException;
 import cn.ponfee.disjob.common.model.CodeMsg;
 
 /**
@@ -16,7 +16,7 @@ import cn.ponfee.disjob.common.model.CodeMsg;
  *
  * @author Ponfee
  */
-public class PauseTaskException extends BaseCheckedException {
+public class PauseTaskException extends BaseException {
     private static final long serialVersionUID = 409247238969878885L;
 
     public PauseTaskException(CodeMsg cm) {

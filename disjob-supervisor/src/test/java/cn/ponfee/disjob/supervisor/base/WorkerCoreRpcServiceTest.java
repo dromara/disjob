@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 public class WorkerCoreRpcServiceTest extends SpringBootTestBase<Object> {
 
     @Test
-    public void testSplit() throws JobCheckedException {
+    public void testSplit() throws JobException {
         String taskParam = "taskParam";
         //doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerCoreRpcService).split(any());
         when(workerCoreRpcService.split(any())).thenReturn(Collections.singletonList(new SplitTask(taskParam)));

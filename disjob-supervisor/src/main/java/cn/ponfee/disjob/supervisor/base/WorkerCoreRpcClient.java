@@ -12,7 +12,7 @@ import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
@@ -56,11 +56,11 @@ public class WorkerCoreRpcClient {
         this.remote = DiscoveryRestProxy.create(true, WorkerCoreRpcService.class, discoveryRestTemplate);
     }
 
-    public void verify(JobHandlerParam param) throws JobCheckedException {
+    public void verify(JobHandlerParam param) throws JobException {
         grouped(param.getJobGroup()).verify(param);
     }
 
-    public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
+    public List<SplitTask> split(JobHandlerParam param) throws JobException {
         return grouped(param.getJobGroup()).split(param);
     }
 
@@ -79,12 +79,12 @@ public class WorkerCoreRpcClient {
         private static final WorkerCoreRpcLocal INSTANCE = new WorkerCoreRpcLocal();
 
         @Override
-        public void verify(JobHandlerParam param) throws JobCheckedException {
+        public void verify(JobHandlerParam param) throws JobException {
             JobHandlerUtils.verify(param);
         }
 
         @Override
-        public List<SplitTask> split(JobHandlerParam param) throws JobCheckedException {
+        public List<SplitTask> split(JobHandlerParam param) throws JobException {
             return JobHandlerUtils.split(param);
         }
     }

@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.JobHandlerParam;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -29,9 +29,9 @@ public interface WorkerCoreRpcService {
     String PREFIX_PATH = "worker/core/rpc/";
 
     @PostMapping("job/verify")
-    void verify(JobHandlerParam param) throws JobCheckedException;
+    void verify(JobHandlerParam param) throws JobException;
 
     @PostMapping("job/split")
-    List<SplitTask> split(JobHandlerParam param) throws JobCheckedException;
+    List<SplitTask> split(JobHandlerParam param) throws JobException;
 
 }

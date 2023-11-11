@@ -57,7 +57,7 @@ import static cn.ponfee.disjob.core.enums.ExecuteState.*;
 public class WorkerThreadPool extends Thread implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
-    private static final int ERROR_MSG_MAX_LENGTH = 1024;
+    private static final int ERROR_MSG_MAX_LENGTH = 2048;
 
     /**
      * This jdk thread pool for asynchronous to stop(pause or cancel) task

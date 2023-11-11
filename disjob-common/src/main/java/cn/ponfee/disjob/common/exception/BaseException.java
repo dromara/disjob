@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.model.CodeMsg;
  *
  * @author Ponfee
  */
-public abstract class BaseCheckedException extends Exception {
+public abstract class BaseException extends Exception {
     private static final long serialVersionUID = -5891689205125494699L;
 
     /**
@@ -23,11 +23,11 @@ public abstract class BaseCheckedException extends Exception {
      */
     private final int code;
 
-    public BaseCheckedException(int code) {
+    public BaseException(int code) {
         this(code, null, null);
     }
 
-    public BaseCheckedException(CodeMsg codeMsg) {
+    public BaseException(CodeMsg codeMsg) {
         this(codeMsg.getCode(), codeMsg.getMsg(), null);
     }
 
@@ -35,11 +35,11 @@ public abstract class BaseCheckedException extends Exception {
      * @param code    error code
      * @param message error message
      */
-    public BaseCheckedException(int code, String message) {
+    public BaseException(int code, String message) {
         this(code, message, null);
     }
 
-    public BaseCheckedException(CodeMsg codeMsg, Throwable cause) {
+    public BaseException(CodeMsg codeMsg, Throwable cause) {
         this(codeMsg.getCode(), codeMsg.getMsg(), cause);
     }
 
@@ -48,7 +48,7 @@ public abstract class BaseCheckedException extends Exception {
      * @param message error message
      * @param cause   root cause
      */
-    public BaseCheckedException(int code, String message, Throwable cause) {
+    public BaseException(int code, String message, Throwable cause) {
         super(message, cause);
         this.code = code;
     }
@@ -60,11 +60,11 @@ public abstract class BaseCheckedException extends Exception {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace then writableStackTrace
      */
-    public BaseCheckedException(int code,
-                                String message,
-                                Throwable cause,
-                                boolean enableSuppression,
-                                boolean writableStackTrace) {
+    public BaseException(int code,
+                         String message,
+                         Throwable cause,
+                         boolean enableSuppression,
+                         boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
     }

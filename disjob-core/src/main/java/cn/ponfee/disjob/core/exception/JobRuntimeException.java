@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.exception;
 
-import cn.ponfee.disjob.common.exception.BaseUncheckedException;
+import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.common.model.CodeMsg;
 
 /**
@@ -16,34 +16,34 @@ import cn.ponfee.disjob.common.model.CodeMsg;
  *
  * @author Ponfee
  */
-public class JobUncheckedException extends BaseUncheckedException {
+public class JobRuntimeException extends BaseRuntimeException {
     private static final long serialVersionUID = -5627922900462363679L;
 
-    public JobUncheckedException(int code) {
+    public JobRuntimeException(int code) {
         this(code, null, null);
     }
 
-    public JobUncheckedException(int code, String message) {
+    public JobRuntimeException(int code, String message) {
         this(code, message, null);
     }
 
-    public JobUncheckedException(int code, Throwable cause) {
+    public JobRuntimeException(int code, Throwable cause) {
         this(code, null, cause);
     }
 
-    public JobUncheckedException(int code, String message, Throwable cause) {
+    public JobRuntimeException(int code, String message, Throwable cause) {
         super(code, message, cause);
     }
 
-    public JobUncheckedException(CodeMsg cm) {
+    public JobRuntimeException(CodeMsg cm) {
         super(cm.getCode(), cm.getMsg(), null);
     }
 
-    public JobUncheckedException(CodeMsg cm, String message) {
+    public JobRuntimeException(CodeMsg cm, String message) {
         super(cm.getCode(), message, null);
     }
 
-    public JobUncheckedException(CodeMsg cm, String message, Throwable cause) {
+    public JobRuntimeException(CodeMsg cm, String message, Throwable cause) {
         super(cm.getCode(), message, cause);
     }
 
@@ -56,8 +56,8 @@ public class JobUncheckedException extends BaseUncheckedException {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace the writableStackTrace
      */
-    public JobUncheckedException(int code, String message, Throwable cause,
-                                 boolean enableSuppression, boolean writableStackTrace) {
+    public JobRuntimeException(int code, String message, Throwable cause,
+                               boolean enableSuppression, boolean writableStackTrace) {
         super(code, message, cause, enableSuppression, writableStackTrace);
     }
 

@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.*;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -120,10 +120,10 @@ public class DistributedJobManager extends AbstractJobManager {
      * Manual trigger the sched job
      *
      * @param jobId the job id
-     * @throws JobCheckedException if occur error
+     * @throws JobException if occur error
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void triggerJob(long jobId) throws JobCheckedException {
+    public void triggerJob(long jobId) throws JobException {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, () -> "Sched job not found: " + jobId);
 

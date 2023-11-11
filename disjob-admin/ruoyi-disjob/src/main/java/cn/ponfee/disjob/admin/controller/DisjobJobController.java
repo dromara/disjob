@@ -17,7 +17,7 @@ import cn.ponfee.disjob.core.api.supervisor.request.AddSchedJobRequest;
 import cn.ponfee.disjob.core.api.supervisor.request.SchedJobPageRequest;
 import cn.ponfee.disjob.core.api.supervisor.request.UpdateSchedJobRequest;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedJobResponse;
-import cn.ponfee.disjob.core.exception.JobCheckedException;
+import cn.ponfee.disjob.core.exception.JobException;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -136,7 +136,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "调度配置", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult doAdd(AddSchedJobRequest req) throws JobCheckedException {
+    public AjaxResult doAdd(AddSchedJobRequest req) throws JobException {
         req.setCreatedBy(getLoginName());
         supervisorOpenRpcService.addJob(req);
         return success();
@@ -161,7 +161,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "调度配置", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
-    public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobCheckedException {
+    public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobException {
         req.setUpdatedBy(getLoginName());
         supervisorOpenRpcService.updateJob(req);
         return success();
@@ -206,7 +206,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "触发执行", businessType = BusinessType.OTHER)
     @PostMapping("/trigger")
     @ResponseBody
-    public AjaxResult trigger(@RequestParam("jobId") long jobId) throws JobCheckedException {
+    public AjaxResult trigger(@RequestParam("jobId") long jobId) throws JobException {
         supervisorOpenRpcService.triggerJob(jobId);
         return success();
     }

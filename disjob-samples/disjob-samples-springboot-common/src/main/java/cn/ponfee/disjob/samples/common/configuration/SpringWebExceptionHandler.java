@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.samples.common.configuration;
 
-import cn.ponfee.disjob.common.exception.BaseCheckedException;
-import cn.ponfee.disjob.common.exception.BaseUncheckedException;
+import cn.ponfee.disjob.common.exception.BaseException;
+import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
@@ -45,8 +45,8 @@ public class SpringWebExceptionHandler {
         IllegalArgumentException.class,
         IllegalStateException.class,
         UnsupportedOperationException.class,
-        BaseCheckedException.class,
-        BaseUncheckedException.class
+        BaseException.class,
+        BaseRuntimeException.class
     );
 
     @ExceptionHandler(Exception.class)
