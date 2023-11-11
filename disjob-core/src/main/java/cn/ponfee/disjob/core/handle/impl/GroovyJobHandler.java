@@ -26,7 +26,7 @@ import java.util.Objects;
  * <pre>job_param example: {@code
  *  import java.util.*
  *  def uuid = UUID.randomUUID().toString()
- *  savepoint.save(executingTask.taskId, uuid)
+ *  savepoint.save(new Date().toString() + ": " + uuid)
  *  return "execute at: " + new Date() + ", " + jobHandler.toString()
  * }</pre>
  *
