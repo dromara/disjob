@@ -29,7 +29,7 @@ import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
-import cn.ponfee.disjob.supervisor.instance.NormalInstanceCreator;
+import cn.ponfee.disjob.supervisor.instance.GeneralInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
@@ -509,8 +509,8 @@ public class DistributedJobManager extends AbstractJobManager {
     private void createInstance(TriggerInstance tInstance) {
         instanceMapper.insert(tInstance.getInstance());
 
-        if (tInstance instanceof NormalInstanceCreator.NormalInstance) {
-            NormalInstanceCreator.NormalInstance creator = (NormalInstanceCreator.NormalInstance) tInstance;
+        if (tInstance instanceof GeneralInstanceCreator.GeneralInstance) {
+            GeneralInstanceCreator.GeneralInstance creator = (GeneralInstanceCreator.GeneralInstance) tInstance;
             Collects.batchProcess(creator.getTasks(), taskMapper::batchInsert, PROCESS_BATCH_SIZE);
         } else if (tInstance instanceof WorkflowInstanceCreator.WorkflowInstance) {
             WorkflowInstanceCreator.WorkflowInstance creator = (WorkflowInstanceCreator.WorkflowInstance) tInstance;

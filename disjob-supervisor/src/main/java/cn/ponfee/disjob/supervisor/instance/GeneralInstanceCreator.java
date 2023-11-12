@@ -21,35 +21,35 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Normal instance creator
+ * General instance creator
  *
  * @author Ponfee
  */
-public class NormalInstanceCreator extends TriggerInstanceCreator<NormalInstanceCreator.NormalInstance> {
+public class GeneralInstanceCreator extends TriggerInstanceCreator<GeneralInstanceCreator.GeneralInstance> {
 
-    public NormalInstanceCreator(DistributedJobManager jobManager) {
+    public GeneralInstanceCreator(DistributedJobManager jobManager) {
         super(jobManager);
     }
 
     @Override
-    public NormalInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
+    public GeneralInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
         Date now = new Date();
         long instanceId = jobManager.generateId();
         SchedInstance instance = SchedInstance.create(instanceId, job.getJobId(), runType, triggerTime, 0, now);
         List<SchedTask> tasks = jobManager.splitTasks(JobHandlerParam.from(job), instanceId, now);
-        return new NormalInstance(instance, tasks);
+        return new GeneralInstance(instance, tasks);
     }
 
     @Override
-    public void dispatch(SchedJob job, NormalInstance instance) {
+    public void dispatch(SchedJob job, GeneralInstance instance) {
         jobManager.dispatch(job, instance.getInstance(), instance.getTasks());
     }
 
     @Getter
-    public static class NormalInstance extends TriggerInstance {
+    public static class GeneralInstance extends TriggerInstance {
         private final List<SchedTask> tasks;
 
-        public NormalInstance(SchedInstance instance, List<SchedTask> tasks) {
+        public GeneralInstance(SchedInstance instance, List<SchedTask> tasks) {
             super(instance);
             this.tasks = tasks;
         }
