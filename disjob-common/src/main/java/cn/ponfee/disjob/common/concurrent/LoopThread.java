@@ -62,7 +62,7 @@ public class LoopThread extends Thread {
     public void run() {
         LOG.info("Loop process thread begin.");
         if (delayMs > 0) {
-            ThrowingRunnable.checked(() -> Thread.sleep(delayMs));
+            ThrowingRunnable.run(() -> Thread.sleep(delayMs));
         }
         while (state.get() == RUNNING) {
             try {

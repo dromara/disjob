@@ -19,6 +19,7 @@ import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Strings;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -33,8 +34,6 @@ import cn.ponfee.disjob.supervisor.instance.GeneralInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -62,8 +61,6 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME
 @Component
 public class DistributedJobManager extends AbstractJobManager {
     private static final Logger LOG = LoggerFactory.getLogger(DistributedJobManager.class);
-
-    private static final Interner<Long> INTERNER_POOL = Interners.newWeakInterner();
 
     private static final List<Integer> RUN_STATE_TERMINABLE = Collects.convert(RunState.TERMINABLE_LIST, RunState::value);
     private static final List<Integer> RUN_STATE_RUNNABLE = Collects.convert(RunState.RUNNABLE_LIST, RunState::value);
@@ -478,7 +475,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Function<SchedInstance, Boolean> action) {
         // Long.toString(lockKey).intern()
         Long lockInstanceId = wnstanceId == null ? instanceId : wnstanceId;
-        synchronized (INTERNER_POOL.intern(lockInstanceId)) {
+        synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
             Boolean result = transactionTemplate.execute(status -> {
                 SchedInstance lockedInstance = instanceMapper.lock(lockInstanceId);
                 Assert.notNull(lockedInstance, () -> "Lock instance not found: " + lockInstanceId);

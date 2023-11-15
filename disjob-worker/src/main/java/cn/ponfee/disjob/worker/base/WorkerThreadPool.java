@@ -16,6 +16,7 @@ import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -41,7 +42,10 @@ import org.springframework.util.Assert;
 
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -416,9 +420,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
             param.getInstanceId(), param.getWnstanceId(), param.getTaskId(),
             param.getWorker().serialize(), ops, toState, errorMsg
         );
+        long lockInstanceId = param.getWnstanceId() != null ? param.getWnstanceId() : param.getInstanceId();
         try {
-            if (!client.terminateTask(terminateTaskParam)) {
-                LOG.warn("Terminate task failed: {} | {} | {}", param.getTaskId(), ops, toState);
+            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
+                if (!client.terminateTask(terminateTaskParam)) {
+                    LOG.warn("Terminate task failed: {} | {} | {}", param.getTaskId(), ops, toState);
+                }
             }
         } catch (Throwable t) {
             LOG.error("Terminate task error: " + param.getTaskId() + " | " + ops + " | " + toState);
@@ -435,15 +442,17 @@ public class WorkerThreadPool extends Thread implements Closeable {
         LOG.info("Stop instance task: {} | {}", param.getTaskId(), ops);
         terminateTask(client, param, ops, ops.toState(), errorMsg);
 
+        boolean res = true;
+        long lockInstanceId = param.getWnstanceId() != null ? param.getWnstanceId() : param.getInstanceId();
         try {
-            boolean res = true;
-            long lockInstanceId = Optional.ofNullable(param.getWnstanceId()).orElse(param.getInstanceId());
-            if (ops == Operations.PAUSE) {
-                res = client.pauseInstance(lockInstanceId);
-            } else if (ops == Operations.EXCEPTION_CANCEL) {
-                res = client.cancelInstance(lockInstanceId, ops);
-            } else {
-                LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
+            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
+                if (ops == Operations.PAUSE) {
+                    res = client.pauseInstance(lockInstanceId);
+                } else if (ops == Operations.EXCEPTION_CANCEL) {
+                    res = client.cancelInstance(lockInstanceId, ops);
+                } else {
+                    LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
+                }
             }
             if (!res) {
                 LOG.info("Stop instance conflict: {} | {} | {}", param.getInstanceId(), param.getTaskId(), ops);

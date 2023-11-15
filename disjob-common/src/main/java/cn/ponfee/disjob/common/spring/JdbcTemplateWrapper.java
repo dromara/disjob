@@ -100,10 +100,11 @@ public final class JdbcTemplateWrapper {
     public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {
         return jdbcTemplate.execute((ConnectionCallback<T>) con -> {
             Boolean previousAutoCommit = null;
-            PreparedStatementCreator psCreator = new PreparedStatementCreator(con);
+            PreparedStatementCreator psCreator = null;
             try {
                 previousAutoCommit = con.getAutoCommit();
                 con.setAutoCommit(false);
+                psCreator = new PreparedStatementCreator(con);
                 T result = action.apply(psCreator);
                 con.commit();
                 return result;
@@ -111,8 +112,10 @@ public final class JdbcTemplateWrapper {
                 con.rollback();
                 return ExceptionUtils.rethrow(t);
             } finally {
-                psCreator.close();
-                if (previousAutoCommit != null) {
+                if (psCreator != null) {
+                    psCreator.close();
+                }
+                if (previousAutoCommit != null && !con.isClosed()) {
                     try {
                         // restore the auto-commit config
                         con.setAutoCommit(previousAutoCommit);

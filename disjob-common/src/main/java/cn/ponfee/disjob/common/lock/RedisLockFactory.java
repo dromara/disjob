@@ -33,7 +33,7 @@ public class RedisLockFactory {
 
     public RedisLockFactory(RedisTemplate<?, ?> redisTemplate, long sleepMillis) {
         this.redisTemplate = redisTemplate;
-        this.sleepMillis = Math.max(50, sleepMillis);
+        this.sleepMillis = sleepMillis;
     }
 
     public RedisLock create(String lockKey, int timeoutMillis) {

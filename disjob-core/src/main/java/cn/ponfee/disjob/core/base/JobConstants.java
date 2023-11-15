@@ -8,6 +8,9 @@
 
 package cn.ponfee.disjob.core.base;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+
 /**
  * Job constants
  *
@@ -79,5 +82,10 @@ public class JobConstants {
      * Current worker spring bean name
      */
     public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SPRING_BEAN_NAME_PREFIX + ".current-worker";
+
+    /**
+     * Instance lock pool
+     */
+    public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
 
 }

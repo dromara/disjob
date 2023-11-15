@@ -156,8 +156,9 @@ CREATE TABLE `sched_workflow` (
 CREATE TABLE `sched_group` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `group`               VARCHAR(60)              NOT NULL                               COMMENT '分组名(同sched_job.job_group)',
-  `token`               VARCHAR(255)                       DEFAULT NULL                 COMMENT '密钥令牌，用于认证',
-  `alarm_subscribers`   VARCHAR(512)                       DEFAULT NULL                 COMMENT '告警订阅人员列表',
+  `worker_token`        VARCHAR(255)                       DEFAULT NULL                 COMMENT 'worker访问supervisor的密钥令牌',
+  `supervisor_token`    VARCHAR(255)                       DEFAULT NULL                 COMMENT 'supervisor访问worker的密钥令牌',
+  `alarm_subscribers`   VARCHAR(1024)                      DEFAULT NULL                 COMMENT '告警订阅人员列表',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),

@@ -36,7 +36,7 @@ public class LocalPriorityExecutionRouter extends ExecutionRouter {
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
         // 查找workers列表中是否有当前的jvm worker
-        Worker worker = find(workers, Worker.current());
+        Worker worker = findLocal(workers, Worker.current());
         if (worker != null) {
             tasks.forEach(task -> task.setWorker(worker));
         } else {
@@ -44,7 +44,7 @@ public class LocalPriorityExecutionRouter extends ExecutionRouter {
         }
     }
 
-    private static Worker find(List<Worker> workers, Worker current) {
+    private static Worker findLocal(List<Worker> workers, Worker current) {
         if (current == null) {
             return null;
         }

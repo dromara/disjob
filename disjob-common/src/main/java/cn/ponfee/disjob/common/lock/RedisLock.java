@@ -184,11 +184,13 @@ public class RedisLock implements Lock {
         Assert.notNull(redisTemplate, "Redis template cannot be null.");
         Assert.hasText(lockKey, "Lock key cannot be empty.");
 
+        long sleepMillis0 = Math.max(sleepMillis, 50);
+        long timeoutMillis0 = Math.max(sleepMillis0, timeoutMillis);
         this.redisTemplate = redisTemplate;
         this.lockKey = ("lock:" + lockKey).getBytes(UTF_8);
         this.lockUuid = ObjectUtils.uuid();
-        this.timeoutMillis = Long.toString(timeoutMillis).getBytes(UTF_8);
-        this.sleepMillis = Math.min(sleepMillis, timeoutMillis);
+        this.timeoutMillis = Long.toString(timeoutMillis0).getBytes(UTF_8);
+        this.sleepMillis = sleepMillis0;
     }
 
     /**
@@ -357,7 +359,7 @@ public class RedisLock implements Lock {
     }
 
     private long computeSleepMillis(int round) {
-        return round < 5 ? sleepMillis : Math.min(sleepMillis * (round - 3), 5000);
+        return round < 5 ? sleepMillis : Math.min(sleepMillis * (round - 3), 2000);
     }
 
 }
