@@ -26,7 +26,7 @@ public final class EmbeddedZookeeperServer {
         TestingServer testingServer = new TestingServer(2181, createTempDir());
         System.out.println("Embedded zookeeper server started!");
 
-        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.checked(testingServer::stop)));
+        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(testingServer::stop)));
     }
 
     private static File createTempDir() {

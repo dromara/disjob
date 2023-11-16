@@ -286,7 +286,7 @@ public class EtcdClient implements Closeable {
 
         @Override
         public void accept(WatchResponse response) {
-            ThrowingRunnable.execute(latch::await);
+            ThrowingRunnable.doCaught(latch::await);
 
             List<WatchEvent> events = response.getEvents();
             if (events.stream().noneMatch(e -> CHANGED_EVENT_TYPES.contains(e.getEventType()))) {

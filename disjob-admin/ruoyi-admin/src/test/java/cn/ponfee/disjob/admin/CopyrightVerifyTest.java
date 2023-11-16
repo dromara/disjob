@@ -36,12 +36,12 @@ public class CopyrightVerifyTest {
     private static final String COPYRIGHT_KEYWORD = " Copyright (c) 2017-2023 Ponfee ";
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir();
-    private static final String COPYRIGHT = ThrowingSupplier.get(() -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightVerifyTest.class.getClassLoader()));
+    private static final String COPYRIGHT = ThrowingSupplier.doChecked(() -> IOUtils.resourceToString("copy-right.txt", UTF_8, CopyrightVerifyTest.class.getClassLoader()));
 
     @Test
     public void upsertCopyright() {
         handleFile(file -> {
-            String text = ThrowingSupplier.get(() -> IOUtils.toString(file.toURI(), UTF_8));
+            String text = ThrowingSupplier.doChecked(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (!isOwnerCode(text)) {
                 return;
             }
@@ -72,7 +72,7 @@ public class CopyrightVerifyTest {
     @Test
     public void checkCopyright() {
         handleFile(file -> {
-            String text = ThrowingSupplier.get(() -> IOUtils.toString(file.toURI(), UTF_8));
+            String text = ThrowingSupplier.doChecked(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (StringUtils.countMatches(text, " @author ") == 0) {
                 System.out.println(file.getName());
             } else if (isOwnerCode(text)) {
@@ -92,7 +92,7 @@ public class CopyrightVerifyTest {
     @Test
     public void testNoCopyright() {
         handleFile(file -> {
-            String text = ThrowingSupplier.get(() -> IOUtils.toString(file.toURI(), UTF_8));
+            String text = ThrowingSupplier.doChecked(() -> IOUtils.toString(file.toURI(), UTF_8));
             if (!text.contains(COPYRIGHT_KEYWORD)) {
                 System.out.println(file.getName());
             }

@@ -62,7 +62,7 @@ public class LoopThread extends Thread {
     public void run() {
         LOG.info("Loop process thread begin.");
         if (delayMs > 0) {
-            ThrowingRunnable.run(() -> Thread.sleep(delayMs));
+            ThrowingRunnable.doChecked(() -> Thread.sleep(delayMs));
         }
         while (state.get() == RUNNING) {
             try {
@@ -90,7 +90,7 @@ public class LoopThread extends Thread {
 
     public boolean terminate() {
         if (state.compareAndSet(RUNNING, TERMINATED)) {
-            ThrowingRunnable.execute(super::interrupt);
+            ThrowingRunnable.doCaught(super::interrupt);
             return true;
         } else {
             return false;

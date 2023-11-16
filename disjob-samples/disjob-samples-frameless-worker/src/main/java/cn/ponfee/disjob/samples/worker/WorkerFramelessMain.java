@@ -132,8 +132,8 @@ public class WorkerFramelessMain {
 
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                ThrowingRunnable.execute(workerStartup::close);
-                ThrowingRunnable.execute(vertxWebServer::close);
+                ThrowingRunnable.doCaught(workerStartup::close);
+                ThrowingRunnable.doCaught(vertxWebServer::close);
             }));
 
             vertxWebServer.deploy();

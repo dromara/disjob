@@ -109,7 +109,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         }
 
         registered.forEach(this::deregister);
-        ThrowingRunnable.execute(client::close);
+        ThrowingRunnable.doCaught(client::close);
         registered.clear();
         super.close();
     }

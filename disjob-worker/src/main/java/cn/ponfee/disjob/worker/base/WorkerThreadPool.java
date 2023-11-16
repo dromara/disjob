@@ -67,9 +67,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * This jdk thread pool for asynchronous to stop(pause or cancel) task
      */
     private final ThreadPoolExecutor stopTaskExecutor = ThreadPoolExecutors.builder()
-        .corePoolSize(2)
+        .corePoolSize(1)
         .maximumPoolSize(10)
-        .workQueue(new LinkedBlockingQueue<>(20))
+        .workQueue(new LinkedBlockingQueue<>(5))
         .keepAliveTimeSeconds(300)
         .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
         .threadFactory(NamedThreadFactory.builder().prefix("stop_task_operation").priority(Thread.MAX_PRIORITY).build())
@@ -198,27 +198,27 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         // 1、prepare close
         // 1.1、change executing pool thread state
-        ThrowingRunnable.execute(activePool::stopPool);
+        ThrowingRunnable.doCaught(activePool::stopPool);
 
         // 1.2、change idle pool thread state
-        idlePool.forEach(e -> ThrowingRunnable.execute(e::toStop));
+        idlePool.forEach(e -> ThrowingRunnable.doCaught(e::toStop));
 
         // 2、do close
         // 2.1、stop this boss thread
-        ThrowingRunnable.execute(() -> Threads.stopThread(this, 200));
+        ThrowingRunnable.doCaught(() -> Threads.stopThread(this, 200));
 
         // 2.2、stop idle pool thread
-        idlePool.forEach(e -> ThrowingRunnable.execute(() -> stopWorkerThread(e, true)));
-        ThrowingRunnable.execute(idlePool::clear);
+        idlePool.forEach(e -> ThrowingRunnable.doCaught(() -> stopWorkerThread(e, true)));
+        ThrowingRunnable.doCaught(idlePool::clear);
 
         // 2.3、stop executing pool thread
-        ThrowingRunnable.execute(activePool::closePool);
+        ThrowingRunnable.doCaught(activePool::closePool);
 
         // 2.4、shutdown jdk thread pool
         ThreadPoolExecutors.shutdown(stopTaskExecutor, 1);
 
         // 2.5、clear task execution param queue
-        ThrowingRunnable.execute(taskQueue::clear);
+        ThrowingRunnable.doCaught(taskQueue::clear);
 
         workerThreadCounter.set(0);
         LOG.info("Close worker thread pool end.");
@@ -806,7 +806,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     final List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
-                    ThrowingRunnable.execute(() -> client.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
+                    ThrowingRunnable.doCaught(() -> client.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 Threads.interruptIfNecessary(t);
                 // discard task

@@ -57,7 +57,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             this.namingService = NacosFactory.createNamingService(config.toProperties());
             this.eventListener = event -> {
-                ThrowingRunnable.execute(latch::await);
+                ThrowingRunnable.doCaught(latch::await);
                 if (event instanceof NamingEvent) {
                     doRefreshDiscoveryServers(((NamingEvent) event).getInstances());
                 }
@@ -117,8 +117,8 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
         registered.forEach(this::deregister);
         registered.clear();
-        ThrowingRunnable.execute(() -> namingService.unsubscribe(discoveryRootPath, groupName, eventListener));
-        ThrowingRunnable.execute(namingService::shutDown);
+        ThrowingRunnable.doCaught(() -> namingService.unsubscribe(discoveryRootPath, groupName, eventListener));
+        ThrowingRunnable.doCaught(namingService::shutDown);
         super.close();
     }
 

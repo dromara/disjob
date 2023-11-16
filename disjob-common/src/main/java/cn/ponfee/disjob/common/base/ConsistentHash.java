@@ -9,11 +9,13 @@
 package cn.ponfee.disjob.common.base;
 
 import cn.ponfee.disjob.common.util.CRC16;
+import com.google.common.hash.Hashing;
 import org.apache.commons.codec.digest.DigestUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Consistent hashing algorithm.
@@ -66,7 +68,11 @@ public class ConsistentHash<T> {
             return h;
         };
 
-        HashFunction CRC_16 = key -> CRC16.digest(key.getBytes(StandardCharsets.UTF_8));
+        HashFunction SIP_HASH = key -> Hashing.sipHash24().hashBytes(key.getBytes(UTF_8)).asInt();
+
+        HashFunction MURMUR3_32 = key -> Hashing.murmur3_32_fixed().hashBytes(key.getBytes(UTF_8)).asInt();
+
+        HashFunction CRC_16 = key -> CRC16.digest(key.getBytes(UTF_8));
     }
 
     /**

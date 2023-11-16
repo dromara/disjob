@@ -175,7 +175,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     public final void deregister(R server) {
         registered.remove(server);
         Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
-        ThrowingSupplier.execute(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
+        ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
         log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 

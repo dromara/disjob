@@ -236,7 +236,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                 .forPath(serverTagParentPath)
                 .stream()
                 .map(e -> serverTagParentPath + SEP + e)
-                .map(ThrowingFunction.checked(this::getData))
+                .map(ThrowingFunction.toChecked(this::getData))
                 .filter(Objects::nonNull)
                 .map(Bytes::toInt)
                 .collect(Collectors.toSet());
@@ -262,7 +262,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                     return usableWorkerId;
                 } catch (Throwable t) {
                     if (isCreatedWorkerIdPath) {
-                        ThrowingRunnable.execute(() -> deletePath(workerIdPath));
+                        ThrowingRunnable.doCaught(() -> deletePath(workerIdPath));
                     }
                     LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath, t.getMessage());
                     Threads.interruptIfNecessary(t);
@@ -384,7 +384,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                     lastSessionId = sessionId;
                 }
 
-                ThrowingRunnable.execute(() -> RetryTemplate.execute(zkDistributedSnowflake::onReconnected, 3, 1000));
+                ThrowingRunnable.doCaught(() -> RetryTemplate.execute(zkDistributedSnowflake::onReconnected, 3, 1000));
             }
         }
     }

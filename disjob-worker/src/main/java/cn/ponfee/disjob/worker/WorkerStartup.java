@@ -100,10 +100,10 @@ public class WorkerStartup implements Startable {
             LOG.warn("Worker startup already stopped.");
             return;
         }
-        ThrowingRunnable.execute(workerRegistry::close);
-        ThrowingRunnable.execute(taskReceiver::close);
-        ThrowingRunnable.execute(timingWheelRotator::close);
-        ThrowingRunnable.execute(workerThreadPool::close);
+        ThrowingRunnable.doCaught(workerRegistry::close);
+        ThrowingRunnable.doCaught(taskReceiver::close);
+        ThrowingRunnable.doCaught(timingWheelRotator::close);
+        ThrowingRunnable.doCaught(workerThreadPool::close);
     }
 
     // ----------------------------------------------------------------------------------------builder

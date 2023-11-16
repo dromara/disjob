@@ -85,7 +85,7 @@ public final class Throwables {
             };
         }
 
-        static void run(ThrowingRunnable<?> runnable) {
+        static void doChecked(ThrowingRunnable<?> runnable) {
             try {
                 runnable.run();
             } catch (Throwable t) {
@@ -93,11 +93,11 @@ public final class Throwables {
             }
         }
 
-        static void execute(ThrowingRunnable<?> runnable) {
-            execute(runnable, EMPTY_MESSAGE);
+        static void doCaught(ThrowingRunnable<?> runnable) {
+            doCaught(runnable, EMPTY_MESSAGE);
         }
 
-        static void execute(ThrowingRunnable<?> runnable, Supplier<String> message) {
+        static void doCaught(ThrowingRunnable<?> runnable, Supplier<String> message) {
             try {
                 runnable.run();
             } catch (Throwable t) {
@@ -106,7 +106,7 @@ public final class Throwables {
             }
         }
 
-        static Runnable checked(ThrowingRunnable<?> runnable) {
+        static Runnable toChecked(ThrowingRunnable<?> runnable) {
             return () -> {
                 try {
                     runnable.run();
@@ -116,11 +116,11 @@ public final class Throwables {
             };
         }
 
-        static Runnable caught(ThrowingRunnable<?> runnable) {
-            return caught(runnable, EMPTY_MESSAGE);
+        static Runnable toCaught(ThrowingRunnable<?> runnable) {
+            return toCaught(runnable, EMPTY_MESSAGE);
         }
 
-        static Runnable caught(ThrowingRunnable<?> runnable, Supplier<String> message) {
+        static Runnable toCaught(ThrowingRunnable<?> runnable, Supplier<String> message) {
             return () -> {
                 try {
                     runnable.run();
@@ -146,7 +146,7 @@ public final class Throwables {
             return this::get;
         }
 
-        static <R> R get(ThrowingSupplier<R, ?> supplier) {
+        static <R> R doChecked(ThrowingSupplier<R, ?> supplier) {
             try {
                 return supplier.get();
             } catch (Throwable t) {
@@ -154,11 +154,11 @@ public final class Throwables {
             }
         }
 
-        static <R> R execute(ThrowingSupplier<R, ?> supplier) {
-            return execute(supplier, null, EMPTY_MESSAGE);
+        static <R> R doCaught(ThrowingSupplier<R, ?> supplier) {
+            return doCaught(supplier, null, EMPTY_MESSAGE);
         }
 
-        static <R> R execute(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
+        static <R> R doCaught(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
             try {
                 return supplier.get();
             } catch (Throwable t) {
@@ -168,7 +168,7 @@ public final class Throwables {
             }
         }
 
-        static <R> Supplier<R> checked(ThrowingSupplier<R, ?> supplier) {
+        static <R> Supplier<R> toChecked(ThrowingSupplier<R, ?> supplier) {
             return () -> {
                 try {
                     return supplier.get();
@@ -178,11 +178,11 @@ public final class Throwables {
             };
         }
 
-        static <R> Supplier<R> caught(ThrowingSupplier<R, ?> supplier) {
-            return caught(supplier, null, EMPTY_MESSAGE);
+        static <R> Supplier<R> toCaught(ThrowingSupplier<R, ?> supplier) {
+            return toCaught(supplier, null, EMPTY_MESSAGE);
         }
 
-        static <R> Supplier<R> caught(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
+        static <R> Supplier<R> toCaught(ThrowingSupplier<R, ?> supplier, R defaultValue, Supplier<String> message) {
             return () -> {
                 try {
                     return supplier.get();
@@ -209,7 +209,7 @@ public final class Throwables {
             return this::call;
         }
 
-        static <R> R call(ThrowingCallable<R, ?> callable) {
+        static <R> R doChecked(ThrowingCallable<R, ?> callable) {
             try {
                 return callable.call();
             } catch (Throwable t) {
@@ -217,11 +217,11 @@ public final class Throwables {
             }
         }
 
-        static <R> R execute(ThrowingCallable<R, ?> callable) {
-            return execute(callable, null, EMPTY_MESSAGE);
+        static <R> R doCaught(ThrowingCallable<R, ?> callable) {
+            return doCaught(callable, null, EMPTY_MESSAGE);
         }
 
-        static <R> R execute(ThrowingCallable<R, ?> callable, R defaultValue, Supplier<String> message) {
+        static <R> R doCaught(ThrowingCallable<R, ?> callable, R defaultValue, Supplier<String> message) {
             try {
                 return callable.call();
             } catch (Throwable t) {
@@ -231,7 +231,7 @@ public final class Throwables {
             }
         }
 
-        static <R> Callable<R> checked(ThrowingCallable<R, ?> callable) {
+        static <R> Callable<R> toChecked(ThrowingCallable<R, ?> callable) {
             return () -> {
                 try {
                     return callable.call();
@@ -241,11 +241,11 @@ public final class Throwables {
             };
         }
 
-        static <R> Callable<R> caught(ThrowingCallable<R, ?> supplier) {
-            return caught(supplier, null, EMPTY_MESSAGE);
+        static <R> Callable<R> toCaught(ThrowingCallable<R, ?> supplier) {
+            return toCaught(supplier, null, EMPTY_MESSAGE);
         }
 
-        static <R> Callable<R> caught(ThrowingCallable<R, ?> supplier, R defaultValue, Supplier<String> message) {
+        static <R> Callable<R> toCaught(ThrowingCallable<R, ?> supplier, R defaultValue, Supplier<String> message) {
             return () -> {
                 try {
                     return supplier.call();
@@ -275,7 +275,7 @@ public final class Throwables {
             };
         }
 
-        static <E> void accept(ThrowingConsumer<E, ?> consumer, E arg) {
+        static <E> void doChecked(ThrowingConsumer<E, ?> consumer, E arg) {
             try {
                 consumer.accept(arg);
             } catch (Throwable t) {
@@ -283,11 +283,11 @@ public final class Throwables {
             }
         }
 
-        static <E> void execute(ThrowingConsumer<E, ?> consumer, E arg) {
-            execute(consumer, arg, EMPTY_MESSAGE);
+        static <E> void doCaught(ThrowingConsumer<E, ?> consumer, E arg) {
+            doCaught(consumer, arg, EMPTY_MESSAGE);
         }
 
-        static <E> void execute(ThrowingConsumer<E, ?> consumer, E arg, Supplier<String> message) {
+        static <E> void doCaught(ThrowingConsumer<E, ?> consumer, E arg, Supplier<String> message) {
             try {
                 consumer.accept(arg);
             } catch (Throwable t) {
@@ -296,7 +296,7 @@ public final class Throwables {
             }
         }
 
-        static <E> Consumer<E> checked(ThrowingConsumer<E, ?> consumer) {
+        static <E> Consumer<E> toChecked(ThrowingConsumer<E, ?> consumer) {
             return e -> {
                 try {
                     consumer.accept(e);
@@ -306,11 +306,11 @@ public final class Throwables {
             };
         }
 
-        static <E> Consumer<E> caught(ThrowingConsumer<E, ?> consumer) {
-            return caught(consumer, EMPTY_MESSAGE);
+        static <E> Consumer<E> toCaught(ThrowingConsumer<E, ?> consumer) {
+            return toCaught(consumer, EMPTY_MESSAGE);
         }
 
-        static <E> Consumer<E> caught(ThrowingConsumer<E, ?> consumer, Supplier<String> message) {
+        static <E> Consumer<E> toCaught(ThrowingConsumer<E, ?> consumer, Supplier<String> message) {
             return arg -> {
                 try {
                     consumer.accept(arg);
@@ -337,7 +337,7 @@ public final class Throwables {
             return this::apply;
         }
 
-        static <E, R> R apply(ThrowingFunction<E, R, ?> function, E arg) {
+        static <E, R> R doChecked(ThrowingFunction<E, R, ?> function, E arg) {
             try {
                 return function.apply(arg);
             } catch (Throwable t) {
@@ -345,11 +345,11 @@ public final class Throwables {
             }
         }
 
-        static <E, R> R execute(ThrowingFunction<E, R, ?> function, E arg) {
-            return execute(function, arg, null, EMPTY_MESSAGE);
+        static <E, R> R doCaught(ThrowingFunction<E, R, ?> function, E arg) {
+            return doCaught(function, arg, null, EMPTY_MESSAGE);
         }
 
-        static <E, R> R execute(ThrowingFunction<E, R, ?> function, E arg, R defaultValue, Supplier<String> message) {
+        static <E, R> R doCaught(ThrowingFunction<E, R, ?> function, E arg, R defaultValue, Supplier<String> message) {
             try {
                 return function.apply(arg);
             } catch (Throwable t) {
@@ -359,7 +359,7 @@ public final class Throwables {
             }
         }
 
-        static <E, R> Function<E, R> checked(ThrowingFunction<E, R, ?> function) {
+        static <E, R> Function<E, R> toChecked(ThrowingFunction<E, R, ?> function) {
             return e -> {
                 try {
                     return function.apply(e);
@@ -369,11 +369,11 @@ public final class Throwables {
             };
         }
 
-        static <E, R> Function<E, R> caught(ThrowingFunction<E, R, ?> function) {
-            return caught(function, null, EMPTY_MESSAGE);
+        static <E, R> Function<E, R> toCaught(ThrowingFunction<E, R, ?> function) {
+            return toCaught(function, null, EMPTY_MESSAGE);
         }
 
-        static <E, R> Function<E, R> caught(ThrowingFunction<E, R, ?> function, R defaultValue, Supplier<String> message) {
+        static <E, R> Function<E, R> toCaught(ThrowingFunction<E, R, ?> function, R defaultValue, Supplier<String> message) {
             return arg -> {
                 try {
                     return function.apply(arg);

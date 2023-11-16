@@ -104,14 +104,14 @@ public class SupervisorStartup implements Startable {
             LOG.warn("Supervisor startup already Stopped.");
             return;
         }
-        ThrowingRunnable.execute(supervisorRegistry::close);
-        ThrowingRunnable.execute(triggeringJobScanner::toStop);
-        ThrowingRunnable.execute(runningInstanceScanner::toStop);
-        ThrowingRunnable.execute(waitingInstanceScanner::toStop);
-        ThrowingRunnable.execute(taskDispatcher::close);
-        ThrowingRunnable.execute(triggeringJobScanner::close);
-        ThrowingRunnable.execute(runningInstanceScanner::close);
-        ThrowingRunnable.execute(waitingInstanceScanner::close);
+        ThrowingRunnable.doCaught(supervisorRegistry::close);
+        ThrowingRunnable.doCaught(triggeringJobScanner::toStop);
+        ThrowingRunnable.doCaught(runningInstanceScanner::toStop);
+        ThrowingRunnable.doCaught(waitingInstanceScanner::toStop);
+        ThrowingRunnable.doCaught(taskDispatcher::close);
+        ThrowingRunnable.doCaught(triggeringJobScanner::close);
+        ThrowingRunnable.doCaught(runningInstanceScanner::close);
+        ThrowingRunnable.doCaught(waitingInstanceScanner::close);
     }
 
     // ----------------------------------------------------------------------------------------builder

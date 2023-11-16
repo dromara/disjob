@@ -19,6 +19,7 @@ import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -29,6 +30,8 @@ import java.nio.charset.Charset;
  * @author Ponfee
  */
 public class JobUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JobUtils.class);
 
     public static ExecuteResult completeProcess(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
@@ -58,33 +61,37 @@ public class JobUtils {
 
     public static String getLocalHost(String specifiedHost) {
         String host = specifiedHost;
-        if (StringUtils.isNotEmpty(host)) {
-            return validateHost(host, "specified");
+        if (isValidHost(host, "specified")) {
+            return host;
         }
 
         host = System.getProperty(JobConstants.DISJOB_BOUND_SERVER_HOST);
-        if (StringUtils.isNotEmpty(host)) {
-            return validateHost(host, "jvm");
+        if (isValidHost(host, "jvm")) {
+            return host;
         }
 
         host = System.getenv(JobConstants.DISJOB_BOUND_SERVER_HOST);
-        if (StringUtils.isNotEmpty(host)) {
-            return validateHost(host, "os");
+        if (isValidHost(host, "os")) {
+            return host;
         }
 
         host = NetUtils.getLocalHost();
-        if (StringUtils.isNotEmpty(host)) {
-            return validateHost(host, "network");
-        }
-
-        throw new IllegalStateException("Not found available server host");
-    }
-
-    private static String validateHost(String host, String from) {
-        if (NetUtils.isValidLocalHost(host)) {
+        if (isValidHost(host, "network")) {
             return host;
         }
-        throw new AssertionError("Invalid bound server host configured " + from + ": " + host);
+
+        throw new AssertionError("Not found available server host.");
+    }
+
+    private static boolean isValidHost(String host, String from) {
+        if (StringUtils.isBlank(host)) {
+            return false;
+        }
+        if (NetUtils.isValidLocalHost(host)) {
+            return true;
+        }
+        LOG.warn("Invalid bound server host configured {}: {}", from, host);
+        return false;
     }
 
 }

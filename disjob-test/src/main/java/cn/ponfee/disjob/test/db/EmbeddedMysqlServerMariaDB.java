@@ -54,7 +54,7 @@ public class EmbeddedMysqlServerMariaDB {
 
     public static void main(String[] args) throws Exception {
         DB db = start(3306);
-        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.checked(db::stop)));
+        Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(db::stop)));
     }
 
     public static DB start(int port) throws Exception {

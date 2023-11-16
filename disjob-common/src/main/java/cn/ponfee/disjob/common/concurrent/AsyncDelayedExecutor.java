@@ -118,9 +118,9 @@ public final class AsyncDelayedExecutor<E> extends Thread {
             if (delayed != null) {
                 E data = delayed.getData();
                 if (asyncExecutor != null) {
-                    asyncExecutor.submit(ThrowingRunnable.caught(() -> processor.accept(data)));
+                    asyncExecutor.submit(ThrowingRunnable.toCaught(() -> processor.accept(data)));
                 } else {
-                    ThrowingRunnable.execute(() -> processor.accept(data));
+                    ThrowingRunnable.doCaught(() -> processor.accept(data));
                 }
             }
         }

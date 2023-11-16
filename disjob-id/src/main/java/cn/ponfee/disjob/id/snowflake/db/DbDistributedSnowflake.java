@@ -124,7 +124,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     @Override
     public void close() {
         if (heartbeatThread.terminate()) {
-            ThrowingSupplier.execute(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
+            ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
         }
     }
 

@@ -206,7 +206,7 @@ public final class ThreadPoolExecutors {
             return true;
         } catch (Throwable t) {
             LOG.error("Shutdown ExecutorService occur error.", t);
-            ThrowingRunnable.execute(executorService::shutdownNow);
+            ThrowingRunnable.doCaught(executorService::shutdownNow);
             Threads.interruptIfNecessary(t);
             return false;
         }
@@ -232,7 +232,7 @@ public final class ThreadPoolExecutors {
         } catch (Throwable t) {
             LOG.error("Shutdown ExecutorService occur error.", t);
             if (!hasCallShutdownNow) {
-                ThrowingRunnable.execute(executorService::shutdownNow);
+                ThrowingRunnable.doCaught(executorService::shutdownNow);
             }
             Threads.interruptIfNecessary(t);
         }

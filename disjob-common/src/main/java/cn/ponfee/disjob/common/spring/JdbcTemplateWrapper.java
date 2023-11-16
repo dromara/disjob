@@ -115,7 +115,9 @@ public final class JdbcTemplateWrapper {
                 if (psCreator != null) {
                     psCreator.close();
                 }
-                if (previousAutoCommit != null && !con.isClosed()) {
+
+                // isClosed: connection is proxy by CloseSuppressingInvocationHandler, always false
+                if (previousAutoCommit != null) {
                     try {
                         // restore the auto-commit config
                         con.setAutoCommit(previousAutoCommit);
@@ -155,7 +157,7 @@ public final class JdbcTemplateWrapper {
         Boolean result = jdbcTemplate.execute((ConnectionCallback<Boolean>) conn -> {
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet rs = meta.getTables(null, null, tableName, null);
-            boolean exists = rs.next();
+            boolean exists = rs.next() && tableName.equalsIgnoreCase(rs.getString(3));
             JdbcUtils.closeResultSet(rs);
             return exists;
         });

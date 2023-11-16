@@ -116,7 +116,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
                 .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
                 .collect(Collectors.toList());
             // 更新task的worker信息
-            ThrowingRunnable.execute(() -> supervisorCoreRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
+            ThrowingRunnable.doCaught(() -> supervisorCoreRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
 
             // 触发执行
             subs.forEach(e -> {

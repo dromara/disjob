@@ -105,7 +105,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
         public void destroy() {
             DataSource dataSource = wrapper.jdbcTemplate().getDataSource();
             if (dataSource != null) {
-                ThrowingRunnable.execute(() -> Destroyable.destroy(dataSource), () -> "Database registry datasource destroy error.");
+                ThrowingRunnable.doCaught(() -> Destroyable.destroy(dataSource), () -> "Database registry datasource destroy error.");
                 LOG.info("Database registry datasource destroy finished.");
             }
         }

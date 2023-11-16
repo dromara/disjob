@@ -29,9 +29,9 @@ public class WaitForProcess {
             long sleepTime = sleepMillis[Math.min(i, lastIndex)];
             if (sleepTime > 0) {
                 if (caught) {
-                    ThrowingRunnable.execute(() -> Thread.sleep(sleepTime));
+                    ThrowingRunnable.doCaught(() -> Thread.sleep(sleepTime));
                 } else {
-                    ThrowingRunnable.run(() -> Thread.sleep(sleepTime));
+                    ThrowingRunnable.doChecked(() -> Thread.sleep(sleepTime));
                 }
             }
             if (processor.getAsBoolean()) {

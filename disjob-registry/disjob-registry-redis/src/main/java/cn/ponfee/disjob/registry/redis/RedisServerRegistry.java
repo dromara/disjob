@@ -139,7 +139,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         container.setConnectionFactory(Objects.requireNonNull(stringRedisTemplate.getConnectionFactory()));
         container.setTaskExecutor(redisSubscribeExecutor);
         // validate “handleMessage” method is valid
-        String listenerMethod = ThrowingSupplier.get(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
+        String listenerMethod = ThrowingSupplier.doChecked(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
         MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, listenerMethod);
         listenerAdapter.afterPropertiesSet();
         container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryRootPath + separator + CHANNEL));
@@ -172,15 +172,15 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         doRegisterServers(Collections.singleton(server));
         registered.add(server);
-        ThrowingRunnable.execute(() -> publish(server, EventType.REGISTER));
+        ThrowingRunnable.doCaught(() -> publish(server, EventType.REGISTER));
         log.info("Server registered: {} | {}", registryRole.name(), server);
     }
 
     @Override
     public final void deregister(R server) {
         registered.remove(server);
-        ThrowingSupplier.execute(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        ThrowingRunnable.execute(() -> publish(server, EventType.DEREGISTER));
+        ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
+        ThrowingRunnable.doCaught(() -> publish(server, EventType.DEREGISTER));
         log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 
@@ -196,7 +196,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         registerHeartbeatThread.terminate();
         registered.forEach(this::deregister);
 
-        ThrowingRunnable.execute(redisMessageListenerContainer::stop);
+        ThrowingRunnable.doCaught(redisMessageListenerContainer::stop);
         discoverHeartbeatThread.terminate();
         ThreadPoolExecutors.shutdown(redisSubscribeExecutor, 2);
         registered.clear();
