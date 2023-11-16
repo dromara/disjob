@@ -54,6 +54,9 @@ public class ConsistentHash<T> {
             return hash;
         };
 
+        /**
+         * Fowler-Noll-Vo
+         */
         HashFunction FNV = key -> {
             int p = 16777619;
             int h = (int) 2166136261L;

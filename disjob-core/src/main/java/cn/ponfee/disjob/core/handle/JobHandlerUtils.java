@@ -54,26 +54,20 @@ public class JobHandlerUtils {
             jobHandlers = Collections.singleton(param.getJobHandler());
         }
 
-        for (String jobHandler : jobHandlers) {
-            if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
-                try {
+        try {
+            for (String jobHandler : jobHandlers) {
+                if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
                     JobHandler handler = load(jobHandler);
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
-                } catch (JobException | JobRuntimeException e) {
-                    throw e;
-                } catch (Throwable e) {
-                    throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
-                }
-            } else {
-                try {
+                } else {
                     param.setJobHandler(jobHandler);
                     Assert.notEmpty(split(param), () -> "Not split any task: " + jobHandler);
-                } catch (JobException | JobRuntimeException e) {
-                    throw e;
-                } catch (Throwable e) {
-                    throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
                 }
             }
+        } catch (JobException | JobRuntimeException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
         }
     }
 
