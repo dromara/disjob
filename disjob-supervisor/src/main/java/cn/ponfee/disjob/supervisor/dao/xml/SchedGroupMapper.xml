@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper">
+
+  <sql id="Table_Name">sched_group</sql>
+
+  <sql id="Base_Column_List">
+    `group`, worker_token, supervisor_token, alarm_subscribers, web_hook, `version`
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedGroup" useGeneratedKeys="true">
+    INSERT INTO <include refid="Table_Name" /> (
+      `group`,
+      worker_token,
+      supervisor_token,
+      alarm_subscribers,
+      web_hook
+    ) VALUES (
+      #{group,jdbcType=VARCHAR},
+      #{workerToken,jdbcType=VARCHAR},
+      #{supervisorToken,jdbcType=VARCHAR},
+      #{alarmSubscribers,jdbcType=VARCHAR},
+      #{webHook,jdbcType=VARCHAR}
+    )
+  </insert>
+
+  <select id="findAll" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedGroup">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+  </select>
+
+  <update id="updateWorkerToken">
+    UPDATE <include refid="Table_Name" />
+    SET worker_token = #{newWorkerToken,jdbcType=VARCHAR},
+        version = version+1
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND worker_token = #{oldWorkerToken,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateSupervisorToken">
+    UPDATE <include refid="Table_Name" />
+    SET supervisor_token = #{newSupervisorToken,jdbcType=VARCHAR},
+        version = version+1
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+       AND supervisor_token = #{oldSupervisorToken,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateAlarmConfig">
+    UPDATE <include refid="Table_Name" />
+    SET alarm_subscribers = #{alarmSubscribers,jdbcType=VARCHAR},
+        web_hook = #{webHook,jdbcType=VARCHAR},
+        version = version+1
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+       AND version = #{version,jdbcType=INTEGER}
+  </update>
+
+  <delete id="delete" parameterType="string">
+    DELETE FROM <include refid="Table_Name" />
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+  </delete>
+
+</mapper>

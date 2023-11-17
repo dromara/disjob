@@ -8,12 +8,15 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.Assert;
 
@@ -29,6 +32,7 @@ import static cn.ponfee.disjob.common.collect.Collects.get;
  *
  * @author Ponfee
  */
+@JsonSerialize(using = Supervisor.JacksonSerializer.class)
 @JsonDeserialize(using = Supervisor.JacksonDeserializer.class)
 public final class Supervisor extends Server {
     private static final long serialVersionUID = -1254559108807415145L;
@@ -72,7 +76,21 @@ public final class Supervisor extends Server {
         return Current.current;
     }
 
-    // --------------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson serialize & deserialize
+
+    /**
+     * Custom serialize Supervisor based jackson.
+     */
+    public static class JacksonSerializer extends JsonSerializer<Supervisor> {
+        @Override
+        public void serialize(Supervisor value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            if (value == null) {
+                gen.writeNull();
+            } else {
+                gen.writeString(value.serialize());
+            }
+        }
+    }
 
     /**
      * Custom deserialize Supervisor based jackson.
@@ -80,11 +98,11 @@ public final class Supervisor extends Server {
     public static class JacksonDeserializer extends JsonDeserializer<Supervisor> {
         @Override
         public Supervisor deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return of(p.readValueAs(Jsons.MAP_NORMAL));
+            return Supervisor.deserialize(p.getText());
         }
     }
 
-    private static Supervisor of(Map<String, Object> map) {
+    public static Supervisor ofMap(Map<String, Object> map) {
         if (map == null) {
             return null;
         }
@@ -93,6 +111,8 @@ public final class Supervisor extends Server {
         int port = MapUtils.getIntValue(map, "port");
         return new Supervisor(host, port);
     }
+
+    // -------------------------------------------------------------------------------private methods & class
 
     /**
      * Supervisor.class.getDeclaredClasses()[0]

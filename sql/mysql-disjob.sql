@@ -159,6 +159,8 @@ CREATE TABLE `sched_group` (
   `worker_token`        VARCHAR(255)                       DEFAULT NULL                 COMMENT 'worker访问supervisor的密钥令牌',
   `supervisor_token`    VARCHAR(255)                       DEFAULT NULL                 COMMENT 'supervisor访问worker的密钥令牌',
   `alarm_subscribers`   VARCHAR(1024)                      DEFAULT NULL                 COMMENT '告警订阅人员列表',
+  `web_hook`            VARCHAR(255)                       DEFAULT NULL                 COMMENT '告警web hook地址',
+  `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),

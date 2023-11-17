@@ -8,14 +8,17 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.model.SchedJob;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.Assert;
 
@@ -29,9 +32,13 @@ import static cn.ponfee.disjob.common.collect.Collects.get;
 /**
  * Worker for execute task(JVM instance)
  *
+ * <p>Also instance of use: @JsonCreator + @JsonProperty("group")
+ *
  * @author Ponfee
+ * @see com.fasterxml.jackson.annotation.JsonCreator
+ * @see com.fasterxml.jackson.annotation.JsonProperty
  */
-// Also instance of use: @JsonCreator + @JsonProperty("group")
+@JsonSerialize(using = Worker.JacksonSerializer.class)
 @JsonDeserialize(using = Worker.JacksonDeserializer.class)
 public final class Worker extends Server {
     private static final long serialVersionUID = 8981019172872301692L;
@@ -147,7 +154,21 @@ public final class Worker extends Server {
         return worker != null && worker.equals(current());
     }
 
-    // --------------------------------------------------------custom jackson deserialize
+    // --------------------------------------------------------custom jackson serialize & deserialize
+
+    /**
+     * Custom serialize Worker based jackson.
+     */
+    public static class JacksonSerializer extends JsonSerializer<Worker> {
+        @Override
+        public void serialize(Worker value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            if (value == null) {
+                gen.writeNull();
+            } else {
+                gen.writeString(value.serialize());
+            }
+        }
+    }
 
     /**
      * Custom deserialize Worker based jackson.
@@ -155,11 +176,11 @@ public final class Worker extends Server {
     public static class JacksonDeserializer extends JsonDeserializer<Worker> {
         @Override
         public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return of(p.readValueAs(Jsons.MAP_NORMAL));
+            return Worker.deserialize(p.getText());
         }
     }
 
-    public static Worker of(Map<String, ?> map) {
+    public static Worker ofMap(Map<String, ?> map) {
         if (map == null) {
             return null;
         }

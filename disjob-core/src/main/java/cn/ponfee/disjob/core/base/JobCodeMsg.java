@@ -18,6 +18,7 @@ import cn.ponfee.disjob.common.model.CodeMsg;
 public enum JobCodeMsg implements CodeMsg {
 
     INVALID_PARAM(400, "Invalid param."),
+    UN_AUTHENTICATED(401, "Un authenticated."),
     SERVER_ERROR(500, "Server error."),
 
     LOAD_HANDLER_ERROR(1001, "Load job handler error."),

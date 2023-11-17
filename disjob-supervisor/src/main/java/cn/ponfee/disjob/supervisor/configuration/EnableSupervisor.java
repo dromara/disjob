@@ -18,6 +18,7 @@ import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
+import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
 import cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider;
@@ -120,6 +121,12 @@ public @interface EnableSupervisor {
         @Bean
         public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {
             return new LocalizedMethodArgumentConfigurer();
+        }
+
+        @ConditionalOnMissingBean
+        @Bean
+        public AuthenticationConfigurer authenticationConfigurer() {
+            return new AuthenticationConfigurer();
         }
 
         @ConditionalOnMissingBean

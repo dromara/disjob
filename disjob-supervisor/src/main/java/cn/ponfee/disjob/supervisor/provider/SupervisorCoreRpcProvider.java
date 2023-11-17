@@ -16,6 +16,7 @@ import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.StartTaskParam;
 import cn.ponfee.disjob.core.param.TaskWorkerParam;
 import cn.ponfee.disjob.core.param.TerminateTaskParam;
+import cn.ponfee.disjob.supervisor.auth.AuthenticationSupervisor;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 
@@ -26,6 +27,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
+@AuthenticationSupervisor
 public class SupervisorCoreRpcProvider implements SupervisorCoreRpcService, RpcController {
 
     private final DistributedJobManager jobManager;

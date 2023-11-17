@@ -97,7 +97,6 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
                             String jobHandler) {
         Assert.notNull(operation, "Operation cannot null.");
         Assert.notNull(routeStrategy, "Route strategy cannot null.");
-        Assert.isTrue(wnstanceId == null || wnstanceId > 0, () -> "Invalid workflow node instance id: " + wnstanceId);
         this.operation = new AtomicReference<>(operation);
         this.taskId = taskId;
         this.instanceId = instanceId;
@@ -278,11 +277,11 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
     public static class JacksonDeserializer extends JsonDeserializer<ExecuteTaskParam> {
         @Override
         public ExecuteTaskParam deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return of(p.readValueAs(Jsons.MAP_NORMAL));
+            return ofMap(p.readValueAs(Jsons.MAP_NORMAL));
         }
     }
 
-    private static ExecuteTaskParam of(Map<String, ?> map) {
+    private static ExecuteTaskParam ofMap(Map<String, ?> map) {
         if (map == null) {
             return null;
         }
@@ -297,7 +296,7 @@ public class ExecuteTaskParam extends ToJsonString implements TimingWheel.Timing
         RouteStrategy routeStrategy = EnumUtils.getEnum(RouteStrategy.class, MapUtils.getString(map, "routeStrategy"));
         int executeTimeout = MapUtils.getInteger(map, "executeTimeout");
         String jobHandler = MapUtils.getString(map, "jobHandler");
-        Worker worker = Worker.of((Map<String, ?>) map.get("worker"));
+        Worker worker = Worker.deserialize(MapUtils.getString(map, "worker"));
 
         // operation is null if terminate task
         ExecuteTaskParam param = new ExecuteTaskParam(

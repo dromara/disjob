@@ -84,6 +84,16 @@ public class JobConstants {
     public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SPRING_BEAN_NAME_PREFIX + ".current-worker";
 
     /**
+     * Authenticate header group
+     */
+    public static final String AUTHENTICATE_HEADER_GROUP = "X-Disjob-Group";
+
+    /**
+     * Authenticate header token
+     */
+    public static final String AUTHENTICATE_HEADER_TOKEN = "X-Disjob-Token";
+
+    /**
      * Instance lock pool
      */
     public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
