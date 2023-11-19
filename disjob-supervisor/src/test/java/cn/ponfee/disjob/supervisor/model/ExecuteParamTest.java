@@ -30,8 +30,8 @@ public class ExecuteParamTest {
 
     @Test
     public void test1() {
-        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 3, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
-        Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\"}", Jsons.toJson(param));
+        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 3, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler", new Worker("default", "workerId", "host", 1));
+        Assertions.assertEquals("{\"supervisorToken\":\"supervisor token\",\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":\"default:workerId:host:1\"}", Jsons.toJson(param));
 
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
@@ -43,12 +43,12 @@ public class ExecuteParamTest {
         });
         String json = param.toString();
         System.out.println(json);
-        Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":\"g:i:h:8081\"}", json);
+        Assertions.assertEquals("{\"supervisorToken\":\"supervisor token\",\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":\"g:i:h:8081\"}", json);
     }
 
     @Test
     public void test2() {
-        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 4, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
+        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 4, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler", new Worker("default", "workerId", "host", 1));
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
@@ -59,7 +59,7 @@ public class ExecuteParamTest {
         });
         String json = param.toString();
         System.out.println(json);
-        Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":4,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":\"g:i:h:8081\"}", json);
+        Assertions.assertEquals("{\"supervisorToken\":\"supervisor token\",\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":4,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":\"g:i:h:8081\"}", json);
         Assertions.assertEquals(json, Jsons.fromJson(json, ExecuteTaskParam.class).toString());
     }
 

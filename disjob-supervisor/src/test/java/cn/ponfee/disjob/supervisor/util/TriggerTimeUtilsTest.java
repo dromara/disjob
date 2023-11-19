@@ -11,6 +11,7 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import cn.ponfee.disjob.core.model.SchedJob;
@@ -235,7 +236,7 @@ public class TriggerTimeUtilsTest {
 
     @Test
     public void testTaskParam() {
-        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, 0, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
+        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, 0, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler",new Worker("default", "workerId", "host", 1));
         Operations old = param.operation();
         Assertions.assertTrue(param.updateOperation(old, null));
         Assertions.assertNull(param.operation());

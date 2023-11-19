@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.URLCodes;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
@@ -89,12 +90,15 @@ public class CommonTest {
             JobType.GENERAL,
             RouteStrategy.ROUND_ROBIN,
             1,
-            "JobHandler测试中文乱码。"
+            "JobHandler测试中文乱码。",
+            new Worker("default", "workerId", "host", 1)
         );
         System.out.println(param1);
         ExecuteTaskParam param2 = ExecuteTaskParam.deserialize(param1.serialize());
-        Assertions.assertFalse(param1 == param2);
+        Assertions.assertNotSame(param1, param2);
         Assertions.assertEquals(param1, param2);
+        Assertions.assertEquals(param1.getSupervisorToken(), param2.getSupervisorToken());
+        Assertions.assertEquals(param1.getWorker(), param2.getWorker());
         Assertions.assertEquals(param1.getJobHandler(), param2.getJobHandler());
     }
 
@@ -186,7 +190,8 @@ public class CommonTest {
                                                           JobType jobType,
                                                           RouteStrategy routeStrategy,
                                                           int executeTimeout,
-                                                          String jobHandler) {
+                                                          String jobHandler,
+                                                          Worker worker) {
         ExecuteTaskParam param = new ExecuteTaskParam();
         param.setOperation(new AtomicReference<>(operation));
         param.setTaskId(taskId);
@@ -197,6 +202,8 @@ public class CommonTest {
         param.setJobType(jobType);
         param.setRouteStrategy(routeStrategy);
         param.setExecuteTimeout(executeTimeout);
+        param.setSupervisorToken("supervisor token");
+        param.setWorker(worker);
         param.setJobHandler(jobHandler);
         return param;
     }

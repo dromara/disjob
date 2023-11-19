@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
@@ -165,7 +166,7 @@ public class TimingWheelTest {
         TimingQueue<ExecuteTaskParam> timingQueue = new TimingQueue<>();
         for (int i = 0; i < 100; i++) {
             long triggerTime = ThreadLocalRandom.current().nextLong(100);
-            timingQueue.offer(CommonTest.createExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
+            timingQueue.offer(CommonTest.createExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler", new Worker("default", "workerId", "host", 1)));
         }
 
         System.out.println("-------------\n");
@@ -191,7 +192,7 @@ public class TimingWheelTest {
 
         for (int i = 0; i < 100000; i++) {
             long triggerTime = System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour);
-            timingWheel.offer(CommonTest.createExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler"));
+            timingWheel.offer(CommonTest.createExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler", new Worker("default", "workerId", "host", 1)));
         }
     }
 

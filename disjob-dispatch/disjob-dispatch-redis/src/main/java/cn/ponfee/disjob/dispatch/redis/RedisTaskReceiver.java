@@ -12,7 +12,6 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
-import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
@@ -24,10 +23,10 @@ import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static cn.ponfee.disjob.common.spring.RedisTemplateUtils.evalScript;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -76,7 +75,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(JobConstants.PROCESS_BATCH_SIZE).getBytes(UTF_8);
 
     private final RedisTemplate<String, String> redisTemplate;
-    private final List<GroupedWorker> gropedWorkers;
+    private final GroupedWorker gropedWorker;
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
@@ -87,7 +86,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         SingletonClassConstraint.constrain(this);
 
         this.redisTemplate = redisTemplate;
-        this.gropedWorkers = Collections.singletonList(new GroupedWorker(currentWorker));
+        this.gropedWorker = new GroupedWorker(currentWorker);
         this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000);
     }
 
@@ -110,60 +109,30 @@ public class RedisTaskReceiver extends TaskReceiver {
     }
 
     private class ReceiveHeartbeatThread extends AbstractHeartbeatThread {
-
         private ReceiveHeartbeatThread(long heartbeatPeriodMs) {
             super(heartbeatPeriodMs);
         }
 
         @Override
         protected boolean heartbeat() {
-            boolean isBusyLoop = true;
-
-            for (GroupedWorker gropedWorker : gropedWorkers) {
-                if (gropedWorker.skipNext) {
-                    gropedWorker.skipNext = false;
-                    continue;
-                }
-                List<byte[]> received = RedisTemplateUtils.evalScript(
-                    redisTemplate, BATCH_POP_SCRIPT, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
-
-                gropedWorker.redisKeyRenewal.renewIfNecessary();
-
-                if (CollectionUtils.isEmpty(received)) {
-                    gropedWorker.skipNext = true;
-                    continue;
-                }
-
-                for (byte[] bytes : received) {
-                    ExecuteTaskParam param = ExecuteTaskParam.deserialize(bytes);
-                    param.setWorker(gropedWorker.worker);
-                    RedisTaskReceiver.this.receive(param);
-                }
-
-                if (received.size() < JobConstants.PROCESS_BATCH_SIZE) {
-                    gropedWorker.skipNext = true;
-                } else {
-                    isBusyLoop = false;
-                }
+            List<byte[]> received = evalScript(redisTemplate, BATCH_POP_SCRIPT, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
+            gropedWorker.redisKeyRenewal.renewIfNecessary();
+            if (CollectionUtils.isEmpty(received)) {
+                return true;
             }
-
-            if (isBusyLoop) {
-                // if busy loop, will be sleep heartbeat period milliseconds, so can't skip next task fetch
-                gropedWorkers.forEach(e -> e.skipNext = false);
+            for (byte[] bytes : received) {
+                RedisTaskReceiver.this.receive(ExecuteTaskParam.deserialize(bytes));
             }
-            return isBusyLoop;
+            return received.size() < JobConstants.PROCESS_BATCH_SIZE;
         }
     }
 
     private class GroupedWorker {
-        private final Worker worker;
         private final byte[][] keysAndArgs;
         private final RedisKeyRenewal redisKeyRenewal;
-        private volatile boolean skipNext = false;
 
-        public GroupedWorker(Worker worker) {
+        private GroupedWorker(Worker worker) {
             byte[] key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker).getBytes();
-            this.worker = worker;
             this.keysAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
             this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, key);
         }
