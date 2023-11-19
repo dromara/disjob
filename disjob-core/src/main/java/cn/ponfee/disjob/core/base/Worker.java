@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -188,18 +187,6 @@ public final class Worker extends Server {
         public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             return Worker.deserialize(p.getText());
         }
-    }
-
-    public static Worker ofMap(Map<String, ?> map) {
-        if (map == null) {
-            return null;
-        }
-
-        String group = MapUtils.getString(map, "group");
-        String workerId = MapUtils.getString(map, "workerId");
-        String host = MapUtils.getString(map, "host");
-        int port = MapUtils.getIntValue(map, "port");
-        return new Worker(group, workerId, host, port);
     }
 
     // -------------------------------------------------------------------------------private methods & class
