@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -109,11 +110,34 @@ public class ConsistentHashExecutionRouterTest {
     }
 
     private static ExecuteTaskParam createExecuteTaskParam(long taskId) {
-        return new ExecuteTaskParam(Operations.TRIGGER, taskId, 1L, 1L, 0, 1L, JobType.GENERAL, RouteStrategy.CONSISTENT_HASH, 0, "");
+        return createExecuteTaskParam(Operations.TRIGGER, taskId, 1L, 1L, 0, 1L, JobType.GENERAL, RouteStrategy.CONSISTENT_HASH, 0, "");
     }
 
     private static Worker createWorker(String workerId) {
         return new Worker("default", workerId, "127.0.0.1", 80);
     }
 
+    public static ExecuteTaskParam createExecuteTaskParam(Operations operation,
+                                                          long taskId,
+                                                          long instanceId,
+                                                          Long wnstanceId,
+                                                          long triggerTime,
+                                                          long jobId,
+                                                          JobType jobType,
+                                                          RouteStrategy routeStrategy,
+                                                          int executeTimeout,
+                                                          String jobHandler) {
+        ExecuteTaskParam param = new ExecuteTaskParam();
+        param.setOperation(new AtomicReference<>(operation));
+        param.setTaskId(taskId);
+        param.setInstanceId(instanceId);
+        param.setWnstanceId(wnstanceId);
+        param.setTriggerTime(triggerTime);
+        param.setJobId(jobId);
+        param.setJobType(jobType);
+        param.setRouteStrategy(routeStrategy);
+        param.setExecuteTimeout(executeTimeout);
+        param.setJobHandler(jobHandler);
+        return param;
+    }
 }

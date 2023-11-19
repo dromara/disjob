@@ -25,6 +25,8 @@ public final class Bytes {
     private static final char[] HEX_LOWER_CODES = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
     private static final char[] HEX_UPPER_CODES = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
+    public static final byte[] EMPTY = new byte[0];
+
     // -----------------------------------------------------------------hexEncode/hexDecode
 
     public static void hexEncode(char[] charArray, int i, byte b) {
@@ -45,7 +47,8 @@ public final class Bytes {
 
     /**
      * encode the byte array the hex string
-     * @param bytes the byte array
+     *
+     * @param bytes     the byte array
      * @param lowercase the boolean
      * @return string
      */
@@ -66,6 +69,7 @@ public final class Bytes {
 
     /**
      * decode the hex string to byte array
+     *
      * @param hex
      * @return
      */
@@ -86,12 +90,14 @@ public final class Bytes {
     }
 
     /**
+     * <pre>
      * convert the byte array to binary string
      * byte:
      *    -1: 11111111
      *     0: 00000000
      *   127: 01111111
      *  -128: 10000000
+     * </pre>
      *
      * @param array the byte array
      * @return binary string
@@ -115,6 +121,7 @@ public final class Bytes {
     }
 
     // -----------------------------------------------------------------char array
+
     /**
      * Converts byte array to char array
      *
@@ -128,7 +135,7 @@ public final class Bytes {
     /**
      * Converts byte array to char array
      *
-     * @param bytes the byte array
+     * @param bytes   the byte array
      * @param charset the charset
      * @return a char array
      */
@@ -153,7 +160,7 @@ public final class Bytes {
     /**
      * Converts char array to byte array
      *
-     * @param chars the char array
+     * @param chars   the char array
      * @param charset the charset
      * @return a byte array
      */
@@ -167,7 +174,7 @@ public final class Bytes {
 
     // -----------------------------------------------------------------char
     public static byte[] toBytes(char value) {
-        return new byte[] {(byte) (value >>> 8), (byte) value};
+        return new byte[]{(byte) (value >>> 8), (byte) value};
     }
 
     public static char toChar(byte[] bytes) {
@@ -200,8 +207,10 @@ public final class Bytes {
     }
 
     // -----------------------------------------------------------------long
+
     /**
      * convert long value to byte array
+     *
      * @param value the long number
      * @return byte array
      */
@@ -232,7 +241,8 @@ public final class Bytes {
 
     /**
      * convert byte array to long number
-     * @param bytes  the byte array
+     *
+     * @param bytes   the byte array
      * @param fromIdx the byte array offset
      * @return long number
      */
@@ -249,6 +259,7 @@ public final class Bytes {
 
     /**
      * convert byte array to long number
+     *
      * @param bytes the byte array
      * @return long value
      */
@@ -257,6 +268,7 @@ public final class Bytes {
     }
 
     // ---------------------------------------------------------BigDecimal
+
     /**
      * Convert a BigDecimal value to a byte array
      *
@@ -320,6 +332,7 @@ public final class Bytes {
     }
 
     // ---------------------------------------------------------BigInteger
+
     /**
      * Converts byte array to positive BigInteger
      *
@@ -332,8 +345,6 @@ public final class Bytes {
         }
         return new BigInteger(1, bytes);
     }
-
-    // ----------------------------------------------------------others
 
     /**
      * Concat many byte arrays
@@ -355,7 +366,27 @@ public final class Bytes {
         return result;
     }
 
-    public static byte[] remaining(ByteBuffer buf) {
+    // ----------------------------------------------------------ByteBuffer
+
+    public static void put(ByteBuffer buf, byte[] array) {
+        if (array != null && array.length > 0) {
+            buf.put(array);
+        }
+    }
+
+    public static byte[] get(ByteBuffer buf, int length) {
+        if (length == -1) {
+            return null;
+        }
+        if (length == 0) {
+            return EMPTY;
+        }
+        byte[] bytes = new byte[length];
+        buf.get(bytes);
+        return bytes;
+    }
+
+    public static byte[] remained(ByteBuffer buf) {
         int count = buf.limit() - buf.position();
         if (count <= 0) {
             return new byte[0];

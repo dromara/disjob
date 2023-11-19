@@ -12,6 +12,7 @@ import com.google.common.base.CaseFormat;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -148,4 +149,12 @@ public final class Strings {
         }
         return str;
     }
+
+    public static String of(byte[] bytes, Charset charset) {
+        if (bytes == null) {
+            return null;
+        }
+        return new String(bytes, charset);
+    }
+
 }

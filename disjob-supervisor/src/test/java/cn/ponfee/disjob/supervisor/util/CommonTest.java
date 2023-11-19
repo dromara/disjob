@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 /**
@@ -78,7 +79,7 @@ public class CommonTest {
 
     @Test
     public void testTaskParam() {
-        ExecuteTaskParam param1 = new ExecuteTaskParam(
+        ExecuteTaskParam param1 = createExecuteTaskParam(
             Operations.TRIGGER,
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
@@ -173,6 +174,31 @@ public class CommonTest {
             Assertions.assertTrue(Collects.getLast(split).b == number - 1);
             Assertions.assertTrue(Collects.getLast(Numbers.partition(number, size)).b == number - 1);
         }
+    }
+
+
+    public static ExecuteTaskParam createExecuteTaskParam(Operations operation,
+                                                          long taskId,
+                                                          long instanceId,
+                                                          Long wnstanceId,
+                                                          long triggerTime,
+                                                          long jobId,
+                                                          JobType jobType,
+                                                          RouteStrategy routeStrategy,
+                                                          int executeTimeout,
+                                                          String jobHandler) {
+        ExecuteTaskParam param = new ExecuteTaskParam();
+        param.setOperation(new AtomicReference<>(operation));
+        param.setTaskId(taskId);
+        param.setInstanceId(instanceId);
+        param.setWnstanceId(wnstanceId);
+        param.setTriggerTime(triggerTime);
+        param.setJobId(jobId);
+        param.setJobType(jobType);
+        param.setRouteStrategy(routeStrategy);
+        param.setExecuteTimeout(executeTimeout);
+        param.setJobHandler(jobHandler);
+        return param;
     }
 
 }

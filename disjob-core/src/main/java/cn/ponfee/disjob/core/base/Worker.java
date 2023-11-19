@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Objects;
 
@@ -95,6 +96,10 @@ public final class Worker extends Server {
     @Override
     public String serialize() {
         return serializedValue;
+    }
+
+    public static Worker deserialize(byte[] bytes, Charset charset) {
+        return deserialize(new String(bytes, charset));
     }
 
     /**

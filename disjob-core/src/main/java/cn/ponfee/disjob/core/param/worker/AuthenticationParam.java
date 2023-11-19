@@ -27,6 +27,6 @@ public abstract class AuthenticationParam extends ToJsonString implements Serial
     /**
      * 从Supervisor侧传过来的token
      */
-    private String supervisorToken;
+    protected String supervisorToken;
 
 }

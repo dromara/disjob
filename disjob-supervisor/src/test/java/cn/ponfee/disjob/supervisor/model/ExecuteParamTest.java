@@ -18,6 +18,7 @@ import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.supervisor.util.CommonTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +30,7 @@ public class ExecuteParamTest {
 
     @Test
     public void test1() {
-        ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 3, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
+        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 3, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
         Assertions.assertEquals("{\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\"}", Jsons.toJson(param));
 
         Worker worker = new Worker("g", "i", "h", 8081);
@@ -47,7 +48,7 @@ public class ExecuteParamTest {
 
     @Test
     public void test2() {
-        ExecuteTaskParam param = new ExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 4, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
+        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operations.TRIGGER, 1, 2, 1L, 4, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler");
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
         param.taskExecutor(new TaskExecutor() {
