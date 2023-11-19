@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 
 import java.util.Objects;
 

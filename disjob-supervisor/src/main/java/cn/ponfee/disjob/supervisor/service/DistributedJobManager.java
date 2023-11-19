@@ -24,7 +24,11 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
-import cn.ponfee.disjob.core.param.*;
+import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
+import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
@@ -150,14 +154,14 @@ public class DistributedJobManager extends AbstractJobManager {
     /**
      * Set or clear task worker
      *
-     * @param params the list of update task worker params
+     * @param list the update task worker list
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
-    public void updateTaskWorker(List<TaskWorkerParam> params) {
-        if (CollectionUtils.isNotEmpty(params)) {
+    public void updateTaskWorker(List<UpdateTaskWorkerParam> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
-            params.sort(Comparator.comparing(TaskWorkerParam::getTaskId));
-            Collects.batchProcess(params, taskMapper::batchUpdateWorker, PROCESS_BATCH_SIZE);
+            list.sort(Comparator.comparingLong(UpdateTaskWorkerParam::getTaskId));
+            Collects.batchProcess(list, taskMapper::batchUpdateWorker, PROCESS_BATCH_SIZE);
         }
     }
 
@@ -206,8 +210,8 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             if (toExecuteState == ExecuteState.WAITING) {
-                Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, taskRow);
-                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
+                Tuple3<SchedJob, SchedInstance, List<SchedTask>> param = buildDispatchParam(instanceId, taskRow);
+                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(param.a, param.b, param.c));
             }
 
             LOG.info("Force change state success {} | {}", instanceId, toExecuteState);
@@ -584,8 +588,8 @@ public class DistributedJobManager extends AbstractJobManager {
         assertManyAffectedRow(row, "Resume sched task failed.");
 
         // dispatch task
-        Tuple3<SchedJob, SchedInstance, List<SchedTask>> params = buildDispatchParams(instanceId, row);
-        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(params.a, params.b, params.c));
+        Tuple3<SchedJob, SchedInstance, List<SchedTask>> param = buildDispatchParam(instanceId, row);
+        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(param.a, param.b, param.c));
     }
 
     private void updateWorkflowLeadState(SchedInstance instance) {
@@ -913,7 +917,7 @@ public class DistributedJobManager extends AbstractJobManager {
         return executingTasks;
     }
 
-    private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParams(long instanceId, int expectTaskSize) {
+    private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParam(long instanceId, int expectTaskSize) {
         SchedInstance instance = instanceMapper.get(instanceId);
         SchedJob job = jobMapper.get(instance.getJobId());
         Assert.notNull(job, "Not found job: " + instance.getJobId());

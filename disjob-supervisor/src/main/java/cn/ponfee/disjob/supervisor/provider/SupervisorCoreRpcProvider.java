@@ -13,9 +13,9 @@ import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.param.StartTaskParam;
-import cn.ponfee.disjob.core.param.TaskWorkerParam;
-import cn.ponfee.disjob.core.param.TerminateTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.supervisor.auth.AuthenticationSupervisor;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
@@ -50,8 +50,8 @@ public class SupervisorCoreRpcProvider implements SupervisorCoreRpcService, RpcC
     }
 
     @Override
-    public void updateTaskWorker(List<TaskWorkerParam> params) {
-        jobManager.updateTaskWorker(params);
+    public void updateTaskWorker(List<UpdateTaskWorkerParam> list) {
+        jobManager.updateTaskWorker(list);
     }
 
     @Override

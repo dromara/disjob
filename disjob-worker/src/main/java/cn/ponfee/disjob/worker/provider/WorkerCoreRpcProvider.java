@@ -10,10 +10,13 @@ package cn.ponfee.disjob.worker.provider;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
+import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.param.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.AuthenticationParam;
+import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -24,14 +27,32 @@ import java.util.List;
  */
 public class WorkerCoreRpcProvider implements WorkerCoreRpcService, RpcController {
 
+    private final String supervisorToken;
+
+    public WorkerCoreRpcProvider(String supervisorToken) {
+        this.supervisorToken = supervisorToken;
+    }
+
     @Override
     public void verify(JobHandlerParam param) throws JobException {
+        authenticate(param);
         JobHandlerUtils.verify(param);
     }
 
     @Override
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
+        authenticate(param);
         return JobHandlerUtils.split(param);
+    }
+
+    private void authenticate(AuthenticationParam param) {
+        if (StringUtils.isBlank(supervisorToken)) {
+            return;
+        }
+
+        if (!supervisorToken.equals(param.getSupervisorToken())) {
+            throw new AuthenticationException("Authentication failed.");
+        }
     }
 
 }

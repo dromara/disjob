@@ -6,40 +6,33 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.param;
+package cn.ponfee.disjob.core.param.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.base.Worker;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
 /**
- * Start task parameter.
+ * Update task worker parameter
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class StartTaskParam extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 7700836087189718161L;
+public class UpdateTaskWorkerParam extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -6622646278492874535L;
 
-    private long instanceId;
     private long taskId;
     private String worker;
 
-    public StartTaskParam(long instanceId, long taskId, String worker) {
-        Assert.hasText(worker, "Start task worker param cannot be null.");
-        this.instanceId = instanceId;
+    public UpdateTaskWorkerParam(long taskId, Worker worker) {
         this.taskId = taskId;
-        this.worker = worker;
-    }
-
-    public static StartTaskParam from(ExecuteTaskParam param) {
-        return new StartTaskParam(param.getInstanceId(), param.getTaskId(), param.getWorker().serialize());
+        this.worker = worker == null ? null : worker.serialize();
     }
 
 }

@@ -15,11 +15,10 @@ import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-import cn.ponfee.disjob.core.param.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.samples.worker.util.JobHandlerHolder;
-import cn.ponfee.disjob.worker.provider.WorkerCoreRpcProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -53,14 +52,15 @@ public class VertxWebServer extends AbstractVerticle {
     private static final Logger LOG = LoggerFactory.getLogger(VertxWebServer.class);
 
     private static final String PATH_PREFIX = "/" + WorkerCoreRpcService.PREFIX_PATH;
-    private static final WorkerCoreRpcService WORKER_SERVICE_PROVIDER = new WorkerCoreRpcProvider();
 
     private final int port;
     private final TaskReceiver httpTaskReceiver;
+    private final WorkerCoreRpcService workerCoreRpcService;
 
-    public VertxWebServer(int port, TaskReceiver httpTaskReceiver) {
+    public VertxWebServer(int port, TaskReceiver httpTaskReceiver, WorkerCoreRpcService workerCoreRpcService) {
         this.port = port;
         this.httpTaskReceiver = httpTaskReceiver;
+        this.workerCoreRpcService = workerCoreRpcService;
     }
 
     public final void deploy() {
@@ -102,13 +102,13 @@ public class VertxWebServer extends AbstractVerticle {
         //String[] args = ctx.body().asPojo(String[].class);
         router.post(PATH_PREFIX + "job/verify").handler(ctx -> handle(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
-            WORKER_SERVICE_PROVIDER.verify(param);
+            workerCoreRpcService.verify(param);
         }, ctx, BAD_REQUEST));
 
         router.post(PATH_PREFIX + "job/split").handler(ctx -> handle(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
             modifyJobHandler(param, "jobHandler");
-            return WORKER_SERVICE_PROVIDER.split(param);
+            return workerCoreRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {

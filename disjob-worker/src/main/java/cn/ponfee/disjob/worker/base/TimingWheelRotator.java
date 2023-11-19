@@ -20,8 +20,8 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-import cn.ponfee.disjob.core.param.TaskWorkerParam;
+import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -110,10 +110,10 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
     private void process(List<ExecuteTaskParam> tasks) {
         for (List<ExecuteTaskParam> subs : Lists.partition(tasks, PROCESS_BATCH_SIZE)) {
-            List<TaskWorkerParam> list = subs.stream()
+            List<UpdateTaskWorkerParam> list = subs.stream()
                 // 广播任务分派的worker不可修改，需要排除
                 .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
-                .map(e -> new TaskWorkerParam(e.getTaskId(), e.getWorker().serialize()))
+                .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), e.getWorker()))
                 .collect(Collectors.toList());
             // 更新task的worker信息
             ThrowingRunnable.doCaught(() -> supervisorCoreRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));

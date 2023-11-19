@@ -58,6 +58,16 @@ public class WorkerProperties extends ToJsonString implements Serializable {
      */
     private int processThreadPoolSize = 5;
 
+    /**
+     * The token which use call rpc to supervisor
+     */
+    private String workerToken;
+
+    /**
+     * The token which is from supervisor rpc call
+     */
+    private String supervisorToken;
+
     public void check() {
         Assert.hasText(group, "Group cannot be blank.");
         Assert.isTrue(timingWheelTickMs > 0, "Timing wheel tick ms must be greater than 0.");

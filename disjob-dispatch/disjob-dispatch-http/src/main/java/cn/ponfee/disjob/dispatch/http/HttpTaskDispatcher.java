@@ -11,7 +11,7 @@ package cn.ponfee.disjob.dispatch.http;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import org.springframework.web.client.RestTemplate;

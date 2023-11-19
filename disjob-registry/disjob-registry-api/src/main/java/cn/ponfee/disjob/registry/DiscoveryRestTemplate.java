@@ -12,9 +12,11 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.base.Worker;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -39,7 +42,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param <D> the discovery type
  * @author Ponfee
  */
-public class DiscoveryRestTemplate<D extends Server> {
+public final class DiscoveryRestTemplate<D extends Server> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
 
@@ -95,37 +98,43 @@ public class DiscoveryRestTemplate<D extends Server> {
      */
     public <T> T execute(String group, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
         List<D> servers = discoveryServer.getDiscoveredServers(group);
+        ServerRole discoveryServerRole = discoveryServer.discoveryRole();
         if (CollectionUtils.isEmpty(servers)) {
             String errMsg = (group == null ? " " : " '" + group + "' ");
-            throw new IllegalStateException("Not found available" + errMsg + discoveryServer.discoveryRole());
+            throw new IllegalStateException("Not found available" + errMsg + discoveryServerRole);
         }
 
         int serverNumber = servers.size();
+        Map<String, String> authenticationHeaders = discoveryServerRole == ServerRole.SUPERVISOR ? Worker.current().authenticateHeaders() : null;
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
+
         // minimum retry two times
         Throwable ex = null;
         for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
             String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
             try {
+                HttpHeaders headers = new HttpHeaders();
+                if (MapUtils.isNotEmpty(authenticationHeaders)) {
+                    authenticationHeaders.forEach(headers::set);
+                }
+
                 URI uri;
-                HttpEntity<?> requestEntity = null;
                 if (RestTemplateUtils.QUERY_PARAM_METHODS.contains(httpMethod)) {
                     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
                     if (ArrayUtils.isNotEmpty(arguments)) {
                         builder.queryParams(buildQueryParams(arguments));
                     }
                     uri = builder.build().encode().toUri();
+                    arguments = null;
                 } else {
                     uri = restTemplate.getUriTemplateHandler().expand(url, EMPTY);
                     if (ArrayUtils.isNotEmpty(arguments)) {
-                        HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
-                        requestEntity = new HttpEntity<>(arguments, headers);
                     }
                 }
 
-                RequestCallback requestCallback = restTemplate.httpEntityCallback(requestEntity, returnType);
+                RequestCallback requestCallback = restTemplate.httpEntityCallback(new HttpEntity<>(arguments, headers), returnType);
                 ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
                 ResponseEntity<T> responseEntity = restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor);
                 return responseEntity.getBody();

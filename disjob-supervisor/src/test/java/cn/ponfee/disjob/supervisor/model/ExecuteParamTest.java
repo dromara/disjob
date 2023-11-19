@@ -17,7 +17,7 @@ import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

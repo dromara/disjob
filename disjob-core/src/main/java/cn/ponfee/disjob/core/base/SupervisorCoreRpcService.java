@@ -11,9 +11,9 @@ package cn.ponfee.disjob.core.base;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.param.StartTaskParam;
-import cn.ponfee.disjob.core.param.TaskWorkerParam;
-import cn.ponfee.disjob.core.param.TerminateTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +37,7 @@ public interface SupervisorCoreRpcService {
     boolean startTask(StartTaskParam param) throws Exception;
 
     @PostMapping("task/worker/update")
-    void updateTaskWorker(List<TaskWorkerParam> params) throws Exception;
+    void updateTaskWorker(List<UpdateTaskWorkerParam> list) throws Exception;
 
     /**
      * Finds workflow predecessor nodes

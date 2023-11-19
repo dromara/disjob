@@ -15,10 +15,11 @@ import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.param.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.supervisor.service.SchedGroupManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nullable;
@@ -57,10 +58,12 @@ public class WorkerCoreRpcClient {
     }
 
     public void verify(JobHandlerParam param) throws JobException {
+        param.setSupervisorToken(getSupervisorToken(param.getJobGroup()));
         grouped(param.getJobGroup()).verify(param);
     }
 
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
+        param.setSupervisorToken(getSupervisorToken(param.getJobGroup()));
         return grouped(param.getJobGroup()).split(param);
     }
 
@@ -73,6 +76,14 @@ public class WorkerCoreRpcClient {
             ((DiscoveryRestProxy.GroupedServer) remote).group(group);
             return remote;
         }
+    }
+
+    private String getSupervisorToken(String group) {
+        SchedGroupManager.DisjobGroup disjobGroup = SchedGroupManager.getDisjobGroup(group);
+        if (disjobGroup == null) {
+            throw new IllegalStateException("Not found worker group: " + group);
+        }
+        return disjobGroup.getSupervisorToken();
     }
 
     private static class WorkerCoreRpcLocal implements WorkerCoreRpcService {

@@ -78,9 +78,10 @@ public @interface EnableWorker {
                                     WorkerProperties config) {
             String host = JobUtils.getLocalHost(boundHost);
             Worker currentWorker = new Worker(config.getGroup(), ObjectUtils.uuid32(), host, port);
+
             // inject current worker: Worker.class.getDeclaredClasses()[0]
             try {
-                ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
+                ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker, config.getWorkerToken()});
             } catch (ClassNotFoundException e) {
                 // cannot happen
                 throw new Error("Setting as current worker occur error.", e);
@@ -91,8 +92,8 @@ public @interface EnableWorker {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerCoreRpcService workerCoreRpcService() {
-            return new WorkerCoreRpcProvider();
+        public WorkerCoreRpcService workerCoreRpcService(WorkerProperties workerProperties) {
+            return new WorkerCoreRpcProvider(workerProperties.getSupervisorToken());
         }
 
         @ConditionalOnMissingBean

@@ -8,22 +8,20 @@
 
 package cn.ponfee.disjob.dispatch;
 
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-
 import java.util.StringJoiner;
 
 /**
- * Dispatch param
+ * Dispatch task param
  *
  * @author Ponfee
  */
-class DispatchParam {
+class DispatchTaskParam {
 
     private final ExecuteTaskParam executeTaskParam;
     private final String group;
     private int retried = 0;
 
-    public DispatchParam(ExecuteTaskParam executeTaskParam, String group) {
+    public DispatchTaskParam(ExecuteTaskParam executeTaskParam, String group) {
         this.executeTaskParam = executeTaskParam;
         this.group = group;
     }
@@ -46,7 +44,7 @@ class DispatchParam {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", DispatchParam.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", DispatchTaskParam.class.getSimpleName() + "[", "]")
             .add("executeTaskParam=" + executeTaskParam)
             .add(group == null ? "group=null" : "group='" + group + "'")
             .add("retried=" + retried)

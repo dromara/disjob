@@ -16,7 +16,6 @@ import cn.ponfee.disjob.common.concurrent.DelayedData;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,7 +42,7 @@ public abstract class TaskDispatcher implements Startable {
 
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
-    private final AsyncDelayedExecutor<DispatchParam> asyncDelayedExecutor;
+    private final AsyncDelayedExecutor<DispatchTaskParam> asyncDelayedExecutor;
 
     public TaskDispatcher(Discovery<Worker> discoveryWorker,
                           RetryProperties retryProperties,
@@ -77,13 +76,13 @@ public abstract class TaskDispatcher implements Startable {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }
-        List<DispatchParam> params = tasks.stream()
+        List<DispatchTaskParam> params = tasks.stream()
             .peek(e -> {
                 Assert.notNull(e.operation(), () -> "Dispatch task operation cannot be null: " + e);
                 Assert.isTrue(e.operation().isNotTrigger(), () -> "Specific dispatch task operation cannot be trigger: " + e);
                 Assert.notNull(e.getWorker(), () -> "Specific dispatch task worker cannot be null: " + e);
             })
-            .map(e -> new DispatchParam(e, null))
+            .map(e -> new DispatchTaskParam(e, null))
             .collect(Collectors.toList());
         return doDispatch(params);
     }
@@ -99,7 +98,7 @@ public abstract class TaskDispatcher implements Startable {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }
-        List<DispatchParam> params = tasks.stream()
+        List<DispatchTaskParam> params = tasks.stream()
             .peek(e -> {
                 Assert.notNull(e.operation(), () -> "Dispatch task operation cannot be null: " + e);
                 Assert.isTrue(e.operation().isTrigger(), () -> "Assign dispatch task operation must be trigger: " + e);
@@ -107,7 +106,7 @@ public abstract class TaskDispatcher implements Startable {
                     Assert.notNull(e.getWorker(), () -> "Broadcast dispatch task worker cannot be null: " + e);
                 }
             })
-            .map(e -> new DispatchParam(e, jobGroup))
+            .map(e -> new DispatchTaskParam(e, jobGroup))
             .collect(Collectors.toList());
         return doDispatch(params);
     }
@@ -130,7 +129,7 @@ public abstract class TaskDispatcher implements Startable {
 
     // ------------------------------------------------------------private methods
 
-    private boolean doDispatch(List<DispatchParam> params) {
+    private boolean doDispatch(List<DispatchTaskParam> params) {
         params.stream()
             .filter(e -> e.executeTaskParam().operation().isTrigger())
             .filter(e -> e.executeTaskParam().getRouteStrategy() != RouteStrategy.BROADCAST)
@@ -140,7 +139,7 @@ public abstract class TaskDispatcher implements Startable {
             .forEach((instanceId, list) -> assignWorker(list));
 
         boolean result = true;
-        for (DispatchParam param : params) {
+        for (DispatchTaskParam param : params) {
             ExecuteTaskParam task = param.executeTaskParam();
             if (task.getWorker() == null) {
                 // if not found worker(assign worker failed), delay retry
@@ -163,15 +162,15 @@ public abstract class TaskDispatcher implements Startable {
         return result;
     }
 
-    private void assignWorker(List<DispatchParam> params) {
-        DispatchParam first = params.get(0);
+    private void assignWorker(List<DispatchTaskParam> params) {
+        DispatchTaskParam first = params.get(0);
         List<Worker> workers = discoveryWorker.getDiscoveredServers(first.group());
         if (CollectionUtils.isEmpty(workers)) {
             LOG.error("Not found available worker for assign to task.");
             return;
         }
 
-        List<ExecuteTaskParam> tasks = Collects.convert(params, DispatchParam::executeTaskParam);
+        List<ExecuteTaskParam> tasks = Collects.convert(params, DispatchTaskParam::executeTaskParam);
         ExecutionRouterRegistrar.route(first.executeTaskParam().getRouteStrategy(), tasks, workers);
     }
 
@@ -190,7 +189,7 @@ public abstract class TaskDispatcher implements Startable {
         }
     }
 
-    private void retry(DispatchParam param) {
+    private void retry(DispatchTaskParam param) {
         if (param.retried() >= retryMaxCount) {
             // discard
             LOG.error("Dispatched task retried max count still failed: " + param.executeTaskParam());

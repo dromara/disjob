@@ -6,32 +6,27 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.param;
+package cn.ponfee.disjob.core.param.worker;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
 
 /**
- * Task worker parameter
+ * Worker authentication param
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-@NoArgsConstructor
-public class TaskWorkerParam extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = -6622646278492874535L;
+public abstract class AuthenticationParam extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -6147946999789807933L;
 
-    private Long taskId;
-    private String worker;
-
-    public TaskWorkerParam(Long taskId, String worker) {
-        this.taskId = taskId;
-        this.worker = worker;
-    }
+    /**
+     * 从Supervisor侧传过来的token
+     */
+    private String supervisorToken;
 
 }

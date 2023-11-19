@@ -10,7 +10,7 @@ package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.param.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Test;
 

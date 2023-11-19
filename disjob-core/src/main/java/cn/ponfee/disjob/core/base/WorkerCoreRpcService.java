@@ -10,7 +10,7 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.param.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

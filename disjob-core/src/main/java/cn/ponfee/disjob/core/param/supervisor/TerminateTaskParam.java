@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.param;
+package cn.ponfee.disjob.core.param.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.enums.ExecuteState;

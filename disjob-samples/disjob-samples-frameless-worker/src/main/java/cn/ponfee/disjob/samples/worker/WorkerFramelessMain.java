@@ -15,12 +15,9 @@ import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.common.util.ObjectUtils;
-import cn.ponfee.disjob.core.base.HttpProperties;
-import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
@@ -31,6 +28,7 @@ import cn.ponfee.disjob.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
+import cn.ponfee.disjob.worker.provider.WorkerCoreRpcProvider;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -73,14 +71,16 @@ public class WorkerFramelessMain {
             props = new YamlProperties(inputStream);
         }
 
+        WorkerProperties workerProperties = props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + ".");
         int port = Optional.ofNullable(props.getInt("server.port")).orElse(NetUtils.findAvailablePort(10000));
 
         String group = props.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");
         String boundHost = JobUtils.getLocalHost(props.getString(DISJOB_BOUND_SERVER_HOST));
         Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), boundHost, port);
+
         // inject current worker
-        ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker});
+        ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker, workerProperties.getWorkerToken()});
 
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(
             props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),
@@ -107,14 +107,16 @@ public class WorkerFramelessMain {
         // --------------------- create registry(select redis or http) --------------------- //
         TaskReceiver taskReceiver;
         VertxWebServer vertxWebServer;
+        WorkerCoreRpcService workerCoreRpcProvider = new WorkerCoreRpcProvider(workerProperties.getSupervisorToken());
         {
             // redis dispatching
             //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
-            //vertxWebServer = new VertxWebServer(port, null);
+            //vertxWebServer = new VertxWebServer(port, null, workerCoreRpcProvider);
 
             // http dispatching
             taskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
-            vertxWebServer = new VertxWebServer(port, taskReceiver);
+
+            vertxWebServer = new VertxWebServer(port, taskReceiver, workerCoreRpcProvider);
         }
         // --------------------- create registry(select redis or http) --------------------- //
 
@@ -123,7 +125,7 @@ public class WorkerFramelessMain {
 
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
-            .workerProperties(props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + "."))
+            .workerProperties(workerProperties)
             .retryProperties(props.extract(RetryProperties.class, RETRY_KEY_PREFIX + "."))
             .httpProperties(props.extract(HttpProperties.class, HTTP_KEY_PREFIX + "."))
             .taskReceiver(taskReceiver)

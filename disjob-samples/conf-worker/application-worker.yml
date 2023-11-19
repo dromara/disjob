@@ -6,3 +6,5 @@ disjob.worker:
   maximum-pool-size: 100
   keep-alive-time-seconds: 300
   process-thread-pool-size: 6
+  worker-token: 358678bfe34648f68b607036a27c6854
+  supervisor-token: 20bb8b7f1cb94dc894b45546a7c2982f

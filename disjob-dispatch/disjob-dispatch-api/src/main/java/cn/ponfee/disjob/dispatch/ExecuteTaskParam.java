@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.param;
+package cn.ponfee.disjob.dispatch;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.base.ToJsonString;

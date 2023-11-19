@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;

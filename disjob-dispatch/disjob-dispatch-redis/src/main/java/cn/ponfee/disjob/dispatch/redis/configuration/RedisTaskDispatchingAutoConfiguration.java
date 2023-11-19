@@ -12,7 +12,7 @@ import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.configuration.BaseTaskDispatchingAutoConfiguration;

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.util.Assert;
 
@@ -59,6 +60,11 @@ public final class Worker extends Server {
      * Serialized value
      */
     private transient final String serializedValue;
+
+    /**
+     * Authenticate http headers
+     */
+    private transient Map<String, String> authenticateHeaders;
 
     public Worker(String group, String workerId, String host, int port) {
         super(host, port);
@@ -150,6 +156,10 @@ public final class Worker extends Server {
         return Current.current;
     }
 
+    public Map<String, String> authenticateHeaders() {
+        return authenticateHeaders;
+    }
+
     public static boolean isCurrent(Worker worker) {
         return worker != null && worker.equals(current());
     }
@@ -192,6 +202,8 @@ public final class Worker extends Server {
         return new Worker(group, workerId, host, port);
     }
 
+    // -------------------------------------------------------------------------------private methods & class
+
     /**
      * Holder the current worker context.
      */
@@ -200,13 +212,17 @@ public final class Worker extends Server {
 
         // need to use reflection do set
         // use synchronized modify for help multiple thread read reference(write to main memory)
-        private static synchronized void set(Worker worker) {
+        private static synchronized void set(Worker worker, String workerToken) {
             if (worker == null) {
                 throw new AssertionError("Current worker cannot set null.");
             }
             if (current != null) {
                 throw new AssertionError("Current worker already set.");
             }
+            worker.authenticateHeaders = ImmutableMap.of(
+                JobConstants.AUTHENTICATE_HEADER_GROUP, worker.getGroup(),
+                JobConstants.AUTHENTICATE_HEADER_TOKEN, workerToken
+            );
             current = worker;
         }
     }

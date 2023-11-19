@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.util.URLCodes;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

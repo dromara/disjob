@@ -31,10 +31,10 @@ import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.param.ExecuteTaskParam;
-import cn.ponfee.disjob.core.param.StartTaskParam;
-import cn.ponfee.disjob.core.param.TaskWorkerParam;
-import cn.ponfee.disjob.core.param.TerminateTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -797,7 +797,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 executingTask = ExecutingTask.of(param.getJobId(), param.getWnstanceId(), task, nodes);
 
                 // update database records start state(sched_instance, sched_task)
-                if (!client.startTask(StartTaskParam.from(param))) {
+                if (!client.startTask(new StartTaskParam(param.getInstanceId(), param.getTaskId(), param.getWorker()))) {
                     LOG.warn("Task start conflicted {}", param);
                     return;
                 }
@@ -805,7 +805,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.warn("Start task fail: " + param, t);
                 if (param.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
-                    final List<TaskWorkerParam> list = Collections.singletonList(new TaskWorkerParam(param.getTaskId(), ""));
+                    List<UpdateTaskWorkerParam> list = Collections.singletonList(new UpdateTaskWorkerParam(param.getTaskId(), null));
                     ThrowingRunnable.doCaught(() -> client.updateTaskWorker(list), () -> "Reset task worker occur error: " + param);
                 }
                 Threads.interruptIfNecessary(t);
