@@ -90,18 +90,16 @@ public @interface EnableSupervisor {
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        public Supervisor currentSupervisor(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
-                                            @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
-            String host = JobUtils.getLocalHost(boundHost);
-            Supervisor currentSupervisor = new Supervisor(host, port);
-            // inject current supervisor: Supervisor.class.getDeclaredClasses()[0]
+        public Supervisor.Current currentSupervisor(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
+                                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
+            Object[] args = {JobUtils.getLocalHost(boundHost), port};
             try {
-                ClassUtils.invoke(Class.forName(Supervisor.class.getName() + "$Current"), "set", new Object[]{currentSupervisor});
+                // inject current supervisor: Supervisor.class.getDeclaredClasses()[0]
+                return ClassUtils.invoke(Class.forName(Supervisor.Current.class.getName()), "create", args);
             } catch (ClassNotFoundException e) {
                 // cannot happen
                 throw new Error("Setting as current supervisor occur error.", e);
             }
-            return currentSupervisor;
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)

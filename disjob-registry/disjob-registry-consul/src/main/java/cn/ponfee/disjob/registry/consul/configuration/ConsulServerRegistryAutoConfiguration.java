@@ -31,7 +31,7 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
     /**
      * Configuration consul supervisor registry.
      */
-    @ConditionalOnBean(Supervisor.class)
+    @ConditionalOnBean(Supervisor.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(ConsulRegistryProperties config) {
@@ -41,7 +41,7 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
     /**
      * Configuration consul worker registry.
      */
-    @ConditionalOnBean(Worker.class)
+    @ConditionalOnBean(Worker.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(ConsulRegistryProperties config) {

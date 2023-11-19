@@ -31,7 +31,7 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
     /**
      * Configuration etcd supervisor registry.
      */
-    @ConditionalOnBean(Supervisor.class)
+    @ConditionalOnBean(Supervisor.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(EtcdRegistryProperties config) {
@@ -41,7 +41,7 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
     /**
      * Configuration etcd worker registry.
      */
-    @ConditionalOnBean(Worker.class)
+    @ConditionalOnBean(Worker.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(EtcdRegistryProperties config) {

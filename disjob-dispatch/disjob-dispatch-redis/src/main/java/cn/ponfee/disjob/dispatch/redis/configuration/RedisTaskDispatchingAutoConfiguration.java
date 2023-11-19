@@ -35,7 +35,7 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
     /**
      * Configuration redis task dispatcher.
      */
-    @ConditionalOnBean(Supervisor.class)
+    @ConditionalOnBean(Supervisor.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public TaskDispatcher taskDispatcher(SupervisorRegistry discoveryWorker,
@@ -48,10 +48,10 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
     /**
      * Configuration redis task receiver.
      */
-    @ConditionalOnBean(Worker.class)
+    @ConditionalOnBean(Worker.Current.class)
     @ConditionalOnMissingBean
     @Bean
-    public TaskReceiver taskReceiver(Worker currentWorker,
+    public TaskReceiver taskReceiver(Worker.Current currentWorker,
                                      TimingWheel<ExecuteTaskParam> timingWheel,
                                      StringRedisTemplate stringRedisTemplate) {
         return new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);

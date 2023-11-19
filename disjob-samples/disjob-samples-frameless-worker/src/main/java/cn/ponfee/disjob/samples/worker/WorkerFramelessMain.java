@@ -77,10 +77,9 @@ public class WorkerFramelessMain {
         String group = props.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");
         String boundHost = JobUtils.getLocalHost(props.getString(DISJOB_BOUND_SERVER_HOST));
-        Worker currentWorker = new Worker(group, ObjectUtils.uuid32(), boundHost, port);
 
-        // inject current worker
-        ClassUtils.invoke(Class.forName(Worker.class.getName() + "$Current"), "set", new Object[]{currentWorker, workerProperties.getWorkerToken()});
+        Object[] array = {group, ObjectUtils.uuid32(), boundHost, port, workerProperties.getWorkerToken(), workerProperties.getSupervisorToken()};
+        Worker.Current currentWorker = ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", array);
 
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(
             props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),

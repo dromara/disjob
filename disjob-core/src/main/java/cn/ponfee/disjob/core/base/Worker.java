@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.model.SchedJob;
@@ -41,7 +42,7 @@ import static cn.ponfee.disjob.common.collect.Collects.get;
  */
 @JsonSerialize(using = Worker.JacksonSerializer.class)
 @JsonDeserialize(using = Worker.JacksonDeserializer.class)
-public final class Worker extends Server {
+public class Worker extends Server {
     private static final long serialVersionUID = 8981019172872301692L;
 
     /**
@@ -61,11 +62,6 @@ public final class Worker extends Server {
      */
     private transient final String serializedValue;
 
-    /**
-     * Authenticate http headers
-     */
-    private transient Map<String, String> authenticateHeaders;
-
     public Worker(String group, String workerId, String host, int port) {
         super(host, port);
 
@@ -79,12 +75,14 @@ public final class Worker extends Server {
 
     @Override
     public boolean equals(Object o) {
-        if (!super.equals(o)) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Worker) || !super.equals(o)) {
             return false;
         }
         Worker other = (Worker) o;
-        return super.equals(other)
-            && this.group.equals(other.group)
+        return this.group.equals(other.group)
             && this.workerId.equals(other.workerId);
     }
 
@@ -96,34 +94,6 @@ public final class Worker extends Server {
     @Override
     public String serialize() {
         return serializedValue;
-    }
-
-    public static Worker deserialize(byte[] bytes, Charset charset) {
-        return deserialize(new String(bytes, charset));
-    }
-
-    /**
-     * Deserialize from string.
-     *
-     * @param text the serialized text string
-     * @return worker object of the text deserialized result
-     */
-    public static Worker deserialize(String text) {
-        Assert.hasText(text, "Serialized text cannot empty.");
-        String[] array = text.split(COLON);
-
-        String group = get(array, 0);
-        Assert.hasText(group, "Worker group cannot bank.");
-
-        String workerId = get(array, 1);
-        Assert.hasText(workerId, "Worker id cannot bank.");
-
-        String host = get(array, 2);
-        Assert.hasText(host, "Worker host cannot bank.");
-
-        int port = Numbers.toInt(get(array, 3));
-
-        return new Worker(group, workerId, host, port);
     }
 
     public String getGroup() {
@@ -156,12 +126,38 @@ public final class Worker extends Server {
             && this.matchesGroup(other.group);
     }
 
-    public static Worker current() {
-        return Current.current;
+    // --------------------------------------------------------static method
+
+    public static Worker deserialize(byte[] bytes, Charset charset) {
+        return deserialize(new String(bytes, charset));
     }
 
-    public Map<String, String> authenticateHeaders() {
-        return authenticateHeaders;
+    /**
+     * Deserialize from string.
+     *
+     * @param text the serialized text string
+     * @return worker object of the text deserialized result
+     */
+    public static Worker deserialize(String text) {
+        Assert.hasText(text, "Serialized text cannot empty.");
+        String[] array = text.split(COLON);
+
+        String group = get(array, 0);
+        Assert.hasText(group, "Worker group cannot bank.");
+
+        String workerId = get(array, 1);
+        Assert.hasText(workerId, "Worker id cannot bank.");
+
+        String host = get(array, 2);
+        Assert.hasText(host, "Worker host cannot bank.");
+
+        int port = Numbers.toInt(get(array, 3));
+
+        return new Worker(group, workerId, host, port);
+    }
+
+    public static Worker.Current current() {
+        return Current.instance;
     }
 
     public static boolean isCurrent(Worker worker) {
@@ -194,29 +190,53 @@ public final class Worker extends Server {
         }
     }
 
-    // -------------------------------------------------------------------------------private methods & class
+    // -------------------------------------------------------------------------------class
 
-    /**
-     * Holder the current worker context.
-     */
-    private static class Current {
-        private static volatile Worker current;
+    public static abstract class Current extends Worker {
+        private static final long serialVersionUID = -480329874106279202L;
+        private static volatile Current instance;
+
+        private Current(String group, String workerId, String host, int port) {
+            super(group, workerId, host, port);
+            SingletonClassConstraint.constrain(Current.class);
+        }
+
+        public abstract Map<String, String> authenticateHeaders();
+
+        public abstract String supervisorToken();
 
         // need to use reflection do set
         // use synchronized modify for help multiple thread read reference(write to main memory)
-        private static synchronized void set(Worker worker, String workerToken) {
-            if (worker == null) {
-                throw new AssertionError("Current worker cannot set null.");
-            }
-            if (current != null) {
+        private static synchronized Current create(String group, String workerId, String host, int port,
+                                                   String workerToken, String supervisorToken0) {
+            if (instance != null) {
                 throw new AssertionError("Current worker already set.");
             }
-            worker.authenticateHeaders = ImmutableMap.of(
-                JobConstants.AUTHENTICATE_HEADER_GROUP, worker.getGroup(),
-                JobConstants.AUTHENTICATE_HEADER_TOKEN, workerToken
-            );
-            current = worker;
+
+            instance = new Current(group, workerId, host, port) {
+                private static final long serialVersionUID = 7553139562459109482L;
+
+                private final Map<String, String> authenticateHeaders = ImmutableMap.of(
+                    JobConstants.AUTHENTICATE_HEADER_GROUP, group,
+                    JobConstants.AUTHENTICATE_HEADER_TOKEN, workerToken
+                );
+
+                private final String supervisorToken = supervisorToken0;
+
+                @Override
+                public Map<String, String> authenticateHeaders() {
+                    return authenticateHeaders;
+                }
+
+                @Override
+                public String supervisorToken() {
+                    return supervisorToken;
+                }
+            };
+
+            return instance;
         }
+
     }
 
 }

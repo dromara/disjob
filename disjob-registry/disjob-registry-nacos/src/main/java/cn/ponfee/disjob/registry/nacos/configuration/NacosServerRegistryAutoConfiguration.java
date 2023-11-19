@@ -31,7 +31,7 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     /**
      * Configuration nacos supervisor registry.
      */
-    @ConditionalOnBean(Supervisor.class)
+    @ConditionalOnBean(Supervisor.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(NacosRegistryProperties config) {
@@ -41,7 +41,7 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     /**
      * Configuration nacos worker registry.
      */
-    @ConditionalOnBean(Worker.class)
+    @ConditionalOnBean(Worker.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(NacosRegistryProperties config) {

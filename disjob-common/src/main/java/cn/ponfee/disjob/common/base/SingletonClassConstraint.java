@@ -31,7 +31,10 @@ public abstract class SingletonClassConstraint {
 
     public static synchronized void constrain(Object instance) {
         Objects.requireNonNull(instance, "Object instance cannot be null.");
-        Class<?> clazz = instance.getClass();
+        constrain(instance.getClass());
+    }
+
+    public static synchronized void constrain(Class<?> clazz) {
         if (MUTEX.contains(clazz)) {
             throw new Error("Class '" + clazz + "' instance already created.");
         }

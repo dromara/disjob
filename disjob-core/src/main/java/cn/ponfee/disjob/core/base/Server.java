@@ -21,7 +21,6 @@ import java.io.Serializable;
  */
 @Getter
 public abstract class Server implements Serializable {
-
     private static final long serialVersionUID = -783308216490505598L;
 
     /**
@@ -45,10 +44,9 @@ public abstract class Server implements Serializable {
         if (this == o) {
             return true;
         }
-        if (o.getClass() != this.getClass()) {
+        if (!(o instanceof Server)) {
             return false;
         }
-
         Server other = (Server) o;
         return this.host.equals(other.host)
             && this.port == other.port;

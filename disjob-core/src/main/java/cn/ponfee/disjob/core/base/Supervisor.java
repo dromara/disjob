@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.util.Numbers;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -32,7 +33,7 @@ import static cn.ponfee.disjob.common.collect.Collects.get;
  */
 @JsonSerialize(using = Supervisor.JacksonSerializer.class)
 @JsonDeserialize(using = Supervisor.JacksonDeserializer.class)
-public final class Supervisor extends Server {
+public class Supervisor extends Server {
     private static final long serialVersionUID = -1254559108807415145L;
 
     private transient final String serializedValue;
@@ -52,6 +53,8 @@ public final class Supervisor extends Server {
         return serializedValue;
     }
 
+    // --------------------------------------------------------static method
+
     /**
      * Deserialize from string.
      *
@@ -70,8 +73,16 @@ public final class Supervisor extends Server {
         return new Supervisor(host, port);
     }
 
-    public static Supervisor current() {
-        return Current.current;
+    public static Supervisor.Current current() {
+        return Current.instance;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        return (o instanceof Supervisor) && super.equals(o);
     }
 
     // --------------------------------------------------------custom jackson serialize & deserialize
@@ -100,22 +111,30 @@ public final class Supervisor extends Server {
         }
     }
 
-    // -------------------------------------------------------------------------------private methods & class
+    // -------------------------------------------------------------------------------class
 
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
-    private static class Current {
-        private static volatile Supervisor current;
+    public static abstract class Current extends Supervisor {
+        private static final long serialVersionUID = -239845054171219365L;
+        private static volatile Current instance;
 
-        private static synchronized void set(Supervisor supervisor) {
-            if (supervisor == null) {
-                throw new AssertionError("Current supervisor cannot set null.");
-            }
-            if (current != null) {
+        private Current(String host, int port) {
+            super(host, port);
+            SingletonClassConstraint.constrain(Current.class);
+        }
+
+        private static synchronized Current create(String host, int port) {
+            if (instance != null) {
                 throw new AssertionError("Current supervisor already set.");
             }
-            current = supervisor;
+
+            instance = new Current(host, port) {
+                private static final long serialVersionUID = 3856221643026735022L;
+            };
+
+            return instance;
         }
     }
 

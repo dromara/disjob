@@ -40,7 +40,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final SupervisorStartup supervisorStartup;
 
-    public SupervisorLifecycle(Supervisor currentSupervisor,
+    public SupervisorLifecycle(Supervisor.Current currentSupervisor,
                                SupervisorProperties supervisorProperties,
                                SupervisorRegistry supervisorRegistry,
                                DistributedJobManager distributedJobManager,

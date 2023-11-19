@@ -40,7 +40,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
      * Configuration http task dispatcher.
      */
     @ConditionalOnClass(RestTemplate.class)
-    @ConditionalOnBean(Supervisor.class)
+    @ConditionalOnBean(Supervisor.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public TaskDispatcher taskDispatcher(HttpProperties httpProperties,
@@ -65,10 +65,10 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     /**
      * Configuration http task receiver.
      */
-    @ConditionalOnBean(Worker.class)
+    @ConditionalOnBean(Worker.Current.class)
     @ConditionalOnMissingBean
     @Bean
-    public TaskReceiver taskReceiver(Worker currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+    public TaskReceiver taskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
         return new HttpTaskReceiver(currentWorker, timingWheel);
     }
 

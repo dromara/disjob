@@ -79,7 +79,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
-    public RedisTaskReceiver(Worker currentWorker,
+    public RedisTaskReceiver(Worker.Current currentWorker,
                              TimingWheel<ExecuteTaskParam> timingWheel,
                              RedisTemplate<String, String> redisTemplate) {
         super(currentWorker, timingWheel);
@@ -131,7 +131,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         private final byte[][] keysAndArgs;
         private final RedisKeyRenewal redisKeyRenewal;
 
-        private GroupedWorker(Worker worker) {
+        private GroupedWorker(Worker.Current worker) {
             byte[] key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker).getBytes();
             this.keysAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
             this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, key);

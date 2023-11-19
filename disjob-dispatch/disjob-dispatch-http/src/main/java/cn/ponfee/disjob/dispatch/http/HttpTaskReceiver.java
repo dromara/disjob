@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Hidden
 public class HttpTaskReceiver extends TaskReceiver implements RpcController {
 
-    public HttpTaskReceiver(Worker currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+    public HttpTaskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
         super(currentWorker, timingWheel);
     }
 

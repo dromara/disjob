@@ -11,6 +11,8 @@ package cn.ponfee.disjob.dispatch;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.exception.AuthenticationException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,10 +28,12 @@ public abstract class TaskReceiver implements Startable {
 
     private final Worker currentWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
+    private final String supervisorToken;
 
-    public TaskReceiver(Worker currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+    public TaskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
         this.timingWheel = Objects.requireNonNull(timingWheel, "Timing wheel cannot be null.");
         this.currentWorker = Objects.requireNonNull(currentWorker, "Current worker cannot be null.");
+        this.supervisorToken = StringUtils.isBlank(currentWorker.supervisorToken()) ? null : currentWorker.supervisorToken();
     }
 
     /**
@@ -41,6 +45,10 @@ public abstract class TaskReceiver implements Startable {
         if (param == null) {
             LOG.error("Received task cannot be null.");
             return false;
+        }
+
+        if (supervisorToken != null && !supervisorToken.equals(param.getSupervisorToken())) {
+            throw new AuthenticationException("Authentication failed.");
         }
 
         Worker assignedWorker = param.getWorker();

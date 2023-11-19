@@ -35,7 +35,7 @@ public class SupervisorStartup implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
-    private final Supervisor currentSupervisor;
+    private final Supervisor.Current currentSupervisor;
     private final TriggeringJobScanner triggeringJobScanner;
     private final WaitingInstanceScanner waitingInstanceScanner;
     private final RunningInstanceScanner runningInstanceScanner;
@@ -44,7 +44,7 @@ public class SupervisorStartup implements Startable {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private SupervisorStartup(Supervisor currentSupervisor,
+    private SupervisorStartup(Supervisor.Current currentSupervisor,
                               SupervisorProperties supervisorProperties,
                               SupervisorRegistry supervisorRegistry,
                               DistributedJobManager distributedJobManager,
@@ -121,7 +121,7 @@ public class SupervisorStartup implements Startable {
     }
 
     public static class Builder {
-        private Supervisor currentSupervisor;
+        private Supervisor.Current currentSupervisor;
         private SupervisorProperties supervisorProperties;
         private SupervisorRegistry supervisorRegistry;
         private DistributedJobManager distributedJobManager;
@@ -134,7 +134,7 @@ public class SupervisorStartup implements Startable {
         private Builder() {
         }
 
-        public Builder currentSupervisor(Supervisor currentSupervisor) {
+        public Builder currentSupervisor(Supervisor.Current currentSupervisor) {
             this.currentSupervisor = currentSupervisor;
             return this;
         }

@@ -35,7 +35,7 @@ public class WorkerLifecycle implements SmartLifecycle {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final WorkerStartup workerStartup;
 
-    public WorkerLifecycle(Worker currentWorker,
+    public WorkerLifecycle(Worker.Current currentWorker,
                            WorkerProperties workerProperties,
                            RetryProperties retryProperties,
                            HttpProperties httpProperties,

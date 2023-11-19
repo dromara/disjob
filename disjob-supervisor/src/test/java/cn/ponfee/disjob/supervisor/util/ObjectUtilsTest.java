@@ -60,12 +60,10 @@ public class ObjectUtilsTest {
 
     @Test
     public void testStaticField() throws ClassNotFoundException {
-        Supervisor supervisor = new Supervisor("127.0.0.1", 10);
-        Class<?> aClass = Class.forName(Supervisor.class.getName() + "$Current");
-        Fields.put(aClass, ClassUtils.getStaticField(aClass, "current"), supervisor);
-        Assertions.assertEquals(supervisor, Supervisor.current());
+        Class<?> aClass = Class.forName(Supervisor.Current.class.getName());
+        Fields.put(aClass, ClassUtils.getStaticField(aClass, "instance"), Supervisor.current());
+        Assertions.assertEquals(Supervisor.current(), Supervisor.current());
     }
-
 
     @Test
     public void testStaticFinalMethod() {

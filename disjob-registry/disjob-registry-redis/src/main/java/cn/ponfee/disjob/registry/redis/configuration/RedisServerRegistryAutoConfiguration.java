@@ -39,7 +39,7 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      * @return SupervisorRegistry
      * @see org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
      */
-    @ConditionalOnBean(Supervisor.class) // 如果注解没有入参，则默认以方法的返回类型判断，即容器中已存在类型为SupervisorRegistry的实例才创建
+    @ConditionalOnBean(Supervisor.Current.class) // 如果注解没有入参，则默认以方法的返回类型判断，即容器中已存在类型为SupervisorRegistry的实例才创建
     @ConditionalOnMissingBean            // 如果注解没有入参，则默认以方法的返回类型判断，即容器中不存在类型为SupervisorRegistry的实例才创建
     @Bean
     public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate,
@@ -50,7 +50,7 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     /**
      * Configuration redis worker registry.
      */
-    @ConditionalOnBean(Worker.class)
+    @ConditionalOnBean(Worker.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(StringRedisTemplate stringRedisTemplate,

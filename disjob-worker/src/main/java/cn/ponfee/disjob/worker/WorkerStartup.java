@@ -38,7 +38,7 @@ public class WorkerStartup implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartup.class);
 
-    private final Worker currentWorker;
+    private final Worker.Current currentWorker;
     private final WorkerThreadPool workerThreadPool;
     private final TimingWheelRotator timingWheelRotator;
     private final TaskReceiver taskReceiver;
@@ -46,7 +46,7 @@ public class WorkerStartup implements Startable {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private WorkerStartup(Worker currentWorker,
+    private WorkerStartup(Worker.Current currentWorker,
                           WorkerProperties workerProperties,
                           RetryProperties retryProperties,
                           HttpProperties httpProperties,
@@ -113,7 +113,7 @@ public class WorkerStartup implements Startable {
     }
 
     public static class Builder {
-        private Worker currentWorker;
+        private Worker.Current currentWorker;
         private WorkerProperties workerProperties;
         private RetryProperties retryProperties;
         private HttpProperties httpProperties;
@@ -125,7 +125,7 @@ public class WorkerStartup implements Startable {
         private Builder() {
         }
 
-        public Builder currentWorker(Worker currentWorker) {
+        public Builder currentWorker(Worker.Current currentWorker) {
             this.currentWorker = currentWorker;
             return this;
         }

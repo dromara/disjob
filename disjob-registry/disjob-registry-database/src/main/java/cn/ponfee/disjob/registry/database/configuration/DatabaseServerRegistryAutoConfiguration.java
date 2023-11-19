@@ -67,7 +67,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Configuration database supervisor registry.
      */
-    @ConditionalOnBean(Supervisor.class)
+    @ConditionalOnBean(Supervisor.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
@@ -78,7 +78,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Configuration database worker registry.
      */
-    @ConditionalOnBean(Worker.class)
+    @ConditionalOnBean(Worker.Current.class)
     @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
