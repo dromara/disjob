@@ -47,12 +47,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             }
 
             String group = request.getHeader(JobConstants.AUTHENTICATE_HEADER_GROUP);
-            SchedGroupManager.DisjobGroup disjobGroup = SchedGroupManager.getDisjobGroup(group);
-            if (disjobGroup == null) {
-                throw new AuthenticationException("Authentication failed.");
-            }
-
-            String workerToken = disjobGroup.getWorkerToken();
+            String workerToken = SchedGroupManager.get(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
                 return true;
             }

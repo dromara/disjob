@@ -32,14 +32,14 @@ import java.util.List;
  */
 public class WorkerCoreRpcClient {
 
-    private final Worker currentWorker;
+    private final Worker.Current currentWorker;
     private final WorkerCoreRpcService local;
     private final WorkerCoreRpcService remote;
 
     public WorkerCoreRpcClient(HttpProperties httpProperties,
                                RetryProperties retryProperties,
                                SupervisorRegistry supervisorRegistry,
-                               @Nullable Worker currentWorker,
+                               @Nullable Worker.Current currentWorker,
                                @Nullable ObjectMapper objectMapper) {
         httpProperties.check();
         retryProperties.check();
@@ -58,12 +58,12 @@ public class WorkerCoreRpcClient {
     }
 
     public void verify(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(getSupervisorToken(param.getJobGroup()));
+        param.setSupervisorToken(SchedGroupManager.get(param.getJobGroup()).getSupervisorToken());
         grouped(param.getJobGroup()).verify(param);
     }
 
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(getSupervisorToken(param.getJobGroup()));
+        param.setSupervisorToken(SchedGroupManager.get(param.getJobGroup()).getSupervisorToken());
         return grouped(param.getJobGroup()).split(param);
     }
 
@@ -76,14 +76,6 @@ public class WorkerCoreRpcClient {
             ((DiscoveryRestProxy.GroupedServer) remote).group(group);
             return remote;
         }
-    }
-
-    private String getSupervisorToken(String group) {
-        SchedGroupManager.DisjobGroup disjobGroup = SchedGroupManager.getDisjobGroup(group);
-        if (disjobGroup == null) {
-            throw new IllegalStateException("Not found worker group: " + group);
-        }
-        return disjobGroup.getSupervisorToken();
     }
 
     private static class WorkerCoreRpcLocal implements WorkerCoreRpcService {

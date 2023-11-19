@@ -108,7 +108,7 @@ public @interface EnableSupervisor {
         public WorkerCoreRpcClient workerCoreRpcClient(HttpProperties httpProperties,
                                                        RetryProperties retryProperties,
                                                        SupervisorRegistry supervisorRegistry,
-                                                       @Nullable Worker currentWorker,
+                                                       @Nullable Worker.Current currentWorker,
                                                        @Nullable ObjectMapper objectMapper) {
             return new WorkerCoreRpcClient(
                 httpProperties, retryProperties, supervisorRegistry, currentWorker, objectMapper

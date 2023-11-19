@@ -127,7 +127,7 @@ public class Supervisor extends Server {
 
         private static synchronized Current create(String host, int port) {
             if (instance != null) {
-                throw new AssertionError("Current supervisor already set.");
+                throw new Error("Current supervisor already set.");
             }
 
             instance = new Current(host, port) {

@@ -17,7 +17,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
@@ -45,8 +45,8 @@ public final class ObjectUtils {
              : reflectionToString(obj, ToStringStyle.JSON_STYLE);
     }
 
-    public static <T> T defaultIfNull(T object, Supplier<T> defaultValue) {
-        return object != null ? object : defaultValue.get();
+    public static <T, R> R applyIfNotNull(T object, Function<T, R> mapper) {
+        return object == null ? null : mapper.apply(object);
     }
 
     /**

@@ -106,7 +106,7 @@ public class WorkerFramelessMain {
         // --------------------- create registry(select redis or http) --------------------- //
         TaskReceiver taskReceiver;
         VertxWebServer vertxWebServer;
-        WorkerCoreRpcService workerCoreRpcProvider = new WorkerCoreRpcProvider(workerProperties.getSupervisorToken());
+        WorkerCoreRpcService workerCoreRpcProvider = new WorkerCoreRpcProvider(currentWorker);
         {
             // redis dispatching
             //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);

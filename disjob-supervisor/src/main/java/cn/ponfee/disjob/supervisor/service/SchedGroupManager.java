@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.service;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
+import cn.ponfee.disjob.core.exception.GroupNotFoundException;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
 import com.google.common.collect.ImmutableMap;
@@ -79,8 +80,12 @@ public class SchedGroupManager extends SingletonClassConstraint implements Close
 
     // ------------------------------------------------------------other methods
 
-    public static DisjobGroup getDisjobGroup(String group) {
-        return all.get(group);
+    public static DisjobGroup get(String group) {
+        DisjobGroup disjobGroup = all.get(group);
+        if (disjobGroup == null) {
+            throw new GroupNotFoundException("Not found worker group: " + group);
+        }
+        return disjobGroup;
     }
 
     public static Set<String> allGroups() {
@@ -117,14 +122,14 @@ public class SchedGroupManager extends SingletonClassConstraint implements Close
         private final Set<String> alarmSubscribers;
         private final String webHook;
 
-        DisjobGroup(String workerToken, String supervisorToken, Set<String> alarmSubscribers, String webHook) {
+        private DisjobGroup(String workerToken, String supervisorToken, Set<String> alarmSubscribers, String webHook) {
             this.workerToken = workerToken;
             this.supervisorToken = supervisorToken;
             this.alarmSubscribers = alarmSubscribers;
             this.webHook = webHook;
         }
 
-        static DisjobGroup of(SchedGroup schedGroup) {
+        private static DisjobGroup of(SchedGroup schedGroup) {
             String alarmSubscribers = schedGroup.getAlarmSubscribers();
             return new DisjobGroup(
                 schedGroup.getWorkerToken(),

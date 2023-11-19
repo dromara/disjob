@@ -249,7 +249,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        String supervisorToken = SchedGroupManager.getDisjobGroup(job.getJobGroup()).getSupervisorToken();
+        String supervisorToken = SchedGroupManager.get(job.getJobGroup()).getSupervisorToken();
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
         List<ExecuteTaskParam> list;
         if (RouteStrategy.BROADCAST.equals(job.getRouteStrategy())) {

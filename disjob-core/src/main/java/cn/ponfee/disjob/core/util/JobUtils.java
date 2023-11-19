@@ -80,7 +80,7 @@ public class JobUtils {
             return host;
         }
 
-        throw new AssertionError("Not found available server host.");
+        throw new Error("Not found available server host.");
     }
 
     private static boolean isValidHost(String host, String from) {

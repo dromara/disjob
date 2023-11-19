@@ -90,8 +90,8 @@ public @interface EnableWorker {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerCoreRpcService workerCoreRpcService(WorkerProperties workerProperties) {
-            return new WorkerCoreRpcProvider(workerProperties.getSupervisorToken());
+        public WorkerCoreRpcService workerCoreRpcService(Worker.Current currentWork) {
+            return new WorkerCoreRpcProvider(currentWork);
         }
 
         @ConditionalOnMissingBean

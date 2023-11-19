@@ -11,7 +11,9 @@ package cn.ponfee.disjob.core.base;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
+import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.core.param.worker.AuthenticationParam;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -160,10 +163,6 @@ public class Worker extends Server {
         return Current.instance;
     }
 
-    public static boolean isCurrent(Worker worker) {
-        return worker != null && worker.equals(current());
-    }
-
     // --------------------------------------------------------custom jackson serialize & deserialize
 
     /**
@@ -203,14 +202,14 @@ public class Worker extends Server {
 
         public abstract Map<String, String> authenticateHeaders();
 
-        public abstract String supervisorToken();
+        public abstract void authenticate(AuthenticationParam param);
 
         // need to use reflection do set
         // use synchronized modify for help multiple thread read reference(write to main memory)
         private static synchronized Current create(String group, String workerId, String host, int port,
                                                    String workerToken, String supervisorToken0) {
             if (instance != null) {
-                throw new AssertionError("Current worker already set.");
+                throw new Error("Current worker already set.");
             }
 
             instance = new Current(group, workerId, host, port) {
@@ -218,10 +217,10 @@ public class Worker extends Server {
 
                 private final Map<String, String> authenticateHeaders = ImmutableMap.of(
                     JobConstants.AUTHENTICATE_HEADER_GROUP, group,
-                    JobConstants.AUTHENTICATE_HEADER_TOKEN, workerToken
+                    JobConstants.AUTHENTICATE_HEADER_TOKEN, StringUtils.defaultString(workerToken, "")
                 );
 
-                private final String supervisorToken = supervisorToken0;
+                private final String supervisorToken = StringUtils.isBlank(supervisorToken0) ? null : supervisorToken0.trim();
 
                 @Override
                 public Map<String, String> authenticateHeaders() {
@@ -229,8 +228,10 @@ public class Worker extends Server {
                 }
 
                 @Override
-                public String supervisorToken() {
-                    return supervisorToken;
+                public void authenticate(AuthenticationParam param) {
+                    if (supervisorToken != null && !supervisorToken.equals(param.getSupervisorToken())) {
+                        throw new AuthenticationException("Authentication failed.");
+                    }
                 }
             };
 

@@ -176,7 +176,7 @@ public abstract class TaskDispatcher implements Startable {
 
     private void doDispatch(ExecuteTaskParam task) throws Exception {
         boolean result;
-        if (timingWheel != null && Worker.isCurrent(task.getWorker())) {
+        if (timingWheel != null && Worker.current().equals(task.getWorker())) {
             // if the server both is supervisor & worker: dispatch to local worker
             LOG.info("Dispatching task to local worker {} | {} | {}", task.getTaskId(), task.getOperation(), task.getWorker());
             result = timingWheel.offer(task);

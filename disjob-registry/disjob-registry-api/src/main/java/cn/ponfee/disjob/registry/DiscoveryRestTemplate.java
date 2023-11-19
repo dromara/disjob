@@ -105,7 +105,10 @@ public final class DiscoveryRestTemplate<D extends Server> {
         }
 
         int serverNumber = servers.size();
-        Map<String, String> authenticationHeaders = discoveryServerRole == ServerRole.SUPERVISOR ? Worker.current().authenticateHeaders() : null;
+        Map<String, String> authenticationHeaders = null;
+        if (discoveryServerRole == ServerRole.SUPERVISOR) {
+            authenticationHeaders = Worker.current().authenticateHeaders();
+        }
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
 
         // minimum retry two times
