@@ -388,8 +388,11 @@ public final class Bytes {
 
     public static byte[] remained(ByteBuffer buf) {
         int count = buf.limit() - buf.position();
-        if (count <= 0) {
-            return new byte[0];
+        if (count < 0) {
+            throw new IndexOutOfBoundsException("Index out of bound: " + count);
+        }
+        if (count == 0) {
+            return EMPTY;
         }
         byte[] bytes = new byte[count];
         buf.get(bytes);

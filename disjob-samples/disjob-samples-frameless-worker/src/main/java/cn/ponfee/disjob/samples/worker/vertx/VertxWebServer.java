@@ -11,14 +11,12 @@ package cn.ponfee.disjob.samples.worker.vertx;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
-import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
-import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
-import cn.ponfee.disjob.samples.worker.util.JobHandlerHolder;
+import cn.ponfee.disjob.samples.worker.util.JobHandlerParser;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -31,7 +29,6 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -43,11 +40,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
  * @author Ponfee
  */
 public class VertxWebServer extends AbstractVerticle {
-
-    static {
-        // 启动时预先加载
-        JobHandlerHolder.getJobHandler(null);
-    }
 
     private static final Logger LOG = LoggerFactory.getLogger(VertxWebServer.class);
 
@@ -107,14 +99,14 @@ public class VertxWebServer extends AbstractVerticle {
 
         router.post(PATH_PREFIX + "job/split").handler(ctx -> handle(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
-            modifyJobHandler(param, "jobHandler");
+            JobHandlerParser.parse(param, "jobHandler");
             return workerCoreRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {
             router.post(PATH_PREFIX + "task/receive").handler(ctx -> handle(() -> {
                 ExecuteTaskParam param = parseArg(ctx, ExecuteTaskParam.class);
-                modifyJobHandler(param, "jobHandler");
+                JobHandlerParser.parse(param, "jobHandler");
                 return httpTaskReceiver.receive(param);
             }, ctx, INTERNAL_SERVER_ERROR));
         }
@@ -162,23 +154,6 @@ public class VertxWebServer extends AbstractVerticle {
             return ((CharSequence) obj).toString();
         }
         return Jsons.toJson(obj);
-    }
-
-    /**
-     * 仅限测试环境使用
-     *
-     * @param param     object
-     * @param fieldName field name
-     */
-    public static void modifyJobHandler(Object param, String fieldName) {
-        String jobHandler = (String) Fields.get(param, fieldName);
-        try {
-            JobHandlerUtils.load(jobHandler);
-        } catch (Exception ex) {
-            Optional.ofNullable(JobHandlerHolder.getJobHandler(jobHandler))
-                .map(Class::getName)
-                .ifPresent(e -> Fields.put(param, fieldName, e));
-        }
     }
 
 }

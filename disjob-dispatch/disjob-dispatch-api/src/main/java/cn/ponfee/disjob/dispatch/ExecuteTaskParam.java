@@ -171,7 +171,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         param.setExecuteTimeout(buf.getInt());                                     //   4: executeTimeout
 
         param.setSupervisorToken(Strings.of(Bytes.get(buf, buf.getInt()), UTF_8)); // 4+x: supervisorToken
-        param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));  // 4+x: supervisorToken
+        param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));  // 4+x: worker
         param.setJobHandler(Strings.of(Bytes.remained(buf), UTF_8));               //   x: jobHandlerBytes
         return param;
     }

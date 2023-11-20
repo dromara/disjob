@@ -22,7 +22,7 @@ import java.util.Objects;
  * @author Ponfee
  */
 public abstract class TaskReceiver implements Startable {
-    private static final Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Worker.Current currentWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
@@ -39,7 +39,7 @@ public abstract class TaskReceiver implements Startable {
      */
     public boolean receive(ExecuteTaskParam param) {
         if (param == null) {
-            LOG.error("Received task cannot be null.");
+            log.error("Received task cannot be null.");
             return false;
         }
 
@@ -47,20 +47,20 @@ public abstract class TaskReceiver implements Startable {
 
         Worker assignedWorker = param.getWorker();
         if (!currentWorker.sameWorker(assignedWorker)) {
-            LOG.error("Received unmatched worker: {} | '{}' | '{}'", param.getTaskId(), currentWorker, assignedWorker);
+            log.error("Received unmatched worker: {} | '{}' | '{}'", param.getTaskId(), currentWorker, assignedWorker);
             return false;
         }
         if (!currentWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
             // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却Http方式派发给新的workerId(同机器同端口)
             // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍(注册中心还存有旧workerId)；
-            LOG.warn("Received former worker: {} | '{}' | '{}'", param.getTaskId(), currentWorker, assignedWorker);
+            log.warn("Received former worker: {} | '{}' | '{}'", param.getTaskId(), currentWorker, assignedWorker);
         }
 
         boolean res = timingWheel.offer(param);
         if (res) {
-            LOG.info("Task trace [received]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+            log.info("Task trace [received]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         } else {
-            LOG.error("Received task failed " + param);
+            log.error("Received task failed " + param);
         }
         return res;
     }

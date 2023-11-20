@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 public abstract class TaskDispatcher implements Startable {
-    private static final Logger LOG = LoggerFactory.getLogger(TaskDispatcher.class);
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Discovery<Worker> discoveryWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
@@ -150,11 +150,11 @@ public abstract class TaskDispatcher implements Startable {
 
             try {
                 doDispatch(task);
-                LOG.info("Task trace [dispatched]: {} | {} | {}", task.getTaskId(), task.getOperation(), task.getWorker());
+                log.info("Task trace [dispatched]: {} | {} | {}", task.getTaskId(), task.getOperation(), task.getWorker());
             } catch (Throwable t) {
                 // dispatch failed, delay retry
                 retry(param);
-                LOG.error("Dispatch task error: " + param, t);
+                log.error("Dispatch task error: " + param, t);
                 result = false;
             }
         }
@@ -166,7 +166,7 @@ public abstract class TaskDispatcher implements Startable {
         DispatchTaskParam first = params.get(0);
         List<Worker> workers = discoveryWorker.getDiscoveredServers(first.group());
         if (CollectionUtils.isEmpty(workers)) {
-            LOG.error("Not found available worker for assign to task.");
+            log.error("Not found available worker for assign to task.");
             return;
         }
 
@@ -178,7 +178,7 @@ public abstract class TaskDispatcher implements Startable {
         boolean result;
         if (timingWheel != null && Worker.current().equals(task.getWorker())) {
             // if the server both is supervisor & worker: dispatch to local worker
-            LOG.info("Dispatching task to local worker {} | {} | {}", task.getTaskId(), task.getOperation(), task.getWorker());
+            log.info("Dispatching task to local worker {} | {} | {}", task.getTaskId(), task.getOperation(), task.getWorker());
             result = timingWheel.offer(task);
         } else {
             // dispatch to remote worker
@@ -192,7 +192,7 @@ public abstract class TaskDispatcher implements Startable {
     private void retry(DispatchTaskParam param) {
         if (param.retried() >= retryMaxCount) {
             // discard
-            LOG.error("Dispatched task retried max count still failed: " + param.executeTaskParam());
+            log.error("Dispatched task retried max count still failed: " + param.executeTaskParam());
             return;
         }
 
