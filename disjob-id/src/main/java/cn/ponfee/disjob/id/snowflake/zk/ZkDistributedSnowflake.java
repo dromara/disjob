@@ -51,11 +51,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * <pre>
  * /snowflake/{bizTag}
- * ├── tag
+ * ├── tag (children are EPHEMERAL node)
  * │   ├── serverTag-a   data=workerId-1
  * │   ├── serverTag-b   data=workerId-2
  * │   └── serverTag-c   data=workerId-3
- * └── id
+ * └── id (children are EPHEMERAL node)
  *     ├── workerId-1    data=lastHeartbeatTime
  *     ├── workerId-2    data=lastHeartbeatTime
  *     └── workerId-3    data=lastHeartbeatTime

@@ -213,9 +213,11 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
                 Assert.hasText(job.getJobHandler(), () -> "General job handler cannot be null: " + job.getJobId());
                 return job.getJobHandler();
             }
-            Assert.hasText(instance.getAttach(), () -> "Workflow node instance attach cannot be null: " + instance.getInstanceId());
+
             InstanceAttach attach = Jsons.fromJson(instance.getAttach(), InstanceAttach.class);
-            return DAGNode.fromString(attach.getCurNode()).getName();
+            String curNode = DAGNode.fromString(attach.getCurNode()).getName();
+            Assert.hasText(curNode, () -> "Workflow instance attach cur node cannot be null: " + instance.getInstanceId());
+            return curNode;
         }
     }
 

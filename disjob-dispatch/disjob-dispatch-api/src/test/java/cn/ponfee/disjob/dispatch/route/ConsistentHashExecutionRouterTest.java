@@ -83,7 +83,7 @@ public class ConsistentHashExecutionRouterTest {
         String[] array = new String[ThreadLocalRandom.current().nextInt(17) + 3];
         array[0] = key;
         for (int i = 1; i < array.length; i++) {
-            array[i] = RandomStringUtils.randomAlphanumeric(ThreadLocalRandom.current().nextInt(5) + 1);
+            array[i] = RandomStringUtils.randomAlphanumeric(ThreadLocalRandom.current().nextInt(5) + 2);
         }
         List<String> workers = Arrays.asList(array);
         Collections.shuffle(workers);

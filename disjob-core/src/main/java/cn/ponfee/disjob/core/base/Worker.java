@@ -37,8 +37,6 @@ import static cn.ponfee.disjob.common.collect.Collects.get;
 /**
  * Worker for execute task(JVM instance)
  *
- * <p>Also instance of use: @JsonCreator + @JsonProperty("group")
- *
  * @author Ponfee
  * @see com.fasterxml.jackson.annotation.JsonCreator
  * @see com.fasterxml.jackson.annotation.JsonProperty
@@ -200,11 +198,21 @@ public class Worker extends Server {
             SingletonClassConstraint.constrain(Current.class);
         }
 
+        /**
+         * 返回http headers，用于Worker远程调用Supervisor RPC接口的授权信息
+         *
+         * @return map of authenticate http headers
+         */
         public abstract Map<String, String> authenticateHeaders();
 
+        /**
+         * 认证Supervisor远程调用Worker RPC接口的授权信息
+         *
+         * @param param authentication param
+         */
         public abstract void authenticate(AuthenticationParam param);
 
-        // need to use reflection do set
+        // need do reflection call
         // use synchronized modify for help multiple thread read reference(write to main memory)
         private static synchronized Current create(String group, String workerId, String host, int port,
                                                    String workerToken, String supervisorToken0) {
