@@ -38,7 +38,7 @@ public interface SysUserPostMapper
     /**
      * 批量新增用户岗位信息
      *
-     * @param userPostList 用户角色列表
+     * @param userPostList 用户岗位列表
      * @return 结果
      */
     int batchUserPost(List<SysUserPost> userPostList);

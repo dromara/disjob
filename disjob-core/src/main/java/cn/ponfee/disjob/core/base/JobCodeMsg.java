@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.model.CodeMsg;
+import cn.ponfee.disjob.common.util.Enums;
 
 /**
  * Job code message definitions.
@@ -20,23 +21,25 @@ public enum JobCodeMsg implements CodeMsg {
     INVALID_PARAM(400, "Invalid param."),
     UN_AUTHENTICATED(401, "Un authenticated."),
     GROUP_NOT_FOUND(404, "Not found worker group."),
+    LOAD_HANDLER_ERROR(450, "Load job handler error."),
+    INVALID_JOB_HANDLER(451, "Invalid job handler."),
+    SPLIT_JOB_FAILED(452, "Split job failed."),
+    NOT_PAUSABLE_INSTANCE(453, "Not pausable instance state."),
+    NOT_CANCELABLE_INSTANCE(454, "Not cancelable instance state."),
+    NOT_RESUMABLE_INSTANCE(455, "Not resumable instance state."),
+
     SERVER_ERROR(500, "Server error."),
-
-    LOAD_HANDLER_ERROR(1001, "Load job handler error."),
-    INVALID_JOB_HANDLER(1002, "Invalid job handler."),
-    SPLIT_JOB_FAILED(1003, "Split job failed."),
-    NOT_DISCOVERED_WORKER(1004, "Not Discovered worker."),
-
-    JOB_EXECUTE_FAILED(2001, "Job execute failed."),
-    JOB_EXECUTE_ERROR(2002, "Job execute failed."),
-    PAUSE_TASK_EXCEPTION(2003, "Pause task exception."),
-    CANCEL_TASK_EXCEPTION(2004, "Cancel task exception."),
-
-    NOT_PAUSABLE_INSTANCE(3005, "Not pausable instance state."),
-    NOT_CANCELABLE_INSTANCE(3006, "Not cancelable instance state."),
-    NOT_RESUMABLE_INSTANCE(3007, "Not resumable instance state."),
+    NOT_DISCOVERED_WORKER(550, "Not Discovered worker."),
+    JOB_EXECUTE_FAILED(561, "Job execute failed."),
+    JOB_EXECUTE_ERROR(562, "Job execute failed."),
+    PAUSE_TASK_EXCEPTION(563, "Pause task exception."),
+    CANCEL_TASK_EXCEPTION(564, "Cancel task exception."),
 
     ;
+
+    static {
+        Enums.checkDuplicated(JobCodeMsg.class, JobCodeMsg::getCode);
+    }
 
     private final int code;
     private final String msg;

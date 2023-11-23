@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
@@ -109,7 +108,7 @@ public class PrimeCountJobHandler extends JobHandler {
         while (next <= n) {
             if (super.isStopped() || Thread.currentThread().isInterrupted()) {
                 savepoint.save(Jsons.toJson(execution));
-                throw new PauseTaskException(JobCodeMsg.PAUSE_TASK_EXCEPTION);
+                throw new PauseTaskException();
             }
 
             long count = Prime.MillerRabin.countPrimes(next, Math.min(next + delta, n));

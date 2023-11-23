@@ -20,7 +20,7 @@ public class GroupNotFoundException extends BaseRuntimeException {
     private static final long serialVersionUID = -8974006648944765503L;
 
     public GroupNotFoundException() {
-        super(JobCodeMsg.UN_AUTHENTICATED);
+        super(JobCodeMsg.UN_AUTHENTICATED.getCode(), "Not found group.");
     }
 
     public GroupNotFoundException(String message) {

@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.core.exception;
 
 import cn.ponfee.disjob.common.exception.BaseException;
-import cn.ponfee.disjob.common.model.CodeMsg;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
  * Executing task failure then should be pausing.
@@ -19,11 +19,7 @@ import cn.ponfee.disjob.common.model.CodeMsg;
 public class PauseTaskException extends BaseException {
     private static final long serialVersionUID = 409247238969878885L;
 
-    public PauseTaskException(CodeMsg cm) {
-        super(cm.getCode(), cm.getMsg());
-    }
-
-    public PauseTaskException(CodeMsg cm, String message) {
-        super(cm.getCode(), message);
+    public PauseTaskException() {
+        super(JobCodeMsg.PAUSE_TASK_EXCEPTION);
     }
 }

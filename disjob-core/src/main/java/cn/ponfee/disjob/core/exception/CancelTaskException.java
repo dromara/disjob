@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.core.exception;
 
 import cn.ponfee.disjob.common.exception.BaseException;
-import cn.ponfee.disjob.common.model.CodeMsg;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
  * Executing task failure then should be canceling.
@@ -19,11 +19,7 @@ import cn.ponfee.disjob.common.model.CodeMsg;
 public class CancelTaskException extends BaseException {
     private static final long serialVersionUID = -3461401416673580272L;
 
-    public CancelTaskException(CodeMsg cm) {
-        super(cm.getCode(), cm.getMsg());
-    }
-
-    public CancelTaskException(CodeMsg cm, String message) {
-        super(cm.getCode(), message);
+    public CancelTaskException() {
+        super(JobCodeMsg.CANCEL_TASK_EXCEPTION);
     }
 }

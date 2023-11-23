@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -48,6 +49,18 @@ public class Enums {
             result.put(keyMapper.apply(e), e);
         }
         return result.build();
+    }
+
+    public static <E extends Enum<E>> void checkDuplicated(Class<E> enumType, Function<E, ?> mapper) {
+        E[] values = enumType.getEnumConstants();
+        for (int n = values.length, i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                Object v1 = mapper.apply(values[i]), v2 = mapper.apply(values[j]);
+                if (Objects.equals(v1, v2)) {
+                    throw new Error(enumType.getSimpleName() + " enums duplicated job error code: " + v1);
+                }
+            }
+        }
     }
 
 }
