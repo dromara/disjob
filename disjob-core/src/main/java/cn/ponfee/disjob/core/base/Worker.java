@@ -28,11 +28,14 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 import static cn.ponfee.disjob.common.collect.Collects.get;
+import static cn.ponfee.disjob.core.base.JobConstants.AUTHENTICATE_HEADER_GROUP;
+import static cn.ponfee.disjob.core.base.JobConstants.AUTHENTICATE_HEADER_TOKEN;
 
 /**
  * Worker for execute task(JVM instance)
@@ -201,9 +204,9 @@ public class Worker extends Server {
         /**
          * 返回http headers，用于Worker远程调用Supervisor RPC接口的授权信息
          *
-         * @return map of authenticate http headers
+         * @return map of authentication http headers
          */
-        public abstract Map<String, String> authenticateHeaders();
+        public abstract Map<String, String> authenticationHeaders();
 
         /**
          * 认证Supervisor远程调用Worker RPC接口的授权信息
@@ -215,7 +218,7 @@ public class Worker extends Server {
         // need do reflection call
         // use synchronized modify for help multiple thread read reference(write to main memory)
         private static synchronized Current create(String group, String workerId, String host, int port,
-                                                   String workerToken, String supervisorToken0) {
+                                                   String workerToken0, String supervisorToken0) {
             if (instance != null) {
                 throw new Error("Current worker already set.");
             }
@@ -223,15 +226,14 @@ public class Worker extends Server {
             instance = new Current(group, workerId, host, port) {
                 private static final long serialVersionUID = 7553139562459109482L;
 
-                private final Map<String, String> authenticateHeaders = ImmutableMap.of(
-                    JobConstants.AUTHENTICATE_HEADER_GROUP, group,
-                    JobConstants.AUTHENTICATE_HEADER_TOKEN, StringUtils.defaultString(workerToken, "")
-                );
+                private final Map<String, String> authenticateHeaders = StringUtils.isBlank(workerToken0)
+                    ? Collections.singletonMap(AUTHENTICATE_HEADER_GROUP, group)
+                    : ImmutableMap.of(AUTHENTICATE_HEADER_GROUP, group, AUTHENTICATE_HEADER_TOKEN, workerToken0.trim());
 
                 private final String supervisorToken = StringUtils.isBlank(supervisorToken0) ? null : supervisorToken0.trim();
 
                 @Override
-                public Map<String, String> authenticateHeaders() {
+                public Map<String, String> authenticationHeaders() {
                     return authenticateHeaders;
                 }
 

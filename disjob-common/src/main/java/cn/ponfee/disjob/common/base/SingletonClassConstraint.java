@@ -11,9 +11,9 @@ package cn.ponfee.disjob.common.base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Constrain class must be singleton instance.
@@ -23,7 +23,7 @@ import java.util.Set;
 public abstract class SingletonClassConstraint {
 
     private static final Logger LOG = LoggerFactory.getLogger(SingletonClassConstraint.class);
-    private static final Set<Class<?>> MUTEX = new HashSet<>();
+    private static final Set<Class<?>> MUTEX = ConcurrentHashMap.newKeySet();
 
     protected SingletonClassConstraint() {
         constrain(this);

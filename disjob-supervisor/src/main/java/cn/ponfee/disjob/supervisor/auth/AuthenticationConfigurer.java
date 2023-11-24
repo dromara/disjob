@@ -33,7 +33,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         registry.addInterceptor(new AuthenticationInterceptor()).order(Ordered.HIGHEST_PRECEDENCE);
     }
 
-    public static class AuthenticationInterceptor implements HandlerInterceptor {
+    private static class AuthenticationInterceptor implements HandlerInterceptor {
 
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -47,6 +47,10 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             }
 
             String group = request.getHeader(JobConstants.AUTHENTICATE_HEADER_GROUP);
+            if (StringUtils.isBlank(group)) {
+                throw new AuthenticationException("Authentication failed.");
+            }
+
             String workerToken = SchedGroupManager.get(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
                 return true;
