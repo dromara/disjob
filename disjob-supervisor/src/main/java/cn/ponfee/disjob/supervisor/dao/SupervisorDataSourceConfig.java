@@ -29,7 +29,7 @@ import javax.sql.DataSource;
  * <pre>
  *  disjob.datasource:
  *    driver-class-name: com.mysql.cj.jdbc.Driver
- *    jdbc-url: jdbc:mysql://112.74.170.75:3306/disjob?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
+ *    jdbc-url: jdbc:mysql://localhost:3306/disjob?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
  *    username: disjob
  *    password:
  *    minimum-idle: 10

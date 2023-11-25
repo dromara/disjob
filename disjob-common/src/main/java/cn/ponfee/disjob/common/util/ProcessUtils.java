@@ -39,17 +39,6 @@ public final class ProcessUtils {
     private static final long INVALID_PID = -1L;
     public static final int SUCCESS_CODE = 0;
 
-    public static void destroy(Process process) {
-        if (process == null) {
-            return;
-        }
-        try {
-            process.destroy();
-        } catch (Throwable t) {
-            LOG.error("Destroy process " + process.getClass().getName() + " error.", t);
-        }
-    }
-
     public static int progress(Process process, Charset charset, Logger log) {
         return progress(process, charset, log::info, log::error);
     }
@@ -73,6 +62,17 @@ public final class ProcessUtils {
                     verbose.accept("Destroy process error: " + ExceptionUtils.getStackTrace(t));
                 }
             }
+        }
+    }
+
+    public static void destroy(Process process) {
+        if (process == null) {
+            return;
+        }
+        try {
+            process.destroy();
+        } catch (Throwable t) {
+            LOG.error("Destroy process " + process.getClass().getName() + " error.", t);
         }
     }
 

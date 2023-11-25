@@ -11,7 +11,7 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.Fields;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -142,11 +142,11 @@ public class TimingWheelTest {
         TreeMap<Integer, String> treeMap = new TreeMap<>(/*Comparator.reverseOrder()*/);
         //System.out.println(treeMap.firstKey()); // NPE
         System.out.println(treeMap.firstEntry());
-        treeMap.put(5, ObjectUtils.uuid32());
-        treeMap.put(5, ObjectUtils.uuid32());
-        treeMap.put(5, ObjectUtils.uuid32());
+        treeMap.put(5, UuidUtils.uuid32());
+        treeMap.put(5, UuidUtils.uuid32());
+        treeMap.put(5, UuidUtils.uuid32());
         for (int i = 0; i < 10; i++) {
-            treeMap.put(ThreadLocalRandom.current().nextInt(20), ObjectUtils.uuid32());
+            treeMap.put(ThreadLocalRandom.current().nextInt(20), UuidUtils.uuid32());
         }
         treeMap.forEach((k, v) -> System.out.println(k + " -> " + v));
         System.out.println("-------------\n");

@@ -49,13 +49,7 @@ public class JobUtils {
             Threads.interruptIfNecessary(t);
             return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         } finally {
-            if (process != null) {
-                try {
-                    process.destroy();
-                } catch (Throwable t) {
-                    log.error("Destroy process error: " + executingTask, t);
-                }
-            }
+            ProcessUtils.destroy(process);
         }
     }
 

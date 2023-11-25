@@ -14,11 +14,13 @@ import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.common.util.Strings;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -44,11 +46,15 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
     }
 
     public <T> T extract(Class<T> beanType, String prefix) {
+        List<Field> fields = ClassUtils.listFields(beanType);
+        if (CollectionUtils.isEmpty(fields)) {
+            return null;
+        }
         T bean = ClassUtils.newInstance(beanType);
         char[] separators = {Char.HYPHEN, Char.DOT};
-        for (Field field : ClassUtils.listFields(beanType)) {
+        for (Field field : fields) {
             for (char separator : separators) {
-                String name = prefix + Strings.toSeparatedName(field.getName(), separator);
+                String name = prefix + Strings.toSeparatedFormat(field.getName(), separator);
                 if (super.containsKey(name)) {
                     Fields.put(bean, field, ObjectUtils.cast(get(name), field.getType()));
                     break;

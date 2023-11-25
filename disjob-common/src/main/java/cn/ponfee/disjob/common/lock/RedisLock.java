@@ -10,7 +10,7 @@ package cn.ponfee.disjob.common.lock;
 
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.common.util.Bytes;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -188,7 +188,7 @@ public class RedisLock implements Lock {
         long timeoutMillis0 = Math.max(sleepMillis0, timeoutMillis);
         this.redisTemplate = redisTemplate;
         this.lockKey = ("lock:" + lockKey).getBytes(UTF_8);
-        this.lockUuid = ObjectUtils.uuid();
+        this.lockUuid = UuidUtils.uuid();
         this.timeoutMillis = Long.toString(timeoutMillis0).getBytes(UTF_8);
         this.sleepMillis = sleepMillis0;
     }

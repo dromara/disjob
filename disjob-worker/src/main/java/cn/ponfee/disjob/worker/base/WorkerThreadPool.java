@@ -15,7 +15,6 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.util.ObjectUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
 import cn.ponfee.disjob.core.enums.ExecuteState;
@@ -190,7 +189,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
-            LOG.warn("Repeat call close method." + "\n" + ObjectUtils.getStackTrace());
+            LOG.warn("Repeat call close method." + "\n" + Threads.getStackTrace());
             return;
         }
 

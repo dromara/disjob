@@ -177,69 +177,6 @@ public final class ObjectUtils {
     }
 
     /**
-     * uuid byte array
-     *
-     * @return
-     */
-    public static byte[] uuid() {
-        UUID uuid = UUID.randomUUID();
-        byte[] value = new byte[16];
-        Bytes.put(uuid.getMostSignificantBits(), value, 0);
-        Bytes.put(uuid.getLeastSignificantBits(), value, 8);
-        return value;
-    }
-
-    /**
-     * uuid 32 string
-     *
-     * @return 32 length uuid
-     */
-    public static String uuid32() {
-        UUID uuid = UUID.randomUUID();
-        return Bytes.toHex(uuid.getMostSignificantBits(), true)
-             + Bytes.toHex(uuid.getLeastSignificantBits(), true);
-    }
-
-    /**
-     * 22位uuid
-     *
-     * @return 22 length uuid
-     */
-    public static String uuid22() {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(uuid());
-    }
-
-    /**
-     * 获取堆栈信息
-     *
-     * @param deepPath
-     * @return
-     */
-    public static String getStackTrace(int deepPath) {
-        StackTraceElement[] traces = Thread.currentThread().getStackTrace();
-        if (traces.length <= deepPath) {
-            return "warning: out of stack trace.";
-        }
-        return traces[deepPath].toString();
-    }
-
-    public static String getStackTrace() {
-        return buildStackTrace(Thread.currentThread().getStackTrace());
-    }
-
-    public static String getStackTrace(Thread thread) {
-        return buildStackTrace(thread.getStackTrace());
-    }
-
-    private static String buildStackTrace(StackTraceElement[] traces) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 2, n = traces.length; i < n; i++) {
-            builder.append("--\t").append(traces[i].toString()).append("\n");
-        }
-        return builder.toString();
-    }
-
-    /**
      * Returns a new instance of type
      *
      * @param type the type class
@@ -264,12 +201,15 @@ public final class ObjectUtils {
         }
     }
 
+    // -------------------------------------------------------------------------- private class
+
     /**
      * yyyyMMdd(HHmmss(SSS))
      */
     private static final Pattern PATTERN_DATE = Pattern.compile(
         "^([1-9]\\d{3}((0[1-9]|1[012])(0[1-9]|1\\d|2[0-8])|(0[13456789]|1[012])(29|30)|(0[13578]|1[02])31)|(([2-9]\\d)(0[48]|[2468][048]|[13579][26])|(([2468][048]|[3579][26])00))0229)(([0-1][0-9]|2[0-3])([0-5][0-9])([0-5][0-9])(\\d{3})?)?$"
     );
+
     /**
      * Validates the text whether date pattern
      *
@@ -280,7 +220,6 @@ public final class ObjectUtils {
         return text != null && PATTERN_DATE.matcher(text).matches();
     }
 
-    // -------------------------------------------------------------------------- private class
     private enum PrimitiveOrWrapperConvertors {
 
         BOOLEAN(boolean.class) {

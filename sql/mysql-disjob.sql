@@ -172,7 +172,7 @@ CREATE TABLE `sched_group` (
 CREATE TABLE `sched_user` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `username`            VARCHAR(60)              NOT NULL                               COMMENT '用户名',
-  `password`            VARCHAR(255)             NOT NULL                               COMMENT '密码',
+  `auth_token`          VARCHAR(255)             NOT NULL                               COMMENT '直接调用supervisor的openapi/openrpc接口的密钥令牌',
   `groups`              VARCHAR(2048)            NOT NULL                               COMMENT '分组名(多个逗号分隔)',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',

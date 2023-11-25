@@ -13,17 +13,17 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import java.util.function.BooleanSupplier;
 
 /**
- * Wait for process
+ * Sleep wait utility.
  *
  * @author Ponfee
  */
-public class WaitForProcess {
+public class SleepWaitUtils {
 
-    public static boolean process(int round, long[] sleepMillis, BooleanSupplier processor) {
-        return process(round, sleepMillis, true, processor);
+    public static boolean waitUntil(int round, long[] sleepMillis, BooleanSupplier supplier) {
+        return waitUntil(round, sleepMillis, true, supplier);
     }
 
-    public static boolean process(int round, long[] sleepMillis, boolean caught, BooleanSupplier processor) {
+    public static boolean waitUntil(int round, long[] sleepMillis, boolean caught, BooleanSupplier supplier) {
         int lastIndex = sleepMillis.length - 1;
         for (int i = 0; i < round; i++) {
             long sleepTime = sleepMillis[Math.min(i, lastIndex)];
@@ -34,7 +34,7 @@ public class WaitForProcess {
                     ThrowingRunnable.doChecked(() -> Thread.sleep(sleepTime));
                 }
             }
-            if (processor.getAsBoolean()) {
+            if (supplier.getAsBoolean()) {
                 return true;
             }
         }

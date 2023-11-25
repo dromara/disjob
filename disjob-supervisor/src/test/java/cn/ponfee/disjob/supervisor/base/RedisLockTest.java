@@ -11,7 +11,7 @@ package cn.ponfee.disjob.supervisor.base;
 import cn.ponfee.disjob.common.lock.RedisLock;
 import cn.ponfee.disjob.common.lock.RedisLockFactory;
 import cn.ponfee.disjob.common.util.MavenProjects;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
@@ -53,7 +53,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void test0() throws InterruptedException {
-        String key = "test:" + ObjectUtils.uuid32();
+        String key = "test:" + UuidUtils.uuid32();
         RedisLock redisLock = factory.create(key, 10000);
         Assertions.assertTrue(redisLock.tryLock());
 
@@ -198,7 +198,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void testTryLockWithTimeout() throws InterruptedException {
         int expire = 2000;
-        String lockKey = "test:lock:" + ObjectUtils.uuid32();
+        String lockKey = "test:lock:" + UuidUtils.uuid32();
         String actualKey = "lock:" + lockKey;
 
         RedisLock redisLock = factory.create(lockKey, expire);

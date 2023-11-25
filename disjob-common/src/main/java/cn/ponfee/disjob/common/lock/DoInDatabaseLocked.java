@@ -89,7 +89,7 @@ public final class DoInDatabaseLocked implements DoInLocked {
     }
 
     private Integer getLockId() {
-        return jdbcTemplateWrapper.get(GET_SQL, JdbcTemplateWrapper.INT_ROW_MAPPER, lockName);
+        return jdbcTemplateWrapper.get(GET_SQL, JdbcTemplateWrapper.INTEGER_ROW_MAPPER, lockName);
     }
 
 }

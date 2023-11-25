@@ -76,20 +76,20 @@ public final class Strings {
     /**
      * 驼峰转为带分隔符名字，如驼峰转换为下划线：CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, camelCaseName);
      *
-     * @param camelcaseName the camelcase name
-     * @param separator     the separator
-     * @return with separator name
+     * @param camelcaseFormat the camelcase format
+     * @param separator       the separator character
+     * @return separator format string
      * @see CaseFormat#to(CaseFormat, String)
      */
-    public static String toSeparatedName(String camelcaseName, char separator) {
-        if (StringUtils.isEmpty(camelcaseName)) {
-            return camelcaseName;
+    public static String toSeparatedFormat(String camelcaseFormat, char separator) {
+        if (StringUtils.isEmpty(camelcaseFormat)) {
+            return camelcaseFormat;
         }
 
-        StringBuilder result = new StringBuilder(camelcaseName.length() << 1);
-        result.append(Character.toLowerCase(camelcaseName.charAt(0)));
-        for (int i = 1, len = camelcaseName.length(); i < len; i++) {
-            char ch = camelcaseName.charAt(i);
+        StringBuilder result = new StringBuilder(camelcaseFormat.length() << 1);
+        result.append(Character.toLowerCase(camelcaseFormat.charAt(0)));
+        for (int i = 1, len = camelcaseFormat.length(); i < len; i++) {
+            char ch = camelcaseFormat.charAt(i);
             if (Character.isUpperCase(ch)) {
                 result.append(separator).append(Character.toLowerCase(ch));
             } else {
@@ -107,22 +107,22 @@ public final class Strings {
      * 4、UPPER_CAMEL       ->  java和c++类的命名规范如UpperCamel
      * 5、UPPER_UNDERSCORE  ->  java和c++常量的命名规范如UPPER_UNDERSCORE
      *
-     * @param separatedName the separated name
-     * @param separator     the separator
-     * @return camelcase name
+     * @param separatedFormat the separated format
+     * @param separator       the separator character
+     * @return camelcase format string
      * @see CaseFormat#to(CaseFormat, String)
      */
-    public static String toCamelcaseName(String separatedName, char separator) {
-        if (StringUtils.isEmpty(separatedName)) {
-            return separatedName;
+    public static String toCamelcaseFormat(String separatedFormat, char separator) {
+        if (StringUtils.isEmpty(separatedFormat)) {
+            return separatedFormat;
         }
 
-        StringBuilder result = new StringBuilder(separatedName.length());
-        for (int i = 0, len = separatedName.length(); i < len; i++) {
-            char ch = separatedName.charAt(i);
+        StringBuilder result = new StringBuilder(separatedFormat.length());
+        for (int i = 0, len = separatedFormat.length(); i < len; i++) {
+            char ch = separatedFormat.charAt(i);
             if (separator == ch) {
                 if (++i < len) {
-                    result.append(Character.toUpperCase(separatedName.charAt(i)));
+                    result.append(Character.toUpperCase(separatedFormat.charAt(i)));
                 }
             } else {
                 result.append(ch);

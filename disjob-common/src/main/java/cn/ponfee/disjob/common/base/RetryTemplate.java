@@ -11,7 +11,7 @@ package cn.ponfee.disjob.common.base;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -47,7 +47,7 @@ public class RetryTemplate {
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop
                     if (traceId == null) {
-                        traceId = ObjectUtils.uuid32();
+                        traceId = UuidUtils.uuid32();
                     }
                     LOG.error("Execute failed, will retrying: " + (i + 1) + " | " + traceId, e);
                     Thread.sleep((i + 1) * retryBackoffPeriod);

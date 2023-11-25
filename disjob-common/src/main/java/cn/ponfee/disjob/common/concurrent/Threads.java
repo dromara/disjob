@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +80,7 @@ public final class Threads {
         }
 
         if (Thread.currentThread() == thread) {
-            LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), ObjectUtils.getStackTrace());
+            LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
             thread.interrupt();
             stopThread(thread);
         }
@@ -121,6 +120,35 @@ public final class Threads {
         if (t instanceof InterruptedException) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * 获取堆栈信息
+     *
+     * @param depth the depth
+     * @return stack trace
+     */
+    public static String getStackTrace(int depth) {
+        StackTraceElement[] traces = Thread.currentThread().getStackTrace();
+        return depth < traces.length ? traces[depth].toString() : null;
+    }
+
+    public static String getStackTrace() {
+        return buildStackTrace(Thread.currentThread().getStackTrace());
+    }
+
+    public static String getStackTrace(Thread thread) {
+        return buildStackTrace(thread.getStackTrace());
+    }
+
+    // ------------------------------------------------------------private methods
+
+    private static String buildStackTrace(StackTraceElement[] traces) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 2, n = traces.length; i < n; i++) {
+            builder.append("--\t").append(traces[i].toString()).append("\n");
+        }
+        return builder.toString();
     }
 
     /**

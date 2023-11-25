@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.dispatch.route;
 
 import cn.ponfee.disjob.common.base.ConsistentHash;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -79,7 +79,7 @@ public class ConsistentHashExecutionRouterTest {
 
     @Test
     public void test() {
-        String key = ObjectUtils.uuid32();
+        String key = UuidUtils.uuid32();
         String[] array = new String[ThreadLocalRandom.current().nextInt(17) + 3];
         array[0] = key;
         for (int i = 1; i < array.length; i++) {

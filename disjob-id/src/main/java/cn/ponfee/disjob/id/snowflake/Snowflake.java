@@ -139,7 +139,7 @@ public final class Snowflake implements IdGenerator {
             sequence = (sequence + 1) & sequenceMask;
             if (sequence == 0) {
                 // 当前毫秒的sequence已用完，需要循环等待获取下一毫秒
-                timestamp = tilNextMillis(lastTimestamp);
+                timestamp = tillNextMillis(lastTimestamp);
                 lastTimestamp = timestamp;
             }
         } else {
@@ -160,7 +160,7 @@ public final class Snowflake implements IdGenerator {
      * @param lastTimestamp the lastTimestamp
      * @return next timestamp
      */
-    private long tilNextMillis(long lastTimestamp) {
+    private long tillNextMillis(long lastTimestamp) {
         LOG.warn("Snowflake til next millis.");
 
         long timestamp;

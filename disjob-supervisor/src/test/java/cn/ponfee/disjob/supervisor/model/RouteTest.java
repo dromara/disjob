@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.dispatch.route.count.AtomicCounter;
 import cn.ponfee.disjob.dispatch.route.count.JdkAtomicCounter;
 import cn.ponfee.disjob.dispatch.route.count.RedisAtomicCounter;
@@ -36,18 +36,18 @@ public class RouteTest extends SpringBootTestBase<StringRedisTemplate> {
 
     @Test
     public void testRedisAtomicCounter() {
-        String key1 = "disjob:counter1:" + ObjectUtils.uuid32();
+        String key1 = "disjob:counter1:" + UuidUtils.uuid32();
         bean.opsForValue().set(key1, "10");
         Assertions.assertEquals(10, Numbers.toLong(bean.opsForValue().get(key1)));
         Assertions.assertEquals(11, bean.opsForValue().increment(key1));
         Assertions.assertEquals(12, bean.opsForValue().increment(key1));
 
-        String key2 = "disjob:counter2:" + ObjectUtils.uuid32();
+        String key2 = "disjob:counter2:" + UuidUtils.uuid32();
         Assertions.assertNull(bean.opsForValue().get(key2));
         Assertions.assertEquals(1, bean.opsForValue().increment(key2));
         Assertions.assertEquals(2, bean.opsForValue().increment(key2));
 
-        RedisAtomicCounter counter = new RedisAtomicCounter("disjob:counter3:" + ObjectUtils.uuid32(), bean);
+        RedisAtomicCounter counter = new RedisAtomicCounter("disjob:counter3:" + UuidUtils.uuid32(), bean);
         long initValue = counter.get();
         Assertions.assertEquals(initValue, counter.getAndIncrement());
         Assertions.assertEquals(1, counter.get());

@@ -14,7 +14,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
@@ -80,7 +80,7 @@ public class WorkerFramelessMain {
         Assert.hasText(group, "Worker group name cannot empty.");
         String boundHost = JobUtils.getLocalHost(props.getString(DISJOB_BOUND_SERVER_HOST));
 
-        Object[] array = {group, ObjectUtils.uuid32(), boundHost, port, workerProperties.getWorkerToken(), workerProperties.getSupervisorToken()};
+        Object[] array = {group, UuidUtils.uuid32(), boundHost, port, workerProperties.getWorkerToken(), workerProperties.getSupervisorToken()};
         Worker.Current currentWorker = ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", array);
 
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(

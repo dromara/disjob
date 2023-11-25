@@ -11,7 +11,7 @@ package cn.ponfee.disjob.worker.configuration;
 import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
@@ -77,7 +77,7 @@ public @interface EnableWorker {
                                             @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
                                             WorkerProperties config) {
             String host = JobUtils.getLocalHost(boundHost);
-            Object[] args = {config.getGroup(), ObjectUtils.uuid32(), host, port, config.getWorkerToken(), config.getSupervisorToken()};
+            Object[] args = {config.getGroup(), UuidUtils.uuid32(), host, port, config.getWorkerToken(), config.getSupervisorToken()};
             try {
                 // inject current worker: Worker.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", args);

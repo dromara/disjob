@@ -10,7 +10,7 @@ package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.WaitForProcess;
+import cn.ponfee.disjob.common.util.SleepWaitUtils;
 import cn.ponfee.disjob.core.api.supervisor.SupervisorOpenRpcService;
 import cn.ponfee.disjob.core.api.supervisor.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.core.api.supervisor.response.SchedInstanceResponse;
@@ -120,7 +120,7 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenRpcService.pauseInstance(instanceId);
-        WaitForProcess.process(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
+        SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
             return !RunState.PAUSABLE_LIST.contains(RunState.of(instance.getRunState()));
         });
@@ -136,7 +136,7 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenRpcService.resumeInstance(instanceId);
-        WaitForProcess.process(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
+        SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
             SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
             return !RunState.PAUSED.equals(instance.getRunState());
         });
@@ -152,7 +152,7 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
         supervisorOpenRpcService.cancelInstance(instanceId);
-        WaitForProcess.process(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
+        SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
             return RunState.of(instance.getRunState()).isTerminal();
         });

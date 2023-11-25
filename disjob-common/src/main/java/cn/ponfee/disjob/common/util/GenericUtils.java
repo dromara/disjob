@@ -84,6 +84,7 @@ public final class GenericUtils {
     }
 
     // ----------------------------------------------------------------------------method actual arg type argument
+
     public static <T> Class<T> getActualArgTypeArgument(Method method, int methodArgsIndex) {
         return getActualArgTypeArgument(method, methodArgsIndex, 0);
     }
@@ -101,6 +102,7 @@ public final class GenericUtils {
     }
 
     // ----------------------------------------------------------------------------method actual return type argument
+
     public static <T> Class<T> getActualReturnTypeArgument(Method method) {
         return getActualReturnTypeArgument(method, 0);
     }
@@ -116,7 +118,8 @@ public final class GenericUtils {
         return getActualTypeArgument(method.getGenericReturnType(), genericArgsIndex);
     }
 
-    // ----------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------get actual type argument
+
     public static <T> Class<T> getActualTypeArgument(Field field) {
         return getActualTypeArgument(field, 0);
     }
@@ -133,6 +136,7 @@ public final class GenericUtils {
     }
 
     // -------------------------------------------------------------------get actual variable type
+
     public static <T> Class<T> getFieldActualType(Class<?> clazz, String fieldName) {
         Field field = ClassUtils.getField(clazz, fieldName);
         if (field == null) {
@@ -208,9 +212,11 @@ public final class GenericUtils {
         }
         List<Type> types = new ArrayList<>();
         if (!clazz.isInterface()) {
-            types.add(clazz.getGenericSuperclass()); // Map<U,V>
+            // Map<U,V>
+            types.add(clazz.getGenericSuperclass());
         }
-        Collections.addAll(types, clazz.getGenericInterfaces()); // List<X>, Y
+        // List<X>, Y
+        Collections.addAll(types, clazz.getGenericInterfaces());
         return types;
     }
 
@@ -261,12 +267,11 @@ public final class GenericUtils {
             return getActualType(clazz, ((ParameterizedType) type).getRawType());
         } else if (type instanceof GenericArrayType) {
             // private E[] array;
-            Type etype = ((GenericArrayType) type).getGenericComponentType(); // E: element type
+            // E: element type
+            Type etype = ((GenericArrayType) type).getGenericComponentType();
             return (Class<T>) Array.newInstance(getActualType(clazz, etype), 0).getClass();
         } else if (type instanceof TypeVariable) {
-            // public class Sup<E> {
-            //   private E id;
-            // }
+            // public class Sup<E> { private E id; }
             // public class Sub extends Sup<Long> {}
             return getVariableActualType(clazz, (TypeVariable<?>) type);
         } else if (type instanceof WildcardType) {
@@ -320,8 +325,8 @@ public final class GenericUtils {
         return names;
     }
 
-    // Class, Method, Constructor
     private static void getTypeVariableName(List<String> names, Class<?> clazz, TypeVariable<?> var) {
+        // Class, Method, Constructor
         names.add(var.getGenericDeclaration().toString() + "[" + var.getName() + "]");
         if (clazz == null || clazz == Object.class) {
             return;
@@ -341,7 +346,7 @@ public final class GenericUtils {
                 if (!(types[i] instanceof TypeVariable<?>)) {
                     continue;
                 }
-                // find the type variable origin difined class
+                // find the type variable origin defined class
                 if (((TypeVariable<?>) types[i]).getName().equals(var.getTypeName())) {
                     clazz = (Class<?>) ptype.getRawType();
                     getTypeVariableName(names, clazz, clazz.getTypeParameters()[i]);

@@ -9,10 +9,7 @@
 package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.spring.ResourceScanner;
-import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Fields;
-import cn.ponfee.disjob.common.util.NetUtils;
-import cn.ponfee.disjob.common.util.ObjectUtils;
+import cn.ponfee.disjob.common.util.*;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.model.SchedJob;
 import org.junit.jupiter.api.Assertions;
@@ -26,7 +23,7 @@ import java.lang.reflect.Modifier;
  */
 public class ObjectUtilsTest {
 
-    private static final String TEST_NAME = ObjectUtils.uuid32();
+    private static final String TEST_NAME = UuidUtils.uuid32();
 
     @Test
     public void testNewInstance() {
@@ -50,7 +47,7 @@ public class ObjectUtilsTest {
     @Test
     public void testModifyConstantFields() {
         String value1 = ObjectUtilsTest.TEST_NAME;
-        String value2 = ObjectUtils.uuid32();
+        String value2 = UuidUtils.uuid32();
         Fields.put(ObjectUtilsTest.class, "TEST_NAME", value2);
         Assertions.assertNotEquals(value1, value2);
         Assertions.assertNotEquals(value1, ObjectUtilsTest.TEST_NAME);
