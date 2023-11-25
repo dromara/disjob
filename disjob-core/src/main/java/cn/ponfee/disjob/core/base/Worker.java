@@ -52,7 +52,7 @@ public class Worker extends Server {
     /**
      * Group name
      *
-     * @see SchedJob#getJobGroup()
+     * @see SchedJob#getGroup()
      */
     private final String group;
 

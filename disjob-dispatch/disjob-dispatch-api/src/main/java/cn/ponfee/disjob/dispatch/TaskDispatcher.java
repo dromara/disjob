@@ -90,11 +90,11 @@ public abstract class TaskDispatcher implements Startable {
     /**
      * Assign a worker and dispatch to the assigned worker.
      *
-     * @param tasks    the list of execution task param
-     * @param jobGroup the job group
+     * @param tasks the list of execution task param
+     * @param group the group
      * @return {@code true} if the first dispatch successful
      */
-    public final boolean dispatch(List<ExecuteTaskParam> tasks, String jobGroup) {
+    public final boolean dispatch(List<ExecuteTaskParam> tasks, String group) {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }
@@ -106,7 +106,7 @@ public abstract class TaskDispatcher implements Startable {
                     Assert.notNull(e.getWorker(), () -> "Broadcast dispatch task worker cannot be null: " + e);
                 }
             })
-            .map(e -> new DispatchTaskParam(e, jobGroup))
+            .map(e -> new DispatchTaskParam(e, group))
             .collect(Collectors.toList());
         return doDispatch(params);
     }

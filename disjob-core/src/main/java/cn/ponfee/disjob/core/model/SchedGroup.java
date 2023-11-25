@@ -28,7 +28,7 @@ public class SchedGroup extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 130809383427026764L;
 
     /**
-     * 分组名(同sched_job.job_group)
+     * 分组名称(同sched_job.group)
      */
     private String group;
 

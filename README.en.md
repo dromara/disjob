@@ -50,7 +50,7 @@ disjob                                        # Main project①
 - Divided into two roles: Manager (Supervisor) and Executor (Worker), Supervisor and Worker can be deployed separately
 - Supervisor and Worker discover each other through the registry center, supported: Database, Redis, Consul, Nacos, Zookeeper, Etcd
 - Supervisor is responsible for generating tasks and dispatching them to Worker for execution, supported: Redis, Http
-- Need to specify the Job group, Job tasks will only be dispatched to the specified group of Workers for execution
+- Need to specify the group, Job tasks will only be dispatched to the specified group of Workers for execution
 - Provides the ability to split tasks, override the method [JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java) to split many tasks, then distributed and parallel execution
 - Supports pausing and cancelling running tasks, paused tasks can be resumed for execution, failed tasks support retry
 - Supports savepoint task execution snapshot, so that manually or abnormally paused tasks can be resumed from the savepoint

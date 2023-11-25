@@ -26,15 +26,15 @@ import lombok.Setter;
 public class JobHandlerParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
-    private String jobGroup;
+    private String group;
     private String jobHandler;
     private String jobParam;
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
-    public JobHandlerParam(String jobGroup, String jobHandler, String jobParam,
+    public JobHandlerParam(String group, String jobHandler, String jobParam,
                            JobType jobType, RouteStrategy routeStrategy) {
-        this.jobGroup = jobGroup;
+        this.group = group;
         this.jobHandler = jobHandler;
         this.jobParam = jobParam;
         this.jobType = jobType;
@@ -47,7 +47,7 @@ public class JobHandlerParam extends AuthenticationParam {
 
     public static JobHandlerParam from(SchedJob job, String jobHandler) {
         return new JobHandlerParam(
-            job.getJobGroup(),
+            job.getGroup(),
             jobHandler,
             job.getJobParam(),
             JobType.of(job.getJobType()),

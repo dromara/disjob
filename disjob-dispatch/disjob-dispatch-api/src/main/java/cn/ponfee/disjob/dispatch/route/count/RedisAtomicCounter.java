@@ -29,7 +29,7 @@ public class RedisAtomicCounter extends AtomicCounter {
     /**
      * Function<String, AtomicCounter>: group -> new RedisAtomicCounter(group, stringRedisTemplate)
      *
-     * @param group               the job group
+     * @param group               the group
      * @param stringRedisTemplate the StringRedisTemplate
      * @see cn.ponfee.disjob.dispatch.route.RoundRobinExecutionRouter#RoundRobinExecutionRouter(Function)
      */

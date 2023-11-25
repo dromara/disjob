@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_job</sql>
 
   <sql id="Base_Column_List">
-    job_id, job_group, job_name, job_handler, job_state, job_type, job_param, retry_type,
+    job_id, `group`, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value,
     execute_timeout, collided_strategy, misfire_strategy, route_strategy, remark,
     last_trigger_time, next_trigger_time, next_scan_time, failed_scan_count, version,
@@ -38,7 +38,7 @@
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedJob" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       job_id,
-      job_group,
+      `group`,
       job_name,
       job_handler,
       job_state,
@@ -61,7 +61,7 @@
       created_by
     ) VALUES (
       #{jobId,jdbcType=BIGINT},
-      #{jobGroup,jdbcType=VARCHAR},
+      #{group,jdbcType=VARCHAR},
       #{jobName,jdbcType=VARCHAR},
       #{jobHandler,jdbcType=LONGVARCHAR},
       #{jobState,jdbcType=TINYINT},
@@ -87,7 +87,7 @@
 
   <update id="update" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
-    SET job_group = #{jobGroup,jdbcType=VARCHAR},
+    SET `group` = #{group,jdbcType=VARCHAR},
         job_name = #{jobName,jdbcType=VARCHAR},
         <if test="jobHandler != null and jobHandler != ''">
           job_handler = #{jobHandler,jdbcType=LONGVARCHAR},
@@ -220,8 +220,8 @@
 
   <sql id="Query_Page_Condition">
     WHERE is_deleted = 0
-      <if test="jobGroup != null and jobGroup != ''">
-        AND job_group = #{jobGroup}
+      <if test="group != null and group != ''">
+        AND `group` = #{group}
       </if>
       <if test="jobName != null and jobName != ''">
         AND job_name LIKE concat('%', #{jobName}, '%')

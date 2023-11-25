@@ -46,7 +46,7 @@ public final class Snowflake implements IdGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(Snowflake.class);
 
     /**
-     * 起始基准时间点(2023-01-01)
+     * 起始基准时间点(2015-03-01 00:00:00)
      */
     private static final long TWEPOCH = 1425139200000L;
 

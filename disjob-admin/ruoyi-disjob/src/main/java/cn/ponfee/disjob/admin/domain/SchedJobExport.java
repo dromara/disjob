@@ -29,10 +29,10 @@ public class SchedJobExport {
     private Long jobId;
 
     /**
-     * Job分组(用于分配给同组下的Worker执行)
+     * 分组名称(可以理解为一个应用的appid，此job只会分派给所属组的Worker执行)
      */
-    @Excel(name = "Job分组")
-    private String jobGroup;
+    @Excel(name = "分组名称")
+    private String group;
 
     /**
      * Job名称
@@ -184,12 +184,12 @@ public class SchedJobExport {
         this.jobId = jobId;
     }
 
-    public String getJobGroup() {
-        return jobGroup;
+    public String getGroup() {
+        return group;
     }
 
-    public void setJobGroup(String jobGroup) {
-        this.jobGroup = jobGroup;
+    public void setGroup(String group) {
+        this.group = group;
     }
 
     public String getJobName() {

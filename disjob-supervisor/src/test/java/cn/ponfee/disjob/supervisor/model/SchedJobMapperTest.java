@@ -59,7 +59,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     public void testInsert1() {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
-        job.setJobGroup("default");
+        job.setGroup("default");
         job.setJobName("test");
         job.setJobHandler("cn.ponfee.disjob.test.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
@@ -92,7 +92,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     public void testInsert2() throws ParseException {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
-        job.setJobGroup("default");
+        job.setGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
         job.setJobHandler("cn.ponfee.disjob.test.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());
@@ -130,7 +130,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     public void testInsert3() throws ParseException {
         SchedJob job = new SchedJob();
         job.setJobId(idGenerator.generateId());
-        job.setJobGroup("default");
+        job.setGroup("default");
         job.setJobName(RandomStringUtils.randomAlphanumeric(5));
         job.setJobHandler("cn.ponfee.disjob.test.handler.NoopJobHandler");
         job.setJobState(JobState.DISABLE.value());

@@ -99,8 +99,8 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
                 return;
             }
             // check is whether not discovered worker
-            if (jobManager.hasNotDiscoveredWorkers(schedJob.getJobGroup())) {
-                log.error("Scanned waiting state instance not discovered worker: {} | {}", instance.getInstanceId(), schedJob.getJobGroup());
+            if (jobManager.hasNotDiscoveredWorkers(schedJob.getGroup())) {
+                log.error("Scanned waiting state instance not discovered worker: {} | {}", instance.getInstanceId(), schedJob.getGroup());
                 return;
             }
             log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());

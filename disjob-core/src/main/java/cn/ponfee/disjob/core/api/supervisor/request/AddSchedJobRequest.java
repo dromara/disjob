@@ -27,7 +27,7 @@ import java.util.Date;
 public class AddSchedJobRequest extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -2765296042332021176L;
 
-    private String jobGroup;
+    private String group;
     private String jobName;
     private String jobHandler;
     private Integer jobState;

@@ -22,7 +22,7 @@ import lombok.Setter;
 public class SchedJobPageRequest extends PageRequest {
     private static final long serialVersionUID = -6482618667917024367L;
 
-    private String jobGroup;
+    private String group;
     private String jobName;
     private Integer jobType;
     private Integer jobState;

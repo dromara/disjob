@@ -27,7 +27,7 @@ public class SchedJobResponse extends ToJsonString implements Serializable {
 
     private Long id;
     private Long jobId;
-    private String jobGroup;
+    private String group;
     private String jobName;
     private Integer jobType;
     private String jobHandler;

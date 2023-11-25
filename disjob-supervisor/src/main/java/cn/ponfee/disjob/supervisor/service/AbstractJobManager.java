@@ -194,7 +194,7 @@ public abstract class AbstractJobManager {
 
     public List<SchedTask> splitTasks(JobHandlerParam param, long instanceId, Date date) throws JobException {
         if (RouteStrategy.BROADCAST == param.getRouteStrategy()) {
-            List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getJobGroup());
+            List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getGroup());
             if (discoveredServers.isEmpty()) {
                 throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
             }
@@ -249,7 +249,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        String supervisorToken = SchedGroupManager.get(job.getJobGroup()).getSupervisorToken();
+        String supervisorToken = SchedGroupManager.get(job.getGroup()).getSupervisorToken();
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
         List<ExecuteTaskParam> list;
         if (RouteStrategy.BROADCAST.equals(job.getRouteStrategy())) {
@@ -269,7 +269,7 @@ public abstract class AbstractJobManager {
                 .collect(Collectors.toList());
         }
 
-        return taskDispatcher.dispatch(list, job.getJobGroup());
+        return taskDispatcher.dispatch(list, job.getGroup());
     }
 
     public boolean dispatch(List<ExecuteTaskParam> params) {
@@ -310,8 +310,8 @@ public abstract class AbstractJobManager {
             for (Long parentJobId : parentJobIds) {
                 SchedJob parentJob = parentJobMap.get(parentJobId);
                 Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
-                if (!job.getJobGroup().equals(parentJob.getJobGroup())) {
-                    throw new IllegalArgumentException("Invalid group: parent=" + parentJob.getJobGroup() + ", child=" + job.getJobGroup());
+                if (!job.getGroup().equals(parentJob.getGroup())) {
+                    throw new IllegalArgumentException("Invalid group: parent=" + parentJob.getGroup() + ", child=" + job.getGroup());
                 }
             }
 

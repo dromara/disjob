@@ -231,7 +231,7 @@ Worker接收到子任务后，会提交到框架自定义的线程池中执行�
 
 ```json5
 {
-  "jobGroup": "default",
+  "group": "default",
   "jobName": "prime-count-dag",
   "jobState": 1, // job状态：0-禁用；1-启用；
   "jobType": 2,  // job类型：1-常规；2-工作流(DAG)；

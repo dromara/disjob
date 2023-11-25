@@ -58,13 +58,13 @@ public class WorkerCoreRpcClient {
     }
 
     public void verify(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupManager.get(param.getJobGroup()).getSupervisorToken());
-        grouped(param.getJobGroup()).verify(param);
+        param.setSupervisorToken(SchedGroupManager.get(param.getGroup()).getSupervisorToken());
+        grouped(param.getGroup()).verify(param);
     }
 
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupManager.get(param.getJobGroup()).getSupervisorToken());
-        return grouped(param.getJobGroup()).split(param);
+        param.setSupervisorToken(SchedGroupManager.get(param.getGroup()).getSupervisorToken());
+        return grouped(param.getGroup()).split(param);
     }
 
     // ------------------------------------------------------------private methods & class

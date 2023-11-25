@@ -39,9 +39,9 @@ public class SchedJob extends BaseEntity implements Serializable {
     private Long jobId;
 
     /**
-     * Job分组(用于分派给同组下的Worker执行)
+     * 分组名称(可以理解为一个应用的appid，此job只会分派给所属组的Worker执行)
      */
-    private String jobGroup;
+    private String group;
 
     /**
      * Job名称
@@ -195,15 +195,15 @@ public class SchedJob extends BaseEntity implements Serializable {
             throw new IllegalArgumentException("Invalid trigger value: " + triggerType + ", " + triggerValue);
         }
         Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
-        Assert.isTrue(isNotBlank(jobGroup), "jobGroup cannot be blank.");
-        Assert.isTrue(length(jobGroup) <= 30, "jobGroup length cannot exceed 30.");
+        Assert.isTrue(isNotBlank(group), "Group cannot be blank.");
+        Assert.isTrue(length(group) <= 30, "Group length cannot exceed 30.");
         Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
         Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
         Assert.hasText(jobHandler, "Job handler cannot be empty.");
         Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
 
         this.triggerValue = triggerValue.trim();
-        this.jobGroup = jobGroup.trim();
+        this.group = group.trim();
         this.jobName = jobName.trim();
         this.jobHandler = jobHandler.trim();
         this.remark = (remark == null) ? "" : remark.trim();
