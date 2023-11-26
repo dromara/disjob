@@ -11,7 +11,7 @@ package cn.ponfee.disjob.supervisor.base;
 import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
+import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -26,21 +26,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * WorkerCoreRpcService client
+ * WorkerRpcService client
  *
  * @author Ponfee
  */
-public class WorkerCoreRpcClient {
+public class WorkerRpcClient {
 
     private final Worker.Current currentWorker;
-    private final WorkerCoreRpcService local;
-    private final WorkerCoreRpcService remote;
+    private final WorkerRpcService local;
+    private final WorkerRpcService remote;
 
-    public WorkerCoreRpcClient(HttpProperties httpProperties,
-                               RetryProperties retryProperties,
-                               SupervisorRegistry supervisorRegistry,
-                               @Nullable Worker.Current currentWorker,
-                               @Nullable ObjectMapper objectMapper) {
+    public WorkerRpcClient(HttpProperties httpProperties,
+                           RetryProperties retryProperties,
+                           SupervisorRegistry supervisorRegistry,
+                           @Nullable Worker.Current currentWorker,
+                           @Nullable ObjectMapper objectMapper) {
         httpProperties.check();
         retryProperties.check();
         DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
@@ -53,8 +53,8 @@ public class WorkerCoreRpcClient {
             .build();
 
         this.currentWorker = currentWorker;
-        this.local = WorkerCoreRpcLocal.INSTANCE;
-        this.remote = DiscoveryRestProxy.create(true, WorkerCoreRpcService.class, discoveryRestTemplate);
+        this.local = WorkerRpcLocal.INSTANCE;
+        this.remote = DiscoveryRestProxy.create(true, WorkerRpcService.class, discoveryRestTemplate);
     }
 
     public void verify(JobHandlerParam param) throws JobException {
@@ -69,7 +69,7 @@ public class WorkerCoreRpcClient {
 
     // ------------------------------------------------------------private methods & class
 
-    private WorkerCoreRpcService grouped(String group) {
+    private WorkerRpcService grouped(String group) {
         if (currentWorker != null && currentWorker.matchesGroup(group)) {
             return local;
         } else {
@@ -78,8 +78,8 @@ public class WorkerCoreRpcClient {
         }
     }
 
-    private static class WorkerCoreRpcLocal implements WorkerCoreRpcService {
-        private static final WorkerCoreRpcLocal INSTANCE = new WorkerCoreRpcLocal();
+    private static class WorkerRpcLocal implements WorkerRpcService {
+        private static final WorkerRpcLocal INSTANCE = new WorkerRpcLocal();
 
         @Override
         public void verify(JobHandlerParam param) throws JobException {

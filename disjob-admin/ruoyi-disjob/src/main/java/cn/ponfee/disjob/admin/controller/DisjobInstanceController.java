@@ -11,11 +11,11 @@ package cn.ponfee.disjob.admin.controller;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.SleepWaitUtils;
-import cn.ponfee.disjob.core.api.supervisor.SupervisorOpenRpcService;
-import cn.ponfee.disjob.core.api.supervisor.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.core.api.supervisor.response.SchedInstanceResponse;
-import cn.ponfee.disjob.core.api.supervisor.response.SchedTaskResponse;
 import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedInstanceResponse;
+import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedTaskResponse;
+import cn.ponfee.disjob.supervisor.service.SupervisorAggregator;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -44,10 +44,10 @@ public class DisjobInstanceController extends BaseController {
     private static final int WAIT_SLEEP_ROUND = 9;
     private static final long[] WAIT_SLEEP_MILLIS = {2500, 500};
 
-    private final SupervisorOpenRpcService supervisorOpenRpcService;
+    private final SupervisorAggregator supervisorAggregator;
 
-    public DisjobInstanceController(SupervisorOpenRpcService supervisorOpenRpcService) {
-        this.supervisorOpenRpcService = supervisorOpenRpcService;
+    public DisjobInstanceController(SupervisorAggregator supervisorAggregator) {
+        this.supervisorAggregator = supervisorAggregator;
     }
 
     @RequiresPermissions(PERMISSION_VIEW)
@@ -66,7 +66,7 @@ public class DisjobInstanceController extends BaseController {
         request.setParent(true);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        return PageUtils.toTableDataInfo(supervisorOpenRpcService.queryInstanceForPage(request));
+        return PageUtils.toTableDataInfo(supervisorAggregator.queryInstanceForPage(request));
     }
 
     /**
@@ -79,20 +79,20 @@ public class DisjobInstanceController extends BaseController {
         request.setParent(false);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        return PageUtils.toTableDataInfo(supervisorOpenRpcService.queryInstanceForPage(request));
+        return PageUtils.toTableDataInfo(supervisorAggregator.queryInstanceForPage(request));
     }
 
     @RequiresPermissions(PERMISSION_QUERY)
     @PostMapping("/children")
     @ResponseBody
     public List<SchedInstanceResponse> children(@RequestParam("pnstanceId") Long pnstanceId) {
-        return supervisorOpenRpcService.listInstanceChildren(pnstanceId);
+        return supervisorAggregator.listInstanceChildren(pnstanceId);
     }
 
     @RequiresPermissions(PERMISSION_QUERY)
     @GetMapping("/tasks/{instanceId}")
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
-        List<SchedTaskResponse> tasks = supervisorOpenRpcService.getInstanceTasks(instanceId);
+        List<SchedTaskResponse> tasks = supervisorAggregator.getInstanceTasks(instanceId);
         mmap.put("tasks", Jsons.toJson(tasks));
         return PREFIX + "/tasks";
     }
@@ -107,7 +107,7 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/remove/{instanceId}")
     @ResponseBody
     public AjaxResult remove(@PathVariable("instanceId") Long instanceId) {
-        supervisorOpenRpcService.deleteInstance(instanceId);
+        supervisorAggregator.deleteInstance(instanceId);
         return success();
     }
 
@@ -119,9 +119,9 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
-        supervisorOpenRpcService.pauseInstance(instanceId);
+        supervisorAggregator.pauseInstance(instanceId);
         SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
-            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
+            SchedInstanceResponse instance = supervisorAggregator.getInstance(instanceId, false);
             return !RunState.PAUSABLE_LIST.contains(RunState.of(instance.getRunState()));
         });
         return success();
@@ -135,9 +135,9 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
-        supervisorOpenRpcService.resumeInstance(instanceId);
+        supervisorAggregator.resumeInstance(instanceId);
         SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
-            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
+            SchedInstanceResponse instance = supervisorAggregator.getInstance(instanceId, false);
             return !RunState.PAUSED.equals(instance.getRunState());
         });
         return success();
@@ -151,9 +151,9 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
-        supervisorOpenRpcService.cancelInstance(instanceId);
+        supervisorAggregator.cancelInstance(instanceId);
         SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
-            SchedInstanceResponse instance = supervisorOpenRpcService.getInstance(instanceId, false);
+            SchedInstanceResponse instance = supervisorAggregator.getInstance(instanceId, false);
             return RunState.of(instance.getRunState()).isTerminal();
         });
         return success();

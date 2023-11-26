@@ -240,7 +240,7 @@ public class Worker extends Server {
                 @Override
                 public void authenticate(AuthenticationParam param) {
                     if (supervisorToken != null && !supervisorToken.equals(param.getSupervisorToken())) {
-                        throw new AuthenticationException("Authentication failed.");
+                        throw new AuthenticationException("Authenticate failed.");
                     }
                 }
             };

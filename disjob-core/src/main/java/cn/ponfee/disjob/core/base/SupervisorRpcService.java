@@ -22,13 +22,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 /**
- * Supervisor core rpc service, provides for worker communication.
+ * Supervisor rpc service, provides for worker communication.
  *
  * @author Ponfee
  */
 @Hidden
-@RequestMapping("supervisor/core/rpc/")
-public interface SupervisorCoreRpcService {
+@RequestMapping("supervisor/rpc/")
+public interface SupervisorRpcService {
 
     @GetMapping("task/get")
     SchedTask getTask(long taskId) throws Exception;

@@ -6,11 +6,11 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.worker.provider;
+package cn.ponfee.disjob.worker.provider.rpc;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
+import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -19,15 +19,15 @@ import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import java.util.List;
 
 /**
- * Worker core rpc service provider.
+ * Worker rpc service provider.
  *
  * @author Ponfee
  */
-public class WorkerCoreRpcProvider implements WorkerCoreRpcService, RpcController {
+public class WorkerRpcProvider implements WorkerRpcService, RpcController {
 
     private final Worker.Current currentWork;
 
-    public WorkerCoreRpcProvider(Worker.Current currentWork) {
+    public WorkerRpcProvider(Worker.Current currentWork) {
         this.currentWork = currentWork;
     }
 

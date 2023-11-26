@@ -6,29 +6,36 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.api.supervisor.request;
+package cn.ponfee.disjob.supervisor.provider.openapi.response;
 
-import cn.ponfee.disjob.common.model.PageRequest;
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Sched instance page request
+ * Schedule task response structure.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SchedInstancePageRequest extends PageRequest {
-    private static final long serialVersionUID = 2550102303488212001L;
+public class SchedTaskResponse extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = 3629610339544019607L;
 
-    private Long jobId;
-    private Integer runType;
-    private Integer runState;
-    private Date startTime;
-    private Date endTime;
-    private boolean parent;
+    private Long taskId;
+    private Long instanceId;
+    private Integer taskNo;
+    private Integer taskCount;
+    private String taskParam;
+    private Date executeStartTime;
+    private Date executeEndTime;
+    private Long executeDuration;
+    private Integer executeState;
+    private String executeSnapshot;
+    private String worker;
+    private String errorMsg;
 
 }

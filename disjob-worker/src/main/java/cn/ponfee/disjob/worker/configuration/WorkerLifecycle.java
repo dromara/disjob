@@ -10,7 +10,7 @@ package cn.ponfee.disjob.worker.configuration;
 
 import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
+import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
@@ -41,8 +41,8 @@ public class WorkerLifecycle implements SmartLifecycle {
                            HttpProperties httpProperties,
                            WorkerRegistry workerRegistry,
                            TaskReceiver taskReceiver,
-                           // if the current server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider
-                           @Nullable SupervisorCoreRpcService supervisorCoreRpcService,
+                           // if the current server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
+                           @Nullable SupervisorRpcService supervisorRpcService,
                            @Nullable ObjectMapper objectMapper) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
@@ -51,7 +51,7 @@ public class WorkerLifecycle implements SmartLifecycle {
             .httpProperties(httpProperties)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)
-            .supervisorCoreRpcService(supervisorCoreRpcService)
+            .supervisorRpcService(supervisorRpcService)
             .objectMapper(objectMapper)
             .build();
     }

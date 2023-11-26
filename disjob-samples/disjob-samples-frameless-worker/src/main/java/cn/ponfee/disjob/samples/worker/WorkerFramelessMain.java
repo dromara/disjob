@@ -29,7 +29,7 @@ import cn.ponfee.disjob.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
-import cn.ponfee.disjob.worker.provider.WorkerCoreRpcProvider;
+import cn.ponfee.disjob.worker.provider.rpc.WorkerRpcProvider;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -108,7 +108,7 @@ public class WorkerFramelessMain {
         // --------------------- create registry(select redis or http) --------------------- //
         TaskReceiver taskReceiver;
         VertxWebServer vertxWebServer;
-        WorkerCoreRpcService workerCoreRpcProvider = new WorkerCoreRpcProvider(currentWorker);
+        WorkerRpcService workerRpcProvider = new WorkerRpcProvider(currentWorker);
         {
             // redis dispatching
             //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate) {
@@ -118,11 +118,11 @@ public class WorkerFramelessMain {
             //        return super.receive(param);
             //    }
             //};
-            //vertxWebServer = new VertxWebServer(port, null, workerCoreRpcProvider);
+            //vertxWebServer = new VertxWebServer(port, null, workerRpcProvider);
 
             // http dispatching
             taskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
-            vertxWebServer = new VertxWebServer(port, taskReceiver, workerCoreRpcProvider);
+            vertxWebServer = new VertxWebServer(port, taskReceiver, workerRpcProvider);
         }
         // --------------------- create registry(select redis or http) --------------------- //
 

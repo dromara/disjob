@@ -50,12 +50,12 @@ disjob                                        # 主项目①
 - 分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署
 - Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http
-- 需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行
+- 需要指定Job的分组(group)，Job的任务只会派发给指定组的Worker执行
 - 提供任务分片的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(Savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
 - 任务在执行时若抛出[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，会暂停对应实例下的全部任务(包括分布在不同worker机器中的任务)
-- 支持广播任务，广播任务会派发给job-group下的所有worker执行
+- 支持广播任务，广播任务会派发给group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
 - 支持DAG工作流，可把`jobHandler`配置为复杂的DAG表达式，如：A->B,C,(D->E)->D,F->G
 - 提供Web管理后台，通过界面进行作业配置，任务监控等

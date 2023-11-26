@@ -6,9 +6,11 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.api.supervisor.response;
+package cn.ponfee.disjob.supervisor.provider.openapi.request;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.provider.openapi.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,22 +18,20 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Schedule job response structure.
+ * Add sched job request parameter structure.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SchedJobResponse extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = -989147023126011287L;
+public class AddSchedJobRequest extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -2765296042332021176L;
 
-    private Long id;
-    private Long jobId;
     private String group;
     private String jobName;
-    private Integer jobType;
     private String jobHandler;
     private Integer jobState;
+    private Integer jobType;
     private String jobParam;
     private Integer retryType;
     private Integer retryCount;
@@ -44,14 +44,11 @@ public class SchedJobResponse extends ToJsonString implements Serializable {
     private Integer collidedStrategy;
     private Integer misfireStrategy;
     private Integer routeStrategy;
-    private Long lastTriggerTime;
-    private Long nextTriggerTime;
     private String remark;
-
-    private Integer version;
-    private Date updatedAt;
-    private Date createdAt;
-    private String updatedBy;
     private String createdBy;
+
+    public SchedJob tosSchedJob() {
+        return SchedJobConverter.INSTANCE.convert(this);
+    }
 
 }

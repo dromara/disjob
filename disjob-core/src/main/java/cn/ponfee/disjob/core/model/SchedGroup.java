@@ -33,14 +33,19 @@ public class SchedGroup extends BaseEntity implements Serializable {
     private String group;
 
     /**
-     * worker访问supervisor的密钥令牌
+     * Supervisor访问Worker的密钥令牌
+     */
+    private String supervisorToken;
+
+    /**
+     * Worker访问Supervisor的密钥令牌
      */
     private String workerToken;
 
     /**
-     * supervisor访问worker的密钥令牌
+     * User访问Supervisor的openapi接口密钥令牌
      */
-    private String supervisorToken;
+    private String userToken;
 
     /**
      * 告警订阅人员列表

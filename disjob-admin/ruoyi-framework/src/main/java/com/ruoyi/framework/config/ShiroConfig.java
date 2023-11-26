@@ -291,8 +291,8 @@ public class ShiroConfig
         filterChainDefinitionMap.put("/captcha/captchaImage**", "anon");
 
         // disjob服务间的PRC调用，后续给服务间颁发证书或密钥来解决安全问题
-        filterChainDefinitionMap.put("/supervisor/core/rpc/**", "anon");
-        filterChainDefinitionMap.put("/worker/core/rpc/**", "anon");
+        filterChainDefinitionMap.put("/supervisor/rpc/**", "anon");
+        filterChainDefinitionMap.put("/worker/rpc/**", "anon");
 
         // 退出 logout地址，shiro去清除session
         filterChainDefinitionMap.put("/logout", "logout");

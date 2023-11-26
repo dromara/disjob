@@ -31,7 +31,7 @@ import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
+import cn.ponfee.disjob.supervisor.base.WorkerRpcClient;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
 import cn.ponfee.disjob.supervisor.instance.GeneralInstanceCreator;
@@ -91,9 +91,9 @@ public class DistributedJobManager extends AbstractJobManager {
                                  IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
-                                 WorkerCoreRpcClient workerCoreRpcClient,
+                                 WorkerRpcClient workerRpcClient,
                                  @Qualifier(DB_NAME + TX_TEMPLATE_NAME_SUFFIX) TransactionTemplate transactionTemplate) {
-        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerCoreRpcClient);
+        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerRpcClient);
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;

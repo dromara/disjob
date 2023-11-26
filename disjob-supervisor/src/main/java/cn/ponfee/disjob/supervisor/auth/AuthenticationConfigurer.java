@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Authentication configurer
+ * Supervisor authentication configurer
  *
  * @author Ponfee
  */
@@ -41,27 +41,53 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 return true;
             }
 
-            HandlerMethod handlerMethod = (HandlerMethod) handler;
-            if (!handlerMethod.getBeanType().isAnnotationPresent(AuthenticationSupervisor.class)) {
+            Class<?> beanType = ((HandlerMethod) handler).getBeanType();
+            SupervisorAuthentication annotation = beanType.getAnnotation(SupervisorAuthentication.class);
+            if (annotation == null) {
                 return true;
             }
 
             String group = request.getHeader(JobConstants.AUTHENTICATE_HEADER_GROUP);
             if (StringUtils.isBlank(group)) {
-                throw new AuthenticationException("Authentication failed.");
+                throw new AuthenticationException("Authenticate failed.");
             }
 
+            switch (annotation.value()) {
+                case WORKER:
+                    authenticateWorker(request, group);
+                    break;
+                case USER:
+                    authenticateUser(request, group);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unsupported supervisor authentication subject: " + annotation.value());
+            }
+
+            return true;
+        }
+
+        private static void authenticateWorker(HttpServletRequest request, String group) {
             String workerToken = SchedGroupManager.get(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
-                return true;
+                return;
             }
 
             String token = request.getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
             if (!workerToken.equals(token)) {
-                throw new AuthenticationException("Authentication failed.");
+                throw new AuthenticationException("Authenticate failed.");
+            }
+        }
+
+        private static void authenticateUser(HttpServletRequest request, String group) {
+            String userToken = SchedGroupManager.get(group).getUserToken();
+            if (StringUtils.isBlank(userToken)) {
+                return;
             }
 
-            return true;
+            String token = request.getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
+            if (!userToken.equals(token)) {
+                throw new AuthenticationException("Authenticate failed.");
+            }
         }
     }
 

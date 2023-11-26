@@ -6,13 +6,13 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.api.supervisor.response;
+package cn.ponfee.disjob.supervisor.provider.openapi.response;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.core.api.supervisor.converter.SchedJobConverter;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.supervisor.provider.openapi.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,4 +60,5 @@ public class SchedInstanceResponse extends ToJsonString implements Serializable 
         instanceResponse.setTasks(Collects.convert(tasks, SchedJobConverter.INSTANCE::convert));
         return instanceResponse;
     }
+
 }

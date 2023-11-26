@@ -172,12 +172,12 @@
             <li>分为管理器(Supervisor)和执行器(Worker)两种角色，Supervisor与Worker可分离部署</li>
             <li>Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd</li>
             <li>Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http</li>
-            <li>需要指定Job的分组(job-group)，Job的任务只会派发给指定组的Worker执行</li>
+            <li>需要指定Job的分组(group)，Job的任务只会派发给指定组的Worker执行</li>
             <li>提供任务分片的能力，重写拆分方法<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java">JobHandler#split</a>即可拆分为多个任务，实现分布式任务及并行执行</li>
             <li>支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试</li>
             <li>支持任务保存(Savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行</li>
             <li>任务在执行时若抛出<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java">PauseTaskException</a>，会暂停对应实例下的全部任务(包括分布在不同worker机器中的任务)</li>
-            <li>支持广播任务，广播任务会派发给job-group下的所有worker执行</li>
+            <li>支持广播任务，广播任务会派发给group下的所有worker执行</li>
             <li>支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行</li>
             <li>支持DAG工作流，可把jobHandler配置为复杂的DAG表达式，如：A-&gt;B,C,(D-&gt;E)-&gt;D,F-&gt;G</li>
             <li>提供Web管理后台，通过界面进行作业配置，任务监控等</li>

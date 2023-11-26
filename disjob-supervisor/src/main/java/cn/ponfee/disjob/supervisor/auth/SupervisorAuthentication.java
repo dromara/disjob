@@ -6,9 +6,31 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
+package cn.ponfee.disjob.supervisor.auth;
+
+import java.lang.annotation.*;
+
 /**
- * Api package.
+ * Supervisor authentication annotation.
  *
  * @author Ponfee
  */
-package cn.ponfee.disjob.core.api;
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+public @interface SupervisorAuthentication {
+
+    Subject value();
+
+    enum Subject {
+        /**
+         * Worker
+         */
+        WORKER,
+        /**
+         * User
+         */
+        USER
+    }
+
+}

@@ -18,7 +18,7 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
+import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
@@ -45,7 +45,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(Dates.DATEFULL_PATTERN);
     private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
-    private final SupervisorCoreRpcService supervisorCoreRpcClient;
+    private final SupervisorRpcService supervisorRpcClient;
     private final Discovery<Supervisor> discoverySupervisor;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
     private final WorkerThreadPool workerThreadPool;
@@ -54,12 +54,12 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
     private volatile int round = 0;
 
-    public TimingWheelRotator(SupervisorCoreRpcService supervisorCoreRpcClient,
+    public TimingWheelRotator(SupervisorRpcService supervisorRpcClient,
                               Discovery<Supervisor> discoverySupervisor,
                               TimingWheel<ExecuteTaskParam> timingWheel,
                               WorkerThreadPool threadPool,
                               int processThreadPoolSize) {
-        this.supervisorCoreRpcClient = supervisorCoreRpcClient;
+        this.supervisorRpcClient = supervisorRpcClient;
         this.discoverySupervisor = discoverySupervisor;
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
@@ -116,7 +116,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
                 .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), e.getWorker()))
                 .collect(Collectors.toList());
             // 更新task的worker信息
-            ThrowingRunnable.doCaught(() -> supervisorCoreRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
+            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
 
             // 触发执行
             subs.forEach(e -> {

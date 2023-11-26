@@ -156,8 +156,9 @@ CREATE TABLE `sched_workflow` (
 CREATE TABLE `sched_group` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `group`               VARCHAR(60)              NOT NULL                               COMMENT '分组名称(同sched_job.group)',
-  `worker_token`        VARCHAR(255)                       DEFAULT NULL                 COMMENT 'worker访问supervisor的密钥令牌',
-  `supervisor_token`    VARCHAR(255)                       DEFAULT NULL                 COMMENT 'supervisor访问worker的密钥令牌',
+  `supervisor_token`    VARCHAR(60)                        DEFAULT NULL                 COMMENT 'Supervisor访问Worker的密钥令牌',
+  `worker_token`        VARCHAR(60)                        DEFAULT NULL                 COMMENT 'Worker访问Supervisor的密钥令牌',
+  `user_token`          VARCHAR(60)                        DEFAULT NULL                 COMMENT 'User访问Supervisor的openapi接口密钥令牌',
   `alarm_subscribers`   VARCHAR(1024)                      DEFAULT NULL                 COMMENT '告警订阅人员列表',
   `web_hook`            VARCHAR(255)                       DEFAULT NULL                 COMMENT '告警web hook地址',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
@@ -176,8 +177,9 @@ CREATE TABLE `sched_user_group` (
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username_group` (`username`, `group`),
+  KEY `ix_group` (`group`),
   KEY `ix_createdat` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户与分组关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户分组表';
 
 
 -- ----------------------------
@@ -194,10 +196,10 @@ INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_stat
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351006, 'default', 'workflow-job',  'AJobHandler,BJobHandler->CJobHandler->DJobHandler,EJobHandler', 1, 2, 1, '',                                                                  2, '2023-03-18 21:30:00',                     unix_timestamp()*1000);
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351007, 'default', 'depend-job',    'cn.ponfee.disjob.test.handler.PrimeCountJobHandler',            1, 1, 1, '{\"m\":1,\"n\":500000000,\"blockSize\":20000000,\"parallel\":3}',   6, '1003164910267351000,1003164910267351001', null                 );
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351020, 'default', 'fixed-rate',    'cn.ponfee.disjob.test.handler.NoopJobHandler',                  1, 1, 1, 'fixed-rate demo',                                                   4, '20',                                      unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351021, 'default', 'fixed-delay',   'cn.ponfee.disjob.test.handler.NoopJobHandler',                  1, 1, 1, 'fixed-delay demo',                                                  5, '20',                                      unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351008, 'default', 'workflow-json-graph', '[{"source":"1:1:AJobHandler","target":"1:1:CJobHandler"},{"source":"1:1:AJobHandler","target":"1:1:DJobHandler"},{"source":"1:1:BJobHandler","target":"1:1:DJobHandler"},{"source":"1:1:BJobHandler","target":"1:1:EJobHandler"}]', 1, 2, '', 2, '2023-03-18 21:30:00', unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351009, 'default', 'prime-count-dag', 'cn.ponfee.disjob.test.handler.PrimeCountJobHandler -> cn.ponfee.disjob.test.handler.PrimeAccumulateJobHandler', 1, 2, '{\"m\":1,\"n\":2000000000,\"blockSize\":100000000,\"parallel\":3}', 2, '2023-09-02 18:00:00', unix_timestamp()*1000);
-INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351010, 'default', 'groovy-job', 'cn.ponfee.disjob.core.handle.impl.GroovyJobHandler', 1, 1, 'import java.util.*; savepoint.save(new Date().toString() + ": " + UUID.randomUUID().toString()); return "execute at: " + new Date() + jobHandler.toString()', 1, '0/50 * * * * ?', unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351021, 'default', 'fixed-delay',   'cn.ponfee.disjob.test.handler.NoopJobHandler',                  1, 1, 5, 'fixed-delay demo',                                                  5, '20',                                      unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351008, 'default', 'workflow-json-graph', '[{"source":"1:1:AJobHandler","target":"1:1:CJobHandler"},{"source":"1:1:AJobHandler","target":"1:1:DJobHandler"},{"source":"1:1:BJobHandler","target":"1:1:DJobHandler"},{"source":"1:1:BJobHandler","target":"1:1:EJobHandler"}]', 1, 2, 2, '', 2, '2023-03-18 21:30:00', unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351009, 'default', 'prime-count-dag', 'cn.ponfee.disjob.test.handler.PrimeCountJobHandler -> cn.ponfee.disjob.test.handler.PrimeAccumulateJobHandler', 1, 2, 3, '{\"m\":1,\"n\":2000000000,\"blockSize\":100000000,\"parallel\":3}', 2, '2023-09-02 18:00:00', unix_timestamp()*1000);
+INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351010, 'default', 'groovy-job', 'cn.ponfee.disjob.core.handle.impl.GroovyJobHandler', 1, 1, 4, 'import java.util.*; savepoint.save(new Date().toString() + ": " + UUID.randomUUID().toString()); return "execute at: " + new Date() + jobHandler.toString()', 1, '0/50 * * * * ?', unix_timestamp()*1000);
 
 INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (1003164910267351007, 1003164910267351000, 1);
 INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (1003164910267351007, 1003164910267351001, 2);

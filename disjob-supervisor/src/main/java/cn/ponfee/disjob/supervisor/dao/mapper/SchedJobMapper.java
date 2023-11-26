@@ -8,8 +8,8 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
-import cn.ponfee.disjob.core.api.supervisor.request.SchedJobPageRequest;
 import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedJobPageRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

@@ -55,7 +55,7 @@ disjob                                        # Main project①
 - Supports pausing and cancelling running tasks, paused tasks can be resumed for execution, failed tasks support retry
 - Supports savepoint task execution snapshot, so that manually or abnormally paused tasks can be resumed from the savepoint
 - If a task throw [PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java) at executing, then will pause all instance tasks (even if dispatched other worker machine tasks)
-- Supports broadcast tasks, broadcast tasks will be dispatched to all workers under the job-group for execution
+- Supports broadcast tasks, broadcast tasks will be dispatched to all workers under the group for execution
 - Supports dependencies jobs, multiple Jobs configured with dependencies will be executed in the established dependency order
 - Supports DAG workflows, can configure jobHandler as a complex DAG expression, such as: A->B,C,(D->E)->D,F->G
 - Provides a Web management backend, job configuration, task monitoring, etc.

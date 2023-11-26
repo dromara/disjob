@@ -13,16 +13,14 @@ import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.core.api.supervisor.SupervisorOpenRpcService;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
-import cn.ponfee.disjob.supervisor.base.WorkerCoreRpcClient;
-import cn.ponfee.disjob.supervisor.provider.SupervisorCoreRpcProvider;
-import cn.ponfee.disjob.supervisor.provider.SupervisorOpenRpcProvider;
+import cn.ponfee.disjob.supervisor.base.WorkerRpcClient;
+import cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -105,12 +103,12 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerCoreRpcClient workerCoreRpcClient(HttpProperties httpProperties,
-                                                       RetryProperties retryProperties,
-                                                       SupervisorRegistry supervisorRegistry,
-                                                       @Nullable Worker.Current currentWorker,
-                                                       @Nullable ObjectMapper objectMapper) {
-            return new WorkerCoreRpcClient(
+        public WorkerRpcClient workerRpcClient(HttpProperties httpProperties,
+                                               RetryProperties retryProperties,
+                                               SupervisorRegistry supervisorRegistry,
+                                               @Nullable Worker.Current currentWorker,
+                                               @Nullable ObjectMapper objectMapper) {
+            return new WorkerRpcClient(
                 httpProperties, retryProperties, supervisorRegistry, currentWorker, objectMapper
             );
         }
@@ -144,17 +142,9 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public SupervisorCoreRpcService supervisorCoreRpcService(DistributedJobManager jobManager,
-                                                                 DistributedJobQuerier jobQuerier) {
-            return new SupervisorCoreRpcProvider(jobManager, jobQuerier);
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @ConditionalOnMissingBean
-        @Bean
-        public SupervisorOpenRpcService supervisorOpenRpcService(DistributedJobManager jobManager,
-                                                                 DistributedJobQuerier jobQuerier) {
-            return new SupervisorOpenRpcProvider(jobManager, jobQuerier);
+        public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
+                                                         DistributedJobQuerier jobQuerier) {
+            return new SupervisorRpcProvider(jobManager, jobQuerier);
         }
     }
 

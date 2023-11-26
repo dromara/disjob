@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.core.base.WorkerCoreRpcService;
+import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import org.junit.jupiter.api.Test;
 
@@ -29,11 +29,11 @@ public class DiscoveryRestProxyTest {
             .retryBackoffPeriod(5000)
             .discoveryServer(new ConsulSupervisorRegistry(new ConsulRegistryProperties()))
             .build();
-        WorkerCoreRpcService workerCoreRpcService = DiscoveryRestProxy.create(WorkerCoreRpcService.class, discoveryRestTemplate);
+        WorkerRpcService workerRpcService = DiscoveryRestProxy.create(true, WorkerRpcService.class, discoveryRestTemplate);
         */
 
-        WorkerCoreRpcService workerCoreRpcService = DiscoveryRestProxy.create(true, WorkerCoreRpcService.class, null);
-        ((DiscoveryRestProxy.GroupedServer) workerCoreRpcService).group("test");
+        WorkerRpcService workerRpcService = DiscoveryRestProxy.create(true, WorkerRpcService.class, null);
+        ((DiscoveryRestProxy.GroupedServer) workerRpcService).group("test");
     }
 
 }

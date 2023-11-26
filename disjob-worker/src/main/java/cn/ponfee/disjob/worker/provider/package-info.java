@@ -6,18 +6,9 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.auth;
-
-import java.lang.annotation.*;
-
 /**
- * Authentication supervisor annotation.
+ * Worker provider package
  *
  * @author Ponfee
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Documented
-public @interface AuthenticationSupervisor {
-
-}
+package cn.ponfee.disjob.worker.provider;

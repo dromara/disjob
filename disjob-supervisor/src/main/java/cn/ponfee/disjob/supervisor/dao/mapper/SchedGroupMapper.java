@@ -24,13 +24,17 @@ public interface SchedGroupMapper {
 
     List<SchedGroup> findAll();
 
+    int updateSupervisorToken(@Param("group") String group,
+                              @Param("newSupervisorToken") String newSupervisorToken,
+                              @Param("oldSupervisorToken") String oldSupervisorToken);
+
     int updateWorkerToken(@Param("group") String group,
                           @Param("newWorkerToken") String newWorkerToken,
                           @Param("oldWorkerToken") String oldWorkerToken);
 
-    int updateSupervisorToken(@Param("group") String group,
-                              @Param("newSupervisorToken") String newSupervisorToken,
-                              @Param("oldSupervisorToken") String oldSupervisorToken);
+    int updateUserToken(@Param("group") String group,
+                        @Param("newUserToken") String newUserToken,
+                        @Param("oldUserToken") String oldUserToken);
 
     int updateAlarmConfig(SchedGroup schedGroup);
 

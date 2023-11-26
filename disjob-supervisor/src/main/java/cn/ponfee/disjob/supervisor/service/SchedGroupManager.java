@@ -54,14 +54,20 @@ public class SchedGroupManager extends SingletonClassConstraint implements Close
         return schedGroup.getId();
     }
 
+    public boolean updateSupervisorToken(String group, String newSupervisorToken, String oldSupervisorToken) {
+        boolean flag = schedGroupMapper.updateSupervisorToken(group, newSupervisorToken, oldSupervisorToken) == AFFECTED_ONE_ROW;
+        refresh();
+        return flag;
+    }
+
     public boolean updateWorkerToken(String group, String newWorkerToken, String oldWorkerToken) {
         boolean flag = schedGroupMapper.updateWorkerToken(group, newWorkerToken, oldWorkerToken) == AFFECTED_ONE_ROW;
         refresh();
         return flag;
     }
 
-    public boolean updateSupervisorToken(String group, String newSupervisorToken, String oldSupervisorToken) {
-        boolean flag = schedGroupMapper.updateSupervisorToken(group, newSupervisorToken, oldSupervisorToken) == AFFECTED_ONE_ROW;
+    public boolean updateUserToken(String group, String newUserToken, String oldUserToken) {
+        boolean flag = schedGroupMapper.updateUserToken(group, newUserToken, oldUserToken) == AFFECTED_ONE_ROW;
         refresh();
         return flag;
     }
@@ -117,14 +123,17 @@ public class SchedGroupManager extends SingletonClassConstraint implements Close
 
     @Getter
     public static class DisjobGroup {
-        private final String workerToken;
         private final String supervisorToken;
+        private final String workerToken;
+        private final String userToken;
         private final Set<String> alarmSubscribers;
         private final String webHook;
 
-        private DisjobGroup(String workerToken, String supervisorToken, Set<String> alarmSubscribers, String webHook) {
-            this.workerToken = workerToken;
+        private DisjobGroup(String supervisorToken, String workerToken, String userToken,
+                            Set<String> alarmSubscribers, String webHook) {
             this.supervisorToken = supervisorToken;
+            this.workerToken = workerToken;
+            this.userToken = userToken;
             this.alarmSubscribers = alarmSubscribers;
             this.webHook = webHook;
         }
@@ -132,8 +141,9 @@ public class SchedGroupManager extends SingletonClassConstraint implements Close
         private static DisjobGroup of(SchedGroup schedGroup) {
             String alarmSubscribers = schedGroup.getAlarmSubscribers();
             return new DisjobGroup(
-                schedGroup.getWorkerToken(),
                 schedGroup.getSupervisorToken(),
+                schedGroup.getWorkerToken(),
+                schedGroup.getUserToken(),
                 StringUtils.isBlank(alarmSubscribers) ? null : ImmutableSet.copyOf(alarmSubscribers.split(",")),
                 schedGroup.getWebHook()
             );

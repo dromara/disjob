@@ -18,15 +18,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 /**
- * Worker core rpc service, provides for supervisor communication.
+ * Worker rpc service, provides for supervisor communication.
  *
  * @author Ponfee
  */
 @Hidden
-@RequestMapping(WorkerCoreRpcService.PREFIX_PATH)
-public interface WorkerCoreRpcService {
+@RequestMapping(WorkerRpcService.PREFIX_PATH)
+public interface WorkerRpcService {
 
-    String PREFIX_PATH = "worker/core/rpc/";
+    String PREFIX_PATH = "worker/rpc/";
 
     @PostMapping("job/verify")
     void verify(JobHandlerParam param) throws JobException;

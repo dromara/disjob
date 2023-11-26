@@ -6,35 +6,35 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.provider;
+package cn.ponfee.disjob.supervisor.provider.rpc;
 
 import cn.ponfee.disjob.common.spring.RpcController;
-import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
+import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
-import cn.ponfee.disjob.supervisor.auth.AuthenticationSupervisor;
+import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 
 import java.util.List;
 
 /**
- * Supervisor core rpc service provider.
+ * Supervisor rpc provider.
  *
  * @author Ponfee
  */
-@AuthenticationSupervisor
-public class SupervisorCoreRpcProvider implements SupervisorCoreRpcService, RpcController {
+@SupervisorAuthentication(SupervisorAuthentication.Subject.WORKER)
+public class SupervisorRpcProvider implements SupervisorRpcService, RpcController {
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
 
-    public SupervisorCoreRpcProvider(DistributedJobManager jobManager,
-                                     DistributedJobQuerier jobQuerier) {
+    public SupervisorRpcProvider(DistributedJobManager jobManager,
+                                 DistributedJobQuerier jobQuerier) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
     }

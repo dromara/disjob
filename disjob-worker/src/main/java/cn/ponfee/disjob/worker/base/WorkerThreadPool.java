@@ -16,7 +16,7 @@ import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.SupervisorCoreRpcService;
+import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -75,9 +75,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
         .build();
 
     /**
-     * Supervisor core rpc client
+     * Supervisor rpc client
      */
-    private final SupervisorCoreRpcService supervisorCoreRpcClient;
+    private final SupervisorRpcService supervisorRpcClient;
 
     /**
      * Maximum pool size
@@ -116,14 +116,14 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
-                            SupervisorCoreRpcService supervisorCoreRpcClient) {
+                            SupervisorRpcService supervisorRpcClient) {
         SingletonClassConstraint.constrain(this);
 
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
-        this.supervisorCoreRpcClient = supervisorCoreRpcClient;
+        this.supervisorRpcClient = supervisorRpcClient;
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
@@ -170,7 +170,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.warn("Not found executing task: {} | {}", taskId, ops);
             // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
             // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
-            terminateTask(supervisorCoreRpcClient, stopParam, ops, ops.toState(), ops.name() + " aborted EXECUTING state task");
+            terminateTask(supervisorRpcClient, stopParam, ops, ops.toState(), ops.name() + " aborted EXECUTING state task");
             return;
         }
 
@@ -181,7 +181,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             // stop the work thread
             stopWorkerThread(workerThread, true);
         } finally {
-            terminateTask(supervisorCoreRpcClient, param, ops, ops.toState(), null);
+            terminateTask(supervisorRpcClient, param, ops, ops.toState(), null);
         }
     }
 
@@ -287,7 +287,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } catch (DuplicateTaskException e) {
                     LOG.error(e.getMessage());
                     // cancel this execution param
-                    terminateTask(supervisorCoreRpcClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
+                    terminateTask(supervisorRpcClient, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
 
                     // return this worker thread
                     idlePool.putFirst(workerThread);
@@ -385,7 +385,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private WorkerThread createWorkerThreadIfNecessary() {
         for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
             if (workerThreadCounter.compareAndSet(count, count + 1)) {
-                WorkerThread thread = new WorkerThread(this, supervisorCoreRpcClient, keepAliveTimeSeconds);
+                WorkerThread thread = new WorkerThread(this, supervisorRpcClient, keepAliveTimeSeconds);
                 LOG.info("Created worker thread, current size: {}", count + 1);
                 return thread;
             }
@@ -406,7 +406,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         return errorMsg;
     }
 
-    private static void terminateTask(SupervisorCoreRpcService client, ExecuteTaskParam param, Operations ops, ExecuteState toState, String errorMsg) {
+    private static void terminateTask(SupervisorRpcService client, ExecuteTaskParam param, Operations ops, ExecuteState toState, String errorMsg) {
         Assert.notNull(ops, "Terminate task operation cannot be null.");
         Assert.notNull(param.getWorker(), "Execute task param worker cannot be null.");
         if (!param.updateOperation(ops, null)) {
@@ -432,7 +432,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
     }
 
-    private static void stopInstance(SupervisorCoreRpcService client, ExecuteTaskParam param, Operations ops, String errorMsg) {
+    private static void stopInstance(SupervisorRpcService client, ExecuteTaskParam param, Operations ops, String errorMsg) {
         if (!param.updateOperation(Operations.TRIGGER, ops)) {
             LOG.info("Stop instance conflict: {} | {}", param, ops);
             return;
@@ -573,7 +573,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
                     // 3、finally update the sched task state
                     if (success) {
-                        terminateTask(supervisorCoreRpcClient, param, ops, ops.toState(), null);
+                        terminateTask(supervisorRpcClient, param, ops, ops.toState(), null);
                     } else {
                         LOG.warn("Change execution param ops failed on thread pool close: {} | {}", param, ops);
                     }
@@ -615,10 +615,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private static class TaskSavepoint implements Savepoint {
         private static final int SNAPSHOT_MAX_LENGTH = 65535;
-        private final SupervisorCoreRpcService client;
+        private final SupervisorRpcService client;
         private final long taskId;
 
-        public TaskSavepoint(SupervisorCoreRpcService client, long taskId) {
+        public TaskSavepoint(SupervisorRpcService client, long taskId) {
             this.client = client;
             this.taskId = taskId;
         }
@@ -645,9 +645,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private final WorkerThreadPool threadPool;
 
         /**
-         * Supervisor core rpc client
+         * Supervisor rpc client
          */
-        private final SupervisorCoreRpcService client;
+        private final SupervisorRpcService client;
 
         /**
          * Thread keep alive time
@@ -675,7 +675,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private final AtomicReference<ExecuteTaskParam> executingParam = new AtomicReference<>();
 
         private WorkerThread(WorkerThreadPool threadPool,
-                             SupervisorCoreRpcService client,
+                             SupervisorRpcService client,
                              long keepAliveTimeSeconds) {
             this.threadPool = threadPool;
             this.client = client;

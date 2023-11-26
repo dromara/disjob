@@ -5,20 +5,22 @@
   <sql id="Table_Name">sched_group</sql>
 
   <sql id="Base_Column_List">
-    `group`, worker_token, supervisor_token, alarm_subscribers, web_hook, `version`
+    `group`, supervisor_token, worker_token, user_token, alarm_subscribers, web_hook, `version`
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedGroup" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       `group`,
-      worker_token,
       supervisor_token,
+      worker_token,
+      user_token,
       alarm_subscribers,
       web_hook
     ) VALUES (
       #{group,jdbcType=VARCHAR},
-      #{workerToken,jdbcType=VARCHAR},
       #{supervisorToken,jdbcType=VARCHAR},
+      #{workerToken,jdbcType=VARCHAR},
+      #{userToken,jdbcType=VARCHAR},
       #{alarmSubscribers,jdbcType=VARCHAR},
       #{webHook,jdbcType=VARCHAR}
     )
@@ -29,6 +31,14 @@
     FROM <include refid="Table_Name" />
   </select>
 
+  <update id="updateSupervisorToken">
+    UPDATE <include refid="Table_Name" />
+    SET supervisor_token = #{newSupervisorToken,jdbcType=VARCHAR},
+        version = version+1
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND supervisor_token = #{oldSupervisorToken,jdbcType=VARCHAR}
+  </update>
+
   <update id="updateWorkerToken">
     UPDATE <include refid="Table_Name" />
     SET worker_token = #{newWorkerToken,jdbcType=VARCHAR},
@@ -37,12 +47,12 @@
       AND worker_token = #{oldWorkerToken,jdbcType=VARCHAR}
   </update>
 
-  <update id="updateSupervisorToken">
+  <update id="updateUserToken">
     UPDATE <include refid="Table_Name" />
-    SET supervisor_token = #{newSupervisorToken,jdbcType=VARCHAR},
+    SET user_token = #{newUserToken,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
-       AND supervisor_token = #{oldSupervisorToken,jdbcType=VARCHAR}
+      AND user_token = #{oldUserToken,jdbcType=VARCHAR}
   </update>
 
   <update id="updateAlarmConfig">

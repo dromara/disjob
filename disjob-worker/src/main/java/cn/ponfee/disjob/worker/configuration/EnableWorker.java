@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
-import cn.ponfee.disjob.worker.provider.WorkerCoreRpcProvider;
+import cn.ponfee.disjob.worker.provider.rpc.WorkerRpcProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -90,8 +90,8 @@ public @interface EnableWorker {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerCoreRpcService workerCoreRpcService(Worker.Current currentWork) {
-            return new WorkerCoreRpcProvider(currentWork);
+        public WorkerRpcService workerRpcService(Worker.Current currentWork) {
+            return new WorkerRpcProvider(currentWork);
         }
 
         @ConditionalOnMissingBean
