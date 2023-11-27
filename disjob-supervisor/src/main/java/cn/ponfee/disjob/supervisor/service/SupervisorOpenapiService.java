@@ -34,20 +34,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Supervisor aggregator.
+ * Supervisor openapi service.
  *
  * @author Ponfee
  */
 @Component
-public class SupervisorAggregator {
+public class SupervisorOpenapiService {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(SupervisorAggregator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SupervisorOpenapiService.class);
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
 
-    public SupervisorAggregator(DistributedJobManager jobManager,
-                                DistributedJobQuerier jobQuerier) {
+    public SupervisorOpenapiService(DistributedJobManager jobManager,
+                                    DistributedJobQuerier jobQuerier) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
     }

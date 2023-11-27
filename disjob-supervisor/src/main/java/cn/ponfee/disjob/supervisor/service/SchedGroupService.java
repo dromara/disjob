@@ -29,12 +29,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.AFFECTED_ONE_ROW;
 
 /**
- * Sched group manager
+ * Sched group service
  *
  * @author Ponfee
  */
 @Component
-public class SchedGroupManager extends SingletonClassConstraint implements Closeable, DisposableBean {
+public class SchedGroupService extends SingletonClassConstraint implements Closeable, DisposableBean {
 
     private static final Lock LOCK = new ReentrantLock();
     private static volatile Map<String, DisjobGroup> all;
@@ -42,7 +42,7 @@ public class SchedGroupManager extends SingletonClassConstraint implements Close
     private final SchedGroupMapper schedGroupMapper;
     private final LoopThread refresher;
 
-    public SchedGroupManager(SchedGroupMapper schedGroupMapper) {
+    public SchedGroupService(SchedGroupMapper schedGroupMapper) {
         this.schedGroupMapper = schedGroupMapper;
         this.refresher = new LoopThread("group_metadata_refresher", 30, 30, this::refresh);
         refresh();

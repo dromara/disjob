@@ -100,6 +100,6 @@ public class DatePeriodsTest {
         System.out.println(number);
         System.out.println(Long.toHexString(number));
         Assertions.assertEquals("cb703fbc86a41b0", Long.toHexString(number));
-        Assertions.assertEquals("0cb703fbc86a41b0", Bytes.hexEncode(Bytes.toBytes(number)));
+        Assertions.assertEquals("0cb703fbc86a41b0", Bytes.encodeHex(Bytes.toBytes(number)));
     }
 }

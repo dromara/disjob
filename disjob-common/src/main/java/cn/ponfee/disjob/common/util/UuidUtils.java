@@ -18,11 +18,10 @@ import java.util.UUID;
  */
 public final class UuidUtils {
 
-
     /**
-     * uuid byte array
+     * Returns 16 length byte array uuid
      *
-     * @return
+     * @return 16 length uuid byte array
      */
     public static byte[] uuid() {
         UUID uuid = UUID.randomUUID();
@@ -33,20 +32,20 @@ public final class UuidUtils {
     }
 
     /**
-     * uuid 32 string
+     * Returns 32 length string uuid, use hex encoding
      *
-     * @return 32 length uuid
+     * @return 32 length uuid string
      */
     public static String uuid32() {
         UUID uuid = UUID.randomUUID();
-        return Bytes.toHex(uuid.getMostSignificantBits(), true)
-            + Bytes.toHex(uuid.getLeastSignificantBits(), true);
+        return Bytes.toHex(uuid.getMostSignificantBits(),  true)
+             + Bytes.toHex(uuid.getLeastSignificantBits(), true);
     }
 
     /**
-     * 22位uuid
+     * Returns 22 length string uuid, use base64 url encoding and without padding
      *
-     * @return 22 length uuid
+     * @return 22 length uuid string
      */
     public static String uuid22() {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(uuid());

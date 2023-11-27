@@ -40,6 +40,8 @@ public class Supervisor extends Server {
 
     public Supervisor(String host, int port) {
         super(host, port);
+
+        Assert.isTrue(!host.contains(COLON), "Host cannot contains symbol ':'");
         this.serializedValue = host + COLON + port;
     }
 
@@ -118,7 +120,7 @@ public class Supervisor extends Server {
      */
     public static abstract class Current extends Supervisor {
         private static final long serialVersionUID = -239845054171219365L;
-        private static volatile Current instance;
+        private static volatile Current instance = null;
 
         private Current(String host, int port) {
             super(host, port);

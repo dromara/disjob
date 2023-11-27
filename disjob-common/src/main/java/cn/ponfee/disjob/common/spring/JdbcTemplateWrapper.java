@@ -129,7 +129,8 @@ public final class JdbcTemplateWrapper {
         });
     }
 
-    public void createTableIfNotExists(String tableName, String createTableDdl) {
+    public void createTableIfNotExists(String tableName0, String createTableDdl) {
+        String tableName = tableName0.toLowerCase();
         if (EXISTS_TABLE.contains(tableName)) {
             return;
         }

@@ -187,8 +187,8 @@ public class WorkerStartup implements Startable {
                                                     WorkerRegistry workerRegistry,
                                                     ObjectMapper objectMapper) {
         if (local != null) {
-            // 此Worker同时也是Supervisor身份，则本地调用：cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
-            // 使用动态代理增加重试能力
+            // cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
+            // 此Worker同时也是Supervisor身份，则是本地调用，并使用动态代理增加重试能力
             InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
             return ProxyUtils.create(SupervisorRpcService.class, ih);
         } else {

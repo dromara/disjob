@@ -20,6 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -42,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *   }
  * }</pre>
  *
- * <p>{Alias for annotation: @link AnnotatedElementUtils#findMergedAnnotation(AnnotatedElement, Class)}
+ * <p>Alias for annotation: {@link AnnotatedElementUtils#findMergedAnnotation(AnnotatedElement, Class)}
  * <pre>{@code
  *   public @interface PostMapping {
  *     @AliasFor(annotation = RequestMapping.class)

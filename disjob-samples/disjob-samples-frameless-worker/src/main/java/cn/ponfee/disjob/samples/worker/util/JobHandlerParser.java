@@ -10,6 +10,7 @@ package cn.ponfee.disjob.samples.worker.util;
 
 import cn.ponfee.disjob.common.spring.ResourceScanner;
 import cn.ponfee.disjob.common.util.Fields;
+import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,9 @@ import org.springframework.util.ClassUtils;
 import java.beans.Introspector;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Job handler parser
@@ -58,7 +61,23 @@ public class JobHandlerParser {
     }
 
     public static void init() {
-        JOB_HANDLER_MAP.size();
+        String ls = Files.SYSTEM_LINE_SEPARATOR;
+        StringBuilder builder = new StringBuilder(ls);
+        List<String> list = JOB_HANDLER_MAP
+            .entrySet()
+            .stream()
+            .map(e -> "|   " + e.getKey() + " -> " + e.getValue().getName())
+            .collect(Collectors.toList());
+        int maxLen = list.stream().mapToInt(String::length).max().getAsInt();
+
+        builder.append(StringUtils.rightPad("/", maxLen + 1, "-")).append("\\").append(ls);
+        builder.append(StringUtils.rightPad("| Job handler map:", maxLen, " ")).append(" |").append(ls);
+
+        list.forEach(e -> builder.append(StringUtils.rightPad(e, maxLen, " ")).append(" |").append(ls));
+
+        builder.append(StringUtils.rightPad("\\", maxLen + 1, "-")).append("/").append(ls);
+
+        System.out.println(builder);
     }
 
     /**

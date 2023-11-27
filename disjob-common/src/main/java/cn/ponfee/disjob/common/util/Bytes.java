@@ -29,20 +29,20 @@ public final class Bytes {
 
     // -----------------------------------------------------------------hexEncode/hexDecode
 
-    public static void hexEncode(char[] charArray, int i, byte b) {
+    public static void encodeHex(char[] charArray, int i, byte b) {
         charArray[  i] = HEX_LOWER_CODES[(0xF0 & b) >>> 4];
         charArray[++i] = HEX_LOWER_CODES[ 0x0F & b       ];
     }
 
-    public static String hexEncode(byte b, boolean lowercase) {
+    public static String encodeHex(byte b, boolean lowercase) {
         char[] codes = lowercase ? HEX_LOWER_CODES : HEX_UPPER_CODES;
         return new String(new char[] {
             codes[(0xF0 & b) >>> 4], codes[0x0F & b]
         });
     }
 
-    public static String hexEncode(byte[] bytes) {
-        return hexEncode(bytes, true);
+    public static String encodeHex(byte[] bytes) {
+        return encodeHex(bytes, true);
     }
 
     /**
@@ -52,13 +52,11 @@ public final class Bytes {
      * @param lowercase the boolean
      * @return string
      */
-    public static String hexEncode(byte[] bytes, boolean lowercase) {
+    public static String encodeHex(byte[] bytes, boolean lowercase) {
         //new BigInteger(1, bytes).toString(16);
         int len = bytes.length;
         char[] out = new char[len << 1];
-
         char[] codes = lowercase ? HEX_LOWER_CODES : HEX_UPPER_CODES;
-
         // one byte -> two char
         for (int i = 0, j = 0; i < len; i++) {
             out[j++] = codes[(0xF0 & bytes[i]) >>> 4];
@@ -68,23 +66,22 @@ public final class Bytes {
     }
 
     /**
-     * decode the hex string to byte array
+     * Decode hex string to byte array
      *
-     * @param hex
-     * @return
+     * @param hex the hex string
+     * @return byte array
      */
-    public static byte[] hexDecode(String hex) {
-        char[] data = hex.toCharArray();
-        int len = data.length;
+    public static byte[] decodeHex(String hex) {
+        int len = hex.length();
         if ((len & 0x01) == 1) {
-            throw new IllegalArgumentException("Invalid hex string.");
+            throw new IllegalArgumentException("Hex string must be twice length.");
         }
 
         byte[] out = new byte[len >> 1];
-
         // two char -> one byte
         for (int i = 0, j = 0; j < len; i++, j += 2) {
-            out[i] = (byte) ( Character.digit(data[j], 16) << 4 | Character.digit(data[j + 1], 16) );
+            char c1 = hex.charAt(j), c2 = hex.charAt(j + 1);
+            out[i] = (byte) (Character.digit(c1, 16) << 4 | Character.digit(c2, 16));
         }
         return out;
     }
@@ -173,6 +170,7 @@ public final class Bytes {
     }
 
     // -----------------------------------------------------------------char
+
     public static byte[] toBytes(char value) {
         return new byte[]{(byte) (value >>> 8), (byte) value};
     }
@@ -189,6 +187,7 @@ public final class Bytes {
     }
 
     // -----------------------------------------------------------------int
+
     public static byte[] toBytes(int value) {
         byte[] bytes = new byte[4];
         put(value, bytes, 0);

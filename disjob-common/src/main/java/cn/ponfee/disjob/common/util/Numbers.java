@@ -52,6 +52,7 @@ public final class Numbers {
     public static final byte    ZERO_BYTE    = 0x00;
 
     // --------------------------------------------------------------character convert
+
     public static char toChar(Object obj) {
         return toChar(obj, Char.ZERO);
     }
@@ -79,6 +80,7 @@ public final class Numbers {
     }
 
     // -----------------------------------------------------------------boolean convert
+
     public static boolean toBoolean(Object obj) {
         return toBoolean(obj, false);
     }
@@ -101,6 +103,7 @@ public final class Numbers {
     }
 
     // -----------------------------------------------------------------byte convert
+
     public static byte toByte(Object obj) {
         return toByte(obj, (byte) 0);
     }
@@ -125,6 +128,7 @@ public final class Numbers {
     }
 
     // -----------------------------------------------------------------short convert
+
     public static short toShort(Object obj) {
         return toShort(obj, (short) 0);
     }
@@ -149,6 +153,7 @@ public final class Numbers {
     }
 
     // -----------------------------------------------------------------int convert
+
     public static int toInt(Object obj) {
         return toInt(obj, 0);
     }
@@ -173,6 +178,7 @@ public final class Numbers {
     }
 
     // -----------------------------------------------------------------long convert
+
     public static long toLong(Object obj) {
         return toLong(obj, 0L);
     }
@@ -196,6 +202,7 @@ public final class Numbers {
     }
 
     // -----------------------------------------------------------------float convert
+
     public static float toFloat(Object obj) {
         return toFloat(obj, 0.0F);
     }
@@ -220,6 +227,7 @@ public final class Numbers {
     }
 
     // -----------------------------------------------------------------double convert
+
     public static double toDouble(Object obj) {
         return toDouble(obj, 0.0D);
     }
@@ -243,12 +251,13 @@ public final class Numbers {
     }
 
     // ---------------------------------------------------------------------number format
+
     /**
-     * 数字精度化
+     * 数字精度
      *
-     * @param value
-     * @param scale
-     * @return
+     * @param value the number value
+     * @param scale the scale
+     * @return double value
      */
     public static double scale(Object value, int scale) {
         double val = toDouble(value);
@@ -265,9 +274,9 @@ public final class Numbers {
     /**
      * 向下转单位
      *
-     * @param value
-     * @param pow
-     * @return
+     * @param value the number value
+     * @param pow the pow
+     * @return double value
      */
     public static double lower(double value, int pow) {
         return BigDecimal.valueOf(value / Math.pow(10, pow)).doubleValue();
@@ -445,9 +454,9 @@ public final class Numbers {
      *   slice(12, 3)  ->  [4, 4, 4]
      * </pre>
      *
-     * @param quantity
-     * @param segment
-     * @return
+     * @param quantity the quantity
+     * @param segment the segment
+     * @return int array
      */
     public static int[] slice(int quantity, int segment) {
         int[] result = new int[segment];
@@ -569,6 +578,7 @@ public final class Numbers {
     }
 
     // -------------------------------------------------------private methods
+
     private static Long parseLong(Object obj) {
         if (obj == null) {
             return null;
@@ -593,4 +603,5 @@ public final class Numbers {
             return null;
         }
     }
+
 }

@@ -20,7 +20,7 @@ import cn.ponfee.disjob.supervisor.provider.openapi.request.UpdateSchedJobReques
 import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.service.SupervisorAggregator;
+import cn.ponfee.disjob.supervisor.service.SupervisorOpenapiService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,47 +37,47 @@ import java.util.List;
 @SupervisorAuthentication(SupervisorAuthentication.Subject.USER)
 public class SupervisorOpenapiProvider extends BaseController {
 
-    private final SupervisorAggregator supervisorAggregator;
+    private final SupervisorOpenapiService supervisorOpenapiService;
 
-    public SupervisorOpenapiProvider(SupervisorAggregator supervisorAggregator) {
-        this.supervisorAggregator = supervisorAggregator;
+    public SupervisorOpenapiProvider(SupervisorOpenapiService supervisorOpenapiService) {
+        this.supervisorOpenapiService = supervisorOpenapiService;
     }
 
     // ------------------------------------------------------------------job
 
     @PostMapping("job/add")
     public Result<Void> addJob(@RequestBody AddSchedJobRequest req) throws JobException {
-        supervisorAggregator.addJob(req);
+        supervisorOpenapiService.addJob(req);
         return Result.success();
     }
 
     @PutMapping("job/update")
     public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) throws JobException {
-        supervisorAggregator.updateJob(req);
+        supervisorOpenapiService.updateJob(req);
         return Result.success();
     }
 
     @DeleteMapping("job/delete")
     public Result<Void> deleteJob(@RequestParam("jobId") long jobId) {
-        supervisorAggregator.deleteJob(jobId);
+        supervisorOpenapiService.deleteJob(jobId);
         return Result.success();
     }
 
     @PostMapping("job/state/change")
     public Result<Boolean> changeJobState(@RequestParam("jobId") long jobId,
                                           @RequestParam("jobState") int jobState) {
-        return Result.success(supervisorAggregator.changeJobState(jobId, jobState));
+        return Result.success(supervisorOpenapiService.changeJobState(jobId, jobState));
     }
 
     @PostMapping("job/trigger")
     public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
-        supervisorAggregator.triggerJob(jobId);
+        supervisorOpenapiService.triggerJob(jobId);
         return Result.success();
     }
 
     @GetMapping("job/get")
     public Result<SchedJobResponse> getJob(@RequestParam("jobId") long jobId) {
-        return Result.success(supervisorAggregator.getJob(jobId));
+        return Result.success(supervisorOpenapiService.getJob(jobId));
     }
 
     /**
@@ -90,51 +90,51 @@ public class SupervisorOpenapiProvider extends BaseController {
      */
     @GetMapping("job/page")
     public Result<PageResponse<SchedJobResponse>> queryJobForPage(SchedJobPageRequest pageRequest) {
-        return Result.success(supervisorAggregator.queryJobForPage(pageRequest));
+        return Result.success(supervisorOpenapiService.queryJobForPage(pageRequest));
     }
 
     // ------------------------------------------------------------------ sched instance
 
     @PostMapping("instance/pause")
     public Result<Void> pauseInstance(@RequestParam("instanceId") long instanceId) {
-        supervisorAggregator.pauseInstance(instanceId);
+        supervisorOpenapiService.pauseInstance(instanceId);
         return Result.success();
     }
 
     @PostMapping("instance/cancel")
     public Result<Void> cancelInstance(@RequestParam("instanceId") long instanceId) {
-        supervisorAggregator.cancelInstance(instanceId);
+        supervisorOpenapiService.cancelInstance(instanceId);
         return Result.success();
     }
 
     @PostMapping("instance/resume")
     public Result<Void> resumeInstance(@RequestParam("instanceId") long instanceId) {
-        supervisorAggregator.resumeInstance(instanceId);
+        supervisorOpenapiService.resumeInstance(instanceId);
         return Result.success();
     }
 
     @DeleteMapping("instance/delete")
     public Result<Void> deleteInstance(@RequestParam("instanceId") long instanceId) {
-        supervisorAggregator.deleteInstance(instanceId);
+        supervisorOpenapiService.deleteInstance(instanceId);
         return Result.success();
     }
 
     @PostMapping("instance/state/change")
     public Result<Void> changeInstanceState(@RequestParam("instanceId") long instanceId,
                                             @RequestParam("targetExecuteState") int targetExecuteState) {
-        supervisorAggregator.changeInstanceState(instanceId, targetExecuteState);
+        supervisorOpenapiService.changeInstanceState(instanceId, targetExecuteState);
         return Result.success();
     }
 
     @GetMapping("instance/get")
     public Result<SchedInstanceResponse> getInstance(@RequestParam(value = "instanceId") long instanceId,
                                                      @RequestParam(value = "withTasks", defaultValue = "false") boolean withTasks) {
-        return Result.success(supervisorAggregator.getInstance(instanceId, withTasks));
+        return Result.success(supervisorOpenapiService.getInstance(instanceId, withTasks));
     }
 
     @GetMapping("instance/tasks")
     public Result<List<SchedTaskResponse>> getInstanceTasks(@RequestParam("instanceId") long instanceId) {
-        return Result.success(supervisorAggregator.getInstanceTasks(instanceId));
+        return Result.success(supervisorOpenapiService.getInstanceTasks(instanceId));
     }
 
     /**
@@ -147,12 +147,12 @@ public class SupervisorOpenapiProvider extends BaseController {
      */
     @GetMapping("instance/page")
     public Result<PageResponse<SchedInstanceResponse>> queryInstanceForPage(SchedInstancePageRequest pageRequest) {
-        return Result.success(supervisorAggregator.queryInstanceForPage(pageRequest));
+        return Result.success(supervisorOpenapiService.queryInstanceForPage(pageRequest));
     }
 
     @GetMapping("instance/children")
     public Result<List<SchedInstanceResponse>> listInstanceChildren(@RequestParam("pnstanceId") long pnstanceId) {
-        return Result.success(supervisorAggregator.listInstanceChildren(pnstanceId));
+        return Result.success(supervisorOpenapiService.listInstanceChildren(pnstanceId));
     }
 
 }

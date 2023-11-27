@@ -10,7 +10,7 @@ package cn.ponfee.disjob.supervisor.auth;
 
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
-import cn.ponfee.disjob.supervisor.service.SchedGroupManager;
+import cn.ponfee.disjob.supervisor.service.SchedGroupService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.web.method.HandlerMethod;
@@ -41,8 +41,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 return true;
             }
 
-            Class<?> beanType = ((HandlerMethod) handler).getBeanType();
-            SupervisorAuthentication annotation = beanType.getAnnotation(SupervisorAuthentication.class);
+            SupervisorAuthentication annotation = getAnnotation((HandlerMethod) handler);
             if (annotation == null) {
                 return true;
             }
@@ -67,7 +66,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateWorker(HttpServletRequest request, String group) {
-            String workerToken = SchedGroupManager.get(group).getWorkerToken();
+            String workerToken = SchedGroupService.get(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
                 return;
             }
@@ -79,7 +78,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateUser(HttpServletRequest request, String group) {
-            String userToken = SchedGroupManager.get(group).getUserToken();
+            String userToken = SchedGroupService.get(group).getUserToken();
             if (StringUtils.isBlank(userToken)) {
                 return;
             }
@@ -88,6 +87,11 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             if (!userToken.equals(token)) {
                 throw new AuthenticationException("Authenticate failed.");
             }
+        }
+
+        private static SupervisorAuthentication getAnnotation(HandlerMethod hm) {
+            SupervisorAuthentication a = hm.getMethodAnnotation(SupervisorAuthentication.class);
+            return a != null ? a : hm.getBeanType().getAnnotation(SupervisorAuthentication.class);
         }
     }
 

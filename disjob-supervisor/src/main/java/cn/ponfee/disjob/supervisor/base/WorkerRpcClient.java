@@ -19,7 +19,7 @@ import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.service.SchedGroupManager;
+import cn.ponfee.disjob.supervisor.service.SchedGroupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nullable;
@@ -58,12 +58,12 @@ public class WorkerRpcClient {
     }
 
     public void verify(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupManager.get(param.getGroup()).getSupervisorToken());
+        param.setSupervisorToken(SchedGroupService.get(param.getGroup()).getSupervisorToken());
         grouped(param.getGroup()).verify(param);
     }
 
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupManager.get(param.getGroup()).getSupervisorToken());
+        param.setSupervisorToken(SchedGroupService.get(param.getGroup()).getSupervisorToken());
         return grouped(param.getGroup()).split(param);
     }
 

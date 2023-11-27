@@ -16,7 +16,7 @@ import java.lang.annotation.*;
  * @author Ponfee
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
 public @interface SupervisorAuthentication {
 

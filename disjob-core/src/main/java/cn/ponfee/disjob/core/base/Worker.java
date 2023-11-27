@@ -69,8 +69,9 @@ public class Worker extends Server {
     public Worker(String group, String workerId, String host, int port) {
         super(host, port);
 
+        Assert.isTrue(!group.contains(COLON), "Group cannot contains symbol ':'");
         Assert.isTrue(!workerId.contains(COLON), "Worker id cannot contains symbol ':'");
-        Assert.isTrue(!group.contains(COLON), "Group name cannot contains symbol ':'");
+        Assert.isTrue(!host.contains(COLON), "Host cannot contains symbol ':'");
         this.group = Strings.requireNonBlank(group.trim());
         this.workerId = workerId;
 
@@ -194,7 +195,7 @@ public class Worker extends Server {
 
     public static abstract class Current extends Worker {
         private static final long serialVersionUID = -480329874106279202L;
-        private static volatile Current instance;
+        private static volatile Current instance = null;
 
         private Current(String group, String workerId, String host, int port) {
             super(group, workerId, host, port);

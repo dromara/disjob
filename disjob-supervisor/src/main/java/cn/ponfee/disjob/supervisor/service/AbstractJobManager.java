@@ -47,7 +47,7 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.AFFECTED_ONE_
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
 
 /**
- * The base job manager
+ * Abstract job manager
  *
  * @author Ponfee
  */
@@ -249,7 +249,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        String supervisorToken = SchedGroupManager.get(job.getGroup()).getSupervisorToken();
+        String supervisorToken = SchedGroupService.get(job.getGroup()).getSupervisorToken();
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
         List<ExecuteTaskParam> list;
         if (RouteStrategy.BROADCAST.equals(job.getRouteStrategy())) {

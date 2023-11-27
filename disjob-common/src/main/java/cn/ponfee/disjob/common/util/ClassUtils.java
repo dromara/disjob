@@ -242,6 +242,7 @@ public final class ClassUtils {
     }
 
     // -----------------------------------------------------------------------------constructor & instance
+
     @SuppressWarnings("unchecked")
     public static <T> Constructor<T> getConstructor(Class<T> type, Class<?>... parameterTypes) {
         boolean noArgs = ArrayUtils.isEmpty(parameterTypes);
@@ -320,6 +321,7 @@ public final class ClassUtils {
     }
 
     // -------------------------------------------------------------------------------------------method & invoke
+
     public static Method getMethod(Object caller, String methodName, Class<?>... parameterTypes) {
         Tuple2<Class<?>, Predicates> tuple = obtainClass(caller);
         Class<?> type = tuple.a;
@@ -572,4 +574,5 @@ public final class ClassUtils {
             ? "()"
             : "(" + Joiner.on(", ").join(parameterTypes) + ")";
     }
+
 }
