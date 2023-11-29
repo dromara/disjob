@@ -173,6 +173,7 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean startTask(StartTaskParam param) {
+        LOG.info("Start task: {}", param);
         SchedInstance instance = instanceMapper.get(param.getInstanceId());
         Assert.notNull(instance, () -> "Sched instance not found: " + param);
         // sched_instance.run_state must in (WAITING, RUNNING)
@@ -264,6 +265,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if terminated task successful
      */
     public boolean terminateTask(TerminateTaskParam param) {
+        LOG.info("Terminate task: {}", param);
         Assert.hasText(param.getWorker(), "Terminate task worker cannot be blank.");
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
@@ -307,6 +309,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if purged successfully
      */
     public boolean purgeInstance(SchedInstance inst) {
+        LOG.info("Purge instance: {}", inst.getInstanceId());
         Long instanceId = inst.getInstanceId();
         return doTransactionLockInSynchronized(instanceId, inst.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Purge instance not found: " + instanceId);
@@ -362,6 +365,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if paused successfully
      */
     public boolean pauseInstance(long instanceId) {
+        LOG.info("Pause instance: {}", instanceId);
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
         if (wnstanceId != null) {
             Assert.isTrue(instanceId == wnstanceId, () -> "Must pause lead workflow instance: " + instanceId);
@@ -399,6 +403,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if canceled successfully
      */
     public boolean cancelInstance(long instanceId, Operations ops) {
+        LOG.info("Cancel instance: {} | {}", instanceId, ops);
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
         if (wnstanceId != null) {

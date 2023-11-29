@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.ExtendMethodHandles;
 import cn.ponfee.disjob.common.util.Files;
+import cn.ponfee.disjob.common.util.ProxyUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -23,7 +24,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -67,7 +67,7 @@ public class DiscoveryRestProxy {
         Class<?>[] interfaces = grouped ? new Class[]{interfaceType, GroupedServer.class} : new Class[]{interfaceType};
         String prefixPath = parsePath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
         InvocationHandler invocationHandler = new RestInvocationHandler(discoveryRestTemplate, prefixPath);
-        return (T) Proxy.newProxyInstance(interfaceType.getClassLoader(), interfaces, invocationHandler);
+        return ProxyUtils.create(invocationHandler, interfaces);
     }
 
     private static class RestInvocationHandler implements InvocationHandler {

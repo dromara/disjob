@@ -78,9 +78,15 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateUser(HttpServletRequest request, String group) {
+            String username = request.getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
+            if (!SchedGroupService.inGroup(username, group)) {
+                throw new AuthenticationException("Authenticate failed.");
+            }
+
             String userToken = SchedGroupService.get(group).getUserToken();
             if (StringUtils.isBlank(userToken)) {
-                return;
+                // user token must configured
+                throw new AuthenticationException("Authenticate failed.");
             }
 
             String token = request.getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);

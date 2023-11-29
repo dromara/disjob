@@ -14,7 +14,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * Mybatis mapper of sched_Group database table.
+ * Mybatis mapper of sched_group database table.
  *
  * @author Ponfee
  */
@@ -40,4 +40,5 @@ public interface SchedGroupMapper {
 
     int delete(String group);
 
+    boolean exists(String group);
 }

@@ -190,7 +190,7 @@ public class WorkerStartup implements Startable {
             // cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
             // 此Worker同时也是Supervisor身份，则是本地调用，并使用动态代理增加重试能力
             InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
-            return ProxyUtils.create(SupervisorRpcService.class, ih);
+            return ProxyUtils.create(ih, SupervisorRpcService.class);
         } else {
             DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
                 .httpConnectTimeout(http.getConnectTimeout())

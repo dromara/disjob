@@ -25,14 +25,13 @@ public class ProxyUtils {
     /**
      * Creates jdk proxy instance
      *
-     * @param interfaceType     the interface class
      * @param invocationHandler jdk invocation handler
+     * @param interfaceTypes    the interface class array
      * @param <T>               the interface type
      * @return jdk proxy instance
      */
-    public static <T> T create(Class<T> interfaceType, InvocationHandler invocationHandler) {
-        Class<?>[] interfaces = {interfaceType};
-        return (T) Proxy.newProxyInstance(interfaceType.getClassLoader(), interfaces, invocationHandler);
+    public static <T> T create(InvocationHandler invocationHandler, Class<?>... interfaceTypes) {
+        return (T) Proxy.newProxyInstance(interfaceTypes[0].getClassLoader(), interfaceTypes, invocationHandler);
     }
 
     /**

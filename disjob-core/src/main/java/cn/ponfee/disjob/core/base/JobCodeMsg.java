@@ -20,7 +20,7 @@ public enum JobCodeMsg implements CodeMsg {
 
     INVALID_PARAM(400, "Invalid param."),
     UN_AUTHENTICATED(401, "Un authenticated."),
-    GROUP_NOT_FOUND(404, "Not found worker group."),
+    GROUP_NOT_FOUND(404, "Worker group not found."),
     LOAD_HANDLER_ERROR(450, "Load job handler error."),
     INVALID_JOB_HANDLER(451, "Invalid job handler."),
     SPLIT_JOB_FAILED(452, "Split job failed."),
@@ -31,9 +31,9 @@ public enum JobCodeMsg implements CodeMsg {
     SERVER_ERROR(500, "Server error."),
     NOT_DISCOVERED_WORKER(550, "Not Discovered worker."),
     JOB_EXECUTE_FAILED(561, "Job execute failed."),
-    JOB_EXECUTE_ERROR(562, "Job execute failed."),
-    PAUSE_TASK_EXCEPTION(563, "Pause task exception."),
-    CANCEL_TASK_EXCEPTION(564, "Cancel task exception."),
+    JOB_EXECUTE_ERROR(562, "Job execute error."),
+    PAUSE_TASK_EXCEPTION(563, "Pause task when exception."),
+    CANCEL_TASK_EXCEPTION(564, "Cancel task when exception."),
 
     ;
 

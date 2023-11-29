@@ -26,7 +26,7 @@
     )
   </insert>
 
-  <select id="findAll" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedGroup">
+  <select id="findAll" resultType="cn.ponfee.disjob.core.model.SchedGroup">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
   </select>
@@ -68,5 +68,21 @@
     DELETE FROM <include refid="Table_Name" />
     WHERE `group` = #{group,jdbcType=VARCHAR}
   </delete>
+
+  <!--
+  |  SELECT COUNT(*) cnt FROM (
+  |    SELECT 1
+  |    FROM <include refid="Table_Name" />
+  |    WHERE `group` = #{group,jdbcType=VARCHAR}
+  |    LIMIT 1
+  |  ) t
+  |-->
+  <select id="exists" parameterType="string" resultType="_boolean">
+    SELECT EXISTS (
+      SELECT 1
+      FROM <include refid="Table_Name" />
+      WHERE `group` = #{group,jdbcType=VARCHAR}
+    )
+  </select>
 
 </mapper>

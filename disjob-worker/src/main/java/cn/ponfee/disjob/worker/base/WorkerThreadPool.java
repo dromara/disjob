@@ -796,6 +796,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 executingTask = ExecutingTask.of(param.getJobId(), param.getWnstanceId(), task, nodes);
 
                 // update database records start state(sched_instance, sched_task)
+                // 这里存在调用超时，但实际supervisor启动task成功的情况
+                // 后续版本可考虑加一个请求ID标识，返回值也加上启动成功的那个请求ID。在重试时通过判断返回的请求ID是否等于本次的请求ID，来识别是否本次启动成功的
                 if (!client.startTask(new StartTaskParam(param.getInstanceId(), param.getTaskId(), param.getWorker()))) {
                     LOG.warn("Task start conflicted {}", param);
                     return;

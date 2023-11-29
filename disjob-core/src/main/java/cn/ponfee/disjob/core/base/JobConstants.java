@@ -89,6 +89,11 @@ public class JobConstants {
     public static final String AUTHENTICATE_HEADER_GROUP = "X-Disjob-Group";
 
     /**
+     * Authenticate header username
+     */
+    public static final String AUTHENTICATE_HEADER_USER = "X-Disjob-User";
+
+    /**
      * Authenticate header token
      */
     public static final String AUTHENTICATE_HEADER_TOKEN = "X-Disjob-Token";
