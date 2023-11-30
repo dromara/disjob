@@ -87,10 +87,10 @@ public class DiscoveryRestProxy {
             Request request = buildRequest(prefixPath, method);
             if (proxy instanceof GroupedServer) {
                 if (request == null) {
-                    //assert method.equals(GroupedServer.class.getDeclaredMethod("group", String.class));
+                    // 调用接口默认方法：GroupedServer#group
+                    // assert method.equals(GroupedServer.class.getDeclaredMethod("group", String.class));
                     MethodHandle methodHandle = METHOD_HANDLE_CACHE.computeIfAbsent(
-                        method,
-                        key -> ExtendMethodHandles.getSpecialMethodHandle(method).bindTo(proxy)
+                        method, key -> ExtendMethodHandles.getSpecialMethodHandle(method).bindTo(proxy)
                     );
                     return methodHandle.invokeWithArguments(args);
                 } else {

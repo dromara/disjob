@@ -22,7 +22,10 @@ import java.io.File;
  */
 public class MavenProjects {
 
-    private static final String EXCLUSION_STRING = "[\r\n]"; // "\r|\n|\\s+"
+    /**
+     * \r|\n|\\s+
+     */
+    private static final String EXCLUSION_STRING = "[\r\n]";
 
     public static String getProjectBaseDir() {
         String path = Thread.currentThread().getContextClassLoader().getResource("").getFile();
@@ -30,6 +33,7 @@ public class MavenProjects {
     }
 
     // --------------------------------------------------------------------------------------java
+
     public static File getMainJavaFile(Class<?> clazz) {
         return new File(getMainJavaPath("") + clazz.getCanonicalName().replace('.', '/') + ".java");
     }
@@ -71,6 +75,7 @@ public class MavenProjects {
     }
 
     // --------------------------------------------------------------------------------------scala
+
     public static File getMainScalaFile(Class<?> clazz) {
         return new File(getMainScalaPath("") + clazz.getCanonicalName().replace('.', '/') + ".scala");
     }
@@ -112,6 +117,7 @@ public class MavenProjects {
     }
 
     // --------------------------------------------------------------------------------------resources
+
     public static String getMainResourcesPath() {
         return getProjectBaseDir() + "/src/main/resources/";
     }
@@ -129,6 +135,7 @@ public class MavenProjects {
     }
 
     // --------------------------------------------------------------------------------------webapp
+
     public static String getWebAppPath() {
         return getProjectBaseDir() + "/src/main/webapp/";
     }

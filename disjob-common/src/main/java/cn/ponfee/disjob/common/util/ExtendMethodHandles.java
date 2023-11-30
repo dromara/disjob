@@ -8,13 +8,13 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
@@ -40,47 +40,11 @@ import java.util.function.Function;
  */
 public class ExtendMethodHandles {
 
-
-    public static final Function<Class<?>, Lookup> METHOD_LOOKUP;
-
-    static {
-        // 先查询jdk9开始提供的“java.lang.invoke.MethodHandles.privateLookupIn”方法
-        Method java9PrivateLookupInMethod = ClassUtils.getMethod(MethodHandles.class, "privateLookupIn", Class.class, Lookup.class);
-        if (java9PrivateLookupInMethod != null) {
-            METHOD_LOOKUP = callerClass -> {
-                try {
-                    return (Lookup) java9PrivateLookupInMethod.invoke(MethodHandles.class, callerClass, MethodHandles.lookup());
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    return ExceptionUtils.rethrow(e);
-                }
-            };
-        } else {
-            // 查询jdk8版本：这种方式也适用于jdk9及以上的版本，但优先上面的可以避免jdk9反射警告
-            Constructor<Lookup> java8LookupConstructor = ClassUtils.getConstructor(Lookup.class, Class.class, int.class);
-            if (java8LookupConstructor == null) {
-                // 未找到则可能是jdk8以下版本
-                throw new IllegalStateException("Not found 'privateLookupIn(Class, Lookup)' and 'Lookup(Class, int)' method in java.lang.invoke.MethodHandles.");
-            }
-            java8LookupConstructor.setAccessible(true);
-            METHOD_LOOKUP = new Function<Class<?>, Lookup>() {
-                private static final int ALLOWED_MODES = Lookup.PRIVATE | Lookup.PROTECTED | Lookup.PACKAGE | Lookup.PUBLIC;
-
-                @Override
-                public Lookup apply(Class<?> callerClass) {
-                    try {
-                        return java8LookupConstructor.newInstance(callerClass, ALLOWED_MODES);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("No found 'Lookup(Class, int)' method in java.lang.invoke.MethodHandles.", e);
-                    }
-                }
-            };
-        }
-    }
+    public static final Function<Class<?>, Lookup> METHOD_LOOKUP = getMethodLookup();
 
     /**
-     * java9中的MethodHandles.lookup()方法返回的Lookup对象
-     * 有权限访问specialCaller != lookupClass()的类
-     * 但是只能适用于接口, {@link java.lang.invoke.MethodHandles.Lookup#checkSpecialCaller(Class)}}
+     * Jdk9中的MethodHandles.lookup()方法返回的Lookup对象，有权限访问specialCaller != lookupClass()的类
+     * 但是只能适用于接口，java.lang.invoke.MethodHandles.Lookup#checkSpecialCaller(Class)
      */
     public static MethodHandle getSpecialMethodHandle(Method parentMethod) {
         Class<?> declaringClass = parentMethod.getDeclaringClass();
@@ -90,6 +54,25 @@ public class ExtendMethodHandles {
         } catch (IllegalAccessException e) {
             return ExceptionUtils.rethrow(e);
         }
+    }
+
+    private static Function<Class<?>, Lookup> getMethodLookup() {
+        // 先查询jdk9开始提供的“java.lang.invoke.MethodHandles.privateLookupIn”方法
+        Method jdk9PrivateLookupInMethod = ClassUtils.getMethod(MethodHandles.class, "privateLookupIn", Class.class, Lookup.class);
+        if (jdk9PrivateLookupInMethod != null) {
+            return callerClass -> ThrowingSupplier.doChecked(() -> (Lookup) jdk9PrivateLookupInMethod.invoke(MethodHandles.class, callerClass, MethodHandles.lookup()));
+        }
+
+        // 查询jdk8版本：这种方式也适用于jdk9及以上的版本，但优先上面的可以避免jdk9反射警告
+        Constructor<Lookup> jdk8LookupConstructor = ClassUtils.getConstructor(Lookup.class, Class.class, int.class);
+        if (jdk8LookupConstructor == null) {
+            // 未找到则可能是jdk8以下版本
+            throw new UnsupportedOperationException("Not found method 'private java.lang.invoke.MethodHandles$Lookup(java.lang.Class,int)'.");
+        }
+
+        jdk8LookupConstructor.setAccessible(true);
+        int modifiers = Lookup.PRIVATE | Lookup.PROTECTED | Lookup.PACKAGE | Lookup.PUBLIC;
+        return callerClass -> ThrowingSupplier.doChecked(() -> jdk8LookupConstructor.newInstance(callerClass, modifiers));
     }
 
 }

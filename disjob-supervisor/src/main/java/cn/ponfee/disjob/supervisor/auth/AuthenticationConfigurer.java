@@ -34,6 +34,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
     }
 
     private static class AuthenticationInterceptor implements HandlerInterceptor {
+        private static final String ERR_MSG = "Authenticate failed.";
 
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -48,7 +49,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
 
             String group = request.getHeader(JobConstants.AUTHENTICATE_HEADER_GROUP);
             if (StringUtils.isBlank(group)) {
-                throw new AuthenticationException("Authenticate failed.");
+                throw new AuthenticationException(ERR_MSG);
             }
 
             switch (annotation.value()) {
@@ -73,25 +74,25 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
 
             String token = request.getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
             if (!workerToken.equals(token)) {
-                throw new AuthenticationException("Authenticate failed.");
+                throw new AuthenticationException(ERR_MSG);
             }
         }
 
         private static void authenticateUser(HttpServletRequest request, String group) {
             String username = request.getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
             if (!SchedGroupService.inGroup(username, group)) {
-                throw new AuthenticationException("Authenticate failed.");
+                throw new AuthenticationException(ERR_MSG);
             }
 
             String userToken = SchedGroupService.get(group).getUserToken();
             if (StringUtils.isBlank(userToken)) {
                 // user token must configured
-                throw new AuthenticationException("Authenticate failed.");
+                throw new AuthenticationException(ERR_MSG);
             }
 
             String token = request.getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
             if (!userToken.equals(token)) {
-                throw new AuthenticationException("Authenticate failed.");
+                throw new AuthenticationException(ERR_MSG);
             }
         }
 

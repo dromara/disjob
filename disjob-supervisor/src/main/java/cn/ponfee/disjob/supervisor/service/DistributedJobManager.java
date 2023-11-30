@@ -173,7 +173,6 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
     public boolean startTask(StartTaskParam param) {
-        LOG.info("Start task: {}", param);
         SchedInstance instance = instanceMapper.get(param.getInstanceId());
         Assert.notNull(instance, () -> "Sched instance not found: " + param);
         // sched_instance.run_state must in (WAITING, RUNNING)
@@ -181,6 +180,7 @@ public class DistributedJobManager extends AbstractJobManager {
             return false;
         }
 
+        LOG.info("Task trace [starting]: {}", param);
         Date now = new Date();
         // start sched instance(also possibly started by other task)
         int row = 0;
@@ -189,11 +189,11 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         // start sched task
-        if (taskMapper.start(param.getTaskId(), param.getWorker(), now) == 0) {
+        if (isOneAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), now))) {
+            return true;
+        } else {
             Assert.state(row == 0, () -> "Start task failed: " + param);
             return false;
-        } else {
-            return true;
         }
     }
 
@@ -265,11 +265,11 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if terminated task successful
      */
     public boolean terminateTask(TerminateTaskParam param) {
-        LOG.info("Terminate task: {}", param);
         Assert.hasText(param.getWorker(), "Terminate task worker cannot be blank.");
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
         Assert.isTrue(!ExecuteState.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
+        LOG.info("Task trace [terminating]: {}", param);
         return doTransactionLockInSynchronized(instanceId, param.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Terminate executing task failed, instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Cannot direct terminate workflow lead instance: " + instance);
