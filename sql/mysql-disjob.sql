@@ -73,13 +73,11 @@ CREATE TABLE `sched_depend` (
   `parent_job_id`       BIGINT         UNSIGNED  NOT NULL                               COMMENT '父job_id',
   `child_job_id`        BIGINT         UNSIGNED  NOT NULL                               COMMENT '子job_id',
   `sequence`            INT            UNSIGNED  NOT NULL                               COMMENT '序号(从1开始)',
-  `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_parentjobid_childjobid` (`parent_job_id`, `child_job_id`),
   UNIQUE KEY `uk_childjobid_sequence` (`child_job_id`, `sequence`),
-  KEY `ix_createdat` (`created_at`),
-  KEY `ix_updatedat` (`updated_at`)
+  KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度依赖表';
 
 CREATE TABLE `sched_instance` (

@@ -58,7 +58,7 @@ public abstract class TaskReceiver implements Startable {
 
         boolean res = timingWheel.offer(param);
         if (res) {
-            log.info("Task trace [received]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+            log.info("Task trace [{}] received: {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         } else {
             log.error("Received task failed " + param);
         }

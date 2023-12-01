@@ -406,7 +406,7 @@
           </ol>
           <p dir="auto">Worker接收到子任务后，会提交到框架自定义的线程池中执行。</p>
           <ol start="4" dir="auto">
-            <li><strong>分布式并行执行</strong></li>
+            <li><strong>分布式并行计算</strong></li>
           </ol>
           <p dir="auto">在执行时我们可以使用分批次方式(通过代码循环)来统计，这里我们指定<code>task-1</code>在第一次循环统计<code>(0, 1亿]</code>，第二次循环统计<code>(10亿, 11亿]</code>，以此类推最后一次循环统计<code>(9990亿, 9991亿]</code>。同理其它的task也是按同样的方式分布式并行统计。</p>
           <blockquote>

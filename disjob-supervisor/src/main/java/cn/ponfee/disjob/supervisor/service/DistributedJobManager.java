@@ -180,7 +180,7 @@ public class DistributedJobManager extends AbstractJobManager {
             return false;
         }
 
-        LOG.info("Task trace [starting]: {}", param);
+        LOG.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
         Date now = new Date();
         // start sched instance(also possibly started by other task)
         int row = 0;
@@ -269,7 +269,7 @@ public class DistributedJobManager extends AbstractJobManager {
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
         Assert.isTrue(!ExecuteState.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
-        LOG.info("Task trace [terminating]: {}", param);
+        LOG.info("Task trace [{}] terminating: {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         return doTransactionLockInSynchronized(instanceId, param.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Terminate executing task failed, instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Cannot direct terminate workflow lead instance: " + instance);

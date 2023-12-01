@@ -142,7 +142,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return false;
         }
 
-        LOG.info("Task trace [submitted]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+        LOG.info("Task trace [{}] submitted: {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         if (param.operation().isTrigger()) {
             return taskQueue.offerLast(param);
         } else {
@@ -757,7 +757,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
 
                 try {
-                    LOG.info("Task trace [readied]: {} | {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+                    LOG.info("Task trace [{}] readied: {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
                     runTask(param);
                 } catch (Throwable t) {
                     LOG.error("Worker thread execute failed: " + param, t);

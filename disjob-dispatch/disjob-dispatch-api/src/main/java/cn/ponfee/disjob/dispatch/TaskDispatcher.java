@@ -150,7 +150,7 @@ public abstract class TaskDispatcher implements Startable {
 
             try {
                 doDispatch(task);
-                log.info("Task trace [dispatched]: {} | {} | {}", task.getTaskId(), task.getOperation(), task.getWorker());
+                log.info("Task trace [{}] dispatched: {} | {}", task.getTaskId(), task.getOperation(), task.getWorker());
             } catch (Throwable t) {
                 // dispatch failed, delay retry
                 retry(param);
