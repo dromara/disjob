@@ -353,7 +353,6 @@ $(function() {
         var panelUrl = $(this).parents('.menuTab').data('panel');
         // 当前元素处于活动状态
         if ($(this).parents('.menuTab').hasClass('active')) {
-        	syncMenuTab($('.page-tabs-content').find('.active').attr('data-id'));
 
             // 当前元素后面有同辈元素，使后面的一个元素处于活动状态
             if ($(this).parents('.menuTab').next('.menuTab').length) {
@@ -432,7 +431,7 @@ $(function() {
             });
         }
         scrollToTab($('.menuTab.active'));
-        syncMenuTab($('.page-tabs-content').find('.active').attr('data-id'));
+        syncMenuTab($.common.isNotEmpty(panelUrl) ? panelUrl : $('.page-tabs-content').find('.active').attr('data-id'));
         return false;
     }
 

@@ -58,11 +58,11 @@ public final class Throwables {
         for (int i = list.size() - 1; i >= 0; i--) {
             String message = list.get(i).getMessage();
             if (StringUtils.isNotBlank(message)) {
-                return "error<" + message + ">";
+                return "error[" + message + "]";
             }
         }
 
-        return "error<" + ClassUtils.getName(throwable.getClass()) + ">";
+        return "error[" + ClassUtils.getName(throwable.getClass()) + "]";
     }
 
     // -------------------------------------------------------------------------------interface definitions

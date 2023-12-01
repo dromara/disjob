@@ -111,6 +111,7 @@
     expandFirst: false,
     expandColumn: 1,
     pagination: true,
+    viewUrl: prefix + "/tasks/{id}",
     // removeUrl: prefix + "/remove/{id}",
     modalName: "调度实例",
     columns: [{
@@ -122,7 +123,7 @@
       title: 'InstanceId',
       width: '240',
       formatter: function (value, row, index) {
-        return value === row.wnstanceId ? value : '<a href="javascript:void(0)" onclick="tasks(\'' + value + '\')">' + value + '</a>';
+        return value === row.wnstanceId ? value : '<a href="javascript:void(0)" onclick="$.operate.view(\'' + value + '\')">' + value + '</a>';
       }
     },
     {
@@ -225,23 +226,6 @@
         }
 
         var actions = [];
-
-        /*
-        if (row.runState <= 20) {
-          actions.push('<a class="btn btn-warning btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="pause(\'' + row.instanceId + '\')"><i class="fa fa-pause"></i> 暂停</a> ')
-        }
-        if (row.runState === 30) {
-          actions.push('<a class="btn btn-info btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="resume(\'' + row.instanceId + '\')"><i class="fa fa-play"></i> 恢复</a> ')
-        }
-        if (row.runState < 40) {
-          actions.push('<a class="btn btn-danger btn-rounded btn-outline btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="cancel(\'' + row.instanceId + '\')"><i class="fa fa-remove"></i> 取消</a> ')
-        }
-        if (row.runState >= 40) {
-          actions.push('<a class="btn btn-danger btn-rounded btn-xs ' + operateFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.instanceId + '\')"><i class="fa fa-trash"></i> 删除</a> ')
-        }
-        return actions.join('');
-        */
-
         if (row.runState <= 20) {
           actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;pause&quot;, &quot;暂停&quot;)'><i class='fa fa-pause'></i> 暂停</a> ");
         }
@@ -356,11 +340,6 @@
       });
     });
   });
-
-  function tasks(instanceId) {
-    var url = prefix + '/tasks/' + instanceId;
-    $.modal.openFull("调度任务", url, null, null, ['关闭']);
-  }
 
   function job(jobId) {
     var url = ctx + 'disjob/job/detail/' + jobId;
