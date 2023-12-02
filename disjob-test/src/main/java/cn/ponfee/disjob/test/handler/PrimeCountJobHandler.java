@@ -16,8 +16,8 @@ import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.test.util.Prime;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
@@ -130,7 +130,8 @@ public class PrimeCountJobHandler extends JobHandler {
         return ExecuteResult.success();
     }
 
-    @Data
+    @Setter
+    @Getter
     public static class JobParam implements Serializable {
         private static final long serialVersionUID = 2525343069219040629L;
 
@@ -140,7 +141,8 @@ public class PrimeCountJobHandler extends JobHandler {
         private int parallel;   // 并行度：子任务数量
     }
 
-    @Data
+    @Setter
+    @Getter
     public static class TaskParam implements Serializable {
         private static final long serialVersionUID = -8122704600602000816L;
 
@@ -150,14 +152,16 @@ public class PrimeCountJobHandler extends JobHandler {
         private long n;
     }
 
-    @Data
-    @NoArgsConstructor
+    @Setter
+    @Getter
     public static class ExecuteSnapshot implements Serializable {
         private static final long serialVersionUID = -5866894559175629912L;
 
         private Long next;
         private long count;
         private boolean finished;
+
+        public ExecuteSnapshot() { }
 
         public ExecuteSnapshot(long start) {
             this.next = start;

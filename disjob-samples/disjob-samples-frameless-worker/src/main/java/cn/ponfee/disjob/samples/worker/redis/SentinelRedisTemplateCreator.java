@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-@SuperBuilder(toBuilder = true)
+@SuperBuilder
 public class SentinelRedisTemplateCreator extends AbstractRedisTemplateCreator {
 
     private String sentinelMaster;

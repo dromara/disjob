@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.core.handle;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,11 +20,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class SplitTask implements java.io.Serializable {
     private static final long serialVersionUID = 5200874217689134007L;
 
     private String taskParam;
+
+    public SplitTask(String taskParam) {
+        this.taskParam = taskParam;
+    }
 
     @Override
     public String toString() {

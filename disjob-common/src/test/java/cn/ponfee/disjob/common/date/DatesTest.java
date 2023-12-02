@@ -11,7 +11,8 @@ package cn.ponfee.disjob.common.date;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -272,7 +273,8 @@ public class DatesTest {
         Assertions.assertEquals("2023-07-19 21:14:25", Dates.format(Dates.toDate(LocalDateTime.parse(source, dateTimeFormatter))));
     }
 
-    @Data
+    @Setter
+    @Getter
     public static class DateEntity {
         @JsonProperty(value = "createTime")
         @JsonFormat(pattern = Dates.DATETIME_PATTERN)

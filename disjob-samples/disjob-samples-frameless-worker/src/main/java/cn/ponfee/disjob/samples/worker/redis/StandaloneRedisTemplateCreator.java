@@ -17,7 +17,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
  *
  * @author Ponfee
  */
-@SuperBuilder(toBuilder = true)
+@SuperBuilder
 public class StandaloneRedisTemplateCreator extends AbstractRedisTemplateCreator {
 
     private String host;

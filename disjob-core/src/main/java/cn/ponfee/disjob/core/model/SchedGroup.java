@@ -10,7 +10,6 @@ package cn.ponfee.disjob.core.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -22,7 +21,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class SchedGroup extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 130809383427026764L;

@@ -9,7 +9,8 @@
 package cn.ponfee.disjob.supervisor.util;
 
 import com.google.common.collect.Lists;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -76,10 +77,13 @@ public class AssertjTest {
         assertThat(person).hasFieldOrPropertyWithValue("name", "tom");
     }
 
-    @Data
+    @Getter
+    @Setter
     public static class Person {
         String name;
         int age;
+
+        public Person() { }
 
         public Person(String name) {
             this.name = name;

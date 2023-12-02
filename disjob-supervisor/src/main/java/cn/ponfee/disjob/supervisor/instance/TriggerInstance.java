@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.supervisor.instance;
 
 import cn.ponfee.disjob.core.model.SchedInstance;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -18,9 +17,11 @@ import lombok.Getter;
  * @author Ponfee
  */
 @Getter
-@AllArgsConstructor
 public abstract class TriggerInstance {
 
     private final SchedInstance instance;
 
+    public TriggerInstance(SchedInstance instance) {
+        this.instance = instance;
+    }
 }

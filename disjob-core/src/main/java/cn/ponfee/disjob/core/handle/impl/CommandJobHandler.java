@@ -16,7 +16,8 @@ import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.util.JobUtils;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -74,7 +75,8 @@ public class CommandJobHandler extends JobHandler {
         return JobUtils.completeProcess(process, charset, executingTask, LOG);
     }
 
-    @Data
+    @Getter
+    @Setter
     public static class CommandParam implements Serializable {
         private static final long serialVersionUID = 2079640617453920047L;
 

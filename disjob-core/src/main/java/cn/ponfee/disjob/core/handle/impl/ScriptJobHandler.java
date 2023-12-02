@@ -16,7 +16,8 @@ import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.util.JobUtils;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -172,7 +173,8 @@ public class ScriptJobHandler extends JobHandler {
         public abstract Process exec(String scriptPath, String[] envp) throws Exception;
     }
 
-    @Data
+    @Getter
+    @Setter
     public static class ScriptParam implements Serializable {
         private static final long serialVersionUID = 4733248467785540711L;
 

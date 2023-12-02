@@ -16,7 +16,8 @@ import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +125,8 @@ public class HttpJobHandler extends JobHandler {
         }
     }
 
-    @Data
+    @Setter
+    @Getter
     public static class HttpJobRequest implements Serializable {
         private static final long serialVersionUID = 6173514568347976014L;
 

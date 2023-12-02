@@ -19,7 +19,7 @@ import java.util.Arrays;
  *
  * @author Ponfee
  */
-@SuperBuilder(toBuilder = true)
+@SuperBuilder
 public class ClusterRedisTemplateCreator extends AbstractRedisTemplateCreator {
 
     private String clusterNodes;

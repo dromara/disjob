@@ -10,7 +10,6 @@ package cn.ponfee.disjob.core.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -22,7 +21,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class SchedUserGroup extends BaseEntity implements Serializable {
 
     /**

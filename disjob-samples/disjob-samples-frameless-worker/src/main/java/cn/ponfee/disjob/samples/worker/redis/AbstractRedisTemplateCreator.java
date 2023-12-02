@@ -14,7 +14,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.data.redis.connection.RedisConfiguration;
@@ -34,7 +35,7 @@ import java.time.Duration;
  *
  * @author Ponfee
  */
-@SuperBuilder(toBuilder = true)
+@SuperBuilder
 public abstract class AbstractRedisTemplateCreator {
 
     protected int database;
@@ -103,7 +104,8 @@ public abstract class AbstractRedisTemplateCreator {
         return redisConnectionFactory;
     }
 
-    @Data
+    @Getter
+    @AllArgsConstructor
     public static class RedisTemplateWrapper {
         private final RedisConnectionFactory redisConnectionFactory;
         private final RedisTemplate<Object, Object> normalRedisTemplate;
