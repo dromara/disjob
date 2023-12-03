@@ -24,6 +24,8 @@ public interface SchedGroupMapper {
 
     List<SchedGroup> findAll();
 
+    int update(SchedGroup schedGroup);
+
     int updateSupervisorToken(@Param("group") String group,
                               @Param("newSupervisorToken") String newSupervisorToken,
                               @Param("oldSupervisorToken") String oldSupervisorToken);
@@ -35,8 +37,6 @@ public interface SchedGroupMapper {
     int updateUserToken(@Param("group") String group,
                         @Param("newUserToken") String newUserToken,
                         @Param("oldUserToken") String oldUserToken);
-
-    int updateAlarmConfig(SchedGroup schedGroup);
 
     int delete(String group);
 

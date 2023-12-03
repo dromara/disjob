@@ -10,27 +10,34 @@ package cn.ponfee.disjob.core.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
 
 /**
- * The schedule user group entity, mapped database table sched_user_group
+ * The schedule group user entity, mapped database table sched_group_user
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SchedUserGroup extends BaseEntity implements Serializable {
-
-    /**
-     * 用户名
-     */
-    private String username;
+@NoArgsConstructor
+public class SchedGroupUser extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = -8078284204149543566L;
 
     /**
      * 分组名称(同sched_job.group)
      */
     private String group;
 
+    /**
+     * 用户
+     */
+    private String user;
+
+    public SchedGroupUser(String group, String user) {
+        this.group = group;
+        this.user = user;
+    }
 }

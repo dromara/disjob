@@ -15,11 +15,6 @@ package cn.ponfee.disjob.supervisor.base;
  */
 public class SupervisorConstants {
 
-    /**
-     * Execute database dml affected rows
-     */
-    public static final int AFFECTED_ONE_ROW = 1;
-
     // ----------------------------------------------------------------scan lock sql
 
     /**

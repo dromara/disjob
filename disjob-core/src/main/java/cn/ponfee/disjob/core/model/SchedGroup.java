@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The schedule group entity, mapped database table sched_group
@@ -46,9 +47,14 @@ public class SchedGroup extends BaseEntity implements Serializable {
     private String userToken;
 
     /**
-     * 告警订阅人员列表
+     * 负责人
      */
-    private String alarmSubscribers;
+    private String ownUser;
+
+    /**
+     * 告警人员(多个逗号分隔)
+     */
+    private String alarmUsers;
 
     /**
      * 告警web hook地址
@@ -59,4 +65,12 @@ public class SchedGroup extends BaseEntity implements Serializable {
      * 行记录版本号
      */
     private Integer version;
+
+    // -------------------------------------------------------non table columns
+
+    /**
+     * Group dev users
+     */
+    private List<String> devUsers;
+
 }

@@ -79,8 +79,8 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateUser(HttpServletRequest request, String group) {
-            String username = request.getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
-            if (!SchedGroupService.inGroup(username, group)) {
+            String user = request.getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
+            if (!SchedGroupService.get(group).getDevUsers().contains(user)) {
                 throw new AuthenticationException(ERR_MSG);
             }
 

@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_group</sql>
 
   <sql id="Base_Column_List">
-    `group`, supervisor_token, worker_token, user_token, alarm_subscribers, web_hook, `version`
+    `group`, supervisor_token, worker_token, user_token, own_user, alarm_users, web_hook, `version`
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedGroup" useGeneratedKeys="true">
@@ -14,14 +14,16 @@
       supervisor_token,
       worker_token,
       user_token,
-      alarm_subscribers,
+      own_user,
+      alarm_users,
       web_hook
     ) VALUES (
       #{group,jdbcType=VARCHAR},
       #{supervisorToken,jdbcType=VARCHAR},
       #{workerToken,jdbcType=VARCHAR},
       #{userToken,jdbcType=VARCHAR},
-      #{alarmSubscribers,jdbcType=VARCHAR},
+      #{ownUser,jdbcType=VARCHAR},
+      #{alarmUsers,jdbcType=VARCHAR},
       #{webHook,jdbcType=VARCHAR}
     )
   </insert>
@@ -30,6 +32,16 @@
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
   </select>
+
+  <update id="update">
+    UPDATE <include refid="Table_Name" />
+    SET own_user = #{ownUser,jdbcType=VARCHAR},
+        alarm_users = #{alarmUsers,jdbcType=VARCHAR},
+        web_hook = #{webHook,jdbcType=VARCHAR},
+        version = version+1
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND version = #{version,jdbcType=INTEGER}
+  </update>
 
   <update id="updateSupervisorToken">
     UPDATE <include refid="Table_Name" />
@@ -53,15 +65,6 @@
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND user_token = #{oldUserToken,jdbcType=VARCHAR}
-  </update>
-
-  <update id="updateAlarmConfig">
-    UPDATE <include refid="Table_Name" />
-    SET alarm_subscribers = #{alarmSubscribers,jdbcType=VARCHAR},
-        web_hook = #{webHook,jdbcType=VARCHAR},
-        version = version+1
-    WHERE `group` = #{group,jdbcType=VARCHAR}
-       AND version = #{version,jdbcType=INTEGER}
   </update>
 
   <delete id="delete" parameterType="string">

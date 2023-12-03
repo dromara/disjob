@@ -38,13 +38,12 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.TX_MANAGER_NAME_SUFFIX;
-import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.AFFECTED_ONE_ROW;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
+import static cn.ponfee.disjob.common.spring.TransactionUtils.assertOneAffectedRow;
+import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANAGER_SPRING_BEAN_NAME;
 
 /**
  * Abstract job manager
@@ -57,8 +56,6 @@ public abstract class AbstractJobManager {
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
     private static final int MAX_DEPENDS_LEVEL = 20;
     private static final List<TriggerType> FIXED_TYPES = ImmutableList.of(TriggerType.FIXED_RATE, TriggerType.FIXED_DELAY);
-
-    protected static final String TX_MANAGER_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
 
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
@@ -93,7 +90,7 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------database operation within spring transactional
 
-    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public void addJob(SchedJob job) throws JobException {
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyBeforeAdd();
@@ -105,7 +102,7 @@ public abstract class AbstractJobManager {
         jobMapper.insert(job);
     }
 
-    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
         job.verifyBeforeUpdate();
         job.checkAndDefaultSetting();
@@ -132,7 +129,7 @@ public abstract class AbstractJobManager {
         assertOneAffectedRow(jobMapper.update(job), "Update sched job fail or conflict.");
     }
 
-    @Transactional(transactionManager = TX_MANAGER_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public void deleteJob(long jobId) {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, "Job id not found: " + jobId);
@@ -154,38 +151,6 @@ public abstract class AbstractJobManager {
         Date date = baseTime == null ? null : fixedDelay.computeNextTriggerTime(job.getTriggerValue(), baseTime);
         Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
         return isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime()));
-    }
-
-    protected boolean isOneAffectedRow(int totalAffectedRow) {
-        return totalAffectedRow == AFFECTED_ONE_ROW;
-    }
-
-    protected boolean isManyAffectedRow(int totalAffectedRow) {
-        return totalAffectedRow >= AFFECTED_ONE_ROW;
-    }
-
-    protected void assertOneAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
-        if (totalAffectedRow != AFFECTED_ONE_ROW) {
-            throw new IllegalStateException(errorMsgSupplier.get());
-        }
-    }
-
-    protected void assertOneAffectedRow(int totalAffectedRow, String errorMsg) {
-        if (totalAffectedRow != AFFECTED_ONE_ROW) {
-            throw new IllegalStateException(errorMsg);
-        }
-    }
-
-    protected void assertManyAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
-        if (totalAffectedRow < AFFECTED_ONE_ROW) {
-            throw new IllegalStateException(errorMsgSupplier.get());
-        }
-    }
-
-    protected void assertManyAffectedRow(int totalAffectedRow, String errorMsg) {
-        if (totalAffectedRow < AFFECTED_ONE_ROW) {
-            throw new IllegalStateException(errorMsg);
-        }
     }
 
     public long generateId() {

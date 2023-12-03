@@ -13,27 +13,32 @@ import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.core.exception.GroupNotFoundException;
 import cn.ponfee.disjob.core.model.SchedGroup;
-import cn.ponfee.disjob.core.model.SchedUserGroup;
+import cn.ponfee.disjob.core.model.SchedGroupUser;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedUserGroupMapper;
+import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupUserMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Closeable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.AFFECTED_ONE_ROW;
+import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANAGER_SPRING_BEAN_NAME;
 
 /**
  * Sched group service
@@ -44,106 +49,82 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.AFFECTED_ONE_
 public class SchedGroupService extends SingletonClassConstraint implements Closeable, DisposableBean {
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
 
-    private static final Lock LOCK1 = new ReentrantLock();
-    private static final Lock LOCK2 = new ReentrantLock();
-
+    private static final Lock LOCK = new ReentrantLock();
     private static volatile Map<String, DisjobGroup> groupMap;
-    private static volatile Map<String, Set<String>> userGroupMap;
 
     private final SchedGroupMapper schedGroupMapper;
-    private final SchedUserGroupMapper schedUserGroupMapper;
+    private final SchedGroupUserMapper schedGroupUserMapper;
     private final LoopThread refresher;
 
     public SchedGroupService(SchedGroupMapper schedGroupMapper,
-                             SchedUserGroupMapper schedUserGroupMapper) {
+                             SchedGroupUserMapper schedGroupUserMapper) {
         this.schedGroupMapper = schedGroupMapper;
-        this.schedUserGroupMapper = schedUserGroupMapper;
-        this.refresher = new LoopThread("group_metadata_refresher", 30, 30, () -> {
-            refreshDisjobGroup();
-            refreshUserGroup();
-        });
-
-        refreshDisjobGroup();
-        refreshUserGroup();
+        this.schedGroupUserMapper = schedGroupUserMapper;
+        this.refresher = new LoopThread("group_metadata_refresher", 60, 60, this::refresh);
+        refresh();
     }
 
     // ------------------------------------------------------------sched group
 
+    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public long add(SchedGroup schedGroup) {
         schedGroupMapper.insert(schedGroup);
-        refreshDisjobGroup();
+        bindDevUsers(schedGroup.getGroup(), schedGroup.getDevUsers());
+        refresh();
         return schedGroup.getId();
     }
 
+    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    public boolean update(SchedGroup schedGroup) {
+        if (isOneAffectedRow(schedGroupMapper.update(schedGroup))) {
+            schedGroupUserMapper.deleteByGroup(schedGroup.getGroup());
+            bindDevUsers(schedGroup.getGroup(), schedGroup.getDevUsers());
+            refresh();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    public boolean delete(String group) {
+        if (isOneAffectedRow(schedGroupMapper.delete(group))) {
+            schedGroupUserMapper.deleteByGroup(group);
+            refresh();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean updateSupervisorToken(String group, String newSupervisorToken, String oldSupervisorToken) {
-        boolean flag = schedGroupMapper.updateSupervisorToken(group, newSupervisorToken, oldSupervisorToken) == AFFECTED_ONE_ROW;
-        refreshDisjobGroup();
-        return flag;
+        if (isOneAffectedRow(schedGroupMapper.updateSupervisorToken(group, newSupervisorToken, oldSupervisorToken))) {
+            refresh();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean updateWorkerToken(String group, String newWorkerToken, String oldWorkerToken) {
-        boolean flag = schedGroupMapper.updateWorkerToken(group, newWorkerToken, oldWorkerToken) == AFFECTED_ONE_ROW;
-        refreshDisjobGroup();
-        return flag;
+        if (isOneAffectedRow(schedGroupMapper.updateWorkerToken(group, newWorkerToken, oldWorkerToken))) {
+            refresh();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean updateUserToken(String group, String newUserToken, String oldUserToken) {
-        boolean flag = schedGroupMapper.updateUserToken(group, newUserToken, oldUserToken) == AFFECTED_ONE_ROW;
-        refreshDisjobGroup();
-        return flag;
-    }
-
-    public boolean updateAlarmConfig(SchedGroup schedGroup) {
-        boolean flag = schedGroupMapper.updateAlarmConfig(schedGroup) == AFFECTED_ONE_ROW;
-        refreshDisjobGroup();
-        return flag;
-    }
-
-    public boolean delete(String group) {
-        boolean flag = schedGroupMapper.delete(group) == AFFECTED_ONE_ROW;
-        schedUserGroupMapper.deleteByGroup(group);
-        refreshDisjobGroup();
-        refreshUserGroup();
-        return flag;
-    }
-
-    // ------------------------------------------------------------sched user group
-
-    public long add(SchedUserGroup userGroup) {
-        if (!schedGroupMapper.exists(userGroup.getGroup())) {
-            throw new IllegalArgumentException("Group not found: " + userGroup.getGroup());
+        if (isOneAffectedRow(schedGroupMapper.updateUserToken(group, newUserToken, oldUserToken))) {
+            refresh();
+            return true;
+        } else {
+            return false;
         }
-        schedUserGroupMapper.insert(userGroup);
-        refreshUserGroup();
-        return userGroup.getId();
     }
 
-    public boolean deleteByUsername(String username) {
-        boolean flag = schedUserGroupMapper.deleteByUsername(username) == AFFECTED_ONE_ROW;
-        refreshUserGroup();
-        return flag;
-    }
-
-    // ------------------------------------------------------------other methods
-
-    public static DisjobGroup get(String group) {
-        DisjobGroup disjobGroup = groupMap.get(group);
-        if (disjobGroup == null) {
-            throw new GroupNotFoundException("Not found worker group: " + group);
-        }
-        return disjobGroup;
-    }
-
-    public static Set<String> allGroups() {
-        return groupMap.keySet();
-    }
-
-    public static boolean inGroup(String username, String group) {
-        Set<String> set = userGroupMap.get(username);
-        return set != null && set.contains(group);
-    }
-
-    // ------------------------------------------------------------other methods
+    // ------------------------------------------------------------close
 
     @Override
     public void close() {
@@ -155,46 +136,47 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         close();
     }
 
-    // ------------------------------------------------------------private methods
+    // ------------------------------------------------------------other static methods
 
-    private void refreshDisjobGroup() {
-        if (!LOCK1.tryLock()) {
-            return;
+    public static DisjobGroup get(String group) {
+        DisjobGroup disjobGroup = groupMap.get(group);
+        if (disjobGroup == null) {
+            throw new GroupNotFoundException("Not found worker group: " + group);
         }
-        try {
-            List<SchedGroup> list = schedGroupMapper.findAll();
-            ImmutableMap.Builder<String, DisjobGroup> builder = ImmutableMap.builderWithExpectedSize(list.size() << 1);
-            list.forEach(e -> builder.put(e.getGroup(), DisjobGroup.of(e)));
-            SchedGroupService.groupMap = builder.build();
-        } catch (Throwable t) {
-            LOG.error("Refresh group error.", t);
-            Threads.interruptIfNecessary(t);
-        } finally {
-            LOCK1.unlock();
-        }
+        return disjobGroup;
     }
 
-    private void refreshUserGroup() {
-        if (!LOCK2.tryLock()) {
+    // ------------------------------------------------------------private methods
+
+    private void bindDevUsers(String group, List<String> devUsers) {
+        if (CollectionUtils.isEmpty(devUsers)) {
+            return;
+        }
+        List<SchedGroupUser> list = devUsers.stream()
+            .distinct()
+            .map(e -> new SchedGroupUser(group, e))
+            .collect(Collectors.toList());
+        schedGroupUserMapper.batchInsert(list);
+    }
+
+    private void refresh() {
+        if (!LOCK.tryLock()) {
             return;
         }
         try {
-            List<SchedUserGroup> list = schedUserGroupMapper.findAll();
-            ImmutableMap.Builder<String, Set<String>> mapBuilder = ImmutableMap.builderWithExpectedSize(list.size() << 1);
+            Map<String, List<SchedGroupUser>> groupUserMap = schedGroupUserMapper.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(SchedGroupUser::getGroup));
 
-            list.stream()
-                .collect(Collectors.groupingBy(SchedUserGroup::getUsername))
-                .forEach((k, v) -> {
-                    ImmutableSet.Builder<String> setBuilder = ImmutableSet.builderWithExpectedSize(v.size() << 1);
-                    v.forEach(e -> setBuilder.add(e.getGroup()));
-                    mapBuilder.put(k, setBuilder.build());
-                });
-            SchedGroupService.userGroupMap = mapBuilder.build();
+            List<SchedGroup> list = schedGroupMapper.findAll();
+            ImmutableMap.Builder<String, DisjobGroup> builder = ImmutableMap.builderWithExpectedSize(list.size() << 1);
+            list.forEach(e -> builder.put(e.getGroup(), DisjobGroup.of(e, groupUserMap.get(e.getGroup()))));
+            SchedGroupService.groupMap = builder.build();
         } catch (Throwable t) {
-            LOG.error("Refresh user group error.", t);
+            LOG.error("Refresh sched group error.", t);
             Threads.interruptIfNecessary(t);
         } finally {
-            LOCK2.unlock();
+            LOCK.unlock();
         }
     }
 
@@ -203,27 +185,46 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         private final String supervisorToken;
         private final String workerToken;
         private final String userToken;
-        private final Set<String> alarmSubscribers;
+        private final String ownUser;
+        private final Set<String> alarmUsers;
+        private final Set<String> devUsers;
         private final String webHook;
 
         private DisjobGroup(String supervisorToken, String workerToken, String userToken,
-                            Set<String> alarmSubscribers, String webHook) {
+                            String ownUser, Set<String> alarmUsers, Set<String> devUsers,
+                            String webHook) {
             this.supervisorToken = supervisorToken;
             this.workerToken = workerToken;
             this.userToken = userToken;
-            this.alarmSubscribers = alarmSubscribers;
+            this.ownUser = ownUser;
+            this.devUsers = devUsers;
+            this.alarmUsers = alarmUsers;
             this.webHook = webHook;
         }
 
-        private static DisjobGroup of(SchedGroup schedGroup) {
-            String alarmSubscribers = schedGroup.getAlarmSubscribers();
+        private static DisjobGroup of(SchedGroup schedGroup, List<SchedGroupUser> devUsers) {
             return new DisjobGroup(
                 schedGroup.getSupervisorToken(),
                 schedGroup.getWorkerToken(),
                 schedGroup.getUserToken(),
-                StringUtils.isBlank(alarmSubscribers) ? null : ImmutableSet.copyOf(alarmSubscribers.split(",")),
+                schedGroup.getOwnUser(),
+                parse(schedGroup.getAlarmUsers()),
+                toSet(devUsers, SchedGroupUser::getUser),
                 schedGroup.getWebHook()
             );
+        }
+
+        private static Set<String> parse(String str) {
+            return StringUtils.isBlank(str) ? Collections.emptySet() : ImmutableSet.copyOf(str.split(","));
+        }
+
+        private static <S, T> Set<T> toSet(List<S> source, Function<S, T> mapper) {
+            if (CollectionUtils.isEmpty(source)) {
+                return Collections.emptySet();
+            }
+            ImmutableSet.Builder<T> builder = ImmutableSet.builderWithExpectedSize(source.size() << 1);
+            source.stream().map(mapper).forEach(builder::add);
+            return builder.build();
         }
     }
 

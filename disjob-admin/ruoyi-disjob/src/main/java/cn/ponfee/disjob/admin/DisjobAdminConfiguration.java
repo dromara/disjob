@@ -28,8 +28,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TEMPLATE_SPRING_BEAN_NAME;
 
 /**
  * Disjob admin configuration
@@ -54,7 +53,7 @@ public class DisjobAdminConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public IdGenerator idGenerator(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate,
+    public IdGenerator idGenerator(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate,
                                    @Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
         return new DbDistributedSnowflake(jdbcTemplate, JobConstants.DISJOB_KEY_PREFIX, JobUtils.getLocalHost(boundHost) + Symbol.Char.COLON + port);

@@ -41,8 +41,7 @@ import org.springframework.lang.Nullable;
 
 import java.lang.annotation.*;
 
-import static cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig.JDBC_TEMPLATE_NAME_SUFFIX;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.DB_NAME;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TEMPLATE_SPRING_BEAN_NAME;
 
 /**
  * Enable supervisor role
@@ -154,19 +153,19 @@ public @interface EnableSupervisor {
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public DoInLocked scanTriggeringJobLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanTriggeringJobLocker(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public DoInLocked scanWaitingInstanceLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanWaitingInstanceLocker(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_WAITING_INSTANCE);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public DoInLocked scanRunningInstanceLocker(@Qualifier(DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX) JdbcTemplate jdbcTemplate) {
+        public DoInLocked scanRunningInstanceLocker(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_RUNNING_INSTANCE);
         }
     }

@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
-import cn.ponfee.disjob.core.model.SchedUserGroup;
+import cn.ponfee.disjob.core.model.SchedGroupUser;
 
 import java.util.List;
 
@@ -17,14 +17,11 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public interface SchedUserGroupMapper {
+public interface SchedGroupUserMapper {
 
-    int insert(SchedUserGroup schedGroup);
+    int batchInsert(List<SchedGroupUser> list);
 
-    List<SchedUserGroup> findAll();
+    List<SchedGroupUser> findAll();
 
     int deleteByGroup(String group);
-
-    int deleteByUsername(String username);
-
 }

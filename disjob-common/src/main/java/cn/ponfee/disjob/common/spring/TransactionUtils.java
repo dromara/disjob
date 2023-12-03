@@ -18,6 +18,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Assert;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Spring transaction utility.
@@ -25,6 +26,43 @@ import java.util.function.Consumer;
  * @author Ponfee
  */
 public class TransactionUtils {
+
+    /**
+     * Execute database dml affected rows
+     */
+    private static final int AFFECTED_ONE_ROW = 1;
+
+    public static boolean isOneAffectedRow(int totalAffectedRow) {
+        return totalAffectedRow == AFFECTED_ONE_ROW;
+    }
+
+    public static boolean isManyAffectedRow(int totalAffectedRow) {
+        return totalAffectedRow >= AFFECTED_ONE_ROW;
+    }
+
+    public static void assertOneAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (totalAffectedRow != AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsgSupplier.get());
+        }
+    }
+
+    public static void assertOneAffectedRow(int totalAffectedRow, String errorMsg) {
+        if (totalAffectedRow != AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsg);
+        }
+    }
+
+    public static void assertManyAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (totalAffectedRow < AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsgSupplier.get());
+        }
+    }
+
+    public static void assertManyAffectedRow(int totalAffectedRow, String errorMsg) {
+        if (totalAffectedRow < AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsg);
+        }
+    }
 
     /**
      * 在事务提交后再执行

@@ -43,7 +43,7 @@ import javax.sql.DataSource;
 @Configuration
 @MapperScan(
     basePackages = SupervisorDataSourceConfig.BASE_PACKAGE + ".mapper",
-    sqlSessionTemplateRef = SupervisorDataSourceConfig.DB_NAME + AbstractDataSourceConfig.SQL_SESSION_TEMPLATE_NAME_SUFFIX
+    sqlSessionTemplateRef = SupervisorDataSourceConfig.SQL_SESSION_TEMPLATE_SPRING_BEAN_NAME
 )
 public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
 
@@ -63,7 +63,32 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     /**
      * database name
      */
-    public static final String DB_NAME = "disjob";
+    private static final String DB_NAME = "disjob";
+
+    /**
+     * Transaction manager spring bean name
+     */
+    public static final String TX_MANAGER_SPRING_BEAN_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
+
+    /**
+     * Transaction template spring bean name
+     */
+    public static final String TX_TEMPLATE_SPRING_BEAN_NAME = DB_NAME + TX_TEMPLATE_NAME_SUFFIX;
+
+    /**
+     * JDBC template spring bean name
+     */
+    public static final String JDBC_TEMPLATE_SPRING_BEAN_NAME = DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX;
+
+    /**
+     * Mybatis sql session factory spring bean name
+     */
+    public static final String SQL_SESSION_FACTORY_SPRING_BEAN_NAME = DB_NAME + SQL_SESSION_FACTORY_NAME_SUFFIX;
+
+    /**
+     * Mybatis sql session template spring bean name
+     */
+    public static final String SQL_SESSION_TEMPLATE_SPRING_BEAN_NAME = DB_NAME + SQL_SESSION_TEMPLATE_NAME_SUFFIX;
 
     @Bean(name = DB_NAME + DATA_SOURCE_NAME_SUFFIX)
     @ConfigurationProperties(prefix = DB_NAME + ".datasource")
@@ -74,27 +99,27 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
             .build();
     }
 
-    @Bean(name = DB_NAME + SQL_SESSION_FACTORY_NAME_SUFFIX)
+    @Bean(name = SQL_SESSION_FACTORY_SPRING_BEAN_NAME)
     public SqlSessionFactory sqlSessionFactory() throws Exception {
         return super.createSqlSessionFactory();
     }
 
-    @Bean(name = DB_NAME + SQL_SESSION_TEMPLATE_NAME_SUFFIX)
+    @Bean(name = SQL_SESSION_TEMPLATE_SPRING_BEAN_NAME)
     public SqlSessionTemplate sqlSessionTemplate() throws Exception {
         return new SqlSessionTemplate(sqlSessionFactory());
     }
 
-    @Bean(name = DB_NAME + TX_MANAGER_NAME_SUFFIX)
+    @Bean(name = TX_MANAGER_SPRING_BEAN_NAME)
     public DataSourceTransactionManager transactionManager() {
         return new DataSourceTransactionManager(dataSource());
     }
 
-    @Bean(name = DB_NAME + TX_TEMPLATE_NAME_SUFFIX)
+    @Bean(name = TX_TEMPLATE_SPRING_BEAN_NAME)
     public TransactionTemplate transactionTemplate() {
         return new TransactionTemplate(transactionManager());
     }
 
-    @Bean(name = DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX)
+    @Bean(name = JDBC_TEMPLATE_SPRING_BEAN_NAME)
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }
