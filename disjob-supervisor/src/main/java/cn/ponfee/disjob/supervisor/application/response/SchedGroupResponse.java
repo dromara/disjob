@@ -6,80 +6,37 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.model;
+package cn.ponfee.disjob.supervisor.application.response;
 
-import cn.ponfee.disjob.common.model.BaseEntity;
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
- * The schedule group entity, mapped database table sched_group
+ * Sched group response
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SchedGroup extends BaseEntity implements Serializable {
+public class SchedGroupResponse extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -8381578632306318642L;
 
-    private static final long serialVersionUID = 130809383427026764L;
-
-    /**
-     * 分组名称(同sched_job.group)
-     */
     private String group;
-
-    /**
-     * Supervisor访问Worker的密钥令牌
-     */
     private String supervisorToken;
-
-    /**
-     * Worker访问Supervisor的密钥令牌
-     */
     private String workerToken;
-
-    /**
-     * User访问Supervisor的openapi接口密钥令牌(未部署Admin 或 提供类似开放平台 时使用)
-     */
     private String userToken;
-
-    /**
-     * Group own user
-     */
     private String ownUser;
-
-    /**
-     * 告警人员(多个逗号分隔)
-     */
     private String alarmUsers;
-
-    /**
-     * 告警web hook地址
-     */
+    private String devUsers;
     private String webHook;
 
-    /**
-     * 行记录版本号
-     */
     private Integer version;
-
-    /**
-     * 更新人
-     */
+    private Date updatedAt;
+    private Date createdAt;
     private String updatedBy;
-
-    /**
-     * 创建人
-     */
     private String createdBy;
-
-    // -------------------------------------------------------non table columns
-
-    /**
-     * Group dev users
-     */
-    private String devUsers;
-
 }

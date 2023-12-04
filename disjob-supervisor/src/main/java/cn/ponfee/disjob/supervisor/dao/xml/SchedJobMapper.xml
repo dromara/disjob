@@ -8,8 +8,8 @@
     job_id, `group`, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value,
     execute_timeout, collided_strategy, misfire_strategy, route_strategy, remark,
-    last_trigger_time, next_trigger_time, next_scan_time, failed_scan_count, version,
-    IFNULL(is_deleted, 1) deleted, updated_by, created_by, updated_at, created_at
+    last_trigger_time, next_trigger_time, next_scan_time, failed_scan_count,
+    version, updated_by, created_by, updated_at, created_at
   </sql>
 
   <!-- ********************use int test start******************** -->
@@ -210,7 +210,8 @@
     <include refid="Query_Page_Condition" />
   </select>
 
-  <select id="queryPageRecords"  resultType="cn.ponfee.disjob.core.model.SchedJob">
+  <!-- 文件导出功能时：paged=false -->
+  <select id="queryPageRecords" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     <include refid="Query_Page_Condition" />

@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.model.SchedGroup;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -21,6 +22,8 @@ import java.util.List;
 public interface SchedGroupMapper {
 
     int insert(SchedGroup schedGroup);
+
+    SchedGroup get(String group);
 
     List<SchedGroup> findAll();
 
@@ -38,7 +41,13 @@ public interface SchedGroupMapper {
                         @Param("newUserToken") String newUserToken,
                         @Param("oldUserToken") String oldUserToken);
 
-    int delete(String group);
+    int softDelete(String group);
 
     boolean exists(String group);
+
+    // -------------------------------------------------query for page
+
+    long queryPageCount(SchedGroupPageRequest request);
+
+    List<SchedGroup> queryPageRecords(SchedGroupPageRequest request);
 }

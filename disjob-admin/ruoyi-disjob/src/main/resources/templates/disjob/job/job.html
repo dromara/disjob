@@ -91,8 +91,12 @@
           field: 'jobState',
           title: 'Job状态',
           formatter: function (value, row, index) {
-            var str = (row.jobState === 0) ? 'off' : 'on';
-            return '<i style="cursor:pointer;" class="fa fa-toggle-' + str + ' text-info fa-2x" onclick="changeState(\'' + row.jobId + '\', ' + value + ')"></i> ';
+            if ([[${@permission.isPermitted('disjob:job:operate')}]]) {
+              var str = (row.jobState === 0) ? 'off' : 'on';
+              return '<i style="cursor:pointer;" class="fa fa-toggle-' + str + ' text-info fa-2x" onclick="changeState(\'' + row.jobId + '\', ' + value + ')"></i> ';
+            } else {
+              return (row.jobState === 0) ? "<span class='badge badge-danger'>禁用</span>" : "<span class='badge badge-success'>启用</span>";
+            }
           }
         },
         {
@@ -142,16 +146,17 @@
         },
         {
           field: 'updatedBy',
-          title: '更新人'
-        },
-        {
-          field: 'createdBy',
-          title: '创建人'
+          title: '更新人',
+          visible: false
         },
         {
           field: 'updatedAt',
           title: '更新时间',
           visible: false
+        },
+        {
+          field: 'createdBy',
+          title: '创建人'
         },
         {
           field: 'createdAt',

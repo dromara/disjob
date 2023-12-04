@@ -49,4 +49,11 @@ public class SupervisorConstants {
      */
     public static final String SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER = "scan-running-instance-locker";
 
+    // ----------------------------------------------------------------others
+
+    /**
+     * Http request attribute key for disjob user request
+     */
+    public static final String REQUEST_ATTRIBUTE_KEY_DISJOB_USER = "disjob_user";
+
 }

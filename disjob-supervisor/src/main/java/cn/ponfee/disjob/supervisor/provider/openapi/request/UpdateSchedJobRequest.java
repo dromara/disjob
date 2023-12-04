@@ -20,14 +20,13 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class UpdateSchedJobRequest extends AddSchedJobRequest {
+public class UpdateSchedJobRequest extends AbstractSchedJobRequest {
     private static final long serialVersionUID = -1481890923435762900L;
 
-    private String updatedBy;
     private Long jobId;
+    private String updatedBy;
     private Integer version;
 
-    @Override
     public SchedJob tosSchedJob() {
         return SchedJobConverter.INSTANCE.convert(this);
     }

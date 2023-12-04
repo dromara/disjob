@@ -6,19 +6,25 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.service;
+package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.GroupNotFoundException;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.core.model.SchedGroupUser;
+import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
+import cn.ponfee.disjob.supervisor.application.request.AddSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupUserMapper;
+import cn.ponfee.disjob.supervisor.application.model.DisjobGroup;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
+import cn.ponfee.disjob.supervisor.provider.openapi.converter.SchedJobConverter;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,16 +32,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.io.Closeable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANAGER_SPRING_BEAN_NAME;
@@ -67,7 +72,10 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     // ------------------------------------------------------------sched group
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public long add(SchedGroup schedGroup) {
+    public long add(AddSchedGroupRequest request) {
+        Assert.hasText(request.getCreatedBy(), "Created by cannot be blank.");
+        SchedGroup schedGroup = request.toSchedGroup();
+        schedGroup.setUpdatedBy(schedGroup.getCreatedBy());
         schedGroupMapper.insert(schedGroup);
         bindDevUsers(schedGroup.getGroup(), schedGroup.getDevUsers());
         refresh();
@@ -75,7 +83,9 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     }
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public boolean update(SchedGroup schedGroup) {
+    public boolean update(UpdateSchedGroupRequest request) {
+        Assert.hasText(request.getUpdatedBy(), "Updated by cannot be blank.");
+        SchedGroup schedGroup = request.toSchedGroup();
         if (isOneAffectedRow(schedGroupMapper.update(schedGroup))) {
             schedGroupUserMapper.deleteByGroup(schedGroup.getGroup());
             bindDevUsers(schedGroup.getGroup(), schedGroup.getDevUsers());
@@ -88,13 +98,18 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public boolean delete(String group) {
-        if (isOneAffectedRow(schedGroupMapper.delete(group))) {
+        if (isOneAffectedRow(schedGroupMapper.softDelete(group))) {
             schedGroupUserMapper.deleteByGroup(group);
             refresh();
             return true;
         } else {
             return false;
         }
+    }
+
+    public SchedGroupResponse getGroup(String group) {
+        SchedGroup schedGroup = schedGroupMapper.get(group);
+        return SchedGroupConverter.INSTANCE.convert(schedGroup);
     }
 
     public boolean updateSupervisorToken(String group, String newSupervisorToken, String oldSupervisorToken) {
@@ -124,6 +139,14 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         }
     }
 
+    public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {
+        return pageRequest.query(
+            schedGroupMapper::queryPageCount,
+            schedGroupMapper::queryPageRecords,
+            SchedGroupConverter.INSTANCE::convert
+        );
+    }
+
     // ------------------------------------------------------------close
 
     @Override
@@ -148,11 +171,11 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     // ------------------------------------------------------------private methods
 
-    private void bindDevUsers(String group, List<String> devUsers) {
-        if (CollectionUtils.isEmpty(devUsers)) {
+    private void bindDevUsers(String group, String devUsers) {
+        if (StringUtils.isEmpty(devUsers)) {
             return;
         }
-        List<SchedGroupUser> list = devUsers.stream()
+        List<SchedGroupUser> list = Stream.of(devUsers.split(","))
             .distinct()
             .map(e -> new SchedGroupUser(group, e))
             .collect(Collectors.toList());
@@ -177,54 +200,6 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
             Threads.interruptIfNecessary(t);
         } finally {
             LOCK.unlock();
-        }
-    }
-
-    @Getter
-    public static class DisjobGroup {
-        private final String supervisorToken;
-        private final String workerToken;
-        private final String userToken;
-        private final String ownUser;
-        private final Set<String> alarmUsers;
-        private final Set<String> devUsers;
-        private final String webHook;
-
-        private DisjobGroup(String supervisorToken, String workerToken, String userToken,
-                            String ownUser, Set<String> alarmUsers, Set<String> devUsers,
-                            String webHook) {
-            this.supervisorToken = supervisorToken;
-            this.workerToken = workerToken;
-            this.userToken = userToken;
-            this.ownUser = ownUser;
-            this.devUsers = devUsers;
-            this.alarmUsers = alarmUsers;
-            this.webHook = webHook;
-        }
-
-        private static DisjobGroup of(SchedGroup schedGroup, List<SchedGroupUser> devUsers) {
-            return new DisjobGroup(
-                schedGroup.getSupervisorToken(),
-                schedGroup.getWorkerToken(),
-                schedGroup.getUserToken(),
-                schedGroup.getOwnUser(),
-                parse(schedGroup.getAlarmUsers()),
-                toSet(devUsers, SchedGroupUser::getUser),
-                schedGroup.getWebHook()
-            );
-        }
-
-        private static Set<String> parse(String str) {
-            return StringUtils.isBlank(str) ? Collections.emptySet() : ImmutableSet.copyOf(str.split(","));
-        }
-
-        private static <S, T> Set<T> toSet(List<S> source, Function<S, T> mapper) {
-            if (CollectionUtils.isEmpty(source)) {
-                return Collections.emptySet();
-            }
-            ImmutableSet.Builder<T> builder = ImmutableSet.builderWithExpectedSize(source.size() << 1);
-            source.stream().map(mapper).forEach(builder::add);
-            return builder.build();
         }
     }
 

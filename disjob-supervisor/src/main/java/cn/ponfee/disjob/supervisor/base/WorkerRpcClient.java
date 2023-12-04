@@ -19,7 +19,7 @@ import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.service.SchedGroupService;
+import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nullable;

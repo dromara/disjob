@@ -5,7 +5,11 @@
   <sql id="Table_Name">sched_group</sql>
 
   <sql id="Base_Column_List">
-    `group`, supervisor_token, worker_token, user_token, own_user, alarm_users, web_hook, `version`
+    `group`, supervisor_token, worker_token, user_token, own_user, alarm_users, web_hook
+  </sql>
+
+  <sql id="Large_Column_List">
+    <include refid="Base_Column_List" />, version, updated_by, created_by, updated_at, created_at
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedGroup" useGeneratedKeys="true">
@@ -16,7 +20,9 @@
       user_token,
       own_user,
       alarm_users,
-      web_hook
+      web_hook,
+      updated_by,
+      created_by
     ) VALUES (
       #{group,jdbcType=VARCHAR},
       #{supervisorToken,jdbcType=VARCHAR},
@@ -24,13 +30,22 @@
       #{userToken,jdbcType=VARCHAR},
       #{ownUser,jdbcType=VARCHAR},
       #{alarmUsers,jdbcType=VARCHAR},
-      #{webHook,jdbcType=VARCHAR}
+      #{webHook,jdbcType=VARCHAR},
+      #{updatedBy,jdbcType=VARCHAR},
+      #{createdBy,jdbcType=VARCHAR}
     )
   </insert>
+
+  <select id="get" resultType="cn.ponfee.disjob.core.model.SchedGroup">
+    SELECT <include refid="Large_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE is_deleted = 0
+  </select>
 
   <select id="findAll" resultType="cn.ponfee.disjob.core.model.SchedGroup">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
+    WHERE is_deleted = 0
   </select>
 
   <update id="update">
@@ -40,6 +55,7 @@
         web_hook = #{webHook,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND is_deleted = 0
       AND version = #{version,jdbcType=INTEGER}
   </update>
 
@@ -49,6 +65,7 @@
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND supervisor_token = #{oldSupervisorToken,jdbcType=VARCHAR}
+      AND is_deleted = 0
   </update>
 
   <update id="updateWorkerToken">
@@ -57,6 +74,7 @@
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND worker_token = #{oldWorkerToken,jdbcType=VARCHAR}
+      AND is_deleted = 0
   </update>
 
   <update id="updateUserToken">
@@ -65,18 +83,22 @@
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND user_token = #{oldUserToken,jdbcType=VARCHAR}
+      AND is_deleted = 0
   </update>
 
-  <delete id="delete" parameterType="string">
-    DELETE FROM <include refid="Table_Name" />
+  <update id="softDelete" parameterType="string">
+    UPDATE <include refid="Table_Name" />
+    SET is_deleted = NULL,
+        version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
-  </delete>
+      AND is_deleted = 0
+  </update>
 
   <!--
   |  SELECT COUNT(*) cnt FROM (
   |    SELECT 1
   |    FROM <include refid="Table_Name" />
-  |    WHERE `group` = #{group,jdbcType=VARCHAR}
+  |    WHERE `group` = #{group,jdbcType=VARCHAR} AND is_deleted = 0
   |    LIMIT 1
   |  ) t
   |-->
@@ -84,8 +106,31 @@
     SELECT EXISTS (
       SELECT 1
       FROM <include refid="Table_Name" />
-      WHERE `group` = #{group,jdbcType=VARCHAR}
+      WHERE `group` = #{group,jdbcType=VARCHAR} AND is_deleted = 0
     )
   </select>
+
+  <!-- ********************page query******************** -->
+
+  <select id="queryPageCount" resultType="_long">
+    SELECT COUNT(*) cnt
+    FROM <include refid="Table_Name" />
+    <include refid="Query_Page_Condition" />
+  </select>
+
+  <select id="queryPageRecords" resultType="cn.ponfee.disjob.core.model.SchedGroup">
+    SELECT <include refid="Large_Column_List" />
+    FROM <include refid="Table_Name" />
+    <include refid="Query_Page_Condition" />
+    ORDER BY updated_at DESC
+    LIMIT #{offset}, #{pageSize}
+  </select>
+
+  <sql id="Query_Page_Condition">
+    WHERE is_deleted = 0
+    <if test="group != null and group != ''">
+      AND `group` LIKE concat('%', #{group}, '%')
+    </if>
+  </sql>
 
 </mapper>

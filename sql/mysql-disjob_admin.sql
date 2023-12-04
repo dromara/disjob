@@ -273,6 +273,18 @@ insert into sys_menu values('1061', '生成代码', '115', '5',  '#', '',  'F', 
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `url`, `target`, `menu_type`, `visible`, `is_refresh`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (5, '调度管理', 0, 5, '#', '', 'M', '0', '1', '', 'fa fa-tasks', 'admin', '2023-02-06 22:55:25', '', NULL, '调度管理菜单目录');
 
+-- 分组配置菜单 SQL
+insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('Group', '5', '1', '/disjob/group', 'C', '0', 'disjob:group:view', '#', 'admin', sysdate(), '', null, 'Group');
+-- 调度配置菜单ID
+SELECT @parentId := LAST_INSERT_ID();
+-- 查询权限 SQL
+insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('查询', @parentId, '1',  '#',  'F', '0', 'disjob:group:query',         '#', 'admin', sysdate(), '', null, '');
+-- 操作权限 SQL
+insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, update_by, update_time, remark)
+values('操作', @parentId, '2',  '#',  'F', '0', 'disjob:group:operate',       '#', 'admin', sysdate(), '', null, '');
+
 -- 调度配置菜单 SQL
 insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, update_by, update_time, remark)
 values('调度配置', '5', '1', '/disjob/job', 'C', '0', 'disjob:job:view', '#', 'admin', sysdate(), '', null, '调度配置菜单');

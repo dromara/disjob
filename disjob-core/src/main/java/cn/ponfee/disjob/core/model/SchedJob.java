@@ -163,11 +163,6 @@ public class SchedJob extends BaseEntity implements Serializable {
     private String remark;
 
     /**
-     * 是否已删除：0-否；NULL-是(用NULL来解决因软删引起的唯一索引冲突问题)；
-     */
-    private Boolean deleted;
-
-    /**
      * 行记录版本号
      */
     private Integer version;
