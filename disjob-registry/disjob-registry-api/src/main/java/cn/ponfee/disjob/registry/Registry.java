@@ -11,6 +11,7 @@ package cn.ponfee.disjob.registry;
 import cn.ponfee.disjob.core.base.Server;
 
 import java.io.Closeable;
+import java.util.List;
 
 /**
  * Server registry.
@@ -40,6 +41,14 @@ public interface Registry<R extends Server> extends Closeable {
      * @return registry server role
      */
     ServerRole registryRole();
+
+    /**
+     * Gets alive registered servers.
+     *
+     * @return list of alive registered servers
+     * @throws Exception if occur exception
+     */
+    List<R> getRegisteredServers() throws Exception;
 
     /**
      * Close registry.

@@ -11,14 +11,19 @@ package cn.ponfee.disjob.registry;
 import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.discovery.DiscoveryServer;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Registry and discovery server.
@@ -108,6 +113,22 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     @Override
     public final ServerRole discoveryRole() {
         return discoveryRole;
+    }
+
+    protected final List<R> deserializeRegistryServers(List<String> list) {
+        return deserializeRegistryServers(list, Function.identity());
+    }
+
+    protected final <T> List<R> deserializeRegistryServers(List<T> list, Function<T, String> function) {
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        return list.stream()
+            .filter(Objects::nonNull)
+            .map(function)
+            .filter(StringUtils::isNotBlank)
+            .<R>map(registryRole::deserialize)
+            .collect(Collectors.toList());
     }
 
     // -------------------------------------------------------------------------------------private method

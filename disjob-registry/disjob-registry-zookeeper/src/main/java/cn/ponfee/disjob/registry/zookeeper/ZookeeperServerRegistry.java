@@ -33,12 +33,13 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     private static final int CREATE_EPHEMERAL_FAIL_RETRIES = 3;
 
     private final CuratorFrameworkClient client;
+    private final String zkRegistryRootPath;
 
     protected ZookeeperServerRegistry(ZookeeperRegistryProperties config) {
         super(config.getNamespace(), Char.SLASH);
         // zookeeper parent path must start with "/"
-        String registryRootPath0 = separator + registryRootPath;
-        String discoveryRootPath0 = separator + discoveryRootPath;
+        this.zkRegistryRootPath = separator + registryRootPath;
+        String zkDiscoveryRootPath = separator + discoveryRootPath;
 
         CountDownLatch latch = new CountDownLatch(1);
         try {
@@ -54,10 +55,10 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
                     }
                 }
             });
-            client.createPersistent(registryRootPath0);
-            client.createPersistent(discoveryRootPath0);
-            //client.listenChildChanged(discoveryRootPath0);
-            client.watchChildChanged(discoveryRootPath0, latch, this::doRefreshDiscoveryServers);
+            client.createPersistent(zkRegistryRootPath);
+            client.createPersistent(zkDiscoveryRootPath);
+            //client.listenChildChanged(zkDiscoveryRootPath);
+            client.watchChildChanged(zkDiscoveryRootPath, latch, this::doRefreshDiscoveryServers);
         } catch (Exception e) {
             throw new RegistryException("Zookeeper registry init error: " + config, e);
         } finally {
@@ -99,6 +100,11 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         }
     }
 
+    @Override
+    public List<R> getRegisteredServers() throws Exception {
+        return deserializeRegistryServers(client.getChildren(zkRegistryRootPath));
+    }
+
     // ------------------------------------------------------------------Close
 
     @PreDestroy
@@ -117,7 +123,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     // ------------------------------------------------------------------private methods
 
     private String buildRegistryPath(R server) {
-        return separator + registryRootPath + separator + server.serialize();
+        return zkRegistryRootPath + separator + server.serialize();
     }
 
     private synchronized void doRefreshDiscoveryServers(List<String> list) {

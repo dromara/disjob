@@ -47,7 +47,7 @@ public class SchedGroup extends BaseEntity implements Serializable {
     private String userToken;
 
     /**
-     * 负责人
+     * Group own user
      */
     private String ownUser;
 

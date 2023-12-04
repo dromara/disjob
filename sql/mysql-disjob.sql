@@ -157,7 +157,7 @@ CREATE TABLE `sched_group` (
   `supervisor_token`    VARCHAR(60)                        DEFAULT NULL                 COMMENT 'Supervisor访问Worker的密钥令牌',
   `worker_token`        VARCHAR(60)                        DEFAULT NULL                 COMMENT 'Worker访问Supervisor的密钥令牌',
   `user_token`          VARCHAR(60)                        DEFAULT NULL                 COMMENT 'User访问Supervisor的openapi接口密钥令牌(未部署Admin 或 提供类似开放平台 时使用)',
-  `own_user`            VARCHAR(36)                        DEFAULT NULL                 COMMENT '负责人',
+  `own_user`            VARCHAR(36)                        DEFAULT NULL                 COMMENT 'Group own user',
   `alarm_users`         VARCHAR(1024)                      DEFAULT NULL                 COMMENT '告警人员(多个逗号分隔)',
   `web_hook`            VARCHAR(255)                       DEFAULT NULL                 COMMENT '告警web hook地址',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',

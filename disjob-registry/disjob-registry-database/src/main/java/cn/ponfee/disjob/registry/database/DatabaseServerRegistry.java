@@ -57,7 +57,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     private static final String DEREGISTER_SQL  = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND server=?";
 
-    private static final String DISCOVER_SQL    = "SELECT server FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time>?";
+    private static final String SELECT_SQL      = "SELECT server FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time>?";
 
     /**
      * Registry namespace
@@ -179,6 +179,12 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 
+    @Override
+    public List<R> getRegisteredServers() {
+        Object[] args = {namespace, registerRoleName, System.currentTimeMillis() - sessionTimeoutMs};
+        return deserializeRegistryServers(jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args));
+    }
+
     // ------------------------------------------------------------------Close
 
     @PreDestroy
@@ -220,7 +226,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private void discoverServers() throws Throwable {
         RetryTemplate.execute(() -> {
             Object[] args = {namespace, discoveryRoleName, System.currentTimeMillis() - sessionTimeoutMs};
-            List<String> discovered = jdbcTemplateWrapper.list(DISCOVER_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
+            List<String> discovered = jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
 
             if (CollectionUtils.isEmpty(discovered)) {
                 log.warn("Not discovered available {} from database.", discoveryRole.name());

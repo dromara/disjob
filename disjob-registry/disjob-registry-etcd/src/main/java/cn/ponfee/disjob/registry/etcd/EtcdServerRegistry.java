@@ -125,8 +125,9 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         }
     }
 
-    private String buildRegistryServerId(R server) {
-        return registryRootPath + separator + server.serialize();
+    @Override
+    public List<R> getRegisteredServers() throws Exception {
+        return deserializeRegistryServers(client.getKeyChildren(registryRootPath));
     }
 
     // ------------------------------------------------------------------Close
@@ -148,6 +149,10 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     }
 
     // ------------------------------------------------------------------private method
+
+    private String buildRegistryServerId(R server) {
+        return registryRootPath + separator + server.serialize();
+    }
 
     private synchronized void doRefreshDiscoveryServers(List<String> list) {
         List<D> servers;

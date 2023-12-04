@@ -16,6 +16,7 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.consul.configuration.ConsulRegistryProperties;
 import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.OperationException;
 import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
@@ -113,6 +114,16 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         }
     }
 
+    @Override
+    public List<R> getRegisteredServers() {
+        HealthServicesRequest request = HealthServicesRequest.newBuilder()
+            .setPassing(true)
+            .setToken(token)
+            .build();
+        List<HealthService> list = client.getHealthServices(registryRootPath, request).getValue();
+        return deserializeRegistryServers(list, e -> e.getService().getId().substring(registryRootPath.length() + 1));
+    }
+
     // ------------------------------------------------------------------Close
 
     @PreDestroy
@@ -175,7 +186,12 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 }
                 log.debug("check pass for server: {} with check id {}", server, checkId);
             } catch (Throwable t) {
-                log.warn("fail to check pass for server: " + server + ", check id is: " + checkId, t);
+                if ((t instanceof OperationException) && ((OperationException) t).getStatusCode() == 404) {
+                    ThrowingRunnable.doCaught(() -> register(server), () -> "Not found server register failed: " + server);
+                    log.warn("Check pass server not found: " + server + ", check id: " + checkId, t);
+                } else {
+                    log.warn("Check pass server failed: " + server + ", check id: " + checkId, t);
+                }
             }
         }
     }

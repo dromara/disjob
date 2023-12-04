@@ -59,7 +59,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         Void.class
     );
 
-    private static final RedisScript<List> DISCOVERY_SCRIPT = RedisScript.of(
+    private static final RedisScript<List> QUERY_SCRIPT = RedisScript.of(
         "redis.call('zremrangebyscore', KEYS[1], '-inf', ARGV[1]);          \n" +
         "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '+inf'); \n" +
         "redis.call('pexpire', KEYS[1], ARGV[2]);                           \n" +
@@ -184,6 +184,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         log.info("Server deregister: {} | {}", registryRole.name(), server);
     }
 
+    @Override
+    public List<R> getRegisteredServers() {
+        List<String> registryServers = stringRedisTemplate.execute(
+            QUERY_SCRIPT, registryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
+        );
+        return deserializeRegistryServers(registryServers);
+    }
+
     // ------------------------------------------------------------------Close
 
     @PreDestroy
@@ -291,7 +299,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     private void doDiscoverServers() throws Throwable {
         RetryTemplate.execute(() -> {
             List<String> discovered = stringRedisTemplate.execute(
-                DISCOVERY_SCRIPT, discoveryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
+                QUERY_SCRIPT, discoveryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
             );
 
             if (CollectionUtils.isEmpty(discovered)) {

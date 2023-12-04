@@ -106,6 +106,12 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         }
     }
 
+    @Override
+    public List<R> getRegisteredServers() throws Exception {
+        List<Instance> list = namingService.getAllInstances(registryRootPath, groupName);
+        return deserializeRegistryServers(list, Instance::getInstanceId);
+    }
+
     // ------------------------------------------------------------------Close
 
     @PreDestroy
