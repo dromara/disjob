@@ -154,10 +154,10 @@ CREATE TABLE `sched_workflow` (
 CREATE TABLE `sched_group` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `group`               VARCHAR(60)              NOT NULL                               COMMENT '分组名称(同sched_job.group)',
+  `own_user`            VARCHAR(36)              NOT NULL                               COMMENT '负责人',
   `supervisor_token`    VARCHAR(60)                        DEFAULT NULL                 COMMENT 'Supervisor访问Worker的密钥令牌',
   `worker_token`        VARCHAR(60)                        DEFAULT NULL                 COMMENT 'Worker访问Supervisor的密钥令牌',
   `user_token`          VARCHAR(60)                        DEFAULT NULL                 COMMENT 'User访问Supervisor的openapi接口密钥令牌(未部署Admin 或 提供类似开放平台 时使用)',
-  `own_user`            VARCHAR(36)                        DEFAULT NULL                 COMMENT 'Group own user',
   `alarm_users`         VARCHAR(1024)                      DEFAULT NULL                 COMMENT '告警人员(多个逗号分隔)',
   `web_hook`            VARCHAR(255)                       DEFAULT NULL                 COMMENT '告警web hook地址',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
@@ -186,7 +186,7 @@ CREATE TABLE `sched_group_user` (
 -- ----------------------------
 -- INITIALIZE TEST SAMPLES JOB
 -- ----------------------------
-INSERT INTO `sched_group` (`group`, `supervisor_token`, `worker_token`, `user_token`, `own_user`) VALUES ('default', '20bb8b7f1cb94dc894b45546a7c2982f', '358678bfe34648f68b607036a27c6854', '1878f0158782423f9306e7d4c70c999c', 'disjob');
+INSERT INTO `sched_group` (`group`, `own_user`, `supervisor_token`, `worker_token`, `user_token`, `own_user`) VALUES ('default', 'disjob', '20bb8b7f1cb94dc894b45546a7c2982f', '358678bfe34648f68b607036a27c6854', '1878f0158782423f9306e7d4c70c999c', 'disjob');
 INSERT INTO `sched_group_user` (`group`, `user`) VALUES ('default', 'disjob');
 
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351000, 'default', 'noop-job',      'cn.ponfee.disjob.test.handler.NoopJobHandler',                  1, 1, 1, '',                                                                  1, '0/40 * * * * ?',                          unix_timestamp()*1000);

@@ -59,7 +59,7 @@ public class DisjobJobController extends BaseController {
     // -------------------------------------------------------查询
 
     @RequiresPermissions(PERMISSION_VIEW)
-    @GetMapping()
+    @GetMapping
     public String job() {
         return PREFIX + "/job";
     }
