@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.worker.provider.rpc;
 
 import cn.ponfee.disjob.common.spring.RpcController;
+import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -41,6 +42,11 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
         currentWork.authenticate(param);
         return JobHandlerUtils.split(param);
+    }
+
+    @Override
+    public boolean isSupervisor() {
+        return Supervisor.current() != null;
     }
 
 }

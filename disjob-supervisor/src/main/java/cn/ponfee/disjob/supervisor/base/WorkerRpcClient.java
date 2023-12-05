@@ -8,10 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
-import cn.ponfee.disjob.core.base.HttpProperties;
-import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
@@ -58,12 +55,12 @@ public class WorkerRpcClient {
     }
 
     public void verify(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupService.get(param.getGroup()).getSupervisorToken());
+        param.setSupervisorToken(SchedGroupService.getGroup(param.getGroup()).getSupervisorToken());
         grouped(param.getGroup()).verify(param);
     }
 
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupService.get(param.getGroup()).getSupervisorToken());
+        param.setSupervisorToken(SchedGroupService.getGroup(param.getGroup()).getSupervisorToken());
         return grouped(param.getGroup()).split(param);
     }
 
@@ -89,6 +86,11 @@ public class WorkerRpcClient {
         @Override
         public List<SplitTask> split(JobHandlerParam param) throws JobException {
             return JobHandlerUtils.split(param);
+        }
+
+        @Override
+        public boolean isSupervisor() {
+            return Supervisor.current() != null;
         }
     }
 

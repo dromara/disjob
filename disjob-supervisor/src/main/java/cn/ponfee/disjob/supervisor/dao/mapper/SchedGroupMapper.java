@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
+import cn.ponfee.disjob.supervisor.application.value.TokenName;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -29,19 +30,18 @@ public interface SchedGroupMapper {
 
     int update(SchedGroup schedGroup);
 
-    int updateSupervisorToken(@Param("group") String group,
-                              @Param("newSupervisorToken") String newSupervisorToken,
-                              @Param("oldSupervisorToken") String oldSupervisorToken);
+    int updateToken(@Param("group") String group,
+                    @Param("name") TokenName name,
+                    @Param("newToken") String newToken,
+                    @Param("updatedBy") String updatedBy,
+                    @Param("oldToken") String oldToken);
 
-    int updateWorkerToken(@Param("group") String group,
-                          @Param("newWorkerToken") String newWorkerToken,
-                          @Param("oldWorkerToken") String oldWorkerToken);
+    int updateOwnUser(@Param("group") String group,
+                      @Param("ownUser") String ownUser,
+                      @Param("updatedBy") String updatedBy);
 
-    int updateUserToken(@Param("group") String group,
-                        @Param("newUserToken") String newUserToken,
-                        @Param("oldUserToken") String oldUserToken);
-
-    int softDelete(String group);
+    int softDelete(@Param("group") String group,
+                   @Param("updatedBy") String updatedBy);
 
     boolean exists(String group);
 

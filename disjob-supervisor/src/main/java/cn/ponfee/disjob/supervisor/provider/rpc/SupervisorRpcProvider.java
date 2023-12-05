@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.provider.rpc;
 
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.Operations;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -72,6 +73,12 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
     @Override
     public boolean cancelInstance(long instanceId, Operations ops) {
         return jobManager.cancelInstance(instanceId, ops);
+    }
+
+    @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
+    @Override
+    public boolean isWorker() {
+        return Worker.current() != null;
     }
 
     @Override

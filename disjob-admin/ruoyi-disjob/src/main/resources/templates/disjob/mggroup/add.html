@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:include="include :: header('新增分组')" />
+</head>
+<body class="white-bg">
+
+  <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+    <form class="form-horizontal m" id="form-group-add">
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">分组名称：</label>
+        <div class="col-sm-9">
+          <input name="group" placeholder="分组名称" class="form-control" type="text" autocomplete="off" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-3 control-label is-required">负责人：</label>
+        <div class="col-sm-9">
+          <input name="ownUser" class="form-control" type="text" autocomplete="off" required />
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <th:block th:include="include :: footer" />
+  <script th:inline="javascript">
+    var prefix = ctx + "disjob/mggroup"
+
+    $("#form-group-add").validate({
+      focusCleanup: true,
+      rules: {
+        retryCount: {
+          digits: true,
+          min: 0
+        },
+        retryInterval: {
+          digits: true,
+          min: 0
+        }
+      }
+    });
+
+    function submitHandler() {
+      if ($.validate.form()) {
+        $.operate.save(prefix + "/add", $('#form-group-add').serialize());
+      }
+    }
+  </script>
+
+</body>
+</html>

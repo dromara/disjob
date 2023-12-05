@@ -6,29 +6,24 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.base;
+package cn.ponfee.disjob.core.exception;
+
+import cn.ponfee.disjob.common.exception.BaseRuntimeException;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
- * Generate id
+ * Ket exists exception
  *
  * @author Ponfee
  */
-@FunctionalInterface
-public interface IdGenerator {
+public class KeyExistsException extends BaseRuntimeException {
+    private static final long serialVersionUID = -6198294663343359692L;
 
-    /**
-     * Returns long id.
-     *
-     * @return id long value
-     */
-    long generateId();
+    public KeyExistsException() {
+        super(JobCodeMsg.INVALID_PARAM.getCode(), "Key already exists.");
+    }
 
-    /**
-     * Returns string id.
-     *
-     * @return id string value
-     */
-    default String generateIdAsString() {
-        return Long.toString(generateId());
+    public KeyExistsException(String message) {
+        super(JobCodeMsg.UN_AUTHENTICATED.getCode(), message);
     }
 }

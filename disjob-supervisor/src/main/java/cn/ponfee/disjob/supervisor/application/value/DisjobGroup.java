@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.application.model;
+package cn.ponfee.disjob.supervisor.application.value;
 
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.core.model.SchedGroupUser;

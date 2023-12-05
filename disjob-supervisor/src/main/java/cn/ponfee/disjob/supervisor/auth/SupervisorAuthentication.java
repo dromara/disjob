@@ -30,7 +30,11 @@ public @interface SupervisorAuthentication {
         /**
          * User
          */
-        USER
+        USER,
+        /**
+         * Anonymous
+         */
+        ANON,
     }
 
 }

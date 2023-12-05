@@ -226,8 +226,7 @@
         var ids = $.map(rows, function (row) {
           return row.jobId;
         });
-        var data = {"ids": ids.join()};
-        $.operate.submit(url, "post", "json", data);
+        $.operate.post(url, {"ids": ids.join()});
       });
     }
   </script>

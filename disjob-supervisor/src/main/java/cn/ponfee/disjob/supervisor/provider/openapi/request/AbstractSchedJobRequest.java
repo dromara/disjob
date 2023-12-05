@@ -9,8 +9,6 @@
 package cn.ponfee.disjob.supervisor.provider.openapi.request;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.supervisor.provider.openapi.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 

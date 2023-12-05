@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:include="include :: header('Supervisors')" />
+</head>
+<body class="gray-bg">
+  <div class="container-div">
+    <div class="row">
+      <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <div th:include="include :: footer"></div>
+  <script th:inline="javascript">
+    $(function () {
+      var options = {
+        data: [[${list}]],
+        sidePagination: "client",
+        showSearch: false,
+        showRefresh: false,
+        showToggle: false,
+        showColumns: false,
+        columns: [{
+          field: 'host',
+          title: 'Host',
+          align: 'center'
+        },
+        {
+          field: 'port',
+          title: 'Port',
+          align: 'center'
+        },
+        {
+          field: 'pingTime',
+          title: 'Ping time(毫秒)',
+          align: 'center'
+        },
+        {
+          field: 'isWorker',
+          title: '是否Worker',
+          formatter: function(value, row, index) {
+            return value ? '<span class="badge badge-success">是</span>' : '<span class="badge badge-info">否</span>';
+          }
+        }]
+      };
+
+      $.table.init(options);
+    });
+  </script>
+
+</body>
+</html>

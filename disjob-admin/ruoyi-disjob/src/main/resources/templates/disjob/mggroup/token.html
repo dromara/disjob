@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:include="include :: header('令牌管理')" />
+</head>
+<body class="white-bg">
+
+  <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+    <form class="form-horizontal m" id="form-group-token" th:object="${data}">
+
+      <div class="form-group">
+        <label class="col-sm-4 control-label">分组名称：</label>
+        <div class="col-sm-8">
+          <input name="group" th:field="*{group}" class="form-control" type="text" readonly />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-4 control-label">Supervisor令牌：</label>
+        <div class="col-sm-8">
+          <div class="input-group">
+            <input class="form-control" type="text" id="supervisorToken" th:field="*{supervisorToken}" readonly />
+            <span id="supervisor1" class="input-group-btn"></span>
+            <span id="supervisor2" class="input-group-btn"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-4 control-label">Worker令牌：</label>
+        <div class="col-sm-8">
+          <div class="input-group">
+            <input class="form-control" type="text" id="workerToken" th:field="*{workerToken}" readonly />
+            <span id="worker1" class="input-group-btn"></span>
+            <span id="worker2" class="input-group-btn"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-sm-4 control-label">User令牌：</label>
+        <div class="col-sm-8">
+          <div class="input-group">
+            <input class="form-control" type="text" id="userToken" th:field="*{userToken}" readonly />
+            <span id="user1" class="input-group-btn"></span>
+            <span id="user2" class="input-group-btn"></span>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <th:block th:include="include :: footer" />
+  <script th:inline="javascript">
+    var prefix = ctx + "disjob/mggroup";
+
+    function updateToken(name, operation) {
+      var input = $("#" + name + "Token");
+      var params = {
+        "group": '[(${data.group})]',
+        "name": name,
+        "operation": operation,
+        "currentValue": input.val()
+      };
+      var ops = operation === 'change' ? "更换" : (operation === 'set' ? "设置" : "清除");
+      $.modal.confirm("确认要" + ops + "'" + name + "'令牌吗？", function () {
+        $.operate.post(prefix + "/token", params, function (result) {
+          input.val(result.data);
+          setTokenButton(name);
+        });
+      });
+    }
+
+    function submitHandler() {
+      var data = {
+        "group": '[(${data.group})]',
+        "supervisorToken": $("#supervisorToken").val(),
+        "workerToken": $("#workerToken").val(),
+        "userToken": $("#userToken").val()
+      }
+      var tempElement = document.createElement("textarea");
+      tempElement.value = JSON.stringify(data, null, 4);
+      document.body.appendChild(tempElement);
+      tempElement.select();
+      document.execCommand('copy')
+      document.body.removeChild(tempElement);
+      top.layer.msg("复制完成", {
+        icon: $.modal.icon(modal_status.SUCCESS),
+        time: 500,
+        shade: [0.1, '#8F8F8F']
+      });
+      return false;
+    }
+
+    function setTokenButton(name) {
+      var input = $("#" + name + "Token");
+      if (input.val()) {
+        $("#" + name + "1").html('<button type="button" class="btn btn-warning" onclick="updateToken(\'' + name + '\', \'change\')">更换</button>')
+        $("#" + name + "2").html('<button type="button" class="btn btn-danger" onclick="updateToken(\'' + name + '\', \'clear\')">清除</button>');
+      } else {
+        $("#" + name + "1").html('<button type="button" class="btn btn-primary" onclick="updateToken(\'' + name + '\', \'set\')">设置</button>')
+        $("#" + name + "2").html('<button type="button" class="btn btn-default disabled" disabled>清除</button>');
+      }
+    }
+
+    $(function () {
+      var names = ['supervisor', 'worker', 'user'];
+      names.forEach(function (item) {
+        setTokenButton(item);
+      });
+    });
+  </script>
+
+</body>
+</html>

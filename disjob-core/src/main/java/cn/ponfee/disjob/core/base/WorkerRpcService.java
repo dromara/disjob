@@ -34,4 +34,7 @@ public interface WorkerRpcService {
     @PostMapping("job/split")
     List<SplitTask> split(JobHandlerParam param) throws JobException;
 
+    @PostMapping("is_supervisor")
+    boolean isSupervisor();
+
 }

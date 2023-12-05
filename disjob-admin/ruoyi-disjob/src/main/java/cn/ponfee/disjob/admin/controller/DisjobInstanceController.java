@@ -89,6 +89,23 @@ public class DisjobInstanceController extends BaseController {
         return supervisorOpenapiService.listInstanceChildren(pnstanceId);
     }
 
+    /**
+     * Date等类型序列化会使用toString():
+     * <pre>{@code
+     *  mmap.put("tasks", tasks);
+     *  data: [[${tasks}]]
+     * }</pre>
+     *
+     * 使用Json方式序列化:
+     * <pre>{@code
+     *  mmap.put("tasks", Jsons.toJson(tasks));
+     *  data: [[${list}]]
+     * }</pre>
+     *
+     * @param instanceId the instance id
+     * @param mmap       the mmap
+     * @return html page path
+     */
     @RequiresPermissions(PERMISSION_QUERY)
     @GetMapping("/tasks/{instanceId}")
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {

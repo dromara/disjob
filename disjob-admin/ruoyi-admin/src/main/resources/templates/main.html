@@ -438,7 +438,7 @@
             <li><strong>任务编排</strong></li>
           </ol>
           <p dir="auto">现在这个质数统计的总任务已经执行完了，共10个子任务，每个子任务都统计出了它的那部分结果。Disjob能自动帮我汇总结果吗？Yes！框架提供了非常强大且方便的表达式来编排任务，如：<code>A-&gt;B,C,(D-&gt;E)-&gt;D,F-&gt;G</code>，现在我们就可以创建一个汇总任务，然后再把这两个任务编排在一起。</p>
-          <p dir="auto">以下是本例中质数统计的job数据，只列了部分主要字段，其中<code>job_handler</code>为这两个任务处理器的编排(代码在项目源码中)</p>
+          <p dir="auto">以下是本例中质数统计的job数据，只列了部分主要字段，其中<code>jobHandler</code>为这两个任务处理器的编排(代码在项目源码中)</p>
           <div class="highlight highlight-source-js notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="{
   &quot;group&quot;: &quot;default&quot;,
   &quot;jobName&quot;: &quot;prime-count-dag&quot;,

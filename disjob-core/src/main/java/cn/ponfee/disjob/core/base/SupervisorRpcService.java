@@ -27,8 +27,10 @@ import java.util.List;
  * @author Ponfee
  */
 @Hidden
-@RequestMapping("supervisor/rpc/")
+@RequestMapping(SupervisorRpcService.PREFIX_PATH)
 public interface SupervisorRpcService {
+
+    String PREFIX_PATH = "supervisor/rpc/";
 
     @GetMapping("task/get")
     SchedTask getTask(long taskId) throws Exception;
@@ -58,6 +60,9 @@ public interface SupervisorRpcService {
 
     @PostMapping("instance/cancel")
     boolean cancelInstance(long instanceId, Operations ops) throws Exception;
+
+    @GetMapping("is_worker")
+    boolean isWorker();
 
     // ---------------------------------------------------------------------------savepoint
 

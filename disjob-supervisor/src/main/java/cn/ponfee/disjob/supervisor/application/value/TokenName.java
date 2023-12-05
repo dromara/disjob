@@ -6,29 +6,29 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.base;
+package cn.ponfee.disjob.supervisor.application.value;
 
 /**
- * Generate id
+ * Token name
  *
  * @author Ponfee
  */
-@FunctionalInterface
-public interface IdGenerator {
+public enum TokenName {
 
     /**
-     * Returns long id.
-     *
-     * @return id long value
+     * supervisor_token
      */
-    long generateId();
+    supervisor,
 
     /**
-     * Returns string id.
-     *
-     * @return id string value
+     * worker_token
      */
-    default String generateIdAsString() {
-        return Long.toString(generateId());
-    }
+
+    worker,
+
+    /**
+     * user_token
+     */
+    user,
+
 }

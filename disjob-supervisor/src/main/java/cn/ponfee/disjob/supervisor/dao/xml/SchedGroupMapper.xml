@@ -15,22 +15,12 @@
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedGroup" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       `group`,
-      supervisor_token,
-      worker_token,
-      user_token,
       own_user,
-      alarm_users,
-      web_hook,
       updated_by,
       created_by
     ) VALUES (
       #{group,jdbcType=VARCHAR},
-      #{supervisorToken,jdbcType=VARCHAR},
-      #{workerToken,jdbcType=VARCHAR},
-      #{userToken,jdbcType=VARCHAR},
       #{ownUser,jdbcType=VARCHAR},
-      #{alarmUsers,jdbcType=VARCHAR},
-      #{webHook,jdbcType=VARCHAR},
       #{updatedBy,jdbcType=VARCHAR},
       #{createdBy,jdbcType=VARCHAR}
     )
@@ -39,7 +29,8 @@
   <select id="get" resultType="cn.ponfee.disjob.core.model.SchedGroup">
     SELECT <include refid="Large_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE is_deleted = 0
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND is_deleted = 0
   </select>
 
   <select id="findAll" resultType="cn.ponfee.disjob.core.model.SchedGroup">
@@ -59,36 +50,29 @@
       AND version = #{version,jdbcType=INTEGER}
   </update>
 
-  <update id="updateSupervisorToken">
+  <update id="updateToken">
     UPDATE <include refid="Table_Name" />
-    SET supervisor_token = #{newSupervisorToken,jdbcType=VARCHAR},
+    SET ${name}_token = #{newToken,jdbcType=VARCHAR},
+        updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
-      AND supervisor_token = #{oldSupervisorToken,jdbcType=VARCHAR}
+      AND ${name}_token = #{oldToken,jdbcType=VARCHAR}
       AND is_deleted = 0
   </update>
 
-  <update id="updateWorkerToken">
+  <update id="updateOwnUser">
     UPDATE <include refid="Table_Name" />
-    SET worker_token = #{newWorkerToken,jdbcType=VARCHAR},
+    SET own_user = #{ownUser,jdbcType=VARCHAR},
+        updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
-      AND worker_token = #{oldWorkerToken,jdbcType=VARCHAR}
-      AND is_deleted = 0
-  </update>
-
-  <update id="updateUserToken">
-    UPDATE <include refid="Table_Name" />
-    SET user_token = #{newUserToken,jdbcType=VARCHAR},
-        version = version+1
-    WHERE `group` = #{group,jdbcType=VARCHAR}
-      AND user_token = #{oldUserToken,jdbcType=VARCHAR}
       AND is_deleted = 0
   </update>
 
   <update id="softDelete" parameterType="string">
     UPDATE <include refid="Table_Name" />
     SET is_deleted = NULL,
+        updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND is_deleted = 0

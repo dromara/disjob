@@ -63,8 +63,8 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TE
     EnableSupervisor.EnableRetryProperties.class,
     EnableSupervisor.EnableHttpProperties.class,
     EnableSupervisor.EnableSupervisorConfiguration.class,
-    EnableSupervisor.EnableScanLockerConfiguration.class,
     EnableSupervisor.EnableComponentScan.class,
+    EnableSupervisor.EnableScanLockerConfiguration.class,
     EnableSupervisor.EnableSupervisorAdapter.class,
     SupervisorLifecycle.class
 })
@@ -135,18 +135,6 @@ public @interface EnableSupervisor {
     class EnableComponentScan {
     }
 
-    @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
-    class EnableSupervisorAdapter {
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @ConditionalOnMissingBean
-        @Bean
-        public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
-                                                         DistributedJobQuerier jobQuerier) {
-            return new SupervisorRpcProvider(jobManager, jobQuerier);
-        }
-    }
-
     @Order
     @ConditionalOnProperty(prefix = JobConstants.SUPERVISOR_KEY_PREFIX, name = "locker", havingValue = "default", matchIfMissing = true)
     class EnableScanLockerConfiguration {
@@ -167,6 +155,18 @@ public @interface EnableSupervisor {
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
         public DoInLocked scanRunningInstanceLocker(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate) {
             return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_RUNNING_INSTANCE);
+        }
+    }
+
+    @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
+    class EnableSupervisorAdapter {
+
+        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @ConditionalOnMissingBean
+        @Bean
+        public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
+                                                         DistributedJobQuerier jobQuerier) {
+            return new SupervisorRpcProvider(jobManager, jobQuerier);
         }
     }
 

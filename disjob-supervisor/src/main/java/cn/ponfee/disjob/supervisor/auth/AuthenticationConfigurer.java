@@ -10,9 +10,9 @@ package cn.ponfee.disjob.supervisor.auth;
 
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
-import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
-import cn.ponfee.disjob.supervisor.application.model.DisjobGroup;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
+import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.web.method.HandlerMethod;
@@ -45,7 +45,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             }
 
             SupervisorAuthentication annotation = getAnnotation((HandlerMethod) handler);
-            if (annotation == null) {
+            if (annotation == null || annotation.value() == SupervisorAuthentication.Subject.ANON) {
                 return true;
             }
 
@@ -54,22 +54,20 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            switch (annotation.value()) {
-                case WORKER:
-                    authenticateWorker(request, group);
-                    break;
-                case USER:
-                    authenticateUser(request, group);
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unsupported supervisor authentication subject: " + annotation.value());
+            SupervisorAuthentication.Subject value = annotation.value();
+            if (value == SupervisorAuthentication.Subject.WORKER) {
+                authenticateWorker(request, group);
+            } else if (value == SupervisorAuthentication.Subject.USER) {
+                authenticateUser(request, group);
+            } else {
+                throw new UnsupportedOperationException("Unsupported supervisor authentication subject: " + annotation.value());
             }
 
             return true;
         }
 
         private static void authenticateWorker(HttpServletRequest request, String group) {
-            String workerToken = SchedGroupService.get(group).getWorkerToken();
+            String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
                 return;
             }
@@ -82,12 +80,12 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
 
         private static void authenticateUser(HttpServletRequest request, String group) {
             String user = request.getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
-            DisjobGroup disjobGroup = SchedGroupService.get(group);
+            DisjobGroup disjobGroup = SchedGroupService.getGroup(group);
             if (!disjobGroup.isDeveloper(user)) {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            String userToken = SchedGroupService.get(group).getUserToken();
+            String userToken = SchedGroupService.getGroup(group).getUserToken();
             if (StringUtils.isBlank(userToken)) {
                 // user token must configured
                 throw new AuthenticationException(ERR_MSG);

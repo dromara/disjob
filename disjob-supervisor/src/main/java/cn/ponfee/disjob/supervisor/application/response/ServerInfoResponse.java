@@ -6,32 +6,30 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.application.request;
+package cn.ponfee.disjob.supervisor.application.response;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.model.SchedGroup;
-import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 
 /**
- * Add sched group request.
+ * Server info response
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class AddSchedGroupRequest extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 8022970678398556635L;
+public abstract class ServerInfoResponse extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = 2989558365810145061L;
 
-    private String group;
-    private String ownUser;
-    private String createdBy;
+    private String host;
+    private int port;
 
-    public SchedGroup toSchedGroup() {
-        return SchedGroupConverter.INSTANCE.convert(this);
-    }
+    /**
+     * Ping time milliseconds
+     */
+    private Long pingTime;
 
 }

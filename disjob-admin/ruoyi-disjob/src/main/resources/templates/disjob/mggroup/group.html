@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
-  <th:block th:include="include :: header('分组配置')" />
+  <th:block th:include="include :: header('分组管理')" />
+  <th:block th:include="include :: bootstrap-editable-css" />
 </head>
 <body class="gray-bg">
 
   <div class="container-div">
     <div class="row">
       <div class="col-sm-12 search-collapse">
-        <form id="sched-job-form">
+        <form id="sched-group-form">
           <div class="select-list">
             <ul>
               <li>
@@ -25,11 +26,11 @@
       </div>
 
       <div class="btn-group-sm" id="toolbar" role="group">
-        <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="disjob:job:operate">
-          <i class="fa fa-plus"></i> 添加
+        <a class="btn btn-success" onclick="add()" shiro:hasPermission="disjob:mggroup:operate">
+          <i class="fa fa-plus"></i> 新增分组
         </a>
-        <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="disjob:job:operate">
-          <i class="fa fa-edit"></i> 修改
+        <a class="btn btn-primary single disabled" onclick="token()" shiro:hasPermission="disjob:mggroup:operate">
+          <i class="fa fa-edit"></i> 令牌管理
         </a>
       </div>
 
@@ -41,20 +42,20 @@
 
   <th:block th:include="include :: footer" />
   <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+  <th:block th:include="include :: bootstrap-table-editable-js" />
   <script th:inline="javascript">
-    var operateFlag = [[${@permission.hasPermi('disjob:job:operate')}]];
-    var prefix = ctx + "disjob/group";
+    var operateFlag = [[${@permission.hasPermi('disjob:mggroup:operate')}]];
+    var prefix = ctx + "disjob/mggroup";
 
     $(function () {
       var options = {
         url: prefix + "/list",
         createUrl: prefix + "/add",
-        updateUrl: prefix + "/edit/{id}",
         removeUrl: prefix + "/remove",
-        exportUrl: prefix + "/export",
         fixedColumns: true,
         fixedNumber: 2,
-        modalName: "分组配置",
+        onEditableSave: updateOwnUser,
+        modalName: "分组",
         columns: [{
           checkbox: true
         },
@@ -62,56 +63,43 @@
           field: 'group',
           title: '分组名称',
           formatter: function (value, row, index) {
-            return '<a href="javascript:void(0)" onclick="detail(\'' + value + '\')">' + value + '</a>';
-          }
-        },
-        {
-          field: 'supervisorToken',
-          title: 'Supervisor Token',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
-          }
-        },
-        {
-          field: 'workerToken',
-          title: 'Worker Token',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
-          }
-        },
-        {
-          field: 'userToken',
-          title: 'User Token',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
+            return '<a href="javascript:void(0)" onclick="workers(\'' + value + '\')">' + value + '</a>';
           }
         },
         {
           field: 'ownUser',
-          title: 'Own User',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
+          title: '负责人',
+          editable: {
+            type: 'text',
+            validate: function(value) {
+              if (!value) {
+                return '不能为空';
+              }
+              if (value.length > 36) {
+                return '不能超过36个字符';
+              }
+            }
           }
         },
         {
           field: 'devUsers',
-          title: 'Dev Users',
+          title: '开发人员',
           formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
+            return $.table.tooltip(value, 72, "open");
           }
         },
         {
           field: 'alarmUsers',
-          title: 'Alarm Users',
+          title: '告警人员',
           formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
+            return $.table.tooltip(value, 72, "open");
           }
         },
         {
           field: 'webHook',
           title: 'Web Hook',
           formatter: function (value, row, index) {
-            return $.table.tooltip(value, 19, "open");
+            return $.table.tooltip(value, 72, "open");
           }
         },
         {
@@ -136,14 +124,11 @@
           title: '操作',
           align: 'center',
           formatter: function (value, row, index) {
-            if (![[${@permission.isPermitted('disjob:job:operate')}]]) {
+            if (![[${@permission.isPermitted('disjob:mggroup:operate')}]]) {
               return '';
             }
-
             var actions = [];
-            actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
-            actions.push("<a class='btn btn-success btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.edit(&quot;" + row.jobId + "&quot;)'><i class='fa fa-edit'></i> 编辑</a> ");
-            actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='copy(&quot;" + row.jobId + "&quot;)'><i class='fa fa-copy'></i> 复制</a> ");
+            actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='remove(&quot;" + row.group + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
             return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
           }
         }]
@@ -151,16 +136,38 @@
       $.table.init(options);
     });
 
-    function detail(jobId) {
-      var url = prefix + '/detail/' + jobId;
+    function add() {
+      table.set();
+      $.modal.open("添加" + table.options.modalName, $.operate.addUrl(), '770', '240');
+    }
+
+    function token() {
+      table.set();
+      var rows = $("#" + table.options.id).bootstrapTable('getSelections');
+      if (rows.length !== 1) {
+        $.modal.alertWarning("请选择一条记录");
+        return;
+      }
+      var url = prefix + '/token?group=' + rows[0].group;
+      $.modal.open("令牌管理", url, '770', '350', null, ['复制', '关闭']);
+    }
+
+    function remove(group) {
+      table.set();
+      $.modal.confirm("确定删除分组'" + group + "'吗？", function() {
+        $.operate.post(table.options.removeUrl, { "group": group });
+      });
+    }
+
+    function updateOwnUser(field, row, rowIndex, oldValue) {
+      var params = { "group": row.group, "ownUser": row[field] };
+      $.operate.post(prefix + "/update_own_user", params);
+    }
+
+    function workers(group) {
+      var url = prefix + '/detail/' + group;
       $.modal.open("调度配置详情", url, null, null, null, ['关闭']);
     }
-
-    function copy(jobId) {
-      var url = prefix + '/copy/' + jobId;
-      $.modal.open("复制", url);
-    }
-
   </script>
 
 </body>
