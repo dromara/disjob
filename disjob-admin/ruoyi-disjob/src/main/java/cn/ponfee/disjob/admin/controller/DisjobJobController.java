@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 调度配置Controller
+ * 作业配置Controller
  *
  * @author Ponfee
  */
@@ -65,7 +65,7 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 查询调度配置列表
+     * 查询作业配置列表
      */
     @RequiresPermissions(PERMISSION_QUERY)
     @PostMapping("/list")
@@ -78,7 +78,7 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 查看调度配置详情
+     * 查看作业配置详情
      */
     @RequiresPermissions(PERMISSION_QUERY)
     @GetMapping("/detail/{jobId}")
@@ -90,10 +90,10 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 导出调度配置列表
+     * 导出作业配置列表
      */
     @RequiresPermissions(PERMISSION_QUERY)
-    @Log(title = "调度配置", businessType = BusinessType.EXPORT)
+    @Log(title = "作业配置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     @ResponseBody
     public AjaxResult export(SchedJobPageRequest request) {
@@ -101,13 +101,13 @@ public class DisjobJobController extends BaseController {
         List<SchedJobResponse> rows = supervisorOpenapiService.queryJobForPage(request).getRows();
         List<SchedJobExport> list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
-        return excel.exportExcel(list, "调度配置数据");
+        return excel.exportExcel(list, "作业配置数据");
     }
 
     // -------------------------------------------------------操作
 
     /**
-     * 新增调度配置
+     * 新增作业配置
      */
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/add")
@@ -116,7 +116,7 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 复制调度配置
+     * 复制作业配置
      */
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/copy/{id}")
@@ -130,10 +130,10 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 新增调度配置
+     * 新增作业配置
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "调度配置", businessType = BusinessType.INSERT)
+    @Log(title = "作业配置", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
     public AjaxResult doAdd(AddSchedJobRequest req) throws JobException {
@@ -143,7 +143,7 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 修改调度配置
+     * 修改作业配置
      */
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/edit/{id}")
@@ -155,10 +155,10 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 修改调度配置
+     * 修改作业配置
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "调度配置", businessType = BusinessType.UPDATE)
+    @Log(title = "作业配置", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobException {
@@ -168,10 +168,10 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 删除调度配置
+     * 删除作业配置
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "调度配置", businessType = BusinessType.DELETE)
+    @Log(title = "作业配置", businessType = BusinessType.DELETE)
     @PostMapping("/remove")
     @ResponseBody
     public AjaxResult remove(@RequestParam("ids") String ids) {
@@ -187,10 +187,10 @@ public class DisjobJobController extends BaseController {
     }
 
     /**
-     * 修改调度配置状态
+     * 修改作业配置状态
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "修改调度配置状态", businessType = BusinessType.UPDATE)
+    @Log(title = "修改作业配置状态", businessType = BusinessType.UPDATE)
     @PostMapping("/changeState")
     @ResponseBody
     public AjaxResult changeState(@RequestParam("jobId") long jobId,

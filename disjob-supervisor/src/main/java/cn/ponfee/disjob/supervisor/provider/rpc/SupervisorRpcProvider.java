@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.provider.rpc;
 
 import cn.ponfee.disjob.common.spring.RpcController;
+import cn.ponfee.disjob.core.base.SupervisorMetrics;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -77,8 +78,10 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
 
     @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
     @Override
-    public boolean isWorker() {
-        return Worker.current() != null;
+    public SupervisorMetrics metrics() {
+        SupervisorMetrics metrics = new SupervisorMetrics();
+        metrics.setAlsoWorker(Worker.current() != null);
+        return metrics;
     }
 
     @Override

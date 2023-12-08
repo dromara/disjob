@@ -89,8 +89,8 @@ public class WorkerRpcClient {
         }
 
         @Override
-        public boolean isSupervisor() {
-            return Supervisor.current() != null;
+        public WorkerMetrics metrics() {
+            throw new UnsupportedOperationException();
         }
     }
 

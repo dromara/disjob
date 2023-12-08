@@ -17,6 +17,7 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
+import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operations;
@@ -135,6 +136,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         super.setName(getClass().getSimpleName());
         super.setPriority(Thread.MAX_PRIORITY);
         super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+
+        WorkerMetricsAggregator.setWorkerThreadPool(this);
     }
 
     /**
@@ -315,6 +318,19 @@ public class WorkerThreadPool extends Thread implements Closeable {
             "maximum-pool-size=%d, current-pool-size=%d, active-pool-size=%d, idle-pool-size=%d, queue-task-count=%d, completed-task-count=%d",
             maximumPoolSize, workerThreadCounter.get(), activePool.size(), idlePool.size(), taskQueue.size(), completedTaskCounter.get()
         );
+    }
+
+    public WorkerMetrics.ThreadPoolMetrics metrics() {
+        WorkerMetrics.ThreadPoolMetrics metrics = new WorkerMetrics.ThreadPoolMetrics();
+        metrics.setClosed(closed.get());
+        metrics.setKeepAliveTime((int) keepAliveTimeSeconds);
+        metrics.setMaximumPoolSize(maximumPoolSize);
+        metrics.setCurrentPoolSize(workerThreadCounter.get());
+        metrics.setActivePoolSize(activePool.size());
+        metrics.setIdlePoolSize(idlePool.size());
+        metrics.setQueueTaskCount(taskQueue.size());
+        metrics.setCompletedTaskCount(completedTaskCounter.get());
+        return metrics;
     }
 
     // ----------------------------------------------------------------------private methods

@@ -61,8 +61,8 @@ public interface SupervisorRpcService {
     @PostMapping("instance/cancel")
     boolean cancelInstance(long instanceId, Operations ops) throws Exception;
 
-    @GetMapping("is_worker")
-    boolean isWorker();
+    @GetMapping("metrics")
+    SupervisorMetrics metrics();
 
     // ---------------------------------------------------------------------------savepoint
 

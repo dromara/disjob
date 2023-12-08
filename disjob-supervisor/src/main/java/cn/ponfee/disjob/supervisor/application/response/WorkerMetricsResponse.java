@@ -8,28 +8,30 @@
 
 package cn.ponfee.disjob.supervisor.application.response;
 
-import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 /**
- * Server info response
+ * Worker metrics response
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public abstract class ServerInfoResponse extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 2989558365810145061L;
+public class WorkerMetricsResponse extends ServerMetricsResponse {
+    private static final long serialVersionUID = -8325148543854446360L;
 
-    private String host;
-    private int port;
+    private String workerId;
 
-    /**
-     * Ping time milliseconds
-     */
-    private Long pingTime;
+    private Boolean alsoSupervisor;
+    private Integer jvmThreadActiveCount;
+    private Boolean closed;
+    private Integer keepAliveTime;
+    private Integer maximumPoolSize;
+    private Integer currentPoolSize;
+    private Integer activePoolSize;
+    private Integer idlePoolSize;
+    private Long queueTaskCount;
+    private Long completedTaskCount;
 
 }

@@ -159,14 +159,14 @@
       });
     }
 
+    function workers(group) {
+      table.set();
+      $.modal.popupRight("Workers", prefix + '/worker?group=' + group);
+    }
+
     function updateOwnUser(field, row, rowIndex, oldValue) {
       var params = { "group": row.group, "ownUser": row[field] };
       $.operate.post(prefix + "/update_own_user", params);
-    }
-
-    function workers(group) {
-      var url = prefix + '/detail/' + group;
-      $.modal.open("调度配置详情", url, null, null, null, ['关闭']);
     }
   </script>
 

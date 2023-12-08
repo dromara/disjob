@@ -12,6 +12,7 @@ import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import io.swagger.v3.oas.annotations.Hidden;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -34,7 +35,7 @@ public interface WorkerRpcService {
     @PostMapping("job/split")
     List<SplitTask> split(JobHandlerParam param) throws JobException;
 
-    @PostMapping("is_supervisor")
-    boolean isSupervisor();
+    @GetMapping("metrics")
+    WorkerMetrics metrics();
 
 }

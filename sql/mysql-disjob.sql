@@ -66,7 +66,7 @@ CREATE TABLE `sched_job` (
   KEY `ix_jobstate_nexttriggertime` (`job_state`, `next_trigger_time`) COMMENT '用于扫表',
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='作业配置表';
 
 CREATE TABLE `sched_depend` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
@@ -108,7 +108,7 @@ CREATE TABLE `sched_instance` (
   KEY `ix_wnstanceid` (`wnstance_id`),
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度实例表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务实例表';
 
 CREATE TABLE `sched_task` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',

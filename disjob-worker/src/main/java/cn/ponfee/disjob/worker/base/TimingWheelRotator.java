@@ -52,7 +52,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private final LoopThread heartbeatThread;
     private final ExecutorService processExecutor;
 
-    private volatile int round = 0;
+    private volatile long nextLogTimeMillis = 0;
 
     public TimingWheelRotator(SupervisorRpcService supervisorRpcClient,
                               Discovery<Supervisor> discoverySupervisor,
@@ -89,16 +89,10 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     }
 
     private void process() {
-        if (++round > 1024) {
-            round = 0;
-            LOG.info("Timing wheel rotator heartbeat, worker-thread-pool: {}, jvm-thread-count: {}", workerThreadPool, Thread.activeCount());
-        }
-
         // check has available supervisors
-        if (!discoverySupervisor.hasDiscoveredServers()) {
-            if ((round & 0x1F) == 0) {
-                LOG.warn("Not found available supervisor.");
-            }
+        if (!discoverySupervisor.hasDiscoveredServers() && System.currentTimeMillis() > nextLogTimeMillis) {
+            LOG.warn("Not found available supervisor.");
+            nextLogTimeMillis = System.currentTimeMillis() + 5000;
             return;
         }
 

@@ -15,22 +15,33 @@ import lombok.Setter;
 import java.io.Serializable;
 
 /**
- * Worker thread pool monitor
+ * Worker metrics
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class WorkerInfo extends ToJsonString implements Serializable {
+public class WorkerMetrics extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -5848721038892533810L;
 
-    private Boolean isSupervisor;
-    private ThreadPoolInfo threadPoolInfo;
+    /**
+     * 是否也是Supervisor角色
+     */
+    private boolean alsoSupervisor;
+
+    /**
+     * Jvm总线程池数
+     */
     private int jvmThreadActiveCount;
+
+    /**
+     * 线程池指标情况
+     */
+    private ThreadPoolMetrics threadPool;
 
     @Getter
     @Setter
-    public static class ThreadPoolInfo extends ToJsonString implements Serializable {
+    public static class ThreadPoolMetrics extends ToJsonString implements Serializable {
         private static final long serialVersionUID = -7745918336704886916L;
 
         private boolean closed;

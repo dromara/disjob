@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 调度实例Controller
+ * 任务实例Controller
  *
  * @author Ponfee
  */
@@ -57,7 +57,7 @@ public class DisjobInstanceController extends BaseController {
     }
 
     /**
-     * 查询调度实例列表-tree
+     * 查询任务实例列表-tree
      */
     @RequiresPermissions(PERMISSION_QUERY)
     @PostMapping("/tree")
@@ -70,7 +70,7 @@ public class DisjobInstanceController extends BaseController {
     }
 
     /**
-     * 查询调度实例列表-flat
+     * 查询任务实例列表-flat
      */
     @RequiresPermissions(PERMISSION_QUERY)
     @PostMapping("/flat")
@@ -117,10 +117,10 @@ public class DisjobInstanceController extends BaseController {
     // -----------------------------------------------------------操作
 
     /**
-     * 删除调度实例
+     * 删除任务实例
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "删除调度实例", businessType = BusinessType.DELETE)
+    @Log(title = "删除任务实例", businessType = BusinessType.DELETE)
     @PostMapping("/remove/{instanceId}")
     @ResponseBody
     public AjaxResult remove(@PathVariable("instanceId") Long instanceId) {
@@ -129,10 +129,10 @@ public class DisjobInstanceController extends BaseController {
     }
 
     /**
-     * 暂停调度实例
+     * 暂停任务实例
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "暂停调度实例", businessType = BusinessType.UPDATE)
+    @Log(title = "暂停任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
@@ -145,10 +145,10 @@ public class DisjobInstanceController extends BaseController {
     }
 
     /**
-     * 恢复调度实例
+     * 恢复任务实例
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "恢复调度实例", businessType = BusinessType.UPDATE)
+    @Log(title = "恢复任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
@@ -161,10 +161,10 @@ public class DisjobInstanceController extends BaseController {
     }
 
     /**
-     * 取消调度实例
+     * 取消任务实例
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "取消调度实例", businessType = BusinessType.UPDATE)
+    @Log(title = "取消任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {

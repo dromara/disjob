@@ -12,14 +12,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Supervisor info response
+ * Supervisor metrics response
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SupervisorInfoResponse extends ServerInfoResponse {
+public class SupervisorMetricsResponse extends ServerMetricsResponse {
     private static final long serialVersionUID = 1128162112784547814L;
 
-    private Boolean isWorker;
+    private Boolean alsoWorker;
+
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
-  <th:block th:include="include :: header('调度配置')" />
+  <th:block th:include="include :: header('作业配置')" />
 </head>
 <body class="gray-bg">
 
@@ -68,7 +68,7 @@
         exportUrl: prefix + "/export",
         fixedColumns: true,
         fixedNumber: 2,
-        modalName: "调度配置",
+        modalName: "作业配置",
         columns: [{
           checkbox: true
         },
@@ -185,7 +185,7 @@
 
     function detail(jobId) {
       var url = prefix + '/detail/' + jobId;
-      $.modal.open("调度配置详情", url, null, null, null, ['关闭']);
+      $.modal.open("作业配置详情", url, null, null, null, ['关闭']);
     }
 
     function changeState(jobId, fromJobState) {
@@ -216,7 +216,7 @@
       }
       for (var i = 0, n = rows.length; i < n; i++) {
         if (rows[i].jobState === 1) {
-          $.modal.alertWarning("不能删除启用状态的调度配置[" + rows[i].jobId + "]");
+          $.modal.alertWarning("不能删除启用状态的作业配置[" + rows[i].jobId + "]");
           return;
         }
       }

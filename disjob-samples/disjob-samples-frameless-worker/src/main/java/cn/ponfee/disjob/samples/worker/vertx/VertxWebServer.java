@@ -103,6 +103,9 @@ public class VertxWebServer extends AbstractVerticle {
             return workerRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
+        router.get(PATH_PREFIX + "metrics")
+              .handler(ctx -> handle(workerRpcService::metrics, ctx, INTERNAL_SERVER_ERROR));
+
         if (httpTaskReceiver != null) {
             router.post(PATH_PREFIX + "task/receive").handler(ctx -> handle(() -> {
                 ExecuteTaskParam param = parseArg(ctx, ExecuteTaskParam.class);

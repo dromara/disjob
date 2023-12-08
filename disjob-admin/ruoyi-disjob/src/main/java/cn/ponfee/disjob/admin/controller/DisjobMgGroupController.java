@@ -11,6 +11,7 @@ package cn.ponfee.disjob.admin.controller;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
 import cn.ponfee.disjob.supervisor.application.request.AddSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.value.TokenName;
@@ -37,9 +38,12 @@ public class DisjobMgGroupController extends BaseController {
     private static final String PERMISSION_OPERATE = "disjob:mggroup:operate";
 
     private final SchedGroupService schedGroupService;
+    private final ServerMetricsService serverMetricsService;
 
-    public DisjobMgGroupController(SchedGroupService schedGroupService) {
+    public DisjobMgGroupController(SchedGroupService schedGroupService,
+                                   ServerMetricsService serverMetricsService) {
         this.schedGroupService = schedGroupService;
+        this.serverMetricsService = serverMetricsService;
     }
 
     // -------------------------------------------------------查询
@@ -145,6 +149,13 @@ public class DisjobMgGroupController extends BaseController {
         } else {
             return AjaxResult.error("更新失败");
         }
+    }
+
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @GetMapping("/worker")
+    public String worker(@RequestParam("group") String group, ModelMap mmap) throws Exception {
+        mmap.put("list", serverMetricsService.workers(group));
+        return PREFIX + "/worker";
     }
 
     private enum TokenOperation {
