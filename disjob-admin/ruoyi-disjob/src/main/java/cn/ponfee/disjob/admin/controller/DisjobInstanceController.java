@@ -12,10 +12,10 @@ import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.SleepWaitUtils;
 import cn.ponfee.disjob.core.enums.RunState;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedInstanceResponse;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.service.SupervisorOpenapiService;
+import cn.ponfee.disjob.supervisor.application.SupervisorOpenapiService;
+import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
+import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -38,9 +38,8 @@ import java.util.List;
 public class DisjobInstanceController extends BaseController {
 
     static final String PREFIX = "disjob/instance";
-    private static final String PERMISSION_VIEW = "disjob:instance:view";
-    private static final String PERMISSION_QUERY = "disjob:instance:query";
-    private static final String PERMISSION_OPERATE = "disjob:instance:operate";
+    private static final String PERMISSION_INSTANCE = "disjob:instance:operate";
+
     private static final int WAIT_SLEEP_ROUND = 9;
     private static final long[] WAIT_SLEEP_MILLIS = {2500, 500};
 
@@ -50,7 +49,7 @@ public class DisjobInstanceController extends BaseController {
         this.supervisorOpenapiService = supervisorOpenapiService;
     }
 
-    @RequiresPermissions(PERMISSION_VIEW)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @GetMapping
     public String instance() {
         return PREFIX + "/instance";
@@ -59,7 +58,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 查询任务实例列表-tree
      */
-    @RequiresPermissions(PERMISSION_QUERY)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @PostMapping("/tree")
     @ResponseBody
     public TableDataInfo tree(SchedInstancePageRequest request) {
@@ -72,7 +71,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 查询任务实例列表-flat
      */
-    @RequiresPermissions(PERMISSION_QUERY)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @PostMapping("/flat")
     @ResponseBody
     public TableDataInfo flat(SchedInstancePageRequest request) {
@@ -82,7 +81,7 @@ public class DisjobInstanceController extends BaseController {
         return PageUtils.toTableDataInfo(supervisorOpenapiService.queryInstanceForPage(request));
     }
 
-    @RequiresPermissions(PERMISSION_QUERY)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @PostMapping("/children")
     @ResponseBody
     public List<SchedInstanceResponse> children(@RequestParam("pnstanceId") Long pnstanceId) {
@@ -106,7 +105,7 @@ public class DisjobInstanceController extends BaseController {
      * @param mmap       the mmap
      * @return html page path
      */
-    @RequiresPermissions(PERMISSION_QUERY)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @GetMapping("/tasks/{instanceId}")
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
         List<SchedTaskResponse> tasks = supervisorOpenapiService.getInstanceTasks(instanceId);
@@ -119,7 +118,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 删除任务实例
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @Log(title = "删除任务实例", businessType = BusinessType.DELETE)
     @PostMapping("/remove/{instanceId}")
     @ResponseBody
@@ -131,7 +130,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 暂停任务实例
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @Log(title = "暂停任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
@@ -147,7 +146,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 恢复任务实例
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @Log(title = "恢复任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
@@ -163,7 +162,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 取消任务实例
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_INSTANCE)
     @Log(title = "取消任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody

@@ -72,7 +72,7 @@
           editable: {
             type: 'text',
             validate: function(value) {
-              if (!value) {
+              if (!value || !value.trim()) {
                 return '不能为空';
               }
               if (value.length > 36) {

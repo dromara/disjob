@@ -20,7 +20,7 @@ import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.base.WorkerRpcClient;
-import cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider;
+import cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider;
 import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import com.fasterxml.jackson.databind.ObjectMapper;

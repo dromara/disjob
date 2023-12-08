@@ -33,8 +33,8 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/" + DisjobMgGroupController.PREFIX)
 public class DisjobMgGroupController extends BaseController {
-    static final String PREFIX = "disjob/mggroup";
 
+    static final String PREFIX = "disjob/mggroup";
     private static final String PERMISSION_OPERATE = "disjob:mggroup:operate";
 
     private final SchedGroupService schedGroupService;

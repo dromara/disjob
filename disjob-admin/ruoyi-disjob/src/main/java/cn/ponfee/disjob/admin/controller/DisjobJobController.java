@@ -13,11 +13,11 @@ import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedJobResponse;
-import cn.ponfee.disjob.supervisor.service.SupervisorOpenapiService;
+import cn.ponfee.disjob.supervisor.application.SupervisorOpenapiService;
+import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
+import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -44,11 +44,9 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/" + DisjobJobController.PREFIX)
 public class DisjobJobController extends BaseController {
-    static final String PREFIX = "disjob/job";
 
-    private static final String PERMISSION_VIEW = "disjob:job:view";
-    private static final String PERMISSION_QUERY = "disjob:job:query";
-    private static final String PERMISSION_OPERATE = "disjob:job:operate";
+    static final String PREFIX = "disjob/job";
+    private static final String PERMISSION_JOB = "disjob:job:operate";
 
     private final SupervisorOpenapiService supervisorOpenapiService;
 
@@ -58,7 +56,7 @@ public class DisjobJobController extends BaseController {
 
     // -------------------------------------------------------查询
 
-    @RequiresPermissions(PERMISSION_VIEW)
+    @RequiresPermissions(PERMISSION_JOB)
     @GetMapping
     public String job() {
         return PREFIX + "/job";
@@ -67,7 +65,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 查询作业配置列表
      */
-    @RequiresPermissions(PERMISSION_QUERY)
+    @RequiresPermissions(PERMISSION_JOB)
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedJobPageRequest request) {
@@ -80,7 +78,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 查看作业配置详情
      */
-    @RequiresPermissions(PERMISSION_QUERY)
+    @RequiresPermissions(PERMISSION_JOB)
     @GetMapping("/detail/{jobId}")
     public String detail(@PathVariable("jobId") long jobId, ModelMap mmap) {
         SchedJobResponse job = supervisorOpenapiService.getJob(jobId);
@@ -92,7 +90,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 导出作业配置列表
      */
-    @RequiresPermissions(PERMISSION_QUERY)
+    @RequiresPermissions(PERMISSION_JOB)
     @Log(title = "作业配置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     @ResponseBody
@@ -109,7 +107,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 新增作业配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @GetMapping("/add")
     public String add(ModelMap mmap) {
         return toAdd(new SchedJobResponse(), mmap);
@@ -118,7 +116,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 复制作业配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @GetMapping("/copy/{id}")
     public String copy(@PathVariable("id") long jobId, ModelMap mmap) {
         return toAdd(supervisorOpenapiService.getJob(jobId), mmap);
@@ -132,7 +130,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 新增作业配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @Log(title = "作业配置", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
@@ -145,7 +143,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 修改作业配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @GetMapping("/edit/{id}")
     public String edit(@PathVariable("id") long jobId, ModelMap mmap) {
         SchedJobResponse job = supervisorOpenapiService.getJob(jobId);
@@ -157,7 +155,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 修改作业配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @Log(title = "作业配置", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
@@ -170,7 +168,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 删除作业配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @Log(title = "作业配置", businessType = BusinessType.DELETE)
     @PostMapping("/remove")
     @ResponseBody
@@ -189,7 +187,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 修改作业配置状态
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @Log(title = "修改作业配置状态", businessType = BusinessType.UPDATE)
     @PostMapping("/changeState")
     @ResponseBody
@@ -202,7 +200,7 @@ public class DisjobJobController extends BaseController {
     /**
      * 触发执行
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_JOB)
     @Log(title = "触发执行", businessType = BusinessType.OTHER)
     @PostMapping("/trigger")
     @ResponseBody

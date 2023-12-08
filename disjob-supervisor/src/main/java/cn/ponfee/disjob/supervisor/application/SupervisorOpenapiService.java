@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.service;
+package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
@@ -18,14 +18,16 @@ import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.supervisor.provider.openapi.converter.SchedJobConverter;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedInstanceResponse;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedJobResponse;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedTaskResponse;
+import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
+import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
+import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
+import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
+import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
+import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

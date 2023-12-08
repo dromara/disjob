@@ -142,8 +142,8 @@ create table sys_role (
 -- ----------------------------
 -- 初始化-角色信息表数据
 -- ----------------------------
-insert into sys_role values('1', '超级管理员', 'admin',  1, 1, '0', '0', 'admin', sysdate(), '', null, '超级管理员');
-insert into sys_role values('2', '普通角色',   'common', 2, 2, '0', '0', 'admin', sysdate(), '', null, '普通角色');
+insert into sys_role values('1', '超级管理员', 'administrator',  1, 1, '0', '0', 'admin', sysdate(), '', null, '超级管理员');
+insert into sys_role values('2', '普通角色',   'normal', 2, 2, '0', '0', 'admin', sysdate(), '', null, '普通角色');
 
 
 -- ----------------------------
@@ -274,40 +274,24 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `url`,
 VALUES (5, '调度管理', 0, 5, '#', '', 'M', '0', '1', '', 'fa fa-tasks', 'admin', sysdate(), '调度管理目录');
 
 -- 5.1）Supervisor菜单 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('Supervisors', '5', '1', '/disjob/supervisor', 'C', '0', 'disjob:supervisor:list', '#', 'admin', sysdate(), 'Supervisor菜单');
+insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
+values(1101, 'Supervisors', '5', '1', '/disjob/supervisor', 'C', '0', 'disjob:supervisor:operate', '#', 'admin', sysdate(), 'Supervisor菜单');
 
 -- 5.2）分组管理菜单 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('分组管理', '5', '2', '/disjob/mggroup', 'C', '0', 'disjob:mggroup:operate', '#', 'admin', sysdate(), '分组管理菜单');
+insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
+values(1102, '分组管理', '5', '2', '/disjob/mggroup', 'C', '0', 'disjob:mggroup:operate', '#', 'admin', sysdate(), '分组管理菜单');
 
--- 5.3）分组管理菜单 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('我的分组', '5', '3', '/disjob/mygroup', 'C', '0', 'disjob:mygroup:operate', '#', 'admin', sysdate(), '我的分组菜单');
+-- 5.3）我的分组菜单 SQL
+insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
+values(1103, '我的分组', '5', '3', '/disjob/mygroup', 'C', '0', 'disjob:mygroup:operate', '#', 'admin', sysdate(), '我的分组菜单');
 
 -- 5.4）作业配置菜单 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('作业配置', '5', '4', '/disjob/job', 'C', '0', 'disjob:job:view', '#', 'admin', sysdate(), '作业配置菜单');
--- 作业配置菜单ID
-SELECT @parentId := LAST_INSERT_ID();
--- 查询权限 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('查询', @parentId, '1',  '#',  'F', '0', 'disjob:job:query',         '#', 'admin', sysdate(), '');
--- 操作权限 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('操作', @parentId, '2',  '#',  'F', '0', 'disjob:job:operate',       '#', 'admin', sysdate(), '');
+insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
+values(1104, '作业配置', '5', '4', '/disjob/job', 'C', '0', 'disjob:job:operate', '#', 'admin', sysdate(), '作业配置菜单');
 
 -- 5.5）任务实例菜单 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('任务实例', '5', '5', '/disjob/instance', 'C', '0', 'disjob:instance:view', '#', 'admin', sysdate(), '任务实例菜单');
--- 任务实例菜单ID
-SELECT @parentId := LAST_INSERT_ID();
--- 查询权限 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('查询', @parentId, '1',  '#',  'F', '0', 'disjob:instance:query',         '#', 'admin', sysdate(), '');
--- 操作权限 SQL
-insert into sys_menu (menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values('操作', @parentId, '2',  '#',  'F', '0', 'disjob:instance:operate',      '#', 'admin', sysdate(), '');
+insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
+values(1105, '任务实例', '5', '5', '/disjob/instance', 'C', '0', 'disjob:instance:operate', '#', 'admin', sysdate(), '任务实例菜单');
 
 
 -- ----------------------------
@@ -340,91 +324,10 @@ create table sys_role_menu (
 -- ----------------------------
 -- 初始化-角色和菜单关联表数据
 -- ----------------------------
-insert into sys_role_menu values ('2', '1');
-insert into sys_role_menu values ('2', '2');
-insert into sys_role_menu values ('2', '3');
-insert into sys_role_menu values ('2', '4');
-insert into sys_role_menu values ('2', '100');
-insert into sys_role_menu values ('2', '101');
-insert into sys_role_menu values ('2', '102');
-insert into sys_role_menu values ('2', '103');
-insert into sys_role_menu values ('2', '104');
-insert into sys_role_menu values ('2', '105');
-insert into sys_role_menu values ('2', '106');
-insert into sys_role_menu values ('2', '107');
-insert into sys_role_menu values ('2', '108');
-insert into sys_role_menu values ('2', '109');
-insert into sys_role_menu values ('2', '110');
-insert into sys_role_menu values ('2', '111');
-insert into sys_role_menu values ('2', '112');
-insert into sys_role_menu values ('2', '113');
-insert into sys_role_menu values ('2', '114');
-insert into sys_role_menu values ('2', '115');
-insert into sys_role_menu values ('2', '116');
-insert into sys_role_menu values ('2', '500');
-insert into sys_role_menu values ('2', '501');
-insert into sys_role_menu values ('2', '1000');
-insert into sys_role_menu values ('2', '1001');
-insert into sys_role_menu values ('2', '1002');
-insert into sys_role_menu values ('2', '1003');
-insert into sys_role_menu values ('2', '1004');
-insert into sys_role_menu values ('2', '1005');
-insert into sys_role_menu values ('2', '1006');
-insert into sys_role_menu values ('2', '1007');
-insert into sys_role_menu values ('2', '1008');
-insert into sys_role_menu values ('2', '1009');
-insert into sys_role_menu values ('2', '1010');
-insert into sys_role_menu values ('2', '1011');
-insert into sys_role_menu values ('2', '1012');
-insert into sys_role_menu values ('2', '1013');
-insert into sys_role_menu values ('2', '1014');
-insert into sys_role_menu values ('2', '1015');
-insert into sys_role_menu values ('2', '1016');
-insert into sys_role_menu values ('2', '1017');
-insert into sys_role_menu values ('2', '1018');
-insert into sys_role_menu values ('2', '1019');
-insert into sys_role_menu values ('2', '1020');
-insert into sys_role_menu values ('2', '1021');
-insert into sys_role_menu values ('2', '1022');
-insert into sys_role_menu values ('2', '1023');
-insert into sys_role_menu values ('2', '1024');
-insert into sys_role_menu values ('2', '1025');
-insert into sys_role_menu values ('2', '1026');
-insert into sys_role_menu values ('2', '1027');
-insert into sys_role_menu values ('2', '1028');
-insert into sys_role_menu values ('2', '1029');
-insert into sys_role_menu values ('2', '1030');
-insert into sys_role_menu values ('2', '1031');
-insert into sys_role_menu values ('2', '1032');
-insert into sys_role_menu values ('2', '1033');
-insert into sys_role_menu values ('2', '1034');
-insert into sys_role_menu values ('2', '1035');
-insert into sys_role_menu values ('2', '1036');
-insert into sys_role_menu values ('2', '1037');
-insert into sys_role_menu values ('2', '1038');
-insert into sys_role_menu values ('2', '1039');
-insert into sys_role_menu values ('2', '1040');
-insert into sys_role_menu values ('2', '1041');
-insert into sys_role_menu values ('2', '1042');
-insert into sys_role_menu values ('2', '1043');
-insert into sys_role_menu values ('2', '1044');
-insert into sys_role_menu values ('2', '1045');
-insert into sys_role_menu values ('2', '1046');
-insert into sys_role_menu values ('2', '1047');
-insert into sys_role_menu values ('2', '1048');
-insert into sys_role_menu values ('2', '1049');
-insert into sys_role_menu values ('2', '1050');
-insert into sys_role_menu values ('2', '1051');
-insert into sys_role_menu values ('2', '1052');
-insert into sys_role_menu values ('2', '1053');
-insert into sys_role_menu values ('2', '1054');
-insert into sys_role_menu values ('2', '1055');
-insert into sys_role_menu values ('2', '1056');
-insert into sys_role_menu values ('2', '1057');
-insert into sys_role_menu values ('2', '1058');
-insert into sys_role_menu values ('2', '1059');
-insert into sys_role_menu values ('2', '1060');
-insert into sys_role_menu values ('2', '1061');
+INSERT INTO sys_role_menu VALUES ('2', '5'   );
+INSERT INTO sys_role_menu VALUES ('2', '1103');
+INSERT INTO sys_role_menu VALUES ('2', '1104');
+INSERT INTO sys_role_menu VALUES ('2', '1105');
 
 -- ----------------------------
 -- 8、角色和部门关联表  角色1-N部门

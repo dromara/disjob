@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.provider.openapi.request;
+package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.model.PageRequest;
 import lombok.Getter;

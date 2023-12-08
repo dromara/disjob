@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.admin.domain;
 
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedJobResponse;
+import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.annotation.Excel;
 import org.springframework.beans.BeanUtils;

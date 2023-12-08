@@ -6,21 +6,21 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.provider.openapi;
+package cn.ponfee.disjob.supervisor.provider;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.BaseController;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.supervisor.application.SupervisorOpenapiService;
+import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
+import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
+import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
+import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.request.UpdateSchedJobRequest;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedInstanceResponse;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedJobResponse;
-import cn.ponfee.disjob.supervisor.provider.openapi.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.service.SupervisorOpenapiService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
