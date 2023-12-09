@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_group</sql>
 
   <sql id="Base_Column_List">
-    `group`, supervisor_token, worker_token, user_token, own_user, alarm_users, web_hook
+    `group`, own_user, supervisor_token, worker_token, user_token, dev_users, alarm_users, web_hook
   </sql>
 
   <sql id="Large_Column_List">
@@ -39,17 +39,6 @@
     WHERE is_deleted = 0
   </select>
 
-  <update id="update">
-    UPDATE <include refid="Table_Name" />
-    SET own_user = #{ownUser,jdbcType=VARCHAR},
-        alarm_users = #{alarmUsers,jdbcType=VARCHAR},
-        web_hook = #{webHook,jdbcType=VARCHAR},
-        version = version+1
-    WHERE `group` = #{group,jdbcType=VARCHAR}
-      AND is_deleted = 0
-      AND version = #{version,jdbcType=INTEGER}
-  </update>
-
   <update id="updateToken">
     UPDATE <include refid="Table_Name" />
     SET ${name}_token = #{newToken,jdbcType=VARCHAR},
@@ -75,6 +64,21 @@
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND is_deleted = 0
+  </update>
+
+  <update id="edit">
+    UPDATE <include refid="Table_Name" />
+    SET dev_users = #{devUsers,jdbcType=VARCHAR},
+        alarm_users = #{alarmUsers,jdbcType=VARCHAR},
+        <if test="ownUser != null and ownUser != ''">
+          own_user = #{ownUser,jdbcType=VARCHAR},
+        </if>
+        web_hook = #{webHook,jdbcType=VARCHAR},
+        updated_by = #{updatedBy,jdbcType=VARCHAR},
+        version = version+1
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND version = #{version,jdbcType=INTEGER}
       AND is_deleted = 0
   </update>
 
@@ -112,8 +116,8 @@
 
   <sql id="Query_Page_Condition">
     WHERE is_deleted = 0
-    <if test="group != null and group != ''">
-      AND `group` LIKE concat('%', #{group}, '%')
+    <if test="groups != null and groups.size() != 0">
+      AND `group` IN  (<foreach collection="groups" separator="," item="group">#{group,jdbcType=VARCHAR}</foreach>)
     </if>
   </sql>
 

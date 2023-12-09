@@ -2,6 +2,8 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
   <th:block th:include="include :: header('我的分组')" />
+  <th:block th:include="include :: select2-css" />
+  <th:block th:include="include :: bootstrap-select-css" />
 </head>
 <body class="gray-bg">
 
@@ -12,8 +14,11 @@
           <div class="select-list">
             <ul>
               <li>
-                <label>分组名称：</label>
-                <input type="text" name="group" />
+                <label>选择分组：</label>
+                <select class="form-control" name="groups" th:with="item=${groups}">
+                  <option value="">　</option>
+                  <option th:each="e : ${item}" th:text="${e}" th:value="${e}"></option>
+                </select>
               </li>
               <li>
                 <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
@@ -25,6 +30,9 @@
       </div>
 
       <div class="btn-group-sm" id="toolbar" role="group">
+        <a class="btn btn-primary single disabled" onclick="edit()" shiro:hasPermission="disjob:mygroup:operate">
+          <i class="fa fa-edit"></i> 修改
+        </a>
       </div>
 
       <div class="col-sm-12 select-table table-striped">
@@ -35,6 +43,9 @@
 
   <th:block th:include="include :: footer" />
   <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+  <th:block th:include="include :: select2-js" />
+  <th:block th:include="include :: bootstrap-select-js" />
+
   <script th:inline="javascript">
     var operateFlag = [[${@permission.hasPermi('disjob:mygroup:operate')}]];
     var prefix = ctx + "disjob/mygroup";
@@ -113,6 +124,18 @@
       };
       $.table.init(options);
     });
+
+    function edit(group) {
+      table.set();
+      if ($.common.isEmpty(group)) {
+        group = $.table.selectFirstColumns();
+        if (!group) {
+          $.modal.alertWarning("请至少选择一条记录");
+          return;
+        }
+      }
+      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '770', '460');
+    }
 
     function workers(group) {
       table.set();

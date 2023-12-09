@@ -31,6 +31,11 @@ public class SchedGroup extends BaseEntity implements Serializable {
     private String group;
 
     /**
+     * 负责人
+     */
+    private String ownUser;
+
+    /**
      * Supervisor访问Worker的密钥令牌
      */
     private String supervisorToken;
@@ -46,9 +51,9 @@ public class SchedGroup extends BaseEntity implements Serializable {
     private String userToken;
 
     /**
-     * 负责人
+     * 开发人员(多个逗号分隔)
      */
-    private String ownUser;
+    private String devUsers;
 
     /**
      * 告警人员(多个逗号分隔)
@@ -74,12 +79,5 @@ public class SchedGroup extends BaseEntity implements Serializable {
      * 创建人
      */
     private String createdBy;
-
-    // -------------------------------------------------------non table columns
-
-    /**
-     * 开发人员(多个逗号分隔)
-     */
-    private String devUsers;
 
 }

@@ -139,7 +139,6 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <!-- Generate annotated @Mapper interface implementation class -->
@@ -147,20 +146,17 @@
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct-processor</artifactId>
       <version>${mapstruct.version}</version>
-      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
-      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     <!-- 谨慎使用，经常会出现启动后运行报错的问题。对于多个模块项目，包含@Component的模块都需要在其pom中增加该依赖，否则启动会报错
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
-      <optional>true</optional>
       <scope>provided</scope>
     </dependency>
     -->

@@ -8,13 +8,18 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Update sched group request parameter structure.
@@ -28,14 +33,34 @@ public class UpdateSchedGroupRequest extends ToJsonString implements Serializabl
 
     private String group;
     private String ownUser;
-    private String alarmUsers;
     private String devUsers;
+    private String alarmUsers;
     private String webHook;
     private String updatedBy;
     private int version;
 
     public SchedGroup toSchedGroup() {
         return SchedGroupConverter.INSTANCE.convert(this);
+    }
+
+    public void checkAndTrim() {
+        Assert.hasText(updatedBy, "Updated by cannot be blank.");
+        this.ownUser = StringUtils.trim(ownUser);
+        this.devUsers = prune(devUsers);
+        this.alarmUsers = prune(alarmUsers);
+        this.webHook = StringUtils.trim(webHook);
+    }
+
+    private static String prune(String users) {
+        if (users == null) {
+            return null;
+        }
+
+        return Stream.of(users.split(Str.COMMA))
+            .filter(StringUtils::isNotBlank)
+            .map(String::trim)
+            .distinct()
+            .collect(Collectors.joining(Str.COMMA));
     }
 
 }

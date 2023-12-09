@@ -9,13 +9,14 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.base.Symbol;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
+import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.core.exception.GroupNotFoundException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.model.SchedGroup;
-import cn.ponfee.disjob.core.model.SchedGroupUser;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.AddSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
@@ -24,9 +25,9 @@ import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
 import cn.ponfee.disjob.supervisor.application.value.TokenName;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupUserMapper;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -35,8 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.io.Closeable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -56,15 +56,13 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     private static final Lock LOCK = new ReentrantLock();
     private static volatile Map<String, DisjobGroup> groupMap;
+    private static volatile Map<String, Set<String>> userMap;
 
     private final SchedGroupMapper schedGroupMapper;
-    private final SchedGroupUserMapper schedGroupUserMapper;
     private final LoopThread refresher;
 
-    public SchedGroupService(SchedGroupMapper schedGroupMapper,
-                             SchedGroupUserMapper schedGroupUserMapper) {
+    public SchedGroupService(SchedGroupMapper schedGroupMapper) {
         this.schedGroupMapper = schedGroupMapper;
-        this.schedGroupUserMapper = schedGroupUserMapper;
         this.refresher = new LoopThread("group_metadata_refresher", 60, 60, this::refresh);
         refresh();
     }
@@ -73,42 +71,33 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public long add(AddSchedGroupRequest request) {
-        Assert.hasText(request.getGroup(), "Group cannot be blank.");
-        Assert.hasText(request.getCreatedBy(), "Created by cannot be blank.");
+        request.checkAndTrim();
         if (schedGroupMapper.exists(request.getGroup())) {
             throw new KeyExistsException("Group already exists: " + request.getGroup());
         }
         SchedGroup schedGroup = request.toSchedGroup();
         schedGroup.setUpdatedBy(schedGroup.getCreatedBy());
         schedGroupMapper.insert(schedGroup);
-        bindDevUsers(schedGroup.getGroup(), schedGroup.getDevUsers());
         refresh();
         return schedGroup.getId();
     }
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public boolean update(UpdateSchedGroupRequest request) {
-        Assert.hasText(request.getUpdatedBy(), "Updated by cannot be blank.");
-        SchedGroup schedGroup = request.toSchedGroup();
-        if (isOneAffectedRow(schedGroupMapper.update(schedGroup))) {
-            schedGroupUserMapper.deleteByGroup(schedGroup.getGroup());
-            bindDevUsers(schedGroup.getGroup(), schedGroup.getDevUsers());
-            refresh();
-            return true;
-        } else {
-            return false;
-        }
+    public boolean delete(String group, String updatedBy) {
+        return Functions.doIfTrue(
+            isOneAffectedRow(schedGroupMapper.softDelete(group, updatedBy)),
+            this::refresh
+        );
     }
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public boolean delete(String group, String updatedBy) {
-        if (isOneAffectedRow(schedGroupMapper.softDelete(group, updatedBy))) {
-            schedGroupUserMapper.deleteByGroup(group);
-            refresh();
-            return true;
-        } else {
-            return false;
-        }
+    public boolean edit(UpdateSchedGroupRequest request) {
+        request.checkAndTrim();
+        SchedGroup schedGroup = request.toSchedGroup();
+        return Functions.doIfTrue(
+            isOneAffectedRow(schedGroupMapper.edit(schedGroup)),
+            this::refresh
+        );
     }
 
     public SchedGroupResponse get(String group) {
@@ -117,22 +106,18 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     }
 
     public boolean updateToken(String group, TokenName name, String newToken, String updatedBy, String oldToken) {
-        if (isOneAffectedRow(schedGroupMapper.updateToken(group, name, newToken, updatedBy, oldToken))) {
-            refresh();
-            return true;
-        } else {
-            return false;
-        }
+        return Functions.doIfTrue(
+            isOneAffectedRow(schedGroupMapper.updateToken(group, name, newToken, updatedBy, oldToken)),
+            this::refresh
+        );
     }
 
     public boolean updateOwnUser(String group, String ownUser, String updatedBy) {
         Assert.hasText(ownUser, "Own user cannot be blank.");
-        if (isOneAffectedRow(schedGroupMapper.updateOwnUser(group, ownUser, updatedBy))) {
-            refresh();
-            return true;
-        } else {
-            return false;
-        }
+        return Functions.doIfTrue(
+            isOneAffectedRow(schedGroupMapper.updateOwnUser(group, ownUser, updatedBy)),
+            this::refresh
+        );
     }
 
     public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {
@@ -157,7 +142,7 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     // ------------------------------------------------------------other static methods
 
-    public static DisjobGroup getGroup(String group) {
+    public static DisjobGroup mapGroup(String group) {
         DisjobGroup disjobGroup = groupMap.get(group);
         if (disjobGroup == null) {
             throw new GroupNotFoundException("Not found worker group: " + group);
@@ -165,38 +150,52 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         return disjobGroup;
     }
 
-    // ------------------------------------------------------------private methods
-
-    private void bindDevUsers(String group, String devUsers) {
-        if (StringUtils.isEmpty(devUsers)) {
-            return;
-        }
-        List<SchedGroupUser> list = Stream.of(devUsers.split(","))
-            .distinct()
-            .map(e -> new SchedGroupUser(group, e))
-            .collect(Collectors.toList());
-        schedGroupUserMapper.batchInsert(list);
+    public static Set<String> mapUser(String user) {
+        Set<String> groups = userMap.get(user);
+        return groups == null ? Collections.emptySet() : groups;
     }
+
+    // ------------------------------------------------------------private methods
 
     private void refresh() {
         if (!LOCK.tryLock()) {
             return;
         }
-        try {
-            Map<String, List<SchedGroupUser>> groupUserMap = schedGroupUserMapper.findAll()
-                .stream()
-                .collect(Collectors.groupingBy(SchedGroupUser::getGroup));
 
+        try {
             List<SchedGroup> list = schedGroupMapper.findAll();
-            ImmutableMap.Builder<String, DisjobGroup> builder = ImmutableMap.builderWithExpectedSize(list.size() << 1);
-            list.forEach(e -> builder.put(e.getGroup(), DisjobGroup.of(e, groupUserMap.get(e.getGroup()))));
-            SchedGroupService.groupMap = builder.build();
+            Map<String, DisjobGroup> groupMap0 = list.stream().collect(Collectors.toMap(SchedGroup::getGroup, DisjobGroup::of));
+            Map<String, Set<String>> userMap0 = toUserMap(list);
+
+            SchedGroupService.groupMap = groupMap0;
+            SchedGroupService.userMap = userMap0;
         } catch (Throwable t) {
             LOG.error("Refresh sched group error.", t);
             Threads.interruptIfNecessary(t);
         } finally {
             LOCK.unlock();
         }
+    }
+
+    private static Map<String, Set<String>> toUserMap(List<SchedGroup> list) {
+        Map<String, ?> userMap = list.stream()
+            .flatMap(e -> {
+                String group = e.getGroup();
+                String devUsers = e.getDevUsers();
+                if (StringUtils.isBlank(devUsers)) {
+                    return Stream.of(Pair.of(e.getOwnUser(), group));
+                }
+
+                String[] array = devUsers.split(Symbol.Str.COMMA);
+                List<Pair<String, String>> users = new ArrayList<>(array.length + 1);
+                users.add(Pair.of(e.getOwnUser(), group));
+                for (String user : array) {
+                    users.add(Pair.of(user, group));
+                }
+                return users.stream();
+            })
+            .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
+        return (Map<String, Set<String>>) userMap;
     }
 
 }

@@ -12,6 +12,8 @@ import cn.ponfee.disjob.common.model.PageRequest;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 /**
  * Sched group page request
  *
@@ -22,6 +24,6 @@ import lombok.Setter;
 public class SchedGroupPageRequest extends PageRequest {
     private static final long serialVersionUID = -213388921649759103L;
 
-    private String group;
+    private Set<String> groups;
 
 }

@@ -13,6 +13,7 @@ import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
@@ -32,6 +33,15 @@ public class AddSchedGroupRequest extends ToJsonString implements Serializable {
 
     public SchedGroup toSchedGroup() {
         return SchedGroupConverter.INSTANCE.convert(this);
+    }
+
+    public void checkAndTrim() {
+        Assert.hasText(group, "Group cannot be blank.");
+        Assert.hasText(ownUser, "Own user cannot be blank.");
+        Assert.hasText(createdBy, "Created by cannot be blank.");
+
+        group = group.trim();
+        ownUser = ownUser.trim();
     }
 
 }

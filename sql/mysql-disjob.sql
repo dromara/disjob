@@ -158,6 +158,7 @@ CREATE TABLE `sched_group` (
   `supervisor_token`    VARCHAR(60)              NOT NULL  DEFAULT ''                   COMMENT 'Supervisor访问Worker的密钥令牌',
   `worker_token`        VARCHAR(60)              NOT NULL  DEFAULT ''                   COMMENT 'Worker访问Supervisor的密钥令牌',
   `user_token`          VARCHAR(60)              NOT NULL  DEFAULT ''                   COMMENT 'User访问Supervisor的openapi接口密钥令牌(未部署Admin 或 提供类似开放平台 时使用)',
+  `dev_users`           VARCHAR(1024)                      DEFAULT NULL                 COMMENT '开发人员(多个逗号分隔)',
   `alarm_users`         VARCHAR(1024)                      DEFAULT NULL                 COMMENT '告警人员(多个逗号分隔)',
   `web_hook`            VARCHAR(255)                       DEFAULT NULL                 COMMENT '告警web hook地址',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
@@ -172,22 +173,12 @@ CREATE TABLE `sched_group` (
   KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分组表';
 
-CREATE TABLE `sched_group_user` (
-  `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
-  `group`               VARCHAR(60)              NOT NULL                               COMMENT '分组名称',
-  `user`                VARCHAR(36)              NOT NULL                               COMMENT '用户',
-  `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_group_user` (`group`, `user`),
-  KEY `ix_createdat` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分组与用户关联表';
-
 
 -- ----------------------------
 -- INITIALIZE TEST SAMPLES JOB
 -- ----------------------------
-INSERT INTO `sched_group` (`group`, `own_user`, `supervisor_token`, `worker_token`, `user_token`) VALUES ('default', 'disjob', '20bb8b7f1cb94dc894b45546a7c2982f', '358678bfe34648f68b607036a27c6854', '1878f0158782423f9306e7d4c70c999c');
-INSERT INTO `sched_group_user` (`group`, `user`) VALUES ('default', 'disjob');
+INSERT INTO `sched_group` (`group`, `own_user`, `supervisor_token`, `worker_token`, `user_token`, `dev_users`)
+VALUES ('default', 'disjob', '20bb8b7f1cb94dc894b45546a7c2982f', '358678bfe34648f68b607036a27c6854', '1878f0158782423f9306e7d4c70c999c', 'admin,disjob');
 
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351000, 'default', 'noop-job',      'cn.ponfee.disjob.test.handler.NoopJobHandler',                  1, 1, 1, '',                                                                  1, '0/40 * * * * ?',                          unix_timestamp()*1000);
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351001, 'default', 'http-job',      'cn.ponfee.disjob.core.handle.impl.HttpJobHandler',              1, 1, 1, '{"method":"GET", "url":"https://www.baidu.com"}',                   1, '0/50 * * * * ?',                          unix_timestamp()*1000);

@@ -28,8 +28,6 @@ public interface SchedGroupMapper {
 
     List<SchedGroup> findAll();
 
-    int update(SchedGroup schedGroup);
-
     int updateToken(@Param("group") String group,
                     @Param("name") TokenName name,
                     @Param("newToken") String newToken,
@@ -42,6 +40,8 @@ public interface SchedGroupMapper {
 
     int softDelete(@Param("group") String group,
                    @Param("updatedBy") String updatedBy);
+
+    int edit(SchedGroup schedGroup);
 
     boolean exists(String group);
 

@@ -9,14 +9,22 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
+import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
+import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.enums.BusinessType;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -44,7 +52,8 @@ public class DisjobMyGroupController extends BaseController {
 
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping
-    public String mygroup() {
+    public String mygroup(ModelMap mmap) {
+        mmap.put("groups", SchedGroupService.mapUser(getLoginName()));
         return PREFIX + "/mygroup";
     }
 
@@ -57,7 +66,40 @@ public class DisjobMyGroupController extends BaseController {
     public TableDataInfo list(SchedGroupPageRequest request) {
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
+        if (CollectionUtils.isEmpty(request.getGroups())) {
+            request.setGroups(SchedGroupService.mapUser(getLoginName()));
+        }
+
+        if (CollectionUtils.isEmpty(request.getGroups())) {
+            return PageUtils.toTableDataInfo(new PageResponse<>());
+        }
         return PageUtils.toTableDataInfo(schedGroupService.queryForPage(request));
+    }
+
+    /**
+     * 修改分组
+     */
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @GetMapping("/edit/{group}")
+    public String edit(@PathVariable("group") String group, ModelMap mmap) {
+        SchedGroupResponse data = schedGroupService.get(group);
+        Assert.notNull(data, () -> "Group not found: " + group);
+        mmap.put("data", data);
+        mmap.put("isOwnUser", getLoginName().equals(data.getOwnUser()));
+        return PREFIX + "/edit";
+    }
+
+    /**
+     * 修改分组
+     */
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @Log(title = "修改分组", businessType = BusinessType.UPDATE)
+    @PostMapping("/edit")
+    @ResponseBody
+    public AjaxResult doEdit(UpdateSchedGroupRequest req) {
+        req.setUpdatedBy(getLoginName());
+        boolean result = schedGroupService.edit(req);
+        return result ? success() : error("修改冲突，请刷重新新页面");
     }
 
     @RequiresPermissions(PERMISSION_OPERATE)
