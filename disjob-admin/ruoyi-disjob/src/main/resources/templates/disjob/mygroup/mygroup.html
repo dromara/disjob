@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+  <th:block th:include="include :: header('我的分组')" />
+</head>
+<body class="gray-bg">
+
+  <div class="container-div">
+    <div class="row">
+      <div class="col-sm-12 search-collapse">
+        <form id="sched-group-form">
+          <div class="select-list">
+            <ul>
+              <li>
+                <label>分组名称：</label>
+                <input type="text" name="group" />
+              </li>
+              <li>
+                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+              </li>
+            </ul>
+          </div>
+        </form>
+      </div>
+
+      <div class="btn-group-sm" id="toolbar" role="group">
+      </div>
+
+      <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:include="include :: footer" />
+  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+  <script th:inline="javascript">
+    var operateFlag = [[${@permission.hasPermi('disjob:mygroup:operate')}]];
+    var prefix = ctx + "disjob/mygroup";
+
+    $(function () {
+      var options = {
+        url: prefix + "/list",
+        fixedColumns: true,
+        fixedNumber: 2,
+        modalName: "分组",
+        columns: [{
+          checkbox: true
+        },
+        {
+          field: 'group',
+          title: '分组名称',
+          formatter: function (value, row, index) {
+            return '<a href="javascript:void(0)" onclick="workers(\'' + value + '\')">' + value + '</a>';
+          }
+        },
+        {
+          field: 'ownUser',
+          title: '负责人'
+        },
+        {
+          field: 'devUsers',
+          title: '开发人员',
+          formatter: function (value, row, index) {
+            return $.table.tooltip(value, 72, "open");
+          }
+        },
+        {
+          field: 'alarmUsers',
+          title: '告警人员',
+          formatter: function (value, row, index) {
+            return $.table.tooltip(value, 72, "open");
+          }
+        },
+        {
+          field: 'webHook',
+          title: 'Web Hook',
+          formatter: function (value, row, index) {
+            return $.table.tooltip(value, 72, "open");
+          }
+        },
+        {
+          field: 'updatedBy',
+          title: '更新人'
+        },
+        {
+          field: 'updatedAt',
+          title: '更新时间'
+        },
+        {
+          field: 'createdBy',
+          title: '创建人',
+          visible: false
+        },
+        {
+          field: 'createdAt',
+          title: '创建时间',
+          visible: false
+        },
+        {
+          title: '操作',
+          align: 'center',
+          formatter: function (value, row, index) {
+            if (![[${@permission.isPermitted('disjob:mygroup:operate')}]]) {
+              return '';
+            }
+            var actions = [];
+            actions.push("<a class='btn btn-success btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='edit(&quot;" + row.group + "&quot;)'><i class='fa fa-edit'></i> 编辑</a> ");
+            return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
+          }
+        }]
+      };
+      $.table.init(options);
+    });
+
+    function workers(group) {
+      table.set();
+      $.modal.popupRight("Workers", prefix + '/worker?group=' + group);
+    }
+  </script>
+
+</body>
+</html>

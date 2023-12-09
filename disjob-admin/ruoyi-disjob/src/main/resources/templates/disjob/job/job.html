@@ -32,7 +32,7 @@
         <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="disjob:job:operate">
           <i class="fa fa-plus"></i> 添加
         </a>
-        <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="disjob:job:operate">
+        <a class="btn btn-primary single disabled" onclick="edit()" shiro:hasPermission="disjob:job:operate">
           <i class="fa fa-edit"></i> 修改
         </a>
         <a class="btn btn-danger multiple disabled" onclick="removeAll()" shiro:hasPermission="disjob:job:operate">
@@ -63,7 +63,6 @@
       var options = {
         url: prefix + "/list",
         createUrl: prefix + "/add",
-        updateUrl: prefix + "/edit/{id}",
         removeUrl: prefix + "/remove",
         exportUrl: prefix + "/export",
         fixedColumns: true,
@@ -174,7 +173,7 @@
               actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
             }
             actions.push("<a class='btn btn-primary btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='trigger(&quot;" + row.jobId + "&quot;)'><i class='fa fa-hand-pointer-o'></i> 触发</a> ");
-            actions.push("<a class='btn btn-success btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.edit(&quot;" + row.jobId + "&quot;)'><i class='fa fa-edit'></i> 编辑</a> ");
+            actions.push("<a class='btn btn-success btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='edit(&quot;" + row.jobId + "&quot;)'><i class='fa fa-edit'></i> 编辑</a> ");
             actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='copy(&quot;" + row.jobId + "&quot;)'><i class='fa fa-copy'></i> 复制</a> ");
             return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
           }
@@ -204,6 +203,18 @@
     function copy(jobId) {
       var url = prefix + '/copy/' + jobId;
       $.modal.open("复制", url);
+    }
+
+    function edit(jobId) {
+      table.set();
+      if ($.common.isEmpty(jobId)) {
+        jobId = $.table.selectFirstColumns();
+        if (!jobId) {
+          $.modal.alertWarning("请至少选择一条记录");
+          return;
+        }
+      }
+      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + jobId);
     }
 
     // 批量删除

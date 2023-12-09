@@ -50,8 +50,8 @@ public class DisjobMgGroupController extends BaseController {
 
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping
-    public String group() {
-        return PREFIX + "/group";
+    public String mggroup() {
+        return PREFIX + "/mggroup";
     }
 
     /**

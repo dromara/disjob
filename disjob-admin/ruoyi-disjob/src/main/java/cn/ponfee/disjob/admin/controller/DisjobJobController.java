@@ -117,8 +117,8 @@ public class DisjobJobController extends BaseController {
      * 复制作业配置
      */
     @RequiresPermissions(PERMISSION_JOB)
-    @GetMapping("/copy/{id}")
-    public String copy(@PathVariable("id") long jobId, ModelMap mmap) {
+    @GetMapping("/copy/{jobId}")
+    public String copy(@PathVariable("jobId") long jobId, ModelMap mmap) {
         return toAdd(supervisorOpenapiService.getJob(jobId), mmap);
     }
 
@@ -144,8 +144,8 @@ public class DisjobJobController extends BaseController {
      * 修改作业配置
      */
     @RequiresPermissions(PERMISSION_JOB)
-    @GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") long jobId, ModelMap mmap) {
+    @GetMapping("/edit/{jobId}")
+    public String edit(@PathVariable("jobId") long jobId, ModelMap mmap) {
         SchedJobResponse job = supervisorOpenapiService.getJob(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:include="include :: header('Workers')" />
+</head>
+<body class="gray-bg">
+  <div class="container-div">
+    <div class="row">
+      <div class="col-sm-12 select-table table-striped">
+        <table id="bootstrap-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <div th:include="include :: footer"></div>
+  <script th:inline="javascript">
+    $(function () {
+      var options = {
+        data: [[${list}]],
+        sidePagination: "client",
+        showSearch: false,
+        showRefresh: false,
+        showToggle: false,
+        showColumns: false,
+        columns: [{
+          field: 'workerId',
+          title: 'Worker Id'
+        },
+        {
+          field: 'host',
+          title: 'Host'
+        },
+        {
+          field: 'port',
+          title: 'Port'
+        },
+        {
+          field: 'pingTime',
+          title: 'Ping time(毫秒)'
+        },
+        {
+          field: 'maximumPoolSize',
+          title: '最大线程数'
+        },
+        {
+          field: 'currentPoolSize',
+          title: '当前线程数'
+        },
+        {
+          field: 'activePoolSize',
+          title: '活跃线程数'
+        },
+        {
+          field: 'idlePoolSize',
+          title: '空闲线程数'
+        },
+        {
+          field: 'queueTaskCount',
+          title: '队列等待任务数'
+        },
+        {
+          field: 'completedTaskCount',
+          title: '已执行完成任务数'
+        },
+        {
+          field: 'closed',
+          title: '线程池是否已关闭',
+          formatter: function(value, row, index) {
+            return value ? '<span class="badge badge-success">是</span>' : '<span class="badge badge-info">否</span>';
+          }
+        },
+        {
+          field: 'jvmThreadActiveCount',
+          title: 'JVM活跃线程数'
+        },
+        {
+          field: 'alsoSupervisor',
+          title: '是否同为Supervisor',
+          formatter: function(value, row, index) {
+            return value ? '<span class="badge badge-success">是</span>' : '<span class="badge badge-info">否</span>';
+          }
+        }]
+      };
+
+      $.table.init(options);
+    });
+  </script>
+
+</body>
+</html>
