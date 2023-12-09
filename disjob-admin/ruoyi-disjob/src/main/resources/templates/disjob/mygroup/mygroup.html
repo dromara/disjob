@@ -15,7 +15,7 @@
               <li>
                 <label>选择分组：</label>
                 <select class="form-control" name="groups" th:with="item=${groups}">
-                  <option value="">　</option>
+                  <option value=""></option>
                   <option th:each="e : ${item}" th:text="${e}" th:value="${e}"></option>
                 </select>
               </li>
@@ -121,6 +121,10 @@
         }]
       };
       $.table.init(options);
+
+      $("select[name='groups']").select2({
+        placeholder: '请选择'
+      });
     });
 
     function resetForm() {

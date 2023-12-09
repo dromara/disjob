@@ -15,6 +15,7 @@ import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
 import cn.ponfee.disjob.supervisor.application.request.AddSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.value.TokenName;
+import com.google.common.collect.ImmutableMap;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -24,6 +25,9 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Manage group controller
@@ -47,6 +51,18 @@ public class DisjobMgGroupController extends BaseController {
     }
 
     // -------------------------------------------------------查询
+
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @GetMapping("/match_group")
+    @ResponseBody
+    public AjaxResult matchGroup(@RequestParam(value = "term", required = false) String term) {
+        List<ImmutableMap<String, String>> result = schedGroupService.matchGroup(term)
+            .stream()
+            .map(e -> ImmutableMap.of("id", e, "text", e))
+            .collect(Collectors.toList());
+
+        return AjaxResult.success(result);
+    }
 
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping

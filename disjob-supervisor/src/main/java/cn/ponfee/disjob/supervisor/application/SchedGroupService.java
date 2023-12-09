@@ -120,6 +120,10 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         );
     }
 
+    public List<String> matchGroup(String term) {
+        return schedGroupMapper.matchGroup(term);
+    }
+
     public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {
         return pageRequest.query(
             schedGroupMapper::queryPageCount,

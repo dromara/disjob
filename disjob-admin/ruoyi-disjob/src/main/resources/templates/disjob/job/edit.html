@@ -2,6 +2,7 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
   <th:block th:include="include :: header('修改作业配置')" />
+  <th:block th:include="include :: select2-css" />
 </head>
 <body class="white-bg">
 
@@ -112,6 +113,8 @@
   </div>
 
   <th:block th:include="include :: footer" />
+  <th:block th:include="include :: select2-js" />
+
   <script th:inline="javascript">
     var prefix = ctx + "disjob/job";
 

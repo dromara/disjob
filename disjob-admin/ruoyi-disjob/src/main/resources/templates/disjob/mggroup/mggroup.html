@@ -3,6 +3,7 @@
 <head>
   <th:block th:include="include :: header('分组管理')" />
   <th:block th:include="include :: bootstrap-editable-css" />
+  <th:block th:include="include :: select2-css" />
 </head>
 <body class="gray-bg">
 
@@ -14,11 +15,13 @@
             <ul>
               <li>
                 <label>分组名称：</label>
-                <input type="text" name="groups" />
+                <select class="form-control" name="groups">
+                  <option value=""></option>
+                </select>
               </li>
               <li>
                 <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
-                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                <a class="btn btn-warning btn-rounded btn-sm" onclick="resetForm()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
               </li>
             </ul>
           </div>
@@ -43,6 +46,8 @@
   <th:block th:include="include :: footer" />
   <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
   <th:block th:include="include :: bootstrap-table-editable-js" />
+  <th:block th:include="include :: select2-js" />
+
   <script th:inline="javascript">
     var operateFlag = [[${@permission.hasPermi('disjob:mggroup:operate')}]];
     var prefix = ctx + "disjob/mggroup";
@@ -134,7 +139,34 @@
         }]
       };
       $.table.init(options);
+
+      // ---------------------------------select2
+      $("select[name='groups']").select2({
+        ajax: {
+          url: prefix + "/match_group",
+          type: "get",
+          dataType: 'json',
+          delay: 300,
+          cache: true,
+          data: function (params) {
+            // {"term": "str", "_type": "query"}
+            return {"term": params.term};
+          },
+          processResults: function (resp) {
+            return {results: resp.data };
+          }
+        },
+        placeholder: '请选择',
+        minimumInputLength: 1
+      });
+
     });
+
+    function resetForm() {
+      $.form.reset();
+      var elem = $("select[name='groups']");
+      elem.val(elem.val()).trigger("change");
+    }
 
     function add() {
       table.set();

@@ -98,6 +98,16 @@
     )
   </select>
 
+  <select id="matchGroup" resultType="string">
+    SELECT `group`
+    FROM <include refid="Table_Name" />
+    WHERE is_deleted = 0
+      <if test="_parameter != null and _parameter != ''">
+        AND `group` LIKE concat('%', #{term}, '%')
+      </if>
+    LIMIT 20
+  </select>
+
   <!-- ********************page query******************** -->
 
   <select id="queryPageCount" resultType="_long">

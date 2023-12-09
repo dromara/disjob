@@ -45,6 +45,8 @@ public interface SchedGroupMapper {
 
     boolean exists(String group);
 
+    List<String> matchGroup(String term);
+
     // -------------------------------------------------query for page
 
     long queryPageCount(SchedGroupPageRequest request);
