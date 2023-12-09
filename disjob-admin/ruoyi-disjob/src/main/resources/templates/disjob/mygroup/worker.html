@@ -13,6 +13,8 @@
   </div>
 
   <div th:include="include :: footer"></div>
+  <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+
   <script th:inline="javascript">
     $(function () {
       var options = {
@@ -22,6 +24,8 @@
         showRefresh: false,
         showToggle: false,
         showColumns: false,
+        fixedColumns: true,
+        fixedNumber: 3,
         columns: [{
           field: 'workerId',
           title: 'Worker Id'
@@ -36,7 +40,7 @@
         },
         {
           field: 'pingTime',
-          title: 'Ping time(毫秒)'
+          title: 'Ping time(ms)'
         },
         {
           field: 'maximumPoolSize',
@@ -63,6 +67,10 @@
           title: '已执行完成任务数'
         },
         {
+          field: 'jvmThreadActiveCount',
+          title: 'JVM活跃线程数'
+        },
+        {
           field: 'closed',
           title: '线程池是否已关闭',
           formatter: function(value, row, index) {
@@ -70,15 +78,15 @@
           }
         },
         {
-          field: 'jvmThreadActiveCount',
-          title: 'JVM活跃线程数'
-        },
-        {
           field: 'alsoSupervisor',
           title: '是否同为Supervisor',
           formatter: function(value, row, index) {
             return value ? '<span class="badge badge-success">是</span>' : '<span class="badge badge-info">否</span>';
           }
+        },
+        {
+          field: 'startupAt',
+          title: 'Worker启动时间'
         }]
       };
 

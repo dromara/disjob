@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
@@ -122,9 +123,16 @@ public class Supervisor extends Server {
         private static final long serialVersionUID = -239845054171219365L;
         private static volatile Current instance = null;
 
+        private final LocalDateTime startupAt;
+
         private Current(String host, int port) {
             super(host, port);
             SingletonClassConstraint.constrain(Current.class);
+            this.startupAt = LocalDateTime.now();
+        }
+
+        public LocalDateTime getStartupAt() {
+            return startupAt;
         }
 
         private static synchronized Current create(String host, int port) {

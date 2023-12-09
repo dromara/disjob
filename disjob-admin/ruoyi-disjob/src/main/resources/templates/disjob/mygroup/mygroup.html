@@ -15,7 +15,7 @@
               <li>
                 <label>选择分组：</label>
                 <select class="form-control" name="groups" th:with="item=${groups}">
-                  <option value=""></option>
+                  <option value="" selected>　</option>
                   <option th:each="e : ${item}" th:text="${e}" th:value="${e}"></option>
                 </select>
               </li>
@@ -29,9 +29,6 @@
       </div>
 
       <div class="btn-group-sm" id="toolbar" role="group">
-        <a class="btn btn-primary single disabled" onclick="edit()" shiro:hasPermission="disjob:mygroup:operate">
-          <i class="fa fa-edit"></i> 修改
-        </a>
       </div>
 
       <div class="col-sm-12 select-table table-striped">
@@ -122,9 +119,7 @@
       };
       $.table.init(options);
 
-      $("select[name='groups']").select2({
-        placeholder: '请选择'
-      });
+
     });
 
     function resetForm() {
@@ -135,13 +130,6 @@
 
     function edit(group) {
       table.set();
-      if ($.common.isEmpty(group)) {
-        group = $.table.selectFirstColumns();
-        if (!group) {
-          $.modal.alertWarning("请至少选择一条记录");
-          return;
-        }
-      }
       $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '770', '460');
     }
 

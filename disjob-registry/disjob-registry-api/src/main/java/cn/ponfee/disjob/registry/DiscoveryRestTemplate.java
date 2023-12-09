@@ -192,7 +192,6 @@ public final class DiscoveryRestTemplate<D extends Server> {
         return params;
     }
 
-
     private static boolean requireRetry(Throwable e) {
         if (e instanceof ResourceAccessException) {
             return (e.getCause() instanceof SocketTimeoutException);

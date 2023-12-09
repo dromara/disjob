@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.admin.domain;
+package cn.ponfee.disjob.admin.export;
 
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -132,43 +132,6 @@ public class SchedJobExport {
     @Excel(name = "路由策略")
     private Integer routeStrategy;
 
-    /**
-     * 最近一次的触发时间(毫秒时间戳)
-     */
-    @Excel(name = "上一次触发时间")
-    private Long lastTriggerTime;
-
-    /**
-     * 下一次的触发时间(毫秒时间戳)
-     */
-    @Excel(name = "下一次触发时间")
-    private Long nextTriggerTime;
-
-    /**
-     * 更新人
-     */
-    @Excel(name = "更新人")
-    private String updatedBy;
-
-    /**
-     * 创建人
-     */
-    @Excel(name = "创建人")
-    private String createdBy;
-
-    /**
-     * 更新时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "更新时间", width = 30, dateFormat = "yyyy-MM-dd")
-    private Date updatedAt;
-
-    /**
-     * 创建时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "创建时间", width = 30, dateFormat = "yyyy-MM-dd")
-    private Date createdAt;
 
     public static SchedJobExport ofSchedJobResponse(SchedJobResponse schedJobResponse) {
         SchedJobExport schedJobExport = new SchedJobExport();
@@ -318,53 +281,5 @@ public class SchedJobExport {
 
     public void setRouteStrategy(Integer routeStrategy) {
         this.routeStrategy = routeStrategy;
-    }
-
-    public Long getLastTriggerTime() {
-        return lastTriggerTime;
-    }
-
-    public void setLastTriggerTime(Long lastTriggerTime) {
-        this.lastTriggerTime = lastTriggerTime;
-    }
-
-    public Long getNextTriggerTime() {
-        return nextTriggerTime;
-    }
-
-    public void setNextTriggerTime(Long nextTriggerTime) {
-        this.nextTriggerTime = nextTriggerTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
     }
 }

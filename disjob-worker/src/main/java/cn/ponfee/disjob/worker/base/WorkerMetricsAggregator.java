@@ -8,7 +8,9 @@
 
 package cn.ponfee.disjob.worker.base;
 
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 
 /**
@@ -29,6 +31,7 @@ public class WorkerMetricsAggregator {
 
     public static WorkerMetrics aggregate() {
         WorkerMetrics metrics = new WorkerMetrics();
+        metrics.setStartupAt(Dates.toDate(Worker.current().getStartupAt()));
         metrics.setAlsoSupervisor(Supervisor.current() != null);
         metrics.setJvmThreadActiveCount(Thread.activeCount());
         if (workerThreadPool != null) {

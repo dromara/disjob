@@ -6,30 +6,31 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.application.request;
+package cn.ponfee.disjob.supervisor.application.converter;
 
-import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.model.PageRequest;
-import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
-import lombok.Getter;
-import lombok.Setter;
+import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 
-import java.util.Set;
+import java.text.ParseException;
+import java.util.Date;
 
 /**
- * Sched group page request
+ * Mapstruct mapper
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public class SchedGroupPageRequest extends PageRequest {
-    private static final long serialVersionUID = -213388921649759103L;
+public class MapstructMapper {
 
-    private Set<String> groups;
+    public String asString(Date date) {
+        return Dates.format(date);
+    }
 
-    public void truncateGroup() {
-        this.groups = Collects.truncate(groups, SupervisorConstants.SQL_GROUP_IN_MAX_SIZE);
+    public Date asDate(String date) {
+        try {
+            return JavaUtilDateFormat.DEFAULT.parse(date);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Invalid date pattern string: " + date);
+        }
     }
 
 }

@@ -275,11 +275,11 @@ VALUES (5, '调度管理', 0, 5, '#', '', 'M', '0', '1', '', 'fa fa-tasks', 'adm
 
 -- 5.1）Supervisor菜单 SQL
 insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values(1101, 'Supervisors', '5', '1', '/disjob/supervisor', 'C', '0', 'disjob:supervisor:operate', '#', 'admin', sysdate(), 'Supervisor菜单');
+values(1101, 'Supervisor', '5', '1', '/disjob/supervisor', 'C', '0', 'disjob:supervisor:operate', '#', 'admin', sysdate(), 'Supervisor菜单');
 
--- 5.2）分组管理菜单 SQL
+-- 5.2）管理分组菜单 SQL
 insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
-values(1102, '分组管理', '5', '2', '/disjob/mggroup', 'C', '0', 'disjob:mggroup:operate', '#', 'admin', sysdate(), '分组管理菜单');
+values(1102, '管理分组', '5', '2', '/disjob/mggroup', 'C', '0', 'disjob:mggroup:operate', '#', 'admin', sysdate(), '管理分组菜单');
 
 -- 5.3）我的分组菜单 SQL
 insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)

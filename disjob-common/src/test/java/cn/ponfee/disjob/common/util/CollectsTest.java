@@ -6,30 +6,29 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.application.request;
+package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.model.PageRequest;
-import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
-import lombok.Getter;
-import lombok.Setter;
+import org.junit.jupiter.api.Test;
+import org.mockito.internal.util.collections.Sets;
 
-import java.util.Set;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Sched group page request
+ * Collects test
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-public class SchedGroupPageRequest extends PageRequest {
-    private static final long serialVersionUID = -213388921649759103L;
+public class CollectsTest {
 
-    private Set<String> groups;
-
-    public void truncateGroup() {
-        this.groups = Collects.truncate(groups, SupervisorConstants.SQL_GROUP_IN_MAX_SIZE);
+    @Test
+    public void test() {
+        assertThat(Collects.truncate(null, 2)).isNull();
+        assertThat(Collects.truncate(Collections.emptySet(), 2)).isEmpty();
+        assertThat(Collects.truncate(Sets.newSet(1), 0)).size().isEqualTo(1);
+        assertThat(Collects.truncate(Sets.newSet(1, 2, 3, 4, 5), 3)).size().isEqualTo(3);
     }
 
 }

@@ -34,6 +34,22 @@ public class Collects {
         return list;
     }
 
+    public static <T> Set<T> truncate(Set<T> set, int length) {
+        if (length < 2 || CollectionUtils.isEmpty(set) || set.size() <= length) {
+            return set;
+        }
+
+        Set<T> result = new HashSet<>(length << 1);
+        int i = 1;
+        for (T t : set) {
+            result.add(t);
+            if (++i > length) {
+                break;
+            }
+        }
+        return result;
+    }
+
     public static <T> List<T> duplicate(List<T> list) {
         return duplicate(list, Function.identity());
     }

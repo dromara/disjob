@@ -31,8 +31,10 @@ import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,15 +43,15 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 @Component
-public class SupervisorOpenapiService {
+public class OpenapiService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SupervisorOpenapiService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
 
-    public SupervisorOpenapiService(DistributedJobManager jobManager,
-                                    DistributedJobQuerier jobQuerier) {
+    public OpenapiService(DistributedJobManager jobManager,
+                          DistributedJobQuerier jobQuerier) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
     }
@@ -57,6 +59,9 @@ public class SupervisorOpenapiService {
     // ------------------------------------------------------------------ sched job
 
     public void addJob(AddSchedJobRequest req) throws JobException {
+        String user = req.getCreatedBy(), group = req.getGroup();
+        Set<String> groups = SchedGroupService.mapUser(user);
+        Assert.isTrue(groups.contains(group), "User '" + user + "' not has group '" + group + "' permission.");
         jobManager.addJob(req.tosSchedJob());
     }
 

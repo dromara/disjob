@@ -125,6 +125,7 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     }
 
     public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {
+        pageRequest.truncateGroup();
         return pageRequest.query(
             schedGroupMapper::queryPageCount,
             schedGroupMapper::queryPageRecords,

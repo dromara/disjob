@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Supervisor metrics
@@ -23,6 +24,11 @@ import java.io.Serializable;
 @Setter
 public class SupervisorMetrics extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -3330041841878987072L;
+
+    /**
+     * 启动时间
+     */
+    private Date startupAt;
 
     /**
      * 是否也是Worker角色

@@ -8,13 +8,13 @@
 
 package cn.ponfee.disjob.admin.controller;
 
-import cn.ponfee.disjob.admin.domain.SchedJobExport;
+import cn.ponfee.disjob.admin.export.SchedJobExport;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
-import cn.ponfee.disjob.supervisor.application.SupervisorOpenapiService;
+import cn.ponfee.disjob.supervisor.application.OpenapiService;
 import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
@@ -51,10 +51,10 @@ public class DisjobJobController extends BaseController {
     static final String PREFIX = "disjob/job";
     private static final String PERMISSION_JOB = "disjob:job:operate";
 
-    private final SupervisorOpenapiService supervisorOpenapiService;
+    private final OpenapiService openapiService;
 
-    public DisjobJobController(SupervisorOpenapiService supervisorOpenapiService) {
-        this.supervisorOpenapiService = supervisorOpenapiService;
+    public DisjobJobController(OpenapiService openapiService) {
+        this.openapiService = openapiService;
     }
 
     // -------------------------------------------------------查询
@@ -82,7 +82,7 @@ public class DisjobJobController extends BaseController {
 
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        PageResponse<SchedJobResponse> response = supervisorOpenapiService.queryJobForPage(request);
+        PageResponse<SchedJobResponse> response = openapiService.queryJobForPage(request);
         return PageUtils.toTableDataInfo(response);
     }
 
@@ -92,7 +92,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_JOB)
     @GetMapping("/detail/{jobId}")
     public String detail(@PathVariable("jobId") long jobId, ModelMap mmap) {
-        SchedJobResponse job = supervisorOpenapiService.getJob(jobId);
+        SchedJobResponse job = openapiService.getJob(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
         return PREFIX + "/detail";
@@ -115,7 +115,7 @@ public class DisjobJobController extends BaseController {
             list = Collections.emptyList();
         } else {
             request.setPaged(false);
-            List<SchedJobResponse> rows = supervisorOpenapiService.queryJobForPage(request).getRows();
+            List<SchedJobResponse> rows = openapiService.queryJobForPage(request).getRows();
             list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
         }
 
@@ -140,7 +140,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_JOB)
     @GetMapping("/copy/{jobId}")
     public String copy(@PathVariable("jobId") long jobId, ModelMap mmap) {
-        return toAdd(supervisorOpenapiService.getJob(jobId), mmap);
+        return toAdd(openapiService.getJob(jobId), mmap);
     }
 
     private String toAdd(SchedJobResponse job, ModelMap mmap) {
@@ -158,7 +158,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult doAdd(AddSchedJobRequest req) throws JobException {
         req.setCreatedBy(getLoginName());
-        supervisorOpenapiService.addJob(req);
+        openapiService.addJob(req);
         return success();
     }
 
@@ -168,7 +168,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_JOB)
     @GetMapping("/edit/{jobId}")
     public String edit(@PathVariable("jobId") long jobId, ModelMap mmap) {
-        SchedJobResponse job = supervisorOpenapiService.getJob(jobId);
+        SchedJobResponse job = openapiService.getJob(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
         return PREFIX + "/edit";
@@ -183,7 +183,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobException {
         req.setUpdatedBy(getLoginName());
-        supervisorOpenapiService.updateJob(req);
+        openapiService.updateJob(req);
         return success();
     }
 
@@ -202,7 +202,7 @@ public class DisjobJobController extends BaseController {
         if (jobIds.isEmpty()) {
             return error("Job id不能为空");
         }
-        jobIds.parallelStream().forEach(supervisorOpenapiService::deleteJob);
+        jobIds.parallelStream().forEach(openapiService::deleteJob);
         return success();
     }
 
@@ -215,7 +215,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult changeState(@RequestParam("jobId") long jobId,
                                   @RequestParam("toState") Integer toState) {
-        boolean result = supervisorOpenapiService.changeJobState(jobId, toState);
+        boolean result = openapiService.changeJobState(jobId, toState);
         return toAjax(result);
     }
 
@@ -227,7 +227,7 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/trigger")
     @ResponseBody
     public AjaxResult trigger(@RequestParam("jobId") long jobId) throws JobException {
-        supervisorOpenapiService.triggerJob(jobId);
+        openapiService.triggerJob(jobId);
         return success();
     }
 

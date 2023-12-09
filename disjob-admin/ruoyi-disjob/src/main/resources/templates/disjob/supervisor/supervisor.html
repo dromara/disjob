@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('Supervisors')" />
+  <th:block th:include="include :: header('Supervisor')" />
 </head>
 <body class="gray-bg">
   <div class="container-div">
@@ -34,7 +34,7 @@
         },
         {
           field: 'pingTime',
-          title: 'Ping time(毫秒)',
+          title: 'Ping time(ms)',
           align: 'center'
         },
         {
@@ -43,6 +43,10 @@
           formatter: function(value, row, index) {
             return value ? '<span class="badge badge-success">是</span>' : '<span class="badge badge-info">否</span>';
           }
+        },
+        {
+          field: 'startupAt',
+          title: 'Supervisor启动时间'
         }]
       };
 

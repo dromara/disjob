@@ -2,6 +2,7 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
   <th:block th:include="include :: header('任务实例')" />
+  <th:block th:include="include :: select2-css" />
 </head>
 <body class="gray-bg">
 
@@ -17,14 +18,14 @@
             </li>
             <li>
               <label>运行状态：</label>
-              <select name="runState" th:with="enum=${@disjobService.enums('RunState')}">
+              <select class="form-control" name="runState" th:with="enum=${@disjobService.enums('RunState')}">
                 <option value="" selected>所有</option>
                 <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
               </select>
             </li>
             <li>
               <label>运行类型：</label>
-              <select name="runType" th:with="enum=${@disjobService.enums('RunType')}">
+              <select class="form-control" name="runType" th:with="enum=${@disjobService.enums('RunType')}">
                 <option value="" selected>所有</option>
                 <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
               </select>
@@ -37,7 +38,7 @@
             </li>
             <li>
               <a class="btn btn-primary btn-rounded btn-sm" onclick="$.treeTable.search('tree-form', 'tree-table')"><i class="fa fa-search"></i>&nbsp;搜索</a>
-              <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset('tree-form', 'tree-table')"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+              <a class="btn btn-warning btn-rounded btn-sm" onclick="resetForm('tree-form', 'tree-table')"><i class="fa fa-refresh"></i>&nbsp;重置</a>
             </li>
           </ul>
         </div>
@@ -63,14 +64,14 @@
             </li>
             <li>
               <label>运行状态：</label>
-              <select name="runState" th:with="enum=${@disjobService.enums('RunState')}">
+              <select class="form-control" name="runState" th:with="enum=${@disjobService.enums('RunState')}">
                 <option value="" selected>所有</option>
                 <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
               </select>
             </li>
             <li>
               <label>运行类型：</label>
-              <select name="runType" th:with="enum=${@disjobService.enums('RunType')}">
+              <select class="form-control" name="runType" th:with="enum=${@disjobService.enums('RunType')}">
                 <option value="" selected>所有</option>
                 <option th:each="e : ${enum}" th:text="${e.desc}" th:value="${e.value}"></option>
               </select>
@@ -83,7 +84,7 @@
             </li>
             <li>
               <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search('flat-form', 'flat-table')"><i class="fa fa-search"></i>&nbsp;搜索</a>
-              <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset('flat-form', 'flat-table')"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+              <a class="btn btn-warning btn-rounded btn-sm" onclick="resetForm('flat-form', 'flat-table')"><i class="fa fa-refresh"></i>&nbsp;重置</a>
             </li>
           </ul>
         </div>
@@ -98,6 +99,8 @@
 </div>
 
 <th:block th:include="include :: footer" />
+<th:block th:include="include :: select2-js" />
+
 <script th:inline="javascript">
   var operateFlag = [[${@permission.hasPermi('disjob:instance:operate')}]];
   var runTypes = [[${@disjobService.enums('RunType')}]];
@@ -340,6 +343,14 @@
       });
     });
   });
+
+  function resetForm(formId, tableId) {
+    $.form.reset(formId, tableId);
+    ["runState", "runType"].forEach(function (item) {
+      var elem = $("#" + formId).find("select[name='" + item + "']");
+      elem.val(elem.val()).trigger("change");
+    });
+  }
 
   function job(jobId) {
     var url = ctx + 'disjob/job/detail/' + jobId;

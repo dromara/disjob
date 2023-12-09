@@ -35,6 +35,11 @@ public abstract class ServerMetricsResponse extends ToJsonString implements Seri
     private int port;
 
     /**
+     * 启动时间
+     */
+    private String startupAt;
+
+    /**
      * Ping time milliseconds
      */
     private Long pingTime;

@@ -15,6 +15,11 @@ package cn.ponfee.disjob.supervisor.base;
  */
 public class SupervisorConstants {
 
+    /**
+     * SQL中`group IN (a, b, ..., x)`的最大长度
+     */
+    public static final int SQL_GROUP_IN_MAX_SIZE = 50;
+
     // ----------------------------------------------------------------scan lock sql
 
     /**

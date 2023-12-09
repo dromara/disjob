@@ -146,6 +146,7 @@ public class DistributedJobQuerier {
     }
 
     public PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest) {
+        pageRequest.truncateGroup();
         return pageRequest.query(
             jobMapper::queryPageCount,
             jobMapper::queryPageRecords,

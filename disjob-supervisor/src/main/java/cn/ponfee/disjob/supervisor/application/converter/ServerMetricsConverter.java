@@ -21,14 +21,14 @@ import org.mapstruct.factory.Mappers;
  *
  * @author Ponfee
  */
-@Mapper
+@Mapper(uses = MapstructMapper.class)
 public interface ServerMetricsConverter {
 
     ServerMetricsConverter INSTANCE = Mappers.getMapper(ServerMetricsConverter.class);
 
     SupervisorMetricsResponse convert(SupervisorMetrics metrics);
 
-    @Mapping( target = ".", source = "threadPool" )
+    @Mapping(target = ".", source = "threadPool")
     WorkerMetricsResponse convert(WorkerMetrics metrics);
 
 }
