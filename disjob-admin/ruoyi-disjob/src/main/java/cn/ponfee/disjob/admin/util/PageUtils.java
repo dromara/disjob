@@ -11,6 +11,7 @@ package cn.ponfee.disjob.admin.util;
 import cn.ponfee.disjob.common.model.PageResponse;
 import com.ruoyi.common.core.page.TableDataInfo;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,5 +36,12 @@ public class PageUtils {
         return rspData;
     }
 
+    public static TableDataInfo empty() {
+        TableDataInfo rspData = new TableDataInfo();
+        rspData.setCode(0);
+        rspData.setRows(Collections.emptyList());
+        rspData.setTotal(0);
+        return rspData;
+    }
 
 }

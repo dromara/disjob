@@ -221,8 +221,8 @@
 
   <sql id="Query_Page_Condition">
     WHERE is_deleted = 0
-      <if test="group != null and group != ''">
-        AND `group` = #{group}
+      <if test="groups != null and groups.size() != 0">
+        AND `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)
       </if>
       <if test="jobName != null and jobName != ''">
         AND job_name LIKE concat('%', #{jobName}, '%')

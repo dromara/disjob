@@ -64,15 +64,15 @@ public class DisjobMyGroupController extends BaseController {
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedGroupPageRequest request) {
-        request.setPageNumber(super.getPageNumber());
-        request.setPageSize(super.getPageSize());
         if (CollectionUtils.isEmpty(request.getGroups())) {
             request.setGroups(SchedGroupService.mapUser(getLoginName()));
         }
-
         if (CollectionUtils.isEmpty(request.getGroups())) {
-            return PageUtils.toTableDataInfo(new PageResponse<>());
+            return PageUtils.empty();
         }
+
+        request.setPageNumber(super.getPageNumber());
+        request.setPageSize(super.getPageSize());
         return PageUtils.toTableDataInfo(schedGroupService.queryForPage(request));
     }
 

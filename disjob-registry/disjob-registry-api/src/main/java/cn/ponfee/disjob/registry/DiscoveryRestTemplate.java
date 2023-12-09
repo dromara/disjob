@@ -15,9 +15,11 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Worker;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -30,10 +32,12 @@ import org.springframework.web.client.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.lang.reflect.Type;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -50,6 +54,7 @@ public final class DiscoveryRestTemplate<D extends Server> {
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
     public static final Object[] EMPTY = new Object[0];
+    private static final List<HttpStatus> TIMEOUT_STATUS_LIST = ImmutableList.of(HttpStatus.REQUEST_TIMEOUT, HttpStatus.GATEWAY_TIMEOUT);
 
     private final RestTemplate restTemplate;
     private final Discovery<D> discoveryServer;
@@ -140,21 +145,18 @@ public final class DiscoveryRestTemplate<D extends Server> {
                 RequestCallback requestCallback = restTemplate.httpEntityCallback(new HttpEntity<>(arguments, headers), returnType);
                 ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
                 ResponseEntity<T> responseEntity = restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor);
-                return responseEntity.getBody();
+                return Objects.requireNonNull(responseEntity).getBody();
             } catch (Throwable e) {
                 if (e instanceof InterruptedException) {
                     LOG.error("Thread interrupted, skip rest retry.");
                     Thread.currentThread().interrupt();
                     throw e;
                 }
-
                 ex = e;
-                if (e instanceof ResourceAccessException || is5xxServerError(e)) {
-                    LOG.error("Invoke discovered server fail: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
-                } else {
-                    LOG.error("Invoke discovered server error: {} | {} | {}", url, Jsons.toJson(arguments), e.getMessage());
+                LOG.error("Invoke server rpc failed: {}, {}, {}", url, Jsons.toJson(arguments), e.getMessage());
+                if (!requireRetry(e)) {
+                    break;
                 }
-
                 if (i < n) {
                     // round-robin retry, 100L * IntMath.pow(i + 1, 2)
                     Thread.sleep((i + 1) * retryBackoffPeriod);
@@ -162,7 +164,11 @@ public final class DiscoveryRestTemplate<D extends Server> {
             }
         }
 
-        throw new RPCInvokeException("Invoke http retried failed: " + path + ", " + Jsons.toJson(arguments), ex);
+        String msg = (ex == null) ? null : ex.getMessage();
+        if (StringUtils.isBlank(msg)) {
+            msg = "Invoke server rpc error: " + path;
+        }
+        throw new RPCInvokeException(msg, ex);
     }
 
     public Discovery<D> getDiscoveryServer() {
@@ -186,11 +192,16 @@ public final class DiscoveryRestTemplate<D extends Server> {
         return params;
     }
 
-    private static boolean is5xxServerError(Throwable e) {
+
+    private static boolean requireRetry(Throwable e) {
+        if (e instanceof ResourceAccessException) {
+            return (e.getCause() instanceof SocketTimeoutException);
+        }
         if (!(e instanceof HttpStatusCodeException)) {
             return false;
         }
-        return ((HttpStatusCodeException) e).getStatusCode().is5xxServerError();
+        HttpStatus statusCode = ((HttpStatusCodeException) e).getStatusCode();
+        return TIMEOUT_STATUS_LIST.contains(statusCode);
     }
 
     // ----------------------------------------------------------------------------------------builder

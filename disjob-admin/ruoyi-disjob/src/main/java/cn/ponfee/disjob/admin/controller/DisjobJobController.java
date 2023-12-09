@@ -13,6 +13,7 @@ import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.SupervisorOpenapiService;
 import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
@@ -24,6 +25,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.poi.ExcelUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
@@ -32,6 +34,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,7 +61,8 @@ public class DisjobJobController extends BaseController {
 
     @RequiresPermissions(PERMISSION_JOB)
     @GetMapping
-    public String job() {
+    public String job(ModelMap mmap) {
+        mmap.put("groups", SchedGroupService.mapUser(getLoginName()));
         return PREFIX + "/job";
     }
 
@@ -69,6 +73,13 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedJobPageRequest request) {
+        if (CollectionUtils.isEmpty(request.getGroups())) {
+            request.setGroups(SchedGroupService.mapUser(getLoginName()));
+        }
+        if (CollectionUtils.isEmpty(request.getGroups())) {
+            return PageUtils.empty();
+        }
+
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
         PageResponse<SchedJobResponse> response = supervisorOpenapiService.queryJobForPage(request);
@@ -95,9 +106,19 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/export")
     @ResponseBody
     public AjaxResult export(SchedJobPageRequest request) {
-        request.setPaged(false);
-        List<SchedJobResponse> rows = supervisorOpenapiService.queryJobForPage(request).getRows();
-        List<SchedJobExport> list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
+        if (CollectionUtils.isEmpty(request.getGroups())) {
+            request.setGroups(SchedGroupService.mapUser(getLoginName()));
+        }
+
+        List<SchedJobExport> list;
+        if (CollectionUtils.isEmpty(request.getGroups())) {
+            list = Collections.emptyList();
+        } else {
+            request.setPaged(false);
+            List<SchedJobResponse> rows = supervisorOpenapiService.queryJobForPage(request).getRows();
+            list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
+        }
+
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
         return excel.exportExcel(list, "作业配置数据");
     }
@@ -124,6 +145,7 @@ public class DisjobJobController extends BaseController {
 
     private String toAdd(SchedJobResponse job, ModelMap mmap) {
         mmap.put("job", job);
+        mmap.put("groups", SchedGroupService.mapUser(getLoginName()));
         return PREFIX + "/add";
     }
 

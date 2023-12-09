@@ -13,7 +13,7 @@ package cn.ponfee.disjob.registry;
  *
  * @author Ponfee
  */
-public class RPCInvokeException extends Exception {
+public class RPCInvokeException extends RuntimeException {
     private static final long serialVersionUID = -2137715994975702313L;
 
     public RPCInvokeException() {

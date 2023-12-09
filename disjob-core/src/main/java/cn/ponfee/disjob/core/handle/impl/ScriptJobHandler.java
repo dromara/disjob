@@ -11,6 +11,8 @@ package cn.ponfee.disjob.core.handle.impl;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ProcessUtils;
+import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
@@ -195,7 +197,7 @@ public class ScriptJobHandler extends JobHandler {
 
         FileUtils.forceMkdirParent(scriptFile);
         if (!scriptFile.createNewFile()) {
-            throw new IllegalStateException("Create script file failed: " + scriptPath);
+            throw new JobRuntimeException(JobCodeMsg.JOB_EXECUTE_ERROR, "Create script file failed: " + scriptPath);
         }
 
         // download script from url

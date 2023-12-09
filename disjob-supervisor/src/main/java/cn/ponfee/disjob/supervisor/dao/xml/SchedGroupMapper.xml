@@ -117,7 +117,7 @@
   <sql id="Query_Page_Condition">
     WHERE is_deleted = 0
     <if test="groups != null and groups.size() != 0">
-      AND `group` IN  (<foreach collection="groups" separator="," item="group">#{group,jdbcType=VARCHAR}</foreach>)
+      AND `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)
     </if>
   </sql>
 

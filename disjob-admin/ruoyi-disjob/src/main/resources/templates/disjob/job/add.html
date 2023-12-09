@@ -2,6 +2,7 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
   <th:block th:include="include :: header('添加作业配置')" />
+  <th:block th:include="include :: select2-css" />
 </head>
 <body class="white-bg">
 
@@ -10,7 +11,9 @@
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">分组名称：</label>
         <div class="col-sm-9">
-          <input name="group" placeholder="分组名称" th:field="*{group}" class="form-control" type="text" autocomplete="off" required />
+          <select class="form-control" name="group" th:with="item=${groups}">
+            <option th:each="e : ${item}" th:text="${e}" th:value="${e}"></option>
+          </select>
         </div>
       </div>
       <div class="form-group">
@@ -110,6 +113,8 @@
   </div>
 
   <th:block th:include="include :: footer" />
+  <th:block th:include="include :: select2-js" />
+
   <script th:inline="javascript">
     var prefix = ctx + "disjob/job"
 

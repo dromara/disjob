@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.exception.AuthenticationException;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -62,13 +63,20 @@ public class SpringWebExceptionHandler {
         PrintWriter out = response.getWriter();
         if (!isMethodReturnResultType(handlerMethod)) {
             response.setContentType(TEXT_PLAIN_VALUE_UTF8);
-            response.setStatus((isBadRequest ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR).value());
+            response.setStatus(obtainHttpStatus(e, isBadRequest).value());
             out.write(errorMsg);
         } else {
             response.setContentType(APPLICATION_JSON_VALUE_UTF8);
             out.write(Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toString());
         }
         out.flush();
+    }
+
+    private HttpStatus obtainHttpStatus(Exception e, boolean isBadRequest) {
+        if (e instanceof AuthenticationException) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        return isBadRequest ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     private static boolean isMethodReturnResultType(HandlerMethod handlerMethod) {

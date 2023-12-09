@@ -3,7 +3,6 @@
 <head>
   <th:block th:include="include :: header('我的分组')" />
   <th:block th:include="include :: select2-css" />
-  <th:block th:include="include :: bootstrap-select-css" />
 </head>
 <body class="gray-bg">
 
@@ -22,7 +21,7 @@
               </li>
               <li>
                 <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
-                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                <a class="btn btn-warning btn-rounded btn-sm" onclick="resetForm()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
               </li>
             </ul>
           </div>
@@ -44,7 +43,6 @@
   <th:block th:include="include :: footer" />
   <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
   <th:block th:include="include :: select2-js" />
-  <th:block th:include="include :: bootstrap-select-js" />
 
   <script th:inline="javascript">
     var operateFlag = [[${@permission.hasPermi('disjob:mygroup:operate')}]];
@@ -124,6 +122,12 @@
       };
       $.table.init(options);
     });
+
+    function resetForm() {
+      $.form.reset();
+      var elem = $("select[name='groups']");
+      elem.val(elem.val()).trigger("change");
+    }
 
     function edit(group) {
       table.set();

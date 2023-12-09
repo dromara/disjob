@@ -2,6 +2,7 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
   <th:block th:include="include :: header('作业配置')" />
+  <th:block th:include="include :: select2-css" />
 </head>
 <body class="gray-bg">
 
@@ -12,8 +13,11 @@
           <div class="select-list">
             <ul>
               <li>
-                <label>分组名称：</label>
-                <input type="text" name="group" />
+                <label>选择分组：</label>
+                <select class="form-control" name="groups" th:with="item=${groups}">
+                  <option value="">　</option>
+                  <option th:each="e : ${item}" th:text="${e}" th:value="${e}"></option>
+                </select>
               </li>
               <li>
                 <label>Job名称：</label>
@@ -21,7 +25,7 @@
               </li>
               <li>
                 <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
-                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                <a class="btn btn-warning btn-rounded btn-sm" onclick="resetForm()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
               </li>
             </ul>
           </div>
@@ -51,6 +55,8 @@
 
   <th:block th:include="include :: footer" />
   <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+  <th:block th:include="include :: select2-js" />
+
   <script th:inline="javascript">
     var operateFlag = [[${@permission.hasPermi('disjob:job:operate')}]];
     var prefix = ctx + "disjob/job";
@@ -181,6 +187,12 @@
       };
       $.table.init(options);
     });
+
+    function resetForm() {
+      $.form.reset();
+      var elem = $("select[name='groups']");
+      elem.val(elem.val()).trigger("change");
+    }
 
     function detail(jobId) {
       var url = prefix + '/detail/' + jobId;
