@@ -323,7 +323,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     public WorkerMetrics.ThreadPoolMetrics metrics() {
         WorkerMetrics.ThreadPoolMetrics metrics = new WorkerMetrics.ThreadPoolMetrics();
         metrics.setClosed(closed.get());
-        metrics.setKeepAliveTime((int) keepAliveTimeSeconds);
+        metrics.setKeepAliveTime(keepAliveTimeSeconds);
         metrics.setMaximumPoolSize(maximumPoolSize);
         metrics.setCurrentPoolSize(workerThreadCounter.get());
         metrics.setActivePoolSize(activePool.size());

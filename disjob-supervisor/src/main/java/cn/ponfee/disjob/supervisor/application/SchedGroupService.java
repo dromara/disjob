@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.base.Symbol;
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
@@ -190,12 +190,13 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
                     return Stream.of(Pair.of(e.getOwnUser(), group));
                 }
 
-                String[] array = devUsers.split(Symbol.Str.COMMA);
+                String[] array = devUsers.split(Str.COMMA);
                 List<Pair<String, String>> users = new ArrayList<>(array.length + 1);
                 users.add(Pair.of(e.getOwnUser(), group));
-                for (String user : array) {
-                    users.add(Pair.of(user, group));
-                }
+                Stream.of(array)
+                    .filter(StringUtils::isNotBlank)
+                    .map(String::trim)
+                    .forEach(u -> users.add(Pair.of(u, group)));
                 return users.stream();
             })
             .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));

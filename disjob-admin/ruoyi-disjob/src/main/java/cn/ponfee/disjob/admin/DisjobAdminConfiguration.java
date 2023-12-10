@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.admin;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.Symbol;
+import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.spring.EnableJacksonDateConfigurer;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.util.JobUtils;
@@ -56,7 +56,7 @@ public class DisjobAdminConfiguration implements WebMvcConfigurer {
     public IdGenerator idGenerator(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate,
                                    @Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
-        return new DbDistributedSnowflake(jdbcTemplate, JobConstants.DISJOB_KEY_PREFIX, JobUtils.getLocalHost(boundHost) + Symbol.Char.COLON + port);
+        return new DbDistributedSnowflake(jdbcTemplate, JobConstants.DISJOB_KEY_PREFIX, JobUtils.getLocalHost(boundHost) + Char.COLON + port);
     }
 
 }

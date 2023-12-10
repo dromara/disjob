@@ -98,7 +98,7 @@ public class DisjobMyGroupController extends BaseController {
     public AjaxResult doEdit(UpdateSchedGroupRequest req) {
         String currentUser = getLoginName();
         if (!currentUser.equals(schedGroupService.get(req.getGroup()).getOwnUser())) {
-            // 非Own User不可更换Own User数据(即只有Own User本人才能更换该group的Own User为其它人)
+            // 非Own User不可更换own_user数据(即只有Own User本人才能更换该group的own_user为其它人)
             req.setOwnUser(null);
         }
         req.setUpdatedBy(currentUser);

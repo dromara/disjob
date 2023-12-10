@@ -54,7 +54,10 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
 
         // ------------------------------------thread
 
-        private int keepAliveTime;
+        /**
+         * Worker thread keep alive time seconds
+         */
+        private long keepAliveTime;
         private int maximumPoolSize;
         private int currentPoolSize;
         private int activePoolSize;

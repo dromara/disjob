@@ -26,7 +26,7 @@ public class WorkerMetricsResponse extends ServerMetricsResponse {
     private Boolean alsoSupervisor;
     private Integer jvmThreadActiveCount;
     private Boolean closed;
-    private Integer keepAliveTime;
+    private Long keepAliveTime;
     private Integer maximumPoolSize;
     private Integer currentPoolSize;
     private Integer activePoolSize;

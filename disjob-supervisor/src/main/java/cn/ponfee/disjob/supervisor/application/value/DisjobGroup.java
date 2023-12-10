@@ -72,7 +72,7 @@ public class DisjobGroup {
         String[] array = str.split(Str.COMMA);
         ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize(array.length + 1);
         builder.add(ownUser);
-        Stream.of(array).filter(StringUtils::isNotBlank).forEach(builder::add);
+        Stream.of(array).filter(StringUtils::isNotBlank).map(String::trim).forEach(builder::add);
         return builder.build();
     }
 

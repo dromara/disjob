@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.model;
 
-import cn.ponfee.disjob.common.base.Symbol;
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,7 +54,7 @@ public class SchedDepend extends BaseEntity implements Serializable {
     }
 
     public static List<Long> parseTriggerValue(String triggerValue) {
-        return Arrays.stream(triggerValue.split(Symbol.Str.COMMA))
+        return Arrays.stream(triggerValue.split(Str.COMMA))
             .filter(StringUtils::isNotBlank)
             .map(e -> Long.parseLong(e.trim()))
             .distinct()
