@@ -17,7 +17,7 @@
 
 - versions-maven-plugin
 ```xml
-<!-- ./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && ./mvnw clean deploy -Prelease -U -->
+<!-- ./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && ./mvnw clean deploy -Prelease -DskipTests -->
 <plugin>
   <groupId>org.codehaus.mojo</groupId>
   <artifactId>versions-maven-plugin</artifactId>
@@ -31,7 +31,7 @@
 - flatten-maven-plugin
 ```xml
 <!-- https://www.mojohaus.org/flatten-maven-plugin/usage.html -->
-<!-- ./mvnw clean deploy -Prelease -U -->
+<!-- ./mvnw clean deploy -Prelease -DskipTests -->
 <plugin>
   <groupId>org.codehaus.mojo</groupId>
   <artifactId>flatten-maven-plugin</artifactId>
