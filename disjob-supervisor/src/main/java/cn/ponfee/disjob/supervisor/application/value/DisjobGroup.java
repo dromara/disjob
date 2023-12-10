@@ -70,7 +70,7 @@ public class DisjobGroup {
             return Collections.singleton(ownUser);
         }
         String[] array = str.split(Str.COMMA);
-        ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize((array.length + 1) << 1);
+        ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize(array.length + 1);
         builder.add(ownUser);
         Stream.of(array).filter(StringUtils::isNotBlank).forEach(builder::add);
         return builder.build();

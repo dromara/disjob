@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CollectsTest {
 
     @Test
-    public void test() {
+    public void testTruncate() {
         assertThat(Collects.truncate(null, 2)).isNull();
         assertThat(Collects.truncate(Collections.emptySet(), 2)).isEmpty();
         assertThat(Collects.truncate(Sets.newSet(1), 0)).size().isEqualTo(1);
