@@ -100,13 +100,13 @@ disjob                                        # Main project①
 
 3. Login to the Admin
 
-- Open【 http://127.0.0.1:80/ 】in your browser and login with username/password: `admin`/`admin123`
+- Open【 http://127.0.0.1:80/ 】in your browser and login with username/password: `admin`/`123456`
 - Find the Scheduling Management menu in the left sidebar to use the `scheduling management` function
 - Scheduling Configuration: Job configuration, including viewing, adding, modifying, deleting, triggering, disabling, etc.
 - Scheduling Instances: job trigger time generate an instance, the instance split to many tasks.
 
 4. Link Address
-- Admin demo:【 http://ponfee.cn:8000/ 】, username/password: `disjob`/`disjob123`
+- Admin demo:【 http://ponfee.cn:8000/ 】, username/password: `disjob`/`123456`
 - Online documentation: **Under construction, please stay tuned!**
 
 ## User Guide

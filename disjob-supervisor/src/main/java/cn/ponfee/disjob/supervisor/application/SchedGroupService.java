@@ -93,9 +93,8 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public boolean edit(UpdateSchedGroupRequest request) {
         request.checkAndTrim();
-        SchedGroup schedGroup = request.toSchedGroup();
         return Functions.doIfTrue(
-            isOneAffectedRow(schedGroupMapper.edit(schedGroup)),
+            isOneAffectedRow(schedGroupMapper.edit(request.toSchedGroup())),
             this::refresh
         );
     }

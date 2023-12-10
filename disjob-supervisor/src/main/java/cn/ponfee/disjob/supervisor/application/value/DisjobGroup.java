@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Disjob group
@@ -46,13 +47,14 @@ public class DisjobGroup {
     }
 
     public static DisjobGroup of(SchedGroup schedGroup) {
+        String ownUser = schedGroup.getOwnUser();
         return new DisjobGroup(
             schedGroup.getSupervisorToken(),
             schedGroup.getWorkerToken(),
             schedGroup.getUserToken(),
-            schedGroup.getOwnUser(),
-            parse(schedGroup.getDevUsers()),
-            parse(schedGroup.getAlarmUsers()),
+            ownUser,
+            parse(schedGroup.getDevUsers(), ownUser),
+            parse(schedGroup.getAlarmUsers(), ownUser),
             schedGroup.getWebHook()
         );
     }
@@ -63,8 +65,15 @@ public class DisjobGroup {
 
     // --------------------------------------------------------------private methods
 
-    private static Set<String> parse(String str) {
-        return StringUtils.isBlank(str) ? Collections.emptySet() : ImmutableSet.copyOf(str.split(Str.COMMA));
+    private static Set<String> parse(String str, String ownUser) {
+        if (StringUtils.isBlank(str)) {
+            return Collections.singleton(ownUser);
+        }
+        String[] array = str.split(Str.COMMA);
+        ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize((array.length + 1) << 1);
+        builder.add(ownUser);
+        Stream.of(array).filter(StringUtils::isNotBlank).forEach(builder::add);
+        return builder.build();
     }
 
 }

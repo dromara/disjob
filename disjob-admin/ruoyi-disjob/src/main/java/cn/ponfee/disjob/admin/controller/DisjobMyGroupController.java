@@ -96,9 +96,14 @@ public class DisjobMyGroupController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedGroupRequest req) {
-        req.setUpdatedBy(getLoginName());
+        String currentUser = getLoginName();
+        if (!currentUser.equals(schedGroupService.get(req.getGroup()).getOwnUser())) {
+            // 非Own User不可更换Own User数据(即只有Own User本人才能更换该group的Own User为其它人)
+            req.setOwnUser(null);
+        }
+        req.setUpdatedBy(currentUser);
         boolean result = schedGroupService.edit(req);
-        return result ? success() : error("修改冲突，请刷重新新页面");
+        return result ? success() : error("修改冲突，请刷新页面");
     }
 
     @RequiresPermissions(PERMISSION_OPERATE)

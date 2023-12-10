@@ -15,7 +15,7 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Worker;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -28,16 +28,19 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.lang.reflect.Type;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -54,7 +57,22 @@ public final class DiscoveryRestTemplate<D extends Server> {
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
     public static final Object[] EMPTY = new Object[0];
-    private static final List<HttpStatus> TIMEOUT_STATUS_LIST = ImmutableList.of(HttpStatus.REQUEST_TIMEOUT, HttpStatus.GATEWAY_TIMEOUT);
+    private static final Set<HttpStatus> RETRIABLE_HTTP_STATUS = ImmutableSet.of(
+        // 4xx
+        HttpStatus.REQUEST_TIMEOUT,
+        HttpStatus.CONFLICT,
+        HttpStatus.LOCKED,
+        HttpStatus.FAILED_DEPENDENCY,
+        HttpStatus.TOO_EARLY,
+        HttpStatus.PRECONDITION_REQUIRED,
+        HttpStatus.TOO_MANY_REQUESTS,
+
+        // 5xx
+        HttpStatus.BAD_GATEWAY,
+        HttpStatus.SERVICE_UNAVAILABLE,
+        HttpStatus.GATEWAY_TIMEOUT,
+        HttpStatus.BANDWIDTH_LIMIT_EXCEEDED
+    );
 
     private final RestTemplate restTemplate;
     private final Discovery<D> discoveryServer;
@@ -154,7 +172,7 @@ public final class DiscoveryRestTemplate<D extends Server> {
                 }
                 ex = e;
                 LOG.error("Invoke server rpc failed: {}, {}, {}", url, Jsons.toJson(arguments), e.getMessage());
-                if (!requireRetry(e)) {
+                if (!isRequireRetry(e)) {
                     break;
                 }
                 if (i < n) {
@@ -179,6 +197,8 @@ public final class DiscoveryRestTemplate<D extends Server> {
         return restTemplate;
     }
 
+    // ----------------------------------------------------------------------------------------private methods
+
     private static MultiValueMap<String, String> buildQueryParams(Object[] arguments) {
         if (ArrayUtils.isEmpty(arguments)) {
             return null;
@@ -192,15 +212,25 @@ public final class DiscoveryRestTemplate<D extends Server> {
         return params;
     }
 
-    private static boolean requireRetry(Throwable e) {
-        if (e instanceof ResourceAccessException) {
-            return (e.getCause() instanceof SocketTimeoutException);
+    private static boolean isRequireRetry(Throwable e) {
+        if (isTimeoutException(e) || isTimeoutException(e.getCause())) {
+            // org.springframework.web.client.ResourceAccessException#getCause may be timeout
+            return true;
         }
         if (!(e instanceof HttpStatusCodeException)) {
             return false;
         }
-        HttpStatus statusCode = ((HttpStatusCodeException) e).getStatusCode();
-        return TIMEOUT_STATUS_LIST.contains(statusCode);
+        return RETRIABLE_HTTP_STATUS.contains(((HttpStatusCodeException) e).getStatusCode());
+    }
+
+    private static boolean isTimeoutException(Throwable e) {
+        if (e == null) {
+            return false;
+        }
+        return (e instanceof java.net.SocketTimeoutException)
+            || (e instanceof java.net.ConnectException)
+            || (e instanceof org.apache.http.conn.ConnectTimeoutException)
+            || (e instanceof java.rmi.ConnectException);
     }
 
     // ----------------------------------------------------------------------------------------builder

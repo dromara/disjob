@@ -66,8 +66,10 @@
       var ops = operation === 'change' ? "更换" : (operation === 'set' ? "设置" : "清除");
       $.modal.confirm("确认要" + ops + "'" + name + "'令牌吗？", function () {
         $.operate.post(prefix + "/token", params, function (result) {
-          input.val(result.data);
-          setTokenButton(name);
+          if (result.code === 0) {
+            input.val(result.data);
+            setTokenButton(name);
+          }
         });
       });
     }

@@ -85,10 +85,10 @@ create table sys_user (
 ) engine=innodb auto_increment=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin comment = '用户信息表';
 
 -- ----------------------------
--- 初始化-用户信息表数据：admin/admin123、disjob/disjob123
+-- 初始化-用户信息表数据：admin/123456、disjob/123456
 -- ----------------------------
-insert into sys_user values(1,  103, 'admin',  '管理员',  '00', 'ponfee.cn@gmail.com', '15888888888', '1', '', '14c17b4e4c51db8d772a59bb43718fe1', '7e040d', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
-insert into sys_user values(2,  105, 'disjob', 'Disjob', '00', 'ponfee.cn@gmail.com', '15666666666', '1', '', 'e92fa6078eb4a44f55232dac9fe9e5e3', '486a3e', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '测试员');
+insert into sys_user values(1,  103, 'admin',  '管理员',  '00', 'ponfee.cn@gmail.com', '15888888888', '1', '', '9d6f39c3df35e33504d646820e139943', 'b67ffd', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
+insert into sys_user values(2,  105, 'disjob', 'Disjob', '00', 'ponfee.cn@gmail.com', '15666666666', '1', '', '3c7230aa7e491814538c02c9e3a2e343', '468561', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '测试员');
 
 
 -- ----------------------------
