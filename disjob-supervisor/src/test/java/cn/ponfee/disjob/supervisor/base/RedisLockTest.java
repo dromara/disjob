@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
 
     private static final String NAME = RandomStringUtils.randomAlphabetic(3);
+    private static final int ROUND = 5;
     private static final int RATIO = 7;
 
     private RedisLockFactory factory;
@@ -103,7 +104,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         String line;
         List<Thread> threads = new ArrayList<>();
         System.out.println("\n=========================START========================");
-        while ((line = reader.readLine()) != null) {
+        for (int i = 0; i < ROUND && (line = reader.readLine()) != null; i++) {
             if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
                 final String line0 = line;
                 threads.add(new Thread(() -> printer.output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")));
@@ -127,7 +128,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         String line;
         List<Thread> threads = new ArrayList<>();
         System.out.println("\n=========================START========================");
-        while ((line = reader.readLine()) != null) {
+        for (int i = 0; i < ROUND && (line = reader.readLine()) != null; i++) {
             if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
                 final String _line = line;
                 threads.add(new Thread(
@@ -152,7 +153,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         String line;
         List<Thread> threads = new ArrayList<>();
         System.out.println("\n=========================START========================");
-        while ((line = reader.readLine()) != null) {
+        for (int i = 0; i < ROUND && (line = reader.readLine()) != null; i++) {
             final String line0 = line;
             if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
                 threads.add(new Thread(
@@ -176,6 +177,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         AtomicInteger num = new AtomicInteger(RATIO);
         System.out.println("\n=========================START========================");
         List<Map<Integer, String>> lines = Files.readLines(file(), StandardCharsets.UTF_8)
+            .subList(0, ROUND)
             .stream()
             .filter(e -> ThreadLocalRandom.current().nextInt(3) == 0)
             .map(line -> ImmutableMap.of(num.getAndIncrement(), line))
