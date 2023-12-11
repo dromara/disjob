@@ -57,7 +57,7 @@ public class SpringWebExceptionHandler {
         if (!isBadRequest || StringUtils.isEmpty(errorMsg)) {
             LOG.error("Handle server exception", e);
         } else {
-            LOG.error("Handle biz exception: " + errorMsg);
+            LOG.error("Handle biz exception: {}", errorMsg);
         }
 
         PrintWriter out = response.getWriter();

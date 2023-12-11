@@ -110,7 +110,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
      */
     private final TimingQueue<T>[] wheel;
 
-    public TimingWheel(long tickMs, int ringSize) {
+    protected TimingWheel(long tickMs, int ringSize) {
         Assert.isTrue(tickMs > 0, "Tick milliseconds must be greater than 0");
         Assert.isTrue(ringSize > 0, "Ring size must be greater than 0");
         this.tickMs = tickMs;
@@ -167,7 +167,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         if (res) {
             LOG.info("Timing wheel task success {}", timing);
         } else {
-            LOG.error("Timing wheel task failed " + timing);
+            LOG.error("Timing wheel task failed {}", timing);
         }
         return res;
     }

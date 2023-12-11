@@ -37,7 +37,7 @@ import static cn.ponfee.disjob.common.collect.Collects.get;
 public class Supervisor extends Server {
     private static final long serialVersionUID = -1254559108807415145L;
 
-    private transient final String serializedValue;
+    private final transient String serializedValue;
 
     public Supervisor(String host, int port) {
         super(host, port);
@@ -119,7 +119,7 @@ public class Supervisor extends Server {
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
-    public static abstract class Current extends Supervisor {
+    public abstract static class Current extends Supervisor {
         private static final long serialVersionUID = -239845054171219365L;
         private static volatile Current instance = null;
 

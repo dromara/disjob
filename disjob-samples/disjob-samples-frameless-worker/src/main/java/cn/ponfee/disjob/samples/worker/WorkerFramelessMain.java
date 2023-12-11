@@ -29,7 +29,7 @@ import cn.ponfee.disjob.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
-import cn.ponfee.disjob.worker.provider.rpc.WorkerRpcProvider;
+import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -190,7 +190,7 @@ public class WorkerFramelessMain {
     }
     */
 
-    private synchronized static StringRedisTemplate stringRedisTemplate(YamlProperties props) {
+    private static synchronized StringRedisTemplate stringRedisTemplate(YamlProperties props) {
         if (stringRedisTemplate == null) {
             String keyPrefix = DISJOB_KEY_PREFIX + ".redis.";
             stringRedisTemplate = AbstractRedisTemplateCreator.create(keyPrefix, props, null).getStringRedisTemplate();

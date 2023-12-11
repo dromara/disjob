@@ -70,8 +70,10 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         this.ttl = config.getSessionTimeoutMs() / 2000;
 
         CountDownLatch latch = new CountDownLatch(1);
+        EtcdClient client0 = null;
         try {
-            this.client = new EtcdClient(config);
+            client0 = new EtcdClient(config);
+            this.client = client0;
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
             createLeaseIdAndKeepAlive();
@@ -86,6 +88,9 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
             doRefreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
         } catch (Exception e) {
+            if (client0 != null) {
+                client0.close();
+            }
             throw new RegistryException("Etcd registry init error: " + config, e);
         } finally {
             latch.countDown();
@@ -108,7 +113,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         try {
             client.createEphemeralKey(buildRegistryServerId(server), PLACEHOLDER_VALUE, leaseId);
             registered.add(server);
-            log.info("Etcd server registered: {} | {}", registryRole.name(), server);
+            log.info("Etcd server registered: {} | {}", registryRole, server);
         } catch (Throwable e) {
             throw new RegistryException("Etcd server register failed: " + server, e);
         }
@@ -119,7 +124,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         try {
             registered.remove(server);
             client.deleteKey(buildRegistryServerId(server));
-            log.info("Etcd server deregister: {} | {}", registryRole.name(), server);
+            log.info("Etcd server deregister: {} | {}", registryRole, server);
         } catch (Throwable t) {
             log.error("Etcd server deregister error.", t);
         }
@@ -157,7 +162,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     private synchronized void doRefreshDiscoveryServers(List<String> list) {
         List<D> servers;
         if (CollectionUtils.isEmpty(list)) {
-            log.warn("Not discovered available {} from etcd.", discoveryRole.name());
+            log.warn("Not discovered available {} from etcd.", discoveryRole);
             servers = Collections.emptyList();
         } else {
             servers = list.stream()

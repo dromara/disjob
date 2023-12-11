@@ -260,16 +260,16 @@ public class CuratorFrameworkClient implements Closeable {
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;
-                LOG.info("Curator first connected, session={}", hex(sessionId));
+                LOG.info("Curator first connected, session={}", sessionId);
             } else if (state == ConnectionState.LOST) {
-                LOG.warn("Curator session expired, session={}", hex(lastSessionId));
+                LOG.warn("Curator session expired, session={}", lastSessionId);
             } else if (state == ConnectionState.SUSPENDED) {
-                LOG.warn("Curator connection lost, session={}", hex(sessionId));
+                LOG.warn("Curator connection lost, session={}", sessionId);
             } else if (state == ConnectionState.RECONNECTED) {
                 if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
-                    LOG.warn("Curator recover connected, reuse old-session={}", hex(sessionId));
+                    LOG.warn("Curator recover connected, reuse old-session={}", sessionId);
                 } else {
-                    LOG.warn("Curator recover connected, old-session={}, new-session={}", hex(lastSessionId), hex(sessionId));
+                    LOG.warn("Curator recover connected, old-session={}, new-session={}", lastSessionId, sessionId);
                     lastSessionId = sessionId;
                 }
                 reconnectCallback.call(CuratorFrameworkClient.this);
@@ -283,10 +283,6 @@ public class CuratorFrameworkClient implements Closeable {
             config.getMaxRetries(),
             config.getMaxSleepMs()
         );
-    }
-
-    private static String hex(long number) {
-        return Long.toHexString(number);
     }
 
 }

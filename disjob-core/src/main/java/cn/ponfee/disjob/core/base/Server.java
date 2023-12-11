@@ -33,7 +33,7 @@ public abstract class Server implements Serializable {
      */
     protected final int port;
 
-    public Server(String host, int port) {
+    protected Server(String host, int port) {
         Assert.isTrue(!host.contains(Str.COLON), "Host cannot contains symbol ':'");
         this.host = host;
         this.port = port;

@@ -95,7 +95,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             client.agentServiceRegister(newService, token);
         }
         registered.add(server);
-        log.info("Consul server registered: {} | {}", registryRole.name(), server);
+        log.info("Consul server registered: {} | {}", registryRole, server);
     }
 
     @Override
@@ -108,7 +108,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             } else {
                 client.agentServiceDeregister(serverId, token);
             }
-            log.info("Consul Server deregister: {} | {}", registryRole.name(), server);
+            log.info("Consul Server deregister: {} | {}", registryRole, server);
         } catch (Throwable t) {
             log.error("Consul server deregister error.", t);
         }
@@ -196,22 +196,6 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         }
     }
 
-    private synchronized void doRefreshDiscoveryServers(List<HealthService> healthServices) {
-        List<D> servers;
-        if (CollectionUtils.isEmpty(healthServices)) {
-            log.warn("Not discovered available {} from consul.", discoveryRole.name());
-            servers = Collections.emptyList();
-        } else {
-            servers = healthServices.stream()
-                .map(HealthService::getService)
-                .filter(Objects::nonNull)
-                .map(s -> s.getId().substring(discoveryRootPath.length() + 1))
-                .<D>map(discoveryRole::deserialize)
-                .collect(Collectors.toList());
-        }
-        refreshDiscoveredServers(servers);
-    }
-
     private class ConsulSubscriberThread extends Thread {
         private long lastConsulIndex;
 
@@ -238,6 +222,22 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                     Threads.interruptIfNecessary(t);
                 }
             }
+        }
+
+        private synchronized void doRefreshDiscoveryServers(List<HealthService> healthServices) {
+            List<D> servers;
+            if (CollectionUtils.isEmpty(healthServices)) {
+                log.warn("Not discovered available {} from consul.", discoveryRole);
+                servers = Collections.emptyList();
+            } else {
+                servers = healthServices.stream()
+                    .map(HealthService::getService)
+                    .filter(Objects::nonNull)
+                    .map(s -> s.getId().substring(discoveryRootPath.length() + 1))
+                    .<D>map(discoveryRole::deserialize)
+                    .collect(Collectors.toList());
+            }
+            refreshDiscoveredServers(servers);
         }
 
         private Response<List<HealthService>> getDiscoveryServers(long index, long waitTime) {

@@ -35,7 +35,7 @@ public class Collects {
     }
 
     public static <T> Set<T> truncate(Set<T> set, int length) {
-        if (length < 2 || CollectionUtils.isEmpty(set) || set.size() <= length) {
+        if (CollectionUtils.isEmpty(set) || length <= 0 || set.size() <= length) {
             return set;
         }
 

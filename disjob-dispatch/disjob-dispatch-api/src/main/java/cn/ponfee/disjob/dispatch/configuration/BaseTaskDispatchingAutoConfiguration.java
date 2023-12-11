@@ -22,7 +22,7 @@ public abstract class BaseTaskDispatchingAutoConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(BaseTaskDispatchingAutoConfiguration.class);
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
 
-    public BaseTaskDispatchingAutoConfiguration() {
+    protected BaseTaskDispatchingAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
             LOG.info("Enabled task dispatching '{}'", getClass());
         } else {

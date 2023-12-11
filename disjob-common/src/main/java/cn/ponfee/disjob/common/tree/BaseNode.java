@@ -49,15 +49,15 @@ public abstract class BaseNode<T extends Serializable & Comparable<T>, A> implem
     protected int       childrenCount; // 子节点个数
     protected int      siblingOrdinal; // 兄弟节点按顺序排行（从1开始）
 
-    public BaseNode(T nid, T pid, A attach) {
+    protected BaseNode(T nid, T pid, A attach) {
         this(nid, pid, true, attach);
     }
 
-    public BaseNode(T nid, T pid, boolean enabled, A attach) {
+    protected BaseNode(T nid, T pid, boolean enabled, A attach) {
         this(nid, pid, enabled, enabled, attach);
     }
 
-    public BaseNode(T nid, T pid, boolean enabled, boolean available, A attach) {
+    protected BaseNode(T nid, T pid, boolean enabled, boolean available, A attach) {
         Assert.isTrue(ObjectUtils.isNotEmpty(nid), "Node id cannot be empty.");
         this.nid = nid;
         this.pid = pid;

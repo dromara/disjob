@@ -250,21 +250,21 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
             Collections.shuffle(usableWorkerIds);
             for (int usableWorkerId : usableWorkerIds) {
-                String workerIdPath = workerIdParentPath + SEP + usableWorkerId;
+                String workerIdPath0 = workerIdParentPath + SEP + usableWorkerId;
                 boolean isCreatedWorkerIdPath = false;
                 long currentTime = System.currentTimeMillis();
                 try {
                     WorkerIdData data = WorkerIdData.of(currentTime, serverTag);
-                    createEphemeral(workerIdPath, data.serialize());
+                    createEphemeral(workerIdPath0, data.serialize());
                     isCreatedWorkerIdPath = true;
                     upsertEphemeral(serverTagPath, Bytes.toBytes(usableWorkerId));
                     LOG.info("Created snowflake zk worker success: {} | {} | {}", serverTag, usableWorkerId, currentTime);
                     return usableWorkerId;
                 } catch (Throwable t) {
                     if (isCreatedWorkerIdPath) {
-                        ThrowingRunnable.doCaught(() -> deletePath(workerIdPath));
+                        ThrowingRunnable.doCaught(() -> deletePath(workerIdPath0));
                     }
-                    LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath, t.getMessage());
+                    LOG.warn("Registry snowflake zk worker '{}' failed: {}", workerIdPath0, t.getMessage());
                     Threads.interruptIfNecessary(t);
                 }
             }
@@ -273,10 +273,10 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
         } else {
             // 已注册
 
-            int workerId = Bytes.toInt(serverTagData);
-            if (workerId < 0 || workerId >= workerIdMaxCount) {
+            int workerId0 = Bytes.toInt(serverTagData);
+            if (workerId0 < 0 || workerId0 >= workerIdMaxCount) {
                 deletePath(serverTagPath);
-                throw new IllegalStateException("Invalid zk worker id: " + workerId);
+                throw new IllegalStateException("Invalid zk worker id: " + workerId0);
             }
 
             byte[] workerIdData = getData(workerIdPath);
@@ -295,9 +295,9 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                 updateData(workerIdPath, WorkerIdData.of(currentTime, serverTag).serialize());
             }
 
-            LOG.info("Reuse zk worker id success: {} | {}", serverTag, workerId);
+            LOG.info("Reuse zk worker id success: {} | {}", serverTag, workerId0);
 
-            return workerId;
+            return workerId0;
 
         }
     }
@@ -371,16 +371,16 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             }
             if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;
-                LOG.info("Curator snowflake first connected, session={}", hex(sessionId));
+                LOG.info("Curator snowflake first connected, session={}", sessionId);
             } else if (state == ConnectionState.LOST) {
-                LOG.warn("Curator snowflake session expired, session={}", hex(lastSessionId));
+                LOG.warn("Curator snowflake session expired, session={}", lastSessionId);
             } else if (state == ConnectionState.SUSPENDED) {
-                LOG.warn("Curator snowflake connection lost, session={}", hex(sessionId));
+                LOG.warn("Curator snowflake connection lost, session={}", sessionId);
             } else if (state == ConnectionState.RECONNECTED) {
                 if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
-                    LOG.warn("Curator snowflake recover connected, reuse old-session={}", hex(sessionId));
+                    LOG.warn("Curator snowflake recover connected, reuse old-session={}", sessionId);
                 } else {
-                    LOG.warn("Curator snowflake recover connected, old-session={}, new-session={}", hex(lastSessionId), hex(sessionId));
+                    LOG.warn("Curator snowflake recover connected, old-session={}, new-session={}", lastSessionId, sessionId);
                     lastSessionId = sessionId;
                 }
 
@@ -411,10 +411,6 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             String server = new String(bytes, 8, bytes.length - 8, UTF_8);
             return WorkerIdData.of(time, server);
         }
-    }
-
-    private static String hex(long number) {
-        return Long.toHexString(number);
     }
 
 }

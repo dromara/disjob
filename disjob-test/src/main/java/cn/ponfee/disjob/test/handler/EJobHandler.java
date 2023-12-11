@@ -48,8 +48,8 @@ public class EJobHandler extends JobHandler {
 
     @Override
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000);
-        LOG.info(this.getClass().getSimpleName() + " execution finished.");
+        Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000L);
+        LOG.info("Execution finished.");
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecuteResult.success();
     }

@@ -22,7 +22,7 @@ public abstract class BaseServerRegistryAutoConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(BaseServerRegistryAutoConfiguration.class);
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
 
-    public BaseServerRegistryAutoConfiguration() {
+    protected BaseServerRegistryAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {
             LOG.info("Enabled registry center '{}'", getClass());
         } else {

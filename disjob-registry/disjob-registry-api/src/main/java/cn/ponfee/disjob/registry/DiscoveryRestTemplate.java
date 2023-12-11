@@ -57,6 +57,7 @@ public final class DiscoveryRestTemplate<D extends Server> {
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
     public static final Object[] EMPTY = new Object[0];
+
     private static final Set<HttpStatus> RETRIABLE_HTTP_STATUS = ImmutableSet.of(
         // 4xx
         HttpStatus.REQUEST_TIMEOUT,
@@ -68,6 +69,8 @@ public final class DiscoveryRestTemplate<D extends Server> {
         HttpStatus.TOO_MANY_REQUESTS,
 
         // 5xx
+        // 500：Supervisor内部组件超时(如数据库超时)等场景
+        HttpStatus.INTERNAL_SERVER_ERROR,
         HttpStatus.BAD_GATEWAY,
         HttpStatus.SERVICE_UNAVAILABLE,
         HttpStatus.GATEWAY_TIMEOUT,
@@ -213,6 +216,9 @@ public final class DiscoveryRestTemplate<D extends Server> {
     }
 
     private static boolean isRequireRetry(Throwable e) {
+        if (e == null) {
+            return false;
+        }
         if (isTimeoutException(e) || isTimeoutException(e.getCause())) {
             // org.springframework.web.client.ResourceAccessException#getCause may be timeout
             return true;

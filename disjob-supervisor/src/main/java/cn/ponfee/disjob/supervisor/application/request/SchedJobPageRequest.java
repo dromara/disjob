@@ -8,9 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.model.PageRequest;
-import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,8 +29,8 @@ public class SchedJobPageRequest extends PageRequest {
     private Integer jobType;
     private Integer jobState;
 
-    public void truncateGroup() {
-        this.groups = Collects.truncate(groups, SupervisorConstants.SQL_GROUP_IN_MAX_SIZE);
+    public void constrainAndTruncateUserGroup(String user) {
+        this.groups = SchedGroupPageRequest.constrainAndTruncateUserGroup(user, this.groups);
     }
 
 }

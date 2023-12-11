@@ -18,9 +18,7 @@ import java.util.Arrays;
  *
  * @author Ponfee
  */
-public final class ArrayHashKey implements java.io.Serializable, Comparable<ArrayHashKey> {
-
-    private static final long serialVersionUID = -8749483734287105153L;
+public final class ArrayHashKey implements Comparable<ArrayHashKey> {
 
     private final Object[] key;
 

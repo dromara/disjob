@@ -21,7 +21,7 @@ public abstract class TriggerInstance {
 
     private final SchedInstance instance;
 
-    public TriggerInstance(SchedInstance instance) {
+    protected TriggerInstance(SchedInstance instance) {
         this.instance = instance;
     }
 }

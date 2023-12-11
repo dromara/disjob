@@ -35,7 +35,7 @@ public interface DiscoveryServer<S extends Server> {
             case SUPERVISOR:
                 return (DiscoveryServer<S>) new DiscoverySupervisor();
             default:
-                throw new UnsupportedOperationException("Unsupported discovery server '" + discoveryRole.name() + "'");
+                throw new UnsupportedOperationException("Unsupported discovery server '" + discoveryRole + "'");
         }
     }
 

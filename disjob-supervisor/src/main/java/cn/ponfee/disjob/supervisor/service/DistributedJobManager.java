@@ -51,7 +51,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.spring.TransactionUtils.*;
@@ -472,7 +472,7 @@ public class DistributedJobManager extends AbstractJobManager {
     // ------------------------------------------------------------------private methods
 
     private void doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Consumer<SchedInstance> action) {
-        doTransactionLockInSynchronized(instanceId, wnstanceId, Functions.convert(action, Boolean.TRUE));
+        doTransactionLockInSynchronized(instanceId, wnstanceId, Functions.convert(action, true));
     }
 
     /**
@@ -483,7 +483,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param action the action
      * @return boolean value of action result
      */
-    private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Function<SchedInstance, Boolean> action) {
+    private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Predicate<SchedInstance> action) {
         // Long.toString(lockKey).intern()
         Long lockInstanceId = wnstanceId == null ? instanceId : wnstanceId;
         synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
@@ -495,7 +495,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
                     throw new IllegalArgumentException("Invalid workflow instance id: " + wnstanceId + ", " + instance);
                 }
-                return action.apply(instance);
+                return action.test(instance);
             });
             return Boolean.TRUE.equals(result);
         }
@@ -639,7 +639,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void createWorkflowNode(SchedInstance leadInstance, WorkflowGraph graph,
-                                    Map<DAGEdge, SchedWorkflow> map, Function<Throwable, Boolean> failHandler) {
+                                    Map<DAGEdge, SchedWorkflow> map, Predicate<Throwable> failHandler) {
         SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::get, leadInstance.getJobId());
         long wnstanceId = leadInstance.getWnstanceId();
         Date now = new Date();
@@ -683,7 +683,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
             } catch (Throwable t) {
-                Boolean result = failHandler.apply(t);
+                Boolean result = failHandler.test(t);
                 if (Boolean.FALSE.equals(result)) {
                     // if false then break
                     return;

@@ -22,7 +22,7 @@ public class WorkerMetricsAggregator {
 
     private static WorkerThreadPool workerThreadPool;
 
-    synchronized static void setWorkerThreadPool(WorkerThreadPool threadPool) {
+    static synchronized void setWorkerThreadPool(WorkerThreadPool threadPool) {
         if (workerThreadPool != null) {
             throw new AssertionError("WorkerThreadPool already set.");
         }

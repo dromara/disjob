@@ -36,7 +36,7 @@ public abstract class SingletonClassConstraint {
 
     public static synchronized void constrain(Class<?> clazz) {
         if (MUTEX.add(clazz)) {
-            LOG.info("Class '" + clazz + "' instance are created.");
+            LOG.info("Class '{}' instance are created.", clazz);
         } else {
             throw new Error("Class '" + clazz + "' instance already created.");
         }

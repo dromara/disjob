@@ -88,7 +88,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             namingService.registerInstance(registryRootPath, groupName, instance);
             registered.add(server);
-            log.info("Nacos server registered: {} | {}", registryRole.name(), server);
+            log.info("Nacos server registered: {} | {}", registryRole, server);
         } catch (Throwable e) {
             throw new RegistryException("Nacos server register failed: " + server, e);
         }
@@ -100,7 +100,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             registered.remove(server);
             namingService.deregisterInstance(registryRootPath, groupName, instance);
-            log.info("Nacos server deregister: {} | {}", registryRole.name(), server);
+            log.info("Nacos server deregister: {} | {}", registryRole, server);
         } catch (Throwable t) {
             log.error("Nacos server deregister error.", t);
         }
@@ -141,7 +141,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
     private synchronized void doRefreshDiscoveryServers(List<Instance> instances) {
         List<D> servers;
         if (CollectionUtils.isEmpty(instances)) {
-            log.warn("Not discovered available {} from nacos.", discoveryRole.name());
+            log.warn("Not discovered available {} from nacos.", discoveryRole);
             servers = Collections.emptyList();
         } else {
             servers = instances.stream()

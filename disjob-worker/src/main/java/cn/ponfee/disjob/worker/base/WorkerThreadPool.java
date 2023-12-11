@@ -198,7 +198,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     @Override
     public void close() {
         if (!closed.compareAndSet(false, true)) {
-            LOG.warn("Repeat call close method." + "\n" + Threads.getStackTrace());
+            LOG.warn("Repeat call close method{}{}", "\n", Threads.getStackTrace());
             return;
         }
 
@@ -303,7 +303,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
             }
         } catch (InterruptedException e) {
-            LOG.warn("Thread pool running interrupted: " + e.getMessage());
+            LOG.warn("Thread pool running interrupted: {}", e.getMessage());
             Thread.currentThread().interrupt();
         } catch (Throwable t) {
             LOG.error("Thread pool running occur error.", t);
@@ -450,7 +450,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
             }
         } catch (Throwable t) {
-            LOG.error("Terminate task error: " + param.getTaskId() + " | " + ops + " | " + toState);
+            LOG.error("Terminate task error: {}, {}, {}", param.getTaskId(), ops, toState);
             Threads.interruptIfNecessary(t);
         }
     }
@@ -757,7 +757,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 try {
                     param = workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS);
                 } catch (InterruptedException e) {
-                    LOG.warn("Poll execution param block interrupted: " + e.getMessage());
+                    LOG.warn("Poll execution param block interrupted: {}", e.getMessage());
                     Thread.currentThread().interrupt();
                     break;
                 }

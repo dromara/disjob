@@ -292,14 +292,14 @@ public final class GenericUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Class<T> getVariableActualType(Class<?> clazz, TypeVariable<?> var) {
+    private static <T> Class<T> getVariableActualType(Class<?> clazz, TypeVariable<?> tv) {
         if (clazz == null) {
             return (Class<T>) Object.class;
         }
 
         return (Class<T>) VARIABLE_TYPE_MAPPING
             .computeIfAbsent(clazz, GenericUtils::getActualTypeVariableMapping)
-            .getOrDefault(getTypeVariableName(null, var).get(0), Object.class);
+            .getOrDefault(getTypeVariableName(null, tv).get(0), Object.class);
     }
 
     private static void resolveMapping(Map<String, Class<?>> result, Type type) {
@@ -319,15 +319,15 @@ public final class GenericUtils {
         }
     }
 
-    private static List<String> getTypeVariableName(Class<?> clazz, TypeVariable<?> var) {
+    private static List<String> getTypeVariableName(Class<?> clazz, TypeVariable<?> tv) {
         List<String> names = new ArrayList<>();
-        getTypeVariableName(names, clazz, var);
+        getTypeVariableName(names, clazz, tv);
         return names;
     }
 
-    private static void getTypeVariableName(List<String> names, Class<?> clazz, TypeVariable<?> var) {
+    private static void getTypeVariableName(List<String> names, Class<?> clazz, TypeVariable<?> tv) {
         // Class, Method, Constructor
-        names.add(var.getGenericDeclaration().toString() + "[" + var.getName() + "]");
+        names.add(tv.getGenericDeclaration().toString() + "[" + tv.getName() + "]");
         if (clazz == null || clazz == Object.class) {
             return;
         }
@@ -347,7 +347,7 @@ public final class GenericUtils {
                     continue;
                 }
                 // find the type variable origin defined class
-                if (((TypeVariable<?>) types[i]).getName().equals(var.getTypeName())) {
+                if (((TypeVariable<?>) types[i]).getName().equals(tv.getTypeName())) {
                     clazz = (Class<?>) ptype.getRawType();
                     getTypeVariableName(names, clazz, clazz.getTypeParameters()[i]);
                     break;

@@ -176,7 +176,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         registered.remove(server);
         Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
         ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
-        log.info("Server deregister: {} | {}", registryRole.name(), server);
+        log.info("Server deregister: {} | {}", registryRole, server);
     }
 
     @Override
@@ -229,14 +229,14 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             List<String> discovered = jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
 
             if (CollectionUtils.isEmpty(discovered)) {
-                log.warn("Not discovered available {} from database.", discoveryRole.name());
+                log.warn("Not discovered available {} from database.", discoveryRole);
                 discovered = Collections.emptyList();
             }
 
             List<D> servers = discovered.stream().<D>map(discoveryRole::deserialize).collect(Collectors.toList());
             refreshDiscoveredServers(servers);
 
-            log.debug("Database discovered {} servers.", discoveryRole.name());
+            log.debug("Database discovered {} servers.", discoveryRole);
         }, 3, 1000L);
     }
 

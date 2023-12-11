@@ -73,9 +73,7 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedJobPageRequest request) {
-        if (CollectionUtils.isEmpty(request.getGroups())) {
-            request.setGroups(SchedGroupService.mapUser(getLoginName()));
-        }
+        request.constrainAndTruncateUserGroup(getLoginName());
         if (CollectionUtils.isEmpty(request.getGroups())) {
             return PageUtils.empty();
         }
@@ -106,9 +104,7 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/export")
     @ResponseBody
     public AjaxResult export(SchedJobPageRequest request) {
-        if (CollectionUtils.isEmpty(request.getGroups())) {
-            request.setGroups(SchedGroupService.mapUser(getLoginName()));
-        }
+        request.constrainAndTruncateUserGroup(getLoginName());
 
         List<SchedJobExport> list;
         if (CollectionUtils.isEmpty(request.getGroups())) {

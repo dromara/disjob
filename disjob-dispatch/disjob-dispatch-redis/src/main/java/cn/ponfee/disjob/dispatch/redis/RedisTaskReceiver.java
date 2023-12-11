@@ -17,8 +17,6 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -49,7 +47,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Ponfee
  */
 public class RedisTaskReceiver extends TaskReceiver {
-    private static final Logger LOG = LoggerFactory.getLogger(TaskReceiver.class);
 
     /**
      * List Batch pop lua script
@@ -93,7 +90,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
-            LOG.warn("Repeat call start method.");
+            log.warn("Repeat call start method.");
             return;
         }
         this.receiveHeartbeatThread.start();
@@ -102,7 +99,7 @@ public class RedisTaskReceiver extends TaskReceiver {
     @Override
     public void stop() {
         if (!started.compareAndSet(true, false)) {
-            LOG.warn("Repeat call stop method.");
+            log.warn("Repeat call stop method.");
             return;
         }
         this.receiveHeartbeatThread.close();

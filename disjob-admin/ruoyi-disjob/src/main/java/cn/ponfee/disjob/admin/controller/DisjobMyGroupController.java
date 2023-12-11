@@ -63,9 +63,7 @@ public class DisjobMyGroupController extends BaseController {
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedGroupPageRequest request) {
-        if (CollectionUtils.isEmpty(request.getGroups())) {
-            request.setGroups(SchedGroupService.mapUser(getLoginName()));
-        }
+        request.constrainAndTruncateUserGroup(getLoginName());
         if (CollectionUtils.isEmpty(request.getGroups())) {
             return PageUtils.empty();
         }
@@ -108,7 +106,7 @@ public class DisjobMyGroupController extends BaseController {
 
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/worker")
-    public String worker(@RequestParam("group") String group, ModelMap mmap) throws Exception {
+    public String worker(@RequestParam("group") String group, ModelMap mmap) {
         mmap.put("list", serverMetricsService.workers(group));
         return PREFIX + "/worker";
     }

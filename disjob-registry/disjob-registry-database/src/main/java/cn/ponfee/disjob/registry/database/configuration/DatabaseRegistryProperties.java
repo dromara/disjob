@@ -30,7 +30,7 @@ public class DatabaseRegistryProperties extends AbstractRegistryProperties {
     /**
      * Session timeout milliseconds
      */
-    private long sessionTimeoutMs = 30 * 1000;
+    private long sessionTimeoutMs = 30 * 1000L;
 
     /**
      * Datasource configuration.

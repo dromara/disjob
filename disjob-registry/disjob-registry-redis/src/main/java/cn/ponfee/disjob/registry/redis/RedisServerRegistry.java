@@ -173,7 +173,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         doRegisterServers(Collections.singleton(server));
         registered.add(server);
         ThrowingRunnable.doCaught(() -> publish(server, EventType.REGISTER));
-        log.info("Server registered: {} | {}", registryRole.name(), server);
+        log.info("Server registered: {} | {}", registryRole, server);
     }
 
     @Override
@@ -181,7 +181,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         registered.remove(server);
         ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
         ThrowingRunnable.doCaught(() -> publish(server, EventType.DEREGISTER));
-        log.info("Server deregister: {} | {}", registryRole.name(), server);
+        log.info("Server deregister: {} | {}", registryRole, server);
     }
 
     @Override
@@ -303,7 +303,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             );
 
             if (CollectionUtils.isEmpty(discovered)) {
-                log.warn("Not discovered available {} from redis.", discoveryRole.name());
+                log.warn("Not discovered available {} from redis.", discoveryRole);
                 discovered = Collections.emptyList();
             }
 
@@ -311,7 +311,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             refreshDiscoveredServers(servers);
 
             renewNextDiscoverTimeMillis();
-            log.debug("Redis discovered {} servers.", discoveryRole.name());
+            log.debug("Redis discovered {} servers.", discoveryRole);
         }, 3, 1000L);
     }
 

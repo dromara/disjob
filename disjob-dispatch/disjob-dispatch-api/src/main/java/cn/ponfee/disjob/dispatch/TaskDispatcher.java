@@ -44,9 +44,9 @@ public abstract class TaskDispatcher implements Startable {
     private final long retryBackoffPeriod;
     private final AsyncDelayedExecutor<DispatchTaskParam> asyncDelayedExecutor;
 
-    public TaskDispatcher(Discovery<Worker> discoveryWorker,
-                          RetryProperties retryProperties,
-                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel) {
+    protected TaskDispatcher(Discovery<Worker> discoveryWorker,
+                             RetryProperties retryProperties,
+                             @Nullable TimingWheel<ExecuteTaskParam> timingWheel) {
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         this.discoveryWorker = discoveryWorker;
         this.timingWheel = timingWheel;
@@ -192,7 +192,7 @@ public abstract class TaskDispatcher implements Startable {
     private void retry(DispatchTaskParam param) {
         if (param.retried() >= retryMaxCount) {
             // discard
-            log.error("Dispatched task retried max count still failed: " + param.executeTaskParam());
+            log.error("Dispatched task retried max count still failed: {}", param.executeTaskParam());
             return;
         }
 

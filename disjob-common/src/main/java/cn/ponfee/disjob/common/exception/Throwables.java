@@ -269,8 +269,8 @@ public final class Throwables {
         void accept(E e) throws T;
 
         default <R> ThrowingFunction<E, R, Throwable> toFunction(R result) {
-            return (arg) -> {
-                accept(arg);
+            return x -> {
+                accept(x);
                 return result;
             };
         }

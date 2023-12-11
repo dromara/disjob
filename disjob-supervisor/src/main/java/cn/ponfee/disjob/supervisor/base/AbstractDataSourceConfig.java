@@ -39,16 +39,16 @@ public abstract class AbstractDataSourceConfig {
 
     private final String mybatisMapperFileLocation;
 
-    public AbstractDataSourceConfig() {
+    protected AbstractDataSourceConfig() {
         this(-1);
     }
 
-    public AbstractDataSourceConfig(int wildcardLastIndex) {
+    protected AbstractDataSourceConfig(int wildcardLastIndex) {
         List<String> list = Arrays.stream(ClassUtils.getPackageName(getClass()).split("\\."))
             .filter(StringUtils::isNotEmpty)
             .collect(Collectors.toList());
         String path;
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             path = "";
         } else if (wildcardLastIndex == 0) {
             path = String.join("/", list) + "/**/";
@@ -67,7 +67,7 @@ public abstract class AbstractDataSourceConfig {
         this.mybatisMapperFileLocation = MessageFormat.format("classpath*:{0}xml/*.xml", path);
     }
 
-    public AbstractDataSourceConfig(String mybatisMapperFileLocation) {
+    protected AbstractDataSourceConfig(String mybatisMapperFileLocation) {
         this.mybatisMapperFileLocation = mybatisMapperFileLocation;
     }
 

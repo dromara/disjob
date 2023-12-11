@@ -23,7 +23,7 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
 
     protected final DistributedJobManager jobManager;
 
-    public TriggerInstanceCreator(DistributedJobManager jobManager) {
+    protected TriggerInstanceCreator(DistributedJobManager jobManager) {
         this.jobManager = jobManager;
     }
 

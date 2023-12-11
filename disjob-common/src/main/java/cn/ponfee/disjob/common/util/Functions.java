@@ -28,6 +28,13 @@ public class Functions {
         };
     }
 
+    public static <T> Predicate<T> convert(final Consumer<T> consumer, boolean result) {
+        return t -> {
+            consumer.accept(t);
+            return result;
+        };
+    }
+
     public static <T> T doIfTrue(Supplier<T> supplier, Predicate<T> predicate, Runnable action) {
         T result = supplier.get();
         if (predicate.test(result)) {

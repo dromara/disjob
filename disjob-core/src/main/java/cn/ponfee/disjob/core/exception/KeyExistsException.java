@@ -24,6 +24,6 @@ public class KeyExistsException extends BaseRuntimeException {
     }
 
     public KeyExistsException(String message) {
-        super(JobCodeMsg.UN_AUTHENTICATED.getCode(), message);
+        super(JobCodeMsg.INVALID_PARAM.getCode(), message);
     }
 }

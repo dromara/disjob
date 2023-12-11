@@ -54,7 +54,7 @@ public class CommonTest {
 
     private static String path(List<String> list, int wildcardLastIndex) {
         String path;
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             path = "";
         } else if (wildcardLastIndex == 0) {
             path = String.join("/", list) + "/**/";

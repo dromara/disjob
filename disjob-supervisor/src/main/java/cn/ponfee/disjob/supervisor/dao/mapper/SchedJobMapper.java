@@ -29,9 +29,9 @@ public interface SchedJobMapper {
 
     List<SchedJob> findByJobIds(List<Long> jobIds);
 
-    int insert(SchedJob record);
+    int insert(SchedJob job);
 
-    int update(SchedJob record);
+    int update(SchedJob job);
 
     /**
      * Gets sched job by job_id

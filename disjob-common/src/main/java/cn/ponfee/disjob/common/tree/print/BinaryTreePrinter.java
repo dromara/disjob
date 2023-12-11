@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Print binary tree
@@ -30,8 +31,8 @@ public class BinaryTreePrinter<T> {
 
     private final Appendable output;
     private final Function<T, String> nodeLabel;
-    private final Function<T, T> leftChild;
-    private final Function<T, T> rightChild;
+    private final UnaryOperator<T> leftChild;
+    private final UnaryOperator<T> rightChild;
 
     /**
      * 分支是方形还是三角形
@@ -55,8 +56,8 @@ public class BinaryTreePrinter<T> {
 
     BinaryTreePrinter(Appendable output,
                       Function<T, String> nodeLabel,
-                      Function<T, T> leftChild,
-                      Function<T, T> rightChild,
+                      UnaryOperator<T> leftChild,
+                      UnaryOperator<T> rightChild,
                       Branch branch,
                       boolean directed,
                       int nodeSpace,
@@ -144,14 +145,16 @@ public class BinaryTreePrinter<T> {
         }
     }
 
-    public static <T> Builder<T> builder(Function<T, String> nodeLabel, Function<T, T> leftChild, Function<T, T> rightChild) {
+    public static <T> Builder<T> builder(Function<T, String> nodeLabel,
+                                         UnaryOperator<T> leftChild,
+                                         UnaryOperator<T> rightChild) {
         return new Builder<>(nodeLabel, leftChild, rightChild);
     }
 
     public static class Builder<T> {
         private final Function<T, String> nodeLabel;
-        private final Function<T, T> leftChild;
-        private final Function<T, T> rightChild;
+        private final UnaryOperator<T> leftChild;
+        private final UnaryOperator<T> rightChild;
 
         private Appendable output = System.out;
         private Branch branch = Branch.RECTANGLE;
@@ -159,7 +162,9 @@ public class BinaryTreePrinter<T> {
         private int nodeSpace = 2;
         private int treeSpace = 5;
 
-        private Builder(Function<T, String> nodeLabel, Function<T, T> leftChild, Function<T, T> rightChild) {
+        private Builder(Function<T, String> nodeLabel,
+                        UnaryOperator<T> leftChild,
+                        UnaryOperator<T> rightChild) {
             this.nodeLabel = nodeLabel;
             this.leftChild = leftChild;
             this.rightChild = rightChild;
@@ -201,7 +206,7 @@ public class BinaryTreePrinter<T> {
     // --------------------------------------------------------------------private methods
 
     private void printTreeLines(List<TreeLine> treeLines) throws IOException {
-        if (treeLines.size() <= 0) {
+        if (treeLines.isEmpty()) {
             return;
         }
         int minLeftOffset = minLeftOffset(treeLines);
@@ -260,8 +265,8 @@ public class BinaryTreePrinter<T> {
             if (branch == Branch.RECTANGLE) {
                 int adjust = (rootSpacing / 2) + 1;
                 String horizontal = String.join("", Collections.nCopies(rootSpacing / 2, "─"));
-                String branch = "┌" + horizontal + "┴" + horizontal + "┐";
-                allTreeLines.add(new TreeLine(branch, -adjust, adjust));
+                String branch0 = "┌" + horizontal + "┴" + horizontal + "┐";
+                allTreeLines.add(new TreeLine(branch0, -adjust, adjust));
                 rightTreeAdjust = adjust;
                 leftTreeAdjust = -adjust;
             } else {
@@ -324,7 +329,12 @@ public class BinaryTreePrinter<T> {
             } else {
                 left = leftTreeLines.get(i);
                 right = rightTreeLines.get(i);
-                int adjustedRootSpacing = (rootSpacing == 1 ? (branch == Branch.RECTANGLE ? 1 : 3) : rootSpacing);
+                int adjustedRootSpacing;
+                if (rootSpacing == 1) {
+                    adjustedRootSpacing = (branch == Branch.RECTANGLE) ? 1 : 3;
+                } else {
+                    adjustedRootSpacing = rootSpacing;
+                }
                 TreeLine combined = new TreeLine(
                     left.line + spaces(adjustedRootSpacing - left.rightOffset + right.leftOffset) + right.line,
                     left.leftOffset + leftTreeAdjust,

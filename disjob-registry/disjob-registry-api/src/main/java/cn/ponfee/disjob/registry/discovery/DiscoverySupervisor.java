@@ -24,10 +24,10 @@ public final class DiscoverySupervisor implements DiscoveryServer<Supervisor> {
     /**
      * ImmutableHashList<serialize, Supervisor>
      */
-    private volatile ImmutableHashList<String, Supervisor> supervisors = ImmutableHashList.empty();
+    private ImmutableHashList<String, Supervisor> supervisors = ImmutableHashList.empty();
 
     @Override
-    public void refreshServers(List<Supervisor> discoveredSupervisors) {
+    public synchronized void refreshServers(List<Supervisor> discoveredSupervisors) {
         this.supervisors = ImmutableHashList.of(discoveredSupervisors, Supervisor::serialize);
     }
 

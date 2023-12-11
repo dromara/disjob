@@ -153,10 +153,10 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
      *
      * @param <T> the data type
      */
-    public static abstract class ImmutableResult<T> extends Result<T> {
+    public abstract static class ImmutableResult<T> extends Result<T> {
         private static final long serialVersionUID = -8356385235924100622L;
 
-        public ImmutableResult(int code, String msg, T data) {
+        protected ImmutableResult(int code, String msg, T data) {
             super(code, msg, data);
         }
 

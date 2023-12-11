@@ -55,12 +55,10 @@ public final class ProcessUtils {
             // return error code: -1
             return -1;
         } finally {
-            if (process != null) {
-                try {
-                    process.destroy();
-                } catch (Throwable t) {
-                    verbose.accept("Destroy process error: " + ExceptionUtils.getStackTrace(t));
-                }
+            try {
+                process.destroy();
+            } catch (Throwable t) {
+                verbose.accept("Destroy process error: " + ExceptionUtils.getStackTrace(t));
             }
         }
     }
@@ -115,7 +113,9 @@ public final class ProcessUtils {
             if (SystemUtils.IS_OS_WINDOWS) {
                 Process killProcess = new ProcessBuilder("taskkill", "/PID", String.valueOf(pid), "/F", "/T").start();
                 waitFor(killProcess, () -> "kill process id " + pid);
-                LOG.info("Stop windows process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Stop windows process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                }
                 destroy(killProcess);
             } else if (SystemUtils.IS_OS_UNIX) {
                 // 1、find child process id
@@ -132,13 +132,15 @@ public final class ProcessUtils {
                 // 2、kill current process id
                 Process killProcess = new ProcessBuilder("kill", "-9", String.valueOf(pid)).start();
                 waitFor(killProcess, () -> "kill process id " + pid);
-                LOG.info("Stop unix process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Stop unix process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                }
                 destroy(killProcess);
             } else {
                 LOG.error("Stop process id unknown os name: {}, {}", SystemUtils.OS_NAME, pid);
             }
         } catch (InterruptedException e) {
-            LOG.error("Kill process id '" + pid + "' interrupted.");
+            LOG.error("Kill process id '{}' interrupted.", pid);
             ExceptionUtils.rethrow(e);
         } catch (Throwable t) {
             LOG.error("Kill process id '" + pid + "' error.", t);

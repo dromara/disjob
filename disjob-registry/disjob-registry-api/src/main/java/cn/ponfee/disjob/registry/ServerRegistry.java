@@ -70,9 +70,9 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      *
      * @param servers discovered servers
      */
-    protected synchronized final void refreshDiscoveredServers(List<D> servers) {
+    protected final synchronized void refreshDiscoveredServers(List<D> servers) {
         discoveryServer.refreshServers(servers);
-        log.debug("Refreshed discovery servers: {} | {}", discoveryRole.name(), servers);
+        log.debug("Refreshed discovery servers: {} | {}", discoveryRole, servers);
     }
 
     /**

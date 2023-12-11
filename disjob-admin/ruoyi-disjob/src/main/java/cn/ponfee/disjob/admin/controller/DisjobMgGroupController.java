@@ -79,6 +79,7 @@ public class DisjobMgGroupController extends BaseController {
     public TableDataInfo list(SchedGroupPageRequest request) {
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
+        request.truncateUserGroup();
         return PageUtils.toTableDataInfo(schedGroupService.queryForPage(request));
     }
 
@@ -169,7 +170,7 @@ public class DisjobMgGroupController extends BaseController {
 
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/worker")
-    public String worker(@RequestParam("group") String group, ModelMap mmap) throws Exception {
+    public String worker(@RequestParam("group") String group, ModelMap mmap) {
         mmap.put("list", serverMetricsService.workers(group));
         return PREFIX + "/worker";
     }

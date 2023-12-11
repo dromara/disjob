@@ -55,8 +55,8 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
 
     private static final Lock LOCK = new ReentrantLock();
-    private static volatile Map<String, DisjobGroup> groupMap;
-    private static volatile Map<String, Set<String>> userMap;
+    private static Map<String, DisjobGroup> groupMap;
+    private static Map<String, Set<String>> userMap;
 
     private final SchedGroupMapper schedGroupMapper;
     private final LoopThread refresher;
@@ -124,7 +124,6 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     }
 
     public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {
-        pageRequest.truncateGroup();
         return pageRequest.query(
             schedGroupMapper::queryPageCount,
             schedGroupMapper::queryPageRecords,
@@ -161,7 +160,16 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     // ------------------------------------------------------------private methods
 
-    private void refresh() {
+    /**
+     * synchronized的执行过程
+     *  1）获得同步锁
+     *  2）清空工作内存
+     *  3）从主内存中复制数据副本到工作内存
+     *  4）执行代码
+     *  5）刷新数据到主内存
+     *  6）释放锁
+     */
+    private synchronized void refresh() {
         if (!LOCK.tryLock()) {
             return;
         }

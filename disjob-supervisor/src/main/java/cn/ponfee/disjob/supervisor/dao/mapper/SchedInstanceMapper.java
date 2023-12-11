@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public interface SchedInstanceMapper {
 
-    int insert(SchedInstance record);
+    int insert(SchedInstance instance);
 
     /**
      * Gets sched instance by instance_id

@@ -27,7 +27,7 @@ public abstract class TaskReceiver implements Startable {
     private final Worker.Current currentWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
-    public TaskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+    protected TaskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
         this.timingWheel = Objects.requireNonNull(timingWheel, "Timing wheel cannot be null.");
         this.currentWorker = Objects.requireNonNull(currentWorker, "Current worker cannot be null.");
     }
@@ -60,7 +60,7 @@ public abstract class TaskReceiver implements Startable {
         if (res) {
             log.info("Task trace [{}] received: {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
         } else {
-            log.error("Received task failed " + param);
+            log.error("Received task failed {}", param);
         }
         return res;
     }

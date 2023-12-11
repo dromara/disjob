@@ -26,7 +26,7 @@ public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implement
 
     protected final T parent;
 
-    public NodeId(T parent) {
+    protected NodeId(T parent) {
         this.parent = parent;
     }
 
