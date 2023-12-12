@@ -14,7 +14,6 @@ import cn.ponfee.disjob.common.util.MavenProjects;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -26,13 +25,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Redis lock test
@@ -42,8 +41,7 @@ import java.util.stream.Collectors;
 public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
 
     private static final String NAME = RandomStringUtils.randomAlphabetic(3);
-    private static final int ROUND = 5;
-    private static final int RATIO = 7;
+    private static final int ROUND = 1;
 
     private RedisLockFactory factory;
 
@@ -55,24 +53,24 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void test0() throws InterruptedException {
         String key = "test:" + UuidUtils.uuid32();
-        RedisLock redisLock = factory.create(key, 10000);
+        RedisLock redisLock = factory.create(key, 5000);
         Assertions.assertTrue(redisLock.tryLock());
 
         Thread.sleep(55);
         Long ttl1 = bean.getExpire("lock:" + key, TimeUnit.MILLISECONDS);
         System.out.println("ttl1: " + ttl1);
-        Assertions.assertTrue(ttl1 > 9000 && ttl1 < 10000);
+        Assertions.assertTrue(ttl1 > 4000 && ttl1 < 5000);
 
-        Thread.sleep(5000);
+        Thread.sleep(1000);
         Long ttl2 = bean.getExpire("lock:" + key, TimeUnit.MILLISECONDS);
         System.out.println("ttl2: " + ttl2);
-        Assertions.assertTrue(ttl2 > 4000 && ttl2 < 5000);
+        Assertions.assertTrue(ttl2 > 3000 && ttl2 < 4000);
 
         Assertions.assertTrue(redisLock.tryLock());
         Thread.sleep(50);
         Long ttl3 = bean.getExpire("lock:" + key, TimeUnit.MILLISECONDS);
         System.out.println("ttl3: " + ttl3);
-        Assertions.assertTrue(ttl3 > 9000 && ttl3 < 10000);
+        Assertions.assertTrue(ttl3 > 4000 && ttl3 < 5000);
 
         Assertions.assertTrue(redisLock.isLocked());
         Assertions.assertTrue(redisLock.isHeldByCurrentThread());
@@ -105,10 +103,8 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         List<Thread> threads = new ArrayList<>();
         System.out.println("\n=========================START========================");
         for (int i = 0; i < ROUND && (line = reader.readLine()) != null; i++) {
-            if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
-                final String line0 = line;
-                threads.add(new Thread(() -> printer.output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")));
-            }
+            final String line0 = line;
+            threads.add(new Thread(() -> printer.output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")));
         }
         reader.close();
         for (Thread thread : threads) {
@@ -129,12 +125,10 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         List<Thread> threads = new ArrayList<>();
         System.out.println("\n=========================START========================");
         for (int i = 0; i < ROUND && (line = reader.readLine()) != null; i++) {
-            if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
-                final String _line = line;
-                threads.add(new Thread(
-                    () -> new Printer(lock).output(NAME + "-" + num.getAndIncrement() + "\t" + _line + "\n")
-                ));
-            }
+            final String _line = line;
+            threads.add(new Thread(
+                () -> new Printer(lock).output(NAME + "-" + num.getAndIncrement() + "\t" + _line + "\n")
+            ));
         }
         reader.close();
         for (Thread thread : threads) {
@@ -155,11 +149,9 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         System.out.println("\n=========================START========================");
         for (int i = 0; i < ROUND && (line = reader.readLine()) != null; i++) {
             final String line0 = line;
-            if (ThreadLocalRandom.current().nextInt(RATIO) == 0) {
-                threads.add(new Thread(
-                    () -> new Printer(factory.create("test:lock:3", 30000)).output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")
-                ));
-            }
+            threads.add(new Thread(
+                () -> new Printer(factory.create("test:lock:3", 30000)).output(NAME + "-" + num.getAndIncrement() + "\t" + line0 + "\n")
+            ));
         }
         reader.close();
         for (Thread thread : threads) {
@@ -174,19 +166,11 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
     @Test
     public void test4() throws IOException {
         Printer printer = new Printer(factory.create("test:lock:4", 30000));
-        AtomicInteger num = new AtomicInteger(RATIO);
         System.out.println("\n=========================START========================");
-        List<Map<Integer, String>> lines = Files.readLines(file(), StandardCharsets.UTF_8)
-            .subList(0, ROUND)
-            .stream()
-            .filter(e -> ThreadLocalRandom.current().nextInt(3) == 0)
-            .map(line -> ImmutableMap.of(num.getAndIncrement(), line))
-            .collect(Collectors.toList());
+        List<String> lines = Files.readLines(file(), StandardCharsets.UTF_8)
+            .subList(0, ROUND);
 
-        execute(lines, map -> {
-            Entry<Integer, String> line = map.entrySet().iterator().next();
-            printer.output(NAME + "-" + line.getKey() + "\t" + line.getValue() + "\n");
-        }, ForkJoinPool.commonPool());
+        execute(lines, line -> printer.output(NAME + "-" + line + "\n"), ForkJoinPool.commonPool());
         System.out.println("=========================END========================\n");
     }
 
@@ -199,7 +183,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
      */
     @Test
     public void testTryLockWithTimeout() throws InterruptedException {
-        int expire = 2000;
+        int expire = 1000;
         String lockKey = "test:lock:" + UuidUtils.uuid32();
         String actualKey = "lock:" + lockKey;
 

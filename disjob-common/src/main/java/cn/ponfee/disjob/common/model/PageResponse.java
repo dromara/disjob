@@ -14,6 +14,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Page query response
@@ -55,6 +56,12 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
 
     public int getTotalPages() {
         return computeTotalPages(request.getPageSize(), total);
+    }
+
+    public void forEachRow(Consumer<T> action) {
+        if (rows != null) {
+            rows.forEach(action);
+        }
     }
 
     public static int computeTotalPages(int pageSize, long total) {

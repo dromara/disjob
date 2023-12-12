@@ -61,7 +61,7 @@ public class ThreadExceptionTest {
         t.start();
         t.interrupt();
         //Thread.interrupted();
-        Thread.sleep(2000);
+        Thread.sleep(500);
         System.out.println("end---");
     }
 

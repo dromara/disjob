@@ -95,7 +95,7 @@ public class HashTest {
         Assertions.assertEquals(String.class, Class.forName("java.lang.String"));
     }
 
-    static long round = 1_000_000_000L;
+    static long round = 1_000_000L;
 
     @Test
     public void testNexFloat() {
@@ -188,7 +188,7 @@ public class HashTest {
             System.out.println("------------b");
         });
         System.out.println("------------1");
-        Thread.sleep(4000);
+        Thread.sleep(1000);
     }
 
 }

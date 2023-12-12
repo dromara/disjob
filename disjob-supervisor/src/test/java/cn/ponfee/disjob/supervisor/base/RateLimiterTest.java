@@ -39,9 +39,9 @@ public class RateLimiterTest {
     public void testStop() throws InterruptedException {
         MyThread1 thread = new MyThread1();
         thread.start();
-        Thread.sleep(2000);
+        Thread.sleep(500);
         Assertions.assertFalse(Threads.isStopped(thread));
-        Threads.stopThread(thread, 1000, 2, 500);
+        Threads.stopThread(thread, 1000, 2, 200);
         Thread.sleep(100);
         Assertions.assertTrue(Threads.isStopped(thread));
         thread.join();
@@ -51,10 +51,10 @@ public class RateLimiterTest {
     public void testInterrupt() throws InterruptedException {
         MyThread2 thread = new MyThread2();
         thread.start();
-        Thread.sleep(2000);
+        Thread.sleep(1000);
         Assertions.assertFalse(Threads.isStopped(thread));
         thread.interrupt();
-        Thread.sleep(1000);
+        Thread.sleep(500);
         Assertions.assertFalse(Threads.isStopped(thread));
         // RateLimiter不会interrupt
     }

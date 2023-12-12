@@ -124,11 +124,14 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     }
 
     public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {
-        return pageRequest.query(
+        PageResponse<SchedGroupResponse> page = pageRequest.query(
             schedGroupMapper::queryPageCount,
             schedGroupMapper::queryPageRecords,
             SchedGroupConverter.INSTANCE::convert
         );
+
+        page.forEachRow(SchedGroupResponse::maskToken);
+        return page;
     }
 
     // ------------------------------------------------------------close

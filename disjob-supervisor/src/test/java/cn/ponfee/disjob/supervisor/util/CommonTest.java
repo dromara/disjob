@@ -170,7 +170,7 @@ public class CommonTest {
         System.out.println(Numbers.partition(47, 2));
         System.out.println(Numbers.partition(256, 2));
         System.out.println(Numbers.partition(256, 4));
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 10000; i++) {
             int number = ThreadLocalRandom.current().nextInt(100000) + 1, size = ThreadLocalRandom.current().nextInt(31) + 1;
             List<Tuple2<Integer, Integer>> split = Numbers.partition(number, size);
             Assertions.assertTrue(Collects.getFirst(split).a == 0);

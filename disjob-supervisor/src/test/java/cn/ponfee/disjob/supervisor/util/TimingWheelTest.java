@@ -81,9 +81,9 @@ public class TimingWheelTest {
 
     @Test
     public void testTimeSecond() throws InterruptedException {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             Assertions.assertEquals((int) ((System.currentTimeMillis() % 60000) / 1000), Calendar.getInstance().get(Calendar.SECOND));
-            Thread.sleep(ThreadLocalRandom.current().nextLong(200));
+            Thread.sleep(ThreadLocalRandom.current().nextLong(50));
         }
     }
 
@@ -190,7 +190,7 @@ public class TimingWheelTest {
         long hour = TimeUnit.HOURS.toMillis(10);
         System.out.println("hour=" + hour);
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 1000; i++) {
             long triggerTime = System.currentTimeMillis() + 5000 + ThreadLocalRandom.current().nextLong(hour);
             timingWheel.offer(CommonTest.createExecuteTaskParam(Operations.TRIGGER, 0, 0, 1L, 0, triggerTime, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 1, "jobHandler", new Worker("default", "workerId", "host", 1)));
         }

@@ -11,6 +11,7 @@ package cn.ponfee.disjob.supervisor.application.response;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -39,4 +40,18 @@ public class SchedGroupResponse extends ToJsonString implements Serializable {
     private Date createdAt;
     private String updatedBy;
     private String createdBy;
+
+    public void maskToken() {
+        this.supervisorToken = mask(supervisorToken);
+        this.workerToken = mask(workerToken);
+        this.userToken = mask(userToken);
+    }
+
+    private static String mask(String str) {
+        if (StringUtils.isEmpty(str)) {
+            return str;
+        }
+        return "*****";
+    }
+
 }
