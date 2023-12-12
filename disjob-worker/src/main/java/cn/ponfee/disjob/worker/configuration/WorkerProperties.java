@@ -29,9 +29,9 @@ public class WorkerProperties extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7914242555106016172L;
 
     /**
-     * Worker group name, default 'default' value.
+     * Worker group name
      */
-    private String group = "default";
+    private String group;
 
     /**
      * Worker timing wheel tick milliseconds.
