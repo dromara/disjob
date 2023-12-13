@@ -26,11 +26,11 @@ import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-@Component
+@Service
 public class OpenapiService {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);

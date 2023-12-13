@@ -31,7 +31,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -50,7 +50,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANA
  *
  * @author Ponfee
  */
-@Component
+@Service
 public class SchedGroupService extends SingletonClassConstraint implements Closeable, DisposableBean {
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
 
@@ -114,7 +114,7 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
     public boolean updateOwnUser(String group, String ownUser, String updatedBy) {
         Assert.hasText(ownUser, "Own user cannot be blank.");
         return Functions.doIfTrue(
-            isOneAffectedRow(schedGroupMapper.updateOwnUser(group, ownUser, updatedBy)),
+            isOneAffectedRow(schedGroupMapper.updateOwnUser(group, ownUser.trim(), updatedBy)),
             this::refresh
         );
     }

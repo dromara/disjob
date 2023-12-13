@@ -19,8 +19,8 @@ import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
-import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
 import lombok.Getter;
 import org.apache.commons.lang3.mutable.MutableInt;
 

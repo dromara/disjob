@@ -20,7 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-@Component
+@Service
 public class ServerMetricsService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerMetricsService.class);
 

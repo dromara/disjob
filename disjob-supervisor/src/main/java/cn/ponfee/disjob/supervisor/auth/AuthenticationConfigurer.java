@@ -60,7 +60,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             } else if (value == SupervisorAuthentication.Subject.USER) {
                 authenticateUser(request, group);
             } else {
-                throw new UnsupportedOperationException("Unsupported supervisor authentication subject: " + annotation.value());
+                throw new UnsupportedOperationException("Unsupported supervisor authentication subject: " + value);
             }
 
             return true;
@@ -87,7 +87,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
 
             String userToken = SchedGroupService.mapGroup(group).getUserToken();
             if (StringUtils.isBlank(userToken)) {
-                // user token must configured
+                // disable openapi if not configured user_token
                 throw new AuthenticationException(ERR_MSG);
             }
 
@@ -96,7 +96,8 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            request.setAttribute(SupervisorConstants.REQUEST_ATTRIBUTE_KEY_DISJOB_USER, disjobGroup);
+            request.setAttribute(SupervisorConstants.REQUEST_ATTRIBUTE_KEY_DISJOB_USER, user);
+            request.setAttribute(SupervisorConstants.REQUEST_ATTRIBUTE_KEY_DISJOB_GROUP, group);
         }
 
         private static SupervisorAuthentication getAnnotation(HandlerMethod hm) {

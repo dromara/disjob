@@ -21,8 +21,8 @@ import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
-import cn.ponfee.disjob.supervisor.service.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.service.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 
 import java.util.List;
 

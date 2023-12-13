@@ -36,12 +36,12 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
     private boolean alsoSupervisor;
 
     /**
-     * Jvm总线程池数
+     * JVM活跃线程数
      */
     private int jvmThreadActiveCount;
 
     /**
-     * 线程池指标情况
+     * Worker线程池指标情况
      */
     private ThreadPoolMetrics threadPool;
 

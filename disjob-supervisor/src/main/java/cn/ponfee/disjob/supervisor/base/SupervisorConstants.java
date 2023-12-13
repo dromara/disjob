@@ -52,8 +52,13 @@ public class SupervisorConstants {
     // ----------------------------------------------------------------others
 
     /**
-     * Http request attribute key for disjob user request
+     * Http request attribute key for disjob request user header
      */
     public static final String REQUEST_ATTRIBUTE_KEY_DISJOB_USER = "disjob_user";
+
+    /**
+     * Http request attribute key for disjob request group header
+     */
+    public static final String REQUEST_ATTRIBUTE_KEY_DISJOB_GROUP = "disjob_group";
 
 }
