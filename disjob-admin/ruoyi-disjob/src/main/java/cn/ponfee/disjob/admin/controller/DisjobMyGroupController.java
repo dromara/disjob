@@ -11,6 +11,7 @@ package cn.ponfee.disjob.admin.controller;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
+import cn.ponfee.disjob.supervisor.application.constraint.UserGroupConstraints;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
@@ -52,7 +53,7 @@ public class DisjobMyGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping
     public String mygroup(ModelMap mmap) {
-        mmap.put("groups", SchedGroupService.mapUser(getLoginName()));
+        mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
         return PREFIX + "/mygroup";
     }
 
@@ -79,6 +80,7 @@ public class DisjobMyGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/edit/{group}")
     public String edit(@PathVariable("group") String group, ModelMap mmap) {
+        UserGroupConstraints.assertPermitGroup(getLoginName(), group);
         SchedGroupResponse data = schedGroupService.get(group);
         Assert.notNull(data, () -> "Group not found: " + group);
         mmap.put("data", data);
@@ -94,10 +96,13 @@ public class DisjobMyGroupController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedGroupRequest req) {
+        UserGroupConstraints.assertPermitGroup(getLoginName(), req.getGroup());
+        SchedGroupResponse data = schedGroupService.get(req.getGroup());
+        Assert.isTrue(req.getVersion() == data.getVersion(), "Edit data conflicted.");
         String currentUser = getLoginName();
-        if (!currentUser.equals(schedGroupService.get(req.getGroup()).getOwnUser())) {
+        if (!currentUser.equals(data.getOwnUser())) {
             // 非Own User不可更换own_user数据(即只有Own User本人才能更换该group的own_user为其它人)
-            req.setOwnUser(null);
+            Assert.isTrue(req.getOwnUser().equals(data.getOwnUser()), "Cannot modify own user.");
         }
         req.setUpdatedBy(currentUser);
         boolean result = schedGroupService.edit(req);
@@ -107,6 +112,7 @@ public class DisjobMyGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
+        UserGroupConstraints.assertPermitGroup(getLoginName(), group);
         mmap.put("list", serverMetricsService.workers(group));
         return PREFIX + "/worker";
     }

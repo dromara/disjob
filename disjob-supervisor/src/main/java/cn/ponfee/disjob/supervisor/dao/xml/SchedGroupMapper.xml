@@ -69,11 +69,9 @@
 
   <update id="edit">
     UPDATE <include refid="Table_Name" />
-    SET dev_users = #{devUsers,jdbcType=VARCHAR},
+    SET own_user = #{ownUser,jdbcType=VARCHAR},
+        dev_users = #{devUsers,jdbcType=VARCHAR},
         alarm_users = #{alarmUsers,jdbcType=VARCHAR},
-        <if test="ownUser != null and ownUser != ''">
-          own_user = #{ownUser,jdbcType=VARCHAR},
-        </if>
         web_hook = #{webHook,jdbcType=VARCHAR},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1

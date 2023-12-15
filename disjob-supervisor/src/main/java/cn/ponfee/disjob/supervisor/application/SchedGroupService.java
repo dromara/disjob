@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.io.Closeable;
@@ -43,7 +42,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANAGER_SPRING_BEAN_NAME;
 
 /**
  * Sched group service
@@ -69,7 +67,6 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     // ------------------------------------------------------------sched group
 
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public long add(AddSchedGroupRequest request) {
         request.checkAndTrim();
         if (schedGroupMapper.exists(request.getGroup())) {
@@ -82,7 +79,6 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         return schedGroup.getId();
     }
 
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public boolean delete(String group, String updatedBy) {
         return Functions.doIfTrue(
             isOneAffectedRow(schedGroupMapper.softDelete(group, updatedBy)),
@@ -90,7 +86,6 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         );
     }
 
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public boolean edit(UpdateSchedGroupRequest request) {
         request.checkAndTrim();
         return Functions.doIfTrue(
@@ -148,7 +143,7 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     // ------------------------------------------------------------other static methods
 
-    public static DisjobGroup mapGroup(String group) {
+    public static DisjobGroup getGroup(String group) {
         DisjobGroup disjobGroup = groupMap.get(group);
         if (disjobGroup == null) {
             throw new GroupNotFoundException("Not found worker group: " + group);
@@ -156,7 +151,7 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         return disjobGroup;
     }
 
-    public static Set<String> mapUser(String user) {
+    public static Set<String> myGroups(String user) {
         Set<String> groups = userMap.get(user);
         return groups == null ? Collections.emptySet() : groups;
     }

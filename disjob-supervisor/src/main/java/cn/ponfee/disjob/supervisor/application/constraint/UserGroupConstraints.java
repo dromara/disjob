@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.application.constraint;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.CollectionUtils;
@@ -20,25 +21,33 @@ import java.util.Set;
  *
  * @author Ponfee
  */
-public class UserGroupConstraints {
+public final class UserGroupConstraints {
+
+    private UserGroupConstraints() { }
 
     /**
      * SQL中`group IN (a, b, ..., x)`允许的最大长度
      */
     public static final int SQL_GROUP_IN_MAX_SIZE = 50;
 
-    public static Set<String> constrainAndTruncateUserGroup(String user, Set<String> groups) {
-        Set<String> uGroups = SchedGroupService.mapUser(user);
-        if (CollectionUtils.isEmpty(groups)) {
-            groups = uGroups;
-        } else if (!uGroups.containsAll(groups)) {
-            throw new IllegalArgumentException("Unauthorized groups: " + Sets.difference(groups, uGroups));
+    public static Set<String> constrainAndTruncateUserGroup(String user, Set<String> paramGroups) {
+        Set<String> permitGroups = SchedGroupService.myGroups(user);
+        if (CollectionUtils.isEmpty(paramGroups)) {
+            paramGroups = permitGroups;
+        } else if (!permitGroups.containsAll(paramGroups)) {
+            throw new AuthenticationException("Unauthorized group: " + Sets.difference(paramGroups, permitGroups));
         }
-        return truncateUserGroup(groups);
+        return truncateUserGroup(paramGroups);
     }
 
-    public static Set<String> truncateUserGroup(Set<String> groups) {
-        return Collects.truncate(groups, SQL_GROUP_IN_MAX_SIZE);
+    public static Set<String> truncateUserGroup(Set<String> paramGroups) {
+        return Collects.truncate(paramGroups, SQL_GROUP_IN_MAX_SIZE);
+    }
+
+    public static void assertPermitGroup(String user, String group) {
+        if (!SchedGroupService.myGroups(user).contains(group)) {
+            throw new AuthenticationException("Unauthorized group: " + group);
+        }
     }
 
 }

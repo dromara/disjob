@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.test.db.EmbeddedMysqlServerMariaDB;
 import cn.ponfee.disjob.test.redis.EmbeddedRedisServerKstyrc;
+import org.slf4j.impl.SimpleLogger;
 import redis.embedded.RedisServer;
 
 /**
@@ -21,6 +22,11 @@ import redis.embedded.RedisServer;
  * @author Ponfee
  */
 public final class EmbeddedMysqlAndRedisServer {
+
+    static {
+        System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "INFO");
+        System.setProperty(SimpleLogger.LOG_FILE_KEY, "System.out");
+    }
 
     public static void main(String[] args) {
         EmbeddedMysqlAndRedisServer.starter()

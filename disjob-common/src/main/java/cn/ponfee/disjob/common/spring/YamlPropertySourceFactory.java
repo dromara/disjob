@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -44,7 +45,7 @@ public class YamlPropertySourceFactory extends DefaultPropertySourceFactory {
         String sourceName = name != null ? name : resource.getResource().getFilename();
         if (!resource.getResource().exists()) {
             return new PropertiesPropertySource(sourceName, new Properties());
-        } else if (sourceName.endsWith(".yml") || sourceName.endsWith(".yaml")) {
+        } else if (StringUtils.endsWithAny(sourceName, ".yml", ".yaml")) {
             //return new YamlPropertySourceLoader().load(sourceName, resource.getResource()).get(0);
             return new PropertiesPropertySource(sourceName, loadYml(resource.getResource()));
         } else {

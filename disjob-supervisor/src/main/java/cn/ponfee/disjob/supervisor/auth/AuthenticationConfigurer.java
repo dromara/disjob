@@ -67,7 +67,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateWorker(HttpServletRequest request, String group) {
-            String workerToken = SchedGroupService.mapGroup(group).getWorkerToken();
+            String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
                 return;
             }
@@ -80,12 +80,12 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
 
         private static void authenticateUser(HttpServletRequest request, String group) {
             String user = request.getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
-            DisjobGroup disjobGroup = SchedGroupService.mapGroup(group);
+            DisjobGroup disjobGroup = SchedGroupService.getGroup(group);
             if (!disjobGroup.isDeveloper(user)) {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            String userToken = SchedGroupService.mapGroup(group).getUserToken();
+            String userToken = SchedGroupService.getGroup(group).getUserToken();
             if (StringUtils.isBlank(userToken)) {
                 // disable openapi if not configured user_token
                 throw new AuthenticationException(ERR_MSG);

@@ -225,6 +225,11 @@ public class BaseController
         return getSysUser().getLoginName();
     }
 
+    public boolean isCurrentUser(String user)
+    {
+        return getSysUser().getLoginName().equals(user);
+    }
+
     public int getPageNumber() {
         return Convert.toInt(ServletUtils.getParameter(TableSupport.PAGE_NUM), 1);
     }

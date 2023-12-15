@@ -116,7 +116,7 @@ public class DisjobMgGroupController extends BaseController {
     @ResponseBody
     public AjaxResult remove(@RequestParam("group") String group) {
         if (schedGroupService.delete(group, getLoginName())) {
-            return success();
+            return AjaxResult.success("删除成功");
         } else {
             return AjaxResult.error("删除失败");
         }

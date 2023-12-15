@@ -62,7 +62,7 @@ public class DisjobJobController extends BaseController {
     @RequiresPermissions(PERMISSION_JOB)
     @GetMapping
     public String job(ModelMap mmap) {
-        mmap.put("groups", SchedGroupService.mapUser(getLoginName()));
+        mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
         return PREFIX + "/job";
     }
 
@@ -141,7 +141,7 @@ public class DisjobJobController extends BaseController {
 
     private String toAdd(SchedJobResponse job, ModelMap mmap) {
         mmap.put("job", job);
-        mmap.put("groups", SchedGroupService.mapUser(getLoginName()));
+        mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
         return PREFIX + "/add";
     }
 
