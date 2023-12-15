@@ -49,6 +49,12 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
+  <select id="getJobId" parameterType="_long" resultType="long">
+    SELECT jobId
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+  </select>
+
   <select id="getByJobIdAndTriggerTimeAndRunType" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />

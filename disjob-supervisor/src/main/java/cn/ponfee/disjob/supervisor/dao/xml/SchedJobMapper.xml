@@ -127,6 +127,13 @@
       AND is_deleted = 0
   </select>
 
+  <select id="getGroup" parameterType="_long" resultType="string">
+    SELECT `group`
+    FROM <include refid="Table_Name" />
+    WHERE job_id = #{jobId,jdbcType=BIGINT}
+      AND is_deleted = 0
+  </select>
+
   <select id="findBeTriggering" resultType="cn.ponfee.disjob.core.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />

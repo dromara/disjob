@@ -20,7 +20,7 @@ public enum JobCodeMsg implements CodeMsg {
 
     INVALID_PARAM(400, "Invalid param."),
     UN_AUTHENTICATED(401, "Un authenticated."),
-    GROUP_NOT_FOUND(404, "Worker group not found."),
+    KEY_NOT_FOUND(404, "Key not found."),
     LOAD_HANDLER_ERROR(450, "Load job handler error."),
     INVALID_JOB_HANDLER(451, "Invalid job handler."),
     SPLIT_JOB_FAILED(452, "Split job failed."),

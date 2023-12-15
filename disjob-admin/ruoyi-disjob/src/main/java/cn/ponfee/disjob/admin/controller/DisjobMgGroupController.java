@@ -79,7 +79,7 @@ public class DisjobMgGroupController extends BaseController {
     public TableDataInfo list(SchedGroupPageRequest request) {
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        request.truncateUserGroup();
+        request.truncateGroup();
         return PageUtils.toTableDataInfo(schedGroupService.queryForPage(request));
     }
 

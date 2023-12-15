@@ -33,6 +33,14 @@ public interface SchedInstanceMapper {
      */
     SchedInstance get(long instanceId);
 
+    /**
+     * Gets job id by instance_id
+     *
+     * @param instanceId the instance id
+     * @return job id
+     */
+    Long getJobId(long instanceId);
+
     Long getWnstanceId(long instanceId);
 
     int start(@Param("instanceId") long instanceId,

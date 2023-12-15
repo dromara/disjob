@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.model.PageRequest;
-import cn.ponfee.disjob.supervisor.application.constraint.UserGroupConstraints;
+import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,8 +30,8 @@ public class SchedJobPageRequest extends PageRequest {
     private Integer jobType;
     private Integer jobState;
 
-    public void constrainAndTruncateUserGroup(String user) {
-        this.groups = UserGroupConstraints.constrainAndTruncateUserGroup(user, this.groups);
+    public void authorizeAndTruncateGroup(String user) {
+        this.groups = AuthorizeGroupService.authorizeAndTruncateGroup(user, this.groups);
     }
 
 }

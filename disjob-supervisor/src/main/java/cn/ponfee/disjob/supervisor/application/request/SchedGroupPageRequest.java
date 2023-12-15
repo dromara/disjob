@@ -9,7 +9,7 @@
 package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.model.PageRequest;
-import cn.ponfee.disjob.supervisor.application.constraint.UserGroupConstraints;
+import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,12 +26,12 @@ public class SchedGroupPageRequest extends PageRequest {
     private static final long serialVersionUID = -213388921649759103L;
     private Set<String> groups;
 
-    public void constrainAndTruncateUserGroup(String user) {
-        this.groups = UserGroupConstraints.constrainAndTruncateUserGroup(user, this.groups);
+    public void authorizeAndTruncateGroup(String user) {
+        this.groups = AuthorizeGroupService.authorizeAndTruncateGroup(user, this.groups);
     }
 
-    public void truncateUserGroup() {
-        this.groups = UserGroupConstraints.truncateUserGroup(this.groups);
+    public void truncateGroup() {
+        this.groups = AuthorizeGroupService.truncateGroup(this.groups);
     }
 
 }

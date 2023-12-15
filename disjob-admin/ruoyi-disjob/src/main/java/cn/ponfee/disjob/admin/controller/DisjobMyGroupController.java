@@ -9,9 +9,9 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
-import cn.ponfee.disjob.supervisor.application.constraint.UserGroupConstraints;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
@@ -64,7 +64,7 @@ public class DisjobMyGroupController extends BaseController {
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedGroupPageRequest request) {
-        request.constrainAndTruncateUserGroup(getLoginName());
+        request.authorizeAndTruncateGroup(getLoginName());
         if (CollectionUtils.isEmpty(request.getGroups())) {
             return PageUtils.empty();
         }
@@ -80,7 +80,7 @@ public class DisjobMyGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/edit/{group}")
     public String edit(@PathVariable("group") String group, ModelMap mmap) {
-        UserGroupConstraints.assertPermitGroup(getLoginName(), group);
+        AuthorizeGroupService.authorizeGroup(getLoginName(), group);
         SchedGroupResponse data = schedGroupService.get(group);
         Assert.notNull(data, () -> "Group not found: " + group);
         mmap.put("data", data);
@@ -96,7 +96,7 @@ public class DisjobMyGroupController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedGroupRequest req) {
-        UserGroupConstraints.assertPermitGroup(getLoginName(), req.getGroup());
+        AuthorizeGroupService.authorizeGroup(getLoginName(), req.getGroup());
         SchedGroupResponse data = schedGroupService.get(req.getGroup());
         Assert.isTrue(req.getVersion() == data.getVersion(), "Edit data conflicted.");
         String currentUser = getLoginName();
@@ -112,7 +112,7 @@ public class DisjobMyGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
-        UserGroupConstraints.assertPermitGroup(getLoginName(), group);
+        AuthorizeGroupService.authorizeGroup(getLoginName(), group);
         mmap.put("list", serverMetricsService.workers(group));
         return PREFIX + "/worker";
     }

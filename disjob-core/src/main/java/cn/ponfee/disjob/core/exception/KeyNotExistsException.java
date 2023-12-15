@@ -12,18 +12,18 @@ import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
- * Group not found exception
+ * Ket not exists exception
  *
  * @author Ponfee
  */
-public class GroupNotFoundException extends BaseRuntimeException {
-    private static final long serialVersionUID = -8974006648944765503L;
+public class KeyNotExistsException extends BaseRuntimeException {
+    private static final long serialVersionUID = -5304388166455122511L;
 
-    public GroupNotFoundException() {
-        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), "Not found group.");
+    public KeyNotExistsException() {
+        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), "Key already exists.");
     }
 
-    public GroupNotFoundException(String message) {
+    public KeyNotExistsException(String message) {
         super(JobCodeMsg.KEY_NOT_FOUND.getCode(), message);
     }
 }

@@ -42,6 +42,14 @@ public interface SchedJobMapper {
     SchedJob get(long jobId);
 
     /**
+     * Gets group by job_id
+     *
+     * @param jobId the job id
+     * @return group
+     */
+    String getGroup(long jobId);
+
+    /**
      * Finds job witch will be triggering
      *
      * @param maxNextTriggerTime the max next trigger time
