@@ -9,24 +9,35 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.SleepWaitUtils;
+import cn.ponfee.disjob.common.util.TextTokenizer;
 import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.exception.KeyNotExistsException;
+import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.OpenapiService;
+import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.supervisor.application.request.SearchJobRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
+import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * 任务实例Controller
@@ -42,11 +53,26 @@ public class DisjobInstanceController extends BaseController {
 
     private static final int WAIT_SLEEP_ROUND = 9;
     private static final long[] WAIT_SLEEP_MILLIS = {2500, 500};
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("^[1-9]\\d*$");
 
     private final OpenapiService openapiService;
+    private final DistributedJobQuerier jobQuerier;
+    private final AuthorizeGroupService authorizeGroupService;
 
-    public DisjobInstanceController(OpenapiService openapiService) {
+    public DisjobInstanceController(OpenapiService openapiService,
+                                    DistributedJobQuerier jobQuerier,
+                                    AuthorizeGroupService authorizeGroupService) {
         this.openapiService = openapiService;
+        this.jobQuerier = jobQuerier;
+        this.authorizeGroupService = authorizeGroupService;
+    }
+
+    @RequiresPermissions(PERMISSION_INSTANCE)
+    @GetMapping("/match_job")
+    @ResponseBody
+    public AjaxResult matchJob(@RequestParam(value = "term") String term) {
+        SearchJobRequest req = parseTerm(term);
+        return AjaxResult.success(req == null ? Collections.emptyList() : jobQuerier.searchJob(req));
     }
 
     @RequiresPermissions(PERMISSION_INSTANCE)
@@ -61,7 +87,15 @@ public class DisjobInstanceController extends BaseController {
     @RequiresPermissions(PERMISSION_INSTANCE)
     @PostMapping("/tree")
     @ResponseBody
-    public TableDataInfo tree(SchedInstancePageRequest request) {
+    public Object tree(SchedInstancePageRequest request) {
+        try {
+            request.authorize(getLoginName(), authorizeGroupService);
+        } catch (KeyNotExistsException e) {
+            return PageUtils.toTableDataInfo(PageResponse.empty());
+        } catch (Exception e) {
+            return AjaxResult.error(e.getMessage());
+        }
+
         request.setParent(true);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
@@ -74,7 +108,15 @@ public class DisjobInstanceController extends BaseController {
     @RequiresPermissions(PERMISSION_INSTANCE)
     @PostMapping("/flat")
     @ResponseBody
-    public TableDataInfo flat(SchedInstancePageRequest request) {
+    public Object flat(SchedInstancePageRequest request) {
+        try {
+            request.authorize(getLoginName(), authorizeGroupService);
+        } catch (KeyNotExistsException e) {
+            return PageUtils.toTableDataInfo(PageResponse.empty());
+        } catch (Exception e) {
+            return AjaxResult.error(e.getMessage());
+        }
+
         request.setParent(false);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
@@ -85,6 +127,8 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/children")
     @ResponseBody
     public List<SchedInstanceResponse> children(@RequestParam("pnstanceId") Long pnstanceId) {
+        authorizeGroupService.authorizeInstance(getLoginName(), pnstanceId);
+
         return openapiService.listInstanceChildren(pnstanceId);
     }
 
@@ -108,6 +152,8 @@ public class DisjobInstanceController extends BaseController {
     @RequiresPermissions(PERMISSION_INSTANCE)
     @GetMapping("/tasks/{instanceId}")
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
+        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+
         List<SchedTaskResponse> tasks = openapiService.getInstanceTasks(instanceId);
         mmap.put("tasks", Jsons.toJson(tasks));
         return PREFIX + "/tasks";
@@ -123,6 +169,8 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/remove/{instanceId}")
     @ResponseBody
     public AjaxResult remove(@PathVariable("instanceId") Long instanceId) {
+        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+
         openapiService.deleteInstance(instanceId);
         return success();
     }
@@ -135,6 +183,8 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
     public AjaxResult pause(@PathVariable("instanceId") Long instanceId) {
+        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+
         openapiService.pauseInstance(instanceId);
         SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
@@ -151,6 +201,8 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
     public AjaxResult resume(@PathVariable("instanceId") Long instanceId) {
+        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+
         openapiService.resumeInstance(instanceId);
         SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
             SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
@@ -167,12 +219,51 @@ public class DisjobInstanceController extends BaseController {
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody
     public AjaxResult cancel(@PathVariable("instanceId") Long instanceId) {
+        authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
+
         openapiService.cancelInstance(instanceId);
         SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
             return RunState.of(instance.getRunState()).isTerminal();
         });
         return success();
+    }
+
+    // ------------------------------------------------------------private methods
+
+    private SearchJobRequest parseTerm(String term) {
+        if (StringUtils.isBlank(term)) {
+            return null;
+        }
+
+        SearchJobRequest request = new SearchJobRequest();
+        Set<String> groups = null;
+        String user = getLoginName();
+        if ("*".equals(term)) {
+            request.setGroups(AuthorizeGroupService.truncateGroup(SchedGroupService.myGroups(user)));
+            return request;
+        }
+
+        TextTokenizer tokenizer = new TextTokenizer(term, ": ");
+        if (tokenizer.hasNext()) {
+            String str = tokenizer.next().trim();
+            if (SchedGroupService.myGroups(user).contains(str)) {
+                groups = Collections.singleton(str);
+                term = tokenizer.tail();
+            }
+        }
+        if (groups == null) {
+            groups = AuthorizeGroupService.truncateGroup(SchedGroupService.myGroups(user));
+        }
+
+        term = term.trim();
+        request.setGroups(groups);
+        request.setJobName(term);
+        if (NUMBER_PATTERN.matcher(term).matches()) {
+            request.setJobId(Numbers.toWrapLong(term));
+        }
+
+        return request;
     }
 
 }

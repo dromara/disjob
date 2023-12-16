@@ -50,7 +50,7 @@
   </select>
 
   <select id="getJobId" parameterType="_long" resultType="long">
-    SELECT jobId
+    SELECT job_id
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
@@ -198,6 +198,9 @@
     <where>
       <if test="jobId != null">
         AND job_id = #{jobId}
+      </if>
+      <if test="instanceId != null">
+        AND instance_id = #{instanceId}
       </if>
       <if test="runType != null">
         AND run_type = #{runType}

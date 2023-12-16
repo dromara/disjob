@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.dag;
 
+import cn.ponfee.disjob.common.util.TextTokenizer;
 import org.springframework.util.Assert;
 
 import java.beans.Transient;
@@ -119,10 +120,10 @@ public final class DAGNode implements Serializable {
     }
 
     public static DAGNode fromString(String str) {
-        int pos = -1;
-        int section = Integer.parseInt(str.substring(pos += 1, pos = str.indexOf(COLON, pos)));
-        int ordinal = Integer.parseInt(str.substring(pos += 1, pos = str.indexOf(COLON, pos)));
-        String name = str.substring(pos + 1);
+        TextTokenizer tokenizer = new TextTokenizer(str, COLON);
+        int section = Integer.parseInt(tokenizer.next());
+        int ordinal = Integer.parseInt(tokenizer.next());
+        String name = tokenizer.tail();
         if (START.equals(section, ordinal, name)) {
             return START;
         }

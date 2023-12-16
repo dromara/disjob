@@ -13,8 +13,14 @@
         <div class="select-list">
           <ul>
             <li>
-              <label>JobId：</label>
-              <input type="text" name="jobId" autocomplete="off" />
+              <label>Job：</label>
+              <select class="form-control" name="jobId">
+                <option value=""></option>
+              </select>
+            </li>
+            <li>
+              <label>InstanceId：</label>
+              <input type="text" name="instanceId" autocomplete="off" />
             </li>
             <li>
               <label>运行状态：</label>
@@ -59,8 +65,14 @@
         <div class="select-list">
           <ul>
             <li>
-              <label>JobId：</label>
-              <input type="text" name="jobId" autocomplete="off" />
+              <label>Job：</label>
+              <select class="form-control" name="jobId">
+                <option value=""></option>
+              </select>
+            </li>
+            <li>
+              <label>InstanceId：</label>
+              <input type="text" name="instanceId" autocomplete="off" />
             </li>
             <li>
               <label>运行状态：</label>
@@ -254,7 +266,8 @@
       code: "instanceId",
       parentCode: "pnstanceId",
       url: prefix + "/tree",
-      dataUrl: prefix + "/children"
+      dataUrl: prefix + "/children",
+      firstLoad: false
     }, defaultOps);
     $.treeTable.init(treeOps);
 
@@ -342,11 +355,36 @@
         }
       });
     });
+
+    // ---------------------------------select2
+    $("select[name='jobId']").select2({
+      ajax: {
+        url: prefix + "/match_job",
+        type: "get",
+        dataType: 'json',
+        delay: 1000,
+        cache: true,
+        data: function (params) {
+          return {"term": params.term};
+        },
+        processResults: function (resp) {
+          return {results: resp.data };
+        }
+      },
+      placeholder: "`name`或`group: name`搜索",
+      minimumInputLength: 1,
+      templateSelection: function (repo) {
+        var array = repo.text.split(" | ");
+        return array.length > 1 ? array[1] : array[0];
+      },
+      width: "resolve"
+    });
+
   });
 
   function resetForm(formId, tableId) {
     $.form.reset(formId, tableId);
-    ["runState", "runType"].forEach(function (item) {
+    ["jobId", "runState", "runType"].forEach(function (item) {
       var elem = $("#" + formId).find("select[name='" + item + "']");
       elem.val(elem.val()).trigger("change");
     });

@@ -15,6 +15,7 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.util.TextTokenizer;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.EventType;
 import cn.ponfee.disjob.registry.ServerRegistry;
@@ -221,12 +222,12 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      */
     public void handleMessage(String message, String pattern) {
         try {
-            int pos = -1;
-            String s0 = message.substring(pos += 1, pos = message.indexOf(COLON, pos));
-            String s1 = message.substring(pos += 1);
+            TextTokenizer tokenizer = new TextTokenizer(message, COLON);
+            String type = tokenizer.next();
+            String serv = tokenizer.tail();
 
             log.info("Subscribed message: {} | {}", pattern, message);
-            subscribe(EventType.valueOf(s0), discoveryRole.deserialize(s1));
+            subscribe(EventType.valueOf(type), discoveryRole.deserialize(serv));
         } catch (Throwable t) {
             log.error("Parse subscribed message error: " + message + ", " + pattern, t);
         }

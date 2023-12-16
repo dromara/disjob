@@ -32,8 +32,10 @@
             initHeader();
             // 初始化表体
             initBody();
-            // 初始化数据服务
-            initServer();
+            if (options.firstLoad !== false) {
+                // 初始化数据服务
+                initServer();
+            }
             // 动态设置表头宽度
             autoTheadWidth(true);
             // 缓存target对象

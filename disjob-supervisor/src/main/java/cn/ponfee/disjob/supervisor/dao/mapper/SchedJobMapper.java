@@ -10,9 +10,11 @@ package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
+import cn.ponfee.disjob.supervisor.application.request.SearchJobRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Mybatis mapper of sched_job database table.
@@ -106,6 +108,8 @@ public interface SchedJobMapper {
      * @return delete sql affected rows
      */
     int softDelete(long jobId);
+
+    List<Map<String, Object>> searchJob(SearchJobRequest request);
 
     // -------------------------------------------------query for page
 

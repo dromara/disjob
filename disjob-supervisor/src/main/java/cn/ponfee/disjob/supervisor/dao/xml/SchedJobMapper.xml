@@ -209,6 +209,27 @@
       AND is_deleted = 0
   </update>
 
+  <select id="searchJob" resultType="map">
+    SELECT CAST(job_id AS CHAR) id, CONCAT(`group`, ' | ', job_name) text
+    FROM <include refid="Table_Name" />
+    WHERE `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)
+      AND is_deleted = 0
+      <choose>
+        <when test="jobName != null and jobName != '' and jobId != null">
+          AND ( job_name LIKE CONCAT('%', #{jobName}, '%') OR job_id = #{jobId} )
+        </when>
+        <when test="jobName != null and jobName != ''">
+          AND job_name LIKE CONCAT('%', #{jobName}, '%')
+        </when>
+        <when test="jobId != null">
+          AND job_id = #{jobId}
+        </when>
+        <otherwise>
+        </otherwise>
+      </choose>
+    LIMIT 20
+  </select>
+
   <!-- ********************page query******************** -->
 
   <select id="queryPageCount" resultType="_long">
@@ -232,7 +253,7 @@
         AND `group` IN (<foreach collection="groups" separator="," item="g">#{g,jdbcType=VARCHAR}</foreach>)
       </if>
       <if test="jobName != null and jobName != ''">
-        AND job_name LIKE concat('%', #{jobName}, '%')
+        AND job_name LIKE CONCAT('%', #{jobName}, '%')
       </if>
       <if test="jobType != null">
         AND job_type = #{jobType}

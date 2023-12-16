@@ -101,7 +101,7 @@
     FROM <include refid="Table_Name" />
     WHERE is_deleted = 0
       <if test="_parameter != null and _parameter != ''">
-        AND `group` LIKE concat('%', #{term}, '%')
+        AND `group` LIKE CONCAT('%', #{term}, '%')
       </if>
     LIMIT 20
   </select>

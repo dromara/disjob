@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -66,6 +67,10 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
 
     public static int computeTotalPages(int pageSize, long total) {
         return (int) ((total + pageSize - 1) / pageSize);
+    }
+
+    public static <T> PageResponse<T> empty() {
+        return new PageResponse<>(Collections.emptyList(), 0);
     }
 
 }

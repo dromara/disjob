@@ -630,6 +630,7 @@ var table = {
                     pageSize: 10,
                     pageList: [10, 25, 50],
                     expandColumn: 1,
+                    firstLoad: true,
                     showSearch: true,
                     showRefresh: true,
                     showColumns: true,
@@ -654,6 +655,7 @@ var table = {
                     pageSize: options.pageSize,                         // 每页的记录行数
                     pageList: options.pageList,                         // 可供选择的每页的行数
                     expandColumn: options.expandColumn,                 // 在哪一列上面显示展开按钮
+                    firstLoad: options.firstLoad,                       // 是否首次请求加载数据，对于数据较大可以配置false
                     striped: options.striped,                           // 是否显示行间隔色
                     bordered: options.bordered,                         // 是否显示边框
                     toolbar: '#' + options.toolbar,                     // 指定工作栏
@@ -709,19 +711,20 @@ var table = {
         // 表单封装处理
         form: {
             // 表单重置
-            reset: function(formId, tableId, pageNumber, pageSize) {
+            reset: function(formId, tableId, pageSize) {
                 table.set(tableId);
                 formId = $.common.isEmpty(formId) ? $('form').attr('id') : formId;
                 $("#" + formId)[0].reset();
                 var tableId = $.common.isEmpty(tableId) ? table.options.id : tableId;
-                if (table.options.type == table_type.bootstrapTable) {
-                    var params = $("#" + tableId).bootstrapTable('getOptions');
+                if (table.options.type === table_type.bootstrapTable) {
+                    var tableObj = $("#" + tableId);
+                    var params = tableObj.bootstrapTable('getOptions');
                     params.pageNumber = 1;
                     if ($.common.isNotEmpty(pageSize)) {
                         params.pageSize = pageSize;
                     }
-                    $("#" + tableId).bootstrapTable('refresh', params);
-                } else if (table.options.type == table_type.bootstrapTreeTable) {
+                    tableObj.bootstrapTable('refresh', params);
+                } else if (table.options.type === table_type.bootstrapTreeTable) {
                     $("#" + tableId).bootstrapTreeTable('refresh', table.options.ajaxParams);
                 }
                 resetDate();

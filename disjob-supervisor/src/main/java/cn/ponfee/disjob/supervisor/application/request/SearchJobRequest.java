@@ -6,24 +6,25 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.exception;
+package cn.ponfee.disjob.supervisor.application.request;
 
-import cn.ponfee.disjob.common.exception.BaseRuntimeException;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
 
 /**
- * Ket not exists exception
+ * Search job request
  *
  * @author Ponfee
  */
-public class KeyNotExistsException extends BaseRuntimeException {
-    private static final long serialVersionUID = -5304388166455122511L;
+@Getter
+@Setter
+public class SearchJobRequest {
+    private static final long serialVersionUID = -538371009995926914L;
 
-    public KeyNotExistsException() {
-        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), "Key not exists.");
-    }
+    private Set<String> groups;
+    private String jobName;
+    private Long jobId;
 
-    public KeyNotExistsException(String message) {
-        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), message);
-    }
 }

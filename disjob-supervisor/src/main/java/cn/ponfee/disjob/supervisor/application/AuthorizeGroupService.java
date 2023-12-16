@@ -66,7 +66,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public void authorizeJob(String user, long jobId) {
         String group = schedJobMapper.getGroup(jobId);
         if (StringUtils.isEmpty(group)) {
-            throw new KeyNotExistsException();
+            throw new KeyNotExistsException("Job id not exists: " + jobId);
         }
         if (!SchedGroupService.myGroups(user).contains(group)) {
             throw new AuthenticationException("Unauthorized group: " + group);
@@ -76,7 +76,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     public void authorizeInstance(String user, long instanceId) {
         Long jobId = schedInstanceMapper.getJobId(instanceId);
         if (jobId == null) {
-            throw new KeyNotExistsException();
+            throw new KeyNotExistsException("Instance id not exists: " + instanceId);
         }
         authorizeJob(user, jobId);
     }
