@@ -35,7 +35,7 @@ public class SchedInstancePageRequest extends PageRequest {
 
     public void authorize(String user, AuthorizeGroupService authorizeGroupService) {
         if (jobId == null && instanceId == null) {
-            throw new IllegalArgumentException("JobId和InstanceId请至少输入一项");
+            throw new IllegalArgumentException("Job和InstanceId请至少输入一项");
         }
         if (jobId != null) {
             authorizeGroupService.authorizeJob(user, jobId);

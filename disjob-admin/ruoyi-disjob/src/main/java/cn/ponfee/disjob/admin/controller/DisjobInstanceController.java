@@ -9,11 +9,7 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
-import cn.ponfee.disjob.common.model.PageResponse;
-import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.common.util.SleepWaitUtils;
-import cn.ponfee.disjob.common.util.TextTokenizer;
+import cn.ponfee.disjob.common.util.*;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
@@ -87,19 +83,10 @@ public class DisjobInstanceController extends BaseController {
     @RequiresPermissions(PERMISSION_INSTANCE)
     @PostMapping("/tree")
     @ResponseBody
-    public Object tree(SchedInstancePageRequest request) {
-        try {
-            request.authorize(getLoginName(), authorizeGroupService);
-        } catch (KeyNotExistsException e) {
-            return PageUtils.toTableDataInfo(PageResponse.empty());
-        } catch (Exception e) {
-            return AjaxResult.error(e.getMessage());
-        }
-
+    public Object tree(SchedInstancePageRequest request,
+                       @RequestParam(value = "resetSearch", required = false) String resetSearch) {
         request.setParent(true);
-        request.setPageNumber(super.getPageNumber());
-        request.setPageSize(super.getPageSize());
-        return PageUtils.toTableDataInfo(openapiService.queryInstanceForPage(request));
+        return page(request, resetSearch);
     }
 
     /**
@@ -108,19 +95,10 @@ public class DisjobInstanceController extends BaseController {
     @RequiresPermissions(PERMISSION_INSTANCE)
     @PostMapping("/flat")
     @ResponseBody
-    public Object flat(SchedInstancePageRequest request) {
-        try {
-            request.authorize(getLoginName(), authorizeGroupService);
-        } catch (KeyNotExistsException e) {
-            return PageUtils.toTableDataInfo(PageResponse.empty());
-        } catch (Exception e) {
-            return AjaxResult.error(e.getMessage());
-        }
-
+    public Object flat(SchedInstancePageRequest request,
+                       @RequestParam(value = "resetSearch", required = false) String resetSearch) {
         request.setParent(false);
-        request.setPageNumber(super.getPageNumber());
-        request.setPageSize(super.getPageSize());
-        return PageUtils.toTableDataInfo(openapiService.queryInstanceForPage(request));
+        return page(request, resetSearch);
     }
 
     @RequiresPermissions(PERMISSION_INSTANCE)
@@ -142,7 +120,7 @@ public class DisjobInstanceController extends BaseController {
      * 使用Json方式序列化:
      * <pre>{@code
      *  mmap.put("tasks", Jsons.toJson(tasks));
-     *  data: [[${list}]]
+     *  data: [(${tasks})]
      * }</pre>
      *
      * @param instanceId the instance id
@@ -258,12 +236,29 @@ public class DisjobInstanceController extends BaseController {
 
         term = term.trim();
         request.setGroups(groups);
-        request.setJobName(term);
+        request.setJobName(Strings.concatSqlLike(term));
         if (NUMBER_PATTERN.matcher(term).matches()) {
             request.setJobId(Numbers.toWrapLong(term));
         }
 
         return request;
+    }
+
+    private Object page(SchedInstancePageRequest request, String resetSearch) {
+        if (StringUtils.isBlank(resetSearch)) {
+            return PageUtils.empty();
+        }
+        try {
+            request.authorize(getLoginName(), authorizeGroupService);
+        } catch (KeyNotExistsException e) {
+            return PageUtils.empty();
+        } catch (Exception e) {
+            return AjaxResult.error(e.getMessage());
+        }
+
+        request.setPageNumber(super.getPageNumber());
+        request.setPageSize(super.getPageSize());
+        return PageUtils.toTableDataInfo(openapiService.queryInstanceForPage(request));
     }
 
 }

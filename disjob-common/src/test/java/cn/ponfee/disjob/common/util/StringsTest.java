@@ -28,4 +28,18 @@ public class StringsTest {
         Assertions.assertTrue(Strings.isMatch("ab", "?*"));
         Assertions.assertFalse(Strings.isMatch("aab", "c*a*b"));
     }
+
+    @Test
+    public void testConcatSqlLike() {
+        Assertions.assertNull(Strings.concatSqlLike(null));
+        Assertions.assertTrue(Strings.concatSqlLike("").isEmpty());
+        Assertions.assertEquals("^", Strings.concatSqlLike("^"));
+        Assertions.assertEquals("$", Strings.concatSqlLike("$"));
+        Assertions.assertEquals("^$", Strings.concatSqlLike("^$"));
+        Assertions.assertEquals("%$^%", Strings.concatSqlLike("$^"));
+        Assertions.assertEquals("%a%", Strings.concatSqlLike("a"));
+        Assertions.assertEquals("a%", Strings.concatSqlLike("^a"));
+        Assertions.assertEquals("%a", Strings.concatSqlLike("a$"));
+    }
+
 }

@@ -216,10 +216,10 @@
       AND is_deleted = 0
       <choose>
         <when test="jobName != null and jobName != '' and jobId != null">
-          AND ( job_name LIKE CONCAT('%', #{jobName}, '%') OR job_id = #{jobId} )
+          AND ( job_name LIKE #{jobName} OR job_id = #{jobId} )
         </when>
         <when test="jobName != null and jobName != ''">
-          AND job_name LIKE CONCAT('%', #{jobName}, '%')
+          AND job_name LIKE #{jobName}
         </when>
         <when test="jobId != null">
           AND job_id = #{jobId}

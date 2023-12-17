@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 统计任意0<m<=n，[m, n]的素数个数
@@ -112,6 +113,7 @@ public class PrimeCountJobHandler extends JobHandler {
             }
 
             long count = Prime.MillerRabin.countPrimes(next, Math.min(next + delta, n));
+            Thread.sleep(66 + ThreadLocalRandom.current().nextLong(67));
             execution.increment(count);
 
             next += step;

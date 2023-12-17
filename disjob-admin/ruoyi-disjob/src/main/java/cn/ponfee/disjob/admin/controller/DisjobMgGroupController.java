@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
@@ -56,6 +57,7 @@ public class DisjobMgGroupController extends BaseController {
     @GetMapping("/match_group")
     @ResponseBody
     public AjaxResult matchGroup(@RequestParam(value = "term", required = false) String term) {
+        term = Strings.concatSqlLike(term);
         List<ImmutableMap<String, String>> result = schedGroupService.matchGroup(term)
             .stream()
             .map(e -> ImmutableMap.of("id", e, "text", e))

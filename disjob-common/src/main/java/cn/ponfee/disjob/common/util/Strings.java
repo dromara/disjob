@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.common.util;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +22,8 @@ import java.util.List;
  * @author Ponfee
  */
 public final class Strings {
+
+    private static final List<String> SQL_LIKE_LIST = ImmutableList.of("^", "$", "^$");
 
     /**
      * <pre>
@@ -155,6 +158,24 @@ public final class Strings {
             return null;
         }
         return new String(bytes, charset);
+    }
+
+    public static String concatSqlLike(String str) {
+        if (StringUtils.isEmpty(str) || SQL_LIKE_LIST.contains(str)) {
+            return str;
+        }
+
+        if (str.startsWith("^")) {
+            str = str.substring(1);
+        } else {
+            str = "%" + str;
+        }
+        if (str.endsWith("$")) {
+            str = str.substring(0, str.length() - 1);
+        } else {
+            str = str + "%";
+        }
+        return str;
     }
 
 }

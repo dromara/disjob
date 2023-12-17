@@ -10,6 +10,7 @@
   <div class="row">
     <div class="col-sm-12 search-collapse">
       <form id="tree-form">
+        <input type="hidden" name="resetSearch" value="false" />
         <div class="select-list">
           <ul>
             <li>
@@ -62,6 +63,7 @@
   <div class="row">
     <div class="col-sm-12 search-collapse">
       <form id="flat-form">
+        <input type="hidden" name="resetSearch" value="false" />
         <div class="select-list">
           <ul>
             <li>
@@ -129,6 +131,9 @@
     pagination: true,
     viewUrl: prefix + "/tasks/{id}",
     modalName: "任务实例",
+    onLoadSuccess: function () {
+      $("input[name='resetSearch']").val("false");
+    },
     columns: [{
       field: 'selectItem',
       radio: true
@@ -383,9 +388,11 @@
   });
 
   function resetForm(formId, tableId) {
+    var formElem = $("#" + formId);
+    formElem.find("input[name='resetSearch']").val("");
     $.form.reset(formId, tableId);
     ["jobId", "runState", "runType"].forEach(function (item) {
-      var elem = $("#" + formId).find("select[name='" + item + "']");
+      var elem = formElem.find("select[name='" + item + "']");
       elem.val(elem.val()).trigger("change");
     });
   }
