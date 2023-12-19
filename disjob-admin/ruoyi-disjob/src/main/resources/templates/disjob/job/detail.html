@@ -2,6 +2,7 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
   <th:block th:include="include :: header('查看作业配置')" />
+  <th:block th:include="include :: jsonview-css" />
 </head>
 <body class="white-bg">
 
@@ -34,13 +35,13 @@
       <div class="form-group">
         <label class="col-sm-3 control-label is-required">Job处理器：</label>
         <div class="col-sm-9">
-          <textarea rows="3" name="jobParam" class="form-control" readonly>[(*{jobHandler})]</textarea>
+          <pre id="jobHandler"></pre>
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-3 control-label">Job参数：</label>
         <div class="col-sm-9">
-          <textarea rows="3" name="jobParam" class="form-control" readonly>[(*{jobParam})]</textarea>
+          <pre id="jobParam"></pre>
         </div>
       </div>
       <div class="form-group">
@@ -104,6 +105,26 @@
   </div>
 
   <th:block th:include="include :: footer" />
+  <th:block th:include="include :: jsonview-js" />
 
+  <script th:inline="javascript">
+    $(function () {
+      view("jobParam",   [[${job.jobParam}]]   );
+      view("jobHandler", [[${job.jobHandler}]] );
+    });
+
+    function view(id, text) {
+      var elem = $("#" + id);
+      if (text) {
+        try {
+          elem.JSONView(text);
+        } catch (error) {
+          elem.text(text);
+        }
+      } else {
+        elem.text(" ");
+      }
+    }
+  </script>
 </body>
 </html>

@@ -62,7 +62,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
      */
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
-    private volatile transient TaskExecutor taskExecutor;
+    private transient AtomicReference<TaskExecutor> taskExecutor = new AtomicReference<>();
 
     // --------------------------------------------------------other methods
 
@@ -75,11 +75,11 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     }
 
     public void taskExecutor(TaskExecutor taskExecutor) {
-        this.taskExecutor = taskExecutor;
+        this.taskExecutor.set(taskExecutor);
     }
 
     public void stop() {
-        final TaskExecutor executor = this.taskExecutor;
+        TaskExecutor executor = taskExecutor.get();
         if (executor != null) {
             executor.stop();
         }
