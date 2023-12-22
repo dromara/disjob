@@ -83,6 +83,7 @@ public final class Threads {
             LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
             thread.interrupt();
             stopThread(thread);
+            return;
         }
 
         // sleep for wait the tread run method block code execute finish

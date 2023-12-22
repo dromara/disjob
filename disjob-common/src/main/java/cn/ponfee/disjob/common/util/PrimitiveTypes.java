@@ -23,6 +23,7 @@ import java.util.Set;
  *
  * @author Ponfee
  */
+@SuppressWarnings("all")
 public enum PrimitiveTypes {
 
     DOUBLE (Double.class   , (byte) 0B1_0_0_0_0_0_0_0, (byte) 0B1_0_0_0_0_0_0_0   ),
@@ -115,7 +116,7 @@ public enum PrimitiveTypes {
         return pt == null ? type : (Class<T>) pt.primitive;
     }
 
-    private static class Hide {
+    private static final class Hide {
         private static final Map<Class<?>, PrimitiveTypes> PRIMITIVE_OR_WRAPPER_MAPPING = new HashMap<>();
     }
 }

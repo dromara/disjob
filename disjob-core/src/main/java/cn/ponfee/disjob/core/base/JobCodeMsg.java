@@ -16,6 +16,7 @@ import cn.ponfee.disjob.common.util.Enums;
  *
  * @author Ponfee
  */
+@SuppressWarnings("all")
 public enum JobCodeMsg implements CodeMsg {
 
     INVALID_PARAM(400, "Invalid param."),

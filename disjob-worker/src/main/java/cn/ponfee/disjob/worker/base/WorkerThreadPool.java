@@ -275,9 +275,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 try {
                     activePool.doExecute(workerThread, param);
                 } catch (InterruptedException e) {
-                    LOG.error("Do execute occur thread interrupted.", e);
-                    // discard this execution param
-                    param = null;
                     // destroy this worker thread
                     stopWorkerThread(workerThread, true);
                     throw e;
@@ -289,8 +286,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     stopWorkerThread(workerThread, true);
                 } catch (IllegalTaskException e) {
                     LOG.error(e.getMessage());
-                    // discard the execute param
-                    param = null;
                     // return this worker thread
                     idlePool.putFirst(workerThread);
                 } catch (DuplicateTaskException e) {
@@ -345,7 +340,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private boolean returnWorkerThread(WorkerThread workerThread) {
         if (activePool.removeThread(workerThread) == null) {
             // maybe already removed by other operation
-            LOG.warn("Return thread failed, because not found: {}", workerThread.getName());
+            LOG.error("Return thread failed, because not found: {}", workerThread.getName());
             return false;
         }
 
@@ -451,36 +446,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
         } catch (Throwable t) {
             LOG.error("Terminate task error: {}, {}, {}", param.getTaskId(), ops, toState);
-            Threads.interruptIfNecessary(t);
-        }
-    }
-
-    private static void stopInstance(WorkerThreadPool threadPool, ExecuteTaskParam param, Operations ops, String errorMsg) {
-        if (!param.updateOperation(Operations.TRIGGER, ops)) {
-            LOG.info("Stop instance conflict: {} | {}", param, ops);
-            return;
-        }
-
-        LOG.info("Stop instance task: {} | {}", param.getTaskId(), ops);
-        terminateTask(threadPool, param, ops, ops.toState(), errorMsg);
-
-        boolean res = true;
-        long lockInstanceId = param.getWnstanceId() != null ? param.getWnstanceId() : param.getInstanceId();
-        try {
-            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
-                if (ops == Operations.PAUSE) {
-                    res = threadPool.supervisorRpcClient.pauseInstance(lockInstanceId);
-                } else if (ops == Operations.EXCEPTION_CANCEL) {
-                    res = threadPool.supervisorRpcClient.cancelInstance(lockInstanceId, ops);
-                } else {
-                    LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
-                }
-            }
-            if (!res) {
-                LOG.info("Stop instance conflict: {} | {} | {}", param.getInstanceId(), param.getTaskId(), ops);
-            }
-        } catch (Throwable t) {
-            LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, t);
             Threads.interruptIfNecessary(t);
         }
     }
@@ -763,11 +728,13 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
 
                 if (param == null) {
-                    if (executingParam.get() != null) {
-                        param = workQueue.poll();
-                    }
-                    if (param == null) {
+                    ExecuteTaskParam executeTaskParam = executingParam.get();
+                    if (executeTaskParam == null) {
                         LOG.info("Worker thread exit, idle wait timeout.");
+                        break;
+                    }
+                    if ((param = workQueue.poll()) == null) {
+                        LOG.error("Executing param exists, but work queue not task: {}", executeTaskParam);
                         break;
                     }
                 }
@@ -782,7 +749,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
                 // return this to idle thread pool
                 if (!threadPool.returnWorkerThread(this)) {
-                    return;
+                    break;
                 }
             }
 
@@ -885,10 +852,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 terminateTask(threadPool, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
                 LOG.error("Pause task exception: {} | {}", param, e.getMessage());
-                stopInstance(threadPool, param, Operations.PAUSE, toErrorMsg(e));
+                stopInstance(param, Operations.PAUSE, toErrorMsg(e));
             } catch (CancelTaskException e) {
                 LOG.error("Cancel task exception:  {} | {}", param, e.getMessage());
-                stopInstance(threadPool, param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
+                stopInstance(param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     LOG.warn("Task execute thread death: {} | {}", param, t.getMessage());
@@ -907,8 +874,39 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } catch (Throwable t) {
                     LOG.error("Task destroy error: " + param, t);
                 }
-            } // end of try catch block
-        } // end of runTask method
+            }
+        }
+
+        private void stopInstance(ExecuteTaskParam param, Operations ops, String errorMsg) {
+            if (!param.updateOperation(Operations.TRIGGER, ops)) {
+                LOG.info("Stop instance conflict: {} | {}", param, ops);
+                return;
+            }
+
+            LOG.info("Stop instance task: {} | {}", param.getTaskId(), ops);
+            terminateTask(threadPool, param, ops, ops.toState(), errorMsg);
+
+            boolean res = true;
+            long lockInstanceId = param.getWnstanceId() != null ? param.getWnstanceId() : param.getInstanceId();
+            try {
+                synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
+                    if (ops == Operations.PAUSE) {
+                        res = threadPool.supervisorRpcClient.pauseInstance(lockInstanceId);
+                    } else if (ops == Operations.EXCEPTION_CANCEL) {
+                        res = threadPool.supervisorRpcClient.cancelInstance(lockInstanceId, ops);
+                    } else {
+                        LOG.error("Stop instance unsupported operation: {} | {}", param.getTaskId(), ops);
+                    }
+                }
+                if (!res) {
+                    LOG.info("Stop instance conflict: {} | {} | {}", param.getInstanceId(), param.getTaskId(), ops);
+                }
+            } catch (Throwable t) {
+                LOG.error("Stop instance error: " + param.getTaskId() + " | " + ops, t);
+                Threads.interruptIfNecessary(t);
+            }
+        }
+
     } // end of worker thread class definition
 
 }

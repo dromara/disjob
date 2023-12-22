@@ -26,7 +26,14 @@ import java.util.function.UnaryOperator;
 public class BinaryTreePrinter<T> {
 
     public enum Branch {
-        RECTANGLE, TRIANGLE
+        /**
+         * Rectangle
+         */
+        RECTANGLE,
+        /**
+         * Triangle
+         */
+        TRIANGLE
     }
 
     private final Appendable output;
