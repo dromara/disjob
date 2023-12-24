@@ -32,21 +32,18 @@ public class BaseController
 {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    /**
-     * 将前台传递过来的日期格式的字符串，自动转化为Date类型
-     */
     @InitBinder
-    public void initBinder(WebDataBinder binder)
-    {
-        // Date 类型转换
-        binder.registerCustomEditor(Date.class, new PropertyEditorSupport()
-        {
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
             @Override
-            public void setAsText(String text)
-            {
+            public void setAsText(String text) {
                 setValue(DateUtils.parseDate(text));
             }
         });
+        binder.registerCustomEditor(Long.class, new StringToLongConverter());
+        binder.registerCustomEditor(long.class, new StringToLongConverter());
+        binder.registerCustomEditor(Integer.class, new StringToIntegerConverter());
+        binder.registerCustomEditor(int.class, new StringToIntegerConverter());
     }
 
     /**
@@ -236,6 +233,35 @@ public class BaseController
 
     public int getPageSize() {
         return Convert.toInt(ServletUtils.getParameter(TableSupport.PAGE_SIZE), 20);
+    }
+
+
+    private static class StringToIntegerConverter extends PropertyEditorSupport {
+        @Override
+        public void setAsText(String text) {
+            if (StringUtils.isEmpty(text)) {
+                return;
+            }
+            try {
+                setValue(Integer.parseInt(text));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid int value: " + text);
+            }
+        }
+    }
+
+    private static class StringToLongConverter extends PropertyEditorSupport {
+        @Override
+        public void setAsText(String text) {
+            if (StringUtils.isEmpty(text)) {
+                return;
+            }
+            try {
+                setValue(Long.parseLong(text));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid long value: " + text);
+            }
+        }
     }
 
 }

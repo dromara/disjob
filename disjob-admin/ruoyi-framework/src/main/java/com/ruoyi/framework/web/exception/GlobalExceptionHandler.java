@@ -1,7 +1,6 @@
 package com.ruoyi.framework.web.exception;
 
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.exception.DemoModeException;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.security.PermissionUtils;
@@ -124,19 +123,8 @@ public class GlobalExceptionHandler
      * 自定义验证异常
      */
     @ExceptionHandler(BindException.class)
-    public AjaxResult handleBindException(BindException e)
-    {
-        log.error(e.getMessage(), e);
-        String message = e.getAllErrors().get(0).getDefaultMessage();
-        return AjaxResult.error(message);
+    public AjaxResult handleBindException(BindException e) {
+        return AjaxResult.error(e.getAllErrors().get(0).getDefaultMessage());
     }
 
-    /**
-     * 演示模式异常
-     */
-    @ExceptionHandler(DemoModeException.class)
-    public AjaxResult handleDemoModeException(DemoModeException e)
-    {
-        return AjaxResult.error("演示模式，不允许操作");
-    }
 }

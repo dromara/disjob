@@ -8,12 +8,14 @@
 
 package cn.ponfee.disjob.common.base;
 
+import java.util.Iterator;
+
 /**
  * Text tokenizer
  *
  * @author Ponfee
  */
-public class TextTokenizer {
+public class TextTokenizer implements Iterator<String> {
 
     private final String text;
     private final String delimiter;
@@ -26,10 +28,12 @@ public class TextTokenizer {
         this.position = -1;
     }
 
+    @Override
     public boolean hasNext() {
         return text.indexOf(delimiter, position) != -1;
     }
 
+    @Override
     public String next() {
         int begin = (++position);
         int end   = position = text.indexOf(delimiter, position);
