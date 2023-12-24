@@ -9,13 +9,13 @@
 package cn.ponfee.disjob.registry.redis;
 
 import cn.ponfee.disjob.common.base.RetryTemplate;
+import cn.ponfee.disjob.common.base.TextTokenizer;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
-import cn.ponfee.disjob.common.util.TextTokenizer;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.EventType;
 import cn.ponfee.disjob.registry.ServerRegistry;

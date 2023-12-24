@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.common.util;
+package cn.ponfee.disjob.common.base;
 
 /**
  * Text tokenizer

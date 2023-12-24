@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.common.dag;
 
-import cn.ponfee.disjob.common.util.TextTokenizer;
+import cn.ponfee.disjob.common.base.TextTokenizer;
 import org.springframework.util.Assert;
 
 import java.beans.Transient;

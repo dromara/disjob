@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.base.TextTokenizer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
