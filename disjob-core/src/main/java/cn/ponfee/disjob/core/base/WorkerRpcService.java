@@ -10,7 +10,9 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.ModifyMaximumPoolSizeParam;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +38,9 @@ public interface WorkerRpcService {
     List<SplitTask> split(JobHandlerParam param) throws JobException;
 
     @GetMapping("metrics")
-    WorkerMetrics metrics();
+    WorkerMetrics metrics(GetMetricsParam param);
+
+    @PostMapping("maximum_pool_size/modify")
+    void modifyMaximumPoolSize(ModifyMaximumPoolSizeParam param);
 
 }

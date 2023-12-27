@@ -8,12 +8,16 @@
 
 package cn.ponfee.disjob.samples.worker.vertx;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.ModifyMaximumPoolSizeParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.samples.worker.util.JobHandlerParser;
@@ -103,8 +107,16 @@ public class VertxWebServer extends AbstractVerticle {
             return workerRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.get(PATH_PREFIX + "metrics")
-              .handler(ctx -> handle(workerRpcService::metrics, ctx, INTERNAL_SERVER_ERROR));
+        router.get(PATH_PREFIX + "metrics").handler(ctx -> handle(() -> {
+            String json = Collects.get(ctx.queryParam(LocalizedMethodArgumentUtils.getQueryParamName(0)), 0);
+            GetMetricsParam param = Jsons.fromJson(json, GetMetricsParam.class);
+            return workerRpcService.metrics(param);
+        }, ctx, INTERNAL_SERVER_ERROR));
+
+        router.post(PATH_PREFIX + "maximum_pool_size/modify").handler(ctx -> handle(() -> {
+            ModifyMaximumPoolSizeParam param = parseArg(ctx, ModifyMaximumPoolSizeParam.class);
+            workerRpcService.modifyMaximumPoolSize(param);
+        }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {
             router.post(PATH_PREFIX + "task/receive").handler(ctx -> handle(() -> {

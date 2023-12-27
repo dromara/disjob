@@ -40,4 +40,8 @@ public class WorkerMetricsAggregator {
         return metrics;
     }
 
+    public static void modifyMaximumPoolSize(int maximumPoolSize) {
+        workerThreadPool.modifyMaximumPoolSize(maximumPoolSize);
+    }
+
 }

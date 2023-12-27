@@ -10,13 +10,11 @@ package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpMethod;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -27,9 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -82,42 +78,22 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
         return Collects.get(arguments, parameterIndex);
     }
 
-    private Object[] parseMethodParameters(Method method, HttpServletRequest request) throws IOException {
+    public static Object[] parseMethodParameters(Method method, HttpServletRequest request) throws IOException {
         if (QUERY_PARAM_METHODS.contains(request.getMethod())) {
-            return parseQueryString(method, request.getParameterMap());
-        } else {
-            try (ServletInputStream inputStream = request.getInputStream()) {
-                String body = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-                if (StringUtils.isEmpty(body)) {
-                    return parseQueryString(method, request.getParameterMap());
-                } else {
-                    return Jsons.parseMethodArgs(body, method);
-                }
+            return LocalizedMethodArgumentUtils.parseQueryParams(method, request.getParameterMap());
+        }
+
+        try (ServletInputStream inputStream = request.getInputStream()) {
+            String body = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            if (StringUtils.isEmpty(body)) {
+                return LocalizedMethodArgumentUtils.parseQueryParams(method, request.getParameterMap());
+            } else {
+                return Jsons.parseMethodArgs(body, method);
             }
         }
     }
 
-    private Object[] parseQueryString(Method method, Map<String, String[]> parameterMap) {
-        int parameterCount = method.getParameterCount();
-        Object[] arguments = new Object[parameterCount];
-        for (int i = 0; i < parameterCount; i++) {
-            String argName = "args[" + i + "]";
-            String[] array = parameterMap.get(argName);
-            Assert.isTrue(
-                array == null || array.length <= 1,
-                () -> "Argument cannot be multiple value, name: " + argName + ", value: " + Jsons.toJson(array)
-            );
-            String argValue = Collects.get(array, 0);
-            Type argType = method.getGenericParameterTypes()[i];
-            if (argValue == null) {
-                // if basic type then set default value
-                arguments[i] = (argType instanceof Class<?>) ? ObjectUtils.cast(null, (Class<?>) argType) : null;
-            } else {
-                arguments[i] = Jsons.fromJson(argValue, argType);
-            }
-        }
-        return arguments;
-    }
+    // --------------------------------------------------------------private methods
 
     private static boolean isAnnotationPresent(Method method, Class<? extends Annotation> annotationType) {
         return AnnotationUtils.findAnnotation(method, annotationType) != null;

@@ -148,12 +148,6 @@ public class DisjobJobController extends BaseController {
         return toAdd(job, mmap);
     }
 
-    private String toAdd(SchedJobResponse job, ModelMap mmap) {
-        mmap.put("job", job);
-        mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
-        return PREFIX + "/add";
-    }
-
     /**
      * 新增作业配置
      */
@@ -247,6 +241,14 @@ public class DisjobJobController extends BaseController {
 
         openapiService.triggerJob(jobId);
         return success();
+    }
+
+    // -------------------------------------------------------private methods
+
+    private String toAdd(SchedJobResponse job, ModelMap mmap) {
+        mmap.put("job", job);
+        mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
+        return PREFIX + "/add";
     }
 
 }

@@ -197,8 +197,18 @@
     }
 
     function updateOwnUser(field, row, rowIndex, oldValue) {
-      var params = { "group": row.group, "ownUser": row[field] };
+      if (field !== "ownUser") {
+        $.modal.msgError("只能更新['ownUser']字段");
+        return;
+      }
+      const newValue = row[field].trim();
+      if (oldValue.toString().trim() === newValue) {
+        row[field] = newValue;
+        return;
+      }
+      const params = { "group": row.group, "ownUser": newValue };
       $.operate.post(prefix + "/update_own_user", params);
+      row[field] = newValue;
     }
   </script>
 

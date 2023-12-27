@@ -11,16 +11,22 @@ package cn.ponfee.disjob.supervisor.application;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.exception.KeyNotExistsException;
+import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
+import cn.ponfee.disjob.core.param.worker.ModifyMaximumPoolSizeParam;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
+import cn.ponfee.disjob.supervisor.application.request.ModifyMaximumPoolSizeRequest;
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
@@ -41,6 +47,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
 
     private static final String SUPERVISOR_METRICS_URL = "http://%s:%d/" + SupervisorRpcService.PREFIX_PATH + "metrics";
     private static final String WORKER_METRICS_URL = "http://%s:%d/" + WorkerRpcService.PREFIX_PATH + "metrics";
+    private static final String WORKER_MODIFY_MAXIMUM_POOL_SIZE_URL = "http://%s:%d/" + WorkerRpcService.PREFIX_PATH + "maximum_pool_size/modify";
 
     private final RestTemplate restTemplate;
     private final SupervisorRegistry supervisorRegistry;
@@ -58,7 +65,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
         this.supervisorRegistry = supervisorRegistry;
     }
 
-    // ------------------------------------------------------------supervisors
+    // ------------------------------------------------------------public methods
 
     public List<SupervisorMetricsResponse> supervisors() throws Exception {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
@@ -90,6 +97,24 @@ public class ServerMetricsService extends SingletonClassConstraint {
             .collect(Collectors.toList());
     }
 
+    public void modifyWorkerMaximumPoolSize(ModifyMaximumPoolSizeRequest req) {
+        Assert.isTrue(req.getMaximumPoolSize() > 0, "Worker maximum pool size must greater than 0.");
+
+        List<Worker> list = supervisorRegistry.getDiscoveredServers(req.getGroup());
+        if (CollectionUtils.isEmpty(list)) {
+            throw new KeyNotExistsException("Not exists workers: " + req.getGroup());
+        }
+
+        Worker worker = req.toWorker();
+        if (list.stream().noneMatch(e -> e.equals(worker))) {
+            throw new KeyNotExistsException("Not found worker: " + worker);
+        }
+
+        String url = String.format(WORKER_MODIFY_MAXIMUM_POOL_SIZE_URL, worker.getHost(), worker.getPort());
+        ModifyMaximumPoolSizeParam param = new ModifyMaximumPoolSizeParam(req.getMaximumPoolSize(), supervisorToken(req.getGroup()));
+        RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param);
+    }
+
     // ------------------------------------------------------------private methods
 
     private SupervisorMetricsResponse convert(Supervisor supervisor) {
@@ -98,7 +123,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
         String url = String.format(SUPERVISOR_METRICS_URL, supervisor.getHost(), supervisor.getPort());
         try {
             long start = System.currentTimeMillis();
-            metrics = restTemplate.getForObject(url, SupervisorMetrics.class);
+            metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, SupervisorMetrics.class, null);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
@@ -117,9 +142,10 @@ public class ServerMetricsService extends SingletonClassConstraint {
         WorkerMetrics metrics = null;
         Long pingTime = null;
         String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
+        GetMetricsParam param = new GetMetricsParam(supervisorToken(worker.getGroup()));
         try {
             long start = System.currentTimeMillis();
-            metrics = restTemplate.getForObject(url, WorkerMetrics.class);
+            metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
@@ -133,6 +159,10 @@ public class ServerMetricsService extends SingletonClassConstraint {
         response.setWorkerId(worker.getWorkerId());
         response.setPingTime(pingTime);
         return response;
+    }
+
+    private static String supervisorToken(String group) {
+        return SchedGroupService.getGroup(group).getSupervisorToken();
     }
 
 }

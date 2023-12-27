@@ -12,6 +12,7 @@ import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
+import cn.ponfee.disjob.supervisor.application.request.ModifyMaximumPoolSizeRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
@@ -113,8 +114,22 @@ public class DisjobMyGroupController extends BaseController {
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), group);
+        mmap.put("group", group);
         mmap.put("list", serverMetricsService.workers(group));
         return PREFIX + "/worker";
+    }
+
+    /**
+     * 更新Worker线程池最大线程数
+     */
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @Log(title = "更新Worker线程池最大线程数", businessType = BusinessType.UPDATE)
+    @PostMapping("/modify_maximum_pool_size")
+    @ResponseBody
+    public AjaxResult modifyMaximumPoolSize(ModifyMaximumPoolSizeRequest request) {
+        AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
+        serverMetricsService.modifyWorkerMaximumPoolSize(request);
+        return AjaxResult.success("更新成功");
     }
 
 }

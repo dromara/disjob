@@ -9,11 +9,13 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -26,8 +28,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.core.NamedThreadLocal;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -37,10 +39,14 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.net.ssl.SSLContext;
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -67,6 +73,11 @@ public class RestTemplateUtils {
      * </pre>
      */
     public static final Set<HttpMethod> QUERY_PARAM_METHODS = ImmutableSet.of(GET, HEAD, OPTIONS, TRACE);
+
+    public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
+    public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
+    public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
+    public static final Object[] EMPTY = new Object[0];
 
     public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(ObjectMapper objectMapper) {
         if (objectMapper == null) {
@@ -135,6 +146,54 @@ public class RestTemplateUtils {
         return MapUtils.isEmpty(map) ? null : new LinkedMultiValueMap<>(map);
     }
 
+    public static <T> T invokeRpc(RestTemplate restTemplate, String url, HttpMethod httpMethod,
+                                  Type returnType, Map<String, String> headersMap, Object... arguments) {
+        HttpHeaders headers = new HttpHeaders();
+        if (MapUtils.isNotEmpty(headersMap)) {
+            headersMap.forEach(headers::set);
+        }
+
+        URI uri;
+        if (QUERY_PARAM_METHODS.contains(httpMethod)) {
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+            if (ArrayUtils.isNotEmpty(arguments)) {
+                builder.queryParams(LocalizedMethodArgumentUtils.buildQueryParams(arguments));
+            }
+            uri = builder.build().encode().toUri();
+            arguments = null;
+        } else {
+            uri = restTemplate.getUriTemplateHandler().expand(url, EMPTY);
+            if (ArrayUtils.isNotEmpty(arguments)) {
+                headers.setContentType(MediaType.APPLICATION_JSON);
+            }
+        }
+
+        RequestCallback requestCallback = restTemplate.httpEntityCallback(new HttpEntity<>(arguments, headers), returnType);
+        ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
+        ResponseEntity<T> responseEntity = restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor);
+        return Objects.requireNonNull(responseEntity).getBody();
+    }
+
+    // -----------------------------------------------------------------------public static class
+
+    public static class HttpContextHolder {
+        private static final ThreadLocal<RequestConfig> THREAD_LOCAL = new NamedThreadLocal<>("request-config");
+
+        public static void bind(RequestConfig requestConfig) {
+            THREAD_LOCAL.set(requestConfig);
+        }
+
+        private static RequestConfig get() {
+            return THREAD_LOCAL.get();
+        }
+
+        public static void unbind() {
+            THREAD_LOCAL.remove();
+        }
+    }
+
+    // -----------------------------------------------------------------------private methods or static class
+
     private static List<String> toListString(Object value) {
         if (value == null) {
             return null;
@@ -162,24 +221,6 @@ public class RestTemplateUtils {
 
     private static String toString(Object value) {
         return value == null ? null : value.toString();
-    }
-
-    // -----------------------------------------------------------------------static class
-
-    public static class HttpContextHolder {
-        private static final ThreadLocal<RequestConfig> THREAD_LOCAL = new NamedThreadLocal<>("request-config");
-
-        public static void bind(RequestConfig requestConfig) {
-            THREAD_LOCAL.set(requestConfig);
-        }
-
-        private static RequestConfig get() {
-            return THREAD_LOCAL.get();
-        }
-
-        public static void unbind() {
-            THREAD_LOCAL.remove();
-        }
     }
 
     private static class HttpContextFactory implements BiFunction<HttpMethod, URI, HttpContext> {

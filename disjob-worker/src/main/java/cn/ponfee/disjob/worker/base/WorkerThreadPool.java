@@ -84,7 +84,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     /**
      * Maximum pool size
      */
-    private final int maximumPoolSize;
+    private int maximumPoolSize;
 
     /**
      * Worker thread keep alive time seconds
@@ -315,7 +315,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         );
     }
 
-    public WorkerMetrics.ThreadPoolMetrics metrics() {
+    WorkerMetrics.ThreadPoolMetrics metrics() {
         WorkerMetrics.ThreadPoolMetrics metrics = new WorkerMetrics.ThreadPoolMetrics();
         metrics.setClosed(closed.get());
         metrics.setKeepAliveTime(keepAliveTimeSeconds);
@@ -326,6 +326,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
         metrics.setQueueTaskCount(taskQueue.size());
         metrics.setCompletedTaskCount(completedTaskCounter.get());
         return metrics;
+    }
+
+    synchronized void modifyMaximumPoolSize(int maximumPoolSize) {
+        Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must greater than 0.");
+        this.maximumPoolSize = maximumPoolSize;
     }
 
     // ----------------------------------------------------------------------private methods

@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.registry;
 
-import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Server;
@@ -17,29 +16,20 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.Assert;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RequestCallback;
-import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -52,11 +42,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class DiscoveryRestTemplate<D extends Server> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
-
-    public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
-    public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
-    public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
-    public static final Object[] EMPTY = new Object[0];
 
     private static final Set<HttpStatus> RETRIABLE_HTTP_STATUS = ImmutableSet.of(
         // 4xx
@@ -143,36 +128,8 @@ public final class DiscoveryRestTemplate<D extends Server> {
             Server server = servers.get((start + i) % serverNumber);
             String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
             try {
-                HttpHeaders headers = new HttpHeaders();
-                if (MapUtils.isNotEmpty(authenticationHeaders)) {
-                    authenticationHeaders.forEach(headers::set);
-                }
-
-                URI uri;
-                if (RestTemplateUtils.QUERY_PARAM_METHODS.contains(httpMethod)) {
-                    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-                    if (ArrayUtils.isNotEmpty(arguments)) {
-                        builder.queryParams(buildQueryParams(arguments));
-                    }
-                    uri = builder.build().encode().toUri();
-                    arguments = null;
-                } else {
-                    uri = restTemplate.getUriTemplateHandler().expand(url, EMPTY);
-                    if (ArrayUtils.isNotEmpty(arguments)) {
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                    }
-                }
-
-                RequestCallback requestCallback = restTemplate.httpEntityCallback(new HttpEntity<>(arguments, headers), returnType);
-                ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(returnType);
-                ResponseEntity<T> responseEntity = restTemplate.execute(uri, httpMethod, requestCallback, responseExtractor);
-                return Objects.requireNonNull(responseEntity).getBody();
+                return RestTemplateUtils.invokeRpc(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
             } catch (Throwable e) {
-                if (e instanceof InterruptedException) {
-                    LOG.error("Thread interrupted, skip rest retry.");
-                    Thread.currentThread().interrupt();
-                    throw e;
-                }
                 ex = e;
                 LOG.error("Invoke server rpc failed: {}, {}, {}", url, Jsons.toJson(arguments), e.getMessage());
                 if (!isRequireRetry(e)) {
@@ -201,19 +158,6 @@ public final class DiscoveryRestTemplate<D extends Server> {
     }
 
     // ----------------------------------------------------------------------------------------private methods
-
-    private static MultiValueMap<String, String> buildQueryParams(Object[] arguments) {
-        if (ArrayUtils.isEmpty(arguments)) {
-            return null;
-        }
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>(arguments.length << 1);
-        for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i] != null) {
-                params.add("args[" + i + "]", Jsons.toJson(arguments[i]));
-            }
-        }
-        return params;
-    }
 
     private static boolean isRequireRetry(Throwable e) {
         if (e == null) {

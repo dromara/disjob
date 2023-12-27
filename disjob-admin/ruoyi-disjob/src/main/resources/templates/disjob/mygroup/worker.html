@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:include="include :: header('Workers')" />
+  <th:block th:include="include :: header('Worker')" />
+  <th:block th:include="include :: bootstrap-editable-css" />
 </head>
 <body class="gray-bg">
   <div class="container-div">
@@ -14,8 +15,11 @@
 
   <div th:include="include :: footer"></div>
   <th:block th:include="include :: bootstrap-table-fixed-columns-js" />
+  <th:block th:include="include :: bootstrap-table-editable-js" />
 
   <script th:inline="javascript">
+    var prefix = ctx + "disjob/mygroup";
+
     $(function () {
       var options = {
         data: [[${list}]],
@@ -26,6 +30,7 @@
         showColumns: false,
         fixedColumns: true,
         fixedNumber: 3,
+        onEditableSave: modifyMaximumPoolSize,
         columns: [{
           field: 'workerId',
           title: 'Worker Id'
@@ -44,7 +49,18 @@
         },
         {
           field: 'maximumPoolSize',
-          title: '最大线程数'
+          title: '最大线程数',
+          editable: {
+            type: 'text',
+            validate: function(value) {
+              if (!value || !value.trim()) {
+                return '不能为空';
+              }
+              if (!/^[1-9]\d*$/g.test(value.trim())) {
+                return '请输入正整数';
+              }
+            }
+          }
         },
         {
           field: 'currentPoolSize',
@@ -92,6 +108,28 @@
 
       $.table.init(options);
     });
+
+    function modifyMaximumPoolSize(field, row, rowIndex, oldValue) {
+      if (field !== "maximumPoolSize") {
+        $.modal.msgError("只能更新['maximumPoolSize']字段");
+        return;
+      }
+      const newValue = parseInt(row[field].toString().trim());
+      if (parseInt(oldValue.toString().trim()) === newValue) {
+        row[field] = newValue;
+        return;
+      }
+
+      const params = {
+        "group": [[${group}]],
+        "workerId": row.workerId,
+        "host": row.host,
+        "port": row['port'],
+        "maximumPoolSize": newValue
+      };
+      $.operate.post(prefix + "/modify_maximum_pool_size", params);
+      row[field] = newValue;
+    }
   </script>
 
 </body>

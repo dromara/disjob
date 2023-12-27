@@ -58,8 +58,8 @@ public class DiscoveryRestProxy {
     private static final ThreadLocal<String> GROUPED_SERVER_THREADLOCAL = new ThreadLocal<>();
 
     public interface GroupedServer {
-        default void group(String groupName) {
-            GROUPED_SERVER_THREADLOCAL.set(groupName);
+        default void group(String group) {
+            GROUPED_SERVER_THREADLOCAL.set(group);
         }
     }
 
