@@ -72,7 +72,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      */
     protected final synchronized void refreshDiscoveredServers(List<D> servers) {
         discoveryServer.refreshServers(servers);
-        log.debug("Refreshed discovery servers: {} | {}", discoveryRole, servers);
+        log.debug("Refreshed discovery servers: {}, {}", discoveryRole, servers);
     }
 
     /**

@@ -159,7 +159,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
                 Object[] args = {bizTag, serverTag, usableWorkerId, System.currentTimeMillis()};
                 try {
                     jdbcTemplateWrapper.insert(REGISTER_WORKER_SQL, args);
-                    LOG.info("Create snowflake db worker success: {} | {} | {} | {}", args);
+                    LOG.info("Create snowflake db worker success: {}, {}, {}, {}", args);
                     return usableWorkerId;
                 } catch (Throwable ignored) {
                     // ignored
@@ -180,11 +180,11 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
             long currentTime = System.currentTimeMillis();
             long lastHeartbeatTime = current.getHeartbeatTime();
             if (currentTime < lastHeartbeatTime) {
-                throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s | %s | %d | %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
+                throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s, %s, %d, %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
             }
             Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
             if (jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
-                LOG.info("Reuse db worker id success: {} | {} | {} | {}", args);
+                LOG.info("Reuse db worker id success: {}, {}, {}, {}", args);
                 return workerId;
             }
 
@@ -197,9 +197,9 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         RetryTemplate.execute(() -> {
             Object[] args = {System.currentTimeMillis(), bizTag, serverTag};
             if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
-                LOG.debug("Heartbeat db worker id success: {} | {} | {}", args);
+                LOG.debug("Heartbeat db worker id success: {}, {}, {}", args);
             } else {
-                LOG.error("Heartbeat db worker id failed: {} | {} | {}", args);
+                LOG.error("Heartbeat db worker id failed: {}, {}, {}", args);
             }
         }, 5, 3000L);
     }

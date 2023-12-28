@@ -88,7 +88,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             namingService.registerInstance(registryRootPath, groupName, instance);
             registered.add(server);
-            log.info("Nacos server registered: {} | {}", registryRole, server);
+            log.info("Nacos server registered: {}, {}", registryRole, server);
         } catch (Throwable e) {
             throw new RegistryException("Nacos server register failed: " + server, e);
         }
@@ -100,7 +100,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         try {
             registered.remove(server);
             namingService.deregisterInstance(registryRootPath, groupName, instance);
-            log.info("Nacos server deregister: {} | {}", registryRole, server);
+            log.info("Nacos server deregister: {}, {}", registryRole, server);
         } catch (Throwable t) {
             log.error("Nacos server deregister error.", t);
         }

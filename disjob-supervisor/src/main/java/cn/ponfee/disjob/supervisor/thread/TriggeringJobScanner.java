@@ -116,7 +116,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // check has available workers
             if (jobManager.hasNotDiscoveredWorkers(job.getGroup())) {
                 updateNextScanTime(job, now, 30);
-                log.warn("Scan job not discovered worker: {} | {}", job.getJobId(), job.getGroup());
+                log.warn("Scan job not discovered worker: {}, {}", job.getJobId(), job.getGroup());
                 return;
             }
 
@@ -125,7 +125,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             if (job.getNextTriggerTime() == null) {
                 String reason = "Recompute has not next trigger time";
                 job.setRemark(reason);
-                log.info("{} | {}", reason, job);
+                log.info("{}, {}", reason, job);
                 jobManager.disableJob(job);
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
@@ -147,9 +147,9 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
         } catch (DuplicateKeyException e) {
             if (jobManager.updateJobNextTriggerTime(job)) {
-                log.info("Conflict trigger time: {} | {}", job, e.getMessage());
+                log.info("Conflict trigger time: {}, {}", job, e.getMessage());
             } else {
-                log.error("Conflict trigger time: {} | {}", job, e.getMessage());
+                log.error("Conflict trigger time: {}, {}", job, e.getMessage());
             }
         } catch (IllegalArgumentException e) {
             log.error("Scan trigger job failed: " + job, e);
@@ -257,7 +257,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private boolean checkBlockCollidedTrigger(SchedJob job, List<SchedInstance> instances, CollidedStrategy collidedStrategy, Date now) {
         if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
             SchedInstance first = instances.get(0);
-            log.error("Fixed delay trigger type cannot happen run collided: {} | {}", first.obtainRnstanceId(), job.getNextTriggerTime());
+            log.error("Fixed delay trigger type cannot happen run collided: {}, {}", first.obtainRnstanceId(), job.getNextTriggerTime());
         }
         switch (collidedStrategy) {
             case DISCARD:

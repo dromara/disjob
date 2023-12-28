@@ -114,7 +114,7 @@ public final class ProcessUtils {
                 Process killProcess = new ProcessBuilder("taskkill", "/PID", String.valueOf(pid), "/F", "/T").start();
                 waitFor(killProcess, () -> "kill process id " + pid);
                 if (LOG.isInfoEnabled()) {
-                    LOG.info("Stop windows process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                    LOG.info("Stop windows process verbose: {}, {}", pid, processVerbose(killProcess, charset));
                 }
                 destroy(killProcess);
             } else if (SystemUtils.IS_OS_UNIX) {
@@ -133,7 +133,7 @@ public final class ProcessUtils {
                 Process killProcess = new ProcessBuilder("kill", "-9", String.valueOf(pid)).start();
                 waitFor(killProcess, () -> "kill process id " + pid);
                 if (LOG.isInfoEnabled()) {
-                    LOG.info("Stop unix process verbose: {} | {}", pid, processVerbose(killProcess, charset));
+                    LOG.info("Stop unix process verbose: {}, {}", pid, processVerbose(killProcess, charset));
                 }
                 destroy(killProcess);
             } else {

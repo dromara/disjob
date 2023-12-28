@@ -258,7 +258,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                     createEphemeral(workerIdPath0, data.serialize());
                     isCreatedWorkerIdPath = true;
                     upsertEphemeral(serverTagPath, Bytes.toBytes(usableWorkerId));
-                    LOG.info("Created snowflake zk worker success: {} | {} | {}", serverTag, usableWorkerId, currentTime);
+                    LOG.info("Created snowflake zk worker success: {}, {}, {}", serverTag, usableWorkerId, currentTime);
                     return usableWorkerId;
                 } catch (Throwable t) {
                     if (isCreatedWorkerIdPath) {
@@ -290,12 +290,12 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
                 }
                 long currentTime = System.currentTimeMillis();
                 if (currentTime < data.time) {
-                    throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s | %s | %d", serverTagPath, currentTime, data.time));
+                    throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s, %s, %d", serverTagPath, currentTime, data.time));
                 }
                 updateData(workerIdPath, WorkerIdData.of(currentTime, serverTag).serialize());
             }
 
-            LOG.info("Reuse zk worker id success: {} | {}", serverTag, workerId0);
+            LOG.info("Reuse zk worker id success: {}, {}", serverTag, workerId0);
 
             return workerId0;
 

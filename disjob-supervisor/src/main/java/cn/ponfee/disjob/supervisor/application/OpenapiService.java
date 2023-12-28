@@ -121,7 +121,7 @@ public class OpenapiService {
         // verify the execution state
         ExecuteState.of(targetExecuteState);
 
-        LOG.info("Do force change state {} | {}", instanceId, targetExecuteState);
+        LOG.info("Do force change state {}, {}", instanceId, targetExecuteState);
         jobManager.changeInstanceState(instanceId, ExecuteState.of(targetExecuteState));
     }
 

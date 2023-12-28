@@ -95,7 +95,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             client.agentServiceRegister(newService, token);
         }
         registered.add(server);
-        log.info("Consul server registered: {} | {}", registryRole, server);
+        log.info("Consul server registered: {}, {}", registryRole, server);
     }
 
     @Override
@@ -108,7 +108,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             } else {
                 client.agentServiceDeregister(serverId, token);
             }
-            log.info("Consul Server deregister: {} | {}", registryRole, server);
+            log.info("Consul Server deregister: {}, {}", registryRole, server);
         } catch (Throwable t) {
             log.error("Consul server deregister error.", t);
         }

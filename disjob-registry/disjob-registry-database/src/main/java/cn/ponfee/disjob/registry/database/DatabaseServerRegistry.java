@@ -155,7 +155,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             int updateRowsAffected = update.executeUpdate();
             Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid update rows affected: " + updateRowsAffected);
             if (updateRowsAffected == AFFECTED_ONE_ROW) {
-                log.info("Database register update: {} | {} | {}", namespace, registerRoleName, serialize);
+                log.info("Database register update: {}, {}, {}", namespace, registerRoleName, serialize);
             } else {
                 PreparedStatement insert = psCreator.apply(REGISTER_SQL);
                 insert.setString(1, namespace);
@@ -164,7 +164,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
                 insert.setLong(4, System.currentTimeMillis());
                 int insertRowsAffected = insert.executeUpdate();
                 Assert.isTrue(insertRowsAffected == AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + insertRowsAffected);
-                log.info("Database register insert: {} | {} | {}", namespace, insertRowsAffected, serialize);
+                log.info("Database register insert: {}, {}, {}", namespace, insertRowsAffected, serialize);
             }
         });
 
@@ -176,7 +176,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         registered.remove(server);
         Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
         ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
-        log.info("Server deregister: {} | {}", registryRole, server);
+        log.info("Server deregister: {}, {}", registryRole, server);
     }
 
     @Override
@@ -212,13 +212,13 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             RetryTemplate.executeQuietly(() -> {
                 Object[] updateArgs = {System.currentTimeMillis(), namespace, registerRoleName, serialize};
                 if (jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs) == AFFECTED_ONE_ROW) {
-                    log.debug("Database heartbeat register update: {} | {} | {} | {}", updateArgs);
+                    log.debug("Database heartbeat register update: {}, {}, {}, {}", updateArgs);
                     return;
                 }
 
                 Object[] insertArgs = {namespace, registerRoleName, serialize, System.currentTimeMillis()};
                 jdbcTemplateWrapper.insert(REGISTER_SQL, insertArgs);
-                log.debug("Database heartbeat register insert: {} | {} | {} | {}", insertArgs);
+                log.debug("Database heartbeat register insert: {}, {}, {}, {}", insertArgs);
             }, 3, 1000L);
         }
     }

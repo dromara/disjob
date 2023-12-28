@@ -29,7 +29,7 @@ public class WorkerMetricsAggregator {
         workerThreadPool = threadPool;
     }
 
-    public static WorkerMetrics aggregate() {
+    public static WorkerMetrics metrics() {
         WorkerMetrics metrics = new WorkerMetrics();
         metrics.setStartupAt(Dates.toDate(Worker.current().getStartupAt()));
         metrics.setAlsoSupervisor(Supervisor.current() != null);

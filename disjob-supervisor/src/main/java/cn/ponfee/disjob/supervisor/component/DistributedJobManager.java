@@ -114,7 +114,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     public void savepoint(long taskId, String executeSnapshot) {
-        assertOneAffectedRow(taskMapper.savepoint(taskId, executeSnapshot), () -> "Save point failed: " + taskId + " | " + executeSnapshot);
+        assertOneAffectedRow(taskMapper.savepoint(taskId, executeSnapshot), () -> "Save point failed: " + taskId + ", " + executeSnapshot);
     }
 
     // ------------------------------------------------------------------database operation within spring transactional
@@ -217,7 +217,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(param.a, param.b, param.c));
             }
 
-            LOG.info("Force change state success {} | {}", instanceId, toExecuteState);
+            LOG.info("Force change state success {}, {}", instanceId, toExecuteState);
         });
     }
 
@@ -271,7 +271,7 @@ public class DistributedJobManager extends AbstractJobManager {
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
         Assert.isTrue(!ExecuteState.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
-        LOG.info("Task trace [{}] terminating: {} | {}", param.getTaskId(), param.getOperation(), param.getWorker());
+        LOG.info("Task trace [{}] terminating: {}, {}", param.getTaskId(), param.getOperation(), param.getWorker());
         return doTransactionLockInSynchronized(instanceId, param.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Terminate executing task failed, instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Cannot direct terminate workflow lead instance: " + instance);
@@ -284,7 +284,7 @@ public class DistributedJobManager extends AbstractJobManager {
             int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
             if (!isOneAffectedRow(row)) {
                 // usual is worker invoke http timeout, then retry
-                LOG.warn("Conflict terminate executing task: {} | {}", param.getTaskId(), toState);
+                LOG.warn("Conflict terminate executing task: {}, {}", param.getTaskId(), toState);
                 return false;
             }
 
@@ -405,7 +405,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if canceled successfully
      */
     public boolean cancelInstance(long instanceId, Operations ops) {
-        LOG.info("Cancel instance: {} | {}", instanceId, ops);
+        LOG.info("Cancel instance: {}, {}", instanceId, ops);
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
         if (wnstanceId != null) {
@@ -548,7 +548,7 @@ public class DistributedJobManager extends AbstractJobManager {
             // must be paused or terminate
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
             int row = instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_PAUSABLE, tuple.b);
-            assertOneAffectedRow(row, () -> "Pause instance failed: " + instance + " | " + tuple.a);
+            assertOneAffectedRow(row, () -> "Pause instance failed: " + instance + ", " + tuple.a);
             if (instance.isWorkflowNode()) {
                 updateWorkflowEdgeState(instance, tuple.a.value(), RUN_STATE_PAUSABLE);
             }
@@ -576,7 +576,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             RunState toState = tuple.a;
             int row = instanceMapper.terminate(instanceId, toState.value(), RUN_STATE_TERMINABLE, tuple.b);
-            assertOneAffectedRow(row, () -> "Cancel instance failed: " + instance + " | " + toState);
+            assertOneAffectedRow(row, () -> "Cancel instance failed: " + instance + ", " + toState);
             if (instance.isWorkflowNode()) {
                 updateWorkflowEdgeState(instance, tuple.a.value(), RUN_STATE_TERMINABLE);
             }
@@ -610,18 +610,18 @@ public class DistributedJobManager extends AbstractJobManager {
         if (graph.allMatch(e -> e.getValue().isTerminal())) {
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.FINISHED;
             int row = instanceMapper.terminate(instance.getWnstanceId(), state.value(), RUN_STATE_TERMINABLE, new Date());
-            assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + " | " + state);
+            assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + ", " + state);
         } else if (workflows.stream().noneMatch(e -> RunState.RUNNING.equals(e.getRunState()))) {
             RunState state = RunState.PAUSED;
             int row = instanceMapper.updateState(instance.getWnstanceId(), state.value(), instance.getRunState());
-            assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + " | " + state);
+            assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + ", " + state);
         }
     }
 
     private void updateWorkflowEdgeState(SchedInstance instance, Integer toState, List<Integer> fromStates) {
         String curNode = instance.parseAttach().getCurNode();
         int row = workflowMapper.update(instance.getWnstanceId(), curNode, toState, null, fromStates, instance.getInstanceId());
-        Assert.isTrue(row > 0, () -> "Update workflow state failed: " + instance + " | " + toState);
+        Assert.isTrue(row > 0, () -> "Update workflow state failed: " + instance + ", " + toState);
     }
 
     private void updateWorkflowEndState(WorkflowGraph graph) {
@@ -632,7 +632,7 @@ public class DistributedJobManager extends AbstractJobManager {
             if (ends.values().stream().allMatch(SchedWorkflow::isTerminal)) {
                 RunState endState = ends.values().stream().anyMatch(SchedWorkflow::isFailure) ? RunState.CANCELED : RunState.FINISHED;
                 int row = workflowMapper.update(wnstanceId, DAGNode.END.toString(), endState.value(), null, RUN_STATE_TERMINABLE, null);
-                Assert.isTrue(row > 0, () -> "Update workflow end node failed: " + wnstanceId + " | " + endState);
+                Assert.isTrue(row > 0, () -> "Update workflow end node failed: " + wnstanceId + ", " + endState);
                 ends.forEach((k, v) -> graph.get(k.getTarget(), DAGNode.END).setRunState(endState.value()));
             }
         }
@@ -661,7 +661,7 @@ public class DistributedJobManager extends AbstractJobManager {
             if (predecessors.values().stream().anyMatch(e -> RunState.of(e.getRunState()).isFailure())) {
                 RunState state = RunState.CANCELED;
                 int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), state.value(), null, RUN_STATE_TERMINABLE, null);
-                Assert.isTrue(row > 0, () -> "Update workflow cur node state failed: " + workflow + " | " + state);
+                Assert.isTrue(row > 0, () -> "Update workflow cur node state failed: " + workflow + ", " + state);
                 continue;
             }
 
@@ -755,7 +755,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (graph.allMatch(e -> e.getValue().isTerminal())) {
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.FINISHED;
             int row = instanceMapper.terminate(wnstanceId, state.value(), RUN_STATE_TERMINABLE, new Date());
-            assertOneAffectedRow(row, () -> "Terminate workflow lead instance failed: " + nodeInstance + " | " + state);
+            assertOneAffectedRow(row, () -> "Terminate workflow lead instance failed: " + nodeInstance + ", " + state);
             afterTerminateTask(instanceMapper.get(wnstanceId));
             return;
         }
@@ -863,7 +863,7 @@ public class DistributedJobManager extends AbstractJobManager {
         for (SchedDepend depend : schedDepends) {
             SchedJob childJob = jobMapper.get(depend.getChildJobId());
             if (childJob == null) {
-                LOG.error("Child sched job not found: {} | {}", depend.getParentJobId(), depend.getChildJobId());
+                LOG.error("Child sched job not found: {}, {}", depend.getParentJobId(), depend.getChildJobId());
                 continue;
             }
             if (JobState.DISABLE.equals(childJob.getJobState())) {
@@ -887,7 +887,7 @@ public class DistributedJobManager extends AbstractJobManager {
                     createInstance(tInstance);
                     return () -> creator.dispatch(childJob, tInstance);
                 },
-                t -> LOG.error("Depend job instance created fail: " + parentInstance + " | " + childJob, t)
+                t -> LOG.error("Depend job instance created fail: " + parentInstance + ", " + childJob, t)
             );
 
             if (dispatchAction != null) {

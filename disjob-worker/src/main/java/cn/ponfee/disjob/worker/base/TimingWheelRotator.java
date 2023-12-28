@@ -114,7 +114,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
             // 触发执行
             subs.forEach(e -> {
-                LOG.info("Task trace [{}] triggered: {} | {} | {}", e.getTaskId(), e.getOperation(), e.getWorker(), DATE_FORMAT.format(e.getTriggerTime()));
+                LOG.info("Task trace [{}] triggered: {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), DATE_FORMAT.format(e.getTriggerTime()));
                 workerThreadPool.submit(e);
             });
         }

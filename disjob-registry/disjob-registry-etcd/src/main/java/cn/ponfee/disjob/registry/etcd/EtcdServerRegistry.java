@@ -113,7 +113,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         try {
             client.createEphemeralKey(buildRegistryServerId(server), PLACEHOLDER_VALUE, leaseId);
             registered.add(server);
-            log.info("Etcd server registered: {} | {}", registryRole, server);
+            log.info("Etcd server registered: {}, {}", registryRole, server);
         } catch (Throwable e) {
             throw new RegistryException("Etcd server register failed: " + server, e);
         }
@@ -124,7 +124,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         try {
             registered.remove(server);
             client.deleteKey(buildRegistryServerId(server));
-            log.info("Etcd server deregister: {} | {}", registryRole, server);
+            log.info("Etcd server deregister: {}, {}", registryRole, server);
         } catch (Throwable t) {
             log.error("Etcd server deregister error.", t);
         }

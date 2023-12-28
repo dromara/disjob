@@ -49,7 +49,7 @@ public class RetryTemplate {
                     if (traceId == null) {
                         traceId = UuidUtils.uuid32();
                     }
-                    LOG.error("Execute failed, will retrying: " + (i + 1) + " | " + traceId, e);
+                    LOG.error("Execute failed, will retrying: " + (i + 1) + ", " + traceId, e);
                     Thread.sleep((i + 1) * retryBackoffPeriod);
                 } else {
                     LOG.error("Execute failed, retried max count: " + traceId, e);

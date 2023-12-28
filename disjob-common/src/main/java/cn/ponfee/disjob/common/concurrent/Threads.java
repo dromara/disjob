@@ -11,6 +11,8 @@ package cn.ponfee.disjob.common.concurrent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ForkJoinPool;
+
 /**
  * Thread utilities
  *
@@ -62,59 +64,14 @@ public final class Threads {
         return thread.getState() == Thread.State.TERMINATED;
     }
 
-    public static void stopThread(Thread thread, long joinMillis) {
-        stopThread(thread, joinMillis, 0, 0);
-    }
-
     /**
      * Stops the thread
      *
      * @param thread      the thread
      * @param joinMillis  the joinMillis
-     * @param sleepCount  the sleepCount
-     * @param sleepMillis the sleepMillis
      */
-    public static void stopThread(Thread thread, long joinMillis, int sleepCount, long sleepMillis) {
-        if (isStopped(thread)) {
-            return;
-        }
-
-        if (Thread.currentThread() == thread) {
-            LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
-            thread.interrupt();
-            stopThread(thread);
-            return;
-        }
-
-        // sleep for wait the tread run method block code execute finish
-        LOG.info("Thread stopping: {}", thread.getName());
-        while (sleepCount-- > 0 && sleepMillis > 0 && !isStopped(thread)) {
-            try {
-                // Wait some time
-                Thread.sleep(sleepMillis);
-            } catch (InterruptedException e) {
-                LOG.error("Waiting thread terminal interrupted: " + thread.getName(), e);
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
-
-        if (isStopped(thread)) {
-            return;
-        }
-
-        // interrupt and wait joined
-        thread.interrupt();
-        if (joinMillis > 0) {
-            try {
-                thread.join(joinMillis);
-            } catch (InterruptedException e) {
-                LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        stopThread(thread);
+    public static void stopThread(Thread thread, long joinMillis) {
+        stopThread(false, thread, joinMillis);
     }
 
     public static void interruptIfNecessary(Throwable t) {
@@ -152,6 +109,35 @@ public final class Threads {
         return builder.toString();
     }
 
+    private static void stopThread(boolean async, Thread thread, long joinMillis) {
+        if (isStopped(thread)) {
+            return;
+        }
+
+        if (Thread.currentThread() == thread) {
+            if (async) {
+                LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
+                stopThread(thread);
+            } else {
+                ForkJoinPool.commonPool().execute(() -> stopThread(true, thread, Math.max(joinMillis, 10)));
+            }
+            return;
+        }
+
+        // interrupt and wait joined
+        thread.interrupt();
+        if (joinMillis > 0) {
+            try {
+                thread.join(joinMillis);
+            } catch (InterruptedException e) {
+                LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        stopThread(thread);
+    }
+
     /**
      * Stop the thread
      *
@@ -162,6 +148,7 @@ public final class Threads {
             return;
         }
 
+        thread.interrupt();
         try {
             // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
             // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行

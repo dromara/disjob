@@ -50,7 +50,7 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
     @Override
     public WorkerMetrics metrics(GetMetricsParam param) {
         currentWork.authenticate(param);
-        return WorkerMetricsAggregator.aggregate();
+        return WorkerMetricsAggregator.metrics();
     }
 
     @Override

@@ -71,7 +71,7 @@ public class CommandJobHandler extends JobHandler {
 
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
-        LOG.info("Command process id: {} | {}", executingTask.getTaskId(), pid);
+        LOG.info("Command process id: {}, {}", executingTask.getTaskId(), pid);
         return JobUtils.completeProcess(process, charset, executingTask, LOG);
     }
 

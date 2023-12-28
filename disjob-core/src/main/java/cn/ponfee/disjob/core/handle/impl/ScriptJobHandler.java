@@ -81,7 +81,7 @@ public class ScriptJobHandler extends JobHandler {
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
-        LOG.info("Script process id: {} | {}", executingTask.getTaskId(), pid);
+        LOG.info("Script process id: {}, {}", executingTask.getTaskId(), pid);
         return JobUtils.completeProcess(process, charset, executingTask, LOG);
     }
 
