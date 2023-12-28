@@ -21,7 +21,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class GetMetricsParam extends AuthenticationParam {
-
     private static final long serialVersionUID = 6100003437491314940L;
 
     public GetMetricsParam(String supervisorToken) {

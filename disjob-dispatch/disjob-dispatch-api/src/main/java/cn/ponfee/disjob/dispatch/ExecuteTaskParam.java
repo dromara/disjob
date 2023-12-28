@@ -122,6 +122,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
      * @return string of serialized result
      */
     public byte[] serialize() {
+        String supervisorToken = super.getSupervisorToken();
         byte[] supervisorTokenBytes = (supervisorToken != null) ? supervisorToken.getBytes(UTF_8) : null;
         byte[] workerBytes = worker.serialize().getBytes(UTF_8);
         byte[] jobHandlerBytes = jobHandler.getBytes(UTF_8);
