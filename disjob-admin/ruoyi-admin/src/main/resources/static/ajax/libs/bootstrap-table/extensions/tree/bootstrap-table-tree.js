@@ -34,7 +34,7 @@
             initBody();
             if (options.firstLoad !== false) {
                 // 初始化数据服务
-                initServer();
+                initServer(options.firstLoadParams);
             }
             // 动态设置表头宽度
             autoTheadWidth(true);

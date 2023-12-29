@@ -656,6 +656,7 @@ var table = {
                     pageList: options.pageList,                         // 可供选择的每页的行数
                     expandColumn: options.expandColumn,                 // 在哪一列上面显示展开按钮
                     firstLoad: options.firstLoad,                       // 是否首次请求加载数据，对于数据较大可以配置false
+                    firstLoadParams: options.firstLoadParams,           // 首次请求加载数据的参数
                     striped: options.striped,                           // 是否显示行间隔色
                     bordered: options.bordered,                         // 是否显示边框
                     toolbar: '#' + options.toolbar,                     // 指定工作栏
