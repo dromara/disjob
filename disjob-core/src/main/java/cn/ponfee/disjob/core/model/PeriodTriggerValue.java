@@ -27,7 +27,6 @@ import java.util.Date;
 @Setter
 @Getter
 public class PeriodTriggerValue implements Serializable {
-
     private static final long serialVersionUID = -8395535372974631095L;
 
     /**

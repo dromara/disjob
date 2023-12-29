@@ -24,7 +24,6 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 public class InstanceAttach implements Serializable {
-
     private static final long serialVersionUID = -7365475674760089839L;
 
     /**

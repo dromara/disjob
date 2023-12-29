@@ -12,8 +12,6 @@ import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 /**
  * The schedule group entity, mapped database table sched_group
  *
@@ -21,8 +19,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public class SchedGroup extends BaseEntity implements Serializable {
-
+public class SchedGroup extends BaseEntity {
     private static final long serialVersionUID = 130809383427026764L;
 
     /**

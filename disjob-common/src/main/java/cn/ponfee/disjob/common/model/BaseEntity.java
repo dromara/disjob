@@ -22,7 +22,6 @@ import java.util.Date;
 @Getter
 @Setter
 public abstract class BaseEntity extends ToJsonString implements java.io.Serializable {
-
     private static final long serialVersionUID = -7150065349727498445L;
 
     /**

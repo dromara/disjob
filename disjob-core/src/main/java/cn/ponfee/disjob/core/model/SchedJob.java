@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import static cn.ponfee.disjob.common.date.Dates.format;
@@ -29,8 +28,7 @@ import static org.apache.commons.lang3.StringUtils.length;
  */
 @Getter
 @Setter
-public class SchedJob extends BaseEntity implements Serializable {
-
+public class SchedJob extends BaseEntity {
     private static final long serialVersionUID = -1595287180906247896L;
 
     /**

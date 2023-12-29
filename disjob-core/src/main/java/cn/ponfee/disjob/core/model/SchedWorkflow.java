@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.beans.Transient;
-import java.io.Serializable;
 
 /**
  * Disjob workflow, mapped database table sched_workflow
@@ -26,7 +25,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SchedWorkflow extends BaseEntity implements Serializable {
+public class SchedWorkflow extends BaseEntity {
     private static final long serialVersionUID = 3485414559751420216L;
 
     /**

@@ -49,11 +49,11 @@
   <th:block th:include="include :: select2-js" />
 
   <script th:inline="javascript">
-    var operateFlag = [[${@permission.hasPermi('disjob:mggroup:operate')}]];
-    var prefix = ctx + "disjob/mggroup";
+    const operateFlag = [[${@permission.hasPermi('disjob:mggroup:operate')}]];
+    const prefix = ctx + "disjob/mggroup";
 
     $(function () {
-      var options = {
+      const options = {
         url: prefix + "/list",
         createUrl: prefix + "/add",
         removeUrl: prefix + "/remove",
@@ -132,7 +132,7 @@
             if (![[${@permission.isPermitted('disjob:mggroup:operate')}]]) {
               return '';
             }
-            var actions = [];
+            const actions = [];
             actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='remove(&quot;" + row.group + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
             return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
           }
@@ -164,7 +164,7 @@
 
     function resetForm() {
       $.form.reset();
-      var elem = $("select[name='groups']");
+      const elem = $("select[name='groups']");
       elem.val(elem.val()).trigger("change");
     }
 
@@ -175,12 +175,12 @@
 
     function token() {
       table.set();
-      var rows = $("#" + table.options.id).bootstrapTable('getSelections');
+      const rows = $("#" + table.options.id).bootstrapTable('getSelections');
       if (rows.length !== 1) {
         $.modal.alertWarning("请选择一条记录");
         return;
       }
-      var url = prefix + '/token?group=' + rows[0].group;
+      const url = prefix + '/token?group=' + rows[0].group;
       $.modal.open("令牌管理", url, '770', '350', null, ['复制', '关闭']);
     }
 
@@ -202,8 +202,9 @@
         return;
       }
       const newValue = row[field].trim();
-      if (oldValue.toString().trim() === newValue) {
-        row[field] = newValue;
+      if ($.trim(oldValue) === newValue) {
+        // reset to oldValue(none left or right blank)
+        row[field] = oldValue;
         return;
       }
       const params = { "group": row.group, "ownUser": newValue };

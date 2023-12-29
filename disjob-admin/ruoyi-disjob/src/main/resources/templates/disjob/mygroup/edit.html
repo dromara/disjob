@@ -2,6 +2,7 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
   <th:block th:include="include :: header('修改分组')" />
+  <th:block th:include="include :: bootstrap-tagsinput-css" />
 </head>
 <body class="white-bg">
 
@@ -23,13 +24,13 @@
       <div class="form-group">
         <label class="col-sm-3 control-label">Dev Users：</label>
         <div class="col-sm-9">
-          <textarea rows="3" name="devUsers" class="form-control">[(*{devUsers})]</textarea>
+          <input type="text" name="devUsers" th:field="*{devUsers}" autocomplete="off" data-role="tagsinput" />
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-3 control-label">Alarm Users：</label>
         <div class="col-sm-9">
-          <textarea rows="3" name="alarmUsers" class="form-control">[(*{alarmUsers})]</textarea>
+          <input type="text" name="alarmUsers" th:field="*{alarmUsers}" autocomplete="off" data-role="tagsinput" />
         </div>
       </div>
       <div class="form-group">
@@ -42,6 +43,8 @@
   </div>
 
   <th:block th:include="include :: footer" />
+  <th:block th:include="include :: bootstrap-tagsinput-js" />
+
   <script th:inline="javascript">
     var prefix = ctx + "disjob/mygroup";
 
@@ -59,6 +62,8 @@
       if (![(${isOwnUser})]) {
         $("input[name='ownUser']").attr("readonly", "true")
       }
+
+      $("div[class='bootstrap-tagsinput']").addClass("col-sm-12");
     });
   </script>
 

@@ -25,8 +25,18 @@ import java.util.Date;
 public class SchedJobResponse extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -989147023126011287L;
 
-    private Long id;
+    /**
+     * <pre>
+     * 返回给端上浏览器JavaScript Number数值过大时会有问题：Number.MAX_SAFE_INTEGER = 9007199254740991
+     * 当数值大于`9007199254740991`时就有可能会丢失精度：1234567891011121314 -> 1234567891011121400
+     *
+     * 方式一：spring.jackson.generator.write_numbers_as_strings=true
+     * 方式二：@JsonSerialize(using = ToStringSerializer.class)
+     * 方式三：@JsonFormat(shape = JsonFormat.Shape.STRING)
+     * </pre>
+     */
     private Long jobId;
+
     private String group;
     private String jobName;
     private Integer jobType;

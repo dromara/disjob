@@ -18,10 +18,10 @@
   <th:block th:include="include :: bootstrap-table-editable-js" />
 
   <script th:inline="javascript">
-    var prefix = ctx + "disjob/mygroup";
+    const prefix = ctx + "disjob/mygroup";
 
     $(function () {
-      var options = {
+      const options = {
         data: [[${list}]],
         sidePagination: "client",
         showSearch: false,
@@ -114,12 +114,12 @@
         $.modal.msgError("只能更新['maximumPoolSize']字段");
         return;
       }
-      const newValue = parseInt(row[field].toString().trim());
-      if (parseInt(oldValue.toString().trim()) === newValue) {
-        row[field] = newValue;
+      const newValue = parseInt($.trim(row[field]));
+      if (parseInt($.trim(oldValue)) === newValue) {
+        // reset to oldValue(none left or right blank)
+        row[field] = oldValue;
         return;
       }
-
       const params = {
         "group": [[${group}]],
         "workerId": row.workerId,

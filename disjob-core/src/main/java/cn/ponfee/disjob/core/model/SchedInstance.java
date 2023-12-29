@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.beans.Transient;
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -28,8 +27,7 @@ import java.util.Date;
  */
 @Getter
 @Setter
-public class SchedInstance extends BaseEntity implements Serializable {
-
+public class SchedInstance extends BaseEntity {
     private static final long serialVersionUID = -1457861792948169949L;
 
     /**

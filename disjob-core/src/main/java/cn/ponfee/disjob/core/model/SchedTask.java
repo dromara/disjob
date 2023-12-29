@@ -13,7 +13,6 @@ import cn.ponfee.disjob.core.enums.ExecuteState;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -23,7 +22,7 @@ import java.util.Date;
  */
 @Getter
 @Setter
-public class SchedTask extends BaseEntity implements Serializable {
+public class SchedTask extends BaseEntity {
 
     private static final long serialVersionUID = 4882055618593707631L;
 
