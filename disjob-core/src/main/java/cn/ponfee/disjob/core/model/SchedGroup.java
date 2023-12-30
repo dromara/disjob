@@ -43,7 +43,7 @@ public class SchedGroup extends BaseEntity {
     private String workerToken;
 
     /**
-     * User访问Supervisor的openapi接口密钥令牌(未部署Admin 或 提供类似开放平台 时使用)
+     * User访问Supervisor Openapi接口的密钥令牌(`未部署Admin` 或 `提供类似开放平台` 时使用)
      */
     private String userToken;
 
@@ -53,7 +53,7 @@ public class SchedGroup extends BaseEntity {
     private String devUsers;
 
     /**
-     * 告警人员(多个逗号分隔)
+     * 告警接收人员(多个逗号分隔)
      */
     private String alarmUsers;
 

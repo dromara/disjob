@@ -9,11 +9,13 @@
 package cn.ponfee.disjob.dispatch.http;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -38,8 +40,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
     protected boolean dispatch(ExecuteTaskParam param) {
         Worker worker = param.getWorker();
         String url = String.format(URL_PATTERN, worker.getHost(), worker.getPort());
-        Boolean result = restTemplate.postForEntity(url, new Object[]{param}, Boolean.class).getBody();
-        return result != null && result;
+        return RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, boolean.class, null, param);
     }
 
 }

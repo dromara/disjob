@@ -59,11 +59,11 @@
     }
 
     $(function () {
+      $("div[class='bootstrap-tagsinput']").addClass("col-sm-12");
+
       if (![(${isOwnUser})]) {
         $("input[name='ownUser']").attr("readonly", "true")
       }
-
-      $("div[class='bootstrap-tagsinput']").addClass("col-sm-12");
     });
   </script>
 

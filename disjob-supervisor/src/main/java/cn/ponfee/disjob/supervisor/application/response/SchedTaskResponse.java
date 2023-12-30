@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.application.response;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,8 +26,12 @@ import java.util.Date;
 public class SchedTaskResponse extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 3629610339544019607L;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long taskId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long instanceId;
+
     private Integer taskNo;
     private Integer taskCount;
     private String taskParam;

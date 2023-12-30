@@ -289,7 +289,21 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
-            if (tuple != null && instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) > 0) {
+            if (tuple == null) {
+                // If the instance has (WAITING or EXECUTING) task
+                return true;
+            }
+            if (!tuple.a.isTerminal()) {
+                Assert.isTrue(tuple.a == RunState.PAUSED, () -> "Expect pause run state, but actual: " + tuple.a);
+                if (instance.isWorkflow()) {
+                    pauseInstance(instance.getWnstanceId(), instanceMapper.get(instance.getWnstanceId()));
+                } else {
+                    pauseInstance(instanceId, instance);
+                }
+                return true;
+            }
+
+            if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) > 0) {
                 // the last executing task of this sched instance
                 if (param.getOperation().isTrigger()) {
                     instance.markTerminated(tuple.a, tuple.b);
@@ -377,22 +391,7 @@ public class DistributedJobManager extends AbstractJobManager {
             if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
                 return false;
             }
-
-            if (instance.isWorkflow()) {
-                Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot pause workflow node instance: " + instanceId);
-                // update sched_workflow waiting node to paused state
-                workflowMapper.update(instanceId, null, RunState.PAUSED.value(), null, RUN_STATE_WAITING, null);
-                // pause sched_workflow running node
-                instanceMapper.findWorkflowNode(instanceId)
-                    .stream()
-                    .filter(e -> RUN_STATE_PAUSABLE.contains(e.getRunState()))
-                    .forEach(this::pauseInstance);
-                // update sched_workflow running lead
-                updateWorkflowLeadState(instance);
-            } else {
-                pauseInstance(instance);
-            }
-
+            pauseInstance(instanceId, instance);
             return true;
         });
     }
@@ -480,12 +479,12 @@ public class DistributedJobManager extends AbstractJobManager {
      *
      * @param instanceId the instance id
      * @param wnstanceId the workflow instance id
-     * @param action the action
+     * @param action     the action
      * @return boolean value of action result
      */
     private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Predicate<SchedInstance> action) {
         // Long.toString(lockKey).intern()
-        Long lockInstanceId = wnstanceId == null ? instanceId : wnstanceId;
+        Long lockInstanceId = (wnstanceId == null) ? instanceId : wnstanceId;
         synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
             Boolean result = transactionTemplate.execute(status -> {
                 SchedInstance lockedInstance = instanceMapper.lock(lockInstanceId);
@@ -529,6 +528,23 @@ public class DistributedJobManager extends AbstractJobManager {
             }
         } else {
             throw new UnsupportedOperationException("Unknown instance creator type: " + tInstance.getClass());
+        }
+    }
+
+    private void pauseInstance(long instanceId, SchedInstance instance) {
+        if (instance.isWorkflow()) {
+            Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot pause workflow node instance: " + instanceId);
+            // update sched_workflow waiting node to paused state
+            workflowMapper.update(instanceId, null, RunState.PAUSED.value(), null, RUN_STATE_WAITING, null);
+            // pause sched_workflow running node
+            instanceMapper.findWorkflowNode(instanceId)
+                .stream()
+                .filter(e -> RUN_STATE_PAUSABLE.contains(e.getRunState()))
+                .forEach(this::pauseInstance);
+            // update sched_workflow running lead
+            updateWorkflowLeadState(instance);
+        } else {
+            pauseInstance(instance);
         }
     }
 

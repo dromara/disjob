@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.application.response;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,6 +36,7 @@ public class SchedJobResponse extends ToJsonString implements Serializable {
      * 方式三：@JsonFormat(shape = JsonFormat.Shape.STRING)
      * </pre>
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long jobId;
 
     private String group;

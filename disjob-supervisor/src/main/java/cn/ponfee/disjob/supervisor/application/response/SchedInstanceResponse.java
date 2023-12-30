@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,11 +31,21 @@ import java.util.List;
 public class SchedInstanceResponse extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -6772222626245934369L;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long instanceId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long rnstanceId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long pnstanceId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long wnstanceId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long jobId;
+
     private Long triggerTime;
     private Integer runType;
     private Integer runState;
