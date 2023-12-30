@@ -202,14 +202,15 @@
         return;
       }
       const newValue = row[field].trim();
-      if ($.trim(oldValue) === newValue) {
+      if (oldValue === newValue) {
         // reset to oldValue(none left or right blank)
         row[field] = oldValue;
         return;
       }
       const params = { "group": row.group, "ownUser": newValue };
-      $.operate.post(prefix + "/update_own_user", params);
-      row[field] = newValue;
+      $.operate.post(prefix + "/update_own_user", params, function (result) {
+        row[field] = (result.code === 0) ? newValue : oldValue;
+      }, false);
     }
   </script>
 

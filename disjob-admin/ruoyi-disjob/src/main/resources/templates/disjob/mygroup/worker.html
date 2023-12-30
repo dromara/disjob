@@ -115,7 +115,7 @@
         return;
       }
       const newValue = parseInt($.trim(row[field]));
-      if (parseInt($.trim(oldValue)) === newValue) {
+      if (oldValue === newValue) {
         // reset to oldValue(none left or right blank)
         row[field] = oldValue;
         return;
@@ -127,8 +127,9 @@
         "port": row['port'],
         "maximumPoolSize": newValue
       };
-      $.operate.post(prefix + "/modify_maximum_pool_size", params);
-      row[field] = newValue;
+      $.operate.post(prefix + "/modify_maximum_pool_size", params, function (result) {
+        row[field] = (result.code === 0) ? newValue : oldValue;
+      }, false);
     }
   </script>
 

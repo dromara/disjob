@@ -53,17 +53,17 @@
 
   <th:block th:include="include :: footer" />
   <script th:inline="javascript">
-    var prefix = ctx + "disjob/mggroup";
+    const prefix = ctx + "disjob/mggroup";
 
     function updateToken(name, operation) {
-      var input = $("#" + name + "Token");
-      var params = {
+      const input = $("#" + name + "Token");
+      const params = {
         "group": '[(${data.group})]',
         "name": name,
         "operation": operation,
         "currentValue": input.val()
       };
-      var ops = operation === 'change' ? "更换" : (operation === 'set' ? "设置" : "清除");
+      const ops = (operation === 'change') ? "更换" : (operation === 'set' ? "设置" : "清除");
       $.modal.confirm("确认要" + ops + "'" + name + "'令牌吗？", function () {
         $.operate.post(prefix + "/token", params, function (result) {
           if (result.code === 0) {
@@ -75,13 +75,13 @@
     }
 
     function submitHandler() {
-      var data = {
+      const data = {
         "group": '[(${data.group})]',
         "supervisorToken": $("#supervisorToken").val(),
         "workerToken": $("#workerToken").val(),
         "userToken": $("#userToken").val()
       }
-      var tempElement = document.createElement("textarea");
+      const tempElement = document.createElement("textarea");
       tempElement.value = JSON.stringify(data, null, 4);
       document.body.appendChild(tempElement);
       tempElement.select();
@@ -99,7 +99,7 @@
     }
 
     function setTokenButton(name) {
-      var input = $("#" + name + "Token");
+      const input = $("#" + name + "Token");
       if (input.val()) {
         $("#" + name + "1").html('<button type="button" class="btn btn-warning" onclick="updateToken(\'' + name + '\', \'change\')">更换</button>')
         $("#" + name + "2").html('<button type="button" class="btn btn-danger" onclick="updateToken(\'' + name + '\', \'clear\')">清除</button>');
@@ -110,7 +110,7 @@
     }
 
     $(function () {
-      var names = ['supervisor', 'worker', 'user'];
+      const names = ['supervisor', 'worker', 'user'];
       names.forEach(function (item) {
         setTokenButton(item);
       });

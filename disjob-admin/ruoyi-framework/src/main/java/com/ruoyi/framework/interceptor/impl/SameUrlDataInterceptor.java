@@ -1,7 +1,7 @@
 package com.ruoyi.framework.interceptor.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.ruoyi.common.annotation.RepeatSubmit;
-import com.ruoyi.common.json.JSON;
 import com.ruoyi.framework.interceptor.RepeatSubmitInterceptor;
 import org.springframework.stereotype.Component;
 
@@ -30,8 +30,8 @@ public class SameUrlDataInterceptor extends RepeatSubmitInterceptor
     public boolean isRepeatSubmit(HttpServletRequest request, RepeatSubmit annotation) throws Exception
     {
         // 本次参数及系统时间
-        String nowParams = JSON.marshal(request.getParameterMap());
-        Map<String, Object> nowDataMap = new HashMap<String, Object>();
+        String nowParams = JSON.toJSONString(request.getParameterMap());
+        Map<String, Object> nowDataMap = new HashMap<>();
         nowDataMap.put(REPEAT_PARAMS, nowParams);
         nowDataMap.put(REPEAT_TIME, System.currentTimeMillis());
 

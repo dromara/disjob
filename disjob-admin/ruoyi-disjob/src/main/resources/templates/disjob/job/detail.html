@@ -114,7 +114,7 @@
     });
 
     function view(id, text) {
-      var elem = $("#" + id);
+      const elem = $("#" + id);
       if (text) {
         try {
           elem.JSONView(text);

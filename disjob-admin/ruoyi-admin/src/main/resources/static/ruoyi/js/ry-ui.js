@@ -1072,11 +1072,12 @@ var table = {
         // 操作封装处理
         operate: {
             // 提交数据
-            submit: function(url, type, dataType, data, callback) {
+            submit: function(url, type, dataType, data, callback, async) {
                 var config = {
                     url: url,
                     type: type,
                     dataType: dataType,
+                    async: async !== false,
                     data: data,
                     beforeSend: function () {
                         $.modal.loading("正在处理中，请稍候...");
@@ -1091,12 +1092,12 @@ var table = {
                 $.ajax(config)
             },
             // post请求传输
-            post: function(url, data, callback) {
-                $.operate.submit(url, "post", "json", data, callback);
+            post: function(url, data, callback, async) {
+                $.operate.submit(url, "post", "json", data, callback, async);
             },
             // get请求传输
-            get: function(url, callback) {
-                $.operate.submit(url, "get", "json", "", callback);
+            get: function(url, callback, async) {
+                $.operate.submit(url, "get", "json", "", callback, async);
             },
             // 详细信息
             detail: function(id, width, height) {

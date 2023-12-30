@@ -14,11 +14,11 @@
 
   <div th:include="include :: footer"></div>
   <script th:inline="javascript">
-    var executeStates = [[${@disjobService.enums('ExecuteState')}]];
-    var stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
+    const executeStates = [[${@disjobService.enums('ExecuteState')}]];
+    const stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
 
     $(function () {
-      var options = {
+      const options = {
         data: [(${tasks})],
         sidePagination: "client",
         showSearch: false,
@@ -62,7 +62,7 @@
           field: 'executeState',
           title: '执行状态',
           formatter: function (value, row, index) {
-            var label = $.table.selectData(executeStates, value, 'value', 'desc');
+            const label = $.table.selectData(executeStates, value, 'value', 'desc');
             return $.common.sprintf("<span class='badge badge-%s'>%s</span>", stateMap[value > 50 ? 50 : value], label);
           }
         },

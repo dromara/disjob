@@ -1,6 +1,6 @@
 package com.ruoyi.common.utils;
 
-import com.ruoyi.common.json.JSON;
+import com.alibaba.fastjson.JSON;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Map;
 
 /**
  * 处理并记录日志文件
@@ -113,10 +112,9 @@ public class LogUtils
         return "[" + msg + "]";
     }
 
-    protected static String getParams(HttpServletRequest request) throws Exception
+    protected static String getParams(HttpServletRequest request)
     {
-        Map<String, String[]> params = request.getParameterMap();
-        return JSON.marshal(params);
+        return JSON.toJSONString(request.getParameterMap());
     }
 
     protected static String getUsername()
