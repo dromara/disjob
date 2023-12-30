@@ -276,9 +276,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
      * @param sep 分隔符
      * @return set集合
      */
-    public static final Set<String> str2Set(String str, String sep)
+    public static Set<String> str2Set(String str, String sep)
     {
-        return new HashSet<String>(str2List(str, sep, true, false));
+        return new HashSet<>(str2List(str, sep, true, false));
     }
 
     /**
@@ -290,9 +290,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
      * @param trim 去掉首尾空白
      * @return list集合
      */
-    public static final List<String> str2List(String str, String sep, boolean filterBlank, boolean trim)
+    public static List<String> str2List(String str, String sep, boolean filterBlank, boolean trim)
     {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         if (StringUtils.isEmpty(str))
         {
             return list;
@@ -582,7 +582,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
      * @param size 字符串指定长度
      * @return 返回数字的字符串格式，该字符串为指定长度。
      */
-    public static final String padl(final Number num, final int size)
+    public static String padl(final Number num, final int size)
     {
         return padl(num.toString(), size, '0');
     }
@@ -595,7 +595,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
      * @param c 用于补齐的字符
      * @return 返回指定长度的字符串，由原字符串左补齐或截取得到。
      */
-    public static final String padl(final String s, final int size, final char c)
+    public static String padl(final String s, final int size, final char c)
     {
         final StringBuilder sb = new StringBuilder(size);
         if (s != null)

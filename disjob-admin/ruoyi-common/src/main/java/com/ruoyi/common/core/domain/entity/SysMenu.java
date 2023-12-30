@@ -55,7 +55,7 @@ public class SysMenu extends BaseEntity
     private String icon;
 
     /** 子菜单 */
-    private List<SysMenu> children = new ArrayList<SysMenu>();
+    private List<SysMenu> children = new ArrayList<>();
 
     public Long getMenuId()
     {

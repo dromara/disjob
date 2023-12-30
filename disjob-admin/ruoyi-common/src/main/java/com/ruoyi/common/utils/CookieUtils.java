@@ -28,10 +28,10 @@ public class CookieUtils
     /**
      * 设置 Cookie
      *
+     * @param response response
      * @param name 名称
      * @param value 值
-     * @param maxAge 生存时间（单位秒）
-     * @param uri 路径
+     * @param path 路径
      */
     public static void setCookie(HttpServletResponse response, String name, String value, String path)
     {
@@ -41,10 +41,10 @@ public class CookieUtils
     /**
      * 设置 Cookie
      *
+     * @param response response
      * @param name 名称
      * @param value 值
      * @param maxAge 生存时间（单位秒）
-     * @param uri 路径
      */
     public static void setCookie(HttpServletResponse response, String name, String value, int maxAge)
     {
@@ -54,10 +54,11 @@ public class CookieUtils
     /**
      * 设置 Cookie
      *
+     * @param response response
      * @param name 名称
      * @param value 值
+     * @param path 路径
      * @param maxAge 生存时间（单位秒）
-     * @param uri 路径
      */
     public static void setCookie(HttpServletResponse response, String name, String value, String path, int maxAge)
     {

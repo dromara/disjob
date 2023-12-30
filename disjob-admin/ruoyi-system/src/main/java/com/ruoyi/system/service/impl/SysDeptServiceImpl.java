@@ -63,7 +63,7 @@ public class SysDeptServiceImpl implements ISysDeptService
     /**
      * 查询部门管理树（排除下级）
      *
-     * @param deptId 部门ID
+     * @param dept 部门
      * @return 所有部门信息
      */
     @Override
@@ -90,7 +90,7 @@ public class SysDeptServiceImpl implements ISysDeptService
     public List<Ztree> roleDeptTreeData(SysRole role)
     {
         Long roleId = role.getRoleId();
-        List<Ztree> ztrees = new ArrayList<Ztree>();
+        List<Ztree> ztrees;
         List<SysDept> deptList = SpringUtils.getAopProxy(this).selectDeptList(new SysDept());
         if (StringUtils.isNotNull(roleId))
         {
@@ -125,7 +125,7 @@ public class SysDeptServiceImpl implements ISysDeptService
     public List<Ztree> initZtree(List<SysDept> deptList, List<String> roleDeptList)
     {
 
-        List<Ztree> ztrees = new ArrayList<Ztree>();
+        List<Ztree> ztrees = new ArrayList<>();
         boolean isCheck = StringUtils.isNotNull(roleDeptList);
         for (SysDept dept : deptList)
         {

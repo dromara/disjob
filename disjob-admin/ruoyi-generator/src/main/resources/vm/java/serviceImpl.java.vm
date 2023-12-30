@@ -156,7 +156,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
     public List<Ztree> select${ClassName}Tree()
     {
         List<${ClassName}> ${className}List = ${className}Mapper.select${ClassName}List(new ${ClassName}());
-        List<Ztree> ztrees = new ArrayList<Ztree>();
+        List<Ztree> ztrees = new ArrayList<>();
         for (${ClassName} ${className} : ${className}List)
         {
             Ztree ztree = new Ztree();

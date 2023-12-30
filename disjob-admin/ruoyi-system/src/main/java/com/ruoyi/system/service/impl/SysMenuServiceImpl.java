@@ -40,7 +40,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     @Override
     public List<SysMenu> selectMenusByUser(SysUser user)
     {
-        List<SysMenu> menus = new LinkedList<SysMenu>();
+        List<SysMenu> menus;
         // 管理员显示所有菜单信息
         if (user.isAdmin())
         {
@@ -146,7 +146,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     public List<Ztree> roleMenuTreeData(SysRole role, Long userId)
     {
         Long roleId = role.getRoleId();
-        List<Ztree> ztrees = new ArrayList<Ztree>();
+        List<Ztree> ztrees;
         List<SysMenu> menuList = selectMenuAll(userId);
         if (StringUtils.isNotNull(roleId))
         {
@@ -214,7 +214,7 @@ public class SysMenuServiceImpl implements ISysMenuService
      */
     public List<Ztree> initZtree(List<SysMenu> menuList, List<String> roleMenuList, boolean permsFlag)
     {
-        List<Ztree> ztrees = new ArrayList<Ztree>();
+        List<Ztree> ztrees = new ArrayList<>();
         boolean isCheck = StringUtils.isNotNull(roleMenuList);
         for (SysMenu menu : menuList)
         {
@@ -342,7 +342,7 @@ public class SysMenuServiceImpl implements ISysMenuService
      */
     public List<SysMenu> getChildPerms(List<SysMenu> list, int parentId)
     {
-        List<SysMenu> returnList = new ArrayList<SysMenu>();
+        List<SysMenu> returnList = new ArrayList<>();
         for (Iterator<SysMenu> iterator = list.iterator(); iterator.hasNext();)
         {
             SysMenu t = iterator.next();
@@ -381,7 +381,7 @@ public class SysMenuServiceImpl implements ISysMenuService
      */
     private List<SysMenu> getChildList(List<SysMenu> list, SysMenu t)
     {
-        List<SysMenu> tlist = new ArrayList<SysMenu>();
+        List<SysMenu> tlist = new ArrayList<>();
         Iterator<SysMenu> it = list.iterator();
         while (it.hasNext())
         {

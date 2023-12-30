@@ -58,7 +58,7 @@ public class ExcelUtil<T>
     /**
      * 用于dictType属性数据存储，避免重复查缓存
      */
-    public Map<String, String> sysDictMap = new HashMap<String, String>();
+    public Map<String, String> sysDictMap = new HashMap<>();
 
     /**
      * Excel sheet最大行数，默认65536
@@ -175,7 +175,7 @@ public class ExcelUtil<T>
     {
         if (list == null)
         {
-            list = new ArrayList<T>();
+            list = new ArrayList<>();
         }
         this.list = list;
         this.sheetName = sheetName;
@@ -286,7 +286,7 @@ public class ExcelUtil<T>
     {
         this.type = Type.IMPORT;
         this.wb = WorkbookFactory.create(is);
-        List<T> list = new ArrayList<T>();
+        List<T> list = new ArrayList<>();
         // 如果指定sheet名,则取指定sheet中的内容 否则默认指向第1个sheet
         Sheet sheet = StringUtils.isNotEmpty(sheetName) ? wb.getSheet(sheetName) : wb.getSheetAt(0);
         if (sheet == null)
@@ -308,7 +308,7 @@ public class ExcelUtil<T>
         if (rows > 0)
         {
             // 定义一个map用于存放excel列的序号和field.
-            Map<String, Integer> cellMap = new HashMap<String, Integer>();
+            Map<String, Integer> cellMap = new HashMap<>();
             // 获取表头
             Row heard = sheet.getRow(titleNum);
             for (int i = 0; i < heard.getPhysicalNumberOfCells(); i++)
@@ -326,7 +326,7 @@ public class ExcelUtil<T>
             }
             // 有数据时才处理 得到类的所有field.
             List<Object[]> fields = this.getFields();
-            Map<Integer, Object[]> fieldsMap = new HashMap<Integer, Object[]>();
+            Map<Integer, Object[]> fieldsMap = new HashMap<>();
             for (Object[] objects : fields)
             {
                 Excel attr = (Excel) objects[1];
@@ -729,7 +729,7 @@ public class ExcelUtil<T>
     private Map<String, CellStyle> createStyles(Workbook wb)
     {
         // 写入各条记录,每条记录对应excel表中的一行
-        Map<String, CellStyle> styles = new HashMap<String, CellStyle>();
+        Map<String, CellStyle> styles = new HashMap<>();
         CellStyle style = wb.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -781,7 +781,7 @@ public class ExcelUtil<T>
      */
     private Map<String, CellStyle> annotationHeaderStyles(Workbook wb, Map<String, CellStyle> styles)
     {
-        Map<String, CellStyle> headerStyles = new HashMap<String, CellStyle>();
+        Map<String, CellStyle> headerStyles = new HashMap<>();
         for (Object[] os : fields)
         {
             Excel excel = (Excel) os[1];
@@ -814,7 +814,7 @@ public class ExcelUtil<T>
      */
     private Map<String, CellStyle> annotationDataStyles(Workbook wb)
     {
-        Map<String, CellStyle> styles = new HashMap<String, CellStyle>();
+        Map<String, CellStyle> styles = new HashMap<>();
         for (Object[] os : fields)
         {
             Excel excel = (Excel) os[1];
@@ -1385,7 +1385,7 @@ public class ExcelUtil<T>
      */
     public List<Object[]> getFields()
     {
-        List<Object[]> fields = new ArrayList<Object[]>();
+        List<Object[]> fields = new ArrayList<>();
         List<Field> tempFields = new ArrayList<>();
         tempFields.addAll(Arrays.asList(clazz.getSuperclass().getDeclaredFields()));
         tempFields.addAll(Arrays.asList(clazz.getDeclaredFields()));
@@ -1565,7 +1565,7 @@ public class ExcelUtil<T>
      */
     public static Map<String, PictureData> getSheetPictures03(HSSFSheet sheet, HSSFWorkbook workbook)
     {
-        Map<String, PictureData> sheetIndexPicMap = new HashMap<String, PictureData>();
+        Map<String, PictureData> sheetIndexPicMap = new HashMap<>();
         List<HSSFPictureData> pictures = workbook.getAllPictures();
         if (!pictures.isEmpty())
         {
@@ -1598,7 +1598,7 @@ public class ExcelUtil<T>
      */
     public static Map<String, PictureData> getSheetPictures07(XSSFSheet sheet, XSSFWorkbook workbook)
     {
-        Map<String, PictureData> sheetIndexPicMap = new HashMap<String, PictureData>();
+        Map<String, PictureData> sheetIndexPicMap = new HashMap<>();
         for (POIXMLDocumentPart dr : sheet.getRelations())
         {
             if (dr instanceof XSSFDrawing)
@@ -1682,7 +1682,7 @@ public class ExcelUtil<T>
         }
         catch (Exception e)
         {
-            return new ArrayList<Object>();
+            return new ArrayList<>();
         }
         return (Collection<?>) value;
     }

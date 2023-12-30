@@ -80,7 +80,7 @@ public class KickoutSessionFilter extends AccessControlFilter
             if (deque == null)
             {
                 // 初始化队列
-                deque = new ArrayDeque<Serializable>();
+                deque = new ArrayDeque<>();
             }
 
             // 如果队列里没有此sessionId，且用户没有被踢出；放入队列

@@ -52,7 +52,7 @@ public class SameUrlDataInterceptor extends RepeatSubmitInterceptor
                 }
             }
         }
-        Map<String, Object> sessionMap = new HashMap<String, Object>();
+        Map<String, Object> sessionMap = new HashMap<>();
         sessionMap.put(url, nowDataMap);
         session.setAttribute(SESSION_REPEAT_KEY, sessionMap);
         return false;

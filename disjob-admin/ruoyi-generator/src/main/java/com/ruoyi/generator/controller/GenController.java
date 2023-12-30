@@ -144,13 +144,13 @@ public class GenController extends BaseController
     {
         GenTable table = genTableService.selectGenTableById(tableId);
         List<GenTable> genTables = genTableService.selectGenTableAll();
-        List<CxSelect> cxSelect = new ArrayList<CxSelect>();
+        List<CxSelect> cxSelect = new ArrayList<>();
         for (GenTable genTable : genTables)
         {
             if (!StringUtils.equals(table.getTableName(), genTable.getTableName()))
             {
                 CxSelect cxTable = new CxSelect(genTable.getTableName(), genTable.getTableName() + '：' + genTable.getTableComment());
-                List<CxSelect> cxColumns = new ArrayList<CxSelect>();
+                List<CxSelect> cxColumns = new ArrayList<>();
                 for (GenTableColumn tableColumn : genTable.getColumns())
                 {
                     cxColumns.add(new CxSelect(tableColumn.getColumnName(), tableColumn.getColumnName() + '：' + tableColumn.getColumnComment()));

@@ -1,5 +1,8 @@
 package com.ruoyi.common.constant;
 
+import org.springframework.util.AlternativeJdkIdGenerator;
+import org.springframework.util.IdGenerator;
+
 /**
  * 通用常量信息
  * 
@@ -112,4 +115,10 @@ public class Constants
      */
     public static final String[] JOB_ERROR_STR = { "java.net.URL", "javax.naming.InitialContext", "org.yaml.snakeyaml",
             "org.springframework", "org.apache", "com.ruoyi.common.utils.file", "com.ruoyi.common.config" };
+
+    /**
+     * UUID generator
+     */
+    public static final IdGenerator UUID_GENERATOR = new AlternativeJdkIdGenerator();
+
 }

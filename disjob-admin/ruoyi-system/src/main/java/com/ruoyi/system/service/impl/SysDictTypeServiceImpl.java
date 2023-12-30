@@ -235,7 +235,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     @Override
     public List<Ztree> selectDictTree(SysDictType dictType)
     {
-        List<Ztree> ztrees = new ArrayList<Ztree>();
+        List<Ztree> ztrees = new ArrayList<>();
         List<SysDictType> dictList = dictTypeMapper.selectDictTypeList(dictType);
         for (SysDictType dict : dictList)
         {

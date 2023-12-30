@@ -90,7 +90,7 @@ public class DataScopeAspect
     public static void dataScopeFilter(JoinPoint joinPoint, SysUser user, String deptAlias, String userAlias, String permission)
     {
         StringBuilder sqlString = new StringBuilder();
-        List<String> conditions = new ArrayList<String>();
+        List<String> conditions = new ArrayList<>();
 
         for (SysRole role : user.getRoles())
         {

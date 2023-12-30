@@ -302,7 +302,7 @@ public class SysUserServiceImpl implements ISysUserService
         if (StringUtils.isNotNull(roleIds))
         {
             // 新增用户与角色管理
-            List<SysUserRole> list = new ArrayList<SysUserRole>();
+            List<SysUserRole> list = new ArrayList<>();
             for (Long roleId : roleIds)
             {
                 SysUserRole ur = new SysUserRole();
@@ -328,7 +328,7 @@ public class SysUserServiceImpl implements ISysUserService
         if (StringUtils.isNotNull(posts))
         {
             // 新增用户与岗位管理
-            List<SysUserPost> list = new ArrayList<SysUserPost>();
+            List<SysUserPost> list = new ArrayList<>();
             for (Long postId : posts)
             {
                 SysUserPost up = new SysUserPost();

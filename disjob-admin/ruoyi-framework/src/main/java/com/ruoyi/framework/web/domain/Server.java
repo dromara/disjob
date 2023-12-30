@@ -51,7 +51,7 @@ public class Server
     /**
      * 磁盘相关信息
      */
-    private List<SysFile> sysFiles = new LinkedList<SysFile>();
+    private List<SysFile> sysFiles = new LinkedList<>();
 
     public Cpu getCpu()
     {
