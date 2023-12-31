@@ -41,13 +41,13 @@ public class SchedJobExport {
     private String jobName;
 
     /**
-     * Job类型：1-常规；2-工作流(Workflow)；
+     * Job类型：1-常规；2-工作流(DAG)；
      */
     @Excel(name = "Job类型")
     private Integer jobType;
 
     /**
-     * Job状态：0-已禁用；1-已启用；
+     * Job状态：0-禁用；1-启用；
      */
     @Excel(name = "Job状态")
     private Integer jobState;
@@ -83,21 +83,21 @@ public class SchedJobExport {
     private Integer retryInterval;
 
     /**
-     * Job起始时间(为空不限制)
+     * Job有效起始时间(为空不限制)
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "Job起始时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date startTime;
 
     /**
-     * Job结束时间(为空不限制)
+     * Job有效终止时间(为空不限制)
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "Job结束时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date endTime;
 
     /**
-     * 触发器类型：1-Crontab方式；2-指定时间执行一次；3-周期性执行；4-任务依赖；
+     * 触发器类型：1-Cron表达式；2-指定时间；3-固定周期；4-固定频率；5-固定延时；6-任务依赖；
      */
     @Excel(name = "触发器类型")
     private Integer triggerType;
@@ -115,7 +115,7 @@ public class SchedJobExport {
     private Integer executeTimeout;
 
     /**
-     * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行；2-串行；3-覆盖(先取消上一次的执行)；4-丢弃；
+     * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；
      */
     @Excel(name = "冲突策略")
     private Integer collidedStrategy;
@@ -127,7 +127,7 @@ public class SchedJobExport {
     private Integer misfireStrategy;
 
     /**
-     * 任务分配给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；
+     * 任务分派给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；
      */
     @Excel(name = "路由策略")
     private Integer routeStrategy;

@@ -116,12 +116,11 @@
   <th:block th:include="include :: select2-js" />
 
   <script th:inline="javascript">
-    var prefix = ctx + "disjob/job";
+    const prefix = ctx + "disjob/job";
 
     $(function () {
       layui.use('laydate', function () {
-        var laydate = layui.laydate;
-        var startDate = laydate.render({
+        let startDate = layui.laydate.render({
           elem: '#laydate-startTime',
           max: $('#laydate-endTime').val(),
           theme: 'molv',
@@ -139,7 +138,7 @@
             }
           }
         });
-        var endDate = laydate.render({
+        let endDate = layui.laydate.render({
           elem: '#laydate-endTime',
           min: $('#laydate-startTime').val(),
           theme: 'molv',

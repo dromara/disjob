@@ -72,20 +72,20 @@
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
 
-    <spring-boot.version>2.7.17</spring-boot.version>
+    <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
-    <guava.version>32.1.3-jre</guava.version>
+    <guava.version>33.0.0-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
-    <commons-io.version>2.14.0</commons-io.version>
-    <mybatis-spring-boot-starter.version>2.3.1</mybatis-spring-boot-starter.version>
-    <jna-platform.version>5.13.0</jna-platform.version>
+    <commons-io.version>2.15.1</commons-io.version>
+    <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
+    <jna-platform.version>5.14.0</jna-platform.version>
     <curator-recipes.version>5.5.0</curator-recipes.version>
 
     <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
     <embedded-redis.version>1.3</embedded-redis.version>
     <graphviz-java.version>0.18.1</graphviz-java.version>
-    <testcontainers.version>1.19.1</testcontainers.version>
+    <testcontainers.version>1.19.3</testcontainers.version>
 
     <!-- spring-boot-dependencies [type=pom, scope=import]方式，无法自动引入plugin依赖版本 -->
     <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
@@ -99,7 +99,6 @@
 
     <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-    <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
     <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
   </properties>
 
@@ -153,7 +152,7 @@
       <artifactId>spring-boot-configuration-processor</artifactId>
       <scope>provided</scope>
     </dependency>
-    <!-- 谨慎使用，经常会出现启动后运行报错的问题。对于多个模块项目，包含@Component的模块都需要在其pom中增加该依赖，否则启动会报错
+    <!-- 谨慎使用`spring-context-indexer`(经常会出现启动后运行报错的问题)：对于多模块项目，包含@Component的模块都需要在其pom中增加该依赖，否则启动会报错
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
@@ -236,6 +235,7 @@
             Nexus-bug: https://issues.sonatype.org/browse/NEXUS-9138
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.13</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
@@ -319,11 +319,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>${maven-deploy-plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>${nexus-staging-maven-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>

@@ -115,6 +115,7 @@ public abstract class AbstractJobManager {
 
         SchedJob dbJob = jobMapper.get(job.getJobId());
         Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
+        Assert.isTrue(dbJob.getGroup().equals(job.getGroup()), "Cannot modify job group.");
         job.setNextTriggerTime(dbJob.getNextTriggerTime());
 
         if (job.getTriggerType() == null) {

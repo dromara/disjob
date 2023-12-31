@@ -8,6 +8,9 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.springframework.util.AlternativeJdkIdGenerator;
+import org.springframework.util.IdGenerator;
+
 import java.util.Base64;
 import java.util.UUID;
 
@@ -18,13 +21,15 @@ import java.util.UUID;
  */
 public final class UuidUtils {
 
+    private static final IdGenerator UUID_GENERATOR = new AlternativeJdkIdGenerator();
+
     /**
      * Returns 16 length byte array uuid
      *
      * @return 16 length uuid byte array
      */
     public static byte[] uuid() {
-        UUID uuid = UUID.randomUUID();
+        UUID uuid = UUID_GENERATOR.generateId();
         byte[] value = new byte[16];
         Bytes.put(uuid.getMostSignificantBits(), value, 0);
         Bytes.put(uuid.getLeastSignificantBits(), value, 8);
@@ -37,7 +42,7 @@ public final class UuidUtils {
      * @return 32 length uuid string
      */
     public static String uuid32() {
-        UUID uuid = UUID.randomUUID();
+        UUID uuid = UUID_GENERATOR.generateId();
         return Bytes.toHex(uuid.getMostSignificantBits(),  true)
              + Bytes.toHex(uuid.getLeastSignificantBits(), true);
     }

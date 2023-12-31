@@ -116,13 +116,13 @@
 <th:block th:include="include :: select2-js" />
 
 <script th:inline="javascript">
-  var operateFlag = [[${@permission.hasPermi('disjob:instance:operate')}]];
-  var runTypes = [[${@disjobService.enums('RunType')}]];
-  var runStates = [[${@disjobService.enums('RunState')}]];
-  var prefix = ctx + "disjob/instance";
-  var stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
+  const operateFlag = [[${@permission.hasPermi('disjob:instance:operate')}]];
+  const runTypes = [[${@disjobService.enums('RunType')}]];
+  const runStates = [[${@disjobService.enums('RunState')}]];
+  const prefix = ctx + "disjob/instance";
+  const stateMap = {10: "info", 20: "success", 30: "warning", 40: "primary", 50: "danger"};
 
-  var defaultOps = {
+  const defaultOps = {
     uniqueId: "instanceId",
     expandAll: false,
     expandFirst: false,
@@ -159,7 +159,7 @@
       title: '运行状态',
       width: '70',
       formatter: function (value, row, index) {
-        var label = $.table.selectData(runStates, value, 'value', 'desc');
+        const label = $.table.selectData(runStates, value, 'value', 'desc');
         return $.common.sprintf("<span class='badge badge-%s'>%s</span>", stateMap[value], label);
       }
     },
@@ -198,7 +198,7 @@
         if (value === 0) {
           return "0";
         }
-        return value ? parseFloat((value / 1000).toFixed(2)) : "-";
+        return value ? (value / 1000).toFixed(value < 1000 ? 3 : 2) : "-";
       }
     },
     {
@@ -245,7 +245,7 @@
           return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="工作流请操作Lead实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
         }
 
-        var actions = [];
+        const actions = [];
         if (row.runState <= 20) {
           actions.push("<a class='btn btn-warning btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='operate(&quot;" + row.instanceId + "&quot;, &quot;pause&quot;, &quot;暂停&quot;)'><i class='fa fa-pause'></i> 暂停</a> ");
         }
@@ -264,7 +264,7 @@
   };
 
   $(function () {
-    var treeOps = $.extend({
+    const treeOps = $.extend({
       id: "tree-table",
       formId: "tree-form",
       toolbar: "tree-toolbar",
@@ -276,7 +276,7 @@
     }, defaultOps);
     $.treeTable.init(treeOps);
 
-    var flatOps = $.extend({
+    const flatOps = $.extend({
       id: "flat-table",
       formId: "flat-form",
       toolbar: "flat-toolbar",
@@ -286,8 +286,7 @@
     $.table.init(flatOps);
 
     layui.use('laydate', function () {
-      var laydate = layui.laydate;
-      var treeStartDate = laydate.render({
+      let treeStartDate = layui.laydate.render({
         elem: '#tree-startTime',
         max: $('#tree-endTime').val(),
         theme: 'molv',
@@ -305,7 +304,7 @@
           }
         }
       });
-      var treeEndDate = laydate.render({
+      let treeEndDate = layui.laydate.render({
         elem: '#tree-endTime',
         min: $('#tree-startTime').val(),
         theme: 'molv',
@@ -323,7 +322,7 @@
           }
         }
       });
-      var flatStartDate = laydate.render({
+      let flatStartDate = layui.laydate.render({
         elem: '#flat-startTime',
         max: $('#flat-endTime').val(),
         theme: 'molv',
@@ -341,7 +340,7 @@
           }
         }
       });
-      var flatEndDate = laydate.render({
+      let flatEndDate = layui.laydate.render({
         elem: '#flat-endTime',
         min: $('#flat-startTime').val(),
         theme: 'molv',
@@ -379,7 +378,7 @@
       placeholder: "`name`或`group: name`搜索",
       minimumInputLength: 1,
       templateSelection: function (repo) {
-        var array = repo.text.split(" | ");
+        const array = repo.text.split(" | ");
         return array.length > 1 ? array[1] : array[0];
       },
       width: "resolve"
@@ -388,17 +387,17 @@
   });
 
   function resetForm(formId, tableId) {
-    var formElem = $("#" + formId);
+    const formElem = $("#" + formId);
     formElem.find("input[name='resetSearch']").val("");
     $.form.reset(formId, tableId);
     ["jobId", "runState", "runType"].forEach(function (item) {
-      var elem = formElem.find("select[name='" + item + "']");
+      const elem = formElem.find("select[name='" + item + "']");
       elem.val(elem.val()).trigger("change");
     });
   }
 
   function job(jobId) {
-    var url = ctx + 'disjob/job/detail/' + jobId;
+    const url = ctx + 'disjob/job/detail/' + jobId;
     $.modal.open("作业配置详情", url, null, null, null, ['关闭']);
   }
 

@@ -55,15 +55,15 @@
   <th:block th:include="include :: select2-js" />
 
   <script th:inline="javascript">
-    var operateFlag = [[${@permission.hasPermi('disjob:job:operate')}]];
-    var prefix = ctx + "disjob/job";
+    const operateFlag = [[${@permission.hasPermi('disjob:job:operate')}]];
+    const prefix = ctx + "disjob/job";
 
-    var jobTypes        = [[${@disjobService.enums('JobType')}]];
-    var triggerTypes    = [[${@disjobService.enums('TriggerType')}]];
-    var routeStrategies = [[${@disjobService.enums('RouteStrategy')}]];
+    const jobTypes        = [[${@disjobService.enums('JobType')}]];
+    const triggerTypes    = [[${@disjobService.enums('TriggerType')}]];
+    const routeStrategies = [[${@disjobService.enums('RouteStrategy')}]];
 
     $(function () {
-      var options = {
+      const options = {
         url: prefix + "/list",
         createUrl: prefix + "/add",
         removeUrl: prefix + "/remove",
@@ -94,7 +94,7 @@
           title: 'Job状态',
           formatter: function (value, row, index) {
             if ([[${@permission.isPermitted('disjob:job:operate')}]]) {
-              var str = (row.jobState === 0) ? 'off' : 'on';
+              const str = (row.jobState === 0) ? 'off' : 'on';
               return '<i style="cursor:pointer;" class="fa fa-toggle-' + str + ' text-info fa-2x" onclick="changeState(\'' + row.jobId + '\', ' + value + ')"></i> ';
             } else {
               return (row.jobState === 0) ? "<span class='badge badge-danger'>禁用</span>" : "<span class='badge badge-success'>启用</span>";
@@ -171,7 +171,7 @@
             if (![[${@permission.isPermitted('disjob:job:operate')}]]) {
               return '';
             }
-            var actions = [];
+            const actions = [];
             if (row.jobState === 0) {
               actions.push("<a class='btn btn-danger btn-rounded btn-xs " + operateFlag + "' href='javascript:void(0)' onclick='$.operate.remove(&quot;" + row.jobId + "&quot;)'><i class='fa fa-trash'></i> 删除</a> ");
             }
@@ -187,17 +187,17 @@
 
     function resetForm() {
       $.form.reset();
-      var elem = $("select[name='groups']");
+      const elem = $("select[name='groups']");
       elem.val(elem.val()).trigger("change");
     }
 
     function detail(jobId) {
-      var url = prefix + '/detail/' + jobId;
+      const url = prefix + '/detail/' + jobId;
       $.modal.open("作业配置详情", url, null, null, null, ['关闭']);
     }
 
     function changeState(jobId, fromJobState) {
-      var toJobState = (fromJobState === 0) ? 1 : 0;
+      const toJobState = (fromJobState === 0) ? 1 : 0;
       $.modal.confirm("确认要" + (toJobState === 0 ? "禁用" : "启用") + "吗？", function () {
         $.operate.post(prefix + "/changeState", {"jobId": jobId, "toState": toJobState});
       });
@@ -210,8 +210,7 @@
     }
 
     function copy(jobId) {
-      var url = prefix + '/copy/' + jobId;
-      $.modal.open("复制", url);
+      $.modal.open("复制", prefix + '/copy/' + jobId);
     }
 
     function edit(jobId) {
@@ -222,12 +221,12 @@
     // 批量删除
     function removeAll() {
       table.set();
-      var rows = $("#" + table.options.id).bootstrapTable('getSelections');
+      const rows = $("#" + table.options.id).bootstrapTable('getSelections');
       if (rows.length === 0) {
         $.modal.alertWarning("请至少选择一条记录");
         return;
       }
-      for (var i = 0, n = rows.length; i < n; i++) {
+      for (let i = 0, n = rows.length; i < n; i++) {
         if (rows[i].jobState === 1) {
           $.modal.alertWarning("不能删除启用状态的作业配置[" + rows[i].jobId + "]");
           return;
@@ -235,11 +234,10 @@
       }
 
       $.modal.confirm("确认要删除选中的" + rows.length + "条数据吗?", function () {
-        var url = table.options.removeUrl;
-        var ids = $.map(rows, function (row) {
+        const ids = $.map(rows, function (row) {
           return row.jobId;
         });
-        $.operate.post(url, {"ids": ids.join()});
+        $.operate.post(table.options.removeUrl, {"ids": ids.join()});
       });
     }
   </script>

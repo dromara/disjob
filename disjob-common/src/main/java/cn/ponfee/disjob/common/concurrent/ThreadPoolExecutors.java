@@ -36,41 +36,60 @@ public final class ThreadPoolExecutors {
 
     // ----------------------------------------------------------build-in rejected policy
     /**
-     * abort and throw RejectedExecutionException
+     * Throw RejectedExecutionException
      */
     public static final RejectedExecutionHandler ABORT = new AbortPolicy();
 
     /**
-     * discard the task
+     * Discard the current task
      */
     public static final RejectedExecutionHandler DISCARD = new DiscardPolicy();
 
     /**
-     * if not shutdown then run
+     * Caller thread run the current task
      */
     public static final RejectedExecutionHandler CALLER_RUNS = new CallerRunsPolicy();
 
     /**
-     * if not shutdown then discard oldest and execute the new
+     * Discard oldest and execute the new
      */
     public static final RejectedExecutionHandler DISCARD_OLDEST = new DiscardOldestPolicy();
 
     /**
-     * if not shutdown then put queue until enqueue
+     * Caller thread run the oldest task
      */
-    public static final RejectedExecutionHandler CALLER_BLOCKS = (task, executor) -> {
-        if (!executor.isShutdown()) {
-            try {
-                executor.getQueue().put(task);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                ExceptionUtils.rethrow(e);
-            }
+    public static final RejectedExecutionHandler CALLER_RUNS_OLDEST = (currentTask, executor) -> {
+        if (executor.isShutdown()) {
+            return;
+        }
+        BlockingQueue<Runnable> workQueue = executor.getQueue();
+        Runnable oldestTask = workQueue.poll();
+        boolean state = workQueue.offer(currentTask);
+        if (oldestTask != null) {
+            oldestTask.run();
+        }
+        if (!state) {
+            executor.execute(currentTask);
         }
     };
 
     /**
-     * anyway always run
+     * Synchronized put the current task to queue
+     */
+    public static final RejectedExecutionHandler CALLER_BLOCKS = (task, executor) -> {
+        if (executor.isShutdown()) {
+            return;
+        }
+        try {
+            executor.getQueue().put(task);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            ExceptionUtils.rethrow(e);
+        }
+    };
+
+    /**
+     * Anyway always run, ignore the thread pool is whether shutdown
      */
     public static final RejectedExecutionHandler ALWAYS_CALLER_RUNS = (task, executor) -> task.run();
 

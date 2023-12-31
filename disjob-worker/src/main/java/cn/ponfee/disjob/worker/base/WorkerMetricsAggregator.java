@@ -20,7 +20,7 @@ import cn.ponfee.disjob.core.base.WorkerMetrics;
  */
 public class WorkerMetricsAggregator {
 
-    private static WorkerThreadPool workerThreadPool;
+    private static volatile WorkerThreadPool workerThreadPool;
 
     static synchronized void setWorkerThreadPool(WorkerThreadPool threadPool) {
         if (workerThreadPool != null) {

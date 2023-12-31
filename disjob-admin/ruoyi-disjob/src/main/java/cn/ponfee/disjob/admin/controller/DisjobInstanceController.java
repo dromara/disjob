@@ -89,8 +89,7 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public Object tree(SchedInstancePageRequest request,
                        @RequestParam(value = "resetSearch", required = false) String resetSearch) {
-        request.setParent(true);
-        return queryForPage(request, resetSearch);
+        return queryForPage(request, true, resetSearch);
     }
 
     /**
@@ -101,8 +100,7 @@ public class DisjobInstanceController extends BaseController {
     @ResponseBody
     public Object flat(SchedInstancePageRequest request,
                        @RequestParam(value = "resetSearch", required = false) String resetSearch) {
-        request.setParent(false);
-        return queryForPage(request, resetSearch);
+        return queryForPage(request, false, resetSearch);
     }
 
     @RequiresPermissions(PERMISSION_INSTANCE)
@@ -248,7 +246,7 @@ public class DisjobInstanceController extends BaseController {
         return request;
     }
 
-    private Object queryForPage(SchedInstancePageRequest request, String resetSearch) {
+    private Object queryForPage(SchedInstancePageRequest request, boolean parent, String resetSearch) {
         if (StringUtils.isBlank(resetSearch)) {
             return PageUtils.empty();
         }
@@ -260,6 +258,7 @@ public class DisjobInstanceController extends BaseController {
             return AjaxResult.error(e.getMessage());
         }
 
+        request.setParent(parent);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
         return PageUtils.toTableDataInfo(openapiService.queryInstanceForPage(request));

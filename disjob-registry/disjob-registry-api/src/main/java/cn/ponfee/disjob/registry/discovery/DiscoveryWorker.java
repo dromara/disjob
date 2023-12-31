@@ -28,7 +28,7 @@ public final class DiscoveryWorker implements DiscoveryServer<Worker> {
     /**
      * Map<group, ImmutableHashList<serialize, Worker>>
      */
-    private Map<String, ImmutableHashList<String, Worker>> groupedWorkers = Collections.emptyMap();
+    private volatile Map<String, ImmutableHashList<String, Worker>> groupedWorkers = Collections.emptyMap();
 
     @Override
     public synchronized void refreshServers(List<Worker> discoveredWorkers) {

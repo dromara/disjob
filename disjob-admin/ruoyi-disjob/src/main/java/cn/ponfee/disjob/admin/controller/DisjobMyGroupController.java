@@ -94,11 +94,13 @@ public class DisjobMyGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_OPERATE)
     @GetMapping("/edit/{group}")
     public String edit(@PathVariable("group") String group, ModelMap mmap) {
-        AuthorizeGroupService.authorizeGroup(getLoginName(), group);
+        String user = getLoginName();
+        AuthorizeGroupService.authorizeGroup(user, group);
+
         SchedGroupResponse data = schedGroupService.get(group);
         Assert.notNull(data, () -> "Group not found: " + group);
         mmap.put("data", data);
-        mmap.put("isOwnUser", getLoginName().equals(data.getOwnUser()));
+        mmap.put("isOwnUser", user.equals(data.getOwnUser()));
         return PREFIX + "/edit";
     }
 
@@ -110,15 +112,16 @@ public class DisjobMyGroupController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedGroupRequest req) {
-        AuthorizeGroupService.authorizeGroup(getLoginName(), req.getGroup());
+        String user = getLoginName();
+        AuthorizeGroupService.authorizeGroup(user, req.getGroup());
+
         SchedGroupResponse data = schedGroupService.get(req.getGroup());
         Assert.isTrue(req.getVersion() == data.getVersion(), "Edit data conflicted.");
-        String currentUser = getLoginName();
-        if (!currentUser.equals(data.getOwnUser())) {
+        if (!user.equals(data.getOwnUser())) {
             // 非Own User不可更换own_user数据(即只有Own User本人才能更换该group的own_user为其它人)
             Assert.isTrue(req.getOwnUser().equals(data.getOwnUser()), "Cannot modify own user.");
         }
-        req.setUpdatedBy(currentUser);
+        req.setUpdatedBy(user);
         boolean result = schedGroupService.edit(req);
         return result ? success() : error("修改冲突，请刷新页面");
     }
@@ -127,6 +130,7 @@ public class DisjobMyGroupController extends BaseController {
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), group);
+
         mmap.put("group", group);
         mmap.put("list", serverMetricsService.workers(group));
         return PREFIX + "/worker";
@@ -141,6 +145,7 @@ public class DisjobMyGroupController extends BaseController {
     @ResponseBody
     public AjaxResult modifyMaximumPoolSize(ModifyMaximumPoolSizeRequest request) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
+
         serverMetricsService.modifyWorkerMaximumPoolSize(request);
         return AjaxResult.success("更新成功");
     }

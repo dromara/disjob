@@ -156,9 +156,10 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/add")
     @ResponseBody
     public AjaxResult doAdd(AddSchedJobRequest req) throws JobException {
-        AuthorizeGroupService.authorizeGroup(getLoginName(), req.getGroup());
+        String user = getLoginName();
+        AuthorizeGroupService.authorizeGroup(user, req.getGroup());
 
-        req.setCreatedBy(getLoginName());
+        req.setCreatedBy(user);
         openapiService.addJob(req);
         return success();
     }
@@ -185,9 +186,10 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/edit")
     @ResponseBody
     public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobException {
-        AuthorizeGroupService.authorizeGroup(getLoginName(), req.getGroup());
+        String user = getLoginName();
+        authorizeGroupService.authorizeJob(user, req.getJobId());
 
-        req.setUpdatedBy(getLoginName());
+        req.setUpdatedBy(user);
         openapiService.updateJob(req);
         return success();
     }

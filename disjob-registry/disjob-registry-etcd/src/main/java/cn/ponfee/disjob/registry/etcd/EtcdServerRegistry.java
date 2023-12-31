@@ -147,7 +147,10 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         keepAliveCheckThread.terminate();
         registered.forEach(this::deregister);
         registered.clear();
-        ThrowingRunnable.doCaught(keepAlive::close);
+        final CloseableClient keepAlive0 = this.keepAlive;
+        if (keepAlive0 != null) {
+            ThrowingRunnable.doCaught(keepAlive0::close);
+        }
         ThrowingRunnable.doCaught(() -> client.revokeLease(leaseId));
         ThrowingRunnable.doCaught(client::close);
         ThrowingRunnable.doCaught(super::close);
@@ -188,9 +191,10 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     private void keepAliveRecover() {
         synchronized (keepAliveLock) {
+            final CloseableClient keepAlive0 = this.keepAlive;
             try {
-                if (this.keepAlive != null) {
-                    ThrowingRunnable.doCaught(this.keepAlive::close);
+                if (keepAlive0 != null) {
+                    ThrowingRunnable.doCaught(keepAlive0::close);
                     this.keepAlive = null;
                     ThrowingRunnable.doCaught(() -> client.revokeLease(leaseId));
                 }

@@ -87,8 +87,7 @@
 
   <update id="update" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
-    SET `group` = #{group,jdbcType=VARCHAR},
-        job_name = #{jobName,jdbcType=VARCHAR},
+    SET job_name = #{jobName,jdbcType=VARCHAR},
         <if test="jobHandler != null and jobHandler != ''">
           job_handler = #{jobHandler,jdbcType=LONGVARCHAR},
           job_param = #{jobParam,jdbcType=LONGVARCHAR},

@@ -13,6 +13,7 @@ import cn.ponfee.disjob.core.enums.*;
 import com.google.common.math.IntMath;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.Date;
@@ -88,12 +89,12 @@ public class SchedJob extends BaseEntity {
     private Integer retryInterval;
 
     /**
-     * Job起始时间(为空不限制)
+     * Job有效起始时间(为空不限制)
      */
     private Date startTime;
 
     /**
-     * Job结束时间(为空不限制)
+     * Job有效终止时间(为空不限制)
      */
     private Date endTime;
 
@@ -183,29 +184,16 @@ public class SchedJob extends BaseEntity {
     }
 
     public void verifyBeforeAdd() {
-        TriggerType type = TriggerType.of(triggerType);
-        if (!type.validate(triggerValue)) {
-            throw new IllegalArgumentException("Invalid trigger value: " + triggerType + ", " + triggerValue);
-        }
-        Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
+        verify();
         Assert.isTrue(isNotBlank(group), "Group cannot be blank.");
-        Assert.isTrue(length(group) <= 30, "Group length cannot exceed 30.");
-        Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
-        Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
-        Assert.hasText(jobHandler, "Job handler cannot be empty.");
-        Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
-
-        this.triggerValue = triggerValue.trim();
         this.group = group.trim();
-        this.jobName = jobName.trim();
-        this.jobHandler = jobHandler.trim();
-        this.remark = (remark == null) ? "" : remark.trim();
+        Assert.isTrue(length(group) <= 60, "Group length cannot exceed 60.");
     }
 
     public void verifyBeforeUpdate() {
+        verify();
         Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
         Assert.isTrue(version != null && version > 0, () -> "Invalid version: " + version);
-        verifyBeforeAdd();
     }
 
     public void checkAndDefaultSetting() {
@@ -286,6 +274,25 @@ public class SchedJob extends BaseEntity {
         Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' retried " + failCount + " exceed " + retryCount + " limit.");
         // exponential backoff
         return current.getTime() + (long) retryInterval * IntMath.pow(failCount, 2);
+    }
+
+    // ----------------------------------------------------------------private methods
+
+    private void verify() {
+        TriggerType type = TriggerType.of(triggerType);
+        Assert.isTrue(type.validate(triggerValue), () -> "Invalid trigger value: " + triggerType + ", " + triggerValue);
+        this.triggerValue = triggerValue.trim();
+        Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
+
+        Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
+        this.jobName = jobName.trim();
+        Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
+
+        Assert.hasText(jobHandler, "Job handler cannot be empty.");
+        this.jobHandler = jobHandler.trim();
+
+        this.remark = StringUtils.trim(remark);
+        Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
     }
 
 }

@@ -10,8 +10,6 @@ package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -65,18 +63,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private static final int ERROR_MSG_MAX_LENGTH = 2048;
 
     /**
-     * This jdk thread pool for asynchronous to stop(pause or cancel) task
-     */
-    private final ThreadPoolExecutor stopTaskExecutor = ThreadPoolExecutors.builder()
-        .corePoolSize(1)
-        .maximumPoolSize(10)
-        .workQueue(new LinkedBlockingQueue<>(5))
-        .keepAliveTimeSeconds(300)
-        .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-        .threadFactory(NamedThreadFactory.builder().prefix("stop_task_operation").priority(Thread.MAX_PRIORITY).build())
-        .build();
-
-    /**
      * Supervisor rpc client
      */
     private final SupervisorRpcService supervisorRpcClient;
@@ -84,7 +70,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     /**
      * Maximum pool size
      */
-    private int maximumPoolSize;
+    private volatile int maximumPoolSize;
 
     /**
      * Worker thread keep alive time seconds
@@ -155,7 +141,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (param.operation().isTrigger()) {
             return taskQueue.offerLast(param);
         } else {
-            stopTaskExecutor.execute(() -> stop(param));
+            ForkJoinPool.commonPool().execute(() -> stop(param));
             return true;
         }
     }
@@ -222,10 +208,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         // 2.3、stop executing pool thread
         ThrowingRunnable.doCaught(activePool::closePool);
 
-        // 2.4、shutdown jdk thread pool
-        ThreadPoolExecutors.shutdown(stopTaskExecutor, 1);
-
-        // 2.5、clear task execution param queue
+        // 2.4、clear task execution param queue
         ThrowingRunnable.doCaught(taskQueue::clear);
 
         workerThreadCounter.set(0);
