@@ -59,6 +59,15 @@
     }
 
     $(function () {
+      /*
+      $("input[tagsinput]").tagsinput({
+        typeahead: {
+          source: function (term) {
+            return $.get(prefix + "/search_user?term=" + term);
+          }
+        }
+      });
+      */
       $("div[class='bootstrap-tagsinput']").addClass("col-sm-12");
 
       if (![(${isOwnUser})]) {

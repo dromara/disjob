@@ -30,6 +30,10 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>ruoyi-system</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>cn.ponfee</groupId>

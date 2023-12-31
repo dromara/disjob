@@ -45,11 +45,11 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TE
 @EnableWorker     // 若要取消worker角色可去掉@EnableWorker注解
 public class DisjobAdminConfiguration implements WebMvcConfigurer {
 
-    public DisjobAdminConfiguration(@Nullable ObjectMapper mapper) {
-        if (mapper == null) {
+    public DisjobAdminConfiguration(@Nullable ObjectMapper objectMapper) {
+        if (objectMapper == null) {
             throw new Error("Not found jackson object mapper in spring container.");
         }
-        mapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
+        objectMapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
 
         SimpleModule simpleModule = new SimpleModule();
         // 返回给端上浏览器JavaScript Number数值过大时会有问题：Number.MAX_SAFE_INTEGER = 9007199254740991
@@ -57,7 +57,7 @@ public class DisjobAdminConfiguration implements WebMvcConfigurer {
         simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
         simpleModule.addSerializer(long.class, ToStringSerializer.instance);
         simpleModule.addSerializer(BigInteger.class, ToStringSerializer.instance);
-        mapper.registerModule(simpleModule);
+        objectMapper.registerModule(simpleModule);
     }
 
     @Bean

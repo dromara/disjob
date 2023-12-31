@@ -12,6 +12,8 @@ import java.util.List;
  */
 public interface ISysUserService
 {
+    List<String> searchUser(String prefixLoginName);
+
     /**
      * 根据条件分页查询用户列表
      *

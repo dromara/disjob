@@ -114,8 +114,8 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
         );
     }
 
-    public List<String> matchGroup(String term) {
-        return schedGroupMapper.matchGroup(term);
+    public List<String> searchGroup(String term) {
+        return schedGroupMapper.searchGroup(term);
     }
 
     public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {

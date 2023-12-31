@@ -60,6 +60,11 @@ public class SysUserServiceImpl implements ISysUserService
     @Autowired
     protected Validator validator;
 
+    @Override
+    public List<String> searchUser(String prefixLoginName) {
+        return userMapper.searchUser(prefixLoginName);
+    }
+
     /**
      * 根据条件分页查询用户列表
      *

@@ -54,11 +54,11 @@ public class DisjobMgGroupController extends BaseController {
     // -------------------------------------------------------查询
 
     @RequiresPermissions(PERMISSION_OPERATE)
-    @GetMapping("/match_group")
+    @GetMapping("/search_group")
     @ResponseBody
-    public AjaxResult matchGroup(@RequestParam(value = "term", required = false) String term) {
+    public AjaxResult searchGroup(@RequestParam(value = "term", required = false) String term) {
         term = Strings.concatSqlLike(term);
-        List<ImmutableMap<String, String>> result = schedGroupService.matchGroup(term)
+        List<ImmutableMap<String, String>> result = schedGroupService.searchGroup(term)
             .stream()
             .map(e -> ImmutableMap.of("id", e, "text", e))
             .collect(Collectors.toList());

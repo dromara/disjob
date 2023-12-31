@@ -289,10 +289,12 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
+
             if (tuple == null) {
                 // If the instance has (WAITING or EXECUTING) task
                 return true;
             }
+
             if (!tuple.a.isTerminal()) {
                 Assert.isTrue(tuple.a == RunState.PAUSED, () -> "Expect pause run state, but actual: " + tuple.a);
                 if (instance.isWorkflow()) {
@@ -303,7 +305,8 @@ public class DistributedJobManager extends AbstractJobManager {
                 return true;
             }
 
-            if (instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b) > 0) {
+            row = instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b);
+            if (isManyAffectedRow(row)) {
                 // the last executing task of this sched instance
                 if (param.getOperation().isTrigger()) {
                     instance.markTerminated(tuple.a, tuple.b);
@@ -313,8 +316,8 @@ public class DistributedJobManager extends AbstractJobManager {
                     updateWorkflowLeadState(instanceMapper.get(param.getWnstanceId()));
                 }
             }
-
             return true;
+
         });
     }
 

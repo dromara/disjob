@@ -364,10 +364,10 @@
     // ---------------------------------select2
     $("select[name='jobId']").select2({
       ajax: {
-        url: prefix + "/match_job",
+        url: prefix + "/search_job",
         type: "get",
         dataType: 'json',
-        delay: 1000,
+        delay: 600,
         cache: true,
         data: function (params) {
           return {"term": params.term};

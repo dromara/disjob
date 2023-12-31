@@ -68,9 +68,9 @@ public class DisjobInstanceController extends BaseController {
     }
 
     @RequiresPermissions(PERMISSION_INSTANCE)
-    @GetMapping("/match_job")
+    @GetMapping("/search_job")
     @ResponseBody
-    public AjaxResult matchJob(@RequestParam(value = "term") String term) {
+    public AjaxResult searchJob(@RequestParam(value = "term") String term) {
         SearchJobRequest req = parseTerm(term);
         return AjaxResult.success(req == null ? Collections.emptyList() : jobQuerier.searchJob(req));
     }

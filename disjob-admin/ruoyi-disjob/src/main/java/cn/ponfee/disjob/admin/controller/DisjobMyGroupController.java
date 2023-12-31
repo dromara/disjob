@@ -21,12 +21,15 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.system.service.ISysUserService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * My group controller
@@ -42,11 +45,14 @@ public class DisjobMyGroupController extends BaseController {
 
     private final SchedGroupService schedGroupService;
     private final ServerMetricsService serverMetricsService;
+    private final ISysUserService sysUserService;
 
     public DisjobMyGroupController(SchedGroupService schedGroupService,
-                                   ServerMetricsService serverMetricsService) {
+                                   ServerMetricsService serverMetricsService,
+                                   ISysUserService sysUserService) {
         this.schedGroupService = schedGroupService;
         this.serverMetricsService = serverMetricsService;
+        this.sysUserService = sysUserService;
     }
 
     // -------------------------------------------------------查询
@@ -56,6 +62,13 @@ public class DisjobMyGroupController extends BaseController {
     public String mygroup(ModelMap mmap) {
         mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
         return PREFIX + "/mygroup";
+    }
+
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @GetMapping("/search_user")
+    @ResponseBody
+    public List<String> searchUser(@RequestParam(value = "term") String term) {
+        return sysUserService.searchUser(term);
     }
 
     /**

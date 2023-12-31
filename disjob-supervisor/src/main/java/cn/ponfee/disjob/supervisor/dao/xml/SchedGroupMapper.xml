@@ -96,7 +96,7 @@
     )
   </select>
 
-  <select id="matchGroup" resultType="string">
+  <select id="searchGroup" resultType="string">
     SELECT `group`
     FROM <include refid="Table_Name" />
     WHERE is_deleted = 0

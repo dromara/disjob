@@ -12,6 +12,14 @@ import java.util.List;
 public interface SysUserMapper
 {
     /**
+     * 搜索用户
+     *
+     * @param prefixLoginName 前缀
+     * @return 列表
+     */
+    List<String> searchUser(String prefixLoginName);
+
+    /**
      * 根据条件分页查询用户列表
      *
      * @param sysUser 用户信息

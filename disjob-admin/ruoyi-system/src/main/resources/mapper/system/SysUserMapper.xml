@@ -59,6 +59,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			 left join sys_role r on r.role_id = ur.role_id
     </sql>
 
+	<select id="searchUser" resultType="string">
+		SELECT login_name
+		FROM sys_user
+		WHERE `login_name` LIKE CONCAT(#{term}, '%') AND del_flag=0 AND status=0
+		LIMIT 20
+	</select>
+
 	<select id="selectUserList" parameterType="SysUser" resultMap="SysUserResult">
 		select u.user_id, u.dept_id, u.login_name, u.user_name, u.user_type, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.salt, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, d.dept_name, d.leader from sys_user u
 		left join sys_dept d on u.dept_id = d.dept_id
