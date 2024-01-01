@@ -55,7 +55,8 @@
             if (value === 0) {
               return "0";
             }
-            return value ? (value / 1000).toFixed(value < 1000 ? 3 : 2) : "-";
+            let scale = value < 10000 ? 3 : (value < 100000 ? 2 : 1);
+            return value ? (value / 1000).toFixed(scale) : "-";
           }
         },
         {
