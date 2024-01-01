@@ -10,6 +10,7 @@ package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -141,7 +142,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (param.operation().isTrigger()) {
             return taskQueue.offerLast(param);
         } else {
-            ForkJoinPool.commonPool().execute(() -> stop(param));
+            ThreadPoolExecutors.commonPool().execute(() -> stop(param));
             return true;
         }
     }

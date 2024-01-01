@@ -286,15 +286,6 @@ public final class NetUtils {
 
     // ----------------------------------------------------------------private methods
 
-    private static String getSystemConfig(String name) {
-        String value = System.getProperty(name);
-        if (StringUtils.isNotEmpty(value)) {
-            return value;
-        }
-
-        return System.getenv(name);
-    }
-
     private static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
@@ -419,7 +410,7 @@ public final class NetUtils {
             return true;
         }
 
-        String ignoredInterfaceNameRegex = getSystemConfig(IGNORED_NETWORK_INTERFACE);
+        String ignoredInterfaceNameRegex = SystemUtils.getConfig(IGNORED_NETWORK_INTERFACE);
         if (StringUtils.isEmpty(ignoredInterfaceNameRegex)) {
             // not configured ignore network interface name
             return false;
@@ -459,7 +450,7 @@ public final class NetUtils {
         if (networkInterface == null) {
             return false;
         }
-        String preferredNetworkInterfaceName = getSystemConfig(PREFERRED_NETWORK_INTERFACE);
+        String preferredNetworkInterfaceName = SystemUtils.getConfig(PREFERRED_NETWORK_INTERFACE);
         return Objects.equals(networkInterface.getDisplayName(), preferredNetworkInterfaceName)
             || Objects.equals(networkInterface.getName(), preferredNetworkInterfaceName);
     }

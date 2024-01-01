@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
@@ -24,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -45,8 +45,8 @@ public final class ProcessUtils {
 
     public static int progress(Process process, Charset charset, Consumer<String> verbose, Consumer<String> error) {
         // 控制台实时展示
-        ForkJoinPool.commonPool().execute(() -> read(process.getInputStream(), charset, verbose));
-        ForkJoinPool.commonPool().execute(() -> read(process.getErrorStream(), charset, error));
+        ThreadPoolExecutors.commonPool().execute(() -> read(process.getInputStream(), charset, verbose));
+        ThreadPoolExecutors.commonPool().execute(() -> read(process.getErrorStream(), charset, error));
         try {
             return process.waitFor();
         } catch (InterruptedException e) {

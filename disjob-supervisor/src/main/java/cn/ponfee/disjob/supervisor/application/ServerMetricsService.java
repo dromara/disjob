@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -73,9 +75,10 @@ public class ServerMetricsService extends SingletonClassConstraint {
             return Collections.emptyList();
         }
 
+        final Executor executor = ThreadPoolExecutors.commonPool();
         return list.stream()
             .sorted(Comparator.comparing(e -> e.equals(Supervisor.current()) ? 0 : 1))
-            .map(e -> CompletableFuture.supplyAsync(() -> convert(e)))
+            .map(e -> CompletableFuture.supplyAsync(() -> convert(e), executor))
             .collect(Collectors.toList())
             .stream()
             .map(CompletableFuture::join)
@@ -88,9 +91,10 @@ public class ServerMetricsService extends SingletonClassConstraint {
             return Collections.emptyList();
         }
 
+        final Executor executor = ThreadPoolExecutors.commonPool();
         return list.stream()
             .sorted(Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1))
-            .map(e -> CompletableFuture.supplyAsync(() -> convert(e)))
+            .map(e -> CompletableFuture.supplyAsync(() -> convert(e), executor))
             .collect(Collectors.toList())
             .stream()
             .map(CompletableFuture::join)

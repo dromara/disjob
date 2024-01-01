@@ -11,6 +11,7 @@ package cn.ponfee.disjob.admin.controller;
 import cn.ponfee.disjob.admin.export.SchedJobExport;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
@@ -38,6 +39,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -210,9 +213,13 @@ public class DisjobJobController extends BaseController {
             return error("Job id不能为空");
         }
         String user = getLoginName();
-        jobIds.forEach(jobId -> authorizeGroupService.authorizeJob(user, jobId));
 
-        jobIds.parallelStream().forEach(openapiService::deleteJob);
+        final Executor executor = ThreadPoolExecutors.commonPool();
+        jobIds.stream()
+            .map(e -> CompletableFuture.runAsync(() -> doDeleteJob(user, e), executor))
+            .collect(Collectors.toList())
+            .forEach(CompletableFuture::join);
+
         return success();
     }
 
@@ -251,6 +258,11 @@ public class DisjobJobController extends BaseController {
         mmap.put("job", job);
         mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
         return PREFIX + "/add";
+    }
+
+    private void doDeleteJob(String user, long jobId) {
+        authorizeGroupService.authorizeJob(user, jobId);
+        openapiService.deleteJob(jobId);
     }
 
 }

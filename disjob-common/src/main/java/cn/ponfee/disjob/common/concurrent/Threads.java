@@ -11,8 +11,6 @@ package cn.ponfee.disjob.common.concurrent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ForkJoinPool;
-
 /**
  * Thread utilities
  *
@@ -121,7 +119,7 @@ public final class Threads {
                 LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
                 stopThread(thread);
             } else {
-                ForkJoinPool.commonPool().execute(() -> stopThread(thread, Math.max(joinMillis, 5), true));
+                ThreadPoolExecutors.commonPool().execute(() -> stopThread(thread, Math.max(joinMillis, 5), true));
             }
             return;
         }

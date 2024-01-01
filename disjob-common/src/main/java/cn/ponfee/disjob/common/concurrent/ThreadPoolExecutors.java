@@ -9,6 +9,8 @@
 package cn.ponfee.disjob.common.concurrent;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.util.Numbers;
+import cn.ponfee.disjob.common.util.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,9 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 public final class ThreadPoolExecutors {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
+    private static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.pool.size";
+
+    private static volatile ThreadPoolExecutor commonPool;
 
     /**
      * max #workers - 1
@@ -91,7 +96,23 @@ public final class ThreadPoolExecutors {
     /**
      * Anyway always run, ignore the thread pool is whether shutdown
      */
-    public static final RejectedExecutionHandler ALWAYS_CALLER_RUNS = (task, executor) -> task.run();
+    public static final RejectedExecutionHandler CALLER_RUNS_ANYWAY = (task, executor) -> task.run();
+
+    /**
+     * Common thread pool, IO bound / IO intensive
+     *
+     * @return ThreadPoolExecutor
+     */
+    public static ThreadPoolExecutor commonPool() {
+        if (commonPool == null) {
+            synchronized (ThreadPoolExecutors.class) {
+                if (commonPool == null) {
+                    commonPool = makeCommonPool();
+                }
+            }
+        }
+        return commonPool;
+    }
 
     // ----------------------------------------------------------builder
 
@@ -256,6 +277,26 @@ public final class ThreadPoolExecutors {
             Threads.interruptIfNecessary(t);
         }
         return isSafeTerminated;
+    }
+
+    private static ThreadPoolExecutor makeCommonPool() {
+        int poolSize = Numbers.toInt(SystemUtils.getConfig(DISJOB_COMMON_POOL_SIZE), Runtime.getRuntime().availableProcessors() * 4);
+        if (poolSize < 0 || poolSize > MAX_CAP) {
+            LOG.warn("Invalid disjob common pool size config: {}", poolSize);
+            poolSize = Numbers.bound(poolSize, 1, MAX_CAP);
+        }
+
+        final ThreadPoolExecutor threadPool = ThreadPoolExecutors.builder()
+            .corePoolSize(poolSize)
+            .maximumPoolSize(poolSize)
+            .workQueue(new ArrayBlockingQueue<>(poolSize * 10))
+            .keepAliveTimeSeconds(600)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
+            .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-pool").priority(Thread.MAX_PRIORITY).build())
+            .build();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(threadPool, 2)));
+        return threadPool;
     }
 
 }

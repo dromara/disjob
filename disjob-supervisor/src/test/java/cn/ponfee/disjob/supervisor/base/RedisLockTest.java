@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.lock.RedisLock;
 import cn.ponfee.disjob.common.lock.RedisLockFactory;
 import cn.ponfee.disjob.common.util.MavenProjects;
@@ -27,7 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -170,7 +170,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         List<String> lines = Files.readLines(file(), StandardCharsets.UTF_8)
             .subList(0, ROUND);
 
-        execute(lines, line -> printer.output(NAME + "-" + line + "\n"), ForkJoinPool.commonPool());
+        execute(lines, line -> printer.output(NAME + "-" + line + "\n"), ThreadPoolExecutors.commonPool());
         System.out.println("=========================END========================\n");
     }
 
