@@ -75,6 +75,20 @@ public class Collects {
             .collect(Collectors.toList());
     }
 
+    public static <E> List<E> sorted(List<E> list, Comparator<? super E> comparator) {
+        if (list == null || list.size() <= 1) {
+            return list;
+        }
+
+        Class<? extends List> type = list.getClass();
+        if (type == ArrayList.class || type == LinkedList.class) {
+            list.sort(comparator);
+            return list;
+        }
+
+        return list.stream().sorted(comparator).collect(Collectors.toList());
+    }
+
     /**
      * Gets the first element from collection
      *

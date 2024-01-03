@@ -282,7 +282,7 @@ public final class ThreadPoolExecutors {
     private static ThreadPoolExecutor makeCommonPool() {
         int poolSize = Numbers.toInt(SystemUtils.getConfig(DISJOB_COMMON_POOL_SIZE), Runtime.getRuntime().availableProcessors() * 4);
         if (poolSize < 0 || poolSize > MAX_CAP) {
-            LOG.warn("Invalid disjob common pool size config: {}", poolSize);
+            LOG.warn("Invalid disjob common pool size config value: {}", poolSize);
             poolSize = Numbers.bound(poolSize, 1, MAX_CAP);
         }
 

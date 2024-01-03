@@ -46,9 +46,8 @@ public class SupervisorOpenapiProvider extends BaseController {
     // ------------------------------------------------------------------job
 
     @PostMapping("job/add")
-    public Result<Void> addJob(@RequestBody AddSchedJobRequest req) throws JobException {
-        openapiService.addJob(req);
-        return Result.success();
+    public Result<Long> addJob(@RequestBody AddSchedJobRequest req) throws JobException {
+        return Result.success(openapiService.addJob(req));
     }
 
     @PutMapping("job/update")

@@ -9,6 +9,8 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.core.base.*;
@@ -31,12 +33,8 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
 /**
  * Server info service
@@ -71,34 +69,14 @@ public class ServerMetricsService extends SingletonClassConstraint {
 
     public List<SupervisorMetricsResponse> supervisors() throws Exception {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-        }
-
-        final Executor executor = ThreadPoolExecutors.commonPool();
-        return list.stream()
-            .sorted(Comparator.comparing(e -> e.equals(Supervisor.current()) ? 0 : 1))
-            .map(e -> CompletableFuture.supplyAsync(() -> convert(e), executor))
-            .collect(Collectors.toList())
-            .stream()
-            .map(CompletableFuture::join)
-            .collect(Collectors.toList());
+        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Supervisor.current()) ? 0 : 1));
+        return MultithreadExecutors.call(list, this::convert, ThreadPoolExecutors.commonPool());
     }
 
     public List<WorkerMetricsResponse> workers(String group) {
         List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-        }
-
-        final Executor executor = ThreadPoolExecutors.commonPool();
-        return list.stream()
-            .sorted(Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1))
-            .map(e -> CompletableFuture.supplyAsync(() -> convert(e), executor))
-            .collect(Collectors.toList())
-            .stream()
-            .map(CompletableFuture::join)
-            .collect(Collectors.toList());
+        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1));
+        return MultithreadExecutors.call(list, this::convert, ThreadPoolExecutors.commonPool());
     }
 
     public void modifyWorkerMaximumPoolSize(ModifyMaximumPoolSizeRequest req) {

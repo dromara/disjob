@@ -12,7 +12,7 @@
         <label class="col-sm-3 control-label is-required">分组名称：</label>
         <div class="col-sm-9">
           <select class="form-control" name="group" th:with="item=${groups}">
-            <option th:each="e : ${item}" th:text="${e}" th:value="${e}"></option>
+            <option th:each="e : ${item}" th:text="${e}" th:value="${e}" th:field="*{group}"></option>
           </select>
         </div>
       </div>

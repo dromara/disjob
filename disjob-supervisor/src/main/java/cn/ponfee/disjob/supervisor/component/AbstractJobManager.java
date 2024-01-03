@@ -92,7 +92,7 @@ public abstract class AbstractJobManager {
     // ------------------------------------------------------------------database operation within spring transactional
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public void addJob(SchedJob job) throws JobException {
+    public Long addJob(SchedJob job) throws JobException {
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyBeforeAdd();
         job.checkAndDefaultSetting();
@@ -101,6 +101,7 @@ public abstract class AbstractJobManager {
         parseTriggerConfig(job);
 
         jobMapper.insert(job);
+        return job.getJobId();
     }
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)

@@ -8,7 +8,8 @@
 
 package cn.ponfee.disjob.common.util;
 
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * System utility.
@@ -17,13 +18,24 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class SystemUtils {
 
-    public static String getConfig(String name) {
-        String value = System.getProperty(name);
-        if (StringUtils.isNotEmpty(value)) {
-            return value;
-        }
+    private static final Logger LOG = LoggerFactory.getLogger(SystemUtils.class);
 
-        return System.getenv(name);
+    public static String getConfig(String name) {
+        String value = null;
+        try {
+            value = System.getProperty(name);
+            if (value == null) {
+                value = System.getenv(name);
+            }
+        } catch (SecurityException e) {
+            LOG.error("Get system config occur error: " + name, e);
+        }
+        return value;
+    }
+
+    public static String getConfig(String name, String defaultValue) {
+        String value = getConfig(name);
+        return value != null ? value : defaultValue;
     }
 
 }

@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.thread;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
+import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
@@ -31,10 +32,8 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
@@ -92,12 +91,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             if (CollectionUtils.isEmpty(jobs)) {
                 return true;
             }
-
-            jobs.stream()
-                .map(job -> CompletableFuture.runAsync(() -> processJob(job, now, maxNextTriggerTime), processJobExecutor))
-                .collect(Collectors.toList())
-                .forEach(CompletableFuture::join);
-
+            MultithreadExecutors.run(jobs, job -> processJob(job, now, maxNextTriggerTime), processJobExecutor);
             return jobs.size() < PROCESS_BATCH_SIZE;
         });
 
