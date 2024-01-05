@@ -119,7 +119,7 @@ public final class Threads {
                 LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
                 stopThread(thread);
             } else {
-                ThreadPoolExecutors.commonPool().execute(() -> stopThread(thread, Math.max(joinMillis, 5), true));
+                ThreadPoolExecutors.commonThreadPool().execute(() -> stopThread(thread, Math.max(joinMillis, 5), true));
             }
             return;
         }

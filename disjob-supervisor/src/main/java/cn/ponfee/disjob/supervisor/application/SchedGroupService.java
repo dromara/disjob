@@ -10,7 +10,7 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Symbol.Str;
-import cn.ponfee.disjob.common.concurrent.LoopThread;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
@@ -33,12 +33,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.io.Closeable;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -52,8 +51,9 @@ import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
  * @author Ponfee
  */
 @Service
-public class SchedGroupService extends SingletonClassConstraint implements Closeable, DisposableBean {
+public class SchedGroupService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
+    private static final int PERIOD_SECONDS = 60;
 
     private static final Lock LOCK = new ReentrantLock();
     private static volatile Map<String, DisjobGroup> groupMap;
@@ -61,13 +61,12 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
     private final SchedGroupMapper schedGroupMapper;
     private final SupervisorRegistry supervisorRegistry;
-    private final LoopThread refresher;
 
     public SchedGroupService(SchedGroupMapper schedGroupMapper,
                              SupervisorRegistry supervisorRegistry) {
         this.schedGroupMapper = schedGroupMapper;
         this.supervisorRegistry = supervisorRegistry;
-        this.refresher = new LoopThread("group_metadata_refresher", 60, 60, this::refresh);
+        ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::refresh, PERIOD_SECONDS, PERIOD_SECONDS, TimeUnit.SECONDS);
         refresh();
     }
 
@@ -137,18 +136,6 @@ public class SchedGroupService extends SingletonClassConstraint implements Close
 
         page.forEachRow(SchedGroupResponse::maskToken);
         return page;
-    }
-
-    // ------------------------------------------------------------close
-
-    @Override
-    public void close() {
-        this.refresher.terminate();
-    }
-
-    @Override
-    public void destroy() {
-        close();
     }
 
     // ------------------------------------------------------------other static methods

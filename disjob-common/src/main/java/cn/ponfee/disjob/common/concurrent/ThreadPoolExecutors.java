@@ -32,7 +32,8 @@ public final class ThreadPoolExecutors {
     private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
     private static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.pool.size";
 
-    private static volatile ThreadPoolExecutor commonPool;
+    private static volatile ThreadPoolExecutor          commonThreadPool;
+    private static volatile ScheduledThreadPoolExecutor commonScheduledPool;
 
     /**
      * max #workers - 1
@@ -99,19 +100,35 @@ public final class ThreadPoolExecutors {
     public static final RejectedExecutionHandler CALLER_RUNS_ANYWAY = (task, executor) -> task.run();
 
     /**
-     * Common thread pool, IO bound / IO intensive
+     * Common ThreadPoolExecutor, IO bound / IO intensive
      *
      * @return ThreadPoolExecutor
      */
-    public static ThreadPoolExecutor commonPool() {
-        if (commonPool == null) {
+    public static ThreadPoolExecutor commonThreadPool() {
+        if (commonThreadPool == null) {
             synchronized (ThreadPoolExecutors.class) {
-                if (commonPool == null) {
-                    commonPool = makeCommonPool();
+                if (commonThreadPool == null) {
+                    commonThreadPool = makeThreadPoolExecutor();
                 }
             }
         }
-        return commonPool;
+        return commonThreadPool;
+    }
+
+    /**
+     * Common ScheduledThreadPoolExecutor
+     *
+     * @return ScheduledThreadPoolExecutor
+     */
+    public static ScheduledThreadPoolExecutor commonScheduledPool() {
+        if (commonScheduledPool == null) {
+            synchronized (ThreadPoolExecutors.class) {
+                if (commonScheduledPool == null) {
+                    commonScheduledPool = makeCommonScheduledThreadPoolExecutor();
+                }
+            }
+        }
+        return commonScheduledPool;
     }
 
     // ----------------------------------------------------------builder
@@ -279,7 +296,7 @@ public final class ThreadPoolExecutors {
         return isSafeTerminated;
     }
 
-    private static ThreadPoolExecutor makeCommonPool() {
+    private static ThreadPoolExecutor makeThreadPoolExecutor() {
         int poolSize = Numbers.toInt(SystemUtils.getConfig(DISJOB_COMMON_POOL_SIZE), Runtime.getRuntime().availableProcessors() * 4);
         if (poolSize < 0 || poolSize > MAX_CAP) {
             LOG.warn("Invalid disjob common pool size config value: {}", poolSize);
@@ -292,11 +309,21 @@ public final class ThreadPoolExecutors {
             .workQueue(new ArrayBlockingQueue<>(poolSize * 10))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-            .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-pool").priority(Thread.MAX_PRIORITY).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-thread-pool").priority(Thread.MAX_PRIORITY).build())
             .build();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(threadPool, 2)));
+        Runtime.getRuntime().addShutdownHook(new Thread(threadPool::shutdown));
         return threadPool;
+    }
+
+    private static ScheduledThreadPoolExecutor makeCommonScheduledThreadPoolExecutor() {
+        ScheduledThreadPoolExecutor scheduledPool = new ScheduledThreadPoolExecutor(
+            1,
+            NamedThreadFactory.builder().prefix("disjob-common-scheduled-pool").priority(Thread.MAX_PRIORITY).build(),
+            CALLER_RUNS
+        );
+        Runtime.getRuntime().addShutdownHook(new Thread(scheduledPool::shutdown));
+        return scheduledPool;
     }
 
 }

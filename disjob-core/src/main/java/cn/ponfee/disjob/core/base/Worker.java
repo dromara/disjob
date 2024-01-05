@@ -224,6 +224,16 @@ public class Worker extends Server {
          */
         public abstract void authenticate(AuthenticationParam param);
 
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
         // need do reflection call
         // use synchronized modify for help multiple thread read reference(write to main memory)
         private static synchronized Current create(String group, String workerId, String host, int port,

@@ -170,7 +170,7 @@ public class RedisLockTest extends SpringBootTestBase<StringRedisTemplate> {
         List<String> lines = Files.readLines(file(), StandardCharsets.UTF_8)
             .subList(0, ROUND);
 
-        execute(lines, line -> printer.output(NAME + "-" + line + "\n"), ThreadPoolExecutors.commonPool());
+        execute(lines, line -> printer.output(NAME + "-" + line + "\n"), ThreadPoolExecutors.commonThreadPool());
         System.out.println("=========================END========================\n");
     }
 

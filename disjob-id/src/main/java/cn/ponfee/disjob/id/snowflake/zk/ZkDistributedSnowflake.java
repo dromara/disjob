@@ -11,7 +11,7 @@ package cn.ponfee.disjob.id.snowflake.zk;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.concurrent.LoopThread;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -99,7 +99,8 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     private final CuratorFramework curator;
     private final int workerId;
     private final Snowflake snowflake;
-    private final LoopThread heartbeatThread;
+
+    private volatile boolean closed = false;
 
     public ZkDistributedSnowflake(ZkConfig zkConfig, String bizTag, String serverTag) {
         this(zkConfig, bizTag, serverTag, 14, 8);
@@ -141,7 +142,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
         curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
-        this.heartbeatThread = LoopThread.createStarted("zk_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
+        ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::heartbeat, 0, HEARTBEAT_PERIOD_MS, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -152,7 +153,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     @PreDestroy
     @Override
     public void close() {
-        heartbeatThread.terminate();
+        closed = true;
     }
 
     // ------------------------------------------------------------------private methods
@@ -211,8 +212,11 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
         }
     }
 
-    private void heartbeat() throws Throwable {
-        RetryTemplate.execute(() -> {
+    private void heartbeat() {
+        RetryTemplate.executeQuietly(() -> {
+            if (closed) {
+                return;
+            }
             byte[] workerIdData = getData(workerIdPath);
             if (workerIdData != null) {
                 WorkerIdData data = WorkerIdData.deserialize(workerIdData);

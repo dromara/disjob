@@ -12,9 +12,10 @@ import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
-import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -49,7 +50,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 return true;
             }
 
-            String group = request.getHeader(JobConstants.AUTHENTICATE_HEADER_GROUP);
+            String group = requestGroup();
             if (StringUtils.isBlank(group)) {
                 throw new AuthenticationException(ERR_MSG);
             }
@@ -58,7 +59,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             if (value == SupervisorAuthentication.Subject.WORKER) {
                 authenticateWorker(request, group);
             } else if (value == SupervisorAuthentication.Subject.USER) {
-                authenticateUser(request, group);
+                authenticateUser(group);
             } else {
                 throw new UnsupportedOperationException("Unsupported supervisor authentication subject: " + value);
             }
@@ -72,14 +73,14 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 return;
             }
 
-            String token = request.getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
+            String token = requestToken();
             if (!workerToken.equals(token)) {
                 throw new AuthenticationException(ERR_MSG);
             }
         }
 
-        private static void authenticateUser(HttpServletRequest request, String group) {
-            String user = request.getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
+        private static void authenticateUser(String group) {
+            String user = requestUser();
             DisjobGroup disjobGroup = SchedGroupService.getGroup(group);
             if (!disjobGroup.isDeveloper(user)) {
                 throw new AuthenticationException(ERR_MSG);
@@ -91,19 +92,32 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            String token = request.getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
+            String token = requestToken();
             if (!userToken.equals(token)) {
                 throw new AuthenticationException(ERR_MSG);
             }
-
-            request.setAttribute(SupervisorConstants.REQUEST_ATTRIBUTE_KEY_DISJOB_USER, user);
-            request.setAttribute(SupervisorConstants.REQUEST_ATTRIBUTE_KEY_DISJOB_GROUP, group);
         }
 
         private static SupervisorAuthentication getAnnotation(HandlerMethod hm) {
             SupervisorAuthentication a = hm.getMethodAnnotation(SupervisorAuthentication.class);
             return a != null ? a : hm.getBeanType().getAnnotation(SupervisorAuthentication.class);
         }
+    }
+
+    public static String requestUser() {
+        return getRequest().getHeader(JobConstants.AUTHENTICATE_HEADER_USER);
+    }
+
+    public static String requestGroup() {
+        return getRequest().getHeader(JobConstants.AUTHENTICATE_HEADER_GROUP);
+    }
+
+    private static String requestToken() {
+        return getRequest().getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
+    }
+
+    private static HttpServletRequest getRequest() {
+        return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
     }
 
 }

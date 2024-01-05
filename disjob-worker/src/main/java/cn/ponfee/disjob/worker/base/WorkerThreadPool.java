@@ -142,7 +142,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (param.operation().isTrigger()) {
             return taskQueue.offerLast(param);
         } else {
-            ThreadPoolExecutors.commonPool().execute(() -> stop(param));
+            ThreadPoolExecutors.commonThreadPool().execute(() -> stop(param));
             return true;
         }
     }

@@ -70,13 +70,13 @@ public class ServerMetricsService extends SingletonClassConstraint {
     public List<SupervisorMetricsResponse> supervisors() throws Exception {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
         list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Supervisor.current()) ? 0 : 1));
-        return MultithreadExecutors.call(list, this::convert, ThreadPoolExecutors.commonPool());
+        return MultithreadExecutors.call(list, this::convert, ThreadPoolExecutors.commonThreadPool());
     }
 
     public List<WorkerMetricsResponse> workers(String group) {
         List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
         list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1));
-        return MultithreadExecutors.call(list, this::convert, ThreadPoolExecutors.commonPool());
+        return MultithreadExecutors.call(list, this::convert, ThreadPoolExecutors.commonThreadPool());
     }
 
     public void modifyWorkerMaximumPoolSize(ModifyMaximumPoolSizeRequest req) {

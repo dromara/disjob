@@ -211,7 +211,7 @@ public class DisjobJobController extends BaseController {
             return error("Job id不能为空");
         }
         final String user = getLoginName();
-        MultithreadExecutors.run(jobIds, jobId -> doDeleteJob(user, jobId), ThreadPoolExecutors.commonPool());
+        MultithreadExecutors.run(jobIds, jobId -> doDeleteJob(user, jobId), ThreadPoolExecutors.commonThreadPool());
 
         return success();
     }

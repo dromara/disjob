@@ -45,8 +45,8 @@ public final class ProcessUtils {
 
     public static int progress(Process process, Charset charset, Consumer<String> verbose, Consumer<String> error) {
         // 控制台实时展示
-        ThreadPoolExecutors.commonPool().execute(() -> read(process.getInputStream(), charset, verbose));
-        ThreadPoolExecutors.commonPool().execute(() -> read(process.getErrorStream(), charset, error));
+        ThreadPoolExecutors.commonThreadPool().execute(() -> read(process.getInputStream(), charset, verbose));
+        ThreadPoolExecutors.commonThreadPool().execute(() -> read(process.getErrorStream(), charset, error));
         try {
             return process.waitFor();
         } catch (InterruptedException e) {

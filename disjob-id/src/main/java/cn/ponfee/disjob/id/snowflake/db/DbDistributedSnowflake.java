@@ -11,7 +11,7 @@ package cn.ponfee.disjob.id.snowflake.db;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.concurrent.LoopThread;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
@@ -83,7 +83,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     private final String bizTag;
     private final String serverTag;
     private final Snowflake snowflake;
-    private final LoopThread heartbeatThread;
+    private volatile boolean closed = false;
 
     public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
         this(jdbcTemplate, bizTag, serverTag, 14, 8);
@@ -112,7 +112,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
             throw new Error("Db snowflake server initialize error.", e);
         }
 
-        this.heartbeatThread = LoopThread.createStarted("db_snowflake_heartbeat", HEARTBEAT_PERIOD_MS, 0, this::heartbeat);
+        ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::heartbeat, 0, HEARTBEAT_PERIOD_MS, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -123,9 +123,8 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     @PreDestroy
     @Override
     public void close() {
-        if (heartbeatThread.terminate()) {
-            ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
-        }
+        closed = true;
+        ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_WORKER_SQL, bizTag, serverTag));
     }
 
     // -------------------------------------------------------private methods
@@ -193,8 +192,11 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         }
     }
 
-    private void heartbeat() throws Throwable {
-        RetryTemplate.execute(() -> {
+    private void heartbeat() {
+        RetryTemplate.executeQuietly(() -> {
+            if (closed) {
+                return;
+            }
             Object[] args = {System.currentTimeMillis(), bizTag, serverTag};
             if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
                 LOG.debug("Heartbeat db worker id success: {}, {}, {}", args);

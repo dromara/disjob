@@ -135,6 +135,16 @@ public class Supervisor extends Server {
             return startupAt;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
         private static synchronized Current create(String host, int port) {
             if (instance != null) {
                 throw new Error("Current supervisor already set.");
