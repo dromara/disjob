@@ -168,7 +168,7 @@ CREATE TABLE `sched_group` (
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_group` (`group`),
+  UNIQUE KEY `uk_group` (`group`, `is_deleted`),
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分组表';

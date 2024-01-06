@@ -10,7 +10,7 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper;
@@ -20,11 +20,15 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
 
 /**
  * Authorize group service
@@ -33,6 +37,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class AuthorizeGroupService extends SingletonClassConstraint {
+    private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);
 
     /**
      * SQL中`group IN (a, b, ..., x)`允许的最大长度
@@ -55,7 +60,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         this.schedJobMapper = schedJobMapper;
         this.schedInstanceMapper = schedInstanceMapper;
 
-        ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(jobGroupCache::cleanUp, 6, 6, TimeUnit.HOURS);
+        commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 6, 6, TimeUnit.HOURS);
     }
 
     public static Set<String> authorizeAndTruncateGroup(String user, Set<String> paramGroups) {
@@ -122,9 +127,13 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         if (group != null) {
             return group;
         }
+
         group = schedJobMapper.getGroup(jobId);
         if (group != null) {
+            LOG.info("Loaded caching group: {}, {}", jobId, group);
             jobGroupCache.put(jobId, group);
+        } else {
+            LOG.warn("Loading job not exists: {}", jobId);
         }
         return group;
     }

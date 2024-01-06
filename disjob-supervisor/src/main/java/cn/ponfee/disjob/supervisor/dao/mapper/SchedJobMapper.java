@@ -44,6 +44,16 @@ public interface SchedJobMapper {
     SchedJob get(long jobId);
 
     /**
+     * Exists group and job name
+     *
+     * @param group   the group
+     * @param jobName the job name
+     * @return {@code true} if exists
+     */
+    boolean exists(@Param("group") String group,
+                   @Param("jobName") String jobName);
+
+    /**
      * Gets group by job_id
      *
      * @param jobId the job id

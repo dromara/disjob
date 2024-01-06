@@ -15,6 +15,7 @@ import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.model.SchedDepend;
 import cn.ponfee.disjob.core.model.SchedInstance;
@@ -93,6 +94,9 @@ public abstract class AbstractJobManager {
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
+        if (jobMapper.exists(job.getGroup(), job.getJobName())) {
+            throw new KeyExistsException("[" + job.getGroup() + "] already exists job name: " + job.getJobName());
+        }
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyBeforeAdd();
         job.checkAndDefaultSetting();
@@ -121,7 +125,7 @@ public abstract class AbstractJobManager {
 
         if (job.getTriggerType() == null) {
             Assert.isNull(job.getTriggerValue(), "Trigger value must be null if not set trigger type.");
-        } else if (!dbJob.getTriggerType().equals(job.getTriggerType()) || !dbJob.getTriggerValue().equals(job.getTriggerValue())) {
+        } else if (!dbJob.equalsTrigger(job.getTriggerType(), job.getTriggerValue())) {
             Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
             // update last trigger time or depends parent job id
             dependMapper.deleteByChildJobId(job.getJobId());

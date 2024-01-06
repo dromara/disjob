@@ -10,7 +10,6 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Symbol.Str;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
@@ -43,6 +42,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 
 /**
@@ -66,7 +66,7 @@ public class SchedGroupService extends SingletonClassConstraint {
                              SupervisorRegistry supervisorRegistry) {
         this.schedGroupMapper = schedGroupMapper;
         this.supervisorRegistry = supervisorRegistry;
-        ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::refresh, PERIOD_SECONDS, PERIOD_SECONDS, TimeUnit.SECONDS);
+        commonScheduledPool().scheduleWithFixedDelay(this::refresh, PERIOD_SECONDS, PERIOD_SECONDS, TimeUnit.SECONDS);
         refresh();
     }
 

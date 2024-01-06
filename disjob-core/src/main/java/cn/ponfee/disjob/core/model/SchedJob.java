@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.Date;
+import java.util.Objects;
 
 import static cn.ponfee.disjob.common.date.Dates.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -181,6 +182,11 @@ public class SchedJob extends BaseEntity {
             return nextTriggerTime;
         }
         return nextTriggerTime > endTime.getTime() ? null : nextTriggerTime;
+    }
+
+    public boolean equalsTrigger(Integer triggerType0, String triggerValue0) {
+        return Objects.equals(triggerType, triggerType0)
+            && Objects.equals(triggerValue, triggerValue0);
     }
 
     public void verifyBeforeAdd() {

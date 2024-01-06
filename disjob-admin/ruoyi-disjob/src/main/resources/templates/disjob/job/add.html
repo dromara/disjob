@@ -86,6 +86,12 @@
         </div>
       </div>
       <div class="form-group">
+        <label class="col-sm-3 control-label is-required">执行超时时间(毫秒)：</label>
+        <div class="col-sm-9">
+          <input name="executeTimeout" class="form-control" th:field="*{executeTimeout}" type="text" placeholder="不填写或设置为0则表示无超时时间" autocomplete="off" />
+        </div>
+      </div>
+      <div class="form-group">
         <label class="col-sm-3 control-label is-required">执行冲突策略：</label>
         <div class="col-sm-9">
           <select name="collidedStrategy" class="form-control m-b" th:with="enum=${@disjobService.enums('CollidedStrategy')}">

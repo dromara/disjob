@@ -126,6 +126,16 @@
       AND is_deleted = 0
   </select>
 
+  <select id="exists" resultType="_boolean">
+    SELECT EXISTS (
+      SELECT 1
+      FROM <include refid="Table_Name" />
+      WHERE `group` = #{group,jdbcType=VARCHAR}
+        AND job_name = #{jobName,jdbcType=VARCHAR}
+        AND is_deleted = 0
+    )
+  </select>
+
   <select id="getGroup" parameterType="_long" resultType="string">
     SELECT `group`
     FROM <include refid="Table_Name" />

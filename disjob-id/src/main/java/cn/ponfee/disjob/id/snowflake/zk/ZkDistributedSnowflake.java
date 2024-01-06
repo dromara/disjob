@@ -11,7 +11,6 @@ package cn.ponfee.disjob.id.snowflake.zk;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -44,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -142,7 +142,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
 
         curator.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(this));
 
-        ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::heartbeat, 0, HEARTBEAT_PERIOD_MS, TimeUnit.MILLISECONDS);
+        commonScheduledPool().scheduleWithFixedDelay(this::heartbeat, 0, HEARTBEAT_PERIOD_MS, TimeUnit.MILLISECONDS);
     }
 
     @Override
