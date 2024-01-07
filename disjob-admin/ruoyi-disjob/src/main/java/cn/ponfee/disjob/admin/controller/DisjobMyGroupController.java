@@ -12,7 +12,8 @@ import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
-import cn.ponfee.disjob.supervisor.application.request.ModifyMaximumPoolSizeRequest;
+import cn.ponfee.disjob.supervisor.application.request.ModifyAllWorkerConfigRequest;
+import cn.ponfee.disjob.supervisor.application.request.ModifyOneWorkerConfigRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
@@ -137,17 +138,38 @@ public class DisjobMyGroupController extends BaseController {
     }
 
     /**
-     * 更新Worker线程池最大线程数
+     * 修改指定Worker的参数配置
      */
     @RequiresPermissions(PERMISSION_OPERATE)
-    @Log(title = "更新Worker线程池最大线程数", businessType = BusinessType.UPDATE)
-    @PostMapping("/modify_maximum_pool_size")
+    @Log(title = "修改指定Worker的参数配置", businessType = BusinessType.UPDATE)
+    @PostMapping("/modify_one_worker_config")
     @ResponseBody
-    public AjaxResult modifyMaximumPoolSize(ModifyMaximumPoolSizeRequest request) {
+    public AjaxResult modifyOneWorkerConfig(ModifyOneWorkerConfigRequest request) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
 
-        serverMetricsService.modifyWorkerMaximumPoolSize(request);
-        return AjaxResult.success("更新成功");
+        serverMetricsService.modifyOneWorkerConfig(request);
+        return AjaxResult.success("修改成功");
+    }
+
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @GetMapping("/modify_all_worker_config")
+    public String modifyAllWorkerConfig(@RequestParam("group") String group, ModelMap mmap) {
+        mmap.put("group", group);
+        return PREFIX + "/modifyAllWorkerConfig";
+    }
+
+    /**
+     * 修改该分组下的所有Worker的参数配置
+     */
+    @RequiresPermissions(PERMISSION_OPERATE)
+    @Log(title = "修改该分组下的所有Worker的参数配置", businessType = BusinessType.UPDATE)
+    @PostMapping("/modify_all_worker_config")
+    @ResponseBody
+    public AjaxResult modifyAllWorkerConfig(ModifyAllWorkerConfigRequest request) {
+        AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
+
+        serverMetricsService.modifyAllWorkerConfig(request);
+        return AjaxResult.success("修改成功");
     }
 
 }

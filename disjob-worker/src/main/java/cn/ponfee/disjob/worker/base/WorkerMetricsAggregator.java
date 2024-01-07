@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
+import cn.ponfee.disjob.core.param.worker.ModifyWorkerConfigParam;
 
 /**
  * Worker metrics aggregator
@@ -40,8 +41,8 @@ public class WorkerMetricsAggregator {
         return metrics;
     }
 
-    public static void modifyMaximumPoolSize(int maximumPoolSize) {
-        workerThreadPool.modifyMaximumPoolSize(maximumPoolSize);
+    public static void modifyWorkerConfig(ModifyWorkerConfigParam param) {
+        workerThreadPool.modifyMaximumPoolSize(param.getMaximumPoolSize());
     }
 
 }

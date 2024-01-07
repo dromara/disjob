@@ -9,30 +9,30 @@
 package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
 /**
- * Modify worker maximum pool size
+ * Modify all worker config
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class ModifyMaximumPoolSizeRequest extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 8298987323677820526L;
+public class ModifyAllWorkerConfigRequest extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -2430927428049714711L;
 
     private String group;
-    private String workerId;
-    private String host;
-    private int port;
     private int maximumPoolSize;
 
-    public Worker toWorker() {
-        return new Worker(group, workerId, host, port);
+    public void check() {
+        Assert.isTrue(
+            maximumPoolSize > 0 && maximumPoolSize <= ThreadPoolExecutors.MAX_CAP,
+            () -> "Worker maximum pool size must be range [1, " + ThreadPoolExecutors.MAX_CAP + "]."
+        );
     }
-
 }

@@ -57,7 +57,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
 
             SupervisorAuthentication.Subject value = annotation.value();
             if (value == SupervisorAuthentication.Subject.WORKER) {
-                authenticateWorker(request, group);
+                authenticateWorker(group);
             } else if (value == SupervisorAuthentication.Subject.USER) {
                 authenticateUser(group);
             } else {
@@ -67,7 +67,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             return true;
         }
 
-        private static void authenticateWorker(HttpServletRequest request, String group) {
+        private static void authenticateWorker(String group) {
             String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
                 return;

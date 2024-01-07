@@ -20,13 +20,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ModifyMaximumPoolSizeParam extends AuthenticationParam {
+public class ModifyWorkerConfigParam extends AuthenticationParam {
     private static final long serialVersionUID = 1023942345935168778L;
 
     private int maximumPoolSize;
 
-    public ModifyMaximumPoolSizeParam(int maximumPoolSize, String supervisorToken) {
-        this.maximumPoolSize = maximumPoolSize;
+    public ModifyWorkerConfigParam(String supervisorToken) {
         super.setSupervisorToken(supervisorToken);
     }
 

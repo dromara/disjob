@@ -7,6 +7,12 @@
 <body class="gray-bg">
   <div class="container-div">
     <div class="row">
+      <div class="btn-group-sm" id="toolbar" role="group">
+        <a class="btn btn-success" onclick="modifyAllWorkerConfig()">
+          <i class="fa fa-edit"></i> 修改全部
+        </a>
+      </div>
+
       <div class="col-sm-12 select-table table-striped">
         <table id="bootstrap-table"></table>
       </div>
@@ -30,7 +36,7 @@
         showColumns: false,
         fixedColumns: true,
         fixedNumber: 3,
-        onEditableSave: modifyMaximumPoolSize,
+        onEditableSave: modifyOneWorkerConfig,
         columns: [{
           field: 'workerId',
           title: 'Worker Id'
@@ -58,6 +64,9 @@
               }
               if (!/^[1-9]\d*$/g.test(value.trim())) {
                 return '请输入正整数';
+              }
+              if (parseInt(value) > 32767) {
+                return '不能大于 32767';
               }
             }
           }
@@ -109,7 +118,7 @@
       $.table.init(options);
     });
 
-    function modifyMaximumPoolSize(field, row, rowIndex, oldValue) {
+    function modifyOneWorkerConfig(field, row, rowIndex, oldValue) {
       if (field !== "maximumPoolSize") {
         $.modal.msgError("只能更新['maximumPoolSize']字段");
         return;
@@ -127,9 +136,14 @@
         "port": row['port'],
         "maximumPoolSize": newValue
       };
-      $.operate.post(prefix + "/modify_maximum_pool_size", params, function (result) {
+      $.operate.post(prefix + "/modify_one_worker_config", params, function (result) {
         row[field] = (result.code === 0) ? newValue : oldValue;
       }, false);
+    }
+
+    function modifyAllWorkerConfig() {
+      table.set();
+      $.modal.open("修改所有Worker", prefix + "/modify_all_worker_config?group=" + [[${group}]], '360', '200');
     }
   </script>
 

@@ -312,9 +312,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
         return metrics;
     }
 
-    synchronized void modifyMaximumPoolSize(int maximumPoolSize) {
-        Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must greater than 0.");
-        this.maximumPoolSize = maximumPoolSize;
+    synchronized void modifyMaximumPoolSize(int value) {
+        Assert.isTrue(value > 0 && value <= ThreadPoolExecutors.MAX_CAP, "Maximum pool size must be range [1, 32767].");
+        this.maximumPoolSize = value;
     }
 
     // ----------------------------------------------------------------------private methods
