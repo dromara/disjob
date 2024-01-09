@@ -9,7 +9,6 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ShiroUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanValidators;
-import com.ruoyi.common.utils.security.Md5Utils;
 import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.system.domain.SysPost;
 import com.ruoyi.system.domain.SysUserPost;
@@ -17,6 +16,7 @@ import com.ruoyi.system.domain.SysUserRole;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ISysUserService;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -499,7 +499,7 @@ public class SysUserServiceImpl implements ISysUserService
                 if (StringUtils.isNull(u))
                 {
                     BeanValidators.validateWithException(validator, user);
-                    user.setPassword(Md5Utils.hash(user.getLoginName() + password));
+                    user.setPassword(DigestUtils.md5Hex(user.getLoginName() + password));
                     user.setCreateBy(operName);
                     userMapper.insertUser(user);
                     successNum++;

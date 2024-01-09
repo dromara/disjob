@@ -18,8 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Update sched group request parameter structure.
@@ -57,7 +57,7 @@ public class UpdateSchedGroupRequest extends ToJsonString implements Serializabl
             return null;
         }
 
-        return Stream.of(users.split(Str.COMMA))
+        return Arrays.stream(users.split(Str.COMMA))
             .filter(StringUtils::isNotBlank)
             .map(String::trim)
             .distinct()

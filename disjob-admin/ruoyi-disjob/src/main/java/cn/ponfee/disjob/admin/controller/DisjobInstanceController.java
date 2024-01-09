@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 public class DisjobInstanceController extends BaseController {
 
     static final String PREFIX = "disjob/instance";
-    private static final String PERMISSION_INSTANCE = "disjob:instance:operate";
+    private static final String PERMISSION_CODE = "disjob:instance:operate";
 
     private static final int WAIT_SLEEP_ROUND = 9;
     private static final long[] WAIT_SLEEP_MILLIS = {2500, 500};
@@ -67,7 +67,7 @@ public class DisjobInstanceController extends BaseController {
         this.authorizeGroupService = authorizeGroupService;
     }
 
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/search_job")
     @ResponseBody
     public AjaxResult searchJob(@RequestParam(value = "term") String term) {
@@ -75,7 +75,7 @@ public class DisjobInstanceController extends BaseController {
         return AjaxResult.success(req == null ? Collections.emptyList() : jobQuerier.searchJob(req));
     }
 
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping
     public String instance() {
         return PREFIX + "/instance";
@@ -84,7 +84,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 查询任务实例列表-tree
      */
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @PostMapping("/tree")
     @ResponseBody
     public Object tree(SchedInstancePageRequest request,
@@ -95,7 +95,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 查询任务实例列表-flat
      */
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @PostMapping("/flat")
     @ResponseBody
     public Object flat(SchedInstancePageRequest request,
@@ -103,7 +103,7 @@ public class DisjobInstanceController extends BaseController {
         return queryForPage(request, false, resetSearch);
     }
 
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @PostMapping("/children")
     @ResponseBody
     public List<SchedInstanceResponse> children(@RequestParam("pnstanceId") Long pnstanceId) {
@@ -129,7 +129,7 @@ public class DisjobInstanceController extends BaseController {
      * @param mmap       the mmap
      * @return html page path
      */
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/tasks/{instanceId}")
     public String tasks(@PathVariable("instanceId") Long instanceId, ModelMap mmap) {
         authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
@@ -144,7 +144,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 删除任务实例
      */
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "删除任务实例", businessType = BusinessType.DELETE)
     @PostMapping("/remove/{instanceId}")
     @ResponseBody
@@ -158,7 +158,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 暂停任务实例
      */
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "暂停任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/pause/{instanceId}")
     @ResponseBody
@@ -176,7 +176,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 恢复任务实例
      */
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "恢复任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/resume/{instanceId}")
     @ResponseBody
@@ -194,7 +194,7 @@ public class DisjobInstanceController extends BaseController {
     /**
      * 取消任务实例
      */
-    @RequiresPermissions(PERMISSION_INSTANCE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "取消任务实例", businessType = BusinessType.UPDATE)
     @PostMapping("/cancel/{instanceId}")
     @ResponseBody

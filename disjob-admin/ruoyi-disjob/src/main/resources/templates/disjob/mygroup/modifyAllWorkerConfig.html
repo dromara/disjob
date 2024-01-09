@@ -34,10 +34,12 @@
     function submitHandler() {
       if ($.validate.form()) {
         const params = $('#form-group-modify').serialize();
-        $.operate.save(prefix + "/modify_all_worker_config", params, function () {
-          const src = prefix + "/worker?group=" + [[${group}]];
-          const iframe = $(window.parent.document).find("iframe[src='" + src + "']");
-          iframe.attr('src', src);
+        $.operate.save(prefix + "/modify_all_worker_config", params, function (result) {
+          if (result.code === 0) {
+            const src = prefix + "/worker?group=" + [[${group}]];
+            const iframe = $(window.parent.document).find("iframe[src='" + src + "']");
+            iframe.attr("src", src);
+          }
         });
       }
     }

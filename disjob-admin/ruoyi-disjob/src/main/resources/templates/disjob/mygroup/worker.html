@@ -7,7 +7,7 @@
 <body class="gray-bg">
   <div class="container-div">
     <div class="row">
-      <div class="btn-group-sm" id="toolbar" role="group">
+      <div th:if="${not #lists.isEmpty(list)}" class="btn-group-sm" id="toolbar" role="group">
         <a class="btn btn-success" onclick="modifyAllWorkerConfig()">
           <i class="fa fa-edit"></i> 修改全部
         </a>
@@ -32,8 +32,8 @@
         sidePagination: "client",
         showSearch: false,
         showRefresh: false,
-        showToggle: false,
-        showColumns: false,
+        showToggle: true,
+        showColumns: true,
         fixedColumns: true,
         fixedNumber: 3,
         onEditableSave: modifyOneWorkerConfig,

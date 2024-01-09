@@ -187,7 +187,7 @@ public class SchedGroupService extends SingletonClassConstraint {
                 String[] array = devUsers.split(Str.COMMA);
                 List<Pair<String, String>> users = new ArrayList<>(array.length + 1);
                 users.add(Pair.of(e.getOwnUser(), group));
-                Stream.of(array)
+                Arrays.stream(array)
                     .filter(StringUtils::isNotBlank)
                     .map(String::trim)
                     .forEach(u -> users.add(Pair.of(u, group)));

@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.util.Numbers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Array;
@@ -52,6 +53,16 @@ public class Collects {
 
     public static <T> List<T> duplicate(List<T> list) {
         return duplicate(list, Function.identity());
+    }
+
+    public static <R> Set<R> split(String str, String separator, Function<String, R> converter) {
+        if (StringUtils.isEmpty(str)) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(str.split(separator))
+            .filter(StringUtils::isNotBlank)
+            .map(e -> converter.apply(e.trim()))
+            .collect(Collectors.toSet());
     }
 
     /**

@@ -42,7 +42,7 @@ import java.util.List;
 public class DisjobMyGroupController extends BaseController {
 
     static final String PREFIX = "disjob/mygroup";
-    private static final String PERMISSION_OPERATE = "disjob:mygroup:operate";
+    private static final String PERMISSION_CODE = "disjob:mygroup:operate";
 
     private final SchedGroupService schedGroupService;
     private final ServerMetricsService serverMetricsService;
@@ -58,14 +58,14 @@ public class DisjobMyGroupController extends BaseController {
 
     // -------------------------------------------------------查询
 
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping
     public String mygroup(ModelMap mmap) {
         mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
         return PREFIX + "/mygroup";
     }
 
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/search_user")
     @ResponseBody
     public List<String> searchUser(@RequestParam(value = "term") String term) {
@@ -75,7 +75,7 @@ public class DisjobMyGroupController extends BaseController {
     /**
      * 查询分组列表
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedGroupPageRequest request) {
@@ -92,7 +92,7 @@ public class DisjobMyGroupController extends BaseController {
     /**
      * 修改分组
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/edit/{group}")
     public String edit(@PathVariable("group") String group, ModelMap mmap) {
         String user = getLoginName();
@@ -108,7 +108,7 @@ public class DisjobMyGroupController extends BaseController {
     /**
      * 修改分组
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "修改分组", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
@@ -127,7 +127,7 @@ public class DisjobMyGroupController extends BaseController {
         return result ? success() : error("修改冲突，请刷新页面");
     }
 
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), group);
@@ -140,7 +140,7 @@ public class DisjobMyGroupController extends BaseController {
     /**
      * 修改指定Worker的参数配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "修改指定Worker的参数配置", businessType = BusinessType.UPDATE)
     @PostMapping("/modify_one_worker_config")
     @ResponseBody
@@ -151,7 +151,7 @@ public class DisjobMyGroupController extends BaseController {
         return AjaxResult.success("修改成功");
     }
 
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/modify_all_worker_config")
     public String modifyAllWorkerConfig(@RequestParam("group") String group, ModelMap mmap) {
         mmap.put("group", group);
@@ -161,7 +161,7 @@ public class DisjobMyGroupController extends BaseController {
     /**
      * 修改该分组下的所有Worker的参数配置
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "修改该分组下的所有Worker的参数配置", businessType = BusinessType.UPDATE)
     @PostMapping("/modify_all_worker_config")
     @ResponseBody

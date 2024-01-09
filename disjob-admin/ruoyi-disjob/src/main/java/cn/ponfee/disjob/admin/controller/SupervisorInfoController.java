@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class SupervisorInfoController extends BaseController {
 
     static final String PREFIX = "disjob/supervisor";
-    private static final String PERMISSION_SUPERVISOR = "disjob:supervisor:operate";
+    private static final String PERMISSION_CODE = "disjob:supervisor:operate";
 
     private final ServerMetricsService serverMetricsService;
 
@@ -34,7 +34,7 @@ public class SupervisorInfoController extends BaseController {
         this.serverMetricsService = serverMetricsService;
     }
 
-    @RequiresPermissions(PERMISSION_SUPERVISOR)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping
     public String supervisor(ModelMap mmap) throws Exception {
         mmap.put("list", serverMetricsService.supervisors());

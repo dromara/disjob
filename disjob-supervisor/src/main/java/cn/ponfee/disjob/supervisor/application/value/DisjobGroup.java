@@ -14,9 +14,9 @@ import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Disjob group
@@ -72,7 +72,7 @@ public class DisjobGroup {
         String[] array = str.split(Str.COMMA);
         ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize(array.length + 1);
         builder.add(ownUser);
-        Stream.of(array).filter(StringUtils::isNotBlank).map(String::trim).forEach(builder::add);
+        Arrays.stream(array).filter(StringUtils::isNotBlank).map(String::trim).forEach(builder::add);
         return builder.build();
     }
 

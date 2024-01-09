@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class DisjobMgGroupController extends BaseController {
 
     static final String PREFIX = "disjob/mggroup";
-    private static final String PERMISSION_OPERATE = "disjob:mggroup:operate";
+    private static final String PERMISSION_CODE = "disjob:mggroup:operate";
 
     private final SchedGroupService schedGroupService;
     private final ServerMetricsService serverMetricsService;
@@ -53,7 +53,7 @@ public class DisjobMgGroupController extends BaseController {
 
     // -------------------------------------------------------查询
 
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/search_group")
     @ResponseBody
     public AjaxResult searchGroup(@RequestParam(value = "term", required = false) String term) {
@@ -66,7 +66,7 @@ public class DisjobMgGroupController extends BaseController {
         return AjaxResult.success(result);
     }
 
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping
     public String mggroup() {
         return PREFIX + "/mggroup";
@@ -75,7 +75,7 @@ public class DisjobMgGroupController extends BaseController {
     /**
      * 查询分组列表
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(SchedGroupPageRequest request) {
@@ -90,7 +90,7 @@ public class DisjobMgGroupController extends BaseController {
     /**
      * 新增分组
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/add")
     public String add() {
         return PREFIX + "/add";
@@ -99,7 +99,7 @@ public class DisjobMgGroupController extends BaseController {
     /**
      * 新增分组
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "新增分组", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
@@ -112,7 +112,7 @@ public class DisjobMgGroupController extends BaseController {
     /**
      * 删除分组
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "删除分组", businessType = BusinessType.DELETE)
     @PostMapping("/remove")
     @ResponseBody
@@ -127,7 +127,7 @@ public class DisjobMgGroupController extends BaseController {
     /**
      * 令牌管理
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/token")
     public String token(@RequestParam("group") String group, ModelMap mmap) {
         mmap.put("data", schedGroupService.get(group));
@@ -137,7 +137,7 @@ public class DisjobMgGroupController extends BaseController {
     /**
      * 令牌管理
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "令牌管理", businessType = BusinessType.UPDATE)
     @PostMapping("/token")
     @ResponseBody
@@ -157,7 +157,7 @@ public class DisjobMgGroupController extends BaseController {
     /**
      * 更新own_user
      */
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "更新Own User", businessType = BusinessType.UPDATE)
     @PostMapping("/update_own_user")
     @ResponseBody
@@ -170,7 +170,7 @@ public class DisjobMgGroupController extends BaseController {
         }
     }
 
-    @RequiresPermissions(PERMISSION_OPERATE)
+    @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
         mmap.put("list", serverMetricsService.workers(group));

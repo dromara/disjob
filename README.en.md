@@ -2,7 +2,7 @@
 
 **`English`** | [简体中文](README.md)
 
-A distributed task scheduling framework, in addition to having regular task scheduling functions, also provides: pausing/cancelling running tasks, resuming paused tasks, task splitting, failure retries, broadcast tasks, task dependencies, workflow tasks (DAG), separate deployment of managers and executors, Web management backend, and other capabilities.
+A distributed task scheduling and distributed computing framework, in addition to having regular task scheduling functions, also provides: pausing/cancelling running tasks, resuming paused tasks, task splitting, failure retries, broadcast tasks, task dependencies, workflow tasks (DAG), separate deployment of managers and executors, Web management backend, and other capabilities.
 
 Lightweight, easy to use, especially suitable for long task execution. It has good scalability, extensibility, and stability, and has been tested in production.
 
