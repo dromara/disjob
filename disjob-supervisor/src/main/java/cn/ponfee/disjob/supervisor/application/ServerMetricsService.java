@@ -15,12 +15,13 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
-import cn.ponfee.disjob.core.param.worker.ModifyWorkerConfigParam;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
-import cn.ponfee.disjob.supervisor.application.request.ModifyAllWorkerConfigRequest;
-import cn.ponfee.disjob.supervisor.application.request.ModifyOneWorkerConfigRequest;
+import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
+import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,7 +48,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
 
     private static final String SUPERVISOR_METRICS_URL = "http://%s:%d/" + SupervisorRpcService.PREFIX_PATH + "metrics";
     private static final String WORKER_METRICS_URL = "http://%s:%d/" + WorkerRpcService.PREFIX_PATH + "metrics";
-    private static final String MODIFY_WORKER_CONFIG_URL = "http://%s:%d/" + WorkerRpcService.PREFIX_PATH + "worker_config/modify";
+    private static final String WORKER_CONFIGURE_URL = "http://%s:%d/" + WorkerRpcService.PREFIX_PATH + "worker/configure";
 
     private final RestTemplate restTemplate;
     private final SupervisorRegistry supervisorRegistry;
@@ -79,20 +80,22 @@ public class ServerMetricsService extends SingletonClassConstraint {
         return MultithreadExecutors.call(list, this::getMetrics, ThreadPoolExecutors.commonThreadPool());
     }
 
-    public void modifyOneWorkerConfig(ModifyOneWorkerConfigRequest req) {
-        req.check();
+    public void configureOneWorker(ConfigureOneWorkerRequest req) {
         List<Worker> workers = getDiscoveredWorkers(req.getGroup());
         Worker worker = req.toWorker();
         if (!workers.contains(worker)) {
             throw new KeyNotExistsException("Not found worker: " + worker);
         }
-        modifyWorkerConfig(worker, req);
+        configureWorker(worker, req.getAction(), req.getData());
     }
 
-    public void modifyAllWorkerConfig(ModifyAllWorkerConfigRequest req) {
-        req.check();
+    public void configureAllWorker(ConfigureAllWorkerRequest req) {
         List<Worker> workers = getDiscoveredWorkers(req.getGroup());
-        MultithreadExecutors.run(workers, w -> modifyWorkerConfig(w, req), ThreadPoolExecutors.commonThreadPool());
+        MultithreadExecutors.run(
+            workers,
+            worker -> configureWorker(worker, req.getAction(), req.getData()),
+            ThreadPoolExecutors.commonThreadPool()
+        );
     }
 
     // ------------------------------------------------------------private methods
@@ -151,10 +154,11 @@ public class ServerMetricsService extends SingletonClassConstraint {
         return list;
     }
 
-    private void modifyWorkerConfig(Worker worker, ModifyAllWorkerConfigRequest req) {
-        String url = String.format(MODIFY_WORKER_CONFIG_URL, worker.getHost(), worker.getPort());
-        ModifyWorkerConfigParam param = new ModifyWorkerConfigParam(supervisorToken(worker.getGroup()));
-        param.setMaximumPoolSize(req.getMaximumPoolSize());
+    private void configureWorker(Worker worker, Action action, String data) {
+        String url = String.format(WORKER_CONFIGURE_URL, worker.getHost(), worker.getPort());
+        ConfigureWorkerParam param = new ConfigureWorkerParam(supervisorToken(worker.getGroup()));
+        param.setAction(action);
+        param.setData(data);
         RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param);
     }
 

@@ -8,7 +8,7 @@
   <div class="container-div">
     <div class="row">
       <div th:if="${not #lists.isEmpty(list)}" class="btn-group-sm" id="toolbar" role="group">
-        <a class="btn btn-success" onclick="modifyAllWorkerConfig()">
+        <a class="btn btn-success" onclick="modifyAllWorkerMaximumPoolSize()">
           <i class="fa fa-edit"></i> 修改全部
         </a>
       </div>
@@ -36,7 +36,7 @@
         showColumns: true,
         fixedColumns: true,
         fixedNumber: 3,
-        onEditableSave: modifyOneWorkerConfig,
+        onEditableSave: modifyOneWorkerMaximumPoolSize,
         columns: [{
           field: 'workerId',
           title: 'Worker Id'
@@ -58,17 +58,7 @@
           title: '最大线程数',
           editable: {
             type: 'text',
-            validate: function(value) {
-              if (!value || !value.trim()) {
-                return '不能为空';
-              }
-              if (!/^[1-9]\d*$/g.test(value.trim())) {
-                return '请输入正整数';
-              }
-              if (parseInt(value) > 32767) {
-                return '不能大于 32767';
-              }
-            }
+            validate: validateMaximumPoolSize
           }
         },
         {
@@ -118,7 +108,7 @@
       $.table.init(options);
     });
 
-    function modifyOneWorkerConfig(field, row, rowIndex, oldValue) {
+    function modifyOneWorkerMaximumPoolSize(field, row, rowIndex, oldValue) {
       if (field !== "maximumPoolSize") {
         $.modal.msgError("只能更新['maximumPoolSize']字段");
         return;
@@ -134,16 +124,63 @@
         "workerId": row.workerId,
         "host": row.host,
         "port": row['port'],
-        "maximumPoolSize": newValue
+        "action": "MODIFY_MAXIMUM_POOL_SIZE",
+        "data": newValue
       };
-      $.operate.post(prefix + "/modify_one_worker_config", params, function (result) {
+      $.operate.post(prefix + "/configure_one_worker", params, function (result) {
         row[field] = (result.code === 0) ? newValue : oldValue;
       }, false);
     }
 
-    function modifyAllWorkerConfig() {
-      table.set();
-      $.modal.open("修改所有Worker", prefix + "/modify_all_worker_config?group=" + [[${group}]], '360', '200');
+    function modifyAllWorkerMaximumPoolSize() {
+      layer.open({
+        type: 1,
+        title: '修改全部Worker的最大线程数',
+        btn: ['确定', '取消'],
+        content: '<input type="text" class="layui-layer-input" placeholder="请输入最大线程数的值">',
+        skin: 'layui-layer-prompt',
+        resize: false,
+        success: function (layero, index) {
+          layero.find('.layui-layer-input').focus();
+        },
+        yes: function (index, layero) {
+          const input = layero.find('.layui-layer-input');
+          const value = input.val();
+          const msg = validateMaximumPoolSize(value);
+          if (msg) {
+            layer.tips(msg, input, {tips: 1});
+            return;
+          }
+          const params = {
+            "group": [[${group}]],
+            "action": "MODIFY_MAXIMUM_POOL_SIZE",
+            "data": value
+          };
+          $.operate.post(prefix + "/configure_all_worker", params, function (result) {
+            if (result.code === 0) {
+              /*
+              const src = prefix + "/worker?group=" + [[${group}]];
+              const iframe = $(window.parent.document).find("iframe[src='" + src + "']");
+              iframe.attr("src", src);
+              */
+              location.reload();
+              layer.close(index);
+            }
+          }, false);
+        }
+      });
+    }
+
+    function validateMaximumPoolSize(value) {
+      if (!value || !value.trim()) {
+        return '不能为空';
+      }
+      if (!/^[1-9]\d*$/g.test(value.trim())) {
+        return '请输入正整数';
+      }
+      if (parseInt(value) > 32767) {
+        return '不能大于 32767';
+      }
     }
   </script>
 

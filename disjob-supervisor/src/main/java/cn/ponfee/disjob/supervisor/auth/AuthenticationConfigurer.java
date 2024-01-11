@@ -70,7 +70,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         private static void authenticateWorker(String group) {
             String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
             if (StringUtils.isBlank(workerToken)) {
-                // Not configure worker token
+                // Not configured worker token
                 return;
             }
 
@@ -89,7 +89,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
 
             String userToken = SchedGroupService.getGroup(group).getUserToken();
             if (StringUtils.isBlank(userToken)) {
-                // Not configure user token
+                // Not configured user token
                 return;
             }
 

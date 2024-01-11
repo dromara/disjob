@@ -10,9 +10,9 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
-import cn.ponfee.disjob.core.param.worker.ModifyWorkerConfigParam;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +40,7 @@ public interface WorkerRpcService {
     @GetMapping("metrics")
     WorkerMetrics metrics(GetMetricsParam param);
 
-    @PostMapping("worker_config/modify")
-    void modifyWorkerConfig(ModifyWorkerConfigParam param);
+    @PostMapping("worker/configure")
+    void configureWorker(ConfigureWorkerParam param);
 
 }

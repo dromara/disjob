@@ -15,9 +15,9 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
-import cn.ponfee.disjob.core.param.worker.ModifyWorkerConfigParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.samples.worker.util.JobHandlerParser;
@@ -113,9 +113,9 @@ public class VertxWebServer extends AbstractVerticle {
             return workerRpcService.metrics(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.post(PATH_PREFIX + "worker_config/modify").handler(ctx -> handle(() -> {
-            ModifyWorkerConfigParam param = parseArg(ctx, ModifyWorkerConfigParam.class);
-            workerRpcService.modifyWorkerConfig(param);
+        router.post(PATH_PREFIX + "worker/configure").handler(ctx -> handle(() -> {
+            ConfigureWorkerParam param = parseArg(ctx, ConfigureWorkerParam.class);
+            workerRpcService.configureWorker(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {

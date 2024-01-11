@@ -12,8 +12,8 @@ import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
-import cn.ponfee.disjob.supervisor.application.request.ModifyAllWorkerConfigRequest;
-import cn.ponfee.disjob.supervisor.application.request.ModifyOneWorkerConfigRequest;
+import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
+import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
@@ -142,33 +142,26 @@ public class DisjobMyGroupController extends BaseController {
      */
     @RequiresPermissions(PERMISSION_CODE)
     @Log(title = "修改指定Worker的参数配置", businessType = BusinessType.UPDATE)
-    @PostMapping("/modify_one_worker_config")
+    @PostMapping("/configure_one_worker")
     @ResponseBody
-    public AjaxResult modifyOneWorkerConfig(ModifyOneWorkerConfigRequest request) {
+    public AjaxResult configureOneWorker(ConfigureOneWorkerRequest request) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
 
-        serverMetricsService.modifyOneWorkerConfig(request);
+        serverMetricsService.configureOneWorker(request);
         return AjaxResult.success("修改成功");
     }
 
-    @RequiresPermissions(PERMISSION_CODE)
-    @GetMapping("/modify_all_worker_config")
-    public String modifyAllWorkerConfig(@RequestParam("group") String group, ModelMap mmap) {
-        mmap.put("group", group);
-        return PREFIX + "/modifyAllWorkerConfig";
-    }
-
     /**
-     * 修改该分组下的所有Worker的参数配置
+     * 修改该分组下的全部Worker的参数配置
      */
     @RequiresPermissions(PERMISSION_CODE)
-    @Log(title = "修改该分组下的所有Worker的参数配置", businessType = BusinessType.UPDATE)
-    @PostMapping("/modify_all_worker_config")
+    @Log(title = "修改该分组下的全部Worker的参数配置", businessType = BusinessType.UPDATE)
+    @PostMapping("/configure_all_worker")
     @ResponseBody
-    public AjaxResult modifyAllWorkerConfig(ModifyAllWorkerConfigRequest request) {
+    public AjaxResult configureAllWorker(ConfigureAllWorkerRequest request) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
 
-        serverMetricsService.modifyAllWorkerConfig(request);
+        serverMetricsService.configureAllWorker(request);
         return AjaxResult.success("修改成功");
     }
 

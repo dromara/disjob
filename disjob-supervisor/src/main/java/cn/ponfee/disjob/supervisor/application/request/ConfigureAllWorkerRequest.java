@@ -6,27 +6,28 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.core.param.worker;
+package cn.ponfee.disjob.supervisor.application.request;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
- * Modify maximum pool size param
+ * Configure all worker request
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-@NoArgsConstructor
-public class ModifyWorkerConfigParam extends AuthenticationParam {
-    private static final long serialVersionUID = 1023942345935168778L;
+public class ConfigureAllWorkerRequest extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -2430927428049714711L;
 
-    private int maximumPoolSize;
+    private String group;
 
-    public ModifyWorkerConfigParam(String supervisorToken) {
-        super.setSupervisorToken(supervisorToken);
-    }
+    private Action action;
+    private String data;
 
 }

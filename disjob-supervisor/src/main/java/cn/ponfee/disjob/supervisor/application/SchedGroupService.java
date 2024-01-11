@@ -25,6 +25,7 @@ import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
 import cn.ponfee.disjob.supervisor.application.value.TokenName;
+import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
@@ -63,10 +64,12 @@ public class SchedGroupService extends SingletonClassConstraint {
     private final SupervisorRegistry supervisorRegistry;
 
     public SchedGroupService(SchedGroupMapper schedGroupMapper,
-                             SupervisorRegistry supervisorRegistry) {
+                             SupervisorRegistry supervisorRegistry,
+                             SupervisorProperties supervisorProperties) {
         this.schedGroupMapper = schedGroupMapper;
         this.supervisorRegistry = supervisorRegistry;
-        commonScheduledPool().scheduleWithFixedDelay(this::refresh, PERIOD_SECONDS, PERIOD_SECONDS, TimeUnit.SECONDS);
+        int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 10);
+        commonScheduledPool().scheduleWithFixedDelay(this::refresh, periodSeconds, periodSeconds, TimeUnit.SECONDS);
         refresh();
     }
 

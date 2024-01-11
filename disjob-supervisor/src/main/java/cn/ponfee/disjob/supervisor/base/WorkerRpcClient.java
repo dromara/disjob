@@ -12,9 +12,9 @@ import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
-import cn.ponfee.disjob.core.param.worker.ModifyWorkerConfigParam;
 import cn.ponfee.disjob.registry.DiscoveryRestProxy;
 import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -96,8 +96,8 @@ public class WorkerRpcClient {
         }
 
         @Override
-        public void modifyWorkerConfig(ModifyWorkerConfigParam param) {
-            throw new UnsupportedOperationException("Unsupported local modifyWorkerConfig.");
+        public void configureWorker(ConfigureWorkerParam param) {
+            throw new UnsupportedOperationException("Unsupported local configureWorker.");
         }
     }
 

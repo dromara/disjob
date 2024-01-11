@@ -15,9 +15,10 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
+import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
-import cn.ponfee.disjob.core.param.worker.ModifyWorkerConfigParam;
 import cn.ponfee.disjob.worker.base.WorkerMetricsAggregator;
 
 import java.util.List;
@@ -54,9 +55,15 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
     }
 
     @Override
-    public void modifyWorkerConfig(ModifyWorkerConfigParam param) {
+    public void configureWorker(ConfigureWorkerParam param) {
         currentWork.authenticate(param);
-        WorkerMetricsAggregator.modifyWorkerConfig(param);
+        Action action = param.getAction();
+        if (action == Action.MODIFY_MAXIMUM_POOL_SIZE) {
+            Integer maximumPoolSize = action.parse(param.getData());
+            WorkerMetricsAggregator.modifyMaximumPoolSize(maximumPoolSize);
+        } else {
+            throw new UnsupportedOperationException("Unsupported modify worker config action: " + param.getAction());
+        }
     }
 
 }
