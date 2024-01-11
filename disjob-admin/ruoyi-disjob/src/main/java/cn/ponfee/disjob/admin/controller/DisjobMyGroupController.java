@@ -133,7 +133,7 @@ public class DisjobMyGroupController extends BaseController {
         AuthorizeGroupService.authorizeGroup(getLoginName(), group);
 
         mmap.put("group", group);
-        mmap.put("list", serverMetricsService.workers(group));
+        mmap.put("workers", serverMetricsService.workers(group));
         return PREFIX + "/worker";
     }
 

@@ -7,7 +7,6 @@ import com.ruoyi.common.exception.file.FileSizeLimitExceededException;
 import com.ruoyi.common.exception.file.InvalidExtensionException;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.common.utils.uuid.Seq;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -121,10 +120,10 @@ public class FileUploadUtils
     /**
      * 编码文件名
      */
-    public static String extractFilename(MultipartFile file)
-    {
-        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(),
-                FilenameUtils.getBaseName(file.getOriginalFilename()), Seq.getId(Seq.uploadSeqType), getExtension(file));
+    public static String extractFilename(MultipartFile file) {
+        String baseName = FilenameUtils.getBaseName(file.getOriginalFilename());
+        String uuid = Constants.UUID_GENERATOR.generateId().toString().replaceAll("-", "");
+        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(), baseName, uuid, getExtension(file));
     }
 
     public static File getAbsoluteFile(String uploadDir, String fileName) throws IOException

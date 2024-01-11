@@ -7,7 +7,7 @@
 <body class="gray-bg">
   <div class="container-div">
     <div class="row">
-      <div th:if="${not #lists.isEmpty(list)}" class="btn-group-sm" id="toolbar" role="group">
+      <div th:if="${not #lists.isEmpty(workers)}" class="btn-group-sm" id="toolbar" role="group">
         <a class="btn btn-success" onclick="modifyAllWorkerMaximumPoolSize()">
           <i class="fa fa-edit"></i> 修改全部
         </a>
@@ -28,7 +28,7 @@
 
     $(function () {
       const options = {
-        data: [[${list}]],
+        data: [[${workers}]],
         sidePagination: "client",
         showSearch: false,
         showRefresh: false,
@@ -137,7 +137,7 @@
         type: 1,
         title: '修改全部Worker的最大线程数',
         btn: ['确定', '取消'],
-        content: '<input type="text" class="layui-layer-input" placeholder="请输入最大线程数的值">',
+        content: '<input type="text" class="layui-layer-input" placeholder="请输入要修改的最大线程数目标值">',
         skin: 'layui-layer-prompt',
         resize: false,
         success: function (layero, index) {

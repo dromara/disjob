@@ -2,6 +2,9 @@
 <html lang="zh" xmlns:th="http://www.thymeleaf.org">
 <head>
   <th:block th:include="include :: header('令牌管理')" />
+  <style type="text/css">
+    label { text-align: right; }
+  </style>
 </head>
 <body class="white-bg">
 
@@ -9,15 +12,15 @@
     <form class="form-horizontal m" id="form-group-token" th:object="${data}">
 
       <div class="form-group">
-        <label class="col-sm-4 control-label">分组名称：</label>
-        <div class="col-sm-8">
+        <label class="col-xs-3 control-label">分组名称：</label>
+        <div class="col-xs-9">
           <input name="group" th:field="*{group}" class="form-control" type="text" readonly />
         </div>
       </div>
 
       <div class="form-group">
-        <label class="col-sm-4 control-label">Supervisor令牌：</label>
-        <div class="col-sm-8">
+        <label class="col-xs-3 control-label">Supervisor令牌：</label>
+        <div class="col-xs-9">
           <div class="input-group">
             <input class="form-control" type="text" id="supervisorToken" th:field="*{supervisorToken}" readonly />
             <span id="supervisor1" class="input-group-btn"></span>
@@ -27,8 +30,8 @@
       </div>
 
       <div class="form-group">
-        <label class="col-sm-4 control-label">Worker令牌：</label>
-        <div class="col-sm-8">
+        <label class="col-xs-3 control-label">Worker令牌：</label>
+        <div class="col-xs-9">
           <div class="input-group">
             <input class="form-control" type="text" id="workerToken" th:field="*{workerToken}" readonly />
             <span id="worker1" class="input-group-btn"></span>
@@ -38,8 +41,8 @@
       </div>
 
       <div class="form-group">
-        <label class="col-sm-4 control-label">User令牌：</label>
-        <div class="col-sm-8">
+        <label class="col-xs-3 control-label">User令牌：</label>
+        <div class="col-xs-9">
           <div class="input-group">
             <input class="form-control" type="text" id="userToken" th:field="*{userToken}" readonly />
             <span id="user1" class="input-group-btn"></span>
@@ -70,7 +73,7 @@
             input.val(result.data);
             setTokenButton(name);
           }
-        });
+        }, false);
       });
     }
 

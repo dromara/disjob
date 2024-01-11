@@ -79,7 +79,7 @@
     <commons-io.version>2.15.1</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
     <jna-platform.version>5.14.0</jna-platform.version>
-    <curator-recipes.version>5.5.0</curator-recipes.version>
+    <curator-recipes.version>5.6.0</curator-recipes.version>
 
     <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
