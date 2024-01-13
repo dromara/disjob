@@ -8,15 +8,7 @@ var endLayDate;
 var isScrollToTop = parent.isScrollToTop;
 
 $(function() {
-	
-    //  layer扩展皮肤
-    if (window.layer !== undefined) {
-        layer.config({
-            extend: 'moon/style.css',
-            skin: 'layer-ext-moon'
-        });
-    }
-	
+
     // 回到顶部绑定
     if ($.fn.toTop !== undefined) {
         $('#scroll-up').toTop();
@@ -48,9 +40,9 @@ $(function() {
             event.preventDefault();
         }
     });
-	 
+
     // laydate 时间控件绑定
-    if ($(".select-time").length > 0) {
+    if ($(".select-time").length > 0 && $('#startTime').length > 0 && $('#endTime').length > 0) {
        layui.use('laydate', function() {
             var laydate = layui.laydate;
             startLayDate = laydate.render({
