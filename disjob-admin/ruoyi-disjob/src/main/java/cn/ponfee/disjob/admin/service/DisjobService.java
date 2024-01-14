@@ -29,7 +29,7 @@ public class DisjobService {
     /**
      * 加载枚举定义
      */
-    private static final Map<String, Class<IntValueEnum<?>>> ENUM_MAP = new ResourceScanner("cn/ponfee/disjob/**/*.class")
+    private static final Map<String, Class<IntValueEnum<?>>> ENUM_MAP = new ResourceScanner("cn/ponfee/disjob/core/enums/**/*.class")
         .scan4class(new Class<?>[]{IntValueEnum.class}, null)
         .stream()
         // cn.ponfee.disjob.core.enums.TriggerType$1：Class#getSimpleName为空串，e.isAnonymousClass()为true

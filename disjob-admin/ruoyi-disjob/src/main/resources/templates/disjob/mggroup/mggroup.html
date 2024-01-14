@@ -171,13 +171,12 @@
     }
 
     function add() {
-      $.modal.open("新增" + table.options.modalName, $.operate.addUrl(), '430', '240');
+      $.modal.open("新增" + table.options.modalName, $.operate.addUrl(), '460', '240');
     }
 
     function token() {
       /*
       // 引入了“bootstrap-table-editable-js”，导致切换到其它菜单后再切回来时，提示未选择到行
-      table.set();
       const rows = $("#" + table.options.id).bootstrapTable('getSelections');
       */
       const rows = $.table.selectColumns("group");

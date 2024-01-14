@@ -219,7 +219,6 @@
 
     // 批量删除
     function removeAll() {
-      table.set();
       const rows = $("#" + table.options.id).bootstrapTable('getSelections');
       if (rows.length === 0) {
         $.modal.alertWarning("请至少选择一条记录");
