@@ -4,7 +4,10 @@
   <th:block th:include="include :: header('修改分组')" />
   <th:block th:include="include :: bootstrap-tagsinput-css" />
   <style>
-    label { text-align: right; }
+    label {
+      text-align: right;
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body class="white-bg">
@@ -13,31 +16,31 @@
     <form class="form-horizontal m" id="form-mygroup-edit" th:object="${data}">
       <input name="version" th:field="*{version}" type="hidden" />
       <div class="form-group">
-        <label class="col-xs-2 control-label is-required">分组名称：</label>
+        <label class="col-xs-2 control-label is-required" style="padding-right: 0;">分组名称：</label>
         <div class="col-xs-10">
           <input name="group" th:field="*{group}" class="form-control" type="text" readonly required />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label is-required">Own User：</label>
+        <label class="col-xs-2 control-label is-required" style="padding-right: 0;">Own User：</label>
         <div class="col-xs-10">
           <input name="ownUser" th:field="*{ownUser}" class="form-control" type="text" autocomplete="off" required />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label">Dev Users：</label>
+        <label class="col-xs-2 control-label" style="padding-right: 0;">Dev Users：</label>
         <div class="col-xs-10">
           <input type="text" name="devUsers" th:field="*{devUsers}" autocomplete="off" data-role="tagsinput" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label">Alarm Users：</label>
+        <label class="col-xs-2 control-label" style="padding-right: 0;">Alarm Users：</label>
         <div class="col-xs-10">
           <input type="text" name="alarmUsers" th:field="*{alarmUsers}" autocomplete="off" data-role="tagsinput" />
         </div>
       </div>
       <div class="form-group">
-        <label class="col-xs-2 control-label">Web Hook：</label>
+        <label class="col-xs-2 control-label" style="padding-right: 0;">Web Hook：</label>
         <div class="col-xs-10">
           <input name="webHook" th:field="*{webHook}" class="form-control" type="text" autocomplete="off" />
         </div>

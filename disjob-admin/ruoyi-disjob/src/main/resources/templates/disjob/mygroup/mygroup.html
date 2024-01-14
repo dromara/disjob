@@ -127,12 +127,10 @@
     }
 
     function edit(group) {
-      table.set();
-      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '735', '380');
+      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '650', '380');
     }
 
     function workers(group) {
-      table.set();
       $.modal.popupRight("Worker", prefix + "/worker?group=" + group);
     }
   </script>

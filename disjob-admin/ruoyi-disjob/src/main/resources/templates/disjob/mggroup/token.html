@@ -3,7 +3,13 @@
 <head>
   <th:block th:include="include :: header('令牌管理')" />
   <style>
-    label { text-align: right; }
+    label {
+      text-align: right;
+      margin: 6px 0 5px 0;
+    }
+    input {
+      margin: 1px 0 0 0;
+    }
   </style>
 </head>
 <body class="white-bg">
@@ -12,14 +18,14 @@
     <form class="form-horizontal m" id="form-group-token" th:object="${data}">
 
       <div class="form-group">
-        <label class="col-xs-3 control-label">分组名称：</label>
+        <label class="col-xs-3 control-label" style="padding-right: 0;">分组名称：</label>
         <div class="col-xs-9">
           <input name="group" th:field="*{group}" class="form-control" type="text" readonly />
         </div>
       </div>
 
       <div class="form-group">
-        <label class="col-xs-3 control-label">Supervisor令牌：</label>
+        <label class="col-xs-3 control-label" style="padding-right: 0;">Supervisor令牌：</label>
         <div class="col-xs-9">
           <div class="input-group">
             <input class="form-control" type="text" id="supervisorToken" th:field="*{supervisorToken}" readonly />
@@ -30,7 +36,7 @@
       </div>
 
       <div class="form-group">
-        <label class="col-xs-3 control-label">Worker令牌：</label>
+        <label class="col-xs-3 control-label" style="padding-right: 0;">Worker令牌：</label>
         <div class="col-xs-9">
           <div class="input-group">
             <input class="form-control" type="text" id="workerToken" th:field="*{workerToken}" readonly />
@@ -41,7 +47,7 @@
       </div>
 
       <div class="form-group">
-        <label class="col-xs-3 control-label">User令牌：</label>
+        <label class="col-xs-3 control-label" style="padding-right: 0;">User令牌：</label>
         <div class="col-xs-9">
           <div class="input-group">
             <input class="form-control" type="text" id="userToken" th:field="*{userToken}" readonly />

@@ -403,7 +403,6 @@
   }
 
   function operate(instanceId, type, message) {
-    table.set();
     $.modal.confirm("确认要" + message + "吗？", function () {
       $.operate.post(prefix + "/" + type + "/" + instanceId);
     });

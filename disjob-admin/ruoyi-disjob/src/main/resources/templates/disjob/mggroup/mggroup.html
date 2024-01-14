@@ -60,8 +60,10 @@
         fixedColumns: true,
         fixedNumber: 2,
         onEditableSave: updateOwnUser,
+        rememberSelected: true,
         modalName: "分组",
         columns: [{
+          field: 'state',
           checkbox: true
         },
         {
@@ -169,30 +171,31 @@
     }
 
     function add() {
-      table.set();
-      $.modal.open("新增" + table.options.modalName, $.operate.addUrl(), '465', '240');
+      $.modal.open("新增" + table.options.modalName, $.operate.addUrl(), '430', '240');
     }
 
     function token() {
+      /*
+      // 引入了“bootstrap-table-editable-js”，导致切换到其它菜单后再切回来时，提示未选择到行
       table.set();
       const rows = $("#" + table.options.id).bootstrapTable('getSelections');
+      */
+      const rows = $.table.selectColumns("group");
       if (rows.length !== 1) {
         $.modal.alertWarning("请选择一条记录");
         return;
       }
-      const url = prefix + '/token?group=' + rows[0].group;
-      $.modal.open("令牌管理", url, '600', '345', null, ['复制', '关闭']);
+      const url = prefix + '/token?group=' + rows[0];
+      $.modal.open("令牌管理", url, '590', '345', null, ['复制', '关闭']);
     }
 
     function remove(group) {
-      table.set();
       $.modal.confirm("确定删除分组'" + group + "'吗？", function() {
         $.operate.post(table.options.removeUrl, { "group": group });
       });
     }
 
     function workers(group) {
-      table.set();
       $.modal.popupRight("Worker", prefix + "/worker?group=" + group);
     }
 
