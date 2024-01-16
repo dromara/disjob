@@ -21,7 +21,7 @@ import cn.ponfee.disjob.core.model.SchedWorkflow;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.application.request.SearchJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobSearchRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
@@ -180,7 +180,7 @@ public class DistributedJobQuerier {
         return rows;
     }
 
-    public List<Map<String, Object>> searchJob(SearchJobRequest request) {
+    public List<Map<String, Object>> searchJob(SchedJobSearchRequest request) {
         return jobMapper.searchJob(request);
     }
 

@@ -15,7 +15,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.model.InstanceAttach;
@@ -45,7 +45,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel.Timing<ExecuteTaskParam> {
     private static final long serialVersionUID = -6493747747321536680L;
 
-    private AtomicReference<Operations> operation;
+    private AtomicReference<Operation> operation;
     private long taskId;
     private long instanceId;
     private Long wnstanceId;
@@ -66,11 +66,11 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
 
     // --------------------------------------------------------other methods
 
-    public boolean updateOperation(Operations expect, Operations update) {
+    public boolean updateOperation(Operation expect, Operation update) {
         return this.operation.compareAndSet(expect, update);
     }
 
-    public Operations operation() {
+    public Operation operation() {
         return this.operation.get();
     }
 
@@ -161,7 +161,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         ByteBuffer buf = ByteBuffer.wrap(bytes);
 
         ExecuteTaskParam param = new ExecuteTaskParam();
-        param.setOperation(new AtomicReference<>(Operations.values()[buf.get()])); //   1: operation
+        param.setOperation(new AtomicReference<>(Operation.values()[buf.get()]));  //   1: operation
         param.setTaskId(buf.getLong());                                            //   8: taskId
         param.setInstanceId(buf.getLong());                                        //   8: instanceId
         param.setWnstanceId(zeroNull(buf.getLong()));                              //   8: wnstanceId
@@ -192,9 +192,9 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             this.supervisorToken = supervisorToken;
         }
 
-        public ExecuteTaskParam build(Operations ops, long taskId, long triggerTime, Worker worker) {
+        public ExecuteTaskParam build(Operation operation, long taskId, long triggerTime, Worker worker) {
             ExecuteTaskParam param = new ExecuteTaskParam();
-            param.setOperation(new AtomicReference<>(ops));
+            param.setOperation(new AtomicReference<>(operation));
             param.setTaskId(taskId);
             param.setInstanceId(instance.getInstanceId());
             param.setWnstanceId(instance.getWnstanceId());

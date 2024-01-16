@@ -15,7 +15,7 @@ import static cn.ponfee.disjob.core.enums.ExecuteState.*;
  *
  * @author Ponfee
  */
-public enum Operations {
+public enum Operation {
 
     /**
      * Trigger from WAITING to EXECUTING
@@ -47,7 +47,7 @@ public enum Operations {
     private final ExecuteState fromState;
     private final ExecuteState toState;
 
-    Operations(ExecuteState fromState, ExecuteState toState) {
+    Operation(ExecuteState fromState, ExecuteState toState) {
         this.fromState = fromState;
         this.toState = toState;
     }

@@ -8,25 +8,25 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+import java.util.Set;
+
 /**
- * Add sched job request parameter structure.
+ * Search job request
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class AddSchedJobRequest extends AbstractSchedJobRequest {
-    private static final long serialVersionUID = -3122300447277606053L;
+public class SchedJobSearchRequest extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = 9017105275544197742L;
 
-    private String createdBy;
-
-    public SchedJob tosSchedJob() {
-        return SchedJobConverter.INSTANCE.convert(this);
-    }
+    private Set<String> groups;
+    private String jobName;
+    private Long jobId;
 
 }

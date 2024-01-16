@@ -67,7 +67,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
-        this.afterMilliseconds = (heartbeatPeriodMs * 3); // 3s * 3 = 9s
+        // heartbeat period duration: 3s * 3 = 9s
+        this.afterMilliseconds = (heartbeatPeriodMs * 3);
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
             .maximumPoolSize(Math.max(1, processJobMaximumPoolSize))
@@ -233,7 +234,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 } else {
                     // all workers are dead
                     log.info("All worker dead, terminate collided sched instance: {}", instanceId);
-                    jobManager.cancelInstance(lastInstance.obtainLockInstanceId(), Operations.COLLIDED_CANCEL);
+                    jobManager.cancelInstance(lastInstance.obtainLockInstanceId(), Operation.COLLIDED_CANCEL);
                     return false;
                 }
             case CANCELED:
@@ -277,7 +278,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                instances.forEach(e -> jobManager.cancelInstance(e.obtainLockInstanceId(), Operations.COLLIDED_CANCEL));
+                instances.forEach(e -> jobManager.cancelInstance(e.obtainLockInstanceId(), Operation.COLLIDED_CANCEL));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collided strategy: " + collidedStrategy.name());

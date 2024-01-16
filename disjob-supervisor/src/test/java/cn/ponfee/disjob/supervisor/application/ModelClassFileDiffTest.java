@@ -9,18 +9,22 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.util.ClassUtils;
+import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
+import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
-import org.junit.jupiter.api.Assertions;
+import com.google.common.collect.Sets;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * ModelClassFileDiffTest
@@ -31,12 +35,29 @@ public class ModelClassFileDiffTest {
 
     @Test
     public void test() {
-        Assertions.assertTrue(Objects.equals(null, null));
-        System.out.println("SchedJob ⇋ AddSchedJobRequest: " + ClassUtils.fieldDiff(SchedJob.class, AddSchedJobRequest.class));
-        System.out.println("SchedJob ⇋ UpdateSchedJobRequest: " + ClassUtils.fieldDiff(SchedJob.class, UpdateSchedJobRequest.class));
-        System.out.println("SchedJob ⇋ SchedJobResponse: " + ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class));
-        System.out.println("SchedInstance ⇋ SchedInstanceResponse: " + ClassUtils.fieldDiff(SchedInstance.class, SchedInstanceResponse.class));
-        System.out.println("SchedTask ⇋ SchedTaskResponse: " + ClassUtils.fieldDiff(SchedTask.class, SchedTaskResponse.class));
+        Assertions.assertThat(Objects.equals(null, null)).isTrue();
+
+        // SchedJob ⇋ AddSchedJobRequest
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "failedScanCount");
+
+        // SchedJob ⇋ UpdateSchedJobRequest
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "id", "updatedAt", "lastTriggerTime", "createdBy", "nextTriggerTime", "nextScanTime", "failedScanCount");
+
+        // SchedJob ⇋ SchedJobResponse
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "failedScanCount");
+
+        // SchedInstance ⇋ SchedInstanceResponse
+        assertSame(ClassUtils.fieldDiff(SchedInstance.class, SchedInstanceResponse.class), "version", "createdAt", "id", "updatedAt", "isTreeLeaf", "tasks");
+
+        // SchedTask ⇋ SchedTaskResponse
+        assertSame(ClassUtils.fieldDiff(SchedTask.class, SchedTaskResponse.class), "version", "createdAt", "id", "updatedAt");
+
+        // SchedGroup ⇋ SchedGroupResponse
+        assertSame(ClassUtils.fieldDiff(SchedGroup.class, SchedGroupResponse.class), "id");
+    }
+
+    private static void assertSame(Set<String> set, String... array) {
+        Assertions.assertThat(set).isEqualTo(Sets.newHashSet(array));
     }
 
 }

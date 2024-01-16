@@ -14,18 +14,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Update sched job request parameter structure.
+ * Add sched job request parameter structure.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class UpdateSchedJobRequest extends AbstractSchedJobRequest {
-    private static final long serialVersionUID = -1481890923435762900L;
+public class SchedJobAddRequest extends AbstractSchedJobRequest {
+    private static final long serialVersionUID = -3122300447277606053L;
 
-    private Long jobId;
-    private String updatedBy;
-    private Integer version;
+    private String createdBy;
 
     public SchedJob tosSchedJob() {
         return SchedJobConverter.INSTANCE.convert(this);

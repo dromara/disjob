@@ -9,8 +9,8 @@
 package cn.ponfee.disjob.supervisor.application.converter;
 
 import cn.ponfee.disjob.core.model.SchedGroup;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedGroupRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -25,10 +25,10 @@ public interface SchedGroupConverter {
 
     SchedGroupConverter INSTANCE = Mappers.getMapper(SchedGroupConverter.class);
 
-    SchedGroupResponse convert(SchedGroup schedGroup);
+    SchedGroupResponse convert(SchedGroup source);
 
-    SchedGroup convert(AddSchedGroupRequest addSchedGroupRequest);
+    SchedGroup convert(SchedGroupAddRequest source);
 
-    SchedGroup convert(UpdateSchedGroupRequest updateSchedGroupRequest);
+    SchedGroup convert(SchedGroupUpdateRequest source);
 
 }

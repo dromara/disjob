@@ -51,14 +51,14 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     /**
      * Group data refresh period seconds.
      */
-    private int groupRefreshPeriodSeconds = 60;
+    private int groupRefreshPeriodSeconds = 120;
 
     public void check() {
         Assert.isTrue(scanTriggeringJobPeriodMs > 0, "Scan triggering job period ms must be greater than 0.");
         Assert.isTrue(scanWaitingInstancePeriodMs > 0, "Scan waiting instance period ms must be greater than 0.");
         Assert.isTrue(scanRunningInstancePeriodMs > 0, "Scan running instance period ms must be greater than 0.");
         Assert.isTrue(processJobMaximumPoolSize > 0, "Process job maximum pool size must be greater than 0.");
-        Assert.isTrue(groupRefreshPeriodSeconds >= 10, "group refresh period seconds cannot less than 10s.");
+        Assert.isTrue(groupRefreshPeriodSeconds >= 30, "group refresh period seconds cannot less than 30s.");
     }
 
 }

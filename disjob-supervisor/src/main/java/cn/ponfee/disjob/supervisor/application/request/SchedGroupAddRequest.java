@@ -24,7 +24,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public class AddSchedGroupRequest extends ToJsonString implements Serializable {
+public class SchedGroupAddRequest extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 8022970678398556635L;
 
     private String group;

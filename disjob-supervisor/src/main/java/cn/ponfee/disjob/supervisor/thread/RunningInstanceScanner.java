@@ -48,7 +48,8 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
-        this.beforeMilliseconds = (heartbeatPeriodMs << 3); // 30s * 8 = 240s
+        // heartbeat period duration: 30s * 8 = 240s
+        this.beforeMilliseconds = (heartbeatPeriodMs << 3);
     }
 
     @Override

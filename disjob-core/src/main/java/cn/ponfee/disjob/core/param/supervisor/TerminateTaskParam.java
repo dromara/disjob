@@ -10,7 +10,7 @@ package cn.ponfee.disjob.core.param.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,13 +33,13 @@ public class TerminateTaskParam extends ToJsonString implements Serializable {
     private long instanceId;
     private Long wnstanceId;
     private long taskId;
-    private Operations operation;
+    private Operation operation;
     private ExecuteState toState;
     private String errorMsg;
     private String worker;
 
     public TerminateTaskParam(long instanceId, Long wnstanceId, long taskId, String worker,
-                              Operations operation, ExecuteState toState, String errorMsg) {
+                              Operation operation, ExecuteState toState, String errorMsg) {
         Assert.hasText(worker, "Terminate task worker param cannot be blank.");
         this.instanceId = instanceId;
         this.wnstanceId = wnstanceId;

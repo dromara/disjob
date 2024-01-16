@@ -90,7 +90,7 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         return new Result<>(code, msg, null);
     }
 
-    // -----------------------------------------------of operations
+    // -----------------------------------------------of methods
 
     public static <T> Result<T> of(CodeMsg cm) {
         return new Result<>(cm.getCode(), cm.getMsg(), null);

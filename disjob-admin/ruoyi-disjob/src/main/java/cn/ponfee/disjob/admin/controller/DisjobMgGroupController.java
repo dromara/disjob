@@ -13,7 +13,7 @@ import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.value.TokenName;
 import com.google.common.collect.ImmutableMap;
@@ -103,7 +103,7 @@ public class DisjobMgGroupController extends BaseController {
     @Log(title = "新增分组", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult add(AddSchedGroupRequest req) {
+    public AjaxResult add(SchedGroupAddRequest req) {
         req.setCreatedBy(getLoginName());
         schedGroupService.add(req);
         return success();

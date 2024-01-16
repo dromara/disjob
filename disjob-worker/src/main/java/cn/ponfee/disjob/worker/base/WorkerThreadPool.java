@@ -19,7 +19,7 @@ import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobType;
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.CancelTaskException;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
@@ -153,7 +153,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * @param stopParam the stops task param
      */
     private void stop(ExecuteTaskParam stopParam) {
-        Operations ops = stopParam.operation();
+        Operation ops = stopParam.operation();
         Assert.isTrue(ops != null && ops.isNotTrigger(), () -> "Invalid stop operation: " + ops);
 
         if (closed.get()) {
@@ -275,7 +275,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } catch (DuplicateTaskException e) {
                     LOG.error(e.getMessage());
                     // cancel this execution param
-                    terminateTask(this, param, Operations.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
+                    terminateTask(this, param, Operation.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
 
                     // return this worker thread
                     idlePool.putFirst(workerThread);
@@ -412,7 +412,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         return errorMsg;
     }
 
-    private static void terminateTask(WorkerThreadPool threadPool, ExecuteTaskParam param, Operations ops, ExecuteState toState, String errorMsg) {
+    private static void terminateTask(WorkerThreadPool threadPool, ExecuteTaskParam param, Operation ops, ExecuteState toState, String errorMsg) {
         Assert.notNull(ops, "Terminate task operation cannot be null.");
         Assert.notNull(param.getWorker(), "Execute task param worker cannot be null.");
         if (!param.updateOperation(ops, null)) {
@@ -478,14 +478,14 @@ public class WorkerThreadPool extends Thread implements Closeable {
             pool.put(param.getTaskId(), workerThread);
         }
 
-        synchronized Pair<WorkerThread, ExecuteTaskParam> stopTask(long taskId, Operations ops) {
+        synchronized Pair<WorkerThread, ExecuteTaskParam> stopTask(long taskId, Operation ops) {
             WorkerThread thread = pool.get(taskId);
             ExecuteTaskParam param;
             if (thread == null || (param = thread.executingParam()) == null) {
                 return null;
             }
 
-            if (!param.updateOperation(Operations.TRIGGER, ops)) {
+            if (!param.updateOperation(Operation.TRIGGER, ops)) {
                 return null;
             }
 
@@ -536,10 +536,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 .forEach(entry -> {
                     WorkerThread workerThread = entry.getValue();
                     ExecuteTaskParam param = workerThread.executingParam();
-                    Operations ops = Operations.PAUSE;
+                    Operation ops = Operation.PAUSE;
 
                     // 1、first change the execution param operation
-                    boolean success = (param == null) || param.updateOperation(Operations.TRIGGER, ops);
+                    boolean success = (param != null) && param.updateOperation(Operation.TRIGGER, ops);
 
                     // 2、then stop the work thread
                     try {
@@ -733,7 +733,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     runTask(param);
                 } catch (Throwable t) {
                     LOG.error("Worker thread execute failed: " + param, t);
-                    terminateTask(threadPool, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                    terminateTask(threadPool, param, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                 }
 
                 // return this to idle thread pool
@@ -794,7 +794,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 param.taskExecutor(taskExecutor);
             } catch (Throwable t) {
                 LOG.error("Load job handler error: " + param, t);
-                terminateTask(threadPool, param, Operations.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
+                terminateTask(threadPool, param, Operation.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
                 return;
             }
 
@@ -804,7 +804,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.info("Initiated sched task {}", param.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Task init error: " + param, t);
-                terminateTask(threadPool, param, Operations.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
+                terminateTask(threadPool, param, Operation.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
                 return;
             }
@@ -830,21 +830,21 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 // 4、execute end
                 if (result != null && result.isSuccess()) {
                     LOG.info("Task execute finished: {}, {}", param.getTaskId(), result.getMsg());
-                    terminateTask(threadPool, param, Operations.TRIGGER, FINISHED, null);
+                    terminateTask(threadPool, param, Operation.TRIGGER, FINISHED, null);
                 } else {
                     LOG.error("Task execute failed: {}, {}", param, result);
                     String msg = (result == null) ? "null result" : result.getMsg();
-                    terminateTask(threadPool, param, Operations.TRIGGER, EXECUTE_FAILED, msg);
+                    terminateTask(threadPool, param, Operation.TRIGGER, EXECUTE_FAILED, msg);
                 }
             } catch (TimeoutException e) {
                 LOG.error("Task execute timeout: " + param, e);
-                terminateTask(threadPool, param, Operations.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
+                terminateTask(threadPool, param, Operation.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
                 LOG.error("Pause task exception: {}, {}", param, e.getMessage());
-                stopInstance(param, Operations.PAUSE, toErrorMsg(e));
+                stopInstance(param, Operation.PAUSE, toErrorMsg(e));
             } catch (CancelTaskException e) {
                 LOG.error("Cancel task exception:  {}, {}", param, e.getMessage());
-                stopInstance(param, Operations.EXCEPTION_CANCEL, toErrorMsg(e));
+                stopInstance(param, Operation.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     LOG.warn("Task execute thread death: {}, {}", param, t.getMessage());
@@ -853,7 +853,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } else {
                     LOG.error("Task execute occur error: " + param, t);
                 }
-                terminateTask(threadPool, param, Operations.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                terminateTask(threadPool, param, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
             } finally {
                 // 5、destroy
@@ -866,8 +866,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
         }
 
-        private void stopInstance(ExecuteTaskParam param, Operations ops, String errorMsg) {
-            if (!param.updateOperation(Operations.TRIGGER, ops)) {
+        private void stopInstance(ExecuteTaskParam param, Operation ops, String errorMsg) {
+            if (!param.updateOperation(Operation.TRIGGER, ops)) {
                 LOG.info("Stop instance conflict: {}, {}", param, ops);
                 return;
             }
@@ -879,9 +879,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             long lockInstanceId = param.getWnstanceId() != null ? param.getWnstanceId() : param.getInstanceId();
             try {
                 synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
-                    if (ops == Operations.PAUSE) {
+                    if (ops == Operation.PAUSE) {
                         res = threadPool.supervisorRpcClient.pauseInstance(lockInstanceId);
-                    } else if (ops == Operations.EXCEPTION_CANCEL) {
+                    } else if (ops == Operation.EXCEPTION_CANCEL) {
                         res = threadPool.supervisorRpcClient.cancelInstance(lockInstanceId, ops);
                     } else {
                         LOG.error("Stop instance unsupported operation: {}, {}", param.getTaskId(), ops);

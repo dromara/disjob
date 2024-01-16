@@ -12,17 +12,17 @@ import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobState;
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
@@ -58,14 +58,14 @@ public class OpenapiService {
 
     // ------------------------------------------------------------------ sched job
 
-    public Long addJob(AddSchedJobRequest req) throws JobException {
+    public Long addJob(SchedJobAddRequest req) throws JobException {
         String user = req.getCreatedBy(), group = req.getGroup();
         Set<String> groups = SchedGroupService.myGroups(user);
         Assert.isTrue(groups.contains(group), "User '" + user + "' not has group '" + group + "' permission.");
         return jobManager.addJob(req.tosSchedJob());
     }
 
-    public void updateJob(UpdateSchedJobRequest req) throws JobException {
+    public void updateJob(SchedJobUpdateRequest req) throws JobException {
         LOG.info("Do updating sched job {}", req.getJobId());
         jobManager.updateJob(req.tosSchedJob());
     }
@@ -105,7 +105,7 @@ public class OpenapiService {
 
     public void cancelInstance(long instanceId) {
         LOG.info("Do canceling sched instance {}", instanceId);
-        if (!jobManager.cancelInstance(instanceId, Operations.MANUAL_CANCEL)) {
+        if (!jobManager.cancelInstance(instanceId, Operation.MANUAL_CANCEL)) {
             throw new JobRuntimeException(JobCodeMsg.NOT_CANCELABLE_INSTANCE);
         }
     }

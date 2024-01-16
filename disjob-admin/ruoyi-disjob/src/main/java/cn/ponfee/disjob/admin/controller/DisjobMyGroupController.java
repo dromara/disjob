@@ -15,7 +15,7 @@ import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -112,7 +112,7 @@ public class DisjobMyGroupController extends BaseController {
     @Log(title = "修改分组", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
-    public AjaxResult doEdit(UpdateSchedGroupRequest req) {
+    public AjaxResult doEdit(SchedGroupUpdateRequest req) {
         String user = getLoginName();
         AuthorizeGroupService.authorizeGroup(user, req.getGroup());
 

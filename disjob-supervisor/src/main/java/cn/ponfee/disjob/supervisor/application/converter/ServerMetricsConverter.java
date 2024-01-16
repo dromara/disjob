@@ -26,9 +26,9 @@ public interface ServerMetricsConverter {
 
     ServerMetricsConverter INSTANCE = Mappers.getMapper(ServerMetricsConverter.class);
 
-    SupervisorMetricsResponse convert(SupervisorMetrics metrics);
+    SupervisorMetricsResponse convert(SupervisorMetrics source);
 
     @Mapping(target = ".", source = "threadPool")
-    WorkerMetricsResponse convert(WorkerMetrics metrics);
+    WorkerMetricsResponse convert(WorkerMetrics source);
 
 }

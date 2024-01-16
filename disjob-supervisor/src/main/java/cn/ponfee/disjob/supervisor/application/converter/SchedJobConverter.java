@@ -11,8 +11,8 @@ package cn.ponfee.disjob.supervisor.application.converter;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
@@ -29,14 +29,14 @@ public interface SchedJobConverter {
 
     SchedJobConverter INSTANCE = Mappers.getMapper(SchedJobConverter.class);
 
-    SchedJob convert(AddSchedJobRequest req);
+    SchedJob convert(SchedJobAddRequest source);
 
-    SchedJob convert(UpdateSchedJobRequest req);
+    SchedJob convert(SchedJobUpdateRequest source);
 
-    SchedJobResponse convert(SchedJob schedJob);
+    SchedJobResponse convert(SchedJob source);
 
-    SchedInstanceResponse convert(SchedInstance schedInstance);
+    SchedInstanceResponse convert(SchedInstance source);
 
-    SchedTaskResponse convert(SchedTask schedTask);
+    SchedTaskResponse convert(SchedTask source);
 
 }

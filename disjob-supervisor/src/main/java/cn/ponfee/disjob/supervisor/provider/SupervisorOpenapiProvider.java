@@ -14,10 +14,10 @@ import cn.ponfee.disjob.common.spring.BaseController;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.OpenapiService;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
@@ -53,14 +53,14 @@ public class SupervisorOpenapiProvider extends BaseController {
     // ------------------------------------------------------------------job
 
     @PostMapping("job/add")
-    public Result<Long> addJob(@RequestBody AddSchedJobRequest req) throws JobException {
+    public Result<Long> addJob(@RequestBody SchedJobAddRequest req) throws JobException {
         AuthorizeGroupService.authorizeGroup(requestUser(), requestGroup(), req.getGroup());
 
         return Result.success(openapiService.addJob(req));
     }
 
     @PutMapping("job/update")
-    public Result<Void> updateJob(@RequestBody UpdateSchedJobRequest req) throws JobException {
+    public Result<Void> updateJob(@RequestBody SchedJobUpdateRequest req) throws JobException {
         AuthorizeGroupService.authorizeGroup(requestUser(), requestGroup(), req.getGroup());
 
         openapiService.updateJob(req);

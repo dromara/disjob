@@ -99,6 +99,16 @@ public class JobConstants {
     public static final String AUTHENTICATE_HEADER_TOKEN = "X-Disjob-Token";
 
     /**
+     * Http url pattern
+     */
+    public static final String HTTP_URL_PATTERN = "http://%s:%d/";
+
+    /**
+     * Https url pattern
+     */
+    public static final String HTTPS_URL_PATTERN = "https://%s:%d/";
+
+    /**
      * Instance lock pool
      */
     public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();

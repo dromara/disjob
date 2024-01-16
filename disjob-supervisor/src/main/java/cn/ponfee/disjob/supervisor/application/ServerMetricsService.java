@@ -37,6 +37,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 
+import static cn.ponfee.disjob.core.base.JobConstants.HTTP_URL_PATTERN;
+
 /**
  * Server info service
  *
@@ -46,9 +48,9 @@ import java.util.List;
 public class ServerMetricsService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerMetricsService.class);
 
-    private static final String SUPERVISOR_METRICS_URL = "http://%s:%d/" + SupervisorRpcService.PREFIX_PATH + "metrics";
-    private static final String WORKER_METRICS_URL = "http://%s:%d/" + WorkerRpcService.PREFIX_PATH + "metrics";
-    private static final String WORKER_CONFIGURE_URL = "http://%s:%d/" + WorkerRpcService.PREFIX_PATH + "worker/configure";
+    private static final String SUPERVISOR_METRICS_URL = HTTP_URL_PATTERN + SupervisorRpcService.PREFIX_PATH + "metrics";
+    private static final String WORKER_METRICS_URL     = HTTP_URL_PATTERN + WorkerRpcService.PREFIX_PATH + "metrics";
+    private static final String WORKER_CONFIGURE_URL   = HTTP_URL_PATTERN + WorkerRpcService.PREFIX_PATH + "worker/configure";
 
     private final RestTemplate restTemplate;
     private final SupervisorRegistry supervisorRegistry;

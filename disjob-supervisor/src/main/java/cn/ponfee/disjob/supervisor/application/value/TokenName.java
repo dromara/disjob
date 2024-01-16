@@ -23,7 +23,6 @@ public enum TokenName {
     /**
      * worker_token
      */
-
     worker,
 
     /**

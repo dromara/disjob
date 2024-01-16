@@ -50,9 +50,9 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     private final Cache<Long, String> jobGroupCache = CacheBuilder.newBuilder()
         .initialCapacity(1_000)
         .maximumSize(1_000_000)
-        // 当job被删除后，就不再被使用，2小时后没有访问会自动删除
+        // 当job被删除后，就不再被使用，1天后没有访问会自动删除
         // 实际是惰性删除策略：[被访问时判断过期则被删除] 或 [超过容量时使用LRU算法选择删除]
-        .expireAfterAccess(Duration.ofHours(3))
+        .expireAfterAccess(Duration.ofDays(1))
         .build();
 
     public AuthorizeGroupService(SchedJobMapper schedJobMapper,
@@ -60,7 +60,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         this.schedJobMapper = schedJobMapper;
         this.schedInstanceMapper = schedInstanceMapper;
 
-        commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 6, 6, TimeUnit.HOURS);
+        commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 2, 2, TimeUnit.DAYS);
     }
 
     public static Set<String> authorizeAndTruncateGroup(String user, Set<String> paramGroups) {

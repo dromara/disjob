@@ -12,7 +12,7 @@ import cn.ponfee.disjob.common.base.ConsistentHash;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -110,14 +110,14 @@ public class ConsistentHashExecutionRouterTest {
     }
 
     private static ExecuteTaskParam createExecuteTaskParam(long taskId) {
-        return createExecuteTaskParam(Operations.TRIGGER, taskId, 1L, 1L, 0, 1L, JobType.GENERAL, RouteStrategy.CONSISTENT_HASH, 0, "");
+        return createExecuteTaskParam(Operation.TRIGGER, taskId, 1L, 1L, 0, 1L, JobType.GENERAL, RouteStrategy.CONSISTENT_HASH, 0, "");
     }
 
     private static Worker createWorker(String workerId) {
         return new Worker("default", workerId, "127.0.0.1", 80);
     }
 
-    public static ExecuteTaskParam createExecuteTaskParam(Operations operation,
+    public static ExecuteTaskParam createExecuteTaskParam(Operation operation,
                                                           long taskId,
                                                           long instanceId,
                                                           Long wnstanceId,

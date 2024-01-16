@@ -14,7 +14,7 @@ import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.URLCodes;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
@@ -81,7 +81,7 @@ public class CommonTest {
     @Test
     public void testTaskParam() {
         ExecuteTaskParam param1 = createExecuteTaskParam(
-            Operations.TRIGGER,
+            Operation.TRIGGER,
             ThreadLocalRandom.current().nextLong(),
             ThreadLocalRandom.current().nextLong(),
             1L,
@@ -181,7 +181,7 @@ public class CommonTest {
     }
 
 
-    public static ExecuteTaskParam createExecuteTaskParam(Operations operation,
+    public static ExecuteTaskParam createExecuteTaskParam(Operation operation,
                                                           long taskId,
                                                           long instanceId,
                                                           Long wnstanceId,

@@ -20,7 +20,7 @@ import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.OpenapiService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
-import cn.ponfee.disjob.supervisor.application.request.SearchJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobSearchRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
@@ -71,7 +71,7 @@ public class DisjobInstanceController extends BaseController {
     @GetMapping("/search_job")
     @ResponseBody
     public AjaxResult searchJob(@RequestParam(value = "term") String term) {
-        SearchJobRequest req = parseTerm(term);
+        SchedJobSearchRequest req = parseTerm(term);
         return AjaxResult.success(req == null ? Collections.emptyList() : jobQuerier.searchJob(req));
     }
 
@@ -211,12 +211,12 @@ public class DisjobInstanceController extends BaseController {
 
     // ------------------------------------------------------------private methods
 
-    private SearchJobRequest parseTerm(String term) {
+    private SchedJobSearchRequest parseTerm(String term) {
         if (StringUtils.isBlank(term)) {
             return null;
         }
 
-        SearchJobRequest request = new SearchJobRequest();
+        SchedJobSearchRequest request = new SchedJobSearchRequest();
         Set<String> groups = null;
         String user = getLoginName();
         if ("*".equals(term)) {

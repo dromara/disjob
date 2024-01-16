@@ -8,23 +8,27 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
+import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
-
 /**
- * Search job request
+ * Update sched job request parameter structure.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class SearchJobRequest {
-    private static final long serialVersionUID = -538371009995926914L;
+public class SchedJobUpdateRequest extends AbstractSchedJobRequest {
+    private static final long serialVersionUID = -1481890923435762900L;
 
-    private Set<String> groups;
-    private String jobName;
     private Long jobId;
+    private String updatedBy;
+    private Integer version;
+
+    public SchedJob tosSchedJob() {
+        return SchedJobConverter.INSTANCE.convert(this);
+    }
 
 }

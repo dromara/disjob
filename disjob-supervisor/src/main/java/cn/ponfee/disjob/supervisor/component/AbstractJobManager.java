@@ -232,12 +232,12 @@ public abstract class AbstractJobManager {
                 if (isDeadWorker(worker)) {
                     cancelWaitingTask(task.getTaskId());
                 } else {
-                    list.add(builder.build(Operations.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
+                    list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
             }
         } else {
             list = tasks.stream()
-                .map(e -> builder.build(Operations.TRIGGER, e.getTaskId(), instance.getTriggerTime(), null))
+                .map(e -> builder.build(Operation.TRIGGER, e.getTaskId(), instance.getTriggerTime(), null))
                 .collect(Collectors.toList());
         }
 

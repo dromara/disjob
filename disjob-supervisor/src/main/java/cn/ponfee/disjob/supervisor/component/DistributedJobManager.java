@@ -406,7 +406,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param ops        the operation
      * @return {@code true} if canceled successfully
      */
-    public boolean cancelInstance(long instanceId, Operations ops) {
+    public boolean cancelInstance(long instanceId, Operation ops) {
         LOG.info("Cancel instance: {}, {}", instanceId, ops);
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
@@ -554,7 +554,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private void pauseInstance(SchedInstance instance) {
         Assert.isTrue(RUN_STATE_PAUSABLE.contains(instance.getRunState()), () -> "Invalid pause instance state: " + instance);
         long instanceId = instance.getInstanceId();
-        Operations ops = Operations.PAUSE;
+        Operation ops = Operation.PAUSE;
 
         // 1、update task state: (WAITING) -> (PAUSE)
         taskMapper.updateStateByInstanceId(instanceId, ops.toState().value(), EXECUTE_STATE_WAITING, null);
@@ -577,7 +577,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
-    private void cancelInstance(SchedInstance instance, Operations ops) {
+    private void cancelInstance(SchedInstance instance, Operation ops) {
         long instanceId = instance.getInstanceId();
         // 1、update: (WAITING or PAUSED) -> (CANCELED)
         taskMapper.updateStateByInstanceId(instanceId, ops.toState().value(), EXECUTE_STATE_EXECUTABLE, new Date());
@@ -915,7 +915,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
-    private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operations ops) {
+    private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operation ops) {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
         SchedJob schedJob = LazyLoader.of(SchedJob.class, jobMapper::get, instance.getJobId());
         String supervisorToken = SchedGroupService.getGroup(schedJob.getGroup()).getSupervisorToken();

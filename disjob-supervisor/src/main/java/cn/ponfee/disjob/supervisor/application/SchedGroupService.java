@@ -19,9 +19,9 @@ import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedGroupRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
 import cn.ponfee.disjob.supervisor.application.value.TokenName;
@@ -68,14 +68,14 @@ public class SchedGroupService extends SingletonClassConstraint {
                              SupervisorProperties supervisorProperties) {
         this.schedGroupMapper = schedGroupMapper;
         this.supervisorRegistry = supervisorRegistry;
-        int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 10);
+        int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 30);
         commonScheduledPool().scheduleWithFixedDelay(this::refresh, periodSeconds, periodSeconds, TimeUnit.SECONDS);
         refresh();
     }
 
     // ------------------------------------------------------------sched group
 
-    public long add(AddSchedGroupRequest request) {
+    public long add(SchedGroupAddRequest request) {
         request.checkAndTrim();
         if (schedGroupMapper.exists(request.getGroup())) {
             throw new KeyExistsException("Group already exists: " + request.getGroup());
@@ -98,7 +98,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         );
     }
 
-    public boolean edit(UpdateSchedGroupRequest request) {
+    public boolean edit(SchedGroupUpdateRequest request) {
         request.checkAndTrim();
         return Functions.doIfTrue(
             isOneAffectedRow(schedGroupMapper.edit(request.toSchedGroup())),

@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
@@ -59,7 +59,7 @@ public interface SupervisorRpcService {
     boolean pauseInstance(long instanceId) throws Exception;
 
     @PostMapping("instance/cancel")
-    boolean cancelInstance(long instanceId, Operations ops) throws Exception;
+    boolean cancelInstance(long instanceId, Operation operation) throws Exception;
 
     @GetMapping("metrics")
     SupervisorMetrics metrics();

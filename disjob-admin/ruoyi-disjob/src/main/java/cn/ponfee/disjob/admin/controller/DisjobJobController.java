@@ -19,9 +19,9 @@ import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.OpenapiService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
-import cn.ponfee.disjob.supervisor.application.request.AddSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
-import cn.ponfee.disjob.supervisor.application.request.UpdateSchedJobRequest;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -155,7 +155,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "作业配置", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult doAdd(AddSchedJobRequest req) throws JobException {
+    public AjaxResult doAdd(SchedJobAddRequest req) throws JobException {
         String user = getLoginName();
         AuthorizeGroupService.authorizeGroup(user, req.getGroup());
 
@@ -184,7 +184,7 @@ public class DisjobJobController extends BaseController {
     @Log(title = "作业配置", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
-    public AjaxResult doEdit(UpdateSchedJobRequest req) throws JobException {
+    public AjaxResult doEdit(SchedJobUpdateRequest req) throws JobException {
         String user = getLoginName();
         authorizeGroupService.authorizeJob(user, req.getJobId());
 

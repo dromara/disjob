@@ -14,7 +14,7 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorMetrics;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.enums.Operations;
+import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
@@ -74,8 +74,8 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
     }
 
     @Override
-    public boolean cancelInstance(long instanceId, Operations ops) {
-        return jobManager.cancelInstance(instanceId, ops);
+    public boolean cancelInstance(long instanceId, Operation operation) {
+        return jobManager.cancelInstance(instanceId, operation);
     }
 
     @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
