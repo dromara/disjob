@@ -193,6 +193,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         }
 
         public ExecuteTaskParam build(Operation operation, long taskId, long triggerTime, Worker worker) {
+            Assert.notNull(operation, "Operation cannot be null.");
             ExecuteTaskParam param = new ExecuteTaskParam();
             param.setOperation(new AtomicReference<>(operation));
             param.setTaskId(taskId);
