@@ -10,6 +10,7 @@ package cn.ponfee.disjob.dispatch.http;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
@@ -25,7 +26,7 @@ import org.springframework.web.client.RestTemplate;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
-    private static final String URL_PATTERN = "http://%s:%d/" + Constants.WORKER_RECEIVE_PATH;
+    private static final String URL_PATTERN = JobConstants.HTTP_URL_PATTERN + Constants.WORKER_RECEIVE_PATH;
 
     private final RestTemplate restTemplate;
 

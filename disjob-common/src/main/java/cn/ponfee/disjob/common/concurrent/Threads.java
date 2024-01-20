@@ -152,7 +152,7 @@ public final class Threads {
             // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
             // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行
             thread.stop();
-            LOG.info("Invoke java.lang.Thread#stop() method finished: {}", thread.getName());
+            LOG.warn("Invoke java.lang.Thread#stop() method finished: {}", thread.getName());
         } catch (Throwable t) {
             LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
         }

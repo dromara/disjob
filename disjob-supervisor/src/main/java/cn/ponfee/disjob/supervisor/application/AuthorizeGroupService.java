@@ -50,8 +50,9 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     private final Cache<Long, String> jobGroupCache = CacheBuilder.newBuilder()
         .initialCapacity(1_000)
         .maximumSize(1_000_000)
-        // 当job被删除后，就不再被使用，1天后没有访问会自动删除
-        // 实际是惰性删除策略：[被访问时判断过期则被删除] 或 [超过容量时使用LRU算法选择删除]
+        // job被删除后无需同步删除缓存：此处只是校验group权限，即便缓存未删除也不会有业务影响
+        // 当job被删除后便不再被使用，1天后没有访问会自动过期
+        // 惰性过期策略：[被访问时判断过期则被删除] 或 [超过容量时使用LRU算法选择删除]
         .expireAfterAccess(Duration.ofDays(1))
         .build();
 
@@ -91,7 +92,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     }
 
     public void authorizeJob(String user, long jobId) {
-        String dataGroup = getGroup(jobId);
+        String dataGroup = getJobGroup(jobId);
         if (StringUtils.isEmpty(dataGroup)) {
             throw new KeyNotExistsException("Job id not exists: " + jobId);
         }
@@ -99,7 +100,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     }
 
     public void authorizeJob(String user, String authGroup, long jobId) {
-        String dataGroup = getGroup(jobId);
+        String dataGroup = getJobGroup(jobId);
         if (StringUtils.isEmpty(dataGroup)) {
             throw new KeyNotExistsException("Job id not exists: " + jobId);
         }
@@ -122,7 +123,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         authorizeJob(user, authGroup, jobId);
     }
 
-    private String getGroup(Long jobId) {
+    private String getJobGroup(Long jobId) {
         String group = jobGroupCache.getIfPresent(jobId);
         if (group != null) {
             return group;

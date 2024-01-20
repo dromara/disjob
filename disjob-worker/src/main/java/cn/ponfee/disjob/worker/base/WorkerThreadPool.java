@@ -212,7 +212,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         // 2.4、clear task execution task queue
         ThrowingRunnable.doCaught(taskQueue::clear);
 
-        workerThreadCounter.set(0);
         LOG.info("Close worker thread pool end.");
     }
 
@@ -374,9 +373,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
      */
     private void stopWorkerThread(WorkerThread workerThread, boolean doStop) {
         workerThread.toStop();
-        if (workerThread.toDestroy()) {
-            workerThreadCounter.decrementAndGet();
-        }
         if (doStop) {
             LOG.info("Do stop the worker thread: {}", workerThread.getName());
             workerThread.doStop();
@@ -443,14 +439,14 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * Active thread pool
      */
     private class ActiveThreadPool {
-        //private final BiMap<Long, WorkerThread> activePool = Maps.synchronizedBiMap(HashBiMap.create());
-        private final Map<Long, WorkerThread> pool = new HashMap<>();
+        //final BiMap<Long, WorkerThread> pool = Maps.synchronizedBiMap(HashBiMap.create());
+        final Map<Long, WorkerThread> pool = new HashMap<>();
 
         synchronized void doExecute(WorkerThread workerThread, ExecuteTaskParam task) throws InterruptedException {
             Operation operation = (task == null) ? null : task.operation();
             if (operation == null || operation.isNotTrigger()) {
                 // cannot happen
-                throw new IllegalTaskException("Invalid execute param: " + task);
+                throw new IllegalTaskException("Not a executable task operation: " + task);
             }
 
             WorkerThread exists = pool.get(task.getTaskId());
@@ -465,7 +461,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
             }
 
-            if (!workerThread.updateExecuteParam(null, task)) {
+            if (!workerThread.updateCurrentTask(null, task)) {
                 ExecuteTaskParam t = workerThread.currentTask();
                 throw new BrokenThreadException("Execute worker thread conflict: " + workerThread.getName() + ", " + task + ", " + t);
             }
@@ -473,9 +469,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
             try {
                 workerThread.execute(task);
             } catch (Throwable throwable) {
-                workerThread.updateExecuteParam(task, null);
+                workerThread.updateCurrentTask(task, null);
                 throw throwable;
             }
+
             pool.put(task.getTaskId(), workerThread);
         }
 
@@ -490,9 +487,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 return null;
             }
 
-            if (!thread.updateExecuteParam(task, null)) {
+            if (!thread.updateCurrentTask(task, null)) {
                 // cannot happen
-                LOG.error("Stop task clear execute param failed: {}", task);
+                LOG.error("Stop task clear current task failed: {}", task);
                 return null;
             }
             pool.remove(taskId);
@@ -506,23 +503,25 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 return null;
             }
 
-            if (!workerThread.updateExecuteParam(task, null)) {
+            if (!workerThread.updateCurrentTask(task, null)) {
                 // cannot happen
-                LOG.error("Remove thread clear execute param failed: {}", task);
+                LOG.error("Remove thread clear current task failed: {}", task);
                 return null;
             }
+
             WorkerThread removed = pool.remove(task.getTaskId());
 
-            // cannot happen
-            Assert.isTrue(
-                workerThread == removed,
-                () -> "Inconsistent worker thread: " + task.getTaskId() + ", " + workerThread.getName() + ", " + removed.getName()
-            );
+            if (workerThread != removed) {
+                // cannot happen
+                LOG.error("Inconsistent removed worker thread: {}, {}, {}", task.getTaskId(), workerThread.getName(), removed.getName());
+                return null;
+            }
+
             return task;
         }
 
         synchronized void stopPool() {
-            pool.forEach((id, workerThread) -> {
+            pool.forEach((taskId, workerThread) -> {
                 workerThread.toStop();
                 ExecuteTaskParam task = workerThread.currentTask();
                 if (task != null) {
@@ -556,7 +555,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                         LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
                     }
 
-                    workerThread.updateExecuteParam(task, null);
+                    workerThread.updateCurrentTask(task, null);
                 });
 
             pool.clear();
@@ -635,12 +634,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         /**
          * Thread is whether stopped status
          */
-        private volatile boolean stopped = false;
-
-        /**
-         * Thread is whether destroyed
-         */
-        private final AtomicBoolean destroyed = new AtomicBoolean(false);
+        private final AtomicBoolean stopped = new AtomicBoolean(false);
 
         /**
          * Atomic reference object of current task
@@ -654,12 +648,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             super.setDaemon(true);
             super.setName(getClass().getSimpleName() + "-" + NAMED_SEQ.getAndIncrement());
-            this.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+            super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
             super.start();
         }
 
         private void execute(ExecuteTaskParam task) throws InterruptedException {
-            if (stopped || isStopped()) {
+            if (stopped.get() || isStopped()) {
                 throw new BrokenThreadException("Worker thread already stopped: " + super.getName());
             }
             if (!workQueue.offer(task, 1000, TimeUnit.MILLISECONDS)) {
@@ -668,7 +662,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private void toStop() {
-            stopped = true;
+            if (stopped.compareAndSet(false, true)) {
+                threadPool.workerThreadCounter.decrementAndGet();
+            }
         }
 
         private void doStop() {
@@ -680,12 +676,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
             Threads.stopThread(this, 2000);
         }
 
-        private boolean updateExecuteParam(ExecuteTaskParam expect, ExecuteTaskParam update) {
+        private boolean updateCurrentTask(ExecuteTaskParam expect, ExecuteTaskParam update) {
             return currentTask.compareAndSet(expect, update);
-        }
-
-        private boolean toDestroy() {
-            return destroyed.compareAndSet(false, true);
         }
 
         public final ExecuteTaskParam currentTask() {
@@ -698,7 +690,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         @Override
         public void run() {
-            while (!stopped) {
+            while (!stopped.get()) {
                 if (super.isInterrupted()) {
                     LOG.warn("Worker thread run interrupted.");
                     break;
@@ -713,16 +705,23 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     break;
                 }
 
+                ExecuteTaskParam current = currentTask();
                 if (task == null) {
-                    ExecuteTaskParam executeTaskParam = currentTask.get();
-                    if (executeTaskParam == null) {
-                        LOG.info("Worker thread exit, idle wait timeout.");
+                    if (current == null) {
+                        LOG.info("Worker thread exit, idle wait timeout: {}", super.getName());
                         break;
                     }
                     if ((task = workQueue.poll()) == null) {
-                        LOG.error("Executing task exists, but work queue not task: {}", executeTaskParam);
+                        // cannot happen
+                        LOG.error("Not poll task, but has current task: {}", current);
                         break;
                     }
+                }
+
+                if (current != task) {
+                    // cannot happen
+                    LOG.error("Inconsistent poll task and current task: {}, {}", current, task);
+                    break;
                 }
 
                 try {

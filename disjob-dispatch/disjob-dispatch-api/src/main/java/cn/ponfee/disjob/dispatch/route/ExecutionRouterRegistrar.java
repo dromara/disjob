@@ -42,10 +42,6 @@ public class ExecutionRouterRegistrar {
         }
     }
 
-    private static synchronized void register0(ExecutionRouter executionRouter) {
-        REGISTERED_ROUTES[executionRouter.routeStrategy().ordinal()] = executionRouter;
-    }
-
     public static synchronized void register(ExecutionRouter executionRouter) {
         Assert.notNull(executionRouter, "Register execution router cannot be null.");
         Assert.notNull(executionRouter.routeStrategy(), "Register execution router strategy cannot be null.");
@@ -59,4 +55,7 @@ public class ExecutionRouterRegistrar {
         router.route(tasks, workers);
     }
 
+    private static synchronized void register0(ExecutionRouter executionRouter) {
+        REGISTERED_ROUTES[executionRouter.routeStrategy().ordinal()] = executionRouter;
+    }
 }

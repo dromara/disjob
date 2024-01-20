@@ -17,6 +17,6 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
  */
 final class Constants {
 
-    public static final String WORKER_RECEIVE_PATH = WorkerRpcService.PREFIX_PATH + "task/receive";
+    static final String WORKER_RECEIVE_PATH = WorkerRpcService.PREFIX_PATH + "task/receive";
 
 }
