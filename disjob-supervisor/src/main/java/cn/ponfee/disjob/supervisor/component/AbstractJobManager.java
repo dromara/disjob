@@ -30,7 +30,6 @@ import cn.ponfee.disjob.supervisor.base.WorkerRpcClient;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -57,7 +56,6 @@ public abstract class AbstractJobManager {
 
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
     private static final int MAX_DEPENDS_LEVEL = 20;
-    private static final List<TriggerType> FIXED_TYPES = ImmutableList.of(TriggerType.FIXED_RATE, TriggerType.FIXED_DELAY);
 
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
@@ -300,7 +298,7 @@ public abstract class AbstractJobManager {
             job.setNextTriggerTime(null);
         } else {
             Date nextTriggerTime;
-            if (FIXED_TYPES.contains(triggerType)) {
+            if (TriggerType.FIXED_TYPES.contains(triggerType)) {
                 nextTriggerTime = Dates.max(new Date(), job.getStartTime());
             } else {
                 Date baseTime = Dates.max(new Date(), job.getStartTime());

@@ -15,17 +15,17 @@ import java.text.ParseException;
 import java.util.Date;
 
 /**
- * Mapstruct mapper
+ * Common data mapper
  *
  * @author Ponfee
  */
-public class MapstructMapper {
+public class CommonMapper {
 
-    public String asString(Date date) {
+    public static String asString(Date date) {
         return Dates.format(date);
     }
 
-    public Date asDate(String date) {
+    public static Date asDate(String date) {
         try {
             return JavaUtilDateFormat.DEFAULT.parse(date);
         } catch (ParseException e) {

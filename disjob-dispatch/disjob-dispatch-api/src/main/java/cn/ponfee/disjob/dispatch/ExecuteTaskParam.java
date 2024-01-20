@@ -218,7 +218,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
 
             InstanceAttach attach = Jsons.fromJson(instance.getAttach(), InstanceAttach.class);
             String currJobHandler = DAGNode.fromString(attach.getCurNode()).getName();
-            Assert.hasText(currJobHandler, () -> "Workflow instance attach cur node cannot be null: " + instance.getInstanceId());
+            Assert.hasText(currJobHandler, () -> "Curr node job handler cannot be empty: " + instance.getInstanceId());
             return currJobHandler;
         }
     }

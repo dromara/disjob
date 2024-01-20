@@ -16,6 +16,7 @@ import cn.ponfee.disjob.common.util.Enums;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import cn.ponfee.disjob.core.model.SchedDepend;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
@@ -238,6 +239,8 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     ;
 
     private static final Map<Integer, TriggerType> MAPPING = Enums.toMap(TriggerType.class, TriggerType::value);
+
+    public static final List<TriggerType> FIXED_TYPES = ImmutableList.of(FIXED_RATE, FIXED_DELAY);
 
     private final int value;
     private final String example;
