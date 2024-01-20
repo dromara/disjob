@@ -14,11 +14,11 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 
 /**
- * Worker metrics aggregator
+ * Worker configurator
  *
  * @author Ponfee
  */
-public class WorkerMetricsAggregator {
+public class WorkerConfigurator {
 
     private static volatile WorkerThreadPool workerThreadPool;
 
@@ -42,6 +42,10 @@ public class WorkerMetricsAggregator {
 
     public static void modifyMaximumPoolSize(int maximumPoolSize) {
         workerThreadPool.modifyMaximumPoolSize(maximumPoolSize);
+    }
+
+    public static void clearTaskQueue() {
+        workerThreadPool.clearTaskQueue();
     }
 
 }

@@ -14,6 +14,7 @@ import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
@@ -83,11 +84,21 @@ public class ServerMetricsService extends SingletonClassConstraint {
     }
 
     public void configureOneWorker(ConfigureOneWorkerRequest req) {
-        List<Worker> workers = getDiscoveredWorkers(req.getGroup());
         Worker worker = req.toWorker();
-        if (!workers.contains(worker)) {
-            throw new KeyNotExistsException("Not found worker: " + worker);
+        if (req.getAction() == Action.ADD_WORKER) {
+            List<Worker> workers = supervisorRegistry.getDiscoveredServers(req.getGroup());
+            if (workers != null && workers.stream().anyMatch(worker::sameWorker)) {
+                throw new KeyExistsException("Worker already registered: " + worker);
+            }
+            // add worker to this group
+            req.setData(req.getGroup());
+        } else {
+            List<Worker> workers = getDiscoveredWorkers(req.getGroup());
+            if (!workers.contains(worker)) {
+                throw new KeyNotExistsException("Not found worker: " + worker);
+            }
         }
+
         configureWorker(worker, req.getAction(), req.getData());
     }
 
@@ -151,7 +162,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
     public List<Worker> getDiscoveredWorkers(String group) {
         List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
         if (CollectionUtils.isEmpty(list)) {
-            throw new KeyNotExistsException("Not exists workers: " + group);
+            throw new KeyNotExistsException("Group '" + group + "' not exists workers.");
         }
         return list;
     }

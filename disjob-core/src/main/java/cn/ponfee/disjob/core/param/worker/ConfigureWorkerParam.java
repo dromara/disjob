@@ -49,12 +49,12 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         },
 
         /**
-         * Clear  worker thread pool task queue
+         * Clear worker thread pool task queue
          */
         CLEAR_TASK_QUEUE {
             @Override
             public <T> T parse(String data) {
-                return null;
+                throw new UnsupportedOperationException();
             }
         },
 
@@ -64,7 +64,7 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         REMOVE_WORKER {
             @Override
             public <T> T parse(String data) {
-                return null;
+                throw new UnsupportedOperationException();
             }
         },
 
@@ -74,7 +74,7 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         ADD_WORKER {
             @Override
             public <T> T parse(String data) {
-                return null;
+                return (T) data;
             }
         },
 

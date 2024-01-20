@@ -14,6 +14,7 @@ import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,8 +91,9 @@ public @interface EnableWorker {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerRpcService workerRpcService(Worker.Current currentWork) {
-            return new WorkerRpcProvider(currentWork);
+        public WorkerRpcService workerRpcService(Worker.Current currentWork,
+                                                 WorkerRegistry registry) {
+            return new WorkerRpcProvider(currentWork, registry);
         }
 
         @ConditionalOnMissingBean

@@ -47,7 +47,13 @@ public abstract class Server implements Serializable {
         if (!(o instanceof Server)) {
             return false;
         }
-        Server other = (Server) o;
+        return sameServer((Server) o);
+    }
+
+    public boolean sameServer(Server other) {
+        if (other == null) {
+            return false;
+        }
         return this.host.equals(other.host)
             && this.port == other.port;
     }

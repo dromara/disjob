@@ -124,7 +124,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         super.setPriority(Thread.MAX_PRIORITY);
         super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
 
-        WorkerMetricsAggregator.setWorkerThreadPool(this);
+        WorkerConfigurator.setWorkerThreadPool(this);
     }
 
     /**
@@ -314,6 +314,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
     synchronized void modifyMaximumPoolSize(int value) {
         Assert.isTrue(value > 0 && value <= ThreadPoolExecutors.MAX_CAP, "Maximum pool size must be range [1, 32767].");
         this.maximumPoolSize = value;
+    }
+
+    synchronized void clearTaskQueue() {
+        taskQueue.clear();
     }
 
     // ----------------------------------------------------------------------private methods
@@ -653,7 +657,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private void execute(ExecuteTaskParam task) throws InterruptedException {
-            if (stopped.get() || isStopped()) {
+            if (isStopped()) {
                 throw new BrokenThreadException("Worker thread already stopped: " + super.getName());
             }
             if (!workQueue.offer(task, 1000, TimeUnit.MILLISECONDS)) {
@@ -685,7 +689,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         public final boolean isStopped() {
-            return Threads.isStopped(this);
+            return stopped.get() || Threads.isStopped(this);
         }
 
         @Override

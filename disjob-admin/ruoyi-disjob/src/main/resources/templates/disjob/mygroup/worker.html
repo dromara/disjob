@@ -7,9 +7,12 @@
 <body class="gray-bg">
   <div class="container-div">
     <div class="row">
-      <div th:if="${not #lists.isEmpty(workers)}" class="btn-group-sm" id="toolbar" role="group">
-        <a class="btn btn-success" onclick="modifyAllWorkerMaximumPoolSize()">
-          <i class="fa fa-edit"></i> 修改全部Worker的最大线程数
+      <div class="btn-group-sm" id="toolbar" role="group">
+        <a th:if="${not #lists.isEmpty(workers)}" class="btn btn-success" onclick="modifyAllWorkerMaximumPoolSize()">
+          <i class="fa fa-edit"></i> 修改全部
+        </a>
+        <a class="btn btn-success" onclick="addWorker()">
+          <i class="fa fa-plus"></i> 注册Worker
         </a>
       </div>
 
@@ -102,6 +105,16 @@
         {
           field: 'startupAt',
           title: 'Worker启动时间'
+        },
+        {
+          title: '操作',
+          align: 'center',
+          formatter: function (value, row, index) {
+            const actions = [];
+            actions.push("<a class='btn btn-danger btn-rounded btn-xs'  href='javascript:void(0)' onclick='operate(&quot;REMOVE_WORKER&quot;,    &quot;" + row.workerId + "&quot;, &quot;" + row.host + "&quot;, " + row.port + ")'><i class='fa fa-remove'></i> 摘除Worker</a> ");
+            actions.push("<a class='btn btn-warning btn-rounded btn-xs' href='javascript:void(0)' onclick='operate(&quot;CLEAR_TASK_QUEUE&quot;, &quot;" + row.workerId + "&quot;, &quot;" + row.host + "&quot;, " + row.port + ")'><i class='fa fa-trash' ></i> 清空任务</a> ");
+            return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
+          }
         }]
       };
 
@@ -145,7 +158,7 @@
         },
         yes: function (index, layero) {
           const input = layero.find('.layui-layer-input');
-          const value = input.val();
+          const value = input.val().trim();
           const msg = validateMaximumPoolSize(value);
           if (msg) {
             layer.tips(msg, input, {tips: 1});
@@ -181,6 +194,64 @@
       if (parseInt(value) > 32767) {
         return '不能大于 32767';
       }
+    }
+
+    function addWorker() {
+      layer.open({
+        type: 1,
+        title: '注册Worker',
+        btn: ['确定', '取消'],
+        content: '<input type="text" class="layui-layer-input" placeholder="请输入待注册Worker的`host:port`">',
+        skin: 'layui-layer-prompt',
+        resize: false,
+        success: function (layero, index) {
+          layero.find('.layui-layer-input').focus();
+        },
+        yes: function (index, layero) {
+          const input = layero.find('.layui-layer-input');
+          const value = input.val().trim();
+          if (!/^[A-Za-z0-9.]+:\d+$/g.test(value)) {
+            layer.tips("无效的host:port", input, {tips: 1});
+            return;
+          }
+          const params = {
+            "group": [[${group}]],
+            "workerId": null,
+            "host": value.split(":")[0],
+            "port": value.split(":")[1],
+            "action": "ADD_WORKER",
+            "data": null
+          };
+          $.operate.post(prefix + "/configure_one_worker", params, function (result) {
+            if (result.code === 0) {
+              location.reload();
+              layer.close(index);
+            }
+          }, false);
+        }
+      });
+    }
+
+    const actionMap = {
+      "REMOVE_WORKER": "摘除该Worker",
+      "CLEAR_TASK_QUEUE": "清空该Worker的任务队列"
+    };
+    function operate(action, workerId, host, port) {
+      const params = {
+        "group": [[${group}]],
+        "workerId": workerId,
+        "host": host,
+        "port": port,
+        "action": action,
+        "data": null
+      };
+      $.modal.confirm("确认要 `" + actionMap[action] + "` 吗？", function () {
+        $.operate.post(prefix + "/configure_one_worker", params, function (result) {
+          if (result.code === 0) {
+            location.reload();
+          }
+        }, false);
+      });
     }
   </script>
 

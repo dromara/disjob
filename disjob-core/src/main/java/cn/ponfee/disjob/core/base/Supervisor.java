@@ -88,6 +88,10 @@ public class Supervisor extends Server {
         return (o instanceof Supervisor) && super.equals(o);
     }
 
+    public boolean sameSupervisor(Supervisor other) {
+        return super.sameServer(other);
+    }
+
     // --------------------------------------------------------custom jackson serialize & deserialize
 
     /**

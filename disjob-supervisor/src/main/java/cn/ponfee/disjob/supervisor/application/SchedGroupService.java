@@ -54,7 +54,6 @@ import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 @Service
 public class SchedGroupService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
-    private static final int PERIOD_SECONDS = 60;
 
     private static final Lock LOCK = new ReentrantLock();
     private static volatile Map<String, DisjobGroup> groupMap;
