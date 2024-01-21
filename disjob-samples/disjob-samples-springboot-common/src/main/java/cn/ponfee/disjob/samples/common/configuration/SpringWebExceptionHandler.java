@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.HandlerMethod;
@@ -40,9 +40,6 @@ public class SpringWebExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpringWebExceptionHandler.class);
 
-    private static final String APPLICATION_JSON_VALUE_UTF8 = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8";
-    private static final String TEXT_PLAIN_VALUE_UTF8 = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8";
-
     private static final List<Class<? extends Exception>> BAD_REQUEST_EXCEPTIONS = ImmutableList.of(
         IllegalArgumentException.class,
         IllegalStateException.class,
@@ -61,15 +58,16 @@ public class SpringWebExceptionHandler {
             LOG.error("Handle biz exception: {}", errorMsg);
         }
 
+        response.setCharacterEncoding(JobConstants.UTF_8);
         PrintWriter out = response.getWriter();
         if (isMethodReturnResultType(handlerMethod)) {
-            response.setContentType(APPLICATION_JSON_VALUE_UTF8);
-            out.write(Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toString());
+            response.setContentType(JobConstants.APPLICATION_JSON_UTF8);
+            errorMsg = Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toString();
         } else {
-            response.setContentType(TEXT_PLAIN_VALUE_UTF8);
+            response.setContentType(JobConstants.TEXT_PLAIN_UTF8);
             response.setStatus(obtainHttpStatus(t, isBadRequest).value());
-            out.write(errorMsg);
         }
+        out.write(errorMsg);
         out.flush();
     }
 

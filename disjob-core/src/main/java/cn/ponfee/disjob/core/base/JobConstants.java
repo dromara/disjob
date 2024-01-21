@@ -10,6 +10,7 @@ package cn.ponfee.disjob.core.base;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import org.springframework.http.MediaType;
 
 /**
  * Job constants
@@ -112,5 +113,25 @@ public class JobConstants {
      * Instance lock pool
      */
     public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
+
+    /**
+     * UTF-8 charset
+     */
+    public static final String UTF_8 = "UTF-8";
+
+    /**
+     * Media type for application/json;charset=UTF-8
+     */
+    public static final String APPLICATION_JSON_UTF8 = MediaType.APPLICATION_JSON_VALUE + ";charset=" + UTF_8;
+
+    /**
+     * Media type for text/plain;charset=UTF-8
+     */
+    public static final String TEXT_PLAIN_UTF8 = MediaType.TEXT_PLAIN_VALUE + ";charset=" + UTF_8;
+
+    /**
+     * Media type for text/html;charset=UTF-8
+     */
+    public static final String TEXT_HTML_UTF8 = MediaType.TEXT_HTML_VALUE + ";charset=" + UTF_8;
 
 }

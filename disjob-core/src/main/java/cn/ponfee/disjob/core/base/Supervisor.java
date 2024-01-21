@@ -149,7 +149,7 @@ public class Supervisor extends Server {
             return super.hashCode();
         }
 
-        private static synchronized Current create(String host, int port) {
+        private static synchronized Current create(final String host, final int port) {
             if (instance != null) {
                 throw new Error("Current supervisor already set.");
             }

@@ -245,8 +245,9 @@ public class Worker extends Server {
 
         // need do reflection call
         // use synchronized modify for help multiple thread read reference(write to main memory)
-        private static synchronized Current create(String group, String workerId, String host, int port,
-                                                   String workerToken0, String supervisorToken0) {
+        private static synchronized Current create(final String group, final String workerId,
+                                                   final String host, final int port,
+                                                   final String wToken, final String sToken) {
             if (instance != null) {
                 throw new Error("Current worker already set.");
             }
@@ -254,8 +255,8 @@ public class Worker extends Server {
             instance = new Current(group, workerId, host, port) {
                 private static final long serialVersionUID = 7553139562459109482L;
 
-                private final String workerToken = StringUtils.trim(workerToken0);
-                private final String supervisorToken = StringUtils.trim(supervisorToken0);
+                private final String workerToken     = StringUtils.trim(wToken);
+                private final String supervisorToken = StringUtils.trim(sToken);
 
                 @Override
                 public Map<String, String> authenticationHeaders() {

@@ -5,6 +5,7 @@ import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.base.JobConstants;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ServletUtils;
@@ -14,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,8 +36,6 @@ import java.io.PrintWriter;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private static final String APPLICATION_JSON_VALUE_UTF8 = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8";
-    private static final String TEXT_PLAIN_VALUE_UTF8 = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8";
 
     /**
      * 权限校验异常（ajax请求返回json，redirect请求跳转页面）
@@ -103,21 +101,22 @@ public class GlobalExceptionHandler {
         log.error("系统异常", t);
 
         String errorMsg = Throwables.getRootCauseMessage(t);
+        response.setCharacterEncoding(JobConstants.UTF_8);
         PrintWriter out = response.getWriter();
         if (isResponseJson(handlerMethod, request)) {
-            response.setContentType(APPLICATION_JSON_VALUE_UTF8);
+            response.setContentType(JobConstants.APPLICATION_JSON_UTF8);
             Object result;
             if (Result.class.isAssignableFrom(handlerMethod.getMethod().getReturnType())) {
                 result = Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg);
             } else {
                 result = AjaxResult.error(errorMsg);
             }
-            out.write(Jsons.toJson(result));
+            errorMsg = Jsons.toJson(result);
         } else {
-            response.setContentType(TEXT_PLAIN_VALUE_UTF8);
+            response.setContentType(JobConstants.TEXT_PLAIN_UTF8);
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            out.write(errorMsg);
         }
+        out.write(errorMsg);
         out.flush();
     }
 
