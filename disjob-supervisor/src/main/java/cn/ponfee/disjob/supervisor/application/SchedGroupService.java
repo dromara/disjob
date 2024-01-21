@@ -145,41 +145,32 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     // ------------------------------------------------------------other static methods
 
-    public static DisjobGroup getGroup(String group) {
-        DisjobGroup disjobGroup = groupMap.get(group);
-        if (disjobGroup == null) {
-            throw new GroupNotFoundException("Not found worker group: " + group);
-        }
-        return disjobGroup;
-    }
-
     public static Set<String> myGroups(String user) {
         Set<String> groups = userMap.get(user);
         return groups == null ? Collections.emptySet() : groups;
     }
 
+    public static boolean isDeveloper(String group, String user) {
+        return getDisjobGroup(group).isDeveloper(user);
+    }
+
     public static String createSupervisorAuthenticateToken(String group) {
-        String supervisorToken = SchedGroupService.getGroup(group).getSupervisorToken();
+        String supervisorToken = getDisjobGroup(group).getSupervisorToken();
         return Tokens.create(supervisorToken, Type.SUPERVISOR, Mode.AUTHENTICATE, group);
     }
 
-    public static String createSupervisorSignatureToken(String group) {
-        String supervisorToken = SchedGroupService.getGroup(group).getSupervisorToken();
-        return Tokens.create(supervisorToken, Type.SUPERVISOR, Mode.SIGNATURE, group);
-    }
-
     public static boolean verifyWorkerAuthenticateToken(String tokenSecret, String group) {
-        String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
+        String workerToken = getDisjobGroup(group).getWorkerToken();
         return Tokens.verify(tokenSecret, workerToken, Type.WORKER, Mode.AUTHENTICATE, group);
     }
 
     public static boolean verifyUserAuthenticateToken(String tokenSecret, String group) {
-        String userToken = SchedGroupService.getGroup(group).getUserToken();
+        String userToken = getDisjobGroup(group).getUserToken();
         return Tokens.verify(tokenSecret, userToken, Type.USER, Mode.AUTHENTICATE, group);
     }
 
     public static boolean verifyWorkerSignatureToken(String tokenSecret, String group) {
-        String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
+        String workerToken = getDisjobGroup(group).getWorkerToken();
         return Tokens.verify(tokenSecret, workerToken, Type.WORKER, Mode.SIGNATURE, group);
     }
 
@@ -203,6 +194,14 @@ public class SchedGroupService extends SingletonClassConstraint {
         } finally {
             LOCK.unlock();
         }
+    }
+
+    private static DisjobGroup getDisjobGroup(String group) {
+        DisjobGroup disjobGroup = groupMap.get(group);
+        if (disjobGroup == null) {
+            throw new GroupNotFoundException("Not found worker group: " + group);
+        }
+        return disjobGroup;
     }
 
     private static Map<String, Set<String>> toUserMap(List<SchedGroup> list) {

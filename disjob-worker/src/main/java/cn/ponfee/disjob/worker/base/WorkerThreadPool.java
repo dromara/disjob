@@ -14,6 +14,7 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
@@ -34,6 +35,7 @@ import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,16 +43,15 @@ import org.springframework.util.Assert;
 
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
+import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.disjob.core.enums.ExecuteState.*;
 
 /**
@@ -317,7 +318,20 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     synchronized void clearTaskQueue() {
-        taskQueue.clear();
+        List<ExecuteTaskParam> tasks = new LinkedList<>();
+        taskQueue.drainTo(tasks);
+
+        List<UpdateTaskWorkerParam> list = tasks.stream()
+            // 广播任务分派的worker不可修改，需要排除
+            .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
+            // 清除分派worker数据
+            .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), null))
+            .collect(Collectors.toList());
+
+        for (List<UpdateTaskWorkerParam> sub : Lists.partition(list, PROCESS_BATCH_SIZE)) {
+            // 更新task的worker信息
+            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(sub), () -> "Update task worker error: " + Jsons.toJson(list));
+        }
     }
 
     // ----------------------------------------------------------------------private methods

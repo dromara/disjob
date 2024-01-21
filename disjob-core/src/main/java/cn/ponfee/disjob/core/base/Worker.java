@@ -264,11 +264,8 @@ public class Worker extends Server {
                         return Collections.singletonMap(AUTHENTICATE_HEADER_GROUP, group);
                     }
 
-                    String tokenSecret = Tokens.create(workerToken, Type.WORKER, Mode.AUTHENTICATE, group);
-                    return ImmutableMap.of(
-                        AUTHENTICATE_HEADER_GROUP, group,
-                        AUTHENTICATE_HEADER_TOKEN, Objects.requireNonNull(tokenSecret)
-                    );
+                    String tokenSecret = Objects.requireNonNull(Tokens.create(workerToken, Type.WORKER, Mode.AUTHENTICATE, group));
+                    return ImmutableMap.of(AUTHENTICATE_HEADER_GROUP, group, AUTHENTICATE_HEADER_TOKEN, tokenSecret);
                 }
 
                 @Override

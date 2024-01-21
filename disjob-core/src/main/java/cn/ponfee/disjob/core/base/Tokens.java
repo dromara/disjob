@@ -25,7 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Tokens {
 
-    private static final long EXPIRE_MILLISECONDS = 60_000L;
+    private static final long EXPIRATION_MILLISECONDS = 60_000L;
 
     public enum Type {
         /**
@@ -57,8 +57,8 @@ public class Tokens {
         if (StringUtils.isEmpty(tokenPlain)) {
             return null;
         }
-        String expire = Long.toString(System.currentTimeMillis() + EXPIRE_MILLISECONDS);
-        return secret(tokenPlain, type, mode, expire, group) + DOT + expire;
+        String expiration = Long.toString(System.currentTimeMillis() + EXPIRATION_MILLISECONDS);
+        return secret(tokenPlain, type, mode, expiration, group) + DOT + expiration;
     }
 
     public static boolean verify(String tokenSecret, String tokenPlain, Type type, Mode mode, String group) {
@@ -71,26 +71,26 @@ public class Tokens {
 
         String[] array = tokenSecret.split("\\.", 2);
         String actual = array[0];
-        String expire = array[1];
-        if (Long.parseLong(expire) < System.currentTimeMillis()) {
+        String expiration = array[1];
+        if (Long.parseLong(expiration) < System.currentTimeMillis()) {
             return false;
         }
 
-        String expect = secret(tokenPlain, type, mode, expire, group);
+        String expect = secret(tokenPlain, type, mode, expiration, group);
         return actual.equals(expect);
     }
 
     // -----------------------------------------------------------------private methods
 
-    private static String secret(String tokenPlain, Type type, Mode mode, String expire, String group) {
+    private static String secret(String tokenPlain, Type type, Mode mode, String expiration, String group) {
         Assert.notNull(type, "Type cannot be null.");
         Assert.notNull(mode, "Mode cannot be null.");
         Assert.hasText(group, "Group cannot be empty.");
-        String payload = type + DOT + mode + DOT + expire + DOT + group;
+        String payload = type + DOT + mode + DOT + expiration + DOT + group;
 
         HmacUtils hmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_1, tokenPlain.getBytes(UTF_8));
-        byte[] data = hmac.hmac(payload.getBytes(UTF_8));
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(data);
+        byte[] digest = hmac.hmac(payload.getBytes(UTF_8));
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
     }
 
 }

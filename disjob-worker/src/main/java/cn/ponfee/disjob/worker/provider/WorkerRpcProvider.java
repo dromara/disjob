@@ -66,10 +66,10 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
             Integer maximumPoolSize = action.parse(param.getData());
             WorkerConfigurator.modifyMaximumPoolSize(maximumPoolSize);
 
-        } else if (action == Action.CLEAR_TASK_QUEUE) {
-            WorkerConfigurator.clearTaskQueue();
-
         } else if (action == Action.REMOVE_WORKER) {
+            workerRegistry.deregister(currentWork);
+
+        } else if (action == Action.REMOVE_WORKER_AND_CLEAR_TASK_QUEUE) {
             workerRegistry.deregister(currentWork);
             WorkerConfigurator.clearTaskQueue();
 
