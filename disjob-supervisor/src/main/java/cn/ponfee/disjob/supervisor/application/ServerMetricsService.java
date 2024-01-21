@@ -14,6 +14,7 @@ import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
@@ -90,6 +91,9 @@ public class ServerMetricsService extends SingletonClassConstraint {
             if (workers != null && workers.stream().anyMatch(worker::sameWorker)) {
                 throw new KeyExistsException("Worker already registered: " + worker);
             }
+
+            verifyWorkerSignature(worker);
+
             // add worker to this group
             req.setData(req.getGroup());
         } else {
@@ -139,7 +143,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
         WorkerMetrics metrics = null;
         Long pingTime = null;
         String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
-        GetMetricsParam param = new GetMetricsParam(supervisorToken(worker.getGroup()));
+        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticateToken(worker.getGroup()));
         try {
             long start = System.currentTimeMillis();
             metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
@@ -159,7 +163,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
         return response;
     }
 
-    public List<Worker> getDiscoveredWorkers(String group) {
+    private List<Worker> getDiscoveredWorkers(String group) {
         List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
         if (CollectionUtils.isEmpty(list)) {
             throw new KeyNotExistsException("Group '" + group + "' not exists workers.");
@@ -167,16 +171,22 @@ public class ServerMetricsService extends SingletonClassConstraint {
         return list;
     }
 
+    private void verifyWorkerSignature(Worker worker) {
+        String group = worker.getGroup();
+        String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
+        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticateToken(group));
+        WorkerMetrics metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
+        if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
+            throw new AuthenticationException("Worker authenticated failed: " + worker);
+        }
+    }
+
     private void configureWorker(Worker worker, Action action, String data) {
         String url = String.format(WORKER_CONFIGURE_URL, worker.getHost(), worker.getPort());
-        ConfigureWorkerParam param = new ConfigureWorkerParam(supervisorToken(worker.getGroup()));
+        ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticateToken(worker.getGroup()));
         param.setAction(action);
         param.setData(data);
         RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param);
-    }
-
-    private static String supervisorToken(String group) {
-        return SchedGroupService.getGroup(group).getSupervisorToken();
     }
 
 }

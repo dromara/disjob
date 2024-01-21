@@ -37,6 +37,7 @@ public class WorkerConfigurator {
         if (workerThreadPool != null) {
             metrics.setThreadPool(workerThreadPool.metrics());
         }
+        metrics.setSignature(Worker.current().signature());
         return metrics;
     }
 

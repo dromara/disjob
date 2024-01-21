@@ -11,6 +11,8 @@ package cn.ponfee.disjob.core.base;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
+import cn.ponfee.disjob.core.base.Tokens.Mode;
+import cn.ponfee.disjob.core.base.Tokens.Type;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.param.worker.AuthenticationParam;
@@ -224,6 +226,13 @@ public class Worker extends Server {
          */
         public abstract void authenticate(AuthenticationParam param);
 
+        /**
+         * Worker signature
+         *
+         * @return signature string
+         */
+        public abstract String signature();
+
         @Override
         public boolean equals(Object o) {
             return super.equals(o);
@@ -245,22 +254,32 @@ public class Worker extends Server {
             instance = new Current(group, workerId, host, port) {
                 private static final long serialVersionUID = 7553139562459109482L;
 
-                private final Map<String, String> authenticateHeaders = StringUtils.isBlank(workerToken0)
-                    ? Collections.singletonMap(AUTHENTICATE_HEADER_GROUP, group)
-                    : ImmutableMap.of(AUTHENTICATE_HEADER_GROUP, group, AUTHENTICATE_HEADER_TOKEN, workerToken0.trim());
-
-                private final String supervisorToken = StringUtils.isBlank(supervisorToken0) ? null : supervisorToken0.trim();
+                private final String workerToken = StringUtils.trim(workerToken0);
+                private final String supervisorToken = StringUtils.trim(supervisorToken0);
 
                 @Override
                 public Map<String, String> authenticationHeaders() {
-                    return authenticateHeaders;
+                    if (workerToken == null) {
+                        return Collections.singletonMap(AUTHENTICATE_HEADER_GROUP, group);
+                    }
+
+                    String tokenSecret = Tokens.create(workerToken, Type.WORKER, Mode.AUTHENTICATE, group);
+                    return ImmutableMap.of(
+                        AUTHENTICATE_HEADER_GROUP, group,
+                        AUTHENTICATE_HEADER_TOKEN, Objects.requireNonNull(tokenSecret)
+                    );
                 }
 
                 @Override
                 public void authenticate(AuthenticationParam param) {
-                    if (supervisorToken != null && !supervisorToken.equals(param.getSupervisorToken())) {
+                    if (!Tokens.verify(param.getSupervisorToken(), supervisorToken, Type.SUPERVISOR, Mode.AUTHENTICATE, group)) {
                         throw new AuthenticationException("Authenticate failed.");
                     }
+                }
+
+                @Override
+                public String signature() {
+                    return Tokens.create(workerToken, Type.WORKER, Mode.SIGNATURE, group);
                 }
             };
 

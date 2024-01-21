@@ -45,6 +45,11 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
      */
     private ThreadPoolMetrics threadPool;
 
+    /**
+     * Worker signature
+     */
+    private String signature;
+
     @Getter
     @Setter
     public static class ThreadPoolMetrics extends ToJsonString implements Serializable {

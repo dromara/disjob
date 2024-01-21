@@ -13,6 +13,9 @@ import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
+import cn.ponfee.disjob.core.base.Tokens;
+import cn.ponfee.disjob.core.base.Tokens.Mode;
+import cn.ponfee.disjob.core.base.Tokens.Type;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.exception.GroupNotFoundException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
@@ -153,6 +156,31 @@ public class SchedGroupService extends SingletonClassConstraint {
     public static Set<String> myGroups(String user) {
         Set<String> groups = userMap.get(user);
         return groups == null ? Collections.emptySet() : groups;
+    }
+
+    public static String createSupervisorAuthenticateToken(String group) {
+        String supervisorToken = SchedGroupService.getGroup(group).getSupervisorToken();
+        return Tokens.create(supervisorToken, Type.SUPERVISOR, Mode.AUTHENTICATE, group);
+    }
+
+    public static String createSupervisorSignatureToken(String group) {
+        String supervisorToken = SchedGroupService.getGroup(group).getSupervisorToken();
+        return Tokens.create(supervisorToken, Type.SUPERVISOR, Mode.SIGNATURE, group);
+    }
+
+    public static boolean verifyWorkerAuthenticateToken(String tokenSecret, String group) {
+        String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
+        return Tokens.verify(tokenSecret, workerToken, Type.WORKER, Mode.AUTHENTICATE, group);
+    }
+
+    public static boolean verifyUserAuthenticateToken(String tokenSecret, String group) {
+        String userToken = SchedGroupService.getGroup(group).getUserToken();
+        return Tokens.verify(tokenSecret, userToken, Type.USER, Mode.AUTHENTICATE, group);
+    }
+
+    public static boolean verifyWorkerSignatureToken(String tokenSecret, String group) {
+        String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
+        return Tokens.verify(tokenSecret, workerToken, Type.WORKER, Mode.SIGNATURE, group);
     }
 
     // ------------------------------------------------------------private methods

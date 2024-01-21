@@ -68,14 +68,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateWorker(String group) {
-            String workerToken = SchedGroupService.getGroup(group).getWorkerToken();
-            if (StringUtils.isBlank(workerToken)) {
-                // Not configured worker token
-                return;
-            }
-
-            String token = requestToken();
-            if (!workerToken.equals(token)) {
+            if (!SchedGroupService.verifyWorkerAuthenticateToken(requestToken(), group)) {
                 throw new AuthenticationException(ERR_MSG);
             }
         }
@@ -87,14 +80,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            String userToken = SchedGroupService.getGroup(group).getUserToken();
-            if (StringUtils.isBlank(userToken)) {
-                // Not configured user token
-                return;
-            }
-
-            String token = requestToken();
-            if (!userToken.equals(token)) {
+            if (!SchedGroupService.verifyUserAuthenticateToken(requestToken(), group)) {
                 throw new AuthenticationException(ERR_MSG);
             }
         }
