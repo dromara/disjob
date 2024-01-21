@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -50,40 +51,38 @@ public class SpringWebExceptionHandler {
         BaseRuntimeException.class
     );
 
-    @ExceptionHandler(Exception.class)
-    public void execute(HandlerMethod handlerMethod, HttpServletResponse response, Exception e) throws Exception {
-        boolean isBadRequest = BAD_REQUEST_EXCEPTIONS.stream().anyMatch(t -> t.isInstance(e));
-        String errorMsg = Throwables.getRootCauseMessage(e);
+    @ExceptionHandler(Throwable.class)
+    public void execute(HandlerMethod handlerMethod, HttpServletResponse response, Throwable t) throws IOException {
+        boolean isBadRequest = BAD_REQUEST_EXCEPTIONS.stream().anyMatch(e -> e.isInstance(t));
+        String errorMsg = Throwables.getRootCauseMessage(t);
         if (!isBadRequest || StringUtils.isEmpty(errorMsg)) {
-            LOG.error("Handle server exception", e);
+            LOG.error("Handle server exception", t);
         } else {
             LOG.error("Handle biz exception: {}", errorMsg);
         }
 
         PrintWriter out = response.getWriter();
-        if (!isMethodReturnResultType(handlerMethod)) {
-            response.setContentType(TEXT_PLAIN_VALUE_UTF8);
-            response.setStatus(obtainHttpStatus(e, isBadRequest).value());
-            out.write(errorMsg);
-        } else {
+        if (isMethodReturnResultType(handlerMethod)) {
             response.setContentType(APPLICATION_JSON_VALUE_UTF8);
             out.write(Result.failure(JobCodeMsg.SERVER_ERROR.getCode(), errorMsg).toString());
+        } else {
+            response.setContentType(TEXT_PLAIN_VALUE_UTF8);
+            response.setStatus(obtainHttpStatus(t, isBadRequest).value());
+            out.write(errorMsg);
         }
         out.flush();
     }
 
-    private HttpStatus obtainHttpStatus(Exception e, boolean isBadRequest) {
-        if (e instanceof AuthenticationException) {
+    private HttpStatus obtainHttpStatus(Throwable t, boolean isBadRequest) {
+        if (t instanceof AuthenticationException) {
             return HttpStatus.UNAUTHORIZED;
         }
         return isBadRequest ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     private static boolean isMethodReturnResultType(HandlerMethod handlerMethod) {
-        if (handlerMethod == null) {
-            return false;
-        }
-        if (handlerMethod.getBeanType() == BasicErrorController.class) {
+        if (handlerMethod == null ||
+            handlerMethod.getBeanType() == BasicErrorController.class) {
             return false;
         }
         return Result.class.isAssignableFrom(handlerMethod.getMethod().getReturnType());
