@@ -42,25 +42,25 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
 
     @Override
     public void verify(JobHandlerParam param) throws JobException {
-        currentWork.authenticate(param);
+        currentWork.verifySupervisorAuthenticationToken(param);
         JobHandlerUtils.verify(param);
     }
 
     @Override
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
-        currentWork.authenticate(param);
+        currentWork.verifySupervisorAuthenticationToken(param);
         return JobHandlerUtils.split(param);
     }
 
     @Override
     public WorkerMetrics metrics(GetMetricsParam param) {
-        currentWork.authenticate(param);
+        currentWork.verifySupervisorAuthenticationToken(param);
         return WorkerConfigurator.metrics();
     }
 
     @Override
     public void configureWorker(ConfigureWorkerParam param) {
-        currentWork.authenticate(param);
+        currentWork.verifySupervisorAuthenticationToken(param);
         Action action = param.getAction();
         if (action == Action.MODIFY_MAXIMUM_POOL_SIZE) {
             Integer maximumPoolSize = action.parse(param.getData());

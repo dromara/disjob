@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.core.model.TokenType;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,11 +22,11 @@ public class TokensTest {
 
     @Test
     public void test() {
-        String tokenPlain = "tokenPlain";
+        String tokenPlain = "1878f0158782423f9306e7d4c70c999c";
         String group = "app-test";
-        String tokenSecret = Tokens.create(tokenPlain, Tokens.Type.WORKER, Tokens.Mode.AUTHENTICATE, group);
+        String tokenSecret = Tokens.createAuthentication(tokenPlain, TokenType.user, group);
         System.out.println(tokenSecret);
-        boolean state = Tokens.verify(tokenSecret, tokenPlain, Tokens.Type.WORKER, Tokens.Mode.AUTHENTICATE, group);
+        boolean state = Tokens.verifyAuthentication(tokenSecret, tokenPlain, TokenType.user, group);
         assertThat(state).isTrue();
     }
 

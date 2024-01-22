@@ -14,12 +14,11 @@ import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.core.base.Tokens;
-import cn.ponfee.disjob.core.base.Tokens.Mode;
-import cn.ponfee.disjob.core.base.Tokens.Type;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.exception.GroupNotFoundException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.model.SchedGroup;
+import cn.ponfee.disjob.core.model.TokenType;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
@@ -27,7 +26,6 @@ import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
-import cn.ponfee.disjob.supervisor.application.value.TokenName;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
 import com.google.common.collect.ImmutableSet;
@@ -113,9 +111,9 @@ public class SchedGroupService extends SingletonClassConstraint {
         return SchedGroupConverter.INSTANCE.convert(schedGroup);
     }
 
-    public boolean updateToken(String group, TokenName name, String newToken, String updatedBy, String oldToken) {
+    public boolean updateToken(String group, TokenType type, String newToken, String updatedBy, String oldToken) {
         return Functions.doIfTrue(
-            isOneAffectedRow(schedGroupMapper.updateToken(group, name, newToken, updatedBy, oldToken)),
+            isOneAffectedRow(schedGroupMapper.updateToken(group, type, newToken, updatedBy, oldToken)),
             this::refresh
         );
     }
@@ -154,24 +152,24 @@ public class SchedGroupService extends SingletonClassConstraint {
         return getDisjobGroup(group).isDeveloper(user);
     }
 
-    public static String createSupervisorAuthenticateToken(String group) {
+    public static String createSupervisorAuthenticationToken(String group) {
         String supervisorToken = getDisjobGroup(group).getSupervisorToken();
-        return Tokens.create(supervisorToken, Type.SUPERVISOR, Mode.AUTHENTICATE, group);
+        return Tokens.createAuthentication(supervisorToken, TokenType.supervisor, group);
     }
 
-    public static boolean verifyWorkerAuthenticateToken(String tokenSecret, String group) {
+    public static boolean verifyWorkerAuthenticationToken(String tokenSecret, String group) {
         String workerToken = getDisjobGroup(group).getWorkerToken();
-        return Tokens.verify(tokenSecret, workerToken, Type.WORKER, Mode.AUTHENTICATE, group);
+        return Tokens.verifyAuthentication(tokenSecret, workerToken, TokenType.worker, group);
     }
 
-    public static boolean verifyUserAuthenticateToken(String tokenSecret, String group) {
+    public static boolean verifyUserAuthenticationToken(String tokenSecret, String group) {
         String userToken = getDisjobGroup(group).getUserToken();
-        return Tokens.verify(tokenSecret, userToken, Type.USER, Mode.AUTHENTICATE, group);
+        return Tokens.verifyAuthentication(tokenSecret, userToken, TokenType.user, group);
     }
 
     public static boolean verifyWorkerSignatureToken(String tokenSecret, String group) {
         String workerToken = getDisjobGroup(group).getWorkerToken();
-        return Tokens.verify(tokenSecret, workerToken, Type.WORKER, Mode.SIGNATURE, group);
+        return Tokens.verifySignature(tokenSecret, workerToken, TokenType.worker, group);
     }
 
     // ------------------------------------------------------------private methods

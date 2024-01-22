@@ -6,14 +6,14 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.supervisor.application.value;
+package cn.ponfee.disjob.core.model;
 
 /**
- * Token name
+ * Token type
  *
  * @author Ponfee
  */
-public enum TokenName {
+public enum TokenType {
 
     /**
      * supervisor_token

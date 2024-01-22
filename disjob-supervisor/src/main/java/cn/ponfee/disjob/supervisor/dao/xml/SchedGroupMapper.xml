@@ -41,11 +41,11 @@
 
   <update id="updateToken">
     UPDATE <include refid="Table_Name" />
-    SET ${name}_token = #{newToken,jdbcType=VARCHAR},
+    SET ${type}_token = #{newToken,jdbcType=VARCHAR},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}
-      AND ${name}_token = #{oldToken,jdbcType=VARCHAR}
+      AND ${type}_token = #{oldToken,jdbcType=VARCHAR}
       AND is_deleted = 0
   </update>
 

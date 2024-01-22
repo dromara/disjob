@@ -43,7 +43,7 @@ public abstract class TaskReceiver implements Startable {
             return false;
         }
 
-        currentWorker.authenticate(param);
+        currentWorker.verifySupervisorAuthenticationToken(param);
 
         Worker assignedWorker = param.getWorker();
         if (!currentWorker.sameWorker(assignedWorker)) {

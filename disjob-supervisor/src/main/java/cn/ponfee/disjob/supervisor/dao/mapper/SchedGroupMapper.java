@@ -9,8 +9,8 @@
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.model.SchedGroup;
+import cn.ponfee.disjob.core.model.TokenType;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
-import cn.ponfee.disjob.supervisor.application.value.TokenName;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public interface SchedGroupMapper {
     List<SchedGroup> findAll();
 
     int updateToken(@Param("group") String group,
-                    @Param("name") TokenName name,
+                    @Param("type") TokenType type,
                     @Param("newToken") String newToken,
                     @Param("updatedBy") String updatedBy,
                     @Param("oldToken") String oldToken);

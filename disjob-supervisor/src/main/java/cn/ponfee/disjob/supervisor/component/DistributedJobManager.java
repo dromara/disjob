@@ -918,7 +918,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operation ops) {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
         SchedJob schedJob = LazyLoader.of(SchedJob.class, jobMapper::get, instance.getJobId());
-        String supervisorToken = SchedGroupService.createSupervisorAuthenticateToken(schedJob.getGroup());
+        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(schedJob.getGroup());
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, schedJob, supervisorToken);
         // immediate trigger
         long triggerTime = 0L;

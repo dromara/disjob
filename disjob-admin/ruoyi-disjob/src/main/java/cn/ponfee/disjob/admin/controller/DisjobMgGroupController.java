@@ -11,11 +11,11 @@ package cn.ponfee.disjob.admin.controller;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.common.util.UuidUtils;
+import cn.ponfee.disjob.core.model.TokenType;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
-import cn.ponfee.disjob.supervisor.application.value.TokenName;
 import com.google.common.collect.ImmutableMap;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -142,12 +142,12 @@ public class DisjobMgGroupController extends BaseController {
     @PostMapping("/token")
     @ResponseBody
     public AjaxResult token(@RequestParam("group") String group,
-                            @RequestParam("name") TokenName name,
+                            @RequestParam("type") TokenType type,
                             @RequestParam("operation") TokenOperation operation,
                             @RequestParam("currentValue") String currentValue) {
         String newToken = TokenOperation.clear == operation ? "" : UuidUtils.uuid32();
         String oldToken = TokenOperation.set == operation ? "" : currentValue;
-        if (schedGroupService.updateToken(group, name, newToken, getLoginName(), oldToken)) {
+        if (schedGroupService.updateToken(group, type, newToken, getLoginName(), oldToken)) {
             return AjaxResult.success("操作成功", newToken);
         } else {
             return AjaxResult.error("操作失败");

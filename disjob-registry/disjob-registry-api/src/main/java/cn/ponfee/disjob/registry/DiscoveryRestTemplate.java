@@ -118,7 +118,7 @@ public final class DiscoveryRestTemplate<D extends Server> {
         int serverNumber = servers.size();
         Map<String, String> authenticationHeaders = null;
         if (discoveryServerRole == ServerRole.SUPERVISOR) {
-            authenticationHeaders = Worker.current().authenticationHeaders();
+            authenticationHeaders = Worker.current().createWorkerAuthenticationHeaders();
         }
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
 

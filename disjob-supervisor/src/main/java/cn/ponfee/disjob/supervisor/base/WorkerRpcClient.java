@@ -57,12 +57,12 @@ public class WorkerRpcClient {
     }
 
     public void verify(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupService.createSupervisorAuthenticateToken(param.getGroup()));
+        param.setSupervisorToken(SchedGroupService.createSupervisorAuthenticationToken(param.getGroup()));
         grouped(param.getGroup()).verify(param);
     }
 
     public List<SplitTask> split(JobHandlerParam param) throws JobException {
-        param.setSupervisorToken(SchedGroupService.createSupervisorAuthenticateToken(param.getGroup()));
+        param.setSupervisorToken(SchedGroupService.createSupervisorAuthenticationToken(param.getGroup()));
         return grouped(param.getGroup()).split(param);
     }
 

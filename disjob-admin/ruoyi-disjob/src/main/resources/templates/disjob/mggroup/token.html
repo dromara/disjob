@@ -64,20 +64,20 @@
   <script th:inline="javascript">
     const prefix = ctx + "disjob/mggroup";
 
-    function updateToken(name, operation) {
-      const input = $("#" + name + "Token");
+    function updateToken(type, operation) {
+      const input = $("#" + type + "Token");
       const params = {
         "group": '[(${data.group})]',
-        "name": name,
+        "type": type,
         "operation": operation,
         "currentValue": input.val()
       };
       const ops = (operation === 'change') ? "更换" : (operation === 'set' ? "设置" : "清除");
-      $.modal.confirm("确认要" + ops + "'" + name + "'令牌吗？", function () {
+      $.modal.confirm("确认要" + ops + "'" + type + "'令牌吗？", function () {
         $.operate.post(prefix + "/token", params, function (result) {
           if (result.code === 0) {
             input.val(result.data);
-            setTokenButton(name);
+            setTokenButton(type);
           }
         }, false);
       });
@@ -107,20 +107,20 @@
       return false;
     }
 
-    function setTokenButton(name) {
-      const input = $("#" + name + "Token");
+    function setTokenButton(type) {
+      const input = $("#" + type + "Token");
       if (input.val()) {
-        $("#" + name + "1").html('<button type="button" class="btn btn-warning" onclick="updateToken(\'' + name + '\', \'change\')">更换</button>')
-        $("#" + name + "2").html('<button type="button" class="btn btn-danger" onclick="updateToken(\'' + name + '\', \'clear\')">清除</button>');
+        $("#" + type + "1").html('<button type="button" class="btn btn-warning" onclick="updateToken(\'' + type + '\', \'change\')">更换</button>')
+        $("#" + type + "2").html('<button type="button" class="btn btn-danger" onclick="updateToken(\'' + type + '\', \'clear\')">清除</button>');
       } else {
-        $("#" + name + "1").html('<button type="button" class="btn btn-primary" onclick="updateToken(\'' + name + '\', \'set\')">设置</button>')
-        $("#" + name + "2").html('<button type="button" class="btn btn-default disabled" disabled>清除</button>');
+        $("#" + type + "1").html('<button type="button" class="btn btn-primary" onclick="updateToken(\'' + type + '\', \'set\')">设置</button>')
+        $("#" + type + "2").html('<button type="button" class="btn btn-default disabled" disabled>清除</button>');
       }
     }
 
     $(function () {
-      const names = ['supervisor', 'worker', 'user'];
-      names.forEach(function (item) {
+      const types = ['supervisor', 'worker', 'user'];
+      types.forEach(function (item) {
         setTokenButton(item);
       });
     });

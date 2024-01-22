@@ -143,7 +143,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
         WorkerMetrics metrics = null;
         Long pingTime = null;
         String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
-        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticateToken(worker.getGroup()));
+        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
         try {
             long start = System.currentTimeMillis();
             metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
@@ -174,7 +174,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
     private void verifyWorkerSignature(Worker worker) {
         String group = worker.getGroup();
         String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
-        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticateToken(group));
+        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group));
         WorkerMetrics metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
         if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
@@ -183,7 +183,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
 
     private void configureWorker(Worker worker, Action action, String data) {
         String url = String.format(WORKER_CONFIGURE_URL, worker.getHost(), worker.getPort());
-        ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticateToken(worker.getGroup()));
+        ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
         param.setAction(action);
         param.setData(data);
         RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param);

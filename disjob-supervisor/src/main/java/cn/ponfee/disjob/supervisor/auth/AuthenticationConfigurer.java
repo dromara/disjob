@@ -67,7 +67,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateWorker(String group) {
-            if (!SchedGroupService.verifyWorkerAuthenticateToken(requestToken(), group)) {
+            if (!SchedGroupService.verifyWorkerAuthenticationToken(requestToken(), group)) {
                 throw new AuthenticationException(ERR_MSG);
             }
         }
@@ -77,7 +77,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            if (!SchedGroupService.verifyUserAuthenticateToken(requestToken(), group)) {
+            if (!SchedGroupService.verifyUserAuthenticationToken(requestToken(), group)) {
                 throw new AuthenticationException(ERR_MSG);
             }
         }
