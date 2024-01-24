@@ -106,10 +106,6 @@ public class WorkerStartup implements Startable {
         ThrowingRunnable.doCaught(workerThreadPool::close);
     }
 
-    public WorkerThreadPool workerThreadPool() {
-        return workerThreadPool;
-    }
-
     // ----------------------------------------------------------------------------------------builder
 
     public static Builder builder() {

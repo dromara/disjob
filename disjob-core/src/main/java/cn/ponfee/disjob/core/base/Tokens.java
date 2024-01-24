@@ -79,8 +79,8 @@ public class Tokens {
         Assert.hasText(group, "Group cannot be empty.");
         String payload = type.name() + DOT + mode.name() + DOT + expiration + DOT + group;
 
-        HmacUtils hmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_1, tokenPlain.getBytes(UTF_8));
-        byte[] digest = hmac.hmac(payload.getBytes(UTF_8));
+        HmacUtils hm = new HmacUtils(HmacAlgorithms.HMAC_SHA_1, tokenPlain.getBytes(UTF_8));
+        byte[] digest = hm.hmac(payload.getBytes(UTF_8));
         return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
     }
 

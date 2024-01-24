@@ -659,8 +659,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
          */
         private final AtomicReference<ExecuteTaskParam> currentTask = new AtomicReference<>();
 
-        private WorkerThread(WorkerThreadPool threadPool,
-                             long keepAliveTimeSeconds) {
+        private WorkerThread(WorkerThreadPool threadPool, long keepAliveTimeSeconds) {
             this.threadPool = threadPool;
             this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
 

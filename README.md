@@ -54,7 +54,7 @@ disjob                                        # 主项目①
 - 提供任务分片的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(Savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
-- 任务在执行时若抛出[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，会暂停对应实例下的全部任务(包括分布在不同worker机器中的任务)
+- 任务在执行时若抛出[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，会暂停对应任务实例下的全部任务(包括分布在不同worker机器中的任务)
 - 支持广播任务，广播任务会派发给group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
 - 支持DAG工作流，可把`jobHandler`配置为复杂的DAG表达式，如：A->B,C,(D->E)->D,F->G
@@ -224,7 +224,7 @@ Worker接收到子任务后，会提交到框架自定义的线程池中执行�
 
 7. **异常中断**
 
-子任务在执行过程中若抛出框架的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，则会`暂停`对应实例下全部的10个子任务(包括派发在不同机器中的任务)。同样如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`对应实例下全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应实例下其它的子任务不受影响。
+子任务在执行过程中若抛出框架的[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，则会`暂停`对应任务实例下全部的10个子任务(包括派发在不同机器中的任务)。同样如果抛出[CancelTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java)则会`取消`对应任务实例下全部的10个子任务。如果抛出其它类型的异常时，只会`取消`当前子任务，对应任务实例下其它的子任务不受影响。
 
 8. **任务编排**
 
