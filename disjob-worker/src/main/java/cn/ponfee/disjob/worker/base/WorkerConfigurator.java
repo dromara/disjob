@@ -31,6 +31,7 @@ public class WorkerConfigurator {
 
     public static WorkerMetrics metrics() {
         WorkerMetrics metrics = new WorkerMetrics();
+        metrics.setWorkerId(Worker.current().getWorkerId());
         metrics.setStartupAt(Dates.toDate(Worker.current().getStartupAt()));
         metrics.setAlsoSupervisor(Supervisor.current() != null);
         metrics.setJvmThreadActiveCount(Thread.activeCount());

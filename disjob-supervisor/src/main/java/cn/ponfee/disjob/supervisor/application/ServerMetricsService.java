@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
+import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
@@ -28,6 +29,7 @@ import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsRespons
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -36,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -78,10 +81,18 @@ public class ServerMetricsService extends SingletonClassConstraint {
         return MultithreadExecutors.call(list, this::getMetrics, ThreadPoolExecutors.commonThreadPool());
     }
 
-    public List<WorkerMetricsResponse> workers(String group) {
-        List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
-        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1));
-        return MultithreadExecutors.call(list, this::getMetrics, ThreadPoolExecutors.commonThreadPool());
+    public List<WorkerMetricsResponse> workers(String group, String worker) {
+        if (StringUtils.isNotBlank(worker)) {
+            String[] array = worker.trim().split(":");
+            String host = array[0].trim();
+            int port = Numbers.toInt(array[1].trim(), -1);
+            WorkerMetricsResponse metrics = getMetrics(new Worker(group, "", host, port));
+            return StringUtils.isBlank(metrics.getWorkerId()) ? Collections.emptyList() : Collections.singletonList(metrics);
+        } else {
+            List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
+            list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1));
+            return MultithreadExecutors.call(list, this::getMetrics, ThreadPoolExecutors.commonThreadPool());
+        }
     }
 
     public void configureOneWorker(ConfigureOneWorkerRequest req) {
@@ -91,9 +102,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
             if (workers != null && workers.stream().anyMatch(worker::sameWorker)) {
                 throw new KeyExistsException("Worker already registered: " + worker);
             }
-
             verifyWorkerSignature(worker);
-
             // add worker to this group
             req.setData(req.getGroup());
         } else {
@@ -129,10 +138,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
         }
 
-        SupervisorMetricsResponse response = (metrics == null) ?
-            new SupervisorMetricsResponse() :
-            ServerMetricsConverter.INSTANCE.convert(metrics);
-
+        SupervisorMetricsResponse response = (metrics == null) ? new SupervisorMetricsResponse() : ServerMetricsConverter.INSTANCE.convert(metrics);
         response.setHost(supervisor.getHost());
         response.setPort(supervisor.getPort());
         response.setPingTime(pingTime);
@@ -142,8 +148,9 @@ public class ServerMetricsService extends SingletonClassConstraint {
     private WorkerMetricsResponse getMetrics(Worker worker) {
         WorkerMetrics metrics = null;
         Long pingTime = null;
+        String group = worker.getGroup();
         String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
-        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
+        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
         try {
             long start = System.currentTimeMillis();
             metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
@@ -152,14 +159,15 @@ public class ServerMetricsService extends SingletonClassConstraint {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
         }
 
-        WorkerMetricsResponse response = (metrics == null) ?
-            new WorkerMetricsResponse() :
-            ServerMetricsConverter.INSTANCE.convert(metrics);
+        if (metrics != null && !SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
+            metrics = null;
+        }
 
+        WorkerMetricsResponse response = (metrics == null) ? new WorkerMetricsResponse() : ServerMetricsConverter.INSTANCE.convert(metrics);
         response.setHost(worker.getHost());
         response.setPort(worker.getPort());
-        response.setWorkerId(worker.getWorkerId());
         response.setPingTime(pingTime);
+        response.setWorkerId(metrics != null ? metrics.getWorkerId() : worker.getWorkerId());
         return response;
     }
 
@@ -174,7 +182,7 @@ public class ServerMetricsService extends SingletonClassConstraint {
     private void verifyWorkerSignature(Worker worker) {
         String group = worker.getGroup();
         String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
-        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group));
+        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
         WorkerMetrics metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
         if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);

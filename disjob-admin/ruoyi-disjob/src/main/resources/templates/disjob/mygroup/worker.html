@@ -7,6 +7,23 @@
 <body class="gray-bg">
   <div class="container-div">
     <div class="row">
+      <div class="col-sm-12 search-collapse">
+        <form id="form-worker">
+          <div class="select-list">
+            <ul>
+              <li>
+                <label>Worker：</label>
+                <input type="text" name="worker" th:value="${worker}" placeholder="摘除后可输入`host:port`来查询" autocomplete="off" />
+              </li>
+              <li>
+                <a class="btn btn-primary btn-rounded btn-sm" onclick="searchWorker()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                <a class="btn btn-warning btn-rounded btn-sm" onclick="resetForm()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+              </li>
+            </ul>
+          </div>
+        </form>
+      </div>
+
       <div class="btn-group-sm" id="toolbar" role="group">
         <a th:if="${not #lists.isEmpty(workers)}" class="btn btn-success" onclick="modifyAllWorkerMaximumPoolSize()">
           <i class="fa fa-edit"></i> 修改全部
@@ -224,7 +241,8 @@
           };
           $.operate.post(prefix + "/configure_one_worker", params, function (result) {
             if (result.code === 0) {
-              location.reload();
+              //location.reload();
+              resetForm();
               layer.close(index);
             }
           }, false);
@@ -244,10 +262,20 @@
       $.modal.confirm("确认要 `" + msg + "` 吗？", function () {
         $.operate.post(prefix + "/configure_one_worker", params, function (result) {
           if (result.code === 0) {
-            location.reload();
+            resetForm();
           }
         }, false);
       });
+    }
+
+    function searchWorker() {
+      const href = window.location.href;
+      window.location.href = href.split("\?")[0] + "?group=" + [[${group}]] + "&worker=" + $("input[name='worker']").val()
+    }
+
+    function resetForm() {
+      $("input[name='worker']").val("");
+      searchWorker();
     }
   </script>
 

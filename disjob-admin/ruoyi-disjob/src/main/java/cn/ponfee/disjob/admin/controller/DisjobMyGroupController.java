@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
@@ -24,6 +25,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.service.ISysUserService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -129,11 +131,18 @@ public class DisjobMyGroupController extends BaseController {
 
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/worker")
-    public String worker(@RequestParam("group") String group, ModelMap mmap) {
+    public String worker(@RequestParam("group") String group,
+                         @RequestParam(value = "worker", required = false) String worker,
+                         ModelMap mmap) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), group);
 
+        if (StringUtils.isBlank(worker) || !worker.contains(Str.COLON)) {
+            worker = null;
+        }
+
         mmap.put("group", group);
-        mmap.put("workers", serverMetricsService.workers(group));
+        mmap.put("worker", worker);
+        mmap.put("workers", serverMetricsService.workers(group, worker));
         return PREFIX + "/worker";
     }
 

@@ -54,6 +54,11 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
 
     @Override
     public WorkerMetrics metrics(GetMetricsParam param) {
+        String wGroup = Worker.current().getGroup();
+        String pGroup = param.getGroup();
+        if (!wGroup.equals(pGroup)) {
+            throw new IllegalArgumentException("Inconsistent get metrics group: " + wGroup + " != " + pGroup);
+        }
         currentWork.verifySupervisorAuthenticationToken(param);
         return WorkerConfigurator.metrics();
     }
