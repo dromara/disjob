@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
@@ -191,6 +192,7 @@ public final class Jsons {
     }
 
     // ----------------------------------------------------static methods
+
     public static String toJson(Object target) {
         return NORMAL.string(target);
     }
@@ -204,18 +206,18 @@ public final class Jsons {
             return null;
         }
 
-        ObjectMapper mapper = NORMAL.mapper;
-        JsonNode rootNode = readTree(mapper, body);
+        ObjectMapper objectMapper = NORMAL.mapper;
+        JsonNode rootNode = readTree(objectMapper, body);
         Assert.isTrue(rootNode.isArray(), "Not array json data.");
         ArrayNode arrayNode = (ArrayNode) rootNode;
 
         if (types.length == 1 && arrayNode.size() > 1) {
-            return new Object[]{parse(mapper, arrayNode, types[0])};
+            return new Object[]{parse(objectMapper, arrayNode, types[0])};
         }
 
         Object[] result = new Object[types.length];
         for (int i = 0; i < types.length; i++) {
-            result[i] = parse(mapper, arrayNode.get(i), types[i]);
+            result[i] = parse(objectMapper, arrayNode.get(i), types[i]);
         }
         return result;
     }
@@ -234,8 +236,8 @@ public final class Jsons {
             return null;
         }
 
-        ObjectMapper mapper = NORMAL.mapper;
-        JsonNode rootNode = readTree(mapper, body);
+        ObjectMapper objectMapper = NORMAL.mapper;
+        JsonNode rootNode = readTree(objectMapper, body);
         if (rootNode.isArray()) {
             ArrayNode arrayNode = (ArrayNode) rootNode;
 
@@ -243,7 +245,7 @@ public final class Jsons {
             // ["a", "b"]     -> method(Object[] arg) -> arg=["a", "b"]
             // [["a"], ["b"]] -> method(Object[] arg) -> arg=[["a"], ["b"]]
             if (argumentCount == 1 && arrayNode.size() > 1) {
-                return new Object[]{parse(mapper, arrayNode, genericArgumentTypes[0])};
+                return new Object[]{parse(objectMapper, arrayNode, genericArgumentTypes[0])};
             }
 
             // 其它情况，在调用方将参数(requestParameters)用数组包一层：new Object[]{ arg-1, arg-2, ..., arg-n }
@@ -257,12 +259,12 @@ public final class Jsons {
 
             Object[] methodArguments = new Object[argumentCount];
             for (int i = 0; i < argumentCount; i++) {
-                methodArguments[i] = parse(mapper, arrayNode.get(i), genericArgumentTypes[i]);
+                methodArguments[i] = parse(objectMapper, arrayNode.get(i), genericArgumentTypes[i]);
             }
             return methodArguments;
         } else {
             Assert.isTrue(argumentCount == 1, "Single object request parameter not support multiple arguments method.");
-            return new Object[]{parse(mapper, rootNode, genericArgumentTypes[0])};
+            return new Object[]{parse(objectMapper, rootNode, genericArgumentTypes[0])};
         }
     }
 
@@ -318,44 +320,66 @@ public final class Jsons {
         JsonFactory jsonFactory = new JsonFactoryBuilder()
             .disable(JsonFactory.Feature.INTERN_FIELD_NAMES)
             .build();
-        ObjectMapper mapper = new ObjectMapper(jsonFactory);
+        ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
         // 设置序列化时的特性
         if (include != null) {
-            mapper.setSerializationInclusion(include);
+            objectMapper.setSerializationInclusion(include);
         }
-        configObjectMapper(mapper);
-        return mapper;
+        configObjectMapper(objectMapper);
+        return objectMapper;
     }
 
-    public static void configObjectMapper(ObjectMapper mapper) {
-        // 1、Common config
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES); // 反序列化时忽略未知属性
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);    // Date不序列化为时间戳
-        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);          // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
-        mapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);    // BigDecimal禁用科学计数格式输出，new BigDecimal("0.00000000000000001"): 1E-17 -> 0.00000000000000001
-        mapper.disable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES);     // 禁止无双引号字段
-        mapper.enable(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature()); // 字段加双引号
+    public static void configObjectMapper(ObjectMapper objectMapper) {
+        // Common config
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES); // 反序列化时忽略未知属性
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);    // Date不序列化为时间戳
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);          // 解决报错：No serializer found for class XXX and no properties discovered to create BeanSerializer
+        objectMapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);    // BigDecimal禁用科学计数格式输出，new BigDecimal("0.00000000000000001"): 1E-17 -> 0.00000000000000001
+        objectMapper.disable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES);     // 禁止无双引号字段
+        objectMapper.enable(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature()); // 字段加双引号
 
-        // 2、java.util.Date config
+        // java.util.Date config
         // java.util.Date：registerModule > JsonFormat(会使用setTimeZone) > setDateFormat(会使用setTimeZone)
         //   1）如果同时配置了setDateFormat和registerModule，则使用registerModule
         //   2）如果设置了setTimeZone，则会调用setDateFormat#setTimeZone(注：setTimeZone对registerModule无影响)
         //   3）如果实体字段使用了JsonFormat注解，则setDateFormat不生效(会使用jackson内置的格式化器，默认为0时区，此时要setTimeZone)
         //   4）JsonFormat注解对registerModule无影响(registerModule优先级最高)
-        mapper.setTimeZone(JavaUtilDateFormat.DEFAULT.getTimeZone()); // TimeZone.getDefault()
-        mapper.setDateFormat(JavaUtilDateFormat.DEFAULT);
-        //mapper.setConfig(mapper.getDeserializationConfig().with(mapper.getDateFormat()));
-        //mapper.setConfig(mapper.getSerializationConfig().with(mapper.getDateFormat()));
+        objectMapper.setTimeZone(JavaUtilDateFormat.DEFAULT.getTimeZone()); // TimeZone.getDefault()
+        objectMapper.setDateFormat(JavaUtilDateFormat.DEFAULT);
+        //objectMapper.setConfig(mapper.getDeserializationConfig().with(mapper.getDateFormat()));
+        //objectMapper.setConfig(mapper.getSerializationConfig().with(mapper.getDateFormat()));
 
-        // 3、java.util.Date module config
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
-        module.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
-        //module.addSerializer(Money.class, JacksonMoney.INSTANCE.serializer());
-        //module.addDeserializer(Money.class, JacksonMoney.INSTANCE.deserializer());
-        mapper.registerModule(module);
+        // register module
+        registerSimpleModule(objectMapper);
+        registerJavaTimeModule(objectMapper);
+        objectMapper.registerModule(new Jdk8Module());
 
-        // 4、java.time.LocalDateTime module config
+        // Others config
+        //objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    }
+
+    public static void registerSimpleModule(ObjectMapper objectMapper) {
+        SimpleModule simpleModule = new SimpleModule();
+
+        // java.util.Date module config
+        simpleModule.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
+        simpleModule.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
+
+        // 金额序列化
+        //simpleModule.addSerializer(Money.class, JacksonMoney.INSTANCE.serializer());
+        //simpleModule.addDeserializer(Money.class, JacksonMoney.INSTANCE.deserializer());
+
+        // 返回给端上浏览器JavaScript Number数值过大时会有问题：Number.MAX_SAFE_INTEGER = 9007199254740991
+        // 当数值大于`9007199254740991`时就有可能会丢失精度：1234567891011121314 -> 1234567891011121400
+        //simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
+        //simpleModule.addSerializer(long.class, ToStringSerializer.instance);
+        //simpleModule.addSerializer(BigInteger.class, ToStringSerializer.instance);
+
+        objectMapper.registerModule(simpleModule);
+    }
+
+    public static void registerJavaTimeModule(ObjectMapper objectMapper) {
+        // java new time module config
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Dates.DATE_PATTERN);
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         JavaTimeModule javaTimeModule = new JavaTimeModule();
@@ -365,11 +389,10 @@ public final class Jsons {
         javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
         javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
         javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
-        mapper.registerModule(javaTimeModule);
-
-        // 5、Others config
-        //mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        objectMapper.registerModule(javaTimeModule);
     }
+
+    // -----------------------------------------------------------------------private methods
 
     private static JsonNode readTree(ObjectMapper mapper, String body) {
         try {

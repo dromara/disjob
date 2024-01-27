@@ -8,24 +8,15 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.date.*;
+import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
+import cn.ponfee.disjob.common.util.Jsons;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.springframework.context.annotation.Import;
 import org.springframework.lang.Nullable;
 
 import java.lang.annotation.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 /**
  * Enable object mapper configurer
@@ -45,25 +36,11 @@ public @interface EnableJacksonDateConfigurer {
                 return;
             }
 
+            objectMapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
             objectMapper.setDateFormat(JavaUtilDateFormat.DEFAULT);
-
-            SimpleModule module = new SimpleModule();
-            module.addSerializer(Date.class, JacksonDate.INSTANCE.serializer());
-            module.addDeserializer(Date.class, JacksonDate.INSTANCE.deserializer());
-            objectMapper.registerModule(module);
-
-            // java.time.LocalDateTime
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Dates.DATE_PATTERN);
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-            JavaTimeModule javaTimeModule = new JavaTimeModule();
-            javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(LocalDateTimeFormat.PATTERN_11));
-            javaTimeModule.addDeserializer(LocalDateTime.class, CustomLocalDateTimeDeserializer.INSTANCE);
-            javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(dateFormatter));
-            javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(dateFormatter));
-            javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(timeFormatter));
-            javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(timeFormatter));
-            objectMapper.registerModule(javaTimeModule);
+            Jsons.registerSimpleModule(objectMapper);
+            Jsons.registerJavaTimeModule(objectMapper);
+            objectMapper.registerModule(new Jdk8Module());
         }
     }
 
