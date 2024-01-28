@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +25,22 @@ public final class SystemUtils {
         String value = null;
         try {
             value = System.getProperty(name);
-            if (value == null) {
-                value = System.getenv(name);
+            if (StringUtils.isNotEmpty(value)) {
+                return value;
             }
-        } catch (SecurityException e) {
-            LOG.error("Get system config occur error: " + name, e);
+        } catch (Exception e) {
+            LOG.error("Get system property occur error: " + name, e);
         }
+
+        try {
+            value = System.getenv(name);
+            if (StringUtils.isNotEmpty(value)) {
+                return value;
+            }
+        } catch (Exception e) {
+            LOG.error("Get system env occur error: " + name, e);
+        }
+
         return value;
     }
 

@@ -60,17 +60,17 @@ public class JobUtils {
         }
 
         host = System.getProperty(JobConstants.DISJOB_BOUND_SERVER_HOST);
-        if (isValidHost(host, "jvm")) {
+        if (isValidHost(host, "System#getProperty")) {
             return host;
         }
 
         host = System.getenv(JobConstants.DISJOB_BOUND_SERVER_HOST);
-        if (isValidHost(host, "os")) {
+        if (isValidHost(host, "System#getenv")) {
             return host;
         }
 
         host = NetUtils.getLocalHost();
-        if (isValidHost(host, "network")) {
+        if (isValidHost(host, "NetUtils#getLocalHost")) {
             return host;
         }
 
@@ -81,11 +81,14 @@ public class JobUtils {
         if (StringUtils.isBlank(host)) {
             return false;
         }
-        if (NetUtils.isValidLocalHost(host)) {
-            return true;
+        if (!NetUtils.isValidLocalHost(host)) {
+            LOG.warn("Invalid server host configured {}: {}", from, host);
+            return false;
         }
-        LOG.warn("Invalid bound server host configured {}: {}", from, host);
-        return false;
+        if (!NetUtils.isReachableHost(host)) {
+            LOG.warn("Unreachable server host configured {}: {}", from, host);
+        }
+        return true;
     }
 
 }

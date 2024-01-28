@@ -74,6 +74,18 @@ public class NetUtilsTest {
     }
 
     @Test
+    void testIsReachableHost() {
+        assertFalse(NetUtils.isReachableHost("1.2.3.4"));
+        assertFalse(NetUtils.isReachableHost("128.0.0.1"));
+        assertFalse(NetUtils.isReachableHost("127.0.0.1"));
+        assertFalse(NetUtils.isReachableHost("localhost"));
+        assertFalse(NetUtils.isReachableHost("www.baidfdsfffffffxxxxxdsfsdfdsuaaa.com"));
+        //assertTrue(NetUtils.isReachableHost("www.baidu.com"));
+        //assertTrue(NetUtils.isReachableHost("www.ponfee.cn"));
+        //assertTrue(NetUtils.isReachableHost("192.168.1.100"));
+    }
+
+    @Test
     @Disabled
     void testIsConnectable() {
         assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 100));

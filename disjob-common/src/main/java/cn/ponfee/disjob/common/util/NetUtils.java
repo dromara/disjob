@@ -13,11 +13,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,6 +62,8 @@ public final class NetUtils {
     private static final String ANY_IP_ADDRESS   = "0.0.0.0";
     private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
 
+    private static final int PING_TIMEOUT = 300;
+
     /**
      * store the used port.
      * the set used only on the synchronized method.
@@ -84,7 +86,7 @@ public final class NetUtils {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), timeout);
             return true;
-        } catch (IOException ignored) {
+        } catch (Exception ignored) {
             return false;
         }
     }
@@ -102,10 +104,10 @@ public final class NetUtils {
         if (USED_PORT.get(port)) {
             return false;
         }
-        try (ServerSocket ignored = new ServerSocket(port)) {
-            ignored.setReuseAddress(true);
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            serverSocket.setReuseAddress(true);
             return true;
-        } catch (IOException ignored) {
+        } catch (Exception ignored) {
             USED_PORT.set(port);
             return false;
         }
@@ -116,10 +118,40 @@ public final class NetUtils {
     }
 
     public static boolean isValidLocalHost(String host) {
-        return StringUtils.isNotEmpty(host)
-            && !host.equalsIgnoreCase(LOCAL_HOST_NAME)
-            && !host.equals(ANY_IP_ADDRESS)
-            && !host.startsWith("127.");
+        if (StringUtils.isBlank(host) ||
+            host.equalsIgnoreCase(LOCAL_HOST_NAME) ||
+            host.equals(ANY_IP_ADDRESS) ||
+            host.startsWith("127.")) {
+            return false;
+        }
+        try {
+            InetAddress inetAddress = InetAddress.getByName(host);
+            return !inetAddress.isLoopbackAddress();
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    public static boolean isReachableHost(String host) {
+        if (!isValidLocalHost(host)) {
+            return false;
+        }
+        try {
+            InetAddress inetAddress = InetAddress.getByName(host);
+            if (inetAddress.isReachable(PING_TIMEOUT)) {
+                return true;
+            }
+        } catch (Exception ignored) {
+            // ignored
+        }
+
+        try {
+            Process process = Runtime.getRuntime().exec("ping -c 1 " + host);
+            boolean exited = process.waitFor(PING_TIMEOUT, TimeUnit.MILLISECONDS);
+            return exited && process.exitValue() == 0;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     public static boolean isAnyHost(String host) {
@@ -295,13 +327,10 @@ public final class NetUtils {
             return false;
         }
         try {
-            if (address.isReachable(100)) {
-                return true;
-            }
-        } catch (IOException ignored) {
-            // ignored
+            return address.isReachable(PING_TIMEOUT);
+        } catch (Exception ignored) {
+            return false;
         }
-        return false;
     }
 
     private static InetAddress getReachableAddress(NetworkInterface networkInterface) {
