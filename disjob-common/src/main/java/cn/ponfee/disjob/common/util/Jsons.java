@@ -76,10 +76,10 @@ public final class Jsons {
     /**
      * Jackson ObjectMapper(thread safe)
      */
-    private final ObjectMapper mapper;
+    private final ObjectMapper objectMapper;
 
     private Jsons(JsonInclude.Include include) {
-        this.mapper = createObjectMapper(include);
+        this.objectMapper = createObjectMapper(include);
     }
 
     // --------------------------------------------------------serialization
@@ -92,7 +92,7 @@ public final class Jsons {
      */
     public void write(OutputStream output, Object target) {
         try {
-            mapper.writeValue(output, target);
+            objectMapper.writeValue(output, target);
         } catch (IOException e) {
             ExceptionUtils.rethrow(e);
         }
@@ -106,7 +106,7 @@ public final class Jsons {
      */
     public String string(Object target) {
         try {
-            return mapper.writeValueAsString(target);
+            return objectMapper.writeValueAsString(target);
         } catch (IOException e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -120,7 +120,7 @@ public final class Jsons {
      */
     public byte[] bytes(Object target) {
         try {
-            return mapper.writeValueAsBytes(target);
+            return objectMapper.writeValueAsBytes(target);
         } catch (IOException e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -143,7 +143,7 @@ public final class Jsons {
             return null;
         }
         try {
-            return mapper.readValue(json, javaType);
+            return objectMapper.readValue(json, javaType);
         } catch (Exception e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -161,34 +161,34 @@ public final class Jsons {
             return null;
         }
         try {
-            return mapper.readValue(json, javaType);
+            return objectMapper.readValue(json, javaType);
         } catch (Exception e) {
             return ExceptionUtils.rethrow(e);
         }
     }
 
     public <T> T parse(String json, Class<T> target) {
-        return parse(json, mapper.constructType(target));
+        return parse(json, objectMapper.constructType(target));
     }
 
     public <T> T parse(byte[] json, Class<T> target) {
-        return parse(json, mapper.constructType(target));
+        return parse(json, objectMapper.constructType(target));
     }
 
     public <T> T parse(String json, Type type) {
-        return parse(json, mapper.constructType(type));
+        return parse(json, objectMapper.constructType(type));
     }
 
     public <T> T parse(byte[] json, Type type) {
-        return parse(json, mapper.constructType(type));
+        return parse(json, objectMapper.constructType(type));
     }
 
     public <T> T parse(String json, TypeReference<T> type) {
-        return parse(json, mapper.constructType(type));
+        return parse(json, objectMapper.constructType(type));
     }
 
     public <T> T parse(byte[] json, TypeReference<T> type) {
-        return parse(json, mapper.constructType(type));
+        return parse(json, objectMapper.constructType(type));
     }
 
     // ----------------------------------------------------static methods
@@ -206,7 +206,7 @@ public final class Jsons {
             return null;
         }
 
-        ObjectMapper objectMapper = NORMAL.mapper;
+        ObjectMapper objectMapper = NORMAL.objectMapper;
         JsonNode rootNode = readTree(objectMapper, body);
         Assert.isTrue(rootNode.isArray(), "Not array json data.");
         ArrayNode arrayNode = (ArrayNode) rootNode;
@@ -236,7 +236,7 @@ public final class Jsons {
             return null;
         }
 
-        ObjectMapper objectMapper = NORMAL.mapper;
+        ObjectMapper objectMapper = NORMAL.objectMapper;
         JsonNode rootNode = readTree(objectMapper, body);
         if (rootNode.isArray()) {
             ArrayNode arrayNode = (ArrayNode) rootNode;
@@ -394,20 +394,20 @@ public final class Jsons {
 
     // -----------------------------------------------------------------------private methods
 
-    private static JsonNode readTree(ObjectMapper mapper, String body) {
+    private static JsonNode readTree(ObjectMapper objectMapper, String body) {
         try {
-            return mapper.readTree(body);
+            return objectMapper.readTree(body);
         } catch (JsonProcessingException e) {
             return ExceptionUtils.rethrow(e);
         }
     }
 
-    private static Object parse(ObjectMapper mapper, JsonNode jsonNode, Type type) {
+    private static Object parse(ObjectMapper objectMapper, JsonNode jsonNode, Type type) {
         try {
-            return mapper
-                .readerFor(mapper.getTypeFactory().constructType(type))
+            return objectMapper
+                .readerFor(objectMapper.getTypeFactory().constructType(type))
                 .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-                .readValue(mapper.treeAsTokens(jsonNode));
+                .readValue(objectMapper.treeAsTokens(jsonNode));
         } catch (IOException e) {
             return ExceptionUtils.rethrow(e);
         }

@@ -138,7 +138,13 @@ public class ServerMetricsService extends SingletonClassConstraint {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
         }
 
-        SupervisorMetricsResponse response = (metrics == null) ? new SupervisorMetricsResponse() : ServerMetricsConverter.INSTANCE.convert(metrics);
+        SupervisorMetricsResponse response;
+        if (metrics == null) {
+            response = new SupervisorMetricsResponse();
+        } else {
+            response = ServerMetricsConverter.INSTANCE.convert(metrics);
+        }
+
         response.setHost(supervisor.getHost());
         response.setPort(supervisor.getPort());
         response.setPingTime(pingTime);
@@ -159,15 +165,16 @@ public class ServerMetricsService extends SingletonClassConstraint {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
         }
 
-        if (metrics != null && !SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
-            metrics = null;
+        WorkerMetricsResponse response;
+        if (metrics == null || !SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
+            response = new WorkerMetricsResponse(worker.getWorkerId());
+        } else {
+            response = ServerMetricsConverter.INSTANCE.convert(metrics);
         }
 
-        WorkerMetricsResponse response = (metrics == null) ? new WorkerMetricsResponse() : ServerMetricsConverter.INSTANCE.convert(metrics);
         response.setHost(worker.getHost());
         response.setPort(worker.getPort());
         response.setPingTime(pingTime);
-        response.setWorkerId(metrics != null ? metrics.getWorkerId() : worker.getWorkerId());
         return response;
     }
 

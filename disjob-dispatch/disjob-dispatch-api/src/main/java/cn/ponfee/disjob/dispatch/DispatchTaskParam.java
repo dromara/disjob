@@ -46,7 +46,7 @@ class DispatchTaskParam {
     public String toString() {
         return new StringJoiner(", ", DispatchTaskParam.class.getSimpleName() + "[", "]")
             .add("executeTaskParam=" + executeTaskParam)
-            .add(group == null ? "group=null" : "group='" + group + "'")
+            .add("group=" + (group != null ? "'" + group + "'" : "null"))
             .add("retried=" + retried)
             .toString();
     }
