@@ -17,9 +17,11 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.param.supervisor.EventParam;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
+import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
@@ -36,11 +38,14 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
+    private final EventSubscribeService eventSubscribeService;
 
     public SupervisorRpcProvider(DistributedJobManager jobManager,
-                                 DistributedJobQuerier jobQuerier) {
+                                 DistributedJobQuerier jobQuerier,
+                                 EventSubscribeService eventSubscribeService) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
+        this.eventSubscribeService = eventSubscribeService;
     }
 
     @Override
@@ -85,6 +90,12 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
         metrics.setStartupAt(Dates.toDate(Supervisor.current().getStartupAt()));
         metrics.setAlsoWorker(Worker.current() != null);
         return metrics;
+    }
+
+    @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
+    @Override
+    public void publish(EventParam param) {
+        eventSubscribeService.subscribe(param);
     }
 
     @Override

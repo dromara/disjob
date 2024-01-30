@@ -37,7 +37,7 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
  */
 @Service
 public class AuthorizeGroupService extends SingletonClassConstraint {
-    private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthorizeGroupService.class);
 
     /**
      * SQL中`group IN (a, b, ..., x)`允许的最大长度

@@ -11,6 +11,7 @@ package cn.ponfee.disjob.core.base;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.param.supervisor.EventParam;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
@@ -63,6 +64,9 @@ public interface SupervisorRpcService {
 
     @GetMapping("metrics")
     SupervisorMetrics metrics();
+
+    @PostMapping("publish")
+    void publish(EventParam param);
 
     // ---------------------------------------------------------------------------savepoint
 

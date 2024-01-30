@@ -13,7 +13,7 @@ import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.model.TokenType;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
-import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
+import cn.ponfee.disjob.supervisor.application.ServerInvokeService;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import com.google.common.collect.ImmutableMap;
@@ -43,12 +43,12 @@ public class DisjobMgGroupController extends BaseController {
     private static final String PERMISSION_CODE = "disjob:mggroup:operate";
 
     private final SchedGroupService schedGroupService;
-    private final ServerMetricsService serverMetricsService;
+    private final ServerInvokeService serverInvokeService;
 
     public DisjobMgGroupController(SchedGroupService schedGroupService,
-                                   ServerMetricsService serverMetricsService) {
+                                   ServerInvokeService serverInvokeService) {
         this.schedGroupService = schedGroupService;
-        this.serverMetricsService = serverMetricsService;
+        this.serverInvokeService = serverInvokeService;
     }
 
     // -------------------------------------------------------查询
@@ -173,7 +173,7 @@ public class DisjobMgGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
-        mmap.put("workers", serverMetricsService.workers(group, null));
+        mmap.put("workers", serverInvokeService.workers(group, null));
         return PREFIX + "/worker";
     }
 

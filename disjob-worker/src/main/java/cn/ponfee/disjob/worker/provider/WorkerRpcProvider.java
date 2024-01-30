@@ -54,7 +54,7 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
 
     @Override
     public WorkerMetrics metrics(GetMetricsParam param) {
-        String wGroup = Worker.current().getGroup();
+        String wGroup = currentWork.getGroup();
         String pGroup = param.getGroup();
         if (!wGroup.equals(pGroup)) {
             throw new IllegalArgumentException("Inconsistent get metrics group: " + wGroup + " != " + pGroup);
@@ -79,16 +79,15 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
             WorkerConfigurator.clearTaskQueue();
 
         } else if (action == Action.ADD_WORKER) {
-            String group = action.parse(param.getData());
-            if (!currentWork.getGroup().equals(group)) {
-                throw new UnsupportedOperationException(
-                    "Add worker failed, group expect '" + group + "', but actual '" + currentWork.getGroup() + "'"
-                );
+            String cGroup = currentWork.getGroup();
+            String dGroup = action.parse(param.getData());
+            if (!cGroup.equals(dGroup)) {
+                throw new UnsupportedOperationException("Inconsistent add worker group: " + cGroup + "!=" + dGroup);
             }
             workerRegistry.register(currentWork);
 
         } else {
-            throw new UnsupportedOperationException("Unsupported modify worker config action: " + param.getAction());
+            throw new UnsupportedOperationException("Unsupported configure worker action: " + action);
         }
     }
 

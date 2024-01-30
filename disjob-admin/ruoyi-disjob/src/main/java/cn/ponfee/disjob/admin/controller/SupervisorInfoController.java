@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.admin.controller;
 
-import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
+import cn.ponfee.disjob.supervisor.application.ServerInvokeService;
 import com.ruoyi.common.core.controller.BaseController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
@@ -28,16 +28,16 @@ public class SupervisorInfoController extends BaseController {
     static final String PREFIX = "disjob/supervisor";
     private static final String PERMISSION_CODE = "disjob:supervisor:operate";
 
-    private final ServerMetricsService serverMetricsService;
+    private final ServerInvokeService serverInvokeService;
 
-    public SupervisorInfoController(ServerMetricsService serverMetricsService) {
-        this.serverMetricsService = serverMetricsService;
+    public SupervisorInfoController(ServerInvokeService serverInvokeService) {
+        this.serverInvokeService = serverInvokeService;
     }
 
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping
     public String supervisor(ModelMap mmap) throws Exception {
-        mmap.put("list", serverMetricsService.supervisors());
+        mmap.put("list", serverInvokeService.supervisors());
         return PREFIX + "/supervisor";
     }
 

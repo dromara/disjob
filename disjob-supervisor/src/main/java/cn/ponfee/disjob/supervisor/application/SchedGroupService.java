@@ -19,6 +19,7 @@ import cn.ponfee.disjob.core.exception.GroupNotFoundException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.core.model.TokenType;
+import cn.ponfee.disjob.core.param.supervisor.EventParam;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
@@ -62,12 +63,15 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     private final SchedGroupMapper schedGroupMapper;
     private final SupervisorRegistry supervisorRegistry;
+    private final ServerInvokeService serverInvokeService;
 
     public SchedGroupService(SchedGroupMapper schedGroupMapper,
                              SupervisorRegistry supervisorRegistry,
+                             ServerInvokeService serverInvokeService,
                              SupervisorProperties supervisorProperties) {
         this.schedGroupMapper = schedGroupMapper;
         this.supervisorRegistry = supervisorRegistry;
+        this.serverInvokeService = serverInvokeService;
         int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 30);
         commonScheduledPool().scheduleWithFixedDelay(this::refresh, periodSeconds, periodSeconds, TimeUnit.SECONDS);
         refresh();
@@ -83,7 +87,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         SchedGroup schedGroup = request.toSchedGroup();
         schedGroup.setUpdatedBy(schedGroup.getCreatedBy());
         schedGroupMapper.insert(schedGroup);
-        refresh();
+        refresh0();
         return schedGroup.getId();
     }
 
@@ -94,7 +98,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         }
         return Functions.doIfTrue(
             isOneAffectedRow(schedGroupMapper.softDelete(group, updatedBy)),
-            this::refresh
+            this::refresh0
         );
     }
 
@@ -102,7 +106,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         request.checkAndTrim();
         return Functions.doIfTrue(
             isOneAffectedRow(schedGroupMapper.edit(request.toSchedGroup())),
-            this::refresh
+            this::refresh0
         );
     }
 
@@ -114,7 +118,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     public boolean updateToken(String group, TokenType type, String newToken, String updatedBy, String oldToken) {
         return Functions.doIfTrue(
             isOneAffectedRow(schedGroupMapper.updateToken(group, type, newToken, updatedBy, oldToken)),
-            this::refresh
+            this::refresh0
         );
     }
 
@@ -122,7 +126,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         Assert.hasText(ownUser, "Own user cannot be blank.");
         return Functions.doIfTrue(
             isOneAffectedRow(schedGroupMapper.updateOwnUser(group, ownUser.trim(), updatedBy)),
-            this::refresh
+            this::refresh0
         );
     }
 
@@ -174,7 +178,7 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     // ------------------------------------------------------------private methods
 
-    private void refresh() {
+    void refresh() {
         if (!LOCK.tryLock()) {
             return;
         }
@@ -192,6 +196,11 @@ public class SchedGroupService extends SingletonClassConstraint {
         } finally {
             LOCK.unlock();
         }
+    }
+
+    private void refresh0() {
+        refresh();
+        serverInvokeService.publishOtherSupervisors(new EventParam(EventParam.Type.REFRESH_GROUP));
     }
 
     private static DisjobGroup getDisjobGroup(String group) {

@@ -128,7 +128,7 @@ public class RedisTaskReceiver extends TaskReceiver {
         private final byte[][] keysAndArgs;
         private final RedisKeyRenewal redisKeyRenewal;
 
-        private GroupedWorker(Worker.Current worker) {
+        private GroupedWorker(Worker worker) {
             byte[] key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker).getBytes();
             this.keysAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
             this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, key);

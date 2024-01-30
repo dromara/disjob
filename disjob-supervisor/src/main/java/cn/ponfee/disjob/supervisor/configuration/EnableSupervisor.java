@@ -17,6 +17,7 @@ import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
+import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.base.WorkerRpcClient;
@@ -165,8 +166,9 @@ public @interface EnableSupervisor {
         @ConditionalOnMissingBean
         @Bean
         public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
-                                                         DistributedJobQuerier jobQuerier) {
-            return new SupervisorRpcProvider(jobManager, jobQuerier);
+                                                         DistributedJobQuerier jobQuerier,
+                                                         EventSubscribeService eventSubscribeService) {
+            return new SupervisorRpcProvider(jobManager, jobQuerier, eventSubscribeService);
         }
     }
 

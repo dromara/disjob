@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.supervisor.application;
 
+import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
@@ -18,6 +19,7 @@ import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
+import cn.ponfee.disjob.core.param.supervisor.EventParam;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
@@ -41,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.core.base.JobConstants.HTTP_URL_PATTERN;
 
@@ -50,19 +53,20 @@ import static cn.ponfee.disjob.core.base.JobConstants.HTTP_URL_PATTERN;
  * @author Ponfee
  */
 @Service
-public class ServerMetricsService extends SingletonClassConstraint {
-    private static final Logger LOG = LoggerFactory.getLogger(ServerMetricsService.class);
+public class ServerInvokeService extends SingletonClassConstraint {
+    private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
     private static final String SUPERVISOR_METRICS_URL = HTTP_URL_PATTERN + SupervisorRpcService.PREFIX_PATH + "metrics";
+    private static final String SUPERVISOR_PUBLISH_URL = HTTP_URL_PATTERN + SupervisorRpcService.PREFIX_PATH + "publish";
     private static final String WORKER_METRICS_URL     = HTTP_URL_PATTERN + WorkerRpcService.PREFIX_PATH + "metrics";
     private static final String WORKER_CONFIGURE_URL   = HTTP_URL_PATTERN + WorkerRpcService.PREFIX_PATH + "worker/configure";
 
     private final RestTemplate restTemplate;
     private final SupervisorRegistry supervisorRegistry;
 
-    public ServerMetricsService(HttpProperties http,
-                                ObjectMapper objectMapper,
-                                SupervisorRegistry supervisorRegistry) {
+    public ServerInvokeService(HttpProperties http,
+                               ObjectMapper objectMapper,
+                               SupervisorRegistry supervisorRegistry) {
         MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
         httpMessageConverter.setObjectMapper(objectMapper);
         RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);
@@ -122,6 +126,18 @@ public class ServerMetricsService extends SingletonClassConstraint {
             worker -> configureWorker(worker, req.getAction(), req.getData()),
             ThreadPoolExecutors.commonThreadPool()
         );
+    }
+
+    public void publishOtherSupervisors(EventParam eventParam) {
+        try {
+            List<Supervisor> list = supervisorRegistry.getRegisteredServers()
+                .stream()
+                .filter(e -> !Supervisor.current().sameSupervisor(e))
+                .collect(Collectors.toList());
+            MultithreadExecutors.run(list, e -> publishSupervisor(e, eventParam), ThreadPoolExecutors.commonThreadPool());
+        } catch (Exception e) {
+            LOG.error("Publish all supervisor error.", e);
+        }
     }
 
     // ------------------------------------------------------------private methods
@@ -202,6 +218,11 @@ public class ServerMetricsService extends SingletonClassConstraint {
         param.setAction(action);
         param.setData(data);
         RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param);
+    }
+
+    private void publishSupervisor(Supervisor supervisor, EventParam param) {
+        String url = String.format(SUPERVISOR_PUBLISH_URL, supervisor.getHost(), supervisor.getPort());
+        RetryTemplate.executeQuietly(() -> RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param), 1, 2000);
     }
 
 }

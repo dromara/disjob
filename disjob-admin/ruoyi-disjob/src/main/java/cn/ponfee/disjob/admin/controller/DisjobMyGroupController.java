@@ -12,7 +12,7 @@ import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
-import cn.ponfee.disjob.supervisor.application.ServerMetricsService;
+import cn.ponfee.disjob.supervisor.application.ServerInvokeService;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
@@ -47,14 +47,14 @@ public class DisjobMyGroupController extends BaseController {
     private static final String PERMISSION_CODE = "disjob:mygroup:operate";
 
     private final SchedGroupService schedGroupService;
-    private final ServerMetricsService serverMetricsService;
+    private final ServerInvokeService serverInvokeService;
     private final ISysUserService sysUserService;
 
     public DisjobMyGroupController(SchedGroupService schedGroupService,
-                                   ServerMetricsService serverMetricsService,
+                                   ServerInvokeService serverInvokeService,
                                    ISysUserService sysUserService) {
         this.schedGroupService = schedGroupService;
-        this.serverMetricsService = serverMetricsService;
+        this.serverInvokeService = serverInvokeService;
         this.sysUserService = sysUserService;
     }
 
@@ -142,7 +142,7 @@ public class DisjobMyGroupController extends BaseController {
 
         mmap.put("group", group);
         mmap.put("worker", worker);
-        mmap.put("workers", serverMetricsService.workers(group, worker));
+        mmap.put("workers", serverInvokeService.workers(group, worker));
         return PREFIX + "/worker";
     }
 
@@ -156,7 +156,7 @@ public class DisjobMyGroupController extends BaseController {
     public AjaxResult configureOneWorker(ConfigureOneWorkerRequest request) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
 
-        serverMetricsService.configureOneWorker(request);
+        serverInvokeService.configureOneWorker(request);
         return AjaxResult.success("修改成功");
     }
 
@@ -170,7 +170,7 @@ public class DisjobMyGroupController extends BaseController {
     public AjaxResult configureAllWorker(ConfigureAllWorkerRequest request) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), request.getGroup());
 
-        serverMetricsService.configureAllWorker(request);
+        serverInvokeService.configureAllWorker(request);
         return AjaxResult.success("修改成功");
     }
 
