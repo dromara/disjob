@@ -10,10 +10,7 @@ package cn.ponfee.disjob.supervisor.provider;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.spring.RpcController;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.SupervisorMetrics;
-import cn.ponfee.disjob.core.base.SupervisorRpcService;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -87,6 +84,7 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
     @Override
     public SupervisorMetrics metrics() {
         SupervisorMetrics metrics = new SupervisorMetrics();
+        metrics.setVersion(JobConstants.VERSION);
         metrics.setStartupAt(Dates.toDate(Supervisor.current().getStartupAt()));
         metrics.setAlsoWorker(Worker.current() != null);
         return metrics;

@@ -15,7 +15,7 @@ import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
+import cn.ponfee.disjob.registry.Discovery;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,11 +30,12 @@ public class HttpTaskDispatcher extends TaskDispatcher {
 
     private final RestTemplate restTemplate;
 
-    public HttpTaskDispatcher(DiscoveryRestTemplate<Worker> discoveryRestTemplate,
+    public HttpTaskDispatcher(Discovery<Worker> discoveryWorker,
                               RetryProperties retryProperties,
-                              TimingWheel<ExecuteTaskParam> timingWheel) {
-        super(discoveryRestTemplate.getDiscoveryServer(), retryProperties, timingWheel);
-        this.restTemplate = discoveryRestTemplate.getRestTemplate();
+                              TimingWheel<ExecuteTaskParam> timingWheel,
+                              RestTemplate restTemplate) {
+        super(discoveryWorker, retryProperties, timingWheel);
+        this.restTemplate = restTemplate;
     }
 
     @Override

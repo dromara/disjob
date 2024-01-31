@@ -20,6 +20,11 @@ import org.springframework.http.MediaType;
 public class JobConstants {
 
     /**
+     * Version
+     */
+    public static final String VERSION = "2.0.8-SNAPSHOT";
+
+    /**
      * Process batch size
      */
     public static final int PROCESS_BATCH_SIZE = 200;

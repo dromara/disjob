@@ -180,8 +180,8 @@ public class DistributedJobQuerier {
         return rows;
     }
 
-    public List<Map<String, Object>> searchJob(SchedJobSearchRequest request) {
-        return jobMapper.searchJob(request);
+    public List<Map<String, Object>> searchJob(SchedJobSearchRequest req) {
+        return jobMapper.searchJob(req.getGroups(), req.getJobName(), req.getJobId());
     }
 
     // --------------------------------------------------------------------------private methods

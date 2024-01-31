@@ -25,6 +25,11 @@ public abstract class ServerMetricsResponse extends ToJsonString implements Seri
     private static final long serialVersionUID = 2989558365810145061L;
 
     /**
+     * Version
+     */
+    private String version;
+
+    /**
      * Server host
      */
     private String host;

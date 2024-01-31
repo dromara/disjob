@@ -12,11 +12,13 @@ import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.ProxyUtils;
-import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.base.HttpProperties;
+import cn.ponfee.disjob.core.base.RetryProperties;
+import cn.ponfee.disjob.core.base.SupervisorRpcService;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
-import cn.ponfee.disjob.registry.DiscoveryRestProxy;
-import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.WorkerRegistry;
+import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
@@ -48,21 +50,21 @@ public class WorkerStartup implements Startable {
 
     private WorkerStartup(Worker.Current currentWorker,
                           WorkerProperties workerProperties,
-                          RetryProperties retryProperties,
                           HttpProperties httpProperties,
+                          RetryProperties retryProperties,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver,
                           @Nullable SupervisorRpcService supervisorRpcService,
                           @Nullable ObjectMapper objectMapper) {
         Objects.requireNonNull(currentWorker, "Current worker cannot null.");
         Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
-        Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         Objects.requireNonNull(httpProperties, "Http properties cannot be null.").check();
+        Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         Objects.requireNonNull(workerRegistry, "Server registry cannot null.");
         Objects.requireNonNull(taskReceiver, "Task receiver cannot null.");
 
         SupervisorRpcService supervisorRpcClient = createProxy(
-            supervisorRpcService, retryProperties, httpProperties, workerRegistry, objectMapper
+            supervisorRpcService, httpProperties, retryProperties, objectMapper, workerRegistry
         );
 
         this.currentWorker = currentWorker;
@@ -115,8 +117,8 @@ public class WorkerStartup implements Startable {
     public static class Builder {
         private Worker.Current currentWorker;
         private WorkerProperties workerProperties;
-        private RetryProperties retryProperties;
         private HttpProperties httpProperties;
+        private RetryProperties retryProperties;
         private WorkerRegistry workerRegistry;
         private TaskReceiver taskReceiver;
         private SupervisorRpcService supervisorRpcService;
@@ -135,13 +137,13 @@ public class WorkerStartup implements Startable {
             return this;
         }
 
-        public Builder retryProperties(RetryProperties retryProperties) {
-            this.retryProperties = retryProperties;
+        public Builder httpProperties(HttpProperties httpProperties) {
+            this.httpProperties = httpProperties;
             return this;
         }
 
-        public Builder httpProperties(HttpProperties httpProperties) {
-            this.httpProperties = httpProperties;
+        public Builder retryProperties(RetryProperties retryProperties) {
+            this.retryProperties = retryProperties;
             return this;
         }
 
@@ -169,8 +171,8 @@ public class WorkerStartup implements Startable {
             return new WorkerStartup(
                 currentWorker,
                 workerProperties,
-                retryProperties,
                 httpProperties,
+                retryProperties,
                 workerRegistry,
                 taskReceiver,
                 supervisorRpcService,
@@ -182,25 +184,17 @@ public class WorkerStartup implements Startable {
     // ----------------------------------------------------------------------------------------private methods
 
     private static SupervisorRpcService createProxy(SupervisorRpcService local,
-                                                    RetryProperties retry,
                                                     HttpProperties http,
-                                                    WorkerRegistry workerRegistry,
-                                                    ObjectMapper objectMapper) {
+                                                    RetryProperties retry,
+                                                    ObjectMapper objectMapper,
+                                                    WorkerRegistry discoverySupervisor) {
         if (local != null) {
             // cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
             // 此Worker同时也是Supervisor身份，则是本地调用，并使用动态代理增加重试能力
             InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
             return ProxyUtils.create(ih, SupervisorRpcService.class);
         } else {
-            DiscoveryRestTemplate<Supervisor> discoveryRestTemplate = DiscoveryRestTemplate.<Supervisor>builder()
-                .httpConnectTimeout(http.getConnectTimeout())
-                .httpReadTimeout(http.getReadTimeout())
-                .retryMaxCount(retry.getMaxCount())
-                .retryBackoffPeriod(retry.getBackoffPeriod())
-                .objectMapper(objectMapper)
-                .discoveryServer(workerRegistry)
-                .build();
-            return DiscoveryRestProxy.create(false, SupervisorRpcService.class, discoveryRestTemplate);
+            return DiscoveryRestProxy.create(false, SupervisorRpcService.class, http, retry, objectMapper, discoverySupervisor);
         }
     }
 

@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
@@ -31,6 +32,7 @@ public class WorkerConfigurator {
 
     public static WorkerMetrics metrics() {
         WorkerMetrics metrics = new WorkerMetrics();
+        metrics.setVersion(JobConstants.VERSION);
         metrics.setWorkerId(Worker.current().getWorkerId());
         metrics.setStartupAt(Dates.toDate(Worker.current().getStartupAt()));
         metrics.setAlsoSupervisor(Supervisor.current() != null);

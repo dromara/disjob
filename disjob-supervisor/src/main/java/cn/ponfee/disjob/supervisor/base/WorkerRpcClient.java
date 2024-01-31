@@ -15,9 +15,8 @@ import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
-import cn.ponfee.disjob.registry.DiscoveryRestProxy;
-import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,25 +34,14 @@ public class WorkerRpcClient {
     private final WorkerRpcService local;
     private final WorkerRpcService remote;
 
-    public WorkerRpcClient(HttpProperties httpProperties,
-                           RetryProperties retryProperties,
-                           SupervisorRegistry supervisorRegistry,
+    public WorkerRpcClient(HttpProperties http,
+                           RetryProperties retry,
+                           SupervisorRegistry discoveryWorker,
                            @Nullable Worker.Current currentWorker,
                            @Nullable ObjectMapper objectMapper) {
-        httpProperties.check();
-        retryProperties.check();
-        DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-            .httpConnectTimeout(httpProperties.getConnectTimeout())
-            .httpReadTimeout(httpProperties.getReadTimeout())
-            .retryMaxCount(retryProperties.getMaxCount())
-            .retryBackoffPeriod(retryProperties.getBackoffPeriod())
-            .objectMapper(objectMapper)
-            .discoveryServer(supervisorRegistry)
-            .build();
-
         this.currentWorker = currentWorker;
         this.local = WorkerRpcLocal.INSTANCE;
-        this.remote = DiscoveryRestProxy.create(true, WorkerRpcService.class, discoveryRestTemplate);
+        this.remote = DiscoveryRestProxy.create(true, WorkerRpcService.class, http, retry, objectMapper, discoveryWorker);
     }
 
     public void verify(JobHandlerParam param) throws JobException {

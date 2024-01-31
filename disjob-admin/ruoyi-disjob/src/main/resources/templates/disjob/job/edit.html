@@ -163,6 +163,23 @@
           }
         });
       });
+
+      const retryType = $("select[name='retryType']");
+      retryType.change(function () {
+        const retryCount = $("input[name='retryCount']");
+        const retryInterval = $("input[name='retryInterval']");
+        if (this.value === "0") {
+          retryCount.val("");
+          retryInterval.val("");
+          retryCount.hide();
+          retryInterval.hide();
+        } else {
+          retryCount.show();
+          retryInterval.show();
+        }
+      });
+      retryType.trigger("change");
+
     });
 
     $("#form-job-edit").validate({

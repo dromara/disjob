@@ -23,7 +23,7 @@ public class RetryInvocationHandler implements InvocationHandler {
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    public RetryInvocationHandler(Object target, int retryMaxCount, int retryBackoffPeriod) {
+    public RetryInvocationHandler(Object target, int retryMaxCount, long retryBackoffPeriod) {
         this.target = Objects.requireNonNull(target, "Target object cannot be null.");
         this.retryMaxCount = retryMaxCount;
         this.retryBackoffPeriod = retryBackoffPeriod;

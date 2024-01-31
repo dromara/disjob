@@ -19,8 +19,8 @@ import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.configuration.BaseTaskDispatchingAutoConfiguration;
 import cn.ponfee.disjob.dispatch.http.HttpTaskDispatcher;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
-import cn.ponfee.disjob.registry.DiscoveryRestTemplate;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.rpc.DiscoveryRestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -48,18 +48,8 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
                                          SupervisorRegistry discoveryWorker,
                                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          @Nullable ObjectMapper objectMapper) {
-        httpProperties.check();
-        retryProperties.check();
-        DiscoveryRestTemplate<Worker> discoveryRestTemplate = DiscoveryRestTemplate.<Worker>builder()
-            .httpConnectTimeout(httpProperties.getConnectTimeout())
-            .httpReadTimeout(httpProperties.getReadTimeout())
-            .retryMaxCount(retryProperties.getMaxCount())
-            .retryBackoffPeriod(retryProperties.getBackoffPeriod())
-            .objectMapper(objectMapper)
-            .discoveryServer(discoveryWorker)
-            .build();
-
-        return new HttpTaskDispatcher(discoveryRestTemplate, retryProperties, timingWheel);
+        RestTemplate restTemplate = DiscoveryRestTemplate.createRestTemplate(httpProperties, objectMapper);
+        return new HttpTaskDispatcher(discoveryWorker, retryProperties, timingWheel, restTemplate);
     }
 
     /**

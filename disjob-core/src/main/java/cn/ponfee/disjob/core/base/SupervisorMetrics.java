@@ -26,6 +26,11 @@ public class SupervisorMetrics extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -3330041841878987072L;
 
     /**
+     * 使用的框架代码的版本号
+     */
+    private String version;
+
+    /**
      * 启动时间
      */
     private Date startupAt;

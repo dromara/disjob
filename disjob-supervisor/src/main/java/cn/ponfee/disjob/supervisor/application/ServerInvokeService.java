@@ -13,7 +13,6 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
@@ -24,6 +23,7 @@ import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.rpc.ServerRestProxy;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
@@ -34,18 +34,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static cn.ponfee.disjob.core.base.JobConstants.HTTP_URL_PATTERN;
 
 /**
  * Server info service
@@ -56,24 +50,16 @@ import static cn.ponfee.disjob.core.base.JobConstants.HTTP_URL_PATTERN;
 public class ServerInvokeService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
-    private static final String SUPERVISOR_METRICS_URL = HTTP_URL_PATTERN + SupervisorRpcService.PREFIX_PATH + "metrics";
-    private static final String SUPERVISOR_PUBLISH_URL = HTTP_URL_PATTERN + SupervisorRpcService.PREFIX_PATH + "publish";
-    private static final String WORKER_METRICS_URL     = HTTP_URL_PATTERN + WorkerRpcService.PREFIX_PATH + "metrics";
-    private static final String WORKER_CONFIGURE_URL   = HTTP_URL_PATTERN + WorkerRpcService.PREFIX_PATH + "worker/configure";
-
-    private final RestTemplate restTemplate;
+    private final ServerRestProxy.ServerInvoker<WorkerRpcService> invokeWorker;
+    private final ServerRestProxy.ServerInvoker<SupervisorRpcService> invokeSupervisor;
     private final SupervisorRegistry supervisorRegistry;
 
     public ServerInvokeService(HttpProperties http,
                                ObjectMapper objectMapper,
                                SupervisorRegistry supervisorRegistry) {
-        MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
-        httpMessageConverter.setObjectMapper(objectMapper);
-        RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);
-        this.restTemplate = RestTemplateUtils.buildRestTemplate(
-            http.getConnectTimeout(), http.getReadTimeout(),
-            StandardCharsets.UTF_8, httpMessageConverter
-        );
+        RetryProperties retry = RetryProperties.of(0, 0);
+        this.invokeWorker = ServerRestProxy.create(WorkerRpcService.class, http, retry, objectMapper);
+        this.invokeSupervisor = ServerRestProxy.create(SupervisorRpcService.class, http, retry, objectMapper);
         this.supervisorRegistry = supervisorRegistry;
     }
 
@@ -82,7 +68,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     public List<SupervisorMetricsResponse> supervisors() throws Exception {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
         list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Supervisor.current()) ? 0 : 1));
-        return MultithreadExecutors.call(list, this::getMetrics, ThreadPoolExecutors.commonThreadPool());
+        return MultithreadExecutors.call(list, this::getSupervisorMetrics, ThreadPoolExecutors.commonThreadPool());
     }
 
     public List<WorkerMetricsResponse> workers(String group, String worker) {
@@ -90,12 +76,12 @@ public class ServerInvokeService extends SingletonClassConstraint {
             String[] array = worker.trim().split(":");
             String host = array[0].trim();
             int port = Numbers.toInt(array[1].trim(), -1);
-            WorkerMetricsResponse metrics = getMetrics(new Worker(group, "", host, port));
+            WorkerMetricsResponse metrics = getWorkerMetrics(new Worker(group, "", host, port));
             return StringUtils.isBlank(metrics.getWorkerId()) ? Collections.emptyList() : Collections.singletonList(metrics);
         } else {
             List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
             list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1));
-            return MultithreadExecutors.call(list, this::getMetrics, ThreadPoolExecutors.commonThreadPool());
+            return MultithreadExecutors.call(list, this::getWorkerMetrics, ThreadPoolExecutors.commonThreadPool());
         }
     }
 
@@ -130,11 +116,15 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     public void publishOtherSupervisors(EventParam eventParam) {
         try {
-            List<Supervisor> list = supervisorRegistry.getRegisteredServers()
+            List<Supervisor> supervisors = supervisorRegistry.getRegisteredServers()
                 .stream()
                 .filter(e -> !Supervisor.current().sameSupervisor(e))
                 .collect(Collectors.toList());
-            MultithreadExecutors.run(list, e -> publishSupervisor(e, eventParam), ThreadPoolExecutors.commonThreadPool());
+            MultithreadExecutors.run(
+                supervisors,
+                supervisor -> publishSupervisor(supervisor, eventParam),
+                ThreadPoolExecutors.commonThreadPool()
+            );
         } catch (Exception e) {
             LOG.error("Publish all supervisor error.", e);
         }
@@ -142,13 +132,12 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     // ------------------------------------------------------------private methods
 
-    private SupervisorMetricsResponse getMetrics(Supervisor supervisor) {
+    private SupervisorMetricsResponse getSupervisorMetrics(Supervisor supervisor) {
         SupervisorMetrics metrics = null;
         Long pingTime = null;
-        String url = String.format(SUPERVISOR_METRICS_URL, supervisor.getHost(), supervisor.getPort());
         try {
             long start = System.currentTimeMillis();
-            metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, SupervisorMetrics.class, null);
+            metrics = invokeSupervisor.invoke(supervisor, SupervisorRpcService::metrics);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
@@ -167,15 +156,14 @@ public class ServerInvokeService extends SingletonClassConstraint {
         return response;
     }
 
-    private WorkerMetricsResponse getMetrics(Worker worker) {
+    private WorkerMetricsResponse getWorkerMetrics(Worker worker) {
         WorkerMetrics metrics = null;
         Long pingTime = null;
         String group = worker.getGroup();
-        String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
         GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
         try {
             long start = System.currentTimeMillis();
-            metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
+            metrics = invokeWorker.invoke(worker, client -> client.metrics(param));
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
@@ -204,25 +192,22 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private void verifyWorkerSignature(Worker worker) {
         String group = worker.getGroup();
-        String url = String.format(WORKER_METRICS_URL, worker.getHost(), worker.getPort());
         GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
-        WorkerMetrics metrics = RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.GET, WorkerMetrics.class, null, param);
+        WorkerMetrics metrics = invokeWorker.invoke(worker, client -> client.metrics(param));
         if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
         }
     }
 
     private void configureWorker(Worker worker, Action action, String data) {
-        String url = String.format(WORKER_CONFIGURE_URL, worker.getHost(), worker.getPort());
         ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
         param.setAction(action);
         param.setData(data);
-        RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param);
+        invokeWorker.invokeWithoutResult(worker, client -> client.configureWorker(param));
     }
 
     private void publishSupervisor(Supervisor supervisor, EventParam param) {
-        String url = String.format(SUPERVISOR_PUBLISH_URL, supervisor.getHost(), supervisor.getPort());
-        RetryTemplate.executeQuietly(() -> RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, Void.class, null, param), 1, 2000);
+        RetryTemplate.executeQuietly(() -> invokeSupervisor.invokeWithoutResult(supervisor, client -> client.publish(param)), 1, 2000);
     }
 
 }

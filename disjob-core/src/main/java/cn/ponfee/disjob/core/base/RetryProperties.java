@@ -35,7 +35,7 @@ public class RetryProperties extends ToJsonString implements Serializable {
     /**
      * Backoff period milliseconds, default 3000.
      */
-    private int backoffPeriod = 3000;
+    private long backoffPeriod = 3000;
 
     public static RetryProperties of(int maxCount, int backoffPeriod) {
         RetryProperties retry = new RetryProperties();
@@ -46,7 +46,11 @@ public class RetryProperties extends ToJsonString implements Serializable {
 
     public void check() {
         Assert.isTrue(maxCount >= 0, "Retry max count cannot less than 0.");
-        Assert.isTrue(backoffPeriod > 0, "Retry backoff period must be greater than 0.");
+        if (maxCount == 0) {
+            Assert.isTrue(backoffPeriod == 0, "Retry backoff period must be equals 0.");
+        } else {
+            Assert.isTrue(backoffPeriod > 0, "Retry backoff period must be greater than 0.");
+        }
     }
 
 }

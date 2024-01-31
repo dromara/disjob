@@ -6,13 +6,18 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.registry;
+package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.ExtendMethodHandles;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.ProxyUtils;
+import cn.ponfee.disjob.core.base.HttpProperties;
+import cn.ponfee.disjob.core.base.RetryProperties;
+import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.registry.Discovery;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -55,29 +60,36 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DiscoveryRestProxy {
 
-    private static final ThreadLocal<String> GROUPED_SERVER_THREADLOCAL = new ThreadLocal<>();
+    private static final Map<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
+    private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new ThreadLocal<>();
 
     public interface GroupedServer {
         default void group(String group) {
-            GROUPED_SERVER_THREADLOCAL.set(group);
+            GROUP_THREAD_LOCAL.set(group);
         }
     }
 
-    public static <T> T create(boolean grouped, Class<T> interfaceType, DiscoveryRestTemplate<?> discoveryRestTemplate) {
+    public static <T, S extends Server> T create(boolean grouped,
+                                                 Class<T> interfaceType,
+                                                 HttpProperties http,
+                                                 RetryProperties retry,
+                                                 ObjectMapper objectMapper,
+                                                 Discovery<S> discoveryServer) {
         Class<?>[] interfaces = grouped ? new Class[]{interfaceType, GroupedServer.class} : new Class[]{interfaceType};
         String prefixPath = parsePath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
-        InvocationHandler invocationHandler = new RestInvocationHandler(discoveryRestTemplate, prefixPath);
+
+        DiscoveryRestTemplate<S> discoveryRestTemplate = new DiscoveryRestTemplate<>(http, retry, objectMapper, discoveryServer);
+        InvocationHandler invocationHandler = new DiscoveryInvocationHandler(discoveryRestTemplate, prefixPath);
         return ProxyUtils.create(invocationHandler, interfaces);
     }
 
-    private static class RestInvocationHandler implements InvocationHandler {
-        private static final Map<Method, Request> REQUEST_CACHE = new ConcurrentHashMap<>();
+    private static class DiscoveryInvocationHandler implements InvocationHandler {
         private static final Map<Method, MethodHandle> METHOD_HANDLE_CACHE = new ConcurrentHashMap<>();
 
         private final DiscoveryRestTemplate<?> discoveryRestTemplate;
         private final String prefixPath;
 
-        private RestInvocationHandler(DiscoveryRestTemplate<?> discoveryRestTemplate, String prefixPath) {
+        private DiscoveryInvocationHandler(DiscoveryRestTemplate<?> discoveryRestTemplate, String prefixPath) {
             this.discoveryRestTemplate = discoveryRestTemplate;
             this.prefixPath = prefixPath;
         }
@@ -94,11 +106,11 @@ public class DiscoveryRestProxy {
                     );
                     return methodHandle.invokeWithArguments(args);
                 } else {
-                    String group = GROUPED_SERVER_THREADLOCAL.get();
+                    String group = GROUP_THREAD_LOCAL.get();
                     try {
                         return discoveryRestTemplate.execute(group, request.path, request.httpMethod, method.getGenericReturnType(), args);
                     } finally {
-                        GROUPED_SERVER_THREADLOCAL.remove();
+                        GROUP_THREAD_LOCAL.remove();
                     }
                 }
             } else {
@@ -106,36 +118,36 @@ public class DiscoveryRestProxy {
                 return discoveryRestTemplate.execute(null, request.path, request.httpMethod, method.getGenericReturnType(), args);
             }
         }
-
-        private static Request buildRequest(String prefixPath, Method method) {
-            return REQUEST_CACHE.computeIfAbsent(method, key -> {
-                RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class);
-                if (mapping == null || ArrayUtils.isEmpty(mapping.method())) {
-                    return null;
-                }
-                String suffixPath = parsePath(mapping), fullPath;
-                if (prefixPath.isEmpty()) {
-                    fullPath = suffixPath.isEmpty() ? null : suffixPath;
-                } else {
-                    fullPath = suffixPath.isEmpty() ? prefixPath : prefixPath + Files.UNIX_FOLDER_SEPARATOR + suffixPath;
-                }
-                if (fullPath == null) {
-                    return null;
-                }
-                return Arrays.stream(mapping.method())
-                    .filter(Objects::nonNull)
-                    .map(Enum::name)
-                    .map(HttpMethod::valueOf)
-                    .map(httpMethod -> new Request(fullPath, httpMethod))
-                    .findAny()
-                    .orElse(null);
-            });
-        }
     }
 
-    private static class Request {
-        private final String path;
-        private final HttpMethod httpMethod;
+    static Request buildRequest(String prefixPath, Method method) {
+        return METHOD_REQUEST_CACHE.computeIfAbsent(method, key -> {
+            RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(key, RequestMapping.class);
+            if (mapping == null || ArrayUtils.isEmpty(mapping.method())) {
+                return null;
+            }
+            String suffixPath = parsePath(mapping), fullPath;
+            if (prefixPath.isEmpty()) {
+                fullPath = suffixPath.isEmpty() ? null : suffixPath;
+            } else {
+                fullPath = suffixPath.isEmpty() ? prefixPath : prefixPath + Files.UNIX_FOLDER_SEPARATOR + suffixPath;
+            }
+            if (fullPath == null) {
+                return null;
+            }
+            return Arrays.stream(mapping.method())
+                .filter(Objects::nonNull)
+                .map(Enum::name)
+                .map(HttpMethod::valueOf)
+                .map(httpMethod -> new Request(fullPath, httpMethod))
+                .findAny()
+                .orElse(null);
+        });
+    }
+
+    static class Request {
+        final String path;
+        final HttpMethod httpMethod;
 
         private Request(String path, HttpMethod httpMethod) {
             this.path = path;
@@ -149,7 +161,7 @@ public class DiscoveryRestProxy {
      * @param mapping the request mapping
      * @return path
      */
-    private static String parsePath(RequestMapping mapping) {
+    static String parsePath(RequestMapping mapping) {
         String path;
         if (mapping == null || StringUtils.isEmpty(path = Collects.get(mapping.path(), 0))) {
             return "";
