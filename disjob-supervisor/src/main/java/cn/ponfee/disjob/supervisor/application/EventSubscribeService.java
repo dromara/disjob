@@ -44,6 +44,7 @@ public class EventSubscribeService {
 
     public void subscribe(EventParam param) {
         if (param != null && param.getType() != null) {
+            // putIfAbsent不会更新param
             map.compute(param.getType(), (k, v) -> param);
         }
     }

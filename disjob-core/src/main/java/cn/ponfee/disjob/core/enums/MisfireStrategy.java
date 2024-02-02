@@ -39,8 +39,6 @@ public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
 
     ;
 
-    private static final Map<Integer, MisfireStrategy> MAPPING = Enums.toMap(MisfireStrategy.class, MisfireStrategy::value);
-
     private final int value;
     private final String desc;
 
@@ -60,7 +58,11 @@ public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
     }
 
     public static MisfireStrategy of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid misfire strategy value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid misfire strategy value: " + value);
+    }
+
+    private static final class Const {
+        private static final Map<Integer, MisfireStrategy> MAPPING = Enums.toMap(MisfireStrategy.class, MisfireStrategy::value);
     }
 
 }

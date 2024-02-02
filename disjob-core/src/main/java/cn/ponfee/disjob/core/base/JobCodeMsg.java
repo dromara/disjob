@@ -38,10 +38,6 @@ public enum JobCodeMsg implements CodeMsg {
 
     ;
 
-    static {
-        Enums.checkDuplicated(JobCodeMsg.class, JobCodeMsg::getCode);
-    }
-
     private final int code;
     private final String msg;
 
@@ -58,6 +54,10 @@ public enum JobCodeMsg implements CodeMsg {
     @Override
     public String getMsg() {
         return msg;
+    }
+
+    static {
+        Enums.checkDuplicated(JobCodeMsg.class, JobCodeMsg::getCode);
     }
 
 }

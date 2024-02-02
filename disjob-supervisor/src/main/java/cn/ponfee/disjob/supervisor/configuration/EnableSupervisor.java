@@ -105,11 +105,11 @@ public @interface EnableSupervisor {
         @Bean
         public WorkerRpcClient workerRpcClient(HttpProperties httpProperties,
                                                RetryProperties retryProperties,
-                                               SupervisorRegistry supervisorRegistry,
+                                               SupervisorRegistry discoveryWorker,
                                                @Nullable Worker.Current currentWorker,
                                                @Nullable ObjectMapper objectMapper) {
             return new WorkerRpcClient(
-                httpProperties, retryProperties, supervisorRegistry, currentWorker, objectMapper
+                httpProperties, retryProperties, discoveryWorker, currentWorker, objectMapper
             );
         }
 

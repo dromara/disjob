@@ -54,8 +54,6 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
 
     ;
 
-    private static final Map<Integer, RouteStrategy> MAPPING = Enums.toMap(RouteStrategy.class, RouteStrategy::value);
-
     private final int value;
     private final String desc;
 
@@ -75,7 +73,11 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
     }
 
     public static RouteStrategy of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid route strategy value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid route strategy value: " + value);
+    }
+
+    private static final class Const {
+        private static final Map<Integer, RouteStrategy> MAPPING = Enums.toMap(RouteStrategy.class, RouteStrategy::value);
     }
 
 }

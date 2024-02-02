@@ -17,7 +17,6 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.registry.RPCInvokeException;
 import cn.ponfee.disjob.registry.ServerRole;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
@@ -26,12 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,8 +40,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param <D> the discovery type
  * @author Ponfee
  */
-public final class DiscoveryRestTemplate<D extends Server> {
-
+final class DiscoveryRestTemplate<D extends Server> {
     private static final Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
 
     private static final Set<HttpStatus> RETRIABLE_HTTP_STATUS = ImmutableSet.of(
@@ -71,15 +67,16 @@ public final class DiscoveryRestTemplate<D extends Server> {
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    DiscoveryRestTemplate(HttpProperties httpProperties,
-                          RetryProperties retryProperties,
+    DiscoveryRestTemplate(HttpProperties http,
+                          RetryProperties retry,
                           ObjectMapper objectMapper,
                           Discovery<D> discoveryServer) {
-        retryProperties.check();
-        this.restTemplate = createRestTemplate(httpProperties, objectMapper);
+        http.check();
+        retry.check();
+        this.restTemplate = RestTemplateUtils.buildRestTemplate(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         this.discoveryServer = discoveryServer;
-        this.retryMaxCount = retryProperties.getMaxCount();
-        this.retryBackoffPeriod = retryProperties.getBackoffPeriod();
+        this.retryMaxCount = retry.getMaxCount();
+        this.retryBackoffPeriod = retry.getBackoffPeriod();
     }
 
     /**
@@ -117,11 +114,11 @@ public final class DiscoveryRestTemplate<D extends Server> {
             Server server = servers.get((start + i) % serverNumber);
             String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
             try {
-                return RestTemplateUtils.invokeRpc(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
+                return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
             } catch (Throwable e) {
                 ex = e;
                 LOG.error("Invoke server rpc failed: {}, {}, {}", url, Jsons.toJson(arguments), e.getMessage());
-                if (!isRequireRetry(e)) {
+                if (isNotRetry(e)) {
                     break;
                 }
                 if (i < n) {
@@ -138,39 +135,20 @@ public final class DiscoveryRestTemplate<D extends Server> {
         throw new RPCInvokeException(msg, ex);
     }
 
-    public Discovery<D> getDiscoveryServer() {
-        return discoveryServer;
-    }
-
-    public RestTemplate getRestTemplate() {
-        return restTemplate;
-    }
-
     // ----------------------------------------------------------------------------------------static methods
 
-    public static RestTemplate createRestTemplate(HttpProperties http, ObjectMapper objectMapper) {
-        http.check();
-        if (objectMapper == null) {
-            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
-        }
-        MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
-        httpMessageConverter.setObjectMapper(objectMapper);
-        RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);
-        return RestTemplateUtils.buildRestTemplate(http.getConnectTimeout(), http.getReadTimeout(), StandardCharsets.UTF_8, httpMessageConverter);
-    }
-
-    static boolean isRequireRetry(Throwable e) {
+    static boolean isNotRetry(Throwable e) {
         if (e == null) {
-            return false;
+            return true;
         }
         if (isTimeoutException(e) || isTimeoutException(e.getCause())) {
             // org.springframework.web.client.ResourceAccessException#getCause may be timeout
-            return true;
-        }
-        if (!(e instanceof HttpStatusCodeException)) {
             return false;
         }
-        return RETRIABLE_HTTP_STATUS.contains(((HttpStatusCodeException) e).getStatusCode());
+        if (!(e instanceof HttpStatusCodeException)) {
+            return true;
+        }
+        return !RETRIABLE_HTTP_STATUS.contains(((HttpStatusCodeException) e).getStatusCode());
     }
 
     private static boolean isTimeoutException(Throwable e) {

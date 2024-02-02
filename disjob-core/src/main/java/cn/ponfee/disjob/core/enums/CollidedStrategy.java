@@ -44,8 +44,6 @@ public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
 
     ;
 
-    private static final Map<Integer, CollidedStrategy> MAPPING = Enums.toMap(CollidedStrategy.class, CollidedStrategy::value);
-
     private final int value;
     private final String desc;
 
@@ -65,7 +63,11 @@ public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
     }
 
     public static CollidedStrategy of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid collided strategy value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid collided strategy value: " + value);
+    }
+
+    private static final class Const {
+        private static final Map<Integer, CollidedStrategy> MAPPING = Enums.toMap(CollidedStrategy.class, CollidedStrategy::value);
     }
 
 }

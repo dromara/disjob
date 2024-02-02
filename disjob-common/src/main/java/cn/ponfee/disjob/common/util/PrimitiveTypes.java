@@ -8,7 +8,8 @@
 
 package cn.ponfee.disjob.common.util;
 
-import java.util.HashMap;
+import cn.ponfee.disjob.common.collect.Collects;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -43,9 +44,6 @@ public enum PrimitiveTypes {
     private final Class<?> primitive;
     private final int size;
 
-    private static final Map<Class<?>, PrimitiveTypes> PRIMITIVE_MAPPING = Enums.toMap(PrimitiveTypes.class, PrimitiveTypes::primitive);
-    private static final Map<Class<?>, PrimitiveTypes> WRAPPER_MAPPING = Enums.toMap(PrimitiveTypes.class, PrimitiveTypes::wrapper);
-
     PrimitiveTypes(Class<?> wrapper, byte value, byte castable) {
         this(wrapper, value, castable, (int) Fields.get(wrapper, "SIZE"));
     }
@@ -56,8 +54,6 @@ public enum PrimitiveTypes {
         this.castable = castable;
         this.primitive = (Class<?>) Fields.get(wrapper, "TYPE");
         this.size = size;
-        Hide.PRIMITIVE_OR_WRAPPER_MAPPING.put(primitive, this);
-        Hide.PRIMITIVE_OR_WRAPPER_MAPPING.put(wrapper, this);
     }
 
     public Class<?> primitive() {
@@ -83,23 +79,23 @@ public enum PrimitiveTypes {
     }
 
     public static PrimitiveTypes ofPrimitive(Class<?> primitive) {
-        return PRIMITIVE_MAPPING.get(primitive);
+        return Const.PRIMITIVE_MAPPING.get(primitive);
     }
 
     public static PrimitiveTypes ofWrapper(Class<?> wrapper) {
-        return WRAPPER_MAPPING.get(wrapper);
+        return Const.WRAPPER_MAPPING.get(wrapper);
     }
 
     public static PrimitiveTypes ofPrimitiveOrWrapper(Class<?> primitive) {
-        return Hide.PRIMITIVE_OR_WRAPPER_MAPPING.get(primitive);
+        return Const.ALL_MAPPING.get(primitive);
     }
 
     public static Set<Class<?>> allPrimitiveTypes() {
-        return PRIMITIVE_MAPPING.keySet();
+        return Const.PRIMITIVE_MAPPING.keySet();
     }
 
     public static Set<Class<?>> allWrapperTypes() {
-        return WRAPPER_MAPPING.keySet();
+        return Const.WRAPPER_MAPPING.keySet();
     }
 
     public static boolean isWrapperType(Class<?> primitive) {
@@ -116,7 +112,10 @@ public enum PrimitiveTypes {
         return pt == null ? type : (Class<T>) pt.primitive;
     }
 
-    private static final class Hide {
-        private static final Map<Class<?>, PrimitiveTypes> PRIMITIVE_OR_WRAPPER_MAPPING = new HashMap<>();
+    private static final class Const {
+        private static final Map<Class<?>, PrimitiveTypes> PRIMITIVE_MAPPING = Enums.toMap(PrimitiveTypes.class, PrimitiveTypes::primitive);
+        private static final Map<Class<?>, PrimitiveTypes> WRAPPER_MAPPING = Enums.toMap(PrimitiveTypes.class, PrimitiveTypes::wrapper);
+        private static final Map<Class<?>, PrimitiveTypes> ALL_MAPPING = Collects.concat(PRIMITIVE_MAPPING, WRAPPER_MAPPING);
     }
+
 }

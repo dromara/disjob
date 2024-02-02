@@ -298,7 +298,7 @@ public abstract class AbstractJobManager {
             job.setNextTriggerTime(null);
         } else {
             Date nextTriggerTime;
-            if (TriggerType.FIXED_TYPES.contains(triggerType)) {
+            if (TriggerType.Const.FIXED_TYPES.contains(triggerType)) {
                 nextTriggerTime = Dates.max(new Date(), job.getStartTime());
             } else {
                 Date baseTime = Dates.max(new Date(), job.getStartTime());

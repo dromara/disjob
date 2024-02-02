@@ -20,6 +20,7 @@ import cn.ponfee.disjob.registry.Discovery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpMethod;
@@ -61,7 +62,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DiscoveryRestProxy {
 
     private static final Map<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
-    private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<String>    GROUP_THREAD_LOCAL = new NamedThreadLocal<>("discovery_rest_proxy");
 
     public interface GroupedServer {
         default void group(String group) {

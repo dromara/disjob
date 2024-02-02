@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.collect;
 
 import cn.ponfee.disjob.common.util.Numbers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -240,6 +241,12 @@ public class Collects {
         result.addAll(list);
         Collections.addAll(result, array);
         return result;
+    }
+
+    public static <K, V> Map<K, V> concat(Map<K, V>... maps) {
+        return Arrays.stream(maps)
+            .flatMap(e -> e.entrySet().stream())
+            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public static <T> T[] newArray(Class<? extends T[]> arrayType, int length) {

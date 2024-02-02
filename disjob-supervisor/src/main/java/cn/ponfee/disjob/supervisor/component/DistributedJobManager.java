@@ -68,15 +68,15 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_TEMP
 public class DistributedJobManager extends AbstractJobManager {
     private static final Logger LOG = LoggerFactory.getLogger(DistributedJobManager.class);
 
-    private static final List<Integer> RUN_STATE_TERMINABLE = Collects.convert(RunState.TERMINABLE_LIST, RunState::value);
-    private static final List<Integer> RUN_STATE_RUNNABLE = Collects.convert(RunState.RUNNABLE_LIST, RunState::value);
-    private static final List<Integer> RUN_STATE_PAUSABLE = Collects.convert(RunState.PAUSABLE_LIST, RunState::value);
+    private static final List<Integer> RUN_STATE_TERMINABLE = Collects.convert(RunState.Const.TERMINABLE_LIST, RunState::value);
+    private static final List<Integer> RUN_STATE_RUNNABLE = Collects.convert(RunState.Const.RUNNABLE_LIST, RunState::value);
+    private static final List<Integer> RUN_STATE_PAUSABLE = Collects.convert(RunState.Const.PAUSABLE_LIST, RunState::value);
     private static final List<Integer> RUN_STATE_WAITING = Collections.singletonList(RunState.WAITING.value());
     private static final List<Integer> RUN_STATE_RUNNING = Collections.singletonList(RunState.RUNNING.value());
     private static final List<Integer> RUN_STATE_PAUSED = Collections.singletonList(RunState.PAUSED.value());
 
-    private static final List<Integer> EXECUTE_STATE_EXECUTABLE = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::value);
-    private static final List<Integer> EXECUTE_STATE_PAUSABLE = Collects.convert(ExecuteState.PAUSABLE_LIST, ExecuteState::value);
+    private static final List<Integer> EXECUTE_STATE_EXECUTABLE = Collects.convert(ExecuteState.Const.EXECUTABLE_LIST, ExecuteState::value);
+    private static final List<Integer> EXECUTE_STATE_PAUSABLE = Collects.convert(ExecuteState.Const.PAUSABLE_LIST, ExecuteState::value);
     private static final List<Integer> EXECUTE_STATE_WAITING = Collections.singletonList(ExecuteState.WAITING.value());
     private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
 
@@ -270,7 +270,7 @@ public class DistributedJobManager extends AbstractJobManager {
         Assert.hasText(param.getWorker(), "Terminate task worker cannot be blank.");
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
-        Assert.isTrue(!ExecuteState.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
+        Assert.isTrue(!ExecuteState.Const.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
         LOG.info("Task trace [{}] terminating: {}, {}", param.getTaskId(), param.getOperation(), param.getWorker());
         return doTransactionLockInSynchronized(instanceId, param.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Terminate executing task failed, instance not found: " + instanceId);
@@ -513,7 +513,7 @@ public class DistributedJobManager extends AbstractJobManager {
             );
         }
         // if task has WAITING or EXECUTING state, then return null
-        return states.stream().anyMatch(ExecuteState.PAUSABLE_LIST::contains) ? null : Tuple2.of(RunState.PAUSED, null);
+        return states.stream().anyMatch(ExecuteState.Const.PAUSABLE_LIST::contains) ? null : Tuple2.of(RunState.PAUSED, null);
     }
 
     private void createInstance(TriggerInstance tInstance) {

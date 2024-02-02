@@ -42,7 +42,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
     protected boolean dispatch(ExecuteTaskParam param) {
         Worker worker = param.getWorker();
         String url = String.format(URL_PATTERN, worker.getHost(), worker.getPort());
-        return RestTemplateUtils.invokeRpc(restTemplate, url, HttpMethod.POST, boolean.class, null, param);
+        return RestTemplateUtils.invoke(restTemplate, url, HttpMethod.POST, boolean.class, null, param);
     }
 
 }

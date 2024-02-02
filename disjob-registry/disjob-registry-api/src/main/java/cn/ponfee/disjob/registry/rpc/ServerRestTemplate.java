@@ -28,7 +28,6 @@ import java.util.Map;
  * @author Ponfee
  */
 final class ServerRestTemplate {
-
     private static final Logger LOG = LoggerFactory.getLogger(ServerRestTemplate.class);
 
     private final RestTemplate restTemplate;
@@ -36,8 +35,9 @@ final class ServerRestTemplate {
     private final long retryBackoffPeriod;
 
     ServerRestTemplate(HttpProperties http, RetryProperties retry, ObjectMapper objectMapper) {
+        http.check();
         retry.check();
-        this.restTemplate = DiscoveryRestTemplate.createRestTemplate(http, objectMapper);
+        this.restTemplate = RestTemplateUtils.buildRestTemplate(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();
     }
@@ -64,11 +64,11 @@ final class ServerRestTemplate {
         Throwable ex = null;
         for (int i = 0; i <= retryMaxCount; i++) {
             try {
-                return RestTemplateUtils.invokeRpc(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
+                return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
             } catch (Throwable e) {
                 ex = e;
                 LOG.error("Invoke server rpc failed: {}, {}, {}", url, Jsons.toJson(arguments), e.getMessage());
-                if (!DiscoveryRestTemplate.isRequireRetry(e)) {
+                if (DiscoveryRestTemplate.isNotRetry(e)) {
                     break;
                 }
                 if (i < retryMaxCount) {

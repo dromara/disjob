@@ -238,10 +238,6 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
     ;
 
-    private static final Map<Integer, TriggerType> MAPPING = Enums.toMap(TriggerType.class, TriggerType::value);
-
-    public static final List<TriggerType> FIXED_TYPES = ImmutableList.of(FIXED_RATE, FIXED_DELAY);
-
     private final int value;
     private final String example;
     private final String desc;
@@ -277,7 +273,12 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     public abstract List<Date> computeNextTriggerTimes(String triggerValue, Date startTime, int count);
 
     public static TriggerType of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid trigger type value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid trigger type value: " + value);
+    }
+
+    public static final class Const {
+        private static final Map<Integer, TriggerType> MAPPING = Enums.toMap(TriggerType.class, TriggerType::value);
+        public static final List<TriggerType> FIXED_TYPES = ImmutableList.of(FIXED_RATE, FIXED_DELAY);
     }
 
 }

@@ -49,8 +49,8 @@ public class WorkerStartup implements Startable {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     private WorkerStartup(Worker.Current currentWorker,
-                          WorkerProperties workerProperties,
                           HttpProperties httpProperties,
+                          WorkerProperties workerProperties,
                           RetryProperties retryProperties,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver,
@@ -170,8 +170,8 @@ public class WorkerStartup implements Startable {
         public WorkerStartup build() {
             return new WorkerStartup(
                 currentWorker,
-                workerProperties,
                 httpProperties,
+                workerProperties,
                 retryProperties,
                 workerRegistry,
                 taskReceiver,

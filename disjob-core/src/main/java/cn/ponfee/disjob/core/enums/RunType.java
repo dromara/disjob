@@ -44,8 +44,6 @@ public enum RunType implements IntValueEnum<RunType> {
 
     ;
 
-    private static final Map<Integer, RunType> MAPPING = Enums.toMap(RunType.class, RunType::value);
-
     private final int value;
     private final String desc;
 
@@ -65,7 +63,11 @@ public enum RunType implements IntValueEnum<RunType> {
     }
 
     public static RunType of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid run type value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid run type value: " + value);
+    }
+
+    private static final class Const {
+        private static final Map<Integer, RunType> MAPPING = Enums.toMap(RunType.class, RunType::value);
     }
 
 }

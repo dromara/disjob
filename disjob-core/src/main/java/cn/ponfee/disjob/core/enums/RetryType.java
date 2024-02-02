@@ -39,8 +39,6 @@ public enum RetryType implements IntValueEnum<RetryType> {
 
     ;
 
-    private static final Map<Integer, RetryType> MAPPING = Enums.toMap(RetryType.class, RetryType::value);
-
     private final int value;
     private final String desc;
 
@@ -60,7 +58,11 @@ public enum RetryType implements IntValueEnum<RetryType> {
     }
 
     public static RetryType of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid retry type value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid retry type value: " + value);
+    }
+
+    private static final class Const {
+        private static final Map<Integer, RetryType> MAPPING = Enums.toMap(RetryType.class, RetryType::value);
     }
 
 }

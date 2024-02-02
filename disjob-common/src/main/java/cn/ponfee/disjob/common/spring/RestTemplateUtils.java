@@ -49,6 +49,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -100,7 +101,26 @@ public class RestTemplateUtils {
         converter.setSupportedMediaTypes(supportedMediaTypes);
     }
 
-    public static RestTemplate buildRestTemplate(int connectTimeout, int readTimeout, Charset charset,
+    public static RestTemplate buildRestTemplate(int connectTimeout, int readTimeout, ObjectMapper objectMapper) {
+        return buildRestTemplate(connectTimeout, readTimeout, StandardCharsets.UTF_8, objectMapper);
+    }
+
+    public static RestTemplate buildRestTemplate(int connectTimeout,
+                                                 int readTimeout,
+                                                 Charset charset,
+                                                 ObjectMapper objectMapper) {
+        if (objectMapper == null) {
+            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+        }
+        MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
+        httpMessageConverter.setObjectMapper(objectMapper);
+        RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);
+        return buildRestTemplate(connectTimeout, readTimeout, charset, httpMessageConverter);
+    }
+
+    public static RestTemplate buildRestTemplate(int connectTimeout,
+                                                 int readTimeout,
+                                                 Charset charset,
                                                  MappingJackson2HttpMessageConverter httpMessageConverter) {
         SSLContext sslContext;
         try {
@@ -146,8 +166,22 @@ public class RestTemplateUtils {
         return MapUtils.isEmpty(map) ? null : new LinkedMultiValueMap<>(map);
     }
 
-    public static <T> T invokeRpc(RestTemplate restTemplate, String url, HttpMethod httpMethod,
-                                  Type returnType, Map<String, String> headersMap, Object... arguments) {
+    /**
+     * Rpc invoke based http
+     *
+     * @param restTemplate the restTemplate
+     * @param url          the url
+     * @param httpMethod   the httpMethod
+     * @param returnType   the returnType
+     * @param headersMap   the headersMap
+     * @param arguments    the arguments
+     * @param <T>          result type
+     * @return result object
+     * @see LocalizedMethodArguments
+     * @see LocalizedMethodArgumentResolver
+     */
+    public static <T> T invoke(RestTemplate restTemplate, String url, HttpMethod httpMethod,
+                               Type returnType, Map<String, String> headersMap, Object... arguments) {
         HttpHeaders headers = new HttpHeaders();
         if (MapUtils.isNotEmpty(headersMap)) {
             headersMap.forEach(headers::set);

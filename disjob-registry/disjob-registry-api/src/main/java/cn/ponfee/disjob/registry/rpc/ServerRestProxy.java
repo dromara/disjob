@@ -14,6 +14,7 @@ import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -30,7 +31,7 @@ import java.util.function.Function;
  */
 public class ServerRestProxy {
 
-    private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("server_rest_proxy");
 
     public static <T> ServerInvoker<T> create(Class<T> interfaceType,
                                               HttpProperties http,
@@ -42,14 +43,14 @@ public class ServerRestProxy {
         return new ServerInvoker<>(ProxyUtils.create(invocationHandler, interfaceType));
     }
 
-    public static class ServerInvoker<T> {
+    public static final class ServerInvoker<T> {
         private final T proxy;
 
         private ServerInvoker(T proxy) {
             this.proxy = proxy;
         }
 
-        public final <R> R invoke(Server destinationServer, Function<T, R> function) {
+        public <R> R invoke(Server destinationServer, Function<T, R> function) {
             SERVER_THREAD_LOCAL.set(Objects.requireNonNull(destinationServer));
             try {
                 return function.apply(proxy);
@@ -58,7 +59,7 @@ public class ServerRestProxy {
             }
         }
 
-        public final void invokeWithoutResult(Server destinationServer, Consumer<T> consumer) {
+        public void invokeWithoutResult(Server destinationServer, Consumer<T> consumer) {
             invoke(destinationServer, Functions.convert(consumer, null));
         }
     }

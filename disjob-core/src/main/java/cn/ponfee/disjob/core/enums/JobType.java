@@ -34,8 +34,6 @@ public enum JobType implements IntValueEnum<JobType> {
 
     ;
 
-    private static final Map<Integer, JobType> MAPPING = Enums.toMap(JobType.class, JobType::value);
-
     private final int value;
     private final String desc;
 
@@ -55,7 +53,11 @@ public enum JobType implements IntValueEnum<JobType> {
     }
 
     public static JobType of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid job type value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid job type value: " + value);
+    }
+
+    private static final class Const {
+        private static final Map<Integer, JobType> MAPPING = Enums.toMap(JobType.class, JobType::value);
     }
 
 }

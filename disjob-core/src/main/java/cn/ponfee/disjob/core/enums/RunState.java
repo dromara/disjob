@@ -9,8 +9,8 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Enums;
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
@@ -50,25 +50,6 @@ public enum RunState implements IntValueEnum<RunState> {
     CANCELED(50, true, true, "已取消"),
 
     ;
-
-    /**
-     * State list of can transit to PAUSED
-     */
-    public static final List<RunState> PAUSABLE_LIST = Collects.convert(ExecuteState.PAUSABLE_LIST, ExecuteState::runState);
-
-    /**
-     * State list of can transit to RUNNING
-     */
-    public static final List<RunState> RUNNABLE_LIST = Collects.convert(ExecuteState.EXECUTABLE_LIST, ExecuteState::runState);
-
-    /**
-     * State list of can transit to terminated
-     *
-     * @see #isTerminal()
-     */
-    public static final List<RunState> TERMINABLE_LIST = Collects.convert(ExecuteState.TERMINABLE_LIST, ExecuteState::runState);
-
-    private static final Map<Integer, RunState> MAPPING = Enums.toMap(RunState.class, RunState::value);
 
     /**
      * state value
@@ -111,7 +92,28 @@ public enum RunState implements IntValueEnum<RunState> {
     }
 
     public static RunState of(Integer value) {
-        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid run state value: " + value);
+        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid run state value: " + value);
+    }
+
+    public static final class Const {
+        private static final Map<Integer, RunState> MAPPING = Enums.toMap(RunState.class, RunState::value);
+
+        /**
+         * State list of can transit to PAUSED
+         */
+        public static final List<RunState> PAUSABLE_LIST = ImmutableList.of(WAITING, RUNNING);
+
+        /**
+         * State list of can transit to RUNNING
+         */
+        public static final List<RunState> RUNNABLE_LIST = ImmutableList.of(WAITING, PAUSED);
+
+        /**
+         * State list of can transit to terminated
+         *
+         * @see #isTerminal()
+         */
+        public static final List<RunState> TERMINABLE_LIST = ImmutableList.of(WAITING, RUNNING, PAUSED);
     }
 
 }
