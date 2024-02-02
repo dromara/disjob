@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
@@ -28,7 +29,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Localized method parameter for spring web {@code org.springframework.stereotype.Controller} methods.
@@ -40,7 +40,7 @@ public class LocalizedMethodArgumentResolver implements HandlerMethodArgumentRes
 
     //private final WeakHashMap<NativeWebRequest, Map<String, Object>> resolvedCache = new WeakHashMap<>();
 
-    private static final Set<String> QUERY_PARAM_METHODS = RestTemplateUtils.QUERY_PARAM_METHODS.stream().map(HttpMethod::name).collect(Collectors.toSet());
+    private static final Set<String> QUERY_PARAM_METHODS = RestTemplateUtils.QUERY_PARAM_METHODS.stream().map(HttpMethod::name).collect(ImmutableSet.toImmutableSet());
 
     private static final String CACHE_ATTRIBUTE_KEY = "LOCALIZED_METHOD_ARGUMENTS";
 

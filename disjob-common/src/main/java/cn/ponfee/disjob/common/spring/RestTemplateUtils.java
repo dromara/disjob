@@ -78,50 +78,16 @@ public class RestTemplateUtils {
     public static final Type RESULT_STRING = new ParameterizedTypeReference<Result<String>>() {}.getType();
     public static final Type RESULT_BOOLEAN = new ParameterizedTypeReference<Result<Boolean>>() {}.getType();
     public static final Type RESULT_VOID = new ParameterizedTypeReference<Result<Void>>() {}.getType();
-    public static final Object[] EMPTY = new Object[0];
 
-    public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(ObjectMapper objectMapper) {
-        if (objectMapper == null) {
-            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
-        }
-        MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
-        messageConverter.setObjectMapper(objectMapper);
-        extensionSupportedMediaTypes(messageConverter);
-        return messageConverter;
+    public static RestTemplate create(int connectTimeout, int readTimeout, ObjectMapper objectMapper) {
+        return create(connectTimeout, readTimeout, objectMapper, StandardCharsets.UTF_8);
     }
 
-    public static void extensionSupportedMediaTypes(MappingJackson2HttpMessageConverter converter) {
-        List<MediaType> supportedMediaTypes = Collects.concat(
-            converter.getSupportedMediaTypes(),
-            MediaType.TEXT_PLAIN,
-            MediaType.TEXT_HTML,
-            MediaType.MULTIPART_FORM_DATA,
-            MediaType.ALL
-        );
-        converter.setSupportedMediaTypes(supportedMediaTypes);
+    public static RestTemplate create(int connectTimeout, int readTimeout, ObjectMapper objectMapper, Charset charset) {
+        return create(connectTimeout, readTimeout, buildJackson2HttpMessageConverter(objectMapper), charset);
     }
 
-    public static RestTemplate buildRestTemplate(int connectTimeout, int readTimeout, ObjectMapper objectMapper) {
-        return buildRestTemplate(connectTimeout, readTimeout, StandardCharsets.UTF_8, objectMapper);
-    }
-
-    public static RestTemplate buildRestTemplate(int connectTimeout,
-                                                 int readTimeout,
-                                                 Charset charset,
-                                                 ObjectMapper objectMapper) {
-        if (objectMapper == null) {
-            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
-        }
-        MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
-        httpMessageConverter.setObjectMapper(objectMapper);
-        RestTemplateUtils.extensionSupportedMediaTypes(httpMessageConverter);
-        return buildRestTemplate(connectTimeout, readTimeout, charset, httpMessageConverter);
-    }
-
-    public static RestTemplate buildRestTemplate(int connectTimeout,
-                                                 int readTimeout,
-                                                 Charset charset,
-                                                 MappingJackson2HttpMessageConverter httpMessageConverter) {
+    public static RestTemplate create(int connectTimeout, int readTimeout, MappingJackson2HttpMessageConverter httpMessageConverter, Charset charset) {
         SSLContext sslContext;
         try {
             sslContext = SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
@@ -153,6 +119,27 @@ public class RestTemplateUtils {
             httpMessageConverter
         ));
         return restTemplate;
+    }
+
+    public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(ObjectMapper objectMapper) {
+        if (objectMapper == null) {
+            objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
+        }
+        MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
+        messageConverter.setObjectMapper(objectMapper);
+        extensionSupportedMediaTypes(messageConverter);
+        return messageConverter;
+    }
+
+    public static void extensionSupportedMediaTypes(MappingJackson2HttpMessageConverter converter) {
+        List<MediaType> supportedMediaTypes = Collects.concat(
+            converter.getSupportedMediaTypes(),
+            MediaType.TEXT_PLAIN,
+            MediaType.TEXT_HTML,
+            MediaType.MULTIPART_FORM_DATA,
+            MediaType.ALL
+        );
+        converter.setSupportedMediaTypes(supportedMediaTypes);
     }
 
     public static MultiValueMap<String, String> toMultiValueMap(Map<String, Object> params) {
@@ -196,7 +183,7 @@ public class RestTemplateUtils {
             uri = builder.build().encode().toUri();
             arguments = null;
         } else {
-            uri = restTemplate.getUriTemplateHandler().expand(url, EMPTY);
+            uri = restTemplate.getUriTemplateHandler().expand(url, Collects.EMPTY_OBJECT_ARRAY);
             if (ArrayUtils.isNotEmpty(arguments)) {
                 headers.setContentType(MediaType.APPLICATION_JSON);
             }

@@ -34,7 +34,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -56,12 +55,7 @@ public class HttpJobHandler extends JobHandler {
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
     private static final int DEFAULT_READ_TIMEOUT = 5000;
 
-    private static final RestTemplate REST_TEMPLATE = RestTemplateUtils.buildRestTemplate(
-        DEFAULT_CONNECT_TIMEOUT,
-        DEFAULT_READ_TIMEOUT,
-        StandardCharsets.UTF_8,
-        RestTemplateUtils.buildJackson2HttpMessageConverter(null)
-    );
+    private static final RestTemplate REST_TEMPLATE = RestTemplateUtils.create(DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT, null);
 
     @Override
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) {

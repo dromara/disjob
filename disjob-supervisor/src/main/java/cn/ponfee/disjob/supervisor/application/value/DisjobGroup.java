@@ -69,11 +69,11 @@ public class DisjobGroup {
         if (StringUtils.isBlank(str)) {
             return Collections.singleton(ownUser);
         }
+
         String[] array = str.split(Str.COMMA);
         ImmutableSet.Builder<String> builder = ImmutableSet.builderWithExpectedSize(array.length + 1);
-        builder.add(ownUser);
         Arrays.stream(array).filter(StringUtils::isNotBlank).map(String::trim).forEach(builder::add);
-        return builder.build();
+        return builder.add(ownUser).build();
     }
 
 }

@@ -28,12 +28,10 @@ public class ImmutableArrayList<E> extends ToJsonString
 
     private static final long serialVersionUID = 7013120001220709229L;
 
-    public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-
     private final E[] elements;
 
     public ImmutableArrayList() {
-        this.elements = (E[]) EMPTY_OBJECT_ARRAY;
+        this.elements = (E[]) Collects.EMPTY_OBJECT_ARRAY;
     }
 
     public ImmutableArrayList(Object[] elements) {
@@ -60,7 +58,7 @@ public class ImmutableArrayList<E> extends ToJsonString
     }
 
     public static <T> ImmutableArrayList<T> of(List<T> list) {
-        return of((T[]) (list.isEmpty() ? EMPTY_OBJECT_ARRAY : list.toArray()));
+        return of((T[]) (list.isEmpty() ? Collects.EMPTY_OBJECT_ARRAY : list.toArray()));
     }
 
     public static <T> ImmutableArrayList<T> of(List<T> list, T last) {
@@ -85,7 +83,7 @@ public class ImmutableArrayList<E> extends ToJsonString
     @Override
     public final Object[] toArray() {
         if (isEmpty()) {
-            return elements.length == 0 ? elements : EMPTY_OBJECT_ARRAY;
+            return elements.length == 0 ? elements : Collects.EMPTY_OBJECT_ARRAY;
         }
         return Arrays.copyOfRange(elements, offset(), offset() + size());
     }
@@ -189,7 +187,7 @@ public class ImmutableArrayList<E> extends ToJsonString
         if (length == size()) {
             return this;
         } else if (length == 0) {
-            return of((E[]) EMPTY_OBJECT_ARRAY);
+            return of((E[]) Collects.EMPTY_OBJECT_ARRAY);
         } else {
             return new SubList(offset() + fromIndex, offset() + toIndex);
         }

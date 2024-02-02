@@ -49,9 +49,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
                                          @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
                                          @Nullable ObjectMapper objectMapper) {
         httpProperties.check();
-        RestTemplate restTemplate =  RestTemplateUtils.buildRestTemplate(
-            httpProperties.getConnectTimeout(), httpProperties.getReadTimeout(), objectMapper
-        );
+        RestTemplate restTemplate = RestTemplateUtils.create(httpProperties.getConnectTimeout(), httpProperties.getReadTimeout(), objectMapper);
         return new HttpTaskDispatcher(discoveryWorker, retryProperties, timingWheel, restTemplate);
     }
 

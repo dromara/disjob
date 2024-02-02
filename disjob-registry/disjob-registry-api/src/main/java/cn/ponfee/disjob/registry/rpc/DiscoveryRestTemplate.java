@@ -15,7 +15,6 @@ import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.Discovery;
-import cn.ponfee.disjob.registry.RPCInvokeException;
 import cn.ponfee.disjob.registry.ServerRole;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
@@ -73,7 +72,7 @@ final class DiscoveryRestTemplate<D extends Server> {
                           Discovery<D> discoveryServer) {
         http.check();
         retry.check();
-        this.restTemplate = RestTemplateUtils.buildRestTemplate(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
+        this.restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         this.discoveryServer = discoveryServer;
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();

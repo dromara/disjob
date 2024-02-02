@@ -11,7 +11,6 @@ package cn.ponfee.disjob.registry.rpc;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.*;
-import cn.ponfee.disjob.registry.RPCInvokeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ final class ServerRestTemplate {
     ServerRestTemplate(HttpProperties http, RetryProperties retry, ObjectMapper objectMapper) {
         http.check();
         retry.check();
-        this.restTemplate = RestTemplateUtils.buildRestTemplate(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
+        this.restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();
     }

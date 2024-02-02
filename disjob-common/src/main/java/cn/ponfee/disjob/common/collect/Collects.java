@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
  */
 public class Collects {
 
+    public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
     public static <E> LinkedList<E> newLinkedList(E element) {
         LinkedList<E> list = new LinkedList<>();
         list.add(element);
@@ -224,9 +226,7 @@ public class Collects {
         if (source.isEmpty()) {
             return Collections.emptyList();
         }
-        ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(source.size());
-        source.stream().map(mapper).forEach(builder::add);
-        return builder.build();
+        return source.stream().map(mapper).collect(ImmutableList.toImmutableList());
     }
 
     @SafeVarargs

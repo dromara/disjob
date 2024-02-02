@@ -477,13 +477,12 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         }
         */
 
-        int size = parentPath == null ? 1 : parentPath.size() + 1;
-        ImmutableList.Builder<T> builder = ImmutableList.builderWithExpectedSize(size);
-        // root node un-contains null parent
-        if (parentPath != null) {
-            builder.addAll(parentPath);
+        if (parentPath == null) {
+            // root node un-contains null parent
+            return Collections.singletonList(nid);
         }
-        return builder.add(nid).build();
+
+        return ImmutableList.<T>builderWithExpectedSize(parentPath.size() + 1).addAll(parentPath).add(nid).build();
     }
 
     private <E extends TreeTrait<T, A, E>> void convert(Function<TreeNode<T, A>, E> convert,

@@ -10,6 +10,7 @@ package cn.ponfee.disjob.common.base;
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -54,11 +55,9 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
     }
 
     static List<IntValueDesc> values(Class<? extends IntValueEnum<?>> clazz) {
-        ImmutableList.Builder<IntValueDesc> result = ImmutableList.builder();
-        for (final IntValueEnum<?> e : clazz.getEnumConstants()) {
-            result.add(new IntValueDesc(e.value(), e.desc()));
-        }
-        return result.build();
+        return Arrays.stream(clazz.getEnumConstants())
+            .map(e -> new IntValueDesc(e.value(), e.desc()))
+            .collect(ImmutableList.toImmutableList());
     }
 
 }

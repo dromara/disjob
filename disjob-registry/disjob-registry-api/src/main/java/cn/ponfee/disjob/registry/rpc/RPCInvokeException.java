@@ -6,7 +6,7 @@
 **                      \/          \/     \/                                   **
 \*                                                                              */
 
-package cn.ponfee.disjob.registry;
+package cn.ponfee.disjob.registry.rpc;
 
 /**
  * RPC invoke exception

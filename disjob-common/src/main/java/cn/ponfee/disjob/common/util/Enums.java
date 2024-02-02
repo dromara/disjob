@@ -11,6 +11,7 @@ package cn.ponfee.disjob.common.util;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.EnumUtils;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -44,11 +45,8 @@ public class Enums {
      * @return the immutable map of enum to map enums, never null
      */
     public static <K, E extends Enum<E>> Map<K, E> toMap(Class<E> enumType, Function<E, K> keyMapper) {
-        ImmutableMap.Builder<K, E> result = ImmutableMap.builder();
-        for (final E e: enumType.getEnumConstants()) {
-            result.put(keyMapper.apply(e), e);
-        }
-        return result.build();
+        return Arrays.stream(enumType.getEnumConstants())
+            .collect(ImmutableMap.toImmutableMap(keyMapper, Function.identity()));
     }
 
     public static <E extends Enum<E>> void checkDuplicated(Class<E> enumType, Function<E, ?> mapper) {

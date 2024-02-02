@@ -44,16 +44,16 @@ public class ServerRestProxy {
     }
 
     public static final class ServerInvoker<T> {
-        private final T proxy;
+        private final T clientProxy;
 
-        private ServerInvoker(T proxy) {
-            this.proxy = proxy;
+        private ServerInvoker(T clientProxy) {
+            this.clientProxy = clientProxy;
         }
 
         public <R> R invoke(Server destinationServer, Function<T, R> function) {
             SERVER_THREAD_LOCAL.set(Objects.requireNonNull(destinationServer));
             try {
-                return function.apply(proxy);
+                return function.apply(clientProxy);
             } finally {
                 SERVER_THREAD_LOCAL.remove();
             }
