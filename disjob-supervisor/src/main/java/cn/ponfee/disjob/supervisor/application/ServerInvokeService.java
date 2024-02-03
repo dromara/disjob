@@ -52,30 +52,29 @@ import java.util.stream.Collectors;
 public class ServerInvokeService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
+    private final SupervisorRegistry supervisorRegistry;
+    private final Supervisor.Current currentSupervisor;
     private final DesignatedServerInvoker<SupervisorRpcService> invokeSupervisor;
     private final DesignatedServerInvoker<WorkerRpcService> invokeWorker;
-    private final SupervisorRegistry supervisorRegistry;
 
-    public ServerInvokeService(HttpProperties http,
-                               SupervisorRegistry supervisorRegistry,
-                               SupervisorRpcService supervisorRpcServiceProvider,
-                               @Nullable WorkerRpcService workerRpcServiceProvider,
+    public ServerInvokeService(SupervisorRegistry supervisorRegistry,
+                               Supervisor.Current currentSupervisor,
+                               SupervisorRpcService supervisorProvider,
+                               HttpProperties http,
+                               @Nullable WorkerRpcService workerProvider,
                                @Nullable ObjectMapper objectMapper) {
-        RetryProperties retry = RetryProperties.of(0, 0);
-        this.invokeSupervisor = ServerRestProxy.create(
-            SupervisorRpcService.class, supervisorRpcServiceProvider, Supervisor.current(), http, retry, objectMapper
-        );
-        this.invokeWorker = ServerRestProxy.create(
-            WorkerRpcService.class, workerRpcServiceProvider, Worker.current(), http, retry, objectMapper
-        );
         this.supervisorRegistry = supervisorRegistry;
+        this.currentSupervisor = currentSupervisor;
+        RetryProperties retry = RetryProperties.of(0, 0);
+        this.invokeSupervisor = ServerRestProxy.create(SupervisorRpcService.class, supervisorProvider, currentSupervisor, http, retry, objectMapper);
+        this.invokeWorker = ServerRestProxy.create(WorkerRpcService.class, workerProvider, Worker.current(), http, retry, objectMapper);
     }
 
     // ------------------------------------------------------------public methods
 
     public List<SupervisorMetricsResponse> supervisors() throws Exception {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
-        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Supervisor.current()) ? 0 : 1));
+        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(currentSupervisor) ? 0 : 1));
         return MultithreadExecutors.call(list, this::getSupervisorMetrics, ThreadPoolExecutors.commonThreadPool());
     }
 
@@ -126,7 +125,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         try {
             List<Supervisor> supervisors = supervisorRegistry.getRegisteredServers()
                 .stream()
-                .filter(e -> !Supervisor.current().sameSupervisor(e))
+                .filter(e -> !currentSupervisor.sameSupervisor(e))
                 .collect(Collectors.toList());
             MultithreadExecutors.run(
                 supervisors,

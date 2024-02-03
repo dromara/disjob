@@ -31,16 +31,17 @@ public class WorkerConfigurator {
     }
 
     public static WorkerMetrics metrics() {
+        Worker.Current currentWorker = Worker.current();
         WorkerMetrics metrics = new WorkerMetrics();
         metrics.setVersion(JobConstants.VERSION);
-        metrics.setWorkerId(Worker.current().getWorkerId());
-        metrics.setStartupAt(Dates.toDate(Worker.current().getStartupAt()));
+        metrics.setWorkerId(currentWorker.getWorkerId());
+        metrics.setStartupAt(Dates.toDate(currentWorker.getStartupAt()));
         metrics.setAlsoSupervisor(Supervisor.current() != null);
         metrics.setJvmThreadActiveCount(Thread.activeCount());
         if (workerThreadPool != null) {
             metrics.setThreadPool(workerThreadPool.metrics());
         }
-        metrics.setSignature(Worker.current().createWorkerSignatureToken());
+        metrics.setSignature(currentWorker.createWorkerSignatureToken());
         return metrics;
     }
 

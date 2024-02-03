@@ -56,6 +56,8 @@ final class ServerRestTemplate {
         Map<String, String> authenticationHeaders = null;
         Worker.Current currentWorker = Worker.current();
         if (destinationServer instanceof Supervisor && currentWorker != null) {
+            // 这里可能存在Supervisor-A同时也为Worker-A角色，当Supervisor-A远程调用另一个Supervisor-B，
+            // 此时会用Worker-A的身份认证信息去调用Supervisor-B，接收方Supervisor-B也会认为是Worker-A调用过来的，与实际情况不大相符
             authenticationHeaders = currentWorker.createWorkerAuthenticationHeaders();
         }
 
