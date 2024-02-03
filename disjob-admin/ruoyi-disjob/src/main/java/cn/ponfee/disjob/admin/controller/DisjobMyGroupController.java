@@ -83,7 +83,7 @@ public class DisjobMyGroupController extends BaseController {
     public TableDataInfo list(SchedGroupPageRequest request) {
         request.authorizeAndTruncateGroup(getLoginName());
         if (CollectionUtils.isEmpty(request.getGroups())) {
-            return PageUtils.empty();
+            return TableDataInfo.empty();
         }
 
         request.setPageNumber(super.getPageNumber());

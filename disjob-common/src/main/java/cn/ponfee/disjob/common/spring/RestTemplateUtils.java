@@ -44,6 +44,7 @@ import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -84,10 +85,10 @@ public class RestTemplateUtils {
     }
 
     public static RestTemplate create(int connectTimeout, int readTimeout, ObjectMapper objectMapper, Charset charset) {
-        return create(connectTimeout, readTimeout, buildJackson2HttpMessageConverter(objectMapper), charset);
+        return create(connectTimeout, readTimeout, createMappingJackson2HttpMessageConverter(objectMapper), charset);
     }
 
-    public static RestTemplate create(int connectTimeout, int readTimeout, MappingJackson2HttpMessageConverter httpMessageConverter, Charset charset) {
+    public static RestTemplate create(int connectTimeout, int readTimeout, MappingJackson2HttpMessageConverter messageConverter, Charset charset) {
         SSLContext sslContext;
         try {
             sslContext = SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
@@ -116,22 +117,22 @@ public class RestTemplateUtils {
             new ResourceHttpMessageConverter(),
             new SourceHttpMessageConverter<>(),
             new FormHttpMessageConverter(),
-            httpMessageConverter
+            messageConverter
         ));
         return restTemplate;
     }
 
-    public static MappingJackson2HttpMessageConverter buildJackson2HttpMessageConverter(ObjectMapper objectMapper) {
+    public static MappingJackson2HttpMessageConverter createMappingJackson2HttpMessageConverter(@Nullable ObjectMapper objectMapper) {
         if (objectMapper == null) {
             objectMapper = Jsons.createObjectMapper(JsonInclude.Include.NON_NULL);
         }
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
         messageConverter.setObjectMapper(objectMapper);
-        extensionSupportedMediaTypes(messageConverter);
+        extendSupportedMediaTypes(messageConverter);
         return messageConverter;
     }
 
-    public static void extensionSupportedMediaTypes(MappingJackson2HttpMessageConverter converter) {
+    public static void extendSupportedMediaTypes(MappingJackson2HttpMessageConverter converter) {
         List<MediaType> supportedMediaTypes = Collects.concat(
             converter.getSupportedMediaTypes(),
             MediaType.TEXT_PLAIN,
@@ -142,7 +143,7 @@ public class RestTemplateUtils {
         converter.setSupportedMediaTypes(supportedMediaTypes);
     }
 
-    public static MultiValueMap<String, String> toMultiValueMap(Map<String, Object> params) {
+    public static MultiValueMap<String, String> convertToMultiValueMap(Map<String, Object> params) {
         if (MapUtils.isEmpty(params)) {
             return null;
         }

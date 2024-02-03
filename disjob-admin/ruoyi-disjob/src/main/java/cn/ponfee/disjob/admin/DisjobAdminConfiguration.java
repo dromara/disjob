@@ -31,10 +31,10 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TE
  * @author Ponfee
  */
 @Configuration
-@ComponentScan("cn.ponfee.disjob.test.handler")
-@EnableJacksonDateConfigurer // 解决日期反序列化报错的问题
-@EnableSupervisor            // disjob-admin必须启用Supervisor角色，即：必须加@EnableSupervisor注解
-@EnableWorker                // 若要取消worker角色可去掉@EnableWorker注解
+@ComponentScan("cn.ponfee.disjob.test.handler") // 加载一些测试的JobHandler，只用于demo演示使用(开发时建议删掉这行)
+@EnableJacksonDateConfigurer                    // 解决日期反序列化报错的问题
+@EnableSupervisor                               // disjob-admin必须启用Supervisor角色，即：必须加@EnableSupervisor注解
+@EnableWorker                                   // 若要取消worker角色可去掉@EnableWorker注解(生产建议Supervisor与Worker分开部署)
 public class DisjobAdminConfiguration {
 
     @Bean

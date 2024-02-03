@@ -1,6 +1,7 @@
 package com.ruoyi.common.core.page;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,6 +24,14 @@ public class TableDataInfo implements Serializable
 
     /** 消息内容 */
     private String msg;
+
+    public static TableDataInfo empty() {
+        TableDataInfo rspData = new TableDataInfo();
+        rspData.setCode(0);
+        rspData.setRows(Collections.emptyList());
+        rspData.setTotal(0);
+        return rspData;
+    }
 
     /**
      * 表格数据对象

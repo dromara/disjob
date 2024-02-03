@@ -17,9 +17,15 @@ import java.util.function.Predicate;
  */
 public enum Predicates {
 
-    Y(1, "是"), //
+    /**
+     * Yes
+     */
+    Y(1, "是"),
 
-    N(0, "否"), //
+    /**
+     * No
+     */
+    N(0, "否"),
 
     ;
 
@@ -29,7 +35,8 @@ public enum Predicates {
 
     Predicates(int value, String desc) {
         this.value = value;
-        this.code = name().charAt(0); // 'Y' or 'N'
+        // 'Y' or 'N'
+        this.code = name().charAt(0);
         this.desc = desc;
     }
 
@@ -50,6 +57,7 @@ public enum Predicates {
     }
 
     // ------------------------------------------------ equals methods
+
     public boolean equals(Integer value) {
         return equals(value == null ? N.value : value);
     }
@@ -98,6 +106,7 @@ public enum Predicates {
     }
 
     // ------------------------------------------------ check whether the value is yes
+
     public static boolean yes(Integer value) {
         return Y.equals(value);
     }
@@ -131,6 +140,7 @@ public enum Predicates {
     }
 
     // ------------------------------------------------ check whether the value is no
+
     public static boolean no(Integer value) {
         return N.equals(value);
     }
@@ -164,6 +174,7 @@ public enum Predicates {
     }
 
     // ------------------------------------------------ of methods
+
     public static Predicates of(Integer value) {
         return Y.equals(value) ? Y : N;
     }

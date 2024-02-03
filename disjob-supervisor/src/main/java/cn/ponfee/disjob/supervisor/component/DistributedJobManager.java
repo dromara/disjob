@@ -94,9 +94,9 @@ public class DistributedJobManager extends AbstractJobManager {
                                  IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
-                                 GroupedServerInvoker<WorkerRpcService> invokeWorker,
+                                 GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient,
                                  @Qualifier(TX_TEMPLATE_SPRING_BEAN_NAME) TransactionTemplate transactionTemplate) {
-        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, invokeWorker);
+        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerRpcServiceClient);
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;

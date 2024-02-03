@@ -11,6 +11,7 @@ package cn.ponfee.disjob.supervisor.configuration;
 import cn.ponfee.disjob.common.lock.DoInDatabaseLocked;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
+import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
@@ -39,6 +40,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
+import org.springframework.web.client.RestTemplate;
 
 import java.lang.annotation.*;
 
@@ -103,20 +105,22 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public GroupedServerInvoker<WorkerRpcService> invokeWorker(HttpProperties http,
-                                                                   RetryProperties retry,
-                                                                   SupervisorRegistry discoveryWorker,
-                                                                   @Nullable WorkerRpcService localServiceProvider,
-                                                                   @Nullable Worker.Current currentWorker,
-                                                                   @Nullable ObjectMapper objectMapper) {
+        public GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient(HttpProperties http,
+                                                                             RetryProperties retry,
+                                                                             SupervisorRegistry discoveryWorker,
+                                                                             @Nullable WorkerRpcService localServiceProvider,
+                                                                             @Nullable Worker.Current currentWorker,
+                                                                             @Nullable ObjectMapper objectMapper) {
+            http.check();
+            retry.check();
+            RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
             return DiscoveryRestProxy.create(
                 WorkerRpcService.class,
                 localServiceProvider,
-                group -> currentWorker != null && currentWorker.matchesGroup(group),
-                http,
-                retry,
-                objectMapper,
-                discoveryWorker
+                group -> Worker.matchesGroup(currentWorker, group),
+                discoveryWorker,
+                restTemplate,
+                retry
             );
         }
 

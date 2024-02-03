@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.id.snowflake.db;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +20,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DbSnowflakeWorker {
+public class DbSnowflakeWorker extends ToJsonString {
 
     private String bizTag;
     private String serverTag;

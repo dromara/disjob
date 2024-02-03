@@ -79,7 +79,7 @@ public class DisjobJobController extends BaseController {
     public TableDataInfo list(SchedJobPageRequest request) {
         request.authorizeAndTruncateGroup(getLoginName());
         if (CollectionUtils.isEmpty(request.getGroups())) {
-            return PageUtils.empty();
+            return TableDataInfo.empty();
         }
 
         request.setPageNumber(super.getPageNumber());

@@ -80,7 +80,7 @@ public class LoopThread extends Thread {
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
         if (state.compareAndSet(NEW, RUNNING)) {
             super.start();
         } else {

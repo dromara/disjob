@@ -64,7 +64,7 @@ public abstract class AbstractJobManager {
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
-    private final GroupedServerInvoker<WorkerRpcService> invokeWorker;
+    private final GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient;
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
@@ -269,12 +269,12 @@ public abstract class AbstractJobManager {
     private void verifyJob(SchedJob job) {
         JobHandlerParam param = JobHandlerParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
-        invokeWorker.invokeWithoutResult(job.getGroup(), client -> client.verify(param));
+        workerRpcServiceClient.invokeWithoutResult(job.getGroup(), client -> client.verify(param));
     }
 
     private List<SplitTask> splitJob(JobHandlerParam param) {
         SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
-        return invokeWorker.invoke(param.getGroup(), client -> client.split(param));
+        return workerRpcServiceClient.invoke(param.getGroup(), client -> client.split(param));
     }
 
     private void parseTriggerConfig(SchedJob job) {

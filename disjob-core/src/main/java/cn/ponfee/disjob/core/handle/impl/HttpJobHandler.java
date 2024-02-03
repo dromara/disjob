@@ -69,13 +69,13 @@ public class HttpJobHandler extends JobHandler {
         Assert.hasText(req.url, "Http url cannot be empty.");
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(req.url);
-        MultiValueMap<String, String> paramsMap = RestTemplateUtils.toMultiValueMap(req.params);
+        MultiValueMap<String, String> paramsMap = RestTemplateUtils.convertToMultiValueMap(req.params);
         if (paramsMap != null) {
             builder.queryParams(paramsMap);
         }
         URI uri = builder.build().encode().toUri();
 
-        MultiValueMap<String, String> headersMap = RestTemplateUtils.toMultiValueMap(req.headers);
+        MultiValueMap<String, String> headersMap = RestTemplateUtils.convertToMultiValueMap(req.headers);
         HttpEntity<?> requestEntity = (req.body == null && headersMap == null) ? null : new HttpEntity<>(req.body, headersMap);
 
         Class<String> responseType = String.class;

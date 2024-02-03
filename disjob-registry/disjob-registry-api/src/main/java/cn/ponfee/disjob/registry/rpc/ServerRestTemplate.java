@@ -10,8 +10,10 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import cn.ponfee.disjob.core.base.RetryProperties;
+import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.base.Worker;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +35,9 @@ final class ServerRestTemplate {
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    ServerRestTemplate(HttpProperties http, RetryProperties retry, ObjectMapper objectMapper) {
-        http.check();
+    ServerRestTemplate(RestTemplate restTemplate, RetryProperties retry) {
         retry.check();
-        this.restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
+        this.restTemplate = restTemplate;
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();
     }

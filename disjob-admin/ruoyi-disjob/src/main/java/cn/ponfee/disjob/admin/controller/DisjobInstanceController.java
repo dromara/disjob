@@ -27,6 +27,7 @@ import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -249,12 +250,12 @@ public class DisjobInstanceController extends BaseController {
 
     private Object queryForPage(SchedInstancePageRequest request, boolean parent, String resetSearch) {
         if (StringUtils.isBlank(resetSearch)) {
-            return PageUtils.empty();
+            return TableDataInfo.empty();
         }
         try {
             request.authorize(getLoginName(), authorizeGroupService);
         } catch (KeyNotExistsException e) {
-            return PageUtils.empty();
+            return TableDataInfo.empty();
         } catch (Exception e) {
             return AjaxResult.error(e.getMessage());
         }

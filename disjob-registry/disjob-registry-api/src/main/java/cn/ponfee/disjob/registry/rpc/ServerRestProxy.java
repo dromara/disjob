@@ -10,13 +10,12 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.common.util.ProxyUtils;
-import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -36,10 +35,9 @@ public class ServerRestProxy {
     public static <T> DesignatedServerInvoker<T> create(Class<T> interfaceType,
                                                         T localServiceProvider,
                                                         Server currentServer,
-                                                        HttpProperties http,
-                                                        RetryProperties retry,
-                                                        ObjectMapper objectMapper) {
-        ServerRestTemplate serverRestTemplate = new ServerRestTemplate(http, retry, objectMapper);
+                                                        RestTemplate restTemplate,
+                                                        RetryProperties retry) {
+        ServerRestTemplate serverRestTemplate = new ServerRestTemplate(restTemplate, retry);
         String prefixPath = DiscoveryRestProxy.parsePath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
         InvocationHandler invocationHandler = new ServerInvocationHandler(serverRestTemplate, prefixPath);
         T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceType);
@@ -51,7 +49,7 @@ public class ServerRestProxy {
         private final T localServiceProvider;
         private final Server currentServer;
 
-        public DesignatedServerInvoker(T remoteServiceClient, T localServiceProvider, Server currentServer) {
+        private DesignatedServerInvoker(T remoteServiceClient, T localServiceProvider, Server currentServer) {
             this.remoteServiceClient = remoteServiceClient;
             this.localServiceProvider = localServiceProvider;
             this.currentServer = currentServer;
@@ -86,10 +84,9 @@ public class ServerRestProxy {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            DiscoveryRestProxy.Request request = DiscoveryRestProxy.buildRequest(prefixPath, method);
-            Objects.requireNonNull(request, () -> "Invalid server http request method: " + method.toGenericString());
+            DiscoveryRestProxy.Request req = DiscoveryRestProxy.buildRequest(prefixPath, method);
             Server destinationServer = SERVER_THREAD_LOCAL.get();
-            return serverRestTemplate.invoke(destinationServer, request.path, request.httpMethod, method.getGenericReturnType(), args);
+            return serverRestTemplate.invoke(destinationServer, req.path, req.httpMethod, method.getGenericReturnType(), args);
         }
     }
 

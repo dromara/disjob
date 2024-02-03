@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -54,8 +56,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private final SupervisorRegistry supervisorRegistry;
     private final Supervisor.Current currentSupervisor;
-    private final DesignatedServerInvoker<SupervisorRpcService> invokeSupervisor;
-    private final DesignatedServerInvoker<WorkerRpcService> invokeWorker;
+    private final DesignatedServerInvoker<SupervisorRpcService> supervisorRpcServiceClient;
+    private final DesignatedServerInvoker<WorkerRpcService> workerRpcServiceClient;
 
     public ServerInvokeService(SupervisorRegistry supervisorRegistry,
                                Supervisor.Current currentSupervisor,
@@ -63,11 +65,14 @@ public class ServerInvokeService extends SingletonClassConstraint {
                                HttpProperties http,
                                @Nullable WorkerRpcService workerProvider,
                                @Nullable ObjectMapper objectMapper) {
+        http.check();
+        RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
+        RetryProperties retry = RetryProperties.of(0, 0);
+
         this.supervisorRegistry = supervisorRegistry;
         this.currentSupervisor = currentSupervisor;
-        RetryProperties retry = RetryProperties.of(0, 0);
-        this.invokeSupervisor = ServerRestProxy.create(SupervisorRpcService.class, supervisorProvider, currentSupervisor, http, retry, objectMapper);
-        this.invokeWorker = ServerRestProxy.create(WorkerRpcService.class, workerProvider, Worker.current(), http, retry, objectMapper);
+        this.supervisorRpcServiceClient = ServerRestProxy.create(SupervisorRpcService.class, supervisorProvider, currentSupervisor, restTemplate, retry);
+        this.workerRpcServiceClient = ServerRestProxy.create(WorkerRpcService.class, workerProvider, Worker.current(), restTemplate, retry);
     }
 
     // ------------------------------------------------------------public methods
@@ -144,7 +149,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         Long pingTime = null;
         try {
             long start = System.currentTimeMillis();
-            metrics = invokeSupervisor.invoke(supervisor, SupervisorRpcService::metrics);
+            metrics = supervisorRpcServiceClient.invoke(supervisor, SupervisorRpcService::metrics);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
@@ -167,10 +172,10 @@ public class ServerInvokeService extends SingletonClassConstraint {
         WorkerMetrics metrics = null;
         Long pingTime = null;
         String group = worker.getGroup();
-        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
+        GetMetricsParam param = buildGetMetricsParam(group);
         try {
             long start = System.currentTimeMillis();
-            metrics = invokeWorker.invoke(worker, client -> client.metrics(param));
+            metrics = workerRpcServiceClient.invoke(worker, client -> client.metrics(param));
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
@@ -199,8 +204,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private void verifyWorkerSignature(Worker worker) {
         String group = worker.getGroup();
-        GetMetricsParam param = new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
-        WorkerMetrics metrics = invokeWorker.invoke(worker, client -> client.metrics(param));
+        GetMetricsParam param = buildGetMetricsParam(group);
+        WorkerMetrics metrics = workerRpcServiceClient.invoke(worker, client -> client.metrics(param));
         if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
         }
@@ -210,11 +215,15 @@ public class ServerInvokeService extends SingletonClassConstraint {
         ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
         param.setAction(action);
         param.setData(data);
-        invokeWorker.invokeWithoutResult(worker, client -> client.configureWorker(param));
+        workerRpcServiceClient.invokeWithoutResult(worker, client -> client.configureWorker(param));
     }
 
     private void publishSupervisor(Supervisor supervisor, EventParam param) {
-        RetryTemplate.executeQuietly(() -> invokeSupervisor.invokeWithoutResult(supervisor, client -> client.publish(param)), 1, 2000);
+        RetryTemplate.executeQuietly(() -> supervisorRpcServiceClient.invokeWithoutResult(supervisor, client -> client.publish(param)), 1, 2000);
+    }
+
+    private GetMetricsParam buildGetMetricsParam(String group) {
+        return new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
     }
 
 }

@@ -20,6 +20,7 @@ import cn.ponfee.disjob.id.snowflake.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -67,6 +68,8 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
     private static final String QUERY_ALL_SQL = "SELECT biz_tag, server_tag, worker_id, heartbeat_time FROM " + TABLE_NAME + " WHERE biz_tag=?";
 
+    private static final String GET_WORKER_SQL = "SELECT biz_tag, server_tag, worker_id, heartbeat_time FROM " + TABLE_NAME + " WHERE biz_tag=? AND server_tag=?";
+
     private static final String REMOVE_DEAD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_tag=? AND heartbeat_time<?";
 
     private static final String REMOVE_INVALID_SQL = "DELETE FROM " + TABLE_NAME + " WHERE biz_tag=? AND server_tag=?";
@@ -105,7 +108,9 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         jdbcTemplateWrapper.createTableIfNotExists(TABLE_NAME, CREATE_TABLE_DDL);
 
         try {
-            int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdBitLength), 5, 1000L);
+            // workerId取值范围：[0, workerIdMaxCount)
+            int workerIdMaxCount = 1 << workerIdBitLength;
+            int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdMaxCount), 5, 2000L);
             this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
         } catch (Throwable e) {
             Threads.interruptIfNecessary(e);
@@ -129,67 +134,73 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
     // -------------------------------------------------------private methods
 
-    private int registerWorkerId(int workerIdBitLength) {
-        int workerIdMaxCount = 1 << workerIdBitLength;
+    private int registerWorkerId(int workerIdMaxCount) {
         List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
         DbSnowflakeWorker current = registeredWorkers.stream().filter(e -> e.equals(bizTag, serverTag)).findAny().orElse(null);
-
         if (current == null) {
-
-            if (registeredWorkers.size() > workerIdMaxCount / 2) {
-                long oldestTimeMillis = System.currentTimeMillis() - EXPIRE_TIME_MILLIS;
-                jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
-
-                // re-query
-                registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
-            }
-
-            Set<Integer> usedWorkIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());
-            List<Integer> usableWorkerIds = IntStream.range(0, workerIdMaxCount)
-                .boxed()
-                .filter(Predicates.not(usedWorkIds::contains))
-                .collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(usableWorkerIds)) {
-                throw new IllegalStateException("Not found usable db worker id.");
-            }
-
-            Collections.shuffle(usableWorkerIds);
-            for (Integer usableWorkerId : usableWorkerIds) {
-                Object[] args = {bizTag, serverTag, usableWorkerId, System.currentTimeMillis()};
-                try {
-                    jdbcTemplateWrapper.insert(REGISTER_WORKER_SQL, args);
-                    LOG.info("Create snowflake db worker success: {}, {}, {}, {}", args);
-                    return usableWorkerId;
-                } catch (Throwable ignored) {
-                    // ignored
-                }
-            }
-            throw new IllegalStateException("Cannot found usable db worker id: " + bizTag + ", " + serverTag);
-
+            return findUsableWorkerId(registeredWorkers, workerIdMaxCount);
         } else {
-
-            Integer workerId = current.getWorkerId();
-            if (workerId < 0 || workerId >= workerIdMaxCount) {
-                if (jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizTag, serverTag) != AFFECTED_ONE_ROW) {
-                    LOG.error("Deleting invalid db worker id failed.");
-                }
-                throw new IllegalStateException("Invalid db worker id: " + workerId);
-            }
-
-            long currentTime = System.currentTimeMillis();
-            long lastHeartbeatTime = current.getHeartbeatTime();
-            if (currentTime < lastHeartbeatTime) {
-                throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s, %s, %d, %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
-            }
-            Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
-            if (jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
-                LOG.info("Reuse db worker id success: {}, {}, {}, {}", args);
-                return workerId;
-            }
-
-            throw new IllegalStateException("Reuse db worker id failed: " + bizTag + ", " + serverTag);
-
+            return reuseWorkerId(current, workerIdMaxCount);
         }
+    }
+
+    private int findUsableWorkerId(List<DbSnowflakeWorker> registeredWorkers, int workerIdMaxCount) {
+        if (registeredWorkers.size() > (workerIdMaxCount / 2)) {
+            long oldestTimeMillis = System.currentTimeMillis() - EXPIRE_TIME_MILLIS;
+            jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, bizTag, oldestTimeMillis);
+            // re-query
+            registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
+        }
+
+        Set<Integer> usedWorkIds = registeredWorkers.stream().map(DbSnowflakeWorker::getWorkerId).collect(Collectors.toSet());
+        List<Integer> usableWorkerIds = IntStream.range(0, workerIdMaxCount)
+            .boxed()
+            .filter(Predicates.not(usedWorkIds::contains))
+            .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(usableWorkerIds)) {
+            throw new IllegalStateException("Not found usable db worker id.");
+        }
+
+        Collections.shuffle(usableWorkerIds);
+        for (Integer usableWorkerId : usableWorkerIds) {
+            Object[] args = {bizTag, serverTag, usableWorkerId, System.currentTimeMillis()};
+            try {
+                jdbcTemplateWrapper.insert(REGISTER_WORKER_SQL, args);
+                LOG.info("Create snowflake db worker success: {}, {}, {}, {}", args);
+                return usableWorkerId;
+            } catch (DuplicateKeyException ignored) {
+                DbSnowflakeWorker existed = jdbcTemplateWrapper.get(GET_WORKER_SQL, ROW_MAPPER, bizTag, serverTag);
+                if (existed != null) {
+                    LOG.warn("Server tag duplicated: {}", existed);
+                    return reuseWorkerId(existed, workerIdMaxCount);
+                }
+            }
+        }
+
+        throw new IllegalStateException("Cannot found usable db worker id: " + bizTag + ", " + serverTag);
+    }
+
+    private int reuseWorkerId(DbSnowflakeWorker current, int workerIdMaxCount) {
+        Integer workerId = current.getWorkerId();
+        if (workerId < 0 || workerId >= workerIdMaxCount) {
+            if (jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizTag, serverTag) != AFFECTED_ONE_ROW) {
+                LOG.error("Deleting invalid db worker id failed.");
+            }
+            throw new IllegalStateException("Invalid db worker id: " + workerId);
+        }
+
+        long currentTime = System.currentTimeMillis();
+        long lastHeartbeatTime = current.getHeartbeatTime();
+        if (currentTime < lastHeartbeatTime) {
+            throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s, %s, %d, %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
+        }
+        Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
+        if (jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
+            LOG.info("Reuse db worker id success: {}, {}, {}, {}", args);
+            return workerId;
+        }
+
+        throw new IllegalStateException("Reuse db worker id failed: " + bizTag + ", " + serverTag);
     }
 
     private void heartbeat() {

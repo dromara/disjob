@@ -10,13 +10,11 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.registry.ServerRole;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,19 +59,17 @@ final class DiscoveryRestTemplate<D extends Server> {
         HttpStatus.BANDWIDTH_LIMIT_EXCEEDED
     );
 
-    private final RestTemplate restTemplate;
     private final Discovery<D> discoveryServer;
+    private final RestTemplate restTemplate;
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    DiscoveryRestTemplate(HttpProperties http,
-                          RetryProperties retry,
-                          ObjectMapper objectMapper,
-                          Discovery<D> discoveryServer) {
-        http.check();
+    DiscoveryRestTemplate(Discovery<D> discoveryServer,
+                          RestTemplate restTemplate,
+                          RetryProperties retry) {
         retry.check();
-        this.restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         this.discoveryServer = discoveryServer;
+        this.restTemplate = restTemplate;
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();
     }

@@ -26,7 +26,7 @@ public class CustomLocalDateTimeDeserializer extends JSR310DateTimeDeserializerB
 
     public static final CustomLocalDateTimeDeserializer INSTANCE = new CustomLocalDateTimeDeserializer();
 
-    private final transient LocalDateTimeFormat wrappedFormatter;
+    private final LocalDateTimeFormat wrappedFormatter;
 
     protected CustomLocalDateTimeDeserializer() {
         this(Dates.DATETIME_PATTERN);

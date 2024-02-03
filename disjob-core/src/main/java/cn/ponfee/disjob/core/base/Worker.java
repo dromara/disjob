@@ -167,6 +167,10 @@ public class Worker extends Server {
         return Current.instance;
     }
 
+    public static boolean matchesGroup(Worker worker, String group) {
+        return worker != null && worker.matchesGroup(group);
+    }
+
     // --------------------------------------------------------custom jackson serialize & deserialize
 
     /**

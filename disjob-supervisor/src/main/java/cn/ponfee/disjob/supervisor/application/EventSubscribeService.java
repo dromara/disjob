@@ -67,7 +67,7 @@ public class EventSubscribeService {
             schedGroupService.refresh();
 
         } else {
-            LOG.error("Unsupported publish event type: {}", type);
+            LOG.error("Unsupported subscribe event type: {}", type);
         }
     }
 
