@@ -32,17 +32,19 @@ public class DisjobGroup {
     private final String ownUser;
     private final Set<String> alarmUsers;
     private final Set<String> devUsers;
+    private final String workerContextPath;
     private final String webHook;
 
     private DisjobGroup(String supervisorToken, String workerToken, String userToken,
                         String ownUser, Set<String> devUsers, Set<String> alarmUsers,
-                        String webHook) {
+                        String workerContextPath, String webHook) {
         this.supervisorToken = supervisorToken;
         this.workerToken = workerToken;
         this.userToken = userToken;
         this.ownUser = ownUser;
         this.devUsers = devUsers;
         this.alarmUsers = alarmUsers;
+        this.workerContextPath = workerContextPath;
         this.webHook = webHook;
     }
 
@@ -55,6 +57,7 @@ public class DisjobGroup {
             ownUser,
             parse(schedGroup.getDevUsers(), ownUser),
             parse(schedGroup.getAlarmUsers(), ownUser),
+            schedGroup.getWorkerContextPath(),
             schedGroup.getWebHook()
         );
     }

@@ -28,6 +28,9 @@ public class HttpTaskDispatcher extends TaskDispatcher {
 
     private static final String URL_PATTERN = JobConstants.HTTP_URL_PATTERN + Constants.WORKER_RECEIVE_PATH;
 
+    /**
+     * 因为HttpTaskReceiver不是一个接口，所以这里不使用`ServerRestProxy#create`方式
+     */
     private final RestTemplate restTemplate;
 
     public HttpTaskDispatcher(Discovery<Worker> discoveryWorker,

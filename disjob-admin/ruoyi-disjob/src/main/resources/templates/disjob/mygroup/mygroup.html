@@ -62,6 +62,13 @@
           }
         },
         {
+          field: 'workerContextPath',
+          title: 'Context-path',
+          formatter: function (value, row, index) {
+            return $.table.tooltip(value, 30, "open");
+          }
+        },
+        {
           field: 'ownUser',
           title: '负责人'
         },
@@ -127,7 +134,7 @@
     }
 
     function edit(group) {
-      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '650', '380');
+      $.modal.open("修改" + table.options.modalName, prefix + "/edit/" + group, '660', '430');
     }
 
     function workers(group) {

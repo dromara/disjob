@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 import static cn.ponfee.disjob.common.collect.Collects.get;
@@ -135,7 +136,7 @@ public class Supervisor extends Server {
             this.startupAt = LocalDateTime.now();
         }
 
-        public LocalDateTime getStartupAt() {
+        public final LocalDateTime getStartupAt() {
             return startupAt;
         }
 
@@ -149,13 +150,26 @@ public class Supervisor extends Server {
             return super.hashCode();
         }
 
-        private static synchronized Current create(final String host, final int port) {
+        /**
+         * Worker signature
+         *
+         * @return signature string
+         */
+        public abstract String getWorkerContextPath(String group);
+
+        private static synchronized Current create(final String host, final int port,
+                                                   final UnaryOperator<String> workerContextPath) {
             if (instance != null) {
                 throw new Error("Current supervisor already set.");
             }
 
             instance = new Current(host, port) {
                 private static final long serialVersionUID = 3856221643026735022L;
+
+                @Override
+                public String getWorkerContextPath(String group) {
+                    return workerContextPath.apply(group);
+                }
             };
 
             return instance;

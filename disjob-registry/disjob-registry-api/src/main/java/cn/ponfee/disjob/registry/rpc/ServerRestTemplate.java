@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Server rest template(Method pattern)
@@ -37,7 +38,7 @@ final class ServerRestTemplate {
 
     ServerRestTemplate(RestTemplate restTemplate, RetryProperties retry) {
         retry.check();
-        this.restTemplate = restTemplate;
+        this.restTemplate = Objects.requireNonNull(restTemplate);
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();
     }

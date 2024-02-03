@@ -211,7 +211,7 @@ public class Worker extends Server {
             this.startupAt = LocalDateTime.now();
         }
 
-        public LocalDateTime getStartupAt() {
+        public final LocalDateTime getStartupAt() {
             return startupAt;
         }
 

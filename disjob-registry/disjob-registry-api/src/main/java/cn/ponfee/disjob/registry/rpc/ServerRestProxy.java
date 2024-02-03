@@ -17,6 +17,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -33,8 +34,8 @@ public class ServerRestProxy {
     private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("server_rest_proxy");
 
     public static <T> DesignatedServerInvoker<T> create(Class<T> interfaceType,
-                                                        T localServiceProvider,
-                                                        Server currentServer,
+                                                        @Nullable T localServiceProvider,
+                                                        @Nullable Server currentServer,
                                                         RestTemplate restTemplate,
                                                         RetryProperties retry) {
         ServerRestTemplate serverRestTemplate = new ServerRestTemplate(restTemplate, retry);

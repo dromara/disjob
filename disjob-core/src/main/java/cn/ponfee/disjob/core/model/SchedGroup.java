@@ -58,6 +58,11 @@ public class SchedGroup extends BaseEntity {
     private String alarmUsers;
 
     /**
+     * 该组下的Worker服务的context-path
+     */
+    private String workerContextPath;
+
+    /**
      * 告警web hook地址
      */
     private String webHook;

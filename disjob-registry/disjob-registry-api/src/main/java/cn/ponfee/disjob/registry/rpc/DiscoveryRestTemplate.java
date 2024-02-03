@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -68,8 +69,8 @@ final class DiscoveryRestTemplate<D extends Server> {
                           RestTemplate restTemplate,
                           RetryProperties retry) {
         retry.check();
-        this.discoveryServer = discoveryServer;
-        this.restTemplate = restTemplate;
+        this.discoveryServer = Objects.requireNonNull(discoveryServer);
+        this.restTemplate = Objects.requireNonNull(restTemplate);
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();
     }

@@ -68,6 +68,11 @@ public class WorkerProperties extends ToJsonString implements Serializable {
      */
     private String supervisorToken;
 
+    /**
+     * Supervisor context-path
+     */
+    private String supervisorContextPath;
+
     public void check() {
         Assert.hasText(group, "Group cannot be blank.");
         Assert.isTrue(timingWheelTickMs > 0, "Timing wheel tick ms must be greater than 0.");

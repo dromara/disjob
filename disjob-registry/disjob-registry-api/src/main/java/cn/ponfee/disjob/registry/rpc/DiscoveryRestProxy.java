@@ -26,6 +26,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -99,7 +100,7 @@ public class DiscoveryRestProxy {
      * @return rpc service client proxy
      */
     public static <T, D extends Server> GroupedServerInvoker<T> create(Class<T> interfaceType,
-                                                                       T localServiceProvider,
+                                                                       @Nullable T localServiceProvider,
                                                                        Predicate<String> serverGroupMatcher,
                                                                        Discovery<D> discoveryServer,
                                                                        RestTemplate restTemplate,

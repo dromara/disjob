@@ -5,7 +5,8 @@
   <sql id="Table_Name">sched_group</sql>
 
   <sql id="Base_Column_List">
-    `group`, own_user, supervisor_token, worker_token, user_token, dev_users, alarm_users, web_hook
+    `group`, own_user, supervisor_token, worker_token, user_token,
+    dev_users, alarm_users, worker_context_path, web_hook
   </sql>
 
   <sql id="Large_Column_List">
@@ -72,6 +73,7 @@
     SET own_user = #{ownUser,jdbcType=VARCHAR},
         dev_users = #{devUsers,jdbcType=VARCHAR},
         alarm_users = #{alarmUsers,jdbcType=VARCHAR},
+        worker_context_path = #{workerContextPath,jdbcType=VARCHAR},
         web_hook = #{webHook,jdbcType=VARCHAR},
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1

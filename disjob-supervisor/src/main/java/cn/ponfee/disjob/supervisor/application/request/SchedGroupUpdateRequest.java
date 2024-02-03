@@ -35,6 +35,7 @@ public class SchedGroupUpdateRequest extends ToJsonString implements Serializabl
     private String ownUser;
     private String devUsers;
     private String alarmUsers;
+    private String workerContextPath;
     private String webHook;
     private String updatedBy;
     private int version;
@@ -49,6 +50,7 @@ public class SchedGroupUpdateRequest extends ToJsonString implements Serializabl
         this.ownUser = StringUtils.trim(ownUser);
         this.devUsers = prune(devUsers);
         this.alarmUsers = prune(alarmUsers);
+        this.workerContextPath = StringUtils.trim(workerContextPath);
         this.webHook = StringUtils.trim(webHook);
     }
 
