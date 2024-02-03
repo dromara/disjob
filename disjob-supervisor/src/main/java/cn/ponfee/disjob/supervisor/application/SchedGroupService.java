@@ -20,6 +20,7 @@ import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.core.model.TokenType;
 import cn.ponfee.disjob.core.param.supervisor.EventParam;
+import cn.ponfee.disjob.core.param.worker.AuthenticationParam;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
@@ -159,6 +160,10 @@ public class SchedGroupService extends SingletonClassConstraint {
     public static String createSupervisorAuthenticationToken(String group) {
         String supervisorToken = getDisjobGroup(group).getSupervisorToken();
         return Tokens.createAuthentication(supervisorToken, TokenType.supervisor, group);
+    }
+
+    public static void fillSupervisorAuthenticationToken(String group, AuthenticationParam param) {
+        param.setSupervisorToken(createSupervisorAuthenticationToken(group));
     }
 
     public static boolean verifyWorkerAuthenticationToken(String tokenSecret, String group) {

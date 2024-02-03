@@ -24,6 +24,7 @@ import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.ServerRestProxy;
+import cn.ponfee.disjob.registry.rpc.ServerRestProxy.DesignatedServerInvoker;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
@@ -34,6 +35,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -50,16 +52,22 @@ import java.util.stream.Collectors;
 public class ServerInvokeService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
-    private final ServerRestProxy.ServerInvoker<WorkerRpcService> invokeWorker;
-    private final ServerRestProxy.ServerInvoker<SupervisorRpcService> invokeSupervisor;
+    private final DesignatedServerInvoker<SupervisorRpcService> invokeSupervisor;
+    private final DesignatedServerInvoker<WorkerRpcService> invokeWorker;
     private final SupervisorRegistry supervisorRegistry;
 
     public ServerInvokeService(HttpProperties http,
-                               ObjectMapper objectMapper,
-                               SupervisorRegistry supervisorRegistry) {
+                               SupervisorRegistry supervisorRegistry,
+                               SupervisorRpcService supervisorRpcServiceProvider,
+                               @Nullable WorkerRpcService workerRpcServiceProvider,
+                               @Nullable ObjectMapper objectMapper) {
         RetryProperties retry = RetryProperties.of(0, 0);
-        this.invokeWorker = ServerRestProxy.create(WorkerRpcService.class, http, retry, objectMapper);
-        this.invokeSupervisor = ServerRestProxy.create(SupervisorRpcService.class, http, retry, objectMapper);
+        this.invokeSupervisor = ServerRestProxy.create(
+            SupervisorRpcService.class, supervisorRpcServiceProvider, Supervisor.current(), http, retry, objectMapper
+        );
+        this.invokeWorker = ServerRestProxy.create(
+            WorkerRpcService.class, workerRpcServiceProvider, Worker.current(), http, retry, objectMapper
+        );
         this.supervisorRegistry = supervisorRegistry;
     }
 

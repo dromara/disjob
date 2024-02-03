@@ -16,11 +16,11 @@ import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy;
+import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
-import cn.ponfee.disjob.supervisor.base.WorkerRpcClient;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider;
@@ -103,13 +103,20 @@ public @interface EnableSupervisor {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @ConditionalOnMissingBean
         @Bean
-        public WorkerRpcClient workerRpcClient(HttpProperties httpProperties,
-                                               RetryProperties retryProperties,
-                                               SupervisorRegistry discoveryWorker,
-                                               @Nullable Worker.Current currentWorker,
-                                               @Nullable ObjectMapper objectMapper) {
-            return new WorkerRpcClient(
-                httpProperties, retryProperties, discoveryWorker, currentWorker, objectMapper
+        public GroupedServerInvoker<WorkerRpcService> invokeWorker(HttpProperties http,
+                                                                   RetryProperties retry,
+                                                                   SupervisorRegistry discoveryWorker,
+                                                                   @Nullable WorkerRpcService localServiceProvider,
+                                                                   @Nullable Worker.Current currentWorker,
+                                                                   @Nullable ObjectMapper objectMapper) {
+            return DiscoveryRestProxy.create(
+                WorkerRpcService.class,
+                localServiceProvider,
+                group -> currentWorker != null && currentWorker.matchesGroup(group),
+                http,
+                retry,
+                objectMapper,
+                discoveryWorker
             );
         }
 
@@ -166,9 +173,8 @@ public @interface EnableSupervisor {
         @ConditionalOnMissingBean
         @Bean
         public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
-                                                         DistributedJobQuerier jobQuerier,
-                                                         EventSubscribeService eventSubscribeService) {
-            return new SupervisorRpcProvider(jobManager, jobQuerier, eventSubscribeService);
+                                                         DistributedJobQuerier jobQuerier) {
+            return new SupervisorRpcProvider(jobManager, jobQuerier);
         }
     }
 

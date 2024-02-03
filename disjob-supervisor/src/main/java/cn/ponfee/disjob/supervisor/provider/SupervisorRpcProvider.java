@@ -35,14 +35,11 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
-    private final EventSubscribeService eventSubscribeService;
 
     public SupervisorRpcProvider(DistributedJobManager jobManager,
-                                 DistributedJobQuerier jobQuerier,
-                                 EventSubscribeService eventSubscribeService) {
+                                 DistributedJobQuerier jobQuerier) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
-        this.eventSubscribeService = eventSubscribeService;
     }
 
     @Override
@@ -93,7 +90,7 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
     @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
     @Override
     public void publish(EventParam param) {
-        eventSubscribeService.subscribe(param);
+        EventSubscribeService.subscribe(param);
     }
 
     @Override

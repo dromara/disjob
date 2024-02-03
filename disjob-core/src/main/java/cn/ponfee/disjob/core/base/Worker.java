@@ -114,11 +114,11 @@ public class Worker extends Server {
     /**
      * 判断当前Worker的group是否匹配任务分派的Worker的group
      *
-     * @param taskGroup the task group
+     * @param group the group
      * @return {@code true} if matched
      */
-    public boolean matchesGroup(String taskGroup) {
-        return this.group.equals(taskGroup);
+    public boolean matchesGroup(String group) {
+        return this.group.equals(group);
     }
 
     /**

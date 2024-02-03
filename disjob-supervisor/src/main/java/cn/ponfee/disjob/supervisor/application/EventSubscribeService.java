@@ -32,7 +32,8 @@ import java.util.concurrent.TimeUnit;
 public class EventSubscribeService {
     private static final Logger LOG = LoggerFactory.getLogger(EventSubscribeService.class);
 
-    private final ConcurrentMap<Type, EventParam> map = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Type, EventParam> CACHED = new ConcurrentHashMap<>();
+
     private final SchedGroupService schedGroupService;
 
     public EventSubscribeService(SchedGroupService schedGroupService) {
@@ -42,17 +43,17 @@ public class EventSubscribeService {
         ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::process, initialDelay, 5000, TimeUnit.MILLISECONDS);
     }
 
-    public void subscribe(EventParam param) {
+    public static void subscribe(EventParam param) {
         if (param != null && param.getType() != null) {
             // putIfAbsent不会更新param
-            map.compute(param.getType(), (k, v) -> param);
+            CACHED.compute(param.getType(), (k, v) -> param);
         }
     }
 
     private void process() {
-        Set<Type> types = new HashSet<>(map.keySet());
+        Set<Type> types = new HashSet<>(CACHED.keySet());
         for (Type type : types) {
-            ThrowingRunnable.doCaught(() -> process(map.remove(type)));
+            ThrowingRunnable.doCaught(() -> process(CACHED.remove(type)));
         }
     }
 

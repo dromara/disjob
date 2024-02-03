@@ -194,7 +194,7 @@ public class WorkerStartup implements Startable {
             InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
             return ProxyUtils.create(ih, SupervisorRpcService.class);
         } else {
-            return DiscoveryRestProxy.create(false, SupervisorRpcService.class, http, retry, objectMapper, discoverySupervisor);
+            return DiscoveryRestProxy.create(SupervisorRpcService.class, http, retry, objectMapper, discoverySupervisor);
         }
     }
 

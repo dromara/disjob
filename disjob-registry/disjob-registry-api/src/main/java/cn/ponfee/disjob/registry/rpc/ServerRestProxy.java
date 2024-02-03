@@ -33,29 +33,40 @@ public class ServerRestProxy {
 
     private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("server_rest_proxy");
 
-    public static <T> ServerInvoker<T> create(Class<T> interfaceType,
-                                              HttpProperties http,
-                                              RetryProperties retry,
-                                              ObjectMapper objectMapper) {
+    public static <T> DesignatedServerInvoker<T> create(Class<T> interfaceType,
+                                                        T localServiceProvider,
+                                                        Server currentServer,
+                                                        HttpProperties http,
+                                                        RetryProperties retry,
+                                                        ObjectMapper objectMapper) {
         ServerRestTemplate serverRestTemplate = new ServerRestTemplate(http, retry, objectMapper);
         String prefixPath = DiscoveryRestProxy.parsePath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
         InvocationHandler invocationHandler = new ServerInvocationHandler(serverRestTemplate, prefixPath);
-        return new ServerInvoker<>(ProxyUtils.create(invocationHandler, interfaceType));
+        T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceType);
+        return new DesignatedServerInvoker<>(remoteServiceClient, localServiceProvider, currentServer);
     }
 
-    public static final class ServerInvoker<T> {
-        private final T clientProxy;
+    public static final class DesignatedServerInvoker<T> {
+        private final T remoteServiceClient;
+        private final T localServiceProvider;
+        private final Server currentServer;
 
-        private ServerInvoker(T clientProxy) {
-            this.clientProxy = clientProxy;
+        public DesignatedServerInvoker(T remoteServiceClient, T localServiceProvider, Server currentServer) {
+            this.remoteServiceClient = remoteServiceClient;
+            this.localServiceProvider = localServiceProvider;
+            this.currentServer = currentServer;
         }
 
         public <R> R invoke(Server destinationServer, Function<T, R> function) {
-            SERVER_THREAD_LOCAL.set(Objects.requireNonNull(destinationServer));
-            try {
-                return function.apply(clientProxy);
-            } finally {
-                SERVER_THREAD_LOCAL.remove();
+            if (localServiceProvider != null && destinationServer.equals(currentServer)) {
+                return function.apply(localServiceProvider);
+            } else {
+                SERVER_THREAD_LOCAL.set(Objects.requireNonNull(destinationServer));
+                try {
+                    return function.apply(remoteServiceClient);
+                } finally {
+                    SERVER_THREAD_LOCAL.remove();
+                }
             }
         }
 
@@ -76,7 +87,7 @@ public class ServerRestProxy {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             DiscoveryRestProxy.Request request = DiscoveryRestProxy.buildRequest(prefixPath, method);
-            Objects.requireNonNull(request, () -> "Invalid http request method: " + method.toGenericString());
+            Objects.requireNonNull(request, () -> "Invalid server http request method: " + method.toGenericString());
             Server destinationServer = SERVER_THREAD_LOCAL.get();
             return serverRestTemplate.invoke(destinationServer, request.path, request.httpMethod, method.getGenericReturnType(), args);
         }

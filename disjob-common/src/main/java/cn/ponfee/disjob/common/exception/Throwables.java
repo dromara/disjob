@@ -71,14 +71,14 @@ public final class Throwables {
     public interface ThrowingRunnable<T extends Throwable> {
         void run() throws T;
 
-        default <R> ThrowingSupplier<R, Throwable> toSupplier(R result) {
+        default <R> ThrowingSupplier<R, T> toSupplier(R result) {
             return () -> {
                 run();
                 return result;
             };
         }
 
-        default <R> ThrowingCallable<R, Throwable> toCallable(R result) {
+        default <R> ThrowingCallable<R, T> toCallable(R result) {
             return () -> {
                 run();
                 return result;
@@ -205,7 +205,7 @@ public final class Throwables {
     public interface ThrowingCallable<R, T extends Throwable> {
         R call() throws T;
 
-        default ThrowingRunnable<Throwable> toRunnable() {
+        default ThrowingRunnable<T> toRunnable() {
             return this::call;
         }
 
@@ -268,7 +268,7 @@ public final class Throwables {
     public interface ThrowingConsumer<E, T extends Throwable> {
         void accept(E e) throws T;
 
-        default <R> ThrowingFunction<E, R, Throwable> toFunction(R result) {
+        default <R> ThrowingFunction<E, R, T> toFunction(R result) {
             return x -> {
                 accept(x);
                 return result;
@@ -333,7 +333,7 @@ public final class Throwables {
     public interface ThrowingFunction<E, R, T extends Throwable> {
         R apply(E e) throws T;
 
-        default ThrowingConsumer<E, Throwable> toConsumer() {
+        default ThrowingConsumer<E, T> toConsumer() {
             return this::apply;
         }
 

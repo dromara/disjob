@@ -13,6 +13,7 @@ import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.KeyExistsException;
@@ -25,8 +26,8 @@ import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
-import cn.ponfee.disjob.supervisor.base.WorkerRpcClient;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import com.google.common.base.Joiner;
@@ -63,7 +64,7 @@ public abstract class AbstractJobManager {
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
-    private final WorkerRpcClient workerRpcClient;
+    private final GroupedServerInvoker<WorkerRpcService> invokeWorker;
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
@@ -91,14 +92,14 @@ public abstract class AbstractJobManager {
     // ------------------------------------------------------------------database operation within spring transactional
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public Long addJob(SchedJob job) throws JobException {
+    public Long addJob(SchedJob job) {
         if (jobMapper.exists(job.getGroup(), job.getJobName())) {
             throw new KeyExistsException("[" + job.getGroup() + "] already exists job name: " + job.getJobName());
         }
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyBeforeAdd();
         job.checkAndDefaultSetting();
-        workerRpcClient.verify(JobHandlerParam.from(job));
+        verifyJob(job);
         job.setJobId(generateId());
         parseTriggerConfig(job);
 
@@ -107,13 +108,13 @@ public abstract class AbstractJobManager {
     }
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public void updateJob(SchedJob job) throws JobException {
+    public void updateJob(SchedJob job) {
         job.verifyBeforeUpdate();
         job.checkAndDefaultSetting();
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
         } else {
-            workerRpcClient.verify(JobHandlerParam.from(job));
+            verifyJob(job);
         }
 
         SchedJob dbJob = jobMapper.get(job.getJobId());
@@ -173,7 +174,7 @@ public abstract class AbstractJobManager {
                 .mapToObj(i -> SchedTask.create(param.getJobParam(), generateId(), instanceId, i + 1, count, date, discoveredServers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
-            List<SplitTask> split = workerRpcClient.split(param);
+            List<SplitTask> split = splitJob(param);
             Assert.notEmpty(split, () -> "Not split any task: " + param);
             Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + param);
             int count = split.size();
@@ -264,6 +265,17 @@ public abstract class AbstractJobManager {
     protected abstract boolean cancelWaitingTask(long taskId);
 
     // ------------------------------------------------------------------private methods
+
+    private void verifyJob(SchedJob job) {
+        JobHandlerParam param = JobHandlerParam.from(job);
+        SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
+        invokeWorker.invokeWithoutResult(job.getGroup(), client -> client.verify(param));
+    }
+
+    private List<SplitTask> splitJob(JobHandlerParam param) {
+        SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
+        return invokeWorker.invoke(param.getGroup(), client -> client.split(param));
+    }
 
     private void parseTriggerConfig(SchedJob job) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
