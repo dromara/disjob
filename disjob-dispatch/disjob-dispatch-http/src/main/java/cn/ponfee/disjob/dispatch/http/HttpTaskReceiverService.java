@@ -9,14 +9,27 @@
 package cn.ponfee.disjob.dispatch.http;
 
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import io.swagger.v3.oas.annotations.Hidden;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Http task dispatching constants.
+ * Http task receiver service
  *
  * @author Ponfee
  */
-final class Constants {
+@Hidden
+@RequestMapping(WorkerRpcService.PREFIX_PATH)
+public interface HttpTaskReceiverService {
 
-    static final String WORKER_RECEIVE_PATH = WorkerRpcService.PREFIX_PATH + "task/receive";
+    /**
+     * Receive task http method
+     *
+     * @param param the task
+     * @return {@code true} if received successfully
+     */
+    @PostMapping("/task/receive")
+    boolean doReceive(ExecuteTaskParam param);
 
 }

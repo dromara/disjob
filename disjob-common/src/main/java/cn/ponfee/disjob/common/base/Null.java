@@ -8,7 +8,6 @@
 
 package cn.ponfee.disjob.common.base;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -17,12 +16,12 @@ import java.lang.reflect.Method;
  *
  * @author Ponfee
  */
-public final class Null implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public final class Null implements java.io.Serializable {
+    private static final long serialVersionUID = -2631792665226478680L;
 
     public static final Constructor<Null> BROKEN_CONSTRUCTOR;
     public static final Method BROKEN_METHOD;
+
     static {
         try {
             BROKEN_CONSTRUCTOR = Null.class.getDeclaredConstructor();

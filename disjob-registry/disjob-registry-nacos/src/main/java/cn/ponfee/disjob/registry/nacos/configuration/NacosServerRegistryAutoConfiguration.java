@@ -16,7 +16,6 @@ import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfigurati
 import cn.ponfee.disjob.registry.nacos.NacosSupervisorRegistry;
 import cn.ponfee.disjob.registry.nacos.NacosWorkerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -32,7 +31,6 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      * Configuration nacos supervisor registry.
      */
     @ConditionalOnBean(Supervisor.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(NacosRegistryProperties config) {
         return new NacosSupervisorRegistry(config);
@@ -42,7 +40,6 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      * Configuration nacos worker registry.
      */
     @ConditionalOnBean(Worker.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(NacosRegistryProperties config) {
         return new NacosWorkerRegistry(config);

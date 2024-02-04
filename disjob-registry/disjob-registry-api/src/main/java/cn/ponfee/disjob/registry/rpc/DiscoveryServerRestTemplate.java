@@ -10,8 +10,10 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.registry.ServerRole;
@@ -33,13 +35,13 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Discovery rest template(Method pattern)
+ * Discovery server rest template(Method pattern)
  *
  * @param <D> the discovery type
  * @author Ponfee
  */
-final class DiscoveryRestTemplate<D extends Server> {
-    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryRestTemplate.class);
+final class DiscoveryServerRestTemplate<D extends Server> {
+    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryServerRestTemplate.class);
 
     private static final Set<HttpStatus> RETRIABLE_HTTP_STATUS = ImmutableSet.of(
         // 4xx
@@ -65,9 +67,9 @@ final class DiscoveryRestTemplate<D extends Server> {
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    DiscoveryRestTemplate(Discovery<D> discoveryServer,
-                          RestTemplate restTemplate,
-                          RetryProperties retry) {
+    DiscoveryServerRestTemplate(Discovery<D> discoveryServer,
+                                RestTemplate restTemplate,
+                                RetryProperties retry) {
         retry.check();
         this.discoveryServer = Objects.requireNonNull(discoveryServer);
         this.restTemplate = Objects.requireNonNull(restTemplate);
@@ -99,8 +101,14 @@ final class DiscoveryRestTemplate<D extends Server> {
 
         int serverNumber = servers.size();
         Map<String, String> authenticationHeaders = null;
+        String serverContextPath;
         if (discoveryServerRole == ServerRole.SUPERVISOR) {
+            // Worker 远程调用 Supervisor
+            serverContextPath = Worker.current().getSupervisorContextPath();
             authenticationHeaders = Worker.current().createWorkerAuthenticationHeaders();
+        } else {
+            // Supervisor 远程调用 Worker
+            serverContextPath = Supervisor.current().getWorkerContextPath(((Worker) servers.get(0)).getGroup());
         }
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
 
@@ -108,7 +116,7 @@ final class DiscoveryRestTemplate<D extends Server> {
         Throwable ex = null;
         for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
-            String url = String.format("http://%s:%d/%s", server.getHost(), server.getPort(), path);
+            String url = server.buildHttpUrlPrefix() + Strings.concatUrlPath(serverContextPath, path);
             try {
                 return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
             } catch (Throwable e) {

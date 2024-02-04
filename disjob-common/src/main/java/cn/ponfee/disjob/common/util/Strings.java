@@ -8,10 +8,12 @@
 
 package cn.ponfee.disjob.common.util;
 
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -176,6 +178,42 @@ public final class Strings {
             str = str + "%";
         }
         return str;
+    }
+
+    public static String trimUrlPath(String urlPath) {
+        if (StringUtils.isBlank(urlPath) || Str.SLASH.equals(urlPath)) {
+            return Str.SLASH;
+        }
+
+        urlPath = urlPath.replaceAll("[/\\s]+$", "").trim();
+        return urlPath.startsWith(Str.SLASH) ? urlPath : Str.SLASH + urlPath;
+    }
+
+    /**
+     * 拼接两个路径，以“/”开头，不以“/”结尾
+     * <p> e.g.: concatUrlPath("/a", "/b/c") -> /a/b/c
+     *
+     * @param prefixPath the prefix path
+     * @param suffixPath the suffix path
+     * @return concat path
+     */
+    public static String concatUrlPath(String prefixPath, String suffixPath) {
+        Assert.isTrue(prefixPath.startsWith(Str.SLASH), "Prefix path must start with '/'");
+        if (prefixPath.length() > 1) {
+            Assert.isTrue(!prefixPath.endsWith(Str.SLASH), "Prefix path cannot end with '/'");
+        }
+        Assert.isTrue(suffixPath.startsWith(Str.SLASH), "Suffix path must start with '/'");
+        if (suffixPath.length() > 1) {
+            Assert.isTrue(!suffixPath.endsWith(Str.SLASH), "Suffix path cannot end with '/'");
+        }
+
+        if (Str.SLASH.equals(suffixPath)) {
+            return prefixPath;
+        }
+        if (Str.SLASH.equals(prefixPath)) {
+            return suffixPath;
+        }
+        return prefixPath + suffixPath;
     }
 
 }

@@ -77,8 +77,12 @@ public @interface EnableWorker {
         public Worker.Current currentWorker(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                             @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
                                             WorkerProperties config) {
+            config.check();
             String host = JobUtils.getLocalHost(boundHost);
-            Object[] args = {config.getGroup(), UuidUtils.uuid32(), host, port, config.getWorkerToken(), config.getSupervisorToken()};
+            String workerToken = config.getWorkerToken();
+            String supervisorToken = config.getSupervisorToken();
+            String supervisorContextPath = config.getSupervisorContextPath();
+            Object[] args = {config.getGroup(), UuidUtils.uuid32(), host, port, workerToken, supervisorToken, supervisorContextPath};
             try {
                 // inject current worker: Worker.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", args);

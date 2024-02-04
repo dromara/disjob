@@ -16,7 +16,6 @@ import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfigurati
 import cn.ponfee.disjob.registry.zookeeper.ZookeeperSupervisorRegistry;
 import cn.ponfee.disjob.registry.zookeeper.ZookeeperWorkerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -32,7 +31,6 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
      * Configuration zookeeper supervisor registry.
      */
     @ConditionalOnBean(Supervisor.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(ZookeeperRegistryProperties config) {
         return new ZookeeperSupervisorRegistry(config);
@@ -42,7 +40,6 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
      * Configuration zookeeper worker registry.
      */
     @ConditionalOnBean(Worker.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(ZookeeperRegistryProperties config) {
         return new ZookeeperWorkerRegistry(config);

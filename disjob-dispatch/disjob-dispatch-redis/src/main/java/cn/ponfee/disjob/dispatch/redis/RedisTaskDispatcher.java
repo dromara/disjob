@@ -8,12 +8,12 @@
 
 package cn.ponfee.disjob.dispatch.redis;
 
-import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
+import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.Discovery;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -42,21 +42,20 @@ public class RedisTaskDispatcher extends TaskDispatcher {
 
     public RedisTaskDispatcher(Discovery<Worker> discoveryWorker,
                                RetryProperties retryProperties,
-                               @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
-                               RedisTemplate<String, String> redisTemplate) {
-        super(discoveryWorker, retryProperties, timingWheel);
+                               RedisTemplate<String, String> redisTemplate,
+                               @Nullable TaskReceiver taskReceiver) {
+        super(discoveryWorker, retryProperties, taskReceiver);
+
         this.redisTemplate = redisTemplate;
     }
 
     @Override
-    protected final boolean dispatch(ExecuteTaskParam param) {
+    protected final boolean doDispatch(ExecuteTaskParam param) {
         Worker worker = param.getWorker();
         // push to remote worker
         String key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker);
         // ret: return list length after call redis rpush command
-        Long ret = redisTemplate.execute(
-            (RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), param.serialize())
-        );
+        Long ret = redisTemplate.execute((RedisCallback<Long>) conn -> conn.rPush(key.getBytes(), param.serialize()));
 
         // renew redis key ttl
         workerRenewMap.computeIfAbsent(key, k -> new RedisKeyRenewal(redisTemplate, key)).renewIfNecessary();

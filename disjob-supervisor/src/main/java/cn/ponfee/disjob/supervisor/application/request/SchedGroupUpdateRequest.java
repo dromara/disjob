@@ -10,6 +10,7 @@ package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import lombok.Getter;
@@ -50,7 +51,7 @@ public class SchedGroupUpdateRequest extends ToJsonString implements Serializabl
         this.ownUser = StringUtils.trim(ownUser);
         this.devUsers = prune(devUsers);
         this.alarmUsers = prune(alarmUsers);
-        this.workerContextPath = StringUtils.trim(workerContextPath);
+        this.workerContextPath = Strings.trimUrlPath(workerContextPath);
         this.webHook = StringUtils.trim(webHook);
     }
 

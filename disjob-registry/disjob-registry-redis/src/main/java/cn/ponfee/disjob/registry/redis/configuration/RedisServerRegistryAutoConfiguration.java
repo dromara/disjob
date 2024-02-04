@@ -16,7 +16,6 @@ import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfigurati
 import cn.ponfee.disjob.registry.redis.RedisSupervisorRegistry;
 import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -31,16 +30,19 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
 
     /**
      * Configuration redis supervisor registry.
-     * <p>RedisAutoConfiguration has auto-configured two redis template objects.
-     * <p>RedisTemplate<Object, Object> redisTemplate
-     * <p>StringRedisTemplate           stringRedisTemplate
+     *
+     * <pre>
+     * RedisAutoConfiguration has auto-configured two redis template objects.
+     *   1) RedisTemplate<Object, Object> redisTemplate
+     *   2) StringRedisTemplate           stringRedisTemplate
+     * </pre>
      *
      * @param stringRedisTemplate the auto-configured redis template by spring container
+     * @param config              redis registry configuration
      * @return SupervisorRegistry
      * @see org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
      */
     @ConditionalOnBean(Supervisor.Current.class) // 如果注解没有入参，则默认以方法的返回类型判断，即容器中已存在类型为SupervisorRegistry的实例才创建
-    @ConditionalOnMissingBean            // 如果注解没有入参，则默认以方法的返回类型判断，即容器中不存在类型为SupervisorRegistry的实例才创建
     @Bean
     public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate,
                                                  RedisRegistryProperties config) {
@@ -51,7 +53,6 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      * Configuration redis worker registry.
      */
     @ConditionalOnBean(Worker.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(StringRedisTemplate stringRedisTemplate,
                                          RedisRegistryProperties config) {

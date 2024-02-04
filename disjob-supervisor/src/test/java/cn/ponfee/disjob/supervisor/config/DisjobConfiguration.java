@@ -10,26 +10,14 @@ package cn.ponfee.disjob.supervisor.config;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Char;
-import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.util.JobUtils;
-import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
-import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.dispatch.redis.RedisTaskDispatcher;
 import cn.ponfee.disjob.id.snowflake.db.DbDistributedSnowflake;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.registry.redis.RedisSupervisorRegistry;
-import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.lang.Nullable;
 
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TEMPLATE_SPRING_BEAN_NAME;
 
@@ -38,33 +26,8 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TE
  *
  * @author Ponfee
  */
-@EnableConfigurationProperties(RedisRegistryProperties.class)
 @Configuration
 public class DisjobConfiguration {
-
-    /**
-     * RedisAutoConfiguration has auto-configured two redis template objects.
-     * <p>RedisTemplate<Object, Object> redisTemplate
-     * <p>StringRedisTemplate stringRedisTemplate
-     *
-     * @param stringRedisTemplate the auto-configured redis template by spring container
-     * @param config              redis registry configuration
-     * @return SupervisorRegistry
-     * @see org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-     */
-    @Bean
-    public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate,
-                                                 RedisRegistryProperties config) {
-        return new RedisSupervisorRegistry(stringRedisTemplate, config);
-    }
-
-    @Bean
-    public TaskDispatcher taskDispatcher(SupervisorRegistry supervisorRegistry,
-                                         RetryProperties retryProperties,
-                                         @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
-                                         RedisTemplate<String, String> redisTemplate) {
-        return new RedisTaskDispatcher(supervisorRegistry, retryProperties, timingWheel, redisTemplate);
-    }
 
     @Bean
     public IdGenerator idGenerator(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate,

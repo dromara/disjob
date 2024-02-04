@@ -110,16 +110,6 @@ public class JobConstants {
     public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
 
     /**
-     * Http url pattern
-     */
-    public static final String HTTP_URL_PATTERN = "http://%s:%d/";
-
-    /**
-     * Https url pattern
-     */
-    public static final String HTTPS_URL_PATTERN = "https://%s:%d/";
-
-    /**
      * UTF-8 charset
      */
     public static final String UTF_8 = "UTF-8";

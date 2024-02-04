@@ -79,8 +79,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Ponfee
  * @see <a href="https://redisson.org">better implementation: redisson</a>
  */
-public class RedisLock implements Lock {
-
+public class RedisLock implements Lock, java.io.Serializable {
+    private static final long serialVersionUID = -5820879641400425639L;
     private static final Logger LOG = LoggerFactory.getLogger(RedisLock.class);
 
     /**
@@ -150,7 +150,7 @@ public class RedisLock implements Lock {
     /**
      * Spring redis template.
      */
-    private final RedisTemplate<?, ?> redisTemplate;
+    private final transient RedisTemplate<?, ?> redisTemplate;
 
     /**
      * Lock key

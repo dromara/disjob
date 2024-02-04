@@ -8,16 +8,18 @@
 
 package cn.ponfee.disjob.dispatch.http;
 
-import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.spring.RestTemplateUtils;
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
+import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
+import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.Discovery;
-import org.springframework.http.HttpMethod;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.Nullable;
+import java.util.function.Function;
 
 /**
  * Dispatch task based http
@@ -26,26 +28,22 @@ import org.springframework.web.client.RestTemplate;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
-    private static final String URL_PATTERN = JobConstants.HTTP_URL_PATTERN + Constants.WORKER_RECEIVE_PATH;
-
-    /**
-     * 因为HttpTaskReceiver不是一个接口，所以这里不使用`ServerRestProxy#create`方式
-     */
-    private final RestTemplate restTemplate;
+    private final DestinationServerRestProxy.DestinationServerInvoker<HttpTaskReceiverService, Worker> httpTaskReceiverClient;
 
     public HttpTaskDispatcher(Discovery<Worker> discoveryWorker,
                               RetryProperties retryProperties,
-                              TimingWheel<ExecuteTaskParam> timingWheel,
-                              RestTemplate restTemplate) {
-        super(discoveryWorker, retryProperties, timingWheel);
-        this.restTemplate = restTemplate;
+                              RestTemplate restTemplate,
+                              @Nullable TaskReceiver taskReceiver) {
+        super(discoveryWorker, retryProperties, taskReceiver);
+
+        Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
+        RetryProperties retry = RetryProperties.of(0, 0);
+        this.httpTaskReceiverClient = DestinationServerRestProxy.create(HttpTaskReceiverService.class, null, null, workerContextPath, restTemplate, retry);
     }
 
     @Override
-    protected boolean dispatch(ExecuteTaskParam param) {
-        Worker worker = param.getWorker();
-        String url = String.format(URL_PATTERN, worker.getHost(), worker.getPort());
-        return RestTemplateUtils.invoke(restTemplate, url, HttpMethod.POST, boolean.class, null, param);
+    protected boolean doDispatch(ExecuteTaskParam param) {
+        return httpTaskReceiverClient.invoke(param.getWorker(), client -> client.doReceive(param));
     }
 
 }

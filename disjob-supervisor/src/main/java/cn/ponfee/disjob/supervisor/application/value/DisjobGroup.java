@@ -9,6 +9,7 @@
 package cn.ponfee.disjob.supervisor.application.value;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
@@ -57,7 +58,7 @@ public class DisjobGroup {
             ownUser,
             parse(schedGroup.getDevUsers(), ownUser),
             parse(schedGroup.getAlarmUsers(), ownUser),
-            schedGroup.getWorkerContextPath(),
+            Strings.trimUrlPath(schedGroup.getWorkerContextPath()),
             schedGroup.getWebHook()
         );
     }

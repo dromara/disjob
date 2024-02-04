@@ -151,9 +151,10 @@ public class Supervisor extends Server {
         }
 
         /**
-         * Worker signature
+         * Get worker context-path
          *
-         * @return signature string
+         * @param group the group
+         * @return worker context-path
          */
         public abstract String getWorkerContextPath(String group);
 

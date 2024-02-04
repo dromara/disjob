@@ -80,8 +80,8 @@ public class RedisTaskReceiver extends TaskReceiver {
                              TimingWheel<ExecuteTaskParam> timingWheel,
                              RedisTemplate<String, String> redisTemplate) {
         super(currentWorker, timingWheel);
-        SingletonClassConstraint.constrain(this);
 
+        SingletonClassConstraint.constrain(this);
         this.redisTemplate = redisTemplate;
         this.gropedWorker = new GroupedWorker(currentWorker);
         this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000);
@@ -118,7 +118,7 @@ public class RedisTaskReceiver extends TaskReceiver {
                 return true;
             }
             for (byte[] bytes : received) {
-                RedisTaskReceiver.this.receive(ExecuteTaskParam.deserialize(bytes));
+                RedisTaskReceiver.super.receive(ExecuteTaskParam.deserialize(bytes));
             }
             return received.size() < JobConstants.PROCESS_BATCH_SIZE;
         }

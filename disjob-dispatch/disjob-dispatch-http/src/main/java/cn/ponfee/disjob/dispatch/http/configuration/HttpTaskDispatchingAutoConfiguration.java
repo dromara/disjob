@@ -24,7 +24,6 @@ import cn.ponfee.disjob.registry.SupervisorRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
@@ -37,30 +36,28 @@ import org.springframework.web.client.RestTemplate;
 public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAutoConfiguration {
 
     /**
+     * Configuration http task receiver.
+     */
+    @ConditionalOnBean(Worker.Current.class)
+    @Bean
+    public TaskReceiver taskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+        return new HttpTaskReceiver(currentWorker, timingWheel);
+    }
+
+    /**
      * Configuration http task dispatcher.
      */
     @ConditionalOnClass(RestTemplate.class)
     @ConditionalOnBean(Supervisor.Current.class)
-    @ConditionalOnMissingBean
     @Bean
-    public TaskDispatcher taskDispatcher(HttpProperties httpProperties,
-                                         RetryProperties retryProperties,
+    public TaskDispatcher taskDispatcher(HttpProperties http,
+                                         RetryProperties retry,
                                          SupervisorRegistry discoveryWorker,
-                                         @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
-                                         @Nullable ObjectMapper objectMapper) {
-        httpProperties.check();
-        RestTemplate restTemplate = RestTemplateUtils.create(httpProperties.getConnectTimeout(), httpProperties.getReadTimeout(), objectMapper);
-        return new HttpTaskDispatcher(discoveryWorker, retryProperties, timingWheel, restTemplate);
-    }
-
-    /**
-     * Configuration http task receiver.
-     */
-    @ConditionalOnBean(Worker.Current.class)
-    @ConditionalOnMissingBean
-    @Bean
-    public TaskReceiver taskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
-        return new HttpTaskReceiver(currentWorker, timingWheel);
+                                         @Nullable ObjectMapper objectMapper,
+                                         @Nullable TaskReceiver taskReceiver) {
+        http.check();
+        RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
+        return new HttpTaskDispatcher(discoveryWorker, retry, restTemplate, taskReceiver);
     }
 
 }

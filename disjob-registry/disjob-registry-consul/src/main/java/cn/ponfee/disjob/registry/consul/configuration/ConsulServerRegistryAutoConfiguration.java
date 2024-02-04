@@ -16,7 +16,6 @@ import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfigurati
 import cn.ponfee.disjob.registry.consul.ConsulSupervisorRegistry;
 import cn.ponfee.disjob.registry.consul.ConsulWorkerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -32,7 +31,6 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
      * Configuration consul supervisor registry.
      */
     @ConditionalOnBean(Supervisor.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(ConsulRegistryProperties config) {
         return new ConsulSupervisorRegistry(config);
@@ -42,7 +40,6 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
      * Configuration consul worker registry.
      */
     @ConditionalOnBean(Worker.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(ConsulRegistryProperties config) {
         return new ConsulWorkerRegistry(config);

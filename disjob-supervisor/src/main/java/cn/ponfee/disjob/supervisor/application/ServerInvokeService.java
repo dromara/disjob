@@ -24,8 +24,8 @@ import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.registry.rpc.ServerRestProxy;
-import cn.ponfee.disjob.registry.rpc.ServerRestProxy.DesignatedServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
@@ -36,6 +36,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -43,6 +44,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -56,23 +58,30 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private final SupervisorRegistry supervisorRegistry;
     private final Supervisor.Current currentSupervisor;
-    private final DesignatedServerInvoker<SupervisorRpcService> supervisorRpcServiceClient;
-    private final DesignatedServerInvoker<WorkerRpcService> workerRpcServiceClient;
+    private final DestinationServerInvoker<SupervisorRpcService, Supervisor> supervisorRpcServiceClient;
+    private final DestinationServerInvoker<WorkerRpcService, Worker> workerRpcServiceClient;
 
-    public ServerInvokeService(SupervisorRegistry supervisorRegistry,
+    public ServerInvokeService(@Value("${server.servlet.context-path:/}") String contextPath,
+                               SupervisorRegistry supervisorRegistry,
                                Supervisor.Current currentSupervisor,
                                SupervisorRpcService supervisorProvider,
                                HttpProperties http,
                                @Nullable WorkerRpcService workerProvider,
                                @Nullable ObjectMapper objectMapper) {
         http.check();
+        Function<Supervisor, String> supervisorContextPath = supervisor -> contextPath;
+        Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
         RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         RetryProperties retry = RetryProperties.of(0, 0);
 
         this.supervisorRegistry = supervisorRegistry;
         this.currentSupervisor = currentSupervisor;
-        this.supervisorRpcServiceClient = ServerRestProxy.create(SupervisorRpcService.class, supervisorProvider, currentSupervisor, restTemplate, retry);
-        this.workerRpcServiceClient = ServerRestProxy.create(WorkerRpcService.class, workerProvider, Worker.current(), restTemplate, retry);
+        this.supervisorRpcServiceClient = DestinationServerRestProxy.create(
+            SupervisorRpcService.class, supervisorProvider, currentSupervisor, supervisorContextPath, restTemplate, retry
+        );
+        this.workerRpcServiceClient = DestinationServerRestProxy.create(
+            WorkerRpcService.class, workerProvider, Worker.current(), workerContextPath, restTemplate, retry
+        );
     }
 
     // ------------------------------------------------------------public methods

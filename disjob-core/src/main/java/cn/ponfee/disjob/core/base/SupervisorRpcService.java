@@ -31,15 +31,15 @@ import java.util.List;
 @RequestMapping(SupervisorRpcService.PREFIX_PATH)
 public interface SupervisorRpcService {
 
-    String PREFIX_PATH = "supervisor/rpc/";
+    String PREFIX_PATH = "/supervisor/rpc";
 
-    @GetMapping("task/get")
+    @GetMapping("/task/get")
     SchedTask getTask(long taskId) throws Exception;
 
-    @PostMapping("task/start")
+    @PostMapping("/task/start")
     boolean startTask(StartTaskParam param) throws Exception;
 
-    @PostMapping("task/worker/update")
+    @PostMapping("/task/worker/update")
     void updateTaskWorker(List<UpdateTaskWorkerParam> list) throws Exception;
 
     /**
@@ -50,27 +50,27 @@ public interface SupervisorRpcService {
      * @return list of predecessor nodes
      * @throws Exception if occur error
      */
-    @GetMapping("workflow/predecessor/nodes")
+    @GetMapping("/workflow/predecessor/nodes")
     List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) throws Exception;
 
-    @PostMapping("task/terminate")
+    @PostMapping("/task/terminate")
     boolean terminateTask(TerminateTaskParam param) throws Exception;
 
-    @PostMapping("instance/pause")
+    @PostMapping("/instance/pause")
     boolean pauseInstance(long instanceId) throws Exception;
 
-    @PostMapping("instance/cancel")
+    @PostMapping("/instance/cancel")
     boolean cancelInstance(long instanceId, Operation operation) throws Exception;
 
-    @GetMapping("metrics")
+    @GetMapping("/metrics")
     SupervisorMetrics metrics();
 
-    @PostMapping("publish")
+    @PostMapping("/publish")
     void publish(EventParam param);
 
     // ---------------------------------------------------------------------------savepoint
 
-    @PostMapping("task/savepoint")
+    @PostMapping("/task/savepoint")
     void savepoint(long taskId, String executeSnapshot) throws Exception;
 
 }

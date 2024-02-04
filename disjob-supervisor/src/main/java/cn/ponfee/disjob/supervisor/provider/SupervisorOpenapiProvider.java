@@ -37,7 +37,7 @@ import static cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer.requestU
  */
 @Tag(name = "Supervisor openapi provider")
 @RestController
-@RequestMapping("supervisor/openapi")
+@RequestMapping("/supervisor/openapi")
 @SupervisorAuthentication(SupervisorAuthentication.Subject.USER)
 public class SupervisorOpenapiProvider extends BaseController {
 
@@ -52,14 +52,14 @@ public class SupervisorOpenapiProvider extends BaseController {
 
     // ------------------------------------------------------------------job
 
-    @PostMapping("job/add")
+    @PostMapping("/job/add")
     public Result<Long> addJob(@RequestBody SchedJobAddRequest req) throws JobException {
         AuthorizeGroupService.authorizeGroup(requestUser(), requestGroup(), req.getGroup());
 
         return Result.success(openapiService.addJob(req));
     }
 
-    @PutMapping("job/update")
+    @PutMapping("/job/update")
     public Result<Void> updateJob(@RequestBody SchedJobUpdateRequest req) throws JobException {
         AuthorizeGroupService.authorizeGroup(requestUser(), requestGroup(), req.getGroup());
 
@@ -67,7 +67,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @DeleteMapping("job/delete")
+    @DeleteMapping("/job/delete")
     public Result<Void> deleteJob(@RequestParam("jobId") long jobId) {
         authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
 
@@ -75,7 +75,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @PostMapping("job/state/change")
+    @PostMapping("/job/state/change")
     public Result<Boolean> changeJobState(@RequestParam("jobId") long jobId,
                                           @RequestParam("jobState") int jobState) {
         authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
@@ -83,7 +83,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success(openapiService.changeJobState(jobId, jobState));
     }
 
-    @PostMapping("job/trigger")
+    @PostMapping("/job/trigger")
     public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
         authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
 
@@ -91,7 +91,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @GetMapping("job/get")
+    @GetMapping("/job/get")
     public Result<SchedJobResponse> getJob(@RequestParam("jobId") long jobId) {
         authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
 
@@ -106,7 +106,7 @@ public class SupervisorOpenapiProvider extends BaseController {
      * @see org.springframework.http.MediaType#APPLICATION_FORM_URLENCODED
      * @see org.springframework.http.MediaType#MULTIPART_FORM_DATA
      */
-    @GetMapping("job/page")
+    @GetMapping("/job/page")
     public Result<PageResponse<SchedJobResponse>> queryJobForPage(SchedJobPageRequest pageRequest) {
         pageRequest.authorizeAndTruncateGroup(requestUser());
 
@@ -115,7 +115,7 @@ public class SupervisorOpenapiProvider extends BaseController {
 
     // ------------------------------------------------------------------ sched instance
 
-    @PostMapping("instance/pause")
+    @PostMapping("/instance/pause")
     public Result<Void> pauseInstance(@RequestParam("instanceId") long instanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
@@ -123,7 +123,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @PostMapping("instance/cancel")
+    @PostMapping("/instance/cancel")
     public Result<Void> cancelInstance(@RequestParam("instanceId") long instanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
@@ -131,7 +131,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @PostMapping("instance/resume")
+    @PostMapping("/instance/resume")
     public Result<Void> resumeInstance(@RequestParam("instanceId") long instanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
@@ -139,7 +139,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @DeleteMapping("instance/delete")
+    @DeleteMapping("/instance/delete")
     public Result<Void> deleteInstance(@RequestParam("instanceId") long instanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
@@ -147,7 +147,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @PostMapping("instance/state/change")
+    @PostMapping("/instance/state/change")
     public Result<Void> changeInstanceState(@RequestParam("instanceId") long instanceId,
                                             @RequestParam("targetExecuteState") int targetExecuteState) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
@@ -156,7 +156,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success();
     }
 
-    @GetMapping("instance/get")
+    @GetMapping("/instance/get")
     public Result<SchedInstanceResponse> getInstance(@RequestParam(value = "instanceId") long instanceId,
                                                      @RequestParam(value = "withTasks", defaultValue = "false") boolean withTasks) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
@@ -164,7 +164,7 @@ public class SupervisorOpenapiProvider extends BaseController {
         return Result.success(openapiService.getInstance(instanceId, withTasks));
     }
 
-    @GetMapping("instance/tasks")
+    @GetMapping("/instance/tasks")
     public Result<List<SchedTaskResponse>> getInstanceTasks(@RequestParam("instanceId") long instanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
@@ -179,14 +179,14 @@ public class SupervisorOpenapiProvider extends BaseController {
      * @see org.springframework.http.MediaType#APPLICATION_FORM_URLENCODED
      * @see org.springframework.http.MediaType#MULTIPART_FORM_DATA
      */
-    @GetMapping("instance/page")
+    @GetMapping("/instance/page")
     public Result<PageResponse<SchedInstanceResponse>> queryInstanceForPage(SchedInstancePageRequest pageRequest) {
         pageRequest.authorize(requestUser(), authorizeGroupService);
 
         return Result.success(openapiService.queryInstanceForPage(pageRequest));
     }
 
-    @GetMapping("instance/children")
+    @GetMapping("/instance/children")
     public Result<List<SchedInstanceResponse>> listInstanceChildren(@RequestParam("pnstanceId") long pnstanceId) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), pnstanceId);
 

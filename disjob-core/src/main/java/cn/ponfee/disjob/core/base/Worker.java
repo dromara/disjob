@@ -216,6 +216,13 @@ public class Worker extends Server {
         }
 
         /**
+         * Get supervisor context-path
+         *
+         * @return supervisor context-path
+         */
+        public abstract String getSupervisorContextPath();
+
+        /**
          * 返回http headers，用于Worker远程调用Supervisor RPC接口的授权信息
          *
          * @return map of authentication http headers
@@ -250,7 +257,8 @@ public class Worker extends Server {
         // use synchronized modify for help multiple thread read reference(write to main memory)
         private static synchronized Current create(final String group, final String workerId,
                                                    final String host, final int port,
-                                                   final String wToken, final String sToken) {
+                                                   final String wToken, final String sToken,
+                                                   final String supervisorContextPath) {
             if (instance != null) {
                 throw new Error("Current worker already set.");
             }
@@ -260,6 +268,11 @@ public class Worker extends Server {
 
                 private final String workerToken     = StringUtils.trim(wToken);
                 private final String supervisorToken = StringUtils.trim(sToken);
+
+                @Override
+                public String getSupervisorContextPath() {
+                    return supervisorContextPath;
+                }
 
                 @Override
                 public Map<String, String> createWorkerAuthenticationHeaders() {

@@ -29,18 +29,18 @@ import java.util.List;
 @RequestMapping(WorkerRpcService.PREFIX_PATH)
 public interface WorkerRpcService {
 
-    String PREFIX_PATH = "worker/rpc/";
+    String PREFIX_PATH = "/worker/rpc";
 
-    @PostMapping("job/verify")
+    @PostMapping("/job/verify")
     void verify(JobHandlerParam param) throws JobException;
 
-    @PostMapping("job/split")
+    @PostMapping("/job/split")
     List<SplitTask> split(JobHandlerParam param) throws JobException;
 
-    @GetMapping("metrics")
+    @GetMapping("/metrics")
     WorkerMetrics metrics(GetMetricsParam param);
 
-    @PostMapping("worker/configure")
+    @PostMapping("/worker/configure")
     void configureWorker(ConfigureWorkerParam param);
 
 }

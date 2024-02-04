@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static cn.ponfee.disjob.core.base.WorkerRpcService.PREFIX_PATH;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 /**
@@ -46,8 +47,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 public class VertxWebServer extends AbstractVerticle {
 
     private static final Logger LOG = LoggerFactory.getLogger(VertxWebServer.class);
-
-    private static final String PATH_PREFIX = "/" + WorkerRpcService.PREFIX_PATH;
 
     private final int port;
     private final TaskReceiver httpTaskReceiver;
@@ -96,30 +95,30 @@ public class VertxWebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         //String[] args = ctx.body().asPojo(String[].class);
-        router.post(PATH_PREFIX + "job/verify").handler(ctx -> handle(() -> {
+        router.post(PREFIX_PATH + "/job/verify").handler(ctx -> handle(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
             workerRpcService.verify(param);
         }, ctx, BAD_REQUEST));
 
-        router.post(PATH_PREFIX + "job/split").handler(ctx -> handle(() -> {
+        router.post(PREFIX_PATH + "/job/split").handler(ctx -> handle(() -> {
             JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
             JobHandlerParser.parse(param, "jobHandler");
             return workerRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.get(PATH_PREFIX + "metrics").handler(ctx -> handle(() -> {
+        router.get(PREFIX_PATH + "/metrics").handler(ctx -> handle(() -> {
             String json = Collects.get(ctx.queryParam(LocalizedMethodArgumentUtils.getQueryParamName(0)), 0);
             GetMetricsParam param = Jsons.fromJson(json, GetMetricsParam.class);
             return workerRpcService.metrics(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.post(PATH_PREFIX + "worker/configure").handler(ctx -> handle(() -> {
+        router.post(PREFIX_PATH + "/worker/configure").handler(ctx -> handle(() -> {
             ConfigureWorkerParam param = parseArg(ctx, ConfigureWorkerParam.class);
             workerRpcService.configureWorker(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {
-            router.post(PATH_PREFIX + "task/receive").handler(ctx -> handle(() -> {
+            router.post(PREFIX_PATH + "/task/receive").handler(ctx -> handle(() -> {
                 ExecuteTaskParam param = parseArg(ctx, ExecuteTaskParam.class);
                 JobHandlerParser.parse(param, "jobHandler");
                 return httpTaskReceiver.receive(param);

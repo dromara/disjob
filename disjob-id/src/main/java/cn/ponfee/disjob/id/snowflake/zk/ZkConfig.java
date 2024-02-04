@@ -20,8 +20,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  */
 @Getter
 @Setter
-public class ZkConfig {
-    private static final long serialVersionUID = 1L;
+public class ZkConfig implements java.io.Serializable {
+    private static final long serialVersionUID = -2679723559759163644L;
 
     private String connectString = "localhost:2181";
     private String username;

@@ -58,6 +58,14 @@ public abstract class Server implements Serializable {
             && this.port == other.port;
     }
 
+    public final String buildHttpUrlPrefix() {
+        return String.format("http://%s:%d", host, port);
+    }
+
+    public final String buildHttpsUrlPrefix() {
+        return String.format("https://%s:%d", host, port);
+    }
+
     /**
      * Extends {@code Object#hashCode()}
      *

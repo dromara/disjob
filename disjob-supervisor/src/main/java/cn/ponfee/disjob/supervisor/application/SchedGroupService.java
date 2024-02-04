@@ -153,12 +153,20 @@ public class SchedGroupService extends SingletonClassConstraint {
         return groups == null ? Collections.emptySet() : groups;
     }
 
+    public static DisjobGroup getGroup(String group) {
+        DisjobGroup disjobGroup = groupMap.get(group);
+        if (disjobGroup == null) {
+            throw new GroupNotFoundException("Not found worker group: " + group);
+        }
+        return disjobGroup;
+    }
+
     public static boolean isDeveloper(String group, String user) {
-        return getDisjobGroup(group).isDeveloper(user);
+        return getGroup(group).isDeveloper(user);
     }
 
     public static String createSupervisorAuthenticationToken(String group) {
-        String supervisorToken = getDisjobGroup(group).getSupervisorToken();
+        String supervisorToken = getGroup(group).getSupervisorToken();
         return Tokens.createAuthentication(supervisorToken, TokenType.supervisor, group);
     }
 
@@ -167,17 +175,17 @@ public class SchedGroupService extends SingletonClassConstraint {
     }
 
     public static boolean verifyWorkerAuthenticationToken(String tokenSecret, String group) {
-        String workerToken = getDisjobGroup(group).getWorkerToken();
+        String workerToken = getGroup(group).getWorkerToken();
         return Tokens.verifyAuthentication(tokenSecret, workerToken, TokenType.worker, group);
     }
 
     public static boolean verifyUserAuthenticationToken(String tokenSecret, String group) {
-        String userToken = getDisjobGroup(group).getUserToken();
+        String userToken = getGroup(group).getUserToken();
         return Tokens.verifyAuthentication(tokenSecret, userToken, TokenType.user, group);
     }
 
     public static boolean verifyWorkerSignatureToken(String tokenSecret, String group) {
-        String workerToken = getDisjobGroup(group).getWorkerToken();
+        String workerToken = getGroup(group).getWorkerToken();
         return Tokens.verifySignature(tokenSecret, workerToken, TokenType.worker, group);
     }
 
@@ -206,14 +214,6 @@ public class SchedGroupService extends SingletonClassConstraint {
     private void refresh0() {
         refresh();
         serverInvokeService.publishOtherSupervisors(new EventParam(EventParam.Type.REFRESH_GROUP));
-    }
-
-    private static DisjobGroup getDisjobGroup(String group) {
-        DisjobGroup disjobGroup = groupMap.get(group);
-        if (disjobGroup == null) {
-            throw new GroupNotFoundException("Not found worker group: " + group);
-        }
-        return disjobGroup;
     }
 
     private static Map<String, Set<String>> toUserMap(List<SchedGroup> list) {

@@ -25,18 +25,18 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Server rest template(Method pattern)
+ * Destination server rest template(Method pattern)
  *
  * @author Ponfee
  */
-final class ServerRestTemplate {
-    private static final Logger LOG = LoggerFactory.getLogger(ServerRestTemplate.class);
+final class DestinationServerRestTemplate {
+    private static final Logger LOG = LoggerFactory.getLogger(DestinationServerRestTemplate.class);
 
     private final RestTemplate restTemplate;
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    ServerRestTemplate(RestTemplate restTemplate, RetryProperties retry) {
+    DestinationServerRestTemplate(RestTemplate restTemplate, RetryProperties retry) {
         retry.check();
         this.restTemplate = Objects.requireNonNull(restTemplate);
         this.retryMaxCount = retry.getMaxCount();
@@ -63,7 +63,7 @@ final class ServerRestTemplate {
             authenticationHeaders = currentWorker.createWorkerAuthenticationHeaders();
         }
 
-        String url = String.format("http://%s:%d/%s", destinationServer.getHost(), destinationServer.getPort(), path);
+        String url = destinationServer.buildHttpUrlPrefix() + path;
         Throwable ex = null;
         for (int i = 0; i <= retryMaxCount; i++) {
             try {
@@ -71,7 +71,7 @@ final class ServerRestTemplate {
             } catch (Throwable e) {
                 ex = e;
                 LOG.error("Invoke server rpc failed: {}, {}, {}", url, Jsons.toJson(arguments), e.getMessage());
-                if (DiscoveryRestTemplate.isNotRetry(e)) {
+                if (DiscoveryServerRestTemplate.isNotRetry(e)) {
                     break;
                 }
                 if (i < retryMaxCount) {

@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
  * @since 2.2.0
  */
 public class CustomLocalDateTimeDeserializer extends JSR310DateTimeDeserializerBase<LocalDateTime> {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1980033817479428177L;
 
     public static final CustomLocalDateTimeDeserializer INSTANCE = new CustomLocalDateTimeDeserializer();
 

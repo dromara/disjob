@@ -58,14 +58,14 @@ public class OpenapiService {
 
     // ------------------------------------------------------------------ sched job
 
-    public Long addJob(SchedJobAddRequest req) {
+    public Long addJob(SchedJobAddRequest req) throws JobException {
         String user = req.getCreatedBy(), group = req.getGroup();
         Set<String> groups = SchedGroupService.myGroups(user);
         Assert.isTrue(groups.contains(group), "User '" + user + "' not has group '" + group + "' permission.");
         return jobManager.addJob(req.tosSchedJob());
     }
 
-    public void updateJob(SchedJobUpdateRequest req) {
+    public void updateJob(SchedJobUpdateRequest req) throws JobException {
         LOG.info("Do updating sched job {}", req.getJobId());
         jobManager.updateJob(req.tosSchedJob());
     }

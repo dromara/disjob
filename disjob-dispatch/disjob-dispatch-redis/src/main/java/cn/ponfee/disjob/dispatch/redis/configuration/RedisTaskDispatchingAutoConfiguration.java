@@ -20,7 +20,6 @@ import cn.ponfee.disjob.dispatch.redis.RedisTaskDispatcher;
 import cn.ponfee.disjob.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.Nullable;
@@ -33,28 +32,26 @@ import org.springframework.lang.Nullable;
 public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAutoConfiguration {
 
     /**
-     * Configuration redis task dispatcher.
-     */
-    @ConditionalOnBean(Supervisor.Current.class)
-    @ConditionalOnMissingBean
-    @Bean
-    public TaskDispatcher taskDispatcher(SupervisorRegistry discoveryWorker,
-                                         RetryProperties retryProperties,
-                                         @Nullable TimingWheel<ExecuteTaskParam> timingWheel,
-                                         StringRedisTemplate stringRedisTemplate) {
-        return new RedisTaskDispatcher(discoveryWorker, retryProperties, timingWheel, stringRedisTemplate);
-    }
-
-    /**
      * Configuration redis task receiver.
      */
     @ConditionalOnBean(Worker.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public TaskReceiver taskReceiver(Worker.Current currentWorker,
                                      TimingWheel<ExecuteTaskParam> timingWheel,
                                      StringRedisTemplate stringRedisTemplate) {
         return new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
+    }
+
+    /**
+     * Configuration redis task dispatcher.
+     */
+    @ConditionalOnBean(Supervisor.Current.class)
+    @Bean
+    public TaskDispatcher taskDispatcher(SupervisorRegistry discoveryWorker,
+                                         RetryProperties retryProperties,
+                                         StringRedisTemplate stringRedisTemplate,
+                                         @Nullable TaskReceiver taskReceiver) {
+        return new RedisTaskDispatcher(discoveryWorker, retryProperties, stringRedisTemplate, taskReceiver);
     }
 
 }

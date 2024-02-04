@@ -35,9 +35,10 @@ public abstract class TaskReceiver implements Startable {
     /**
      * Receives the supervisor dispatched tasks.
      *
-     * @param param the execution task param
+     * @param param the task param
+     * @return {@code true} if received task successfully
      */
-    public boolean receive(ExecuteTaskParam param) {
+    public final boolean receive(ExecuteTaskParam param) {
         if (param == null) {
             log.error("Received task cannot be null.");
             return false;

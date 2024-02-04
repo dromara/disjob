@@ -26,7 +26,7 @@ import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy.GroupedServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
@@ -92,7 +92,7 @@ public abstract class AbstractJobManager {
     // ------------------------------------------------------------------database operation within spring transactional
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public Long addJob(SchedJob job) {
+    public Long addJob(SchedJob job) throws JobException {
         if (jobMapper.exists(job.getGroup(), job.getJobName())) {
             throw new KeyExistsException("[" + job.getGroup() + "] already exists job name: " + job.getJobName());
         }
@@ -108,7 +108,7 @@ public abstract class AbstractJobManager {
     }
 
     @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
-    public void updateJob(SchedJob job) {
+    public void updateJob(SchedJob job) throws JobException {
         job.verifyBeforeUpdate();
         job.checkAndDefaultSetting();
         if (StringUtils.isEmpty(job.getJobHandler())) {
@@ -266,13 +266,13 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private void verifyJob(SchedJob job) {
+    private void verifyJob(SchedJob job) throws JobException {
         JobHandlerParam param = JobHandlerParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         workerRpcServiceClient.invokeWithoutResult(job.getGroup(), client -> client.verify(param));
     }
 
-    private List<SplitTask> splitJob(JobHandlerParam param) {
+    private List<SplitTask> splitJob(JobHandlerParam param) throws JobException {
         SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
         return workerRpcServiceClient.invoke(param.getGroup(), client -> client.split(param));
     }

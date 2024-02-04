@@ -17,9 +17,10 @@ import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy;
-import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy.GroupedServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
+import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
+import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
@@ -43,6 +44,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.annotation.*;
+import java.util.function.UnaryOperator;
 
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TEMPLATE_SPRING_BEAN_NAME;
 
@@ -92,7 +94,8 @@ public @interface EnableSupervisor {
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         public Supervisor.Current currentSupervisor(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                                     @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
-            Object[] args = {JobUtils.getLocalHost(boundHost), port};
+            UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
+            Object[] args = {JobUtils.getLocalHost(boundHost), port, workerCtxPath};
             try {
                 // inject current supervisor: Supervisor.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Supervisor.Current.class.getName()), "create", args);
@@ -114,7 +117,7 @@ public @interface EnableSupervisor {
             http.check();
             retry.check();
             RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
-            return DiscoveryRestProxy.create(
+            return DiscoveryServerRestProxy.create(
                 WorkerRpcService.class,
                 localServiceProvider,
                 group -> Worker.matchesGroup(currentWorker, group),
@@ -124,6 +127,7 @@ public @interface EnableSupervisor {
             );
         }
 
+        // 如果注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`LocalizedMethodArgumentConfigurer`的实例才创建
         @ConditionalOnMissingBean
         @Bean
         public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {

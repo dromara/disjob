@@ -9,7 +9,6 @@
 package cn.ponfee.disjob.dispatch;
 
 import cn.ponfee.disjob.common.base.Startable;
-import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AsyncDelayedExecutor;
 import cn.ponfee.disjob.common.concurrent.DelayedData;
@@ -38,7 +37,7 @@ public abstract class TaskDispatcher implements Startable {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Discovery<Worker> discoveryWorker;
-    private final TimingWheel<ExecuteTaskParam> timingWheel;
+    private final TaskReceiver taskReceiver;
 
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
@@ -46,14 +45,14 @@ public abstract class TaskDispatcher implements Startable {
 
     protected TaskDispatcher(Discovery<Worker> discoveryWorker,
                              RetryProperties retryProperties,
-                             @Nullable TimingWheel<ExecuteTaskParam> timingWheel) {
+                             @Nullable TaskReceiver taskReceiver) {
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         this.discoveryWorker = discoveryWorker;
-        this.timingWheel = timingWheel;
+        this.taskReceiver = taskReceiver;
 
         this.retryMaxCount = retryProperties.getMaxCount();
         this.retryBackoffPeriod = retryProperties.getBackoffPeriod();
-        this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(5, e -> doDispatch(Collections.singletonList(e)));
+        this.asyncDelayedExecutor = new AsyncDelayedExecutor<>(5, e -> dispatch0(Collections.singletonList(e)));
     }
 
     /**
@@ -63,7 +62,7 @@ public abstract class TaskDispatcher implements Startable {
      * @return {@code true} if dispatched successful
      * @throws Exception if dispatch occur error
      */
-    protected abstract boolean dispatch(ExecuteTaskParam task) throws Exception;
+    protected abstract boolean doDispatch(ExecuteTaskParam task) throws Exception;
 
     /**
      * Dispatch the task to specified worker, which the worker is executing this task
@@ -84,7 +83,7 @@ public abstract class TaskDispatcher implements Startable {
             })
             .map(e -> new DispatchTaskParam(e, null))
             .collect(Collectors.toList());
-        return doDispatch(params);
+        return dispatch0(params);
     }
 
     /**
@@ -108,7 +107,7 @@ public abstract class TaskDispatcher implements Startable {
             })
             .map(e -> new DispatchTaskParam(e, group))
             .collect(Collectors.toList());
-        return doDispatch(params);
+        return dispatch0(params);
     }
 
     /**
@@ -129,7 +128,7 @@ public abstract class TaskDispatcher implements Startable {
 
     // ------------------------------------------------------------private methods
 
-    private boolean doDispatch(List<DispatchTaskParam> params) {
+    private boolean dispatch0(List<DispatchTaskParam> params) {
         params.stream()
             .filter(e -> e.executeTaskParam().operation().isTrigger())
             .filter(e -> e.executeTaskParam().getRouteStrategy() != RouteStrategy.BROADCAST)
@@ -149,7 +148,7 @@ public abstract class TaskDispatcher implements Startable {
             }
 
             try {
-                doDispatch(task);
+                dispatch0(task);
                 log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
             } catch (Throwable t) {
                 // dispatch failed, delay retry
@@ -174,15 +173,15 @@ public abstract class TaskDispatcher implements Startable {
         ExecutionRouterRegistrar.route(first.executeTaskParam().getRouteStrategy(), tasks, workers);
     }
 
-    private void doDispatch(ExecuteTaskParam task) throws Exception {
+    private void dispatch0(ExecuteTaskParam task) throws Exception {
         boolean result;
-        if (timingWheel != null && task.getWorker().equals(Worker.current())) {
-            // if the Supervisor server also is a Worker: dispatch to local worker
+        if (taskReceiver != null && task.getWorker().equals(Worker.current())) {
+            // if current Supervisor also is a Worker role, then dispatch to this local worker
             log.info("Dispatching task to local worker {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
-            result = timingWheel.offer(task);
+            result = taskReceiver.receive(task);
         } else {
             // dispatch to remote worker
-            result = dispatch(task);
+            result = doDispatch(task);
         }
         if (!result) {
             throw new TaskDispatchException("Dispatch task failed: " + task);

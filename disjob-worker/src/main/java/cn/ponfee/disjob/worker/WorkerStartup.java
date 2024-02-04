@@ -19,7 +19,7 @@ import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
-import cn.ponfee.disjob.registry.rpc.DiscoveryRestProxy;
+import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
@@ -197,7 +197,7 @@ public class WorkerStartup implements Startable {
             return ProxyUtils.create(ih, SupervisorRpcService.class);
         } else {
             RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
-            return DiscoveryRestProxy.create(SupervisorRpcService.class, discoverySupervisor, restTemplate, retry);
+            return DiscoveryServerRestProxy.create(SupervisorRpcService.class, discoverySupervisor, restTemplate, retry);
         }
     }
 

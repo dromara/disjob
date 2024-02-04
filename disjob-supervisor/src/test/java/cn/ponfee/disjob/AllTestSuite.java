@@ -17,7 +17,6 @@ package cn.ponfee.disjob;
 /*
 @org.junit.runner.RunWith(org.junit.runners.Suite.class)
 @org.junit.runners.Suite.SuiteClasses({
-    cn.ponfee.disjob.supervisor.base.DiscoveryRestProxyTest.class,
     cn.ponfee.disjob.supervisor.util.CommonTest.class,
     cn.ponfee.disjob.supervisor.transaction.JobTxManagerTest.class
 })

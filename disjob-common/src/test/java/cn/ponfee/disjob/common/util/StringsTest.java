@@ -42,4 +42,14 @@ public class StringsTest {
         Assertions.assertEquals("%a", Strings.concatSqlLike("a$"));
     }
 
+    @Test
+    public void testTrimUrlPath() {
+        Assertions.assertEquals("/test", Strings.trimUrlPath("test///"));
+        Assertions.assertEquals("/test/abc", Strings.trimUrlPath("test/abc///"));
+        Assertions.assertEquals("/test/abc", Strings.trimUrlPath(" /test/abc/// "));
+        Assertions.assertEquals("/", Strings.trimUrlPath(" / // /// "));
+        Assertions.assertEquals("/test/abc", Strings.trimUrlPath(" /test/abc/ / / "));
+        Assertions.assertEquals("  abc/a / b/ c", "  abc/a / b/ c / /// /".replaceAll("[/\\s]+$", ""));
+    }
+
 }

@@ -16,7 +16,6 @@ import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfigurati
 import cn.ponfee.disjob.registry.etcd.EtcdSupervisorRegistry;
 import cn.ponfee.disjob.registry.etcd.EtcdWorkerRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -32,7 +31,6 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
      * Configuration etcd supervisor registry.
      */
     @ConditionalOnBean(Supervisor.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public SupervisorRegistry supervisorRegistry(EtcdRegistryProperties config) {
         return new EtcdSupervisorRegistry(config);
@@ -42,7 +40,6 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
      * Configuration etcd worker registry.
      */
     @ConditionalOnBean(Worker.Current.class)
-    @ConditionalOnMissingBean
     @Bean
     public WorkerRegistry workerRegistry(EtcdRegistryProperties config) {
         return new EtcdWorkerRegistry(config);
