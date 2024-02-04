@@ -63,7 +63,6 @@ public @interface EnableWorker {
 
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
-        @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         public TaskTimingWheel timingWheel(WorkerProperties config) {
             return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
@@ -72,7 +71,6 @@ public @interface EnableWorker {
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
         @DependsOn(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
-        @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         public Worker.Current currentWorker(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                             @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
@@ -93,7 +91,6 @@ public @interface EnableWorker {
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        @ConditionalOnMissingBean
         @Bean
         public WorkerRpcService workerRpcService(Worker.Current currentWork,
                                                  WorkerRegistry registry) {

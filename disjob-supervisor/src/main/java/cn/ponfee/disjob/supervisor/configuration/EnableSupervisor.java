@@ -90,7 +90,6 @@ public @interface EnableSupervisor {
 
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Order(Ordered.HIGHEST_PRECEDENCE)
-        @ConditionalOnMissingBean
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         public Supervisor.Current currentSupervisor(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                                     @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
@@ -106,7 +105,6 @@ public @interface EnableSupervisor {
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @ConditionalOnMissingBean
         @Bean
         public GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient(HttpProperties http,
                                                                              RetryProperties retry,
@@ -127,17 +125,16 @@ public @interface EnableSupervisor {
             );
         }
 
+        @Bean
+        public AuthenticationConfigurer authenticationConfigurer() {
+            return new AuthenticationConfigurer();
+        }
+
         // 如果注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`LocalizedMethodArgumentConfigurer`的实例才创建
         @ConditionalOnMissingBean
         @Bean
         public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {
             return new LocalizedMethodArgumentConfigurer();
-        }
-
-        @ConditionalOnMissingBean
-        @Bean
-        public AuthenticationConfigurer authenticationConfigurer() {
-            return new AuthenticationConfigurer();
         }
 
         @ConditionalOnMissingBean
@@ -178,7 +175,6 @@ public @interface EnableSupervisor {
     class EnableSupervisorAdapter {
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @ConditionalOnMissingBean
         @Bean
         public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
                                                          DistributedJobQuerier jobQuerier) {

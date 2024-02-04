@@ -86,7 +86,6 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
 
     // -------------------------------------------------------------------------destroy datasource
 
-    @ConditionalOnMissingBean
     @Bean
     private DatabaseRegistryDataSourceDestroy databaseRegistryDataSourceDestroy(@Qualifier(SPRING_BEAN_NAME_JTW) JdbcTemplateWrapper wrapper) {
         return new DatabaseRegistryDataSourceDestroy(wrapper);
