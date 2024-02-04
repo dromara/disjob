@@ -78,9 +78,12 @@ public class WorkerFramelessMain {
 
         String group = props.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");
-        String boundHost = JobUtils.getLocalHost(props.getString(DISJOB_BOUND_SERVER_HOST));
+        String host = JobUtils.getLocalHost(props.getString(DISJOB_BOUND_SERVER_HOST));
+        String workerToken = workerProperties.getWorkerToken();
+        String supervisorToken = workerProperties.getSupervisorToken();
+        String supervisorContextPath = workerProperties.getSupervisorContextPath();
 
-        Object[] array = {group, UuidUtils.uuid32(), boundHost, port, workerProperties.getWorkerToken(), workerProperties.getSupervisorToken()};
+        Object[] array = {group, UuidUtils.uuid32(), host, port, workerToken, supervisorToken, supervisorContextPath};
         Worker.Current currentWorker = ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", array);
 
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(
