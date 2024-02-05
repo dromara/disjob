@@ -95,7 +95,6 @@ public class WorkerFramelessMain {
         );
 
 
-
         // --------------------- create registry(select redis or consul) --------------------- //
         WorkerRegistry workerRegistry;
         {
@@ -108,30 +107,34 @@ public class WorkerFramelessMain {
         // --------------------- create registry(select redis or consul) --------------------- //
 
 
-
-
-        // --------------------- create dispatch(select redis or http) --------------------- //
-        TaskReceiver taskReceiver;
-        VertxWebServer vertxWebServer;
-        WorkerRpcService workerRpcProvider = new WorkerRpcProvider(currentWorker, workerRegistry);
+        // --------------------- create receiver(select redis or http) --------------------- //
+        TaskReceiver actualTaskReceiver, paramTaskReceiver;
         {
-            // redis dispatching
-            //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplateLoader.get()) {
-            //    @Override
-            //    public boolean receive(ExecuteTaskParam param) {
-            //        JobHandlerParser.parse(param, "jobHandler");
-            //        return super.receive(param);
-            //    }
-            //};
-            //vertxWebServer = new VertxWebServer(port, null, workerRpcProvider);
+            // redis receiver
+            /*
+            actualTaskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplateLoader.get()) {
+                @Override
+                public boolean receive(ExecuteTaskParam param) {
+                    JobHandlerParser.parse(param, "jobHandler");
+                    return super.receive(param);
+                }
+            };
+            paramTaskReceiver = new TaskReceiver(currentWorker, timingWheel) {
+                @Override
+                public boolean receive(ExecuteTaskParam task) {
+                    throw new UnsupportedOperationException("Redis task receiver unsupported http receive.");
+                }
+            };
+            */
 
-            // http dispatching
-            taskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
-            vertxWebServer = new VertxWebServer(port, taskReceiver, workerRpcProvider);
+            // http receiver
+            paramTaskReceiver = actualTaskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
         }
+
+        // `verify/split/metrics/configure` 等接口还是要走http
+        WorkerRpcService workerRpcProvider = new WorkerRpcProvider(currentWorker, workerRegistry);
+        VertxWebServer vertxWebServer = new VertxWebServer(port, paramTaskReceiver, workerRpcProvider);
         // --------------------- create dispatch(select redis or http) --------------------- //
-
-
 
 
         WorkerStartup workerStartup = WorkerStartup.builder()
@@ -139,7 +142,7 @@ public class WorkerFramelessMain {
             .workerProperties(workerProperties)
             .retryProperties(props.extract(RetryProperties.class, RETRY_KEY_PREFIX + "."))
             .httpProperties(props.extract(HttpProperties.class, HTTP_KEY_PREFIX + "."))
-            .taskReceiver(taskReceiver)
+            .taskReceiver(actualTaskReceiver)
             .workerRegistry(workerRegistry)
             .build();
 

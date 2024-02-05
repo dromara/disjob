@@ -26,8 +26,8 @@ public class HttpTaskReceiver extends TaskReceiver implements HttpTaskReceiverSe
     }
 
     @Override
-    public boolean doReceive(ExecuteTaskParam param) {
-        return super.receive(param);
+    public boolean receive(ExecuteTaskParam param) {
+        return super.doReceive(param);
     }
 
 }

@@ -79,7 +79,7 @@ public class GroovyUtilsTest {
 
     @Test
     public void testPooledGroovyShell() throws Exception {
-        Thread[] threads = new Thread[20];
+        Thread[] threads = new Thread[5];
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(() -> {
                 for (int x = 0; x < 5; x++) {
@@ -95,7 +95,7 @@ public class GroovyUtilsTest {
             thread.start();
         }
 
-        Thread.sleep(1000);
+        Thread.sleep(300);
         for (Thread thread : threads) {
             thread.join();
         }

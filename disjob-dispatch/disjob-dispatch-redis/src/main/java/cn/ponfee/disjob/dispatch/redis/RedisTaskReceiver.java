@@ -71,8 +71,6 @@ public class RedisTaskReceiver extends TaskReceiver {
      */
     private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(JobConstants.PROCESS_BATCH_SIZE).getBytes(UTF_8);
 
-    private final RedisTemplate<String, String> redisTemplate;
-    private final GroupedWorker gropedWorker;
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
@@ -82,9 +80,12 @@ public class RedisTaskReceiver extends TaskReceiver {
         super(currentWorker, timingWheel);
 
         SingletonClassConstraint.constrain(this);
-        this.redisTemplate = redisTemplate;
-        this.gropedWorker = new GroupedWorker(currentWorker);
-        this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000);
+        this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000, redisTemplate, currentWorker, this);
+    }
+
+    @Override
+    public boolean receive(ExecuteTaskParam task) {
+        return super.doReceive(task);
     }
 
     @Override
@@ -105,9 +106,19 @@ public class RedisTaskReceiver extends TaskReceiver {
         this.receiveHeartbeatThread.close();
     }
 
-    private class ReceiveHeartbeatThread extends AbstractHeartbeatThread {
-        private ReceiveHeartbeatThread(long heartbeatPeriodMs) {
+    private static class ReceiveHeartbeatThread extends AbstractHeartbeatThread {
+        private final RedisTemplate<String, String> redisTemplate;
+        private final GroupedWorker gropedWorker;
+        private final RedisTaskReceiver redisTaskReceiver;
+
+        private ReceiveHeartbeatThread(long heartbeatPeriodMs,
+                                       RedisTemplate<String, String> redisTemplate,
+                                       Worker currentWorker,
+                                       RedisTaskReceiver redisTaskReceiver) {
             super(heartbeatPeriodMs);
+            this.redisTemplate = redisTemplate;
+            this.gropedWorker = new GroupedWorker(currentWorker, redisTemplate);
+            this.redisTaskReceiver = redisTaskReceiver;
         }
 
         @Override
@@ -118,17 +129,17 @@ public class RedisTaskReceiver extends TaskReceiver {
                 return true;
             }
             for (byte[] bytes : received) {
-                RedisTaskReceiver.super.receive(ExecuteTaskParam.deserialize(bytes));
+                redisTaskReceiver.receive(ExecuteTaskParam.deserialize(bytes));
             }
             return received.size() < JobConstants.PROCESS_BATCH_SIZE;
         }
     }
 
-    private class GroupedWorker {
+    private static class GroupedWorker {
         private final byte[][] keysAndArgs;
         private final RedisKeyRenewal redisKeyRenewal;
 
-        private GroupedWorker(Worker worker) {
+        private GroupedWorker(Worker worker, RedisTemplate<String, String> redisTemplate) {
             byte[] key = RedisTaskDispatchingUtils.buildDispatchTasksKey(worker).getBytes();
             this.keysAndArgs = new byte[][]{key, LIST_POP_BATCH_SIZE_BYTES};
             this.redisKeyRenewal = new RedisKeyRenewal(redisTemplate, key);

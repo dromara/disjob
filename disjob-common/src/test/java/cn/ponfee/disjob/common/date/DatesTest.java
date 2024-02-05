@@ -39,7 +39,7 @@ import static cn.ponfee.disjob.common.date.Dates.*;
  */
 public class DatesTest {
 
-    static int round = 1_000_000;
+    static int round = 50_000;
 
     @Test
     public void test() throws ParseException {

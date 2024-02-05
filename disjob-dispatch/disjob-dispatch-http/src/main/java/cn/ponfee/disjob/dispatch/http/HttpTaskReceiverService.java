@@ -30,6 +30,6 @@ interface HttpTaskReceiverService {
      * @return {@code true} if received successfully
      */
     @PostMapping("/task/receive")
-    boolean doReceive(ExecuteTaskParam param);
+    boolean receive(ExecuteTaskParam param);
 
 }
