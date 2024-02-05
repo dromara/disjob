@@ -29,7 +29,7 @@ public final class EmbeddedConsulServerPszymczyk {
 
         System.out.println("Embedded pszymczyk consul server starting...");
         ConsulProcess consul = ConsulStarterBuilder.consulStarter()
-            .withConsulVersion("1.14.2")
+            .withConsulVersion("1.15.4")
             .withConsulBinaryDownloadDirectory(createConsulBinaryDownloadDirectory())
             .withHttpPort(8500)
             .buildAndStart();
@@ -39,7 +39,7 @@ public final class EmbeddedConsulServerPszymczyk {
     }
 
     private static Path createConsulBinaryDownloadDirectory() {
-        File file = new File(MavenProjects.getProjectBaseDir() + "/target/consul/");
+        File file = new File(MavenProjects.getProjectBaseDir() + "/src/bin/consul/");
         file.mkdirs();
         return file.toPath();
     }

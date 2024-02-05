@@ -92,7 +92,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
         // check has available supervisors
         if (!discoverySupervisor.hasDiscoveredServers()) {
             if (System.currentTimeMillis() > nextLogTimeMillis) {
-                nextLogTimeMillis = System.currentTimeMillis() + 5000L;
+                this.nextLogTimeMillis = System.currentTimeMillis() + 5000L;
                 LOG.warn("Not found available supervisor.");
             }
             return;

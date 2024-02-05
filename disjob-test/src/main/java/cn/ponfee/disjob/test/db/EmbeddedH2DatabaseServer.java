@@ -50,7 +50,6 @@ public class EmbeddedH2DatabaseServer {
         new org.h2.server.TcpServer().start();
         //new org.h2.server.web.WebServer().start();
         //new org.h2.server.pg.PgServer().start();
-        System.out.println("Embedded h2 database started!");
 
         JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate(jdbcUrl, username, password);
 
@@ -62,6 +61,7 @@ public class EmbeddedH2DatabaseServer {
 
         System.out.println("\n--------------------------------------------------------testScript");
         testScript(jdbcTemplate);
+        System.out.println("Embedded h2 database started!");
 
         new CountDownLatch(1).await();
     }

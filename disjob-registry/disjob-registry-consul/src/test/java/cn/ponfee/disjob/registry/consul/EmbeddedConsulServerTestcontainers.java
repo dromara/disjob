@@ -21,8 +21,12 @@ import java.util.concurrent.CountDownLatch;
  * Embedded consul server based testcontainers.
  * <a href="https://www.testcontainers.org/modules/consul/">testcontainers consul</a>
  * 1、startup local docker environment
- * 2、pull docker consul image: docker pull consul:1.14.2
+ * 2、pull docker consul image: docker pull consul:1.15.4
  * 3、"consul:1.14.2" is docker {image-name:version}
+ *
+ * Other:
+ *  本地搜索：docker search consul --limit 20
+ *  docker官网查看版本：https://hub.docker.com/_/consul/tags
  *
  * 查看latest的具体版本号：docker image inspect {image-name}:latest | grep -i version
  * </pre>
@@ -31,7 +35,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedConsulServerTestcontainers {
 
-    private static final String CONSUL_DOCKER_IMAGE_NAME = "consul:1.14.2";
+    private static final String CONSUL_DOCKER_IMAGE_NAME = "consul:1.15.4";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8500:8500/tcp", "8502:8502/tcp");
 
     public static void main(String[] args) {

@@ -10,6 +10,7 @@ package cn.ponfee.disjob.registry.etcd;
 
 import io.etcd.jetcd.launcher.Etcd;
 import io.etcd.jetcd.launcher.EtcdCluster;
+import org.assertj.core.api.Assertions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.concurrent.CountDownLatch;
 public final class EmbeddedEtcdServerTestcontainers {
 
     private static final String ETCD_DOCKER_IMAGE_NAME = "gcr.io/etcd-development/etcd:v3.5.4";
-    private static final List<String> PORT_BINDINGS = Arrays.asList("2379:2379", "2380:2380", "8080:8080");
+    private static final List<String> PORT_BINDINGS = Arrays.asList("2379:2379/tcp", "2380:2380/tcp", "8080:8080/tcp");
 
     public static void main(String[] args) throws Exception {
         EtcdCluster etcd = Etcd.builder()
@@ -42,6 +43,8 @@ public final class EmbeddedEtcdServerTestcontainers {
         try {
             System.out.println("Embedded docker etcd server starting...");
             etcd.start();
+            Assertions.assertThat(etcd.containers()).hasSize(1);
+            Assertions.assertThat(etcd.containers().get(0).getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
             System.out.println("Embedded docker etcd server started!");
             new CountDownLatch(1).await();
         } finally {

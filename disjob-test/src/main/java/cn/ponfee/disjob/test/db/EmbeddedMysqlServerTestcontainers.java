@@ -58,7 +58,6 @@ public class EmbeddedMysqlServerTestcontainers {
 
             System.out.println("Embedded docker mysql starting...");
             mySQLContainer.start();
-            System.out.println("Embedded docker mysql started!");
             //mySQLContainer.execInContainer("mysqld --skip-grant-tables");
 
             // scriptPath只用于打印日志，此处直接设置为空字符串
@@ -78,6 +77,7 @@ public class EmbeddedMysqlServerTestcontainers {
             System.out.println("\n--------------------------------------------------------testQuerySql");
             DBUtils.testQuerySchedJob(jdbcTemplate);
 
+            System.out.println("Embedded docker mysql started!");
             new CountDownLatch(1).await();
         }
     }

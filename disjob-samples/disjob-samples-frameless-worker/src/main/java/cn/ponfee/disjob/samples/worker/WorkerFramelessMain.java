@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.samples.worker;
 
+import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -63,8 +64,6 @@ public class WorkerFramelessMain {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerFramelessMain.class);
 
-    private static StringRedisTemplate stringRedisTemplate = null;
-
     public static void main(String[] args) throws Exception {
         printBanner();
 
@@ -91,6 +90,9 @@ public class WorkerFramelessMain {
             props.getInt(WORKER_KEY_PREFIX + ".timing-wheel-ring-size", 60)
         );
 
+        LazyLoader<StringRedisTemplate> stringRedisTemplateLoader = LazyLoader.of(
+            () -> AbstractRedisTemplateCreator.create(DISJOB_KEY_PREFIX + ".redis.", props, null).getStringRedisTemplate()
+        );
 
 
 
@@ -98,7 +100,7 @@ public class WorkerFramelessMain {
         WorkerRegistry workerRegistry;
         {
             // redis registry
-            workerRegistry = createRedisWorkerRegistry(JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".redis", props);
+            workerRegistry = createRedisWorkerRegistry(JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".redis", props, stringRedisTemplateLoader);
 
             // consul registry
             //workerRegistry = createConsulWorkerRegistry(JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".consul", props);
@@ -114,7 +116,7 @@ public class WorkerFramelessMain {
         WorkerRpcService workerRpcProvider = new WorkerRpcProvider(currentWorker, workerRegistry);
         {
             // redis dispatching
-            //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate) {
+            //taskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplateLoader.get()) {
             //    @Override
             //    public boolean receive(ExecuteTaskParam param) {
             //        JobHandlerParser.parse(param, "jobHandler");
@@ -175,11 +177,12 @@ public class WorkerFramelessMain {
         System.out.println(banner);
     }
 
-    private static WorkerRegistry createRedisWorkerRegistry(String keyPrefix, YamlProperties props) {
+    private static WorkerRegistry createRedisWorkerRegistry(String keyPrefix, YamlProperties props,
+                                                            LazyLoader<StringRedisTemplate> stringRedisTemplateLoader) {
         RedisRegistryProperties config = new RedisRegistryProperties();
         config.setNamespace(props.getString(keyPrefix + ".namespace"));
         config.setSessionTimeoutMs(props.getLong(keyPrefix + ".session-timeout-ms", 30000));
-        return new RedisWorkerRegistry(stringRedisTemplate(props), config);
+        return new RedisWorkerRegistry(stringRedisTemplateLoader.get(), config);
     }
 
     /*
@@ -192,13 +195,5 @@ public class WorkerFramelessMain {
         return new ConsulWorkerRegistry(config);
     }
     */
-
-    private static synchronized StringRedisTemplate stringRedisTemplate(YamlProperties props) {
-        if (stringRedisTemplate == null) {
-            String keyPrefix = DISJOB_KEY_PREFIX + ".redis.";
-            stringRedisTemplate = AbstractRedisTemplateCreator.create(keyPrefix, props, null).getStringRedisTemplate();
-        }
-        return stringRedisTemplate;
-    }
 
 }

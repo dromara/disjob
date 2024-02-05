@@ -28,5 +28,5 @@ spring.redis:
 
 # 使用redis做注册中心
 disjob.registry.redis:
-  namespace: redis_namespace
+  namespace: disjob_registry
   session-timeout-ms: 60000

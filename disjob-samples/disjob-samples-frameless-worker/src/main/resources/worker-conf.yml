@@ -20,11 +20,11 @@ disjob:
   registry:
     # redis做注册中心时需要配置
     redis:
-      namespace: redis_namespace
+      namespace: disjob_registry
       session-timeout-ms: 60000
     # consul做注册中心时需要配置
     consul:
-      namespace: consul_namespace
+      namespace: disjob_registry
       host: localhost
       port: 8500
       token:
