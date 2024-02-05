@@ -110,7 +110,7 @@ public class WorkerFramelessMain {
 
 
 
-        // --------------------- create registry(select redis or http) --------------------- //
+        // --------------------- create dispatch(select redis or http) --------------------- //
         TaskReceiver taskReceiver;
         VertxWebServer vertxWebServer;
         WorkerRpcService workerRpcProvider = new WorkerRpcProvider(currentWorker, workerRegistry);
@@ -129,7 +129,7 @@ public class WorkerFramelessMain {
             taskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
             vertxWebServer = new VertxWebServer(port, taskReceiver, workerRpcProvider);
         }
-        // --------------------- create registry(select redis or http) --------------------- //
+        // --------------------- create dispatch(select redis or http) --------------------- //
 
 
 

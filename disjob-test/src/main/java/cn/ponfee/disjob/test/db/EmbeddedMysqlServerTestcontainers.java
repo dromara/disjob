@@ -26,9 +26,9 @@ import static cn.ponfee.disjob.test.db.DBUtils.*;
  * <pre>
  * Docker mysql for testcontainers
  *
- * docker pull mysql/mysql-server:8.0.31
+ * docker pull mysql:8.0.36
  *
- * SELECT VERSION()  ->  8.0.27
+ * SELECT VERSION()  ->  8.0.36
  *
  * dependency maven junit:junit
  *
@@ -36,14 +36,16 @@ import static cn.ponfee.disjob.test.db.DBUtils.*;
  * password: 无需密码
  * </pre>
  *
+ * <a href="https://hub.docker.com/_/mysql/tags">docker官网查看版本</a>
+ *
  * @author Ponfee
  */
 public class EmbeddedMysqlServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Collections.singletonList("3306:3306");
 
     public static void main(String[] args) throws Exception {
-        DockerImageName dockerImage = DockerImageName.parse("mysql/mysql-server:8.0.31").asCompatibleSubstituteFor("mysql");
-        try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>(dockerImage)
+        DockerImageName dockerImage = DockerImageName.parse("mysql:8.0.36").asCompatibleSubstituteFor("mysql");
+        try (MySQLContainer<?> mySqlContainer = new MySQLContainer<>(dockerImage)
             //.withConfigurationOverride("mysql_conf_override") // resource file: “resources/mysql_conf_override/my.cnf”
             .withPrivilegedMode(true)
             .withUsername("root")
@@ -53,18 +55,19 @@ public class EmbeddedMysqlServerTestcontainers {
             //.withInitScript(DISJOB_SCRIPT_CLASSPATH)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(EmbeddedMysqlServerTestcontainers.class)))
         ) {
-            mySQLContainer.setPortBindings(PORT_BINDINGS);
-            Runtime.getRuntime().addShutdownHook(new Thread(mySQLContainer::close));
-
             System.out.println("Embedded docker mysql starting...");
-            mySQLContainer.start();
+
+            mySqlContainer.setPortBindings(PORT_BINDINGS);
+            Runtime.getRuntime().addShutdownHook(new Thread(mySqlContainer::close));
+
+            mySqlContainer.start();
             //mySQLContainer.execInContainer("mysqld --skip-grant-tables");
 
             // scriptPath只用于打印日志，此处直接设置为空字符串
             String scriptPath = "";
-            String jdbcUrlParameter = "?useSSL=false&connectTimeout=2000&socketTimeout=5000";
-            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH));
-            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySQLContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_SCRIPT_CLASSPATH));
+            String jdbcUrlParameter = "?useSSL=false&allowPublicKeyRetrieval=true&connectTimeout=2000&socketTimeout=5000";
+            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySqlContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH));
+            ScriptUtils.executeDatabaseScript(new JdbcDatabaseDelegate(mySqlContainer, jdbcUrlParameter), scriptPath, DBUtils.loadScript(DISJOB_SCRIPT_CLASSPATH));
 
             JdbcTemplate jdbcTemplate = DBUtils.createJdbcTemplate("jdbc:mysql://localhost:3306/" + DB_NAME, USERNAME, PASSWORD);
 
@@ -78,6 +81,7 @@ public class EmbeddedMysqlServerTestcontainers {
             DBUtils.testQuerySchedJob(jdbcTemplate);
 
             System.out.println("Embedded docker mysql started!");
+
             new CountDownLatch(1).await();
         }
     }

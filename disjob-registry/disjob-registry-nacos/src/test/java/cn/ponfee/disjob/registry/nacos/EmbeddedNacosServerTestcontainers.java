@@ -24,14 +24,14 @@ import java.util.concurrent.CountDownLatch;
  *
  *
  * <pre>
- *   #docker pull nacos/nacos-server
- *   docker pull zhusaidong/nacos-server-m1:2.0.3
+ *   docker pull nacos/nacos-server:v2.3.0-slim
  *
  *   mkdir -p /opt/docker/nacos/init.d /opt/docker/nacos/logs
  *   touch /opt/docker/nacos/init.d/custom.properties
  *   echo "management.endpoints.web.exposure.include=*" > /opt/docker/nacos/init.d/custom.properties
  *
  *   # --platform linux/amd64 \
+ *   # --platform linux/arm64 \
  *   docker run -d \
  *     --name nacos-quick \
  *     --privileged=true \
@@ -46,17 +46,19 @@ import java.util.concurrent.CountDownLatch;
  *     -e PREFER_HOST_MODE=hostname \
  *     -v /opt/docker/nacos/init.d/custom.properties:/home/nacos/init.d/custom.properties \
  *     -v /opt/docker/nacos/logs:/home/nacos/logs \
- *     zhusaidong/nacos-server-m1:2.0.3
+ *     nacos/nacos-server:v2.3.0-slim
  *
  *     # 初始账号密码都为nacos
  *     # http://localhost:8848/nacos
  * </pre>
  *
+ * <a href="https://hub.docker.com/r/nacos/nacos-server/tags">docker官网查看版本</a>
+ *
  * @author Ponfee
  */
 public final class EmbeddedNacosServerTestcontainers {
 
-    private static final String NACOS_DOCKER_IMAGE_NAME = "zhusaidong/nacos-server-m1:2.0.3";
+    private static final String NACOS_DOCKER_IMAGE_NAME = "nacos/nacos-server:v2.3.0-slim";
     private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848/tcp", "8849:8849/tcp", "9848:9848/tcp", "9849:9849/tcp");
 
     public static void main(String[] args) {
@@ -86,6 +88,7 @@ public final class EmbeddedNacosServerTestcontainers {
             dockerNacosContainer.start();
             Assertions.assertThat(dockerNacosContainer.getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
             System.out.println("Embedded docker nacos server started!");
+
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();

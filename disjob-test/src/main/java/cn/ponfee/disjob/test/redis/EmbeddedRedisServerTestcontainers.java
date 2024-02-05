@@ -24,22 +24,24 @@ import java.util.concurrent.CountDownLatch;
  * Embedded redis server.
  *
  * <pre>
- *   docker pull redis:6.2.8
+ *   docker pull redis:7.2.4
  *
  *   docker run --name test_redis \
  *     --privileged=true \
  *     -p 6379:6379 \
- *     -d redis:6.2.8
+ *     -d redis:7.2.4
  *
  * username: 无需用户名
  * password: 123456
  * </pre>
  *
+ * <a href="https://hub.docker.com/_/redis/tags">docker官网查看版本</a>
+ *
  * @author Ponfee
  */
 public final class EmbeddedRedisServerTestcontainers {
 
-    private static final String NACOS_DOCKER_IMAGE_NAME = "redis:6.2.8";
+    private static final String NACOS_DOCKER_IMAGE_NAME = "redis:7.2.4";
     private static final List<String> PORT_BINDINGS = Collections.singletonList("6379:6379/tcp");
 
     public static void main(String[] args) {
