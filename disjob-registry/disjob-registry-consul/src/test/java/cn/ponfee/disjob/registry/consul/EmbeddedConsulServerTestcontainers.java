@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.consul;
 
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.Assertions;
 import org.testcontainers.consul.ConsulContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -32,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
 public final class EmbeddedConsulServerTestcontainers {
 
     private static final String CONSUL_DOCKER_IMAGE_NAME = "consul:1.14.2";
-    private static final List<String> PORT_BINDINGS = Arrays.asList("8500:8500", "8502:8502");
+    private static final List<String> PORT_BINDINGS = Arrays.asList("8500:8500/tcp", "8502:8502/tcp");
 
     public static void main(String[] args) {
         String key = "config/testing1", val = "value123";
@@ -48,12 +48,10 @@ public final class EmbeddedConsulServerTestcontainers {
             Runtime.getRuntime().addShutdownHook(new Thread(consulContainer::close));
             System.out.println("Embedded docker consul server starting...");
             consulContainer.start();
+            Assertions.assertThat(consulContainer.getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
+            Assertions.assertThat(consulContainer.getExposedPorts()).hasSameElementsAs(Arrays.asList(8500, 8502));
+            Assertions.assertThat(consulContainer.execInContainer("consul", "kv", "get", key).getStdout().trim()).isEqualTo(val);
             System.out.println("Embedded docker consul server started!");
-
-            Assertions.assertEquals(PORT_BINDINGS, consulContainer.getPortBindings());
-            Assertions.assertEquals(Arrays.asList(8500, 8502), consulContainer.getExposedPorts());
-            Assertions.assertEquals(val, consulContainer.execInContainer("consul", "kv", "get", key).getStdout().trim());
-
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();

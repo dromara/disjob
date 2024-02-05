@@ -13,26 +13,26 @@ package cn.ponfee.disjob.registry.rpc;
  *
  * @author Ponfee
  */
-public class RPCInvokeException extends RuntimeException {
+public class RpcInvokeException extends RuntimeException {
     private static final long serialVersionUID = -2137715994975702313L;
 
-    public RPCInvokeException() {
+    public RpcInvokeException() {
         super();
     }
 
-    public RPCInvokeException(String message) {
+    public RpcInvokeException(String message) {
         super(message);
     }
 
-    public RPCInvokeException(Throwable cause) {
+    public RpcInvokeException(Throwable cause) {
         super(cause);
     }
 
-    public RPCInvokeException(String message, Throwable cause) {
+    public RpcInvokeException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    protected RPCInvokeException(String message,
+    protected RpcInvokeException(String message,
                                  Throwable cause,
                                  boolean enableSuppression,
                                  boolean writableStackTrace) {

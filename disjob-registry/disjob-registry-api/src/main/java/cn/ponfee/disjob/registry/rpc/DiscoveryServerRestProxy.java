@@ -59,7 +59,7 @@ import java.util.function.Predicate;
  *
  * @author Ponfee
  */
-public class DiscoveryServerRestProxy {
+public final class DiscoveryServerRestProxy {
 
     private static final Map<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
     private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new NamedThreadLocal<>("discovery_rest_proxy");
@@ -81,8 +81,8 @@ public class DiscoveryServerRestProxy {
                                                  RetryProperties retry) {
         DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
         String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
-        InvocationHandler invocationHandler = new UngroupedInvocationHandler(template, prefixPath);
-        return ProxyUtils.create(invocationHandler, interfaceType);
+        InvocationHandler ungroupedInvocationHandler = new UngroupedInvocationHandler(template, prefixPath);
+        return ProxyUtils.create(ungroupedInvocationHandler, interfaceType);
     }
 
     /**
@@ -106,8 +106,8 @@ public class DiscoveryServerRestProxy {
                                                                        RetryProperties retry) {
         DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
         String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
-        InvocationHandler invocationHandler = new GroupedInvocationHandler(template, prefixPath);
-        T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceType);
+        InvocationHandler groupedInvocationHandler = new GroupedInvocationHandler(template, prefixPath);
+        T remoteServiceClient = ProxyUtils.create(groupedInvocationHandler, interfaceType);
         return new GroupedServerInvoker<>(localServiceProvider, remoteServiceClient, serverGroupMatcher);
     }
 
@@ -225,8 +225,8 @@ public class DiscoveryServerRestProxy {
         if (mapping == null) {
             return Str.SLASH;
         }
-        String configuredFirstPath = Collects.get(mapping.path(), 0);
-        return Strings.trimUrlPath(configuredFirstPath);
+        String firstPath = Collects.get(mapping.path(), 0);
+        return Strings.trimUrlPath(firstPath);
     }
 
 }

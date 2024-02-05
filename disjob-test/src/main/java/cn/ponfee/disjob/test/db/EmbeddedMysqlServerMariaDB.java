@@ -68,11 +68,12 @@ public class EmbeddedMysqlServerMariaDB {
             //.addArg("--default-character-set=utf8mb4")
             //.addArg("--skip-grant-tables") // 默认就是skip-grant-tables
             .build();
-        DB db = DB.newEmbeddedDB(configuration);
 
         System.out.println("Embedded maria db starting...");
+
+        DB db = DB.newEmbeddedDB(configuration);
         db.start();
-        System.out.println("Embedded maria db started!");
+
         db.source(IOUtils.toInputStream(loadScript(DISJOB_ADMIN_SCRIPT_CLASSPATH), StandardCharsets.UTF_8));
         db.source(IOUtils.toInputStream(loadScript(DISJOB_SCRIPT_CLASSPATH), StandardCharsets.UTF_8));
 
@@ -90,6 +91,8 @@ public class EmbeddedMysqlServerMariaDB {
 
         System.out.println("\n--------------------------------------------------------testQuerySql");
         DBUtils.testQuerySchedJob(jdbcTemplate);
+
+        System.out.println("Embedded maria db started!");
         return db;
     }
 

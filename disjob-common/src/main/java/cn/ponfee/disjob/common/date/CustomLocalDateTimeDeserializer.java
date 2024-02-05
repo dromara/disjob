@@ -7,11 +7,13 @@ import com.fasterxml.jackson.core.JsonTokenId;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.deser.JSR310DateTimeDeserializerBase;
+import com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Deserializer for Java 8 temporal {@link LocalDateTime}s.
@@ -24,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 public class CustomLocalDateTimeDeserializer extends JSR310DateTimeDeserializerBase<LocalDateTime> {
     private static final long serialVersionUID = 1980033817479428177L;
 
+    private static final List<JsonToken> TOKEN_LIST = ImmutableList.of(JsonToken.VALUE_STRING, JsonToken.VALUE_EMBEDDED_OBJECT);
     public static final CustomLocalDateTimeDeserializer INSTANCE = new CustomLocalDateTimeDeserializer();
 
     private final LocalDateTimeFormat wrappedFormatter;
@@ -70,9 +73,7 @@ public class CustomLocalDateTimeDeserializer extends JSR310DateTimeDeserializerB
             if (t == JsonToken.END_ARRAY) {
                 return null;
             }
-            if (   (t == JsonToken.VALUE_STRING || t == JsonToken.VALUE_EMBEDDED_OBJECT)
-                && context.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
-            ) {
+            if (TOKEN_LIST.contains(t) && context.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)) {
                 final LocalDateTime parsed = deserialize(parser, context);
                 if (parser.nextToken() != JsonToken.END_ARRAY) {
                     handleMissingEndArrayForSingle(parser, context);

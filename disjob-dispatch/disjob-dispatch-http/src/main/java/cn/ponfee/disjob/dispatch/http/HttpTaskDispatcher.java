@@ -15,11 +15,13 @@ import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.Discovery;
-import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;
+
+import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
+import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.create;
 
 /**
  * Dispatch task based http
@@ -28,7 +30,7 @@ import java.util.function.Function;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
-    private final DestinationServerRestProxy.DestinationServerInvoker<HttpTaskReceiverService, Worker> httpTaskReceiverClient;
+    private final DestinationServerInvoker<HttpTaskReceiverService, Worker> httpTaskReceiverClient;
 
     public HttpTaskDispatcher(Discovery<Worker> discoveryWorker,
                               RetryProperties retryProperties,
@@ -38,7 +40,8 @@ public class HttpTaskDispatcher extends TaskDispatcher {
 
         Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
         RetryProperties retry = RetryProperties.of(0, 0);
-        this.httpTaskReceiverClient = DestinationServerRestProxy.create(HttpTaskReceiverService.class, null, null, workerContextPath, restTemplate, retry);
+        // `TaskDispatcher#dispatch0`内部有处理本地worker的分派逻辑，这里不需要本地的HttpTaskReceiverService，所以传null
+        this.httpTaskReceiverClient = create(HttpTaskReceiverService.class, null, null, workerContextPath, restTemplate, retry);
     }
 
     @Override

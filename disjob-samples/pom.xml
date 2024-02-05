@@ -61,6 +61,7 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- 引入`disjob-test`模块中的一些内置`JobHandler`用于测试，实际开发中建议去除此依赖 -->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-test</artifactId>

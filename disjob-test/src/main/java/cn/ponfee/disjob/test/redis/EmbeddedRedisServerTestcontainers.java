@@ -40,7 +40,7 @@ import java.util.concurrent.CountDownLatch;
 public final class EmbeddedRedisServerTestcontainers {
 
     private static final String NACOS_DOCKER_IMAGE_NAME = "redis:6.2.8";
-    private static final List<String> PORT_BINDINGS = Collections.singletonList("6379:6379");
+    private static final List<String> PORT_BINDINGS = Collections.singletonList("6379:6379/tcp");
 
     public static void main(String[] args) {
         DockerImageName redisImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("redis-test");
@@ -62,14 +62,14 @@ public final class EmbeddedRedisServerTestcontainers {
         try {
             System.out.println("Embedded docker redis server starting...");
             dockerRedisContainer.start();
-            System.out.println("Embedded docker redis server started!");
-
             dockerRedisContainer.execInContainer("redis-cli", "config set requirepass 123456");
-
             Assert.isTrue(
                 CollectionUtils.isEqualCollection(PORT_BINDINGS, dockerRedisContainer.getPortBindings()),
                 () -> Jsons.toJson(PORT_BINDINGS) + "!=" + Jsons.toJson(dockerRedisContainer.getPortBindings())
             );
+            // Assertions.assertThat(dockerRedisContainer.getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
+            System.out.println("Embedded docker redis server started!");
+
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();

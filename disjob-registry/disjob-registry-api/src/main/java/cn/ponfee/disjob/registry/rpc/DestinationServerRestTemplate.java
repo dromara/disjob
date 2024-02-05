@@ -84,7 +84,7 @@ final class DestinationServerRestTemplate {
         if (StringUtils.isBlank(msg)) {
             msg = "Invoke server rpc error: " + path;
         }
-        throw new RPCInvokeException(msg, ex);
+        throw new RpcInvokeException(msg, ex);
     }
 
 }

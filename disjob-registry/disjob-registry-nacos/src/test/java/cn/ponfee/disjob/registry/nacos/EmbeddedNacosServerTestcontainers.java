@@ -8,7 +8,7 @@
 
 package cn.ponfee.disjob.registry.nacos;
 
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.Assertions;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -57,7 +57,7 @@ import java.util.concurrent.CountDownLatch;
 public final class EmbeddedNacosServerTestcontainers {
 
     private static final String NACOS_DOCKER_IMAGE_NAME = "zhusaidong/nacos-server-m1:2.0.3";
-    private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848", "8849:8849", "9848:9848", "9849:9849");
+    private static final List<String> PORT_BINDINGS = Arrays.asList("8848:8848/tcp", "8849:8849/tcp", "9848:9848/tcp", "9849:9849/tcp");
 
     public static void main(String[] args) {
         DockerImageName nacosImage = DockerImageName.parse(NACOS_DOCKER_IMAGE_NAME).asCompatibleSubstituteFor("nacos-test");
@@ -82,13 +82,10 @@ public final class EmbeddedNacosServerTestcontainers {
         Runtime.getRuntime().addShutdownHook(new Thread(dockerNacosContainer::close));
 
         try {
-
             System.out.println("Embedded docker nacos server starting...");
             dockerNacosContainer.start();
+            Assertions.assertThat(dockerNacosContainer.getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
             System.out.println("Embedded docker nacos server started!");
-
-            Assertions.assertEquals(PORT_BINDINGS, dockerNacosContainer.getPortBindings());
-
             new CountDownLatch(1).await();
         } catch (Exception e) {
             e.printStackTrace();

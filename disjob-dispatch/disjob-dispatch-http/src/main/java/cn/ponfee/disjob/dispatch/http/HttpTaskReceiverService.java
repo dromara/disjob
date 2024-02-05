@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Hidden
 @RequestMapping(WorkerRpcService.PREFIX_PATH)
-public interface HttpTaskReceiverService {
+interface HttpTaskReceiverService {
 
     /**
      * Receive task http method

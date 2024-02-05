@@ -112,7 +112,6 @@ final class DiscoveryServerRestTemplate<D extends Server> {
         }
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
 
-        // minimum retry two times
         Throwable ex = null;
         for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
@@ -136,7 +135,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
         if (StringUtils.isBlank(msg)) {
             msg = "Invoke server rpc error: " + path;
         }
-        throw new RPCInvokeException(msg, ex);
+        throw new RpcInvokeException(msg, ex);
     }
 
     // ----------------------------------------------------------------------------------------static methods

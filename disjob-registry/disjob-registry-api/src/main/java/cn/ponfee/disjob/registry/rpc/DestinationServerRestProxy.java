@@ -30,7 +30,7 @@ import java.util.function.Function;
  *
  * @author Ponfee
  */
-public class DestinationServerRestProxy {
+public final class DestinationServerRestProxy {
 
     private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("server_rest_proxy");
 
