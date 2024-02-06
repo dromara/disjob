@@ -38,19 +38,19 @@ public class ModelClassFileDiffTest {
         Assertions.assertThat(Objects.equals(null, null)).isTrue();
 
         // SchedJob ⇋ AddSchedJobRequest
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "failedScanCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobAddRequest.class), "createdAt", "id", "updatedAt", "updatedBy", "lastTriggerTime", "version", "jobId", "nextTriggerTime", "nextScanTime", "scanFailedCount");
 
         // SchedJob ⇋ UpdateSchedJobRequest
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "id", "updatedAt", "lastTriggerTime", "createdBy", "nextTriggerTime", "nextScanTime", "failedScanCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobUpdateRequest.class), "createdAt", "id", "updatedAt", "lastTriggerTime", "createdBy", "nextTriggerTime", "nextScanTime", "scanFailedCount");
 
         // SchedJob ⇋ SchedJobResponse
-        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "failedScanCount");
+        assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "scanFailedCount");
 
         // SchedInstance ⇋ SchedInstanceResponse
         assertSame(ClassUtils.fieldDiff(SchedInstance.class, SchedInstanceResponse.class), "version", "createdAt", "id", "updatedAt", "isTreeLeaf", "tasks");
 
         // SchedTask ⇋ SchedTaskResponse
-        assertSame(ClassUtils.fieldDiff(SchedTask.class, SchedTaskResponse.class), "version", "createdAt", "id", "updatedAt");
+        assertSame(ClassUtils.fieldDiff(SchedTask.class, SchedTaskResponse.class), "version", "createdAt", "id", "updatedAt", "dispatchFailedCount");
 
         // SchedGroup ⇋ SchedGroupResponse
         assertSame(ClassUtils.fieldDiff(SchedGroup.class, SchedGroupResponse.class), "id");

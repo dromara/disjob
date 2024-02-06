@@ -69,7 +69,7 @@ public class SchedTask extends BaseEntity {
     private Long executeDuration;
 
     /**
-     * 执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-实例化异常；51-校验失败；52-初始化异常；53-执行失败；54-执行异常；55-执行超时；56-执行冲突(sched_job.collided_strategy=3)；57-手动取消；58-广播未执行；
+     * 执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-派发失败；51-实例化异常；52-校验失败；53-初始化异常；54-执行失败；55-执行异常；56-执行超时；57-执行冲突(sched_job.collided_strategy=3)；58-手动取消；59-广播未执行；
      *
      * @see ExecuteState
      */
@@ -84,6 +84,11 @@ public class SchedTask extends BaseEntity {
      * 工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)
      */
     private String worker;
+
+    /**
+     * 任务派发失败的次数(失败次数达到阈值后需要终止)
+     */
+    private Integer dispatchFailedCount;
 
     /**
      * 执行错误信息

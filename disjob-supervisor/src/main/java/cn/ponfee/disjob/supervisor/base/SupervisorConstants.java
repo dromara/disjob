@@ -8,6 +8,8 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
+
 /**
  * Supervisor constants definitions.
  *
@@ -37,16 +39,16 @@ public class SupervisorConstants {
     /**
      * Spring bean name of scan triggering job locker
      */
-    public static final String SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER = "scan-triggering-job-locker";
+    public static final String SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER = SPRING_BEAN_NAME_PREFIX + ".scan-triggering-job-locker";
 
     /**
      * Spring bean name of scan waiting instance locker
      */
-    public static final String SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER = "scan-waiting-instance-locker";
+    public static final String SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER = SPRING_BEAN_NAME_PREFIX + ".scan-waiting-instance-locker";
 
     /**
      * Spring bean name of scan running instance locker
      */
-    public static final String SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER = "scan-running-instance-locker";
+    public static final String SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER = SPRING_BEAN_NAME_PREFIX + ".scan-running-instance-locker";
 
 }

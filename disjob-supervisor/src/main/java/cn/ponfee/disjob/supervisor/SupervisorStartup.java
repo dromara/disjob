@@ -65,8 +65,7 @@ public class SupervisorStartup implements Startable {
         this.currentSupervisor = currentSupervisor;
         this.supervisorRegistry = supervisorRegistry;
         this.triggeringJobScanner = new TriggeringJobScanner(
-            supervisorProperties.getScanTriggeringJobPeriodMs(),
-            supervisorProperties.getProcessJobMaximumPoolSize(),
+            supervisorProperties,
             scanTriggeringJobLocker,
             distributedJobManager,
             distributedJobQuerier

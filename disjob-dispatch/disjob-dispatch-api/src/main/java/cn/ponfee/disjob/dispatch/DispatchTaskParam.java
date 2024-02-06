@@ -17,17 +17,17 @@ import java.util.StringJoiner;
  */
 class DispatchTaskParam {
 
-    private final ExecuteTaskParam executeTaskParam;
+    private final ExecuteTaskParam task;
     private final String group;
     private int retried = 0;
 
-    public DispatchTaskParam(ExecuteTaskParam executeTaskParam, String group) {
-        this.executeTaskParam = executeTaskParam;
+    public DispatchTaskParam(ExecuteTaskParam task, String group) {
+        this.task = task;
         this.group = group;
     }
 
-    public ExecuteTaskParam executeTaskParam() {
-        return executeTaskParam;
+    public ExecuteTaskParam task() {
+        return task;
     }
 
     public String group() {
@@ -45,7 +45,7 @@ class DispatchTaskParam {
     @Override
     public String toString() {
         return new StringJoiner(", ", DispatchTaskParam.class.getSimpleName() + "[", "]")
-            .add("executeTaskParam=" + executeTaskParam)
+            .add("task=" + task)
             .add("group=" + (group != null ? "'" + group + "'" : "null"))
             .add("retried=" + retried)
             .toString();

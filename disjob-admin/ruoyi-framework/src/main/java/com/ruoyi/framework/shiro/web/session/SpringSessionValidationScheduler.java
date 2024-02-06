@@ -1,5 +1,6 @@
 package com.ruoyi.framework.shiro.web.session;
 
+import com.ruoyi.common.config.thread.ThreadPoolConfig;
 import com.ruoyi.common.utils.Threads;
 import org.apache.shiro.session.mgt.DefaultSessionManager;
 import org.apache.shiro.session.mgt.SessionValidationScheduler;
@@ -31,7 +32,7 @@ public class SpringSessionValidationScheduler implements SessionValidationSchedu
      * 定时器，用于处理超时的挂起请求，也用于连接断开时的重连。
      */
     @Autowired
-    @Qualifier("scheduledExecutorService")
+    @Qualifier(ThreadPoolConfig.SPRING_BEAN_NAME_SCHEDULED_EXECUTOR_SERVICE)
     private ScheduledExecutorService executorService;
 
     private volatile boolean enabled = false;

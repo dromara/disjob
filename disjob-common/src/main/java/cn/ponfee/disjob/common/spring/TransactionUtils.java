@@ -32,11 +32,15 @@ public class TransactionUtils {
      */
     private static final int AFFECTED_ONE_ROW = 1;
 
+    public static boolean isNotAffectedRow(int totalAffectedRow) {
+        return totalAffectedRow < AFFECTED_ONE_ROW;
+    }
+
     public static boolean isOneAffectedRow(int totalAffectedRow) {
         return totalAffectedRow == AFFECTED_ONE_ROW;
     }
 
-    public static boolean isManyAffectedRow(int totalAffectedRow) {
+    public static boolean hasAffectedRow(int totalAffectedRow) {
         return totalAffectedRow >= AFFECTED_ONE_ROW;
     }
 
@@ -52,13 +56,13 @@ public class TransactionUtils {
         }
     }
 
-    public static void assertManyAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
+    public static void assertHasAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
         if (totalAffectedRow < AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsgSupplier.get());
         }
     }
 
-    public static void assertManyAffectedRow(int totalAffectedRow, String errorMsg) {
+    public static void assertHasAffectedRow(int totalAffectedRow, String errorMsg) {
         if (totalAffectedRow < AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsg);
         }

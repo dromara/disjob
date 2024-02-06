@@ -6,7 +6,7 @@ disjob:
     connect-timeout: 3000
     read-timeout: 10000
   retry:
-    max-count: 5
+    max-count: 3
     backoff-period: 3000
   worker:
     group: app-test

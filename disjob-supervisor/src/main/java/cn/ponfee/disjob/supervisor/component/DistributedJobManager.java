@@ -23,6 +23,7 @@ import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.enums.*;
+import cn.ponfee.disjob.core.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
@@ -34,6 +35,7 @@ import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
 import cn.ponfee.disjob.supervisor.instance.GeneralInstanceCreator;
@@ -45,6 +47,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -81,6 +84,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private static final List<Integer> EXECUTE_STATE_WAITING = Collections.singletonList(ExecuteState.WAITING.value());
     private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
 
+    private final int taskDispatchFailedCountThreshold;
     private final TransactionTemplate transactionTemplate;
     private final SchedInstanceMapper instanceMapper;
     private final SchedTaskMapper taskMapper;
@@ -91,16 +95,34 @@ public class DistributedJobManager extends AbstractJobManager {
                                  SchedInstanceMapper instanceMapper,
                                  SchedTaskMapper taskMapper,
                                  SchedWorkflowMapper workflowMapper,
+                                 SupervisorProperties supervisorProperties,
                                  IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
                                  GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient,
                                  @Qualifier(TX_TEMPLATE_SPRING_BEAN_NAME) TransactionTemplate transactionTemplate) {
         super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerRpcServiceClient);
+        this.taskDispatchFailedCountThreshold = supervisorProperties.getTaskDispatchFailedCountThreshold();
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;
         this.workflowMapper = workflowMapper;
+    }
+
+    /**
+     * Listen task dispatch failed event
+     * <p> {@code `@Async`}需要标注{@code `@EnableAsync`}来启用，默认使用的是`SimpleAsyncTaskExecutor`线程池，会为每个任务创建一个新线程(慎用)
+     */
+    @EventListener
+    public void processTaskDispatchFailedEvent(TaskDispatchFailedEvent event) {
+        if (!shouldTerminateDispatchFailedTask(event.getTaskId())) {
+            return;
+        }
+        int toState = ExecuteState.DISPATCH_FAILED.value();
+        int fromState = ExecuteState.WAITING.value();
+        if (isNotAffectedRow(taskMapper.terminate(event.getTaskId(), null, toState, fromState, null, null))) {
+            LOG.warn("Terminate dispatch failed task unsuccessful: {}", event.getTaskId());
+        }
     }
 
     // ------------------------------------------------------------------database single operation without spring transactional
@@ -238,22 +260,22 @@ public class DistributedJobManager extends AbstractJobManager {
                 // delete task
                 for (SchedInstance e : instanceMapper.findWorkflowNode(instance.getWnstanceId())) {
                     row = taskMapper.deleteByInstanceId(e.getInstanceId());
-                    assertManyAffectedRow(row, () -> "Delete sched task conflict: " + instanceId);
+                    assertHasAffectedRow(row, () -> "Delete sched task conflict: " + instanceId);
                 }
 
                 // delete workflow node instance
                 row = instanceMapper.deleteByWnstanceId(instanceId);
-                assertManyAffectedRow(row, () -> "Delete workflow node instance conflict: " + instanceId);
+                assertHasAffectedRow(row, () -> "Delete workflow node instance conflict: " + instanceId);
 
                 // delete workflow config
                 row = workflowMapper.deleteByWnstanceId(instanceId);
-                assertManyAffectedRow(row, () -> "Delete sched workflow conflict: " + instanceId);
+                assertHasAffectedRow(row, () -> "Delete sched workflow conflict: " + instanceId);
             } else {
                 int row = instanceMapper.deleteByInstanceId(instanceId);
                 assertOneAffectedRow(row, () -> "Delete sched instance conflict: " + instanceId);
 
                 row = taskMapper.deleteByInstanceId(instanceId);
-                assertManyAffectedRow(row, () -> "Delete sched task conflict: " + instanceId);
+                assertHasAffectedRow(row, () -> "Delete sched task conflict: " + instanceId);
             }
             LOG.info("Delete sched instance success {}", instanceId);
         });
@@ -283,7 +305,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             Date executeEndTime = toState.isTerminal() ? new Date() : null;
             int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
-            if (!isOneAffectedRow(row)) {
+            if (isNotAffectedRow(row)) {
                 // usual is worker invoke http timeout, then retry
                 LOG.warn("Conflict terminate executing task: {}, {}", param.getTaskId(), toState);
                 return false;
@@ -306,8 +328,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 return true;
             }
 
-            row = instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b);
-            if (isManyAffectedRow(row)) {
+            if (hasAffectedRow(instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b))) {
                 // the last executing task of this sched instance
                 if (param.getOperation().isTrigger()) {
                     instance.markTerminated(tuple.a, tuple.b);
@@ -359,7 +380,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 // cannot be paused
                 Assert.isTrue(tuple.a.isTerminal(), () -> "Purge instance state must be terminal state: " + instance);
             }
-            if (!isOneAffectedRow(instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b))) {
+            if (isNotAffectedRow(instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_TERMINABLE, tuple.b))) {
                 return false;
             }
 
@@ -504,6 +525,21 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
+    private boolean shouldTerminateDispatchFailedTask(long taskId) {
+        SchedTask task = taskMapper.get(taskId);
+        if (!ExecuteState.WAITING.equals(task.getExecuteState())) {
+            return false;
+        }
+        int currentDispatchFailedCount = task.getDispatchFailedCount();
+        if (currentDispatchFailedCount >= taskDispatchFailedCountThreshold) {
+            return true;
+        }
+        if (isNotAffectedRow(taskMapper.incrementDispatchFailedCount(taskId, currentDispatchFailedCount))) {
+            return false;
+        }
+        return currentDispatchFailedCount + 1 == taskDispatchFailedCountThreshold;
+    }
+
     private Tuple2<RunState, Date> obtainRunState(List<SchedTask> tasks) {
         List<ExecuteState> states = tasks.stream().map(SchedTask::getExecuteState).map(ExecuteState::of).collect(Collectors.toList());
         if (states.stream().allMatch(ExecuteState::isTerminal)) {
@@ -612,7 +648,7 @@ public class DistributedJobManager extends AbstractJobManager {
         assertOneAffectedRow(row, "Resume sched instance failed.");
 
         row = taskMapper.updateStateByInstanceId(instanceId, ExecuteState.WAITING.value(), EXECUTE_STATE_PAUSED, null);
-        assertManyAffectedRow(row, "Resume sched task failed.");
+        assertHasAffectedRow(row, "Resume sched task failed.");
 
         // dispatch task
         Tuple3<SchedJob, SchedInstance, List<SchedTask>> param = buildDispatchParam(instanceId, row);
@@ -934,7 +970,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 // update dead task
                 Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
                 int row = taskMapper.terminate(task.getTaskId(), task.getWorker(), ops.toState().value(), ExecuteState.EXECUTING.value(), executeEndTime, null);
-                if (!isOneAffectedRow(row)) {
+                if (isNotAffectedRow(row)) {
                     LOG.error("Cancel the dead task failed: {}", task);
                     executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));
                 } else {

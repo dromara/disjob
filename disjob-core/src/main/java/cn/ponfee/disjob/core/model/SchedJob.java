@@ -155,7 +155,7 @@ public class SchedJob extends BaseEntity {
     /**
      * 连续失败的扫描次数，连续失败次数达到阈值后自动禁用(set job_state=0)
      */
-    private Integer failedScanCount;
+    private Integer scanFailedCount;
 
     /**
      * 备注
@@ -255,8 +255,8 @@ public class SchedJob extends BaseEntity {
         }
     }
 
-    public int incrementAndGetFailedScanCount() {
-        return ++this.failedScanCount;
+    public int incrementAndGetScanFailedCount() {
+        return ++this.scanFailedCount;
     }
 
     public boolean retryable(RunState runState, int retriedCount) {

@@ -24,6 +24,7 @@ import cn.ponfee.disjob.registry.SupervisorRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
@@ -50,14 +51,15 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     @ConditionalOnClass(RestTemplate.class)
     @ConditionalOnBean(Supervisor.Current.class)
     @Bean
-    public TaskDispatcher taskDispatcher(HttpProperties http,
+    public TaskDispatcher taskDispatcher(ApplicationEventPublisher eventPublisher,
+                                         HttpProperties http,
                                          RetryProperties retry,
                                          SupervisorRegistry discoveryWorker,
                                          @Nullable ObjectMapper objectMapper,
                                          @Nullable TaskReceiver taskReceiver) {
         http.check();
         RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
-        return new HttpTaskDispatcher(discoveryWorker, retry, restTemplate, taskReceiver);
+        return new HttpTaskDispatcher(eventPublisher, discoveryWorker, retry, restTemplate, taskReceiver);
     }
 
 }

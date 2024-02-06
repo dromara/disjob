@@ -30,6 +30,9 @@ public interface SchedTaskMapper {
 
     List<SchedTask> findLargeByInstanceId(long instanceId);
 
+    int incrementDispatchFailedCount(@Param("taskId") long taskId,
+                                     @Param("currentDispatchFailedCount") int currentDispatchFailedCount);
+
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
               @Param("executeStartTime") Date executeStartTime);

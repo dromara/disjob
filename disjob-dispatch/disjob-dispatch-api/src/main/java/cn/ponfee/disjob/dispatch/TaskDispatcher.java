@@ -15,11 +15,13 @@ import cn.ponfee.disjob.common.concurrent.DelayedData;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.dispatch.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 public abstract class TaskDispatcher implements Startable {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    private final ApplicationEventPublisher eventPublisher;
     private final Discovery<Worker> discoveryWorker;
     private final TaskReceiver taskReceiver;
 
@@ -43,11 +46,13 @@ public abstract class TaskDispatcher implements Startable {
     private final long retryBackoffPeriod;
     private final AsyncDelayedExecutor<DispatchTaskParam> asyncDelayedExecutor;
 
-    protected TaskDispatcher(Discovery<Worker> discoveryWorker,
+    protected TaskDispatcher(ApplicationEventPublisher eventPublisher,
+                             Discovery<Worker> discoveryWorker,
                              RetryProperties retryProperties,
                              @Nullable TaskReceiver taskReceiver) {
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
-        this.discoveryWorker = discoveryWorker;
+        this.eventPublisher = Objects.requireNonNull(eventPublisher);
+        this.discoveryWorker = Objects.requireNonNull(discoveryWorker);
         this.taskReceiver = taskReceiver;
 
         this.retryMaxCount = retryProperties.getMaxCount();
@@ -130,25 +135,27 @@ public abstract class TaskDispatcher implements Startable {
 
     private boolean dispatch0(List<DispatchTaskParam> params) {
         params.stream()
-            .filter(e -> e.executeTaskParam().operation().isTrigger())
-            .filter(e -> e.executeTaskParam().getRouteStrategy() != RouteStrategy.BROADCAST)
+            .filter(e -> e.task().operation().isTrigger())
+            .filter(e -> e.task().getRouteStrategy() != RouteStrategy.BROADCAST)
             // setWorker(null): reset worker
-            .peek(e -> e.executeTaskParam().setWorker(null))
-            .collect(Collectors.groupingBy(e -> e.executeTaskParam().getInstanceId()))
+            .peek(e -> e.task().setWorker(null))
+            .collect(Collectors.groupingBy(e -> e.task().getInstanceId()))
             .forEach((instanceId, list) -> assignWorker(list));
 
         boolean result = true;
         for (DispatchTaskParam param : params) {
-            ExecuteTaskParam task = param.executeTaskParam();
+            ExecuteTaskParam task = param.task();
             if (task.getWorker() == null) {
+                log.warn("Task not assigned worker: {}, {}", task.getTaskId(), task.getOperation());
                 // if not found worker(assign worker failed), delay retry
                 retry(param);
                 result = false;
                 continue;
             }
 
+            log.info("Task trace [{}] dispatching: {}, {}, {}", param.retried(), task.getTaskId(), task.getOperation(), task.getWorker());
             try {
-                dispatch0(task);
+                doDispatch0(task);
                 log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
             } catch (Throwable t) {
                 // dispatch failed, delay retry
@@ -169,11 +176,11 @@ public abstract class TaskDispatcher implements Startable {
             return;
         }
 
-        List<ExecuteTaskParam> tasks = Collects.convert(params, DispatchTaskParam::executeTaskParam);
-        ExecutionRouterRegistrar.route(first.executeTaskParam().getRouteStrategy(), tasks, workers);
+        List<ExecuteTaskParam> tasks = Collects.convert(params, DispatchTaskParam::task);
+        ExecutionRouterRegistrar.route(first.task().getRouteStrategy(), tasks, workers);
     }
 
-    private void dispatch0(ExecuteTaskParam task) throws Exception {
+    private void doDispatch0(ExecuteTaskParam task) throws Exception {
         boolean result;
         if (taskReceiver != null && task.getWorker().equals(Worker.current())) {
             // if current Supervisor also is a Worker role, then dispatch to this local worker
@@ -191,10 +198,13 @@ public abstract class TaskDispatcher implements Startable {
     private void retry(DispatchTaskParam param) {
         if (param.retried() >= retryMaxCount) {
             // discard
-            log.error("Dispatched task retried max count still failed: {}", param.executeTaskParam());
+            ExecuteTaskParam task = param.task();
+            log.error("Dispatched task retried max count still failed: {}", task);
+            eventPublisher.publishEvent(new TaskDispatchFailedEvent(task.getJobId(), task.getInstanceId(), task.getTaskId()));
             return;
         }
 
+        log.info("Delay retrying dispatch task [{}]: {}", param.retried(), param.task());
         param.retrying();
         asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * param.retried()));
     }

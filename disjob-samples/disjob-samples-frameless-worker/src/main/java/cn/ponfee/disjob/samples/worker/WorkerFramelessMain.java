@@ -134,7 +134,7 @@ public class WorkerFramelessMain {
         // `verify/split/metrics/configure` 等接口还是要走http
         WorkerRpcService workerRpcProvider = new WorkerRpcProvider(currentWorker, workerRegistry);
         VertxWebServer vertxWebServer = new VertxWebServer(port, paramTaskReceiver, workerRpcProvider);
-        // --------------------- create dispatch(select redis or http) --------------------- //
+        // --------------------- create receiver(select redis or http) --------------------- //
 
 
         WorkerStartup workerStartup = WorkerStartup.builder()

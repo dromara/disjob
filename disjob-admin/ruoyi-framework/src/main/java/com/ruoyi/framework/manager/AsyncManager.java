@@ -1,5 +1,6 @@
 package com.ruoyi.framework.manager;
 
+import com.ruoyi.common.config.thread.ThreadPoolConfig;
 import com.ruoyi.common.utils.Threads;
 import com.ruoyi.common.utils.spring.SpringUtils;
 
@@ -17,12 +18,12 @@ public class AsyncManager
     /**
      * 操作延迟10毫秒
      */
-    private final int OPERATE_DELAY_TIME = 10;
+    private static final int OPERATE_DELAY_TIME = 10;
 
     /**
      * 异步操作任务调度线程池
      */
-    private final ScheduledExecutorService executor = SpringUtils.getBean("scheduledExecutorService");
+    private final ScheduledExecutorService executor = SpringUtils.getBean(ThreadPoolConfig.SPRING_BEAN_NAME_SCHEDULED_EXECUTOR_SERVICE);
 
     /**
      * 单例模式

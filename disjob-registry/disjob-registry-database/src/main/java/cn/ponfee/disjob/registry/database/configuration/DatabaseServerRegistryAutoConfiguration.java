@@ -42,6 +42,9 @@ import javax.sql.DataSource;
 public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseServerRegistryAutoConfiguration.class);
 
+    /**
+     * JdbcTemplateWrapper spring bean name
+     */
     private static final String SPRING_BEAN_NAME_JTW = JobConstants.SPRING_BEAN_NAME_PREFIX + ".database-registry-jtw";
 
     /**

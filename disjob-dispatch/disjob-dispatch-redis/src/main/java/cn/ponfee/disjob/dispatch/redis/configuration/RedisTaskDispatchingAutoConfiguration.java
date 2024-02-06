@@ -20,6 +20,7 @@ import cn.ponfee.disjob.dispatch.redis.RedisTaskDispatcher;
 import cn.ponfee.disjob.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.Nullable;
@@ -47,11 +48,12 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
      */
     @ConditionalOnBean(Supervisor.Current.class)
     @Bean
-    public TaskDispatcher taskDispatcher(SupervisorRegistry discoveryWorker,
+    public TaskDispatcher taskDispatcher(ApplicationEventPublisher eventPublisher,
+                                         SupervisorRegistry discoveryWorker,
                                          RetryProperties retryProperties,
                                          StringRedisTemplate stringRedisTemplate,
                                          @Nullable TaskReceiver taskReceiver) {
-        return new RedisTaskDispatcher(discoveryWorker, retryProperties, stringRedisTemplate, taskReceiver);
+        return new RedisTaskDispatcher(eventPublisher, discoveryWorker, retryProperties, stringRedisTemplate, taskReceiver);
     }
 
 }

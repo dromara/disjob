@@ -11,7 +11,8 @@
   <sql id="Large_Column_List">
     <include refid="Base_Column_List" />,
     execute_start_time, execute_end_time, execute_duration,
-    task_param, execute_snapshot, error_msg, updated_at, created_at
+    task_param, execute_snapshot, dispatch_failed_count,
+    error_msg, updated_at, created_at
   </sql>
 
   <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
@@ -58,6 +59,14 @@
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
+
+  <update id="incrementDispatchFailedCount">
+    UPDATE <include refid="Table_Name" />
+    SET dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT} + 1,
+        version = version + 1
+    WHERE dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT}
+      AND execute_state = 10
+  </update>
 
   <!-- use `IFNULL` function reason: possibly re-execute the paused task -->
   <update id="start">

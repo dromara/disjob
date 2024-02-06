@@ -276,7 +276,7 @@ public class Worker extends Server {
 
                 @Override
                 public Map<String, String> createWorkerAuthenticationHeaders() {
-                    if (workerToken == null) {
+                    if (StringUtils.isEmpty(workerToken)) {
                         return Collections.singletonMap(AUTHENTICATE_HEADER_GROUP, group);
                     }
 

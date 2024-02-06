@@ -8,7 +8,7 @@
     job_id, `group`, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value,
     execute_timeout, collided_strategy, misfire_strategy, route_strategy, remark,
-    last_trigger_time, next_trigger_time, next_scan_time, failed_scan_count,
+    last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
     version, updated_by, created_by, updated_at, created_at
   </sql>
 
@@ -157,7 +157,7 @@
   <update id="updateNextScanTime" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
-        failed_scan_count = #{failedScanCount,jdbcType=INTEGER},
+        scan_failed_count = #{scanFailedCount,jdbcType=INTEGER},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}
@@ -181,7 +181,7 @@
     SET job_state = #{jobState,jdbcType=TINYINT},
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
-        failed_scan_count = 0,
+        scan_failed_count = 0,
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_state = 1

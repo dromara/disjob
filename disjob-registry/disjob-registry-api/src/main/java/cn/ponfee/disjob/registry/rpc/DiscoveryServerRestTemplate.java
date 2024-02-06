@@ -120,7 +120,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
                 return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
             } catch (Throwable e) {
                 ex = e;
-                LOG.error("Invoke server rpc failed: {}, {}, {}", url, Jsons.toJson(arguments), e.getMessage());
+                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(arguments), e.getMessage());
                 if (isNotRetry(e)) {
                     break;
                 }

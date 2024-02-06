@@ -21,6 +21,7 @@ import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.math.IntMath;
@@ -48,22 +49,22 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private static final int SCAN_COLLIDED_INTERVAL_SECONDS = 60;
     private static final int REMARK_MAX_LENGTH = 255;
-    private static final int FAILED_SCAN_COUNT_THRESHOLD = 5;
 
     private final DoInLocked doInLocked;
+    private final int jobScanFailedCountThreshold;
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
     private final long afterMilliseconds;
     private final ExecutorService processJobExecutor;
 
-    public TriggeringJobScanner(long heartbeatPeriodMilliseconds,
-                                int processJobMaximumPoolSize,
+    public TriggeringJobScanner(SupervisorProperties supervisorProperties,
                                 DoInLocked doInLocked,
                                 DistributedJobManager jobManager,
                                 DistributedJobQuerier jobQuerier) {
-        super(heartbeatPeriodMilliseconds);
+        super(supervisorProperties.getScanTriggeringJobPeriodMs());
         SingletonClassConstraint.constrain(this);
 
+        this.jobScanFailedCountThreshold = supervisorProperties.getJobScanFailedCountThreshold();
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
@@ -71,7 +72,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         this.afterMilliseconds = (heartbeatPeriodMs * 3);
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
-            .maximumPoolSize(Math.max(1, processJobMaximumPoolSize))
+            .maximumPoolSize(Math.max(1, supervisorProperties.getProcessJobMaximumPoolSize()))
             .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(300)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
@@ -153,13 +154,13 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             jobManager.disableJob(job);
         } catch (Throwable t) {
             log.error("Scan trigger job error: " + job, t);
-            if (job.getFailedScanCount() >= FAILED_SCAN_COUNT_THRESHOLD) {
+            if (job.getScanFailedCount() >= jobScanFailedCountThreshold) {
                 job.setRemark(StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
                 job.setNextTriggerTime(null);
                 jobManager.disableJob(job);
             } else {
-                int failedScanCount = job.incrementAndGetFailedScanCount();
-                updateNextScanTime(job, now, IntMath.pow(failedScanCount, 2) * 5);
+                int scanFailedCount = job.incrementAndGetScanFailedCount();
+                updateNextScanTime(job, now, IntMath.pow(scanFailedCount, 2) * 5);
             }
         }
     }
