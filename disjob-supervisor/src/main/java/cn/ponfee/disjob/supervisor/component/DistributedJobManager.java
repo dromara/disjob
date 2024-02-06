@@ -118,6 +118,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (!shouldTerminateDispatchFailedTask(event.getTaskId())) {
             return;
         }
+
         int toState = ExecuteState.DISPATCH_FAILED.value();
         int fromState = ExecuteState.WAITING.value();
         if (isNotAffectedRow(taskMapper.terminate(event.getTaskId(), null, toState, fromState, null, null))) {
@@ -537,7 +538,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (isNotAffectedRow(taskMapper.incrementDispatchFailedCount(taskId, currentDispatchFailedCount))) {
             return false;
         }
-        return currentDispatchFailedCount + 1 == taskDispatchFailedCountThreshold;
+        return (currentDispatchFailedCount + 1) == taskDispatchFailedCountThreshold;
     }
 
     private Tuple2<RunState, Date> obtainRunState(List<SchedTask> tasks) {

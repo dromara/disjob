@@ -34,8 +34,8 @@ class DispatchTaskParam {
         return group;
     }
 
-    public void retrying() {
-        this.retried++;
+    public int retrying() {
+        return ++this.retried;
     }
 
     public int retried() {

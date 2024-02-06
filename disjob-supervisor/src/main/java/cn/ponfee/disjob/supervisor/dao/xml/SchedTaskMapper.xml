@@ -62,9 +62,10 @@
 
   <update id="incrementDispatchFailedCount">
     UPDATE <include refid="Table_Name" />
-    SET dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT} + 1,
+    SET dispatch_failed_count = (#{currentDispatchFailedCount,jdbcType=TINYINT} + 1),
         version = version + 1
-    WHERE dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT}
+    WHERE task_id = #{taskId,jdbcType=BIGINT}
+      AND dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT}
       AND execute_state = 10
   </update>
 

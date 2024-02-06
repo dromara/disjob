@@ -64,7 +64,8 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
     }
 
     private boolean process() {
-        Date now = new Date(), expireTime = new Date(now.getTime() - beforeMilliseconds);
+        Date now = new Date();
+        Date expireTime = new Date(now.getTime() - beforeMilliseconds);
         List<SchedInstance> instances = jobQuerier.findExpireRunningInstance(expireTime, PROCESS_BATCH_SIZE);
         if (CollectionUtils.isEmpty(instances)) {
             return true;

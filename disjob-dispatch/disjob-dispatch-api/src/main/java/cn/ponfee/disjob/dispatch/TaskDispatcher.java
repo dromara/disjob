@@ -18,6 +18,7 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.dispatch.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;
+import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -205,8 +206,8 @@ public abstract class TaskDispatcher implements Startable {
         }
 
         log.info("Delay retrying dispatch task [{}]: {}", param.retried(), param.task());
-        param.retrying();
-        asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * param.retried()));
+        int count = param.retrying();
+        asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * IntMath.pow(count, 2)));
     }
 
 }
