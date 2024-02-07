@@ -18,6 +18,7 @@ import javax.script.SimpleBindings;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Groovy utility
@@ -34,7 +35,7 @@ public final class GroovyUtils {
     /**
      * Groovy compile class cache
      */
-    private static final Map<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
 
     /**
      * Groovy shell
@@ -55,7 +56,7 @@ public final class GroovyUtils {
          * Groovy scrip closure
          */
         CLOSURE() {
-            final Map<String, Script> scripCache = new ConcurrentHashMap<>();
+            final ConcurrentMap<String, Script> scripCache = new ConcurrentHashMap<>();
 
             @Override
             protected <T> T evaluate(String scriptText, Map<String, Object> params) {

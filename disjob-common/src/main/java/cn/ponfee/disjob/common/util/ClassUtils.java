@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -43,8 +44,8 @@ public final class ClassUtils {
 
     public static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 
-    private static final Map<Object, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
-    private static final Map<Object, Method>              METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Object, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Object, Method>              METHOD_CACHE = new ConcurrentHashMap<>();
 
     /**
      * Returns class object for text, can be class qualifier name or source code

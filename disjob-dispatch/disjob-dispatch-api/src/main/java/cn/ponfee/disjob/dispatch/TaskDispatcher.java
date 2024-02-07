@@ -160,8 +160,8 @@ public abstract class TaskDispatcher implements Startable {
                 log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
             } catch (Throwable t) {
                 // dispatch failed, delay retry
-                retry(param);
                 log.error("Dispatch task error: " + param, t);
+                retry(param);
                 result = false;
             }
         }
@@ -197,17 +197,16 @@ public abstract class TaskDispatcher implements Startable {
     }
 
     private void retry(DispatchTaskParam param) {
-        if (param.retried() >= retryMaxCount) {
+        if (param.retried() < retryMaxCount) {
+            log.info("Delay retrying dispatch task [{}]: {}", param.retried(), param.task());
+            int count = param.retrying();
+            asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * IntMath.pow(count, 2)));
+        } else {
             // discard
             ExecuteTaskParam task = param.task();
             log.error("Dispatched task retried max count still failed: {}", task);
             eventPublisher.publishEvent(new TaskDispatchFailedEvent(task.getJobId(), task.getInstanceId(), task.getTaskId()));
-            return;
         }
-
-        log.info("Delay retrying dispatch task [{}]: {}", param.retried(), param.task());
-        int count = param.retrying();
-        asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * IntMath.pow(count, 2)));
     }
 
 }

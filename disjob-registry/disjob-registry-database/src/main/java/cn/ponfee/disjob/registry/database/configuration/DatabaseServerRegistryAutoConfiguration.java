@@ -45,7 +45,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * JdbcTemplateWrapper spring bean name
      */
-    private static final String SPRING_BEAN_NAME_JTW = JobConstants.SPRING_BEAN_NAME_PREFIX + ".database-registry-jtw";
+    public static final String SPRING_BEAN_NAME_JTW = JobConstants.SPRING_BEAN_NAME_PREFIX + ".database-registry-jtw";
 
     /**
      * Configuration database registry datasource.

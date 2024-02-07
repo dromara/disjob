@@ -15,6 +15,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 泛型工具类
@@ -25,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class GenericUtils {
 
-    private static final Map<Class<?>, Map<String, Class<?>>> VARIABLE_TYPE_MAPPING = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, Map<String, Class<?>>> VARIABLE_TYPE_MAPPING = new ConcurrentHashMap<>();
 
     /**
      * map泛型协变

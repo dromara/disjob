@@ -123,10 +123,11 @@ public final class Snowflake implements IdGenerator {
 
             LOG.warn("Clock moved backwards {}ms, will be wait moment.", offset);
             try {
-                wait(offset << 1);
+                super.wait(offset << 1);
                 timestamp = timeGen();
                 if (timestamp < lastTimestamp) {
-                    throw new ClockMovedBackwardsException("Clock moved backwards " + offset + " ms, wait still backwards " + (lastTimestamp - timestamp) + " ms.");
+                    String msg = String.format("Clock moved backwards %d ms, wait still backwards %d ms.", offset, (lastTimestamp - timestamp));
+                    throw new ClockMovedBackwardsException(msg);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

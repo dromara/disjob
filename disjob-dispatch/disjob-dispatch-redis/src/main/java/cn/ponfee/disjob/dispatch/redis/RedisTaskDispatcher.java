@@ -20,8 +20,8 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Dispatch task based redis
@@ -37,7 +37,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
      *  value: Renewer type of renew
      * </pre>
      */
-    private final Map<String, RedisKeyRenewal> workerRenewMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, RedisKeyRenewal> workerRenewMap = new ConcurrentHashMap<>();
 
     private final RedisTemplate<String, String> redisTemplate;
 

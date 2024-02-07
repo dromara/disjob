@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -70,7 +71,7 @@ public final class NetUtils {
      */
     private static final BitSet USED_PORT = new BitSet(65536);
 
-    private static final Map<String, String> HOST_NAME_CACHE = new ConcurrentHashMap<>(100);
+    private static final ConcurrentMap<String, String> HOST_NAME_CACHE = new ConcurrentHashMap<>(100);
 
     private static volatile String localHost;
 

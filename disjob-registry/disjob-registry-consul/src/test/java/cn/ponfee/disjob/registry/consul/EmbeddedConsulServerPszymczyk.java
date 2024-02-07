@@ -8,12 +8,13 @@
 
 package cn.ponfee.disjob.registry.consul;
 
+import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import com.pszymczyk.consul.ConsulProcess;
 import com.pszymczyk.consul.ConsulStarterBuilder;
 import com.pszymczyk.consul.infrastructure.HttpBinaryRepository;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -24,7 +25,7 @@ import java.nio.file.Path;
  */
 public final class EmbeddedConsulServerPszymczyk {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.setProperty(HttpBinaryRepository.CONSUL_BINARY_CDN, "https://releases.hashicorp.com/consul/");
 
         System.out.println("Embedded pszymczyk consul server starting...");
@@ -38,10 +39,9 @@ public final class EmbeddedConsulServerPszymczyk {
         Runtime.getRuntime().addShutdownHook(new Thread(consul::close));
     }
 
-    private static Path createConsulBinaryDownloadDirectory() {
-        File file = new File(MavenProjects.getProjectBaseDir() + "/src/bin/consul/");
-        file.mkdirs();
-        return file.toPath();
+    private static Path createConsulBinaryDownloadDirectory() throws IOException {
+        String path = MavenProjects.getProjectBaseDir() + "/src/bin/consul";
+        return Files.mkdirIfNotExists(path).toPath();
     }
 
 }

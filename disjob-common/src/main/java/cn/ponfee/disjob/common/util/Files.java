@@ -8,6 +8,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -88,91 +89,105 @@ public final class Files {
     }
 
     /**
-     * 创建目录
+     * Creates directory if not exists
      *
-     * @param path
-     * @return
+     * @param path the path
+     * @return directory
+     * @throws IOException if create failed
      */
-    public static File mkdir(String path) {
+    public static File mkdirIfNotExists(String path) throws IOException {
         File file = new File(path);
-        mkdir(file);
+        mkdirIfNotExists(file);
         return file;
     }
 
     /**
-     * 创建目录
+     * Creates directory if not exists
      *
-     * @param file
-     * @return
+     * @param path the path
+     * @throws IOException if create failed
      */
-    public static void mkdir(File file) {
-        if (file.isFile()) {
-            throw new IllegalStateException(file.getAbsolutePath() + " is a directory.");
-        }
-
-        if (file.exists()) {
-            return;
-        }
-
-        if (file.mkdirs()) {
-            file.setLastModified(System.currentTimeMillis());
-        }
-    }
-
-    /**
-     * 创建文件
-     *
-     * @param path
-     * @return
-     */
-    public static File touch(String path) {
-        File file = new File(path);
-        touch(file);
-        return file;
-    }
-
-    /**
-     * 创建文件
-     *
-     * @param file
-     * @return
-     */
-    public static void touch(File file) {
-        if (file.isDirectory()) {
-            throw new IllegalStateException(file.getAbsolutePath() + " is a directory.");
-        }
-
-        if (file.exists()) {
-            return;
-        }
-
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-
-        try {
-            if (file.createNewFile()) {
-                file.setLastModified(System.currentTimeMillis());
+    public static void mkdirIfNotExists(File path) throws IOException {
+        if (path.exists()) {
+            if (path.isDirectory()) {
+                return;
             }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new IOException("Exists mkdir path is not a directory: " + path.getAbsolutePath());
+        }
+        if (!path.mkdirs()) {
+            throw new IOException("Create directory failed: " + path.toPath());
         }
     }
 
-    public static void deleteQuietly(File file) {
-        if (file == null) {
-            return;
-        }
+    /**
+     * Clear or make directory
+     *
+     * @param path the path
+     * @return file
+     * @throws IOException if clean or make failed
+     */
+    public static File cleanOrMakeDir(String path) throws IOException {
+        File file = new File(path);
+        cleanOrMakeDir(file);
+        return file;
+    }
 
-        try {
-            //org.apache.commons.io.FileUtils.deleteQuietly(file);
-            java.nio.file.Files.deleteIfExists(file.toPath());
-        } catch (IOException ignored) {
-            ignored.printStackTrace();
+    /**
+     * Clear or make directory
+     *
+     * @param path the path
+     * @throws IOException if clean or make failed
+     */
+    public static void cleanOrMakeDir(File path) throws IOException {
+        if (path.exists()) {
+            if (path.isDirectory()) {
+                PathUtils.deleteDirectory(path.toPath());
+            } else {
+                throw new IOException("Exists clean path is not a directory: " + path.getAbsolutePath());
+            }
+        }
+        if (!path.mkdirs()) {
+            throw new IOException("Clean directory failed: " + path.toPath());
+        }
+    }
+
+    /**
+     * Creates file if not exists
+     *
+     * @param path the path
+     * @return file
+     * @throws IOException if create failed
+     */
+    public static File touchIfNotExists(String path) throws IOException {
+        File file = new File(path);
+        touchIfNotExists(file);
+        return file;
+    }
+
+    /**
+     * Creates file if not exists
+     *
+     * @param path the path
+     * @throws IOException if create failed
+     */
+    public static void touchIfNotExists(File path) throws IOException {
+        if (path.exists()) {
+            if (path.isFile()) {
+                return;
+            }
+            throw new IOException("Exists touch path is not a file: " + path.getAbsolutePath());
+        }
+        File parentFile = path.getParentFile();
+        if (!parentFile.exists() && !parentFile.mkdirs()) {
+            throw new IOException("Create parent file failed: " + parentFile.getAbsolutePath());
+        }
+        if (!path.createNewFile()) {
+            throw new IOException("Create file failed: " + path.getAbsolutePath());
         }
     }
 
     // --------------------------------------------------------------------------file to string
+
     public static String toString(String file) {
         return toString(new File(file), DEFAULT_CHARSET_NAME);
     }
@@ -218,6 +233,7 @@ public final class Files {
     }
 
     // ---------------------------------------------------------------read line
+
     public static List<String> readLines(File file, String charset)
             throws FileNotFoundException {
         return readLines(new FileInputStream(file), charset);
@@ -248,6 +264,7 @@ public final class Files {
     }
 
     // -----------------------------------------------------------------readByteArray
+
     public static byte[] readByteArray(InputStream input, int count) throws IOException {
         byte[] bytes = new byte[count];
         int n, index = 0;

@@ -53,7 +53,7 @@ public class MavenDependencyTest {
     }
 
     private static String dependencyTree() {
-        String path = new File(MavenProjects.getProjectBaseDir()).getParentFile().getAbsolutePath() + "/";
+        String path = new File(MavenProjects.getProjectBaseDir()).getParentFile().getAbsolutePath();
         String installCmd = "bash " + path + "mvnw clean install -DskipTests -U -f " + path + "pom.xml";
 
         // String treeCmd = "mvn dependency:tree -f " + path + "pom.xml";

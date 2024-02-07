@@ -46,7 +46,7 @@
 //    /**
 //     * Map<UserId, Session>：缓存Session，当服务端需要主动推送消息给客户端时，使用此缓存获取Session
 //     */
-//    private static final Map<String, Session> WEBSOCKET_SESSION_CACHE = new ConcurrentHashMap<>();
+//    private static final ConcurrentMap<String, Session> WEBSOCKET_SESSION_CACHE = new ConcurrentHashMap<>();
 //
 //    @Resource
 //    private DistributedJobManager jobManager;

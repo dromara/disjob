@@ -204,7 +204,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     // ------------------------------------------------------------------private methods
 
     /**
-     * 心跳注册，不需要原子性
+     * 心跳注册，不需要事务及原子性保证
      */
     private void registerServers() {
         for (R server : registered) {

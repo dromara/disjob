@@ -22,7 +22,7 @@ public interface Startable extends Closeable {
     /**
      * Returns list of dependencies startable
      *
-     * @return
+     * @return dependency other startable
      */
     default Set<Startable> dependencies() {
         return Collections.emptySet();

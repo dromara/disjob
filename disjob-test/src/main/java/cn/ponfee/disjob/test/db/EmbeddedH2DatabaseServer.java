@@ -13,13 +13,11 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.file.PathUtils;
 import org.h2.tools.RunScript;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -67,14 +65,9 @@ public class EmbeddedH2DatabaseServer {
     }
 
     private static String buildJdbcUrl(String dbName) throws IOException {
-        String dataDir = MavenProjects.getProjectBaseDir() + "/target/h2/";
-
-        File file = new File(dataDir);
-        if (file.exists()) {
-            PathUtils.deleteDirectory(file.toPath());
-        }
-        Files.mkdir(file);
-        return "jdbc:h2:" + dataDir + dbName + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL";
+        String dataDir = MavenProjects.getProjectBaseDir() + "/target/h2";
+        Files.cleanOrMakeDir(dataDir);
+        return "jdbc:h2:" + dataDir + "/" + dbName + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL";
     }
 
     private static void testScript(JdbcTemplate jdbcTemplate) {

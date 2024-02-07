@@ -12,11 +12,11 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -29,7 +29,7 @@ public class PooledObjectProcessor<K, V> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PooledObjectProcessor.class);
 
-    private final Map<K, SubPool> pool = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, SubPool> pool = new ConcurrentHashMap<>();
     private final int size;
     private final Function<K, V> creator;
 

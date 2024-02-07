@@ -15,11 +15,9 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -104,12 +102,8 @@ public class EmbeddedMysqlServerMariaDB {
     }
 
     private static String createDirectory(String name) throws IOException {
-        String dataDir = MavenProjects.getProjectBaseDir() + "/target/mariadb/" + name + "/";
-        File file = new File(dataDir);
-        if (file.exists()) {
-            PathUtils.deleteDirectory(file.toPath());
-        }
-        Files.mkdir(file);
+        String dataDir = MavenProjects.getProjectBaseDir() + "/target/mariadb/" + name;
+        Files.cleanOrMakeDir(dataDir);
         return dataDir;
     }
 

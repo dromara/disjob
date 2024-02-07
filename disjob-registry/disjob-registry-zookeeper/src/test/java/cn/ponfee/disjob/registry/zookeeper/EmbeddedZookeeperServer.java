@@ -9,10 +9,12 @@
 package cn.ponfee.disjob.registry.zookeeper;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.MavenProjects;
 import org.apache.curator.test.TestingServer;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Embedded zooKeeper server.
@@ -29,11 +31,9 @@ public final class EmbeddedZookeeperServer {
         Runtime.getRuntime().addShutdownHook(new Thread(ThrowingRunnable.toCaught(testingServer::stop)));
     }
 
-    private static File createTempDir() {
-        String path = String.format(MavenProjects.getProjectBaseDir() + "/target/zookeeper/data/%d/", System.nanoTime());
-        File file = new File(path);
-        file.mkdirs();
-        return file;
+    private static File createTempDir() throws IOException {
+        String path = MavenProjects.getProjectBaseDir() + "/target/zookeeper/data/" + System.nanoTime();
+        return Files.cleanOrMakeDir(path);
     }
 
 }

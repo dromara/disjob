@@ -44,11 +44,11 @@ import static com.ruoyi.framework.config.properties.DruidProperties.DRUID_PREFIX
  */
 @Configuration
 @MapperScan({"com.ruoyi.**.mapper"})
-public class RuoyiDataSourceConfig {
+public class DisjobAdminDataSourceConfig {
 
     private final Environment env;
 
-    public RuoyiDataSourceConfig(Environment env) {
+    public DisjobAdminDataSourceConfig(Environment env) {
         this.env = env;
     }
 

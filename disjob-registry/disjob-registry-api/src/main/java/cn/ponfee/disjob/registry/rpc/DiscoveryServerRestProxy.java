@@ -30,9 +30,9 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 
 /**
@@ -61,7 +61,7 @@ import java.util.function.Predicate;
  */
 public final class DiscoveryServerRestProxy {
 
-    private static final Map<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
     private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new NamedThreadLocal<>("discovery_rest_proxy");
 
     /**
