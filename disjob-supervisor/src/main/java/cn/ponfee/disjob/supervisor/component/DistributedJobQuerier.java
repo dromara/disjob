@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;
+import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedInstance;
@@ -196,7 +197,7 @@ public class DistributedJobQuerier {
             .collect(Collectors.toMap(e -> MapUtils.getLongValue(e, "pnstanceId"), e -> MapUtils.getIntValue(e, "count")));
         list.forEach(e -> {
             Integer count = map.get(e.getInstanceId());
-            e.setIsTreeLeaf(count == null || count == 0 ? 0 : 1);
+            e.setIsTreeLeaf(Numbers.isNullOrZero(count) ? 0 : 1);
         });
     }
 

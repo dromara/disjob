@@ -25,7 +25,12 @@ nbdist/
 # Gradle
 /**/.gradle/
 
-# SBT(Scala build tool)
+# SBT(Simple Build Tool For Scala)
+# http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
+dist/*
+target/
+lib_managed/
+src_managed/
 
 # STS(Spring tool suite)
 /**/.apt_generated
