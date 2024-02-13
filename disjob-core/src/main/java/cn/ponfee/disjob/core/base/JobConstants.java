@@ -22,7 +22,7 @@ public class JobConstants {
     /**
      * Version
      */
-    public static final String VERSION = "2.0.8-SNAPSHOT";
+    public static final String VERSION = "2.0.8";
 
     /**
      * Process batch size
