@@ -32,7 +32,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Disabled
 public class CopyrightTest {
 
-    private static final String COPYRIGHT_KEYWORD = " Copyright (c) 2017-2023 Ponfee ";
+    private static final String OLD_COPYRIGHT_KEYWORD = " Copyright (c) 2017-2023 Ponfee ";
+    private static final String NEW_COPYRIGHT_KEYWORD = " Copyright (c) 2017-2024 Ponfee ";
 
     private static final String BASE_DIR = MavenProjects.getProjectBaseDir();
     private static final String COPYRIGHT = ThrowingSupplier.doChecked(
@@ -47,22 +48,21 @@ public class CopyrightTest {
                 return;
             }
             try {
-                if (!text.contains("** \\______   \\____   _____/ ____\\____   ____   " + COPYRIGHT_KEYWORD + " **")) {
-                    Writer writer = new FileWriter(file.getAbsolutePath());
-                    IOUtils.write(COPYRIGHT, writer);
-                    IOUtils.write(text, writer);
-                    writer.flush();
-                    writer.close();
-                    return;
-                }
-
-                if (!text.contains("** \\______   \\____   _____/ ____\\____   ____   " + COPYRIGHT_KEYWORD)) {
+                if (text.contains("** \\______   \\____   _____/ ____\\____   ____   " + OLD_COPYRIGHT_KEYWORD + " **")) {
                     Writer writer = new FileWriter(file.getAbsolutePath());
                     IOUtils.write(COPYRIGHT, writer);
                     IOUtils.write(text.substring(83 * 7 + 1), writer);
                     writer.flush();
                     writer.close();
                     return;
+                }
+
+                if (!text.contains("** \\______   \\____   _____/ ____\\____   ____   " + NEW_COPYRIGHT_KEYWORD)) {
+                    Writer writer = new FileWriter(file.getAbsolutePath());
+                    IOUtils.write(COPYRIGHT, writer);
+                    IOUtils.write(text, writer);
+                    writer.flush();
+                    writer.close();
                 }
             } catch (IOException e) {
                 ExceptionUtils.rethrow(e);
@@ -78,12 +78,12 @@ public class CopyrightTest {
                 System.out.println(file.getName());
             } else if (isOwnerCode(text)) {
                 // 自己编写的代码，添加Copyright
-                if (!text.contains(COPYRIGHT_KEYWORD)) {
+                if (!text.contains(NEW_COPYRIGHT_KEYWORD)) {
                     System.out.println(file.getName());
                 }
             } else {
                 // 引用他人的代码，不加Copyright
-                if (text.contains(COPYRIGHT_KEYWORD)) {
+                if (text.contains(NEW_COPYRIGHT_KEYWORD)) {
                     System.out.println(file.getName());
                 }
             }
@@ -94,7 +94,7 @@ public class CopyrightTest {
     public void testNoCopyright() {
         handleFile(file -> {
             String text = ThrowingSupplier.doChecked(() -> IOUtils.toString(file.toURI(), UTF_8));
-            if (!text.contains(COPYRIGHT_KEYWORD)) {
+            if (!text.contains(NEW_COPYRIGHT_KEYWORD)) {
                 System.out.println(file.getName());
             }
         });

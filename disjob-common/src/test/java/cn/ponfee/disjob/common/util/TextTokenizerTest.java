@@ -12,6 +12,7 @@ import cn.ponfee.disjob.common.base.TextTokenizer;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * TextTokenizer test
@@ -35,8 +36,34 @@ public class TextTokenizerTest {
         assertThat(tokenizer.next()).isEqualTo("abc");
         assertThat(tokenizer.next()).isEqualTo("123");
         assertThat(tokenizer.next()).isEqualTo("");
+        assertThat(tokenizer.hasNext()).isTrue();
         assertThat(tokenizer.next()).isEqualTo("test");
         assertThat(tokenizer.hasNext()).isFalse();
+    }
+
+    @Test
+    public void testEmpty() {
+        assertThatThrownBy(() -> new TextTokenizer("", ","))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Text token value cannot be empty.");
+
+        assertThatThrownBy(() -> new TextTokenizer("abc", ""))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Text token delimiter cannot be empty.");
+
+        TextTokenizer tokenizer = new TextTokenizer("a", ":");
+        assertThat(tokenizer.hasNext()).isTrue();
+        assertThat(tokenizer.next()).isEqualTo("a");
+        assertThat(tokenizer.hasNext()).isFalse();
+
+        tokenizer = new TextTokenizer("a:", ":");
+        assertThat(tokenizer.next()).isEqualTo("a");
+        assertThat(tokenizer.hasNext()).isTrue();
+        assertThat(tokenizer.next()).isEqualTo("");
+        assertThat(tokenizer.hasNext()).isFalse();
+
+        assertThat("a".substring(0)).isEqualTo("a");
+        assertThat("a".substring(1)).isEqualTo("");
     }
 
     @Test

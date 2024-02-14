@@ -28,10 +28,8 @@ import java.util.List;
  * @author Ponfee
  */
 @Hidden
-@RequestMapping(SupervisorRpcService.PREFIX_PATH)
+@RequestMapping("/supervisor/rpc")
 public interface SupervisorRpcService {
-
-    String PREFIX_PATH = "/supervisor/rpc";
 
     @GetMapping("/task/get")
     SchedTask getTask(long taskId) throws Exception;

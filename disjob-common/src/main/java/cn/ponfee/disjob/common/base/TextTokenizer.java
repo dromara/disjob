@@ -8,7 +8,10 @@
 
 package cn.ponfee.disjob.common.base;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Text tokenizer
@@ -23,6 +26,12 @@ public class TextTokenizer implements Iterator<String> {
     private int position;
 
     public TextTokenizer(String text, String delimiter) {
+        if (StringUtils.isEmpty(text)) {
+            throw new IllegalArgumentException("Text token value cannot be empty.");
+        }
+        if (StringUtils.isEmpty(delimiter)) {
+            throw new IllegalArgumentException("Text token delimiter cannot be empty.");
+        }
         this.text = text;
         this.delimiter = delimiter;
         this.position = -1;
@@ -30,11 +39,14 @@ public class TextTokenizer implements Iterator<String> {
 
     @Override
     public boolean hasNext() {
-        return text.indexOf(delimiter, position) != -1;
+        return position < text.length();
     }
 
     @Override
     public String next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         int begin = (++position);
         int end   = position = text.indexOf(delimiter, position);
         if (position == -1) {
