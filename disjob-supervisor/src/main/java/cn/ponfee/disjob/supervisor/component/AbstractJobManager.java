@@ -53,7 +53,7 @@ import java.util.stream.IntStream;
 
 import static cn.ponfee.disjob.common.spring.TransactionUtils.assertOneAffectedRow;
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANAGER_SPRING_BEAN_NAME;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
 
 /**
  * Abstract job manager
@@ -99,7 +99,7 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------database operation within spring transactional
 
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
         if (jobMapper.exists(job.getGroup(), job.getJobName())) {
             throw new KeyExistsException("[" + job.getGroup() + "] already exists job name: " + job.getJobName());
@@ -115,7 +115,7 @@ public abstract class AbstractJobManager {
         return job.getJobId();
     }
 
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
         job.verifyBeforeUpdate();
         job.checkAndDefaultSetting();
@@ -143,7 +143,7 @@ public abstract class AbstractJobManager {
         assertOneAffectedRow(jobMapper.update(job), "Update sched job fail or conflict.");
     }
 
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void deleteJob(long jobId) {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, "Job id not found: " + jobId);

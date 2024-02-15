@@ -303,7 +303,7 @@
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-frameless-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java">启动Worker单独部署的普通Java-main应用</a></li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-springboot-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java">启动Supervisor+Worker合并部署的Spring-boot应用</a></li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-springboot-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java">启动Supervisor单独部署的Spring-boot应用</a></li>
-            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java">启动Admin管理后台的Spring-boot应用</a></li>
+            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/DisjobAdminApplication.java">启动Admin管理后台的Spring-boot应用</a></li>
           </ul>
           <ol start="3" dir="auto">
             <li>登录管理后台</li>
@@ -380,11 +380,11 @@
             <p dir="auto">例如：若使用Consul做配置中心时，可加如下配置</p>
           </blockquote>
           <div class="highlight highlight-source-yaml notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="disjob.registry.consul:
-  namespace: consul_namespace
+  namespace: disjob_registry
   host: localhost
   port: 8500
   token:"><pre><span class="pl-ent">disjob.registry.consul</span>:
-  <span class="pl-ent">namespace</span>: <span class="pl-s">consul_namespace</span>
+  <span class="pl-ent">namespace</span>: <span class="pl-s">disjob_registry</span>
   <span class="pl-ent">host</span>: <span class="pl-s">localhost</span>
   <span class="pl-ent">port</span>: <span class="pl-c1">8500</span>
   <span class="pl-ent">token</span>:</pre></div>

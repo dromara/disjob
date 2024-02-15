@@ -97,7 +97,6 @@ public final class ThreadPoolExecutors {
         try {
             executor.getQueue().put(task);
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
             ExceptionUtils.rethrow(e);
         }
     };

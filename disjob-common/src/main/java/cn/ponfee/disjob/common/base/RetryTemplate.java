@@ -48,7 +48,6 @@ public class RetryTemplate {
                 return action.get();
             } catch (InterruptedException e) {
                 LOG.error("Thread interrupted, skip retry.");
-                Thread.currentThread().interrupt();
                 throw e;
             } catch (Throwable e) {
                 ex = e;

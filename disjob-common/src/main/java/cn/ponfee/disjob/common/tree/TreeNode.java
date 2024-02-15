@@ -477,7 +477,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
             return null;
         }
 
-        // already check duplicated, so cannot happen has circular dependencies state
+        // already check duplicated, so cannot happen exists circular dependencies
         /*
         if (IterableUtils.matchesAny(parentPath, nid::equals)) {
             // 节点路径中已经包含了此节点，则视为环状
@@ -502,7 +502,8 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
 
         List<E> list = new LinkedList<>();
         for (TreeNode<T, A> child : children) {
-            if (child.available || containsUnavailable) { // filter unavailable
+            // filter unavailable
+            if (child.available || containsUnavailable) {
                 E node = convert.apply(child);
                 child.convert(convert, node, containsUnavailable);
                 list.add(node);

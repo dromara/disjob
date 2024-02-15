@@ -31,7 +31,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TEMPLATE_SPRING_BEAN_NAME;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
 
 /**
  * Disjob admin configuration
@@ -42,11 +42,11 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.JDBC_TE
 @ComponentScan("cn.ponfee.disjob.test.handler") // 加载一些测试的JobHandler，只用于demo演示使用(开发时建议删掉这行)
 @EnableJacksonDateConfigurer                    // 解决日期反序列化报错的问题
 @EnableSupervisor                               // disjob-admin必须启用Supervisor角色，即：必须加@EnableSupervisor注解
-@EnableWorker                                   // 若要取消worker角色可去掉@EnableWorker注解(生产建议Supervisor与Worker分开部署)
+@EnableWorker                                   // 若要取消worker角色可去掉@EnableWorker注解(生产建议Supervisor与Worker分开部署，即去掉@EnableWorker注解)
 public class DisjobAdminConfiguration {
 
     @Bean
-    public IdGenerator idGenerator(@Qualifier(JDBC_TEMPLATE_SPRING_BEAN_NAME) JdbcTemplate jdbcTemplate,
+    public IdGenerator idGenerator(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate,
                                    @Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
         // serverTag = host:port

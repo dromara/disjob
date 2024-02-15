@@ -26,8 +26,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Arrays;
 
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANAGER_SPRING_BEAN_NAME;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_TEMPLATE_SPRING_BEAN_NAME;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
 
 /**
  * test db_order_base
@@ -38,7 +38,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_TEMP
 public class JobTxManagerTestService extends AbstractTxManagerTestService<SchedJob, Long> {
 
     public JobTxManagerTestService(SchedJobMapper mapper,
-                                   @Qualifier(TX_TEMPLATE_SPRING_BEAN_NAME) TransactionTemplate transactionTemplate) {
+                                   @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
         super(
             transactionTemplate,
             (id1, id2) -> mapper.testFindByJobIds(Arrays.asList(id1, id2)),
@@ -47,13 +47,13 @@ public class JobTxManagerTestService extends AbstractTxManagerTestService<SchedJ
         );
     }
 
-    @Transactional(value = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(value = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     @Override
     public void testWithAnnotationTxHasError(Long id1, Long id2) {
         super.testWithAnnotationTxHasError(id1, id2);
     }
 
-    @Transactional(value = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(value = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     @Override
     public void testWithAnnotationTxNoneError(Long id1, Long id2) {
         super.testWithAnnotationTxNoneError(id1, id2);

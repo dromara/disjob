@@ -96,7 +96,7 @@ disjob                                        # Main project①
 - [Start the Worker Spring-boot application](disjob-samples/disjob-samples-springboot-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
 - [Start the Supervisor+Worker Spring-boot application](disjob-samples/disjob-samples-springboot-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
 - [Start the Supervisor Spring-boot application](disjob-samples/disjob-samples-springboot-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
-- [Start the Admin Spring-boot application](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
+- [Start the Admin Spring-boot application](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/DisjobAdminApplication.java)
 
 3. Login to the Admin
 
@@ -149,7 +149,7 @@ disjob                                        # Main project①
 
 ```yaml
 disjob.registry.consul:
-  namespace: consul_namespace
+  namespace: disjob_registry
   host: localhost
   port: 8500
   token:

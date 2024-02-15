@@ -110,7 +110,7 @@ disjob                                        # 主项目①
 - [启动Worker单独部署的普通Java-main应用](disjob-samples/disjob-samples-frameless-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
 - [启动Supervisor+Worker合并部署的Spring-boot应用](disjob-samples/disjob-samples-springboot-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)
 - [启动Supervisor单独部署的Spring-boot应用](disjob-samples/disjob-samples-springboot-supervisor/src/main/java/cn/ponfee/disjob/samples/supervisor/SupervisorApplication.java)
-- [启动Admin管理后台的Spring-boot应用](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/RuoYiApplication.java)
+- [启动Admin管理后台的Spring-boot应用](disjob-admin/ruoyi-admin/src/main/java/com/ruoyi/DisjobAdminApplication.java)
 
 3. 登录管理后台
 
@@ -168,7 +168,7 @@ disjob                                        # 主项目①
 
 ```yaml
 disjob.registry.consul:
-  namespace: consul_namespace
+  namespace: disjob_registry
   host: localhost
   port: 8500
   token:

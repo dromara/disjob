@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.application;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.ExecuteState;
@@ -51,7 +52,7 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 @Service
-public class OpenapiService {
+public class OpenapiService extends SingletonClassConstraint {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);
 

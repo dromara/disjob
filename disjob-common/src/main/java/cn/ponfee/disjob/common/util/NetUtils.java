@@ -154,8 +154,10 @@ public final class NetUtils {
             // ignored
         }
 
+        // https://stackoverflow.com/questions/11506321/how-to-ping-an-ip-address
+        boolean isWindows = org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
         try {
-            Process process = Runtime.getRuntime().exec("ping -c 1 " + host);
+            Process process = Runtime.getRuntime().exec(String.format("ping -%s 1 %s", isWindows ? "n" : "c", host));
             boolean exited = process.waitFor(PING_TIMEOUT, TimeUnit.MILLISECONDS);
             return exited && process.exitValue() == 0;
         } catch (Exception ignored) {

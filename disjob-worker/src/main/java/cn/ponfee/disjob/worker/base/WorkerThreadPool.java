@@ -364,8 +364,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return true;
         } catch (InterruptedException e) {
             LOG.error("Return thread to idle pool interrupted.", e);
-            Thread.currentThread().interrupt();
             stopWorkerThread(workerThread, false);
+            Thread.currentThread().interrupt();
             return false;
         }
     }

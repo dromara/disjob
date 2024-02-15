@@ -88,8 +88,9 @@ public class NetUtilsTest {
     @Test
     @Disabled
     void testIsConnectable() {
-        assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 100));
-        assertFalse(NetUtils.isConnectableHostPort("www.unknownhostname.com", 80, 100));
+        assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 300));
+        assertTrue(NetUtils.isConnectableHostPort("www.ponfee.cn", 80, 300));
+        assertFalse(NetUtils.isConnectableHostPort("www.unknownhostnamexxxxxxx.com", 80, 300));
     }
 
     @Test
@@ -203,6 +204,12 @@ public class NetUtilsTest {
             // recover the origin ignored interfaces
             this.setIgnoredInterfaces(originIgnoredInterfaces);
         }
+    }
+
+    @Test
+    void testFormat() {
+        assertEquals("ping -n 1 localhost", String.format("ping -%s 1 %s", "n", "localhost"));
+        assertEquals("ping -c 1 localhost", String.format("ping -%s 1 %s", "c", "localhost"));
     }
 
     private String getIgnoredInterfaces() {

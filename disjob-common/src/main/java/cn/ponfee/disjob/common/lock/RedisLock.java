@@ -211,7 +211,6 @@ public class RedisLock implements Lock, java.io.Serializable {
                 Thread.sleep(computeSleepMillis(round));
             } catch (InterruptedException e) {
                 LOG.error("Redis lock sleep occur interrupted exception.", e);
-                Thread.currentThread().interrupt();
                 ExceptionUtils.rethrow(e);
             }
         }

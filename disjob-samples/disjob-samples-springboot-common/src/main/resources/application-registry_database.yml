@@ -1,6 +1,6 @@
 # 当使用database作为注册中心时使用该配置，同时需要在“application.yml”配置文件的“spring.profiles.include”项中增加“registry_database”，即“spring.profiles.include: xxx,registry_database”
 disjob.registry.database:
-  namespace: mysql_namespace
+  namespace: disjob_registry
   session-timeout-ms: 30000
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

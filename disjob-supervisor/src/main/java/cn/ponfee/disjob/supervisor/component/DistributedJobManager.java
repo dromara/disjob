@@ -68,8 +68,8 @@ import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.spring.TransactionUtils.*;
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_MANAGER_SPRING_BEAN_NAME;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.TX_TEMPLATE_SPRING_BEAN_NAME;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
+import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
 
 /**
  * Manage distributed schedule job.
@@ -108,7 +108,7 @@ public class DistributedJobManager extends AbstractJobManager {
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
                                  GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient,
-                                 @Qualifier(TX_TEMPLATE_SPRING_BEAN_NAME) TransactionTemplate transactionTemplate) {
+                                 @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
         super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerRpcServiceClient);
         this.taskDispatchFailedCountThreshold = supervisorProperties.getTaskDispatchFailedCountThreshold();
         this.transactionTemplate = transactionTemplate;
@@ -157,7 +157,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param jobId the job id
      * @throws JobException if occur error
      */
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void triggerJob(long jobId) throws JobException {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, () -> "Sched job not found: " + jobId);
@@ -175,7 +175,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param triggerInstance the trigger instance
      * @return {@code true} if operated success
      */
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public boolean createInstance(SchedJob job, TriggerInstance triggerInstance) {
         if (jobMapper.updateNextTriggerTime(job) == 0) {
             // operation conflicted
@@ -190,7 +190,7 @@ public class DistributedJobManager extends AbstractJobManager {
      *
      * @param list the update task worker list
      */
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateTaskWorker(List<UpdateTaskWorkerParam> list) {
         if (CollectionUtils.isNotEmpty(list)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
@@ -205,7 +205,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param param the start task param
      * @return {@code true} if start successfully
      */
-    @Transactional(transactionManager = TX_MANAGER_SPRING_BEAN_NAME, rollbackFor = Exception.class)
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public boolean startTask(StartTaskParam param) {
         SchedInstance instance = instanceMapper.get(param.getInstanceId());
         Assert.notNull(instance, () -> "Sched instance not found: " + param);

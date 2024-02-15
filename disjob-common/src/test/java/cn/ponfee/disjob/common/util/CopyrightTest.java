@@ -40,6 +40,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Disabled
 public class CopyrightTest {
 
+    public static final String CURRENT_FILE_CLASS = "\npublic class " + CopyrightTest.class.getSimpleName() + " {\n";
     private static final String OLD_COPYRIGHT_KEYWORD = "\n * Copyright 2022-2023 Ponfee (http://www.ponfee.cn/)\n";
     private static final String NEW_COPYRIGHT_KEYWORD = "\n * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)\n";
 
@@ -115,11 +116,11 @@ public class CopyrightTest {
     }
 
     private boolean isOwnerCode(String sourceCode) {
-        if (sourceCode.contains("public class " + getClass().getSimpleName() + " {\n")) {
+        if (sourceCode.contains(CURRENT_FILE_CLASS)) {
             // is current file: CopyrightTest.java
             return true;
         }
-        return sourceCode.contains(" * @author Ponfee\n") && StringUtils.countMatches(sourceCode, " @author ") == 1;
+        return sourceCode.contains("\n * @author Ponfee\n") && StringUtils.countMatches(sourceCode, " @author ") == 1;
     }
 
 }

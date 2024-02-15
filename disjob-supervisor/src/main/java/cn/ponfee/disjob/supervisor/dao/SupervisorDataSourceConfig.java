@@ -51,7 +51,7 @@ import javax.sql.DataSource;
 @Configuration
 @MapperScan(
     basePackages = SupervisorDataSourceConfig.BASE_PACKAGE + ".mapper",
-    sqlSessionTemplateRef = SupervisorDataSourceConfig.SQL_SESSION_TEMPLATE_SPRING_BEAN_NAME
+    sqlSessionTemplateRef = SupervisorDataSourceConfig.SPRING_BEAN_NAME_SQL_SESSION_TEMPLATE
 )
 public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
 
@@ -74,31 +74,36 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
     private static final String DB_NAME = "disjob";
 
     /**
-     * Transaction manager spring bean name
+     * Spring bean name datasource
      */
-    public static final String TX_MANAGER_SPRING_BEAN_NAME = DB_NAME + TX_MANAGER_NAME_SUFFIX;
+    public static final String SPRING_BEAN_NAME_DATASOURCE = DB_NAME + DATA_SOURCE_NAME_SUFFIX;
 
     /**
-     * Transaction template spring bean name
+     * Spring bean name transaction manager
      */
-    public static final String TX_TEMPLATE_SPRING_BEAN_NAME = DB_NAME + TX_TEMPLATE_NAME_SUFFIX;
+    public static final String SPRING_BEAN_NAME_TX_MANAGER = DB_NAME + TX_MANAGER_NAME_SUFFIX;
 
     /**
-     * JDBC template spring bean name
+     * Spring bean name transaction template
      */
-    public static final String JDBC_TEMPLATE_SPRING_BEAN_NAME = DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX;
+    public static final String SPRING_BEAN_NAME_TX_TEMPLATE = DB_NAME + TX_TEMPLATE_NAME_SUFFIX;
 
     /**
-     * Mybatis sql session factory spring bean name
+     * Spring bean name JDBC template
      */
-    public static final String SQL_SESSION_FACTORY_SPRING_BEAN_NAME = DB_NAME + SQL_SESSION_FACTORY_NAME_SUFFIX;
+    public static final String SPRING_BEAN_NAME_JDBC_TEMPLATE = DB_NAME + JDBC_TEMPLATE_NAME_SUFFIX;
 
     /**
-     * Mybatis sql session template spring bean name
+     * Spring bean name mybatis sql session factory
      */
-    public static final String SQL_SESSION_TEMPLATE_SPRING_BEAN_NAME = DB_NAME + SQL_SESSION_TEMPLATE_NAME_SUFFIX;
+    public static final String SPRING_BEAN_NAME_SQL_SESSION_FACTORY = DB_NAME + SQL_SESSION_FACTORY_NAME_SUFFIX;
 
-    @Bean(name = DB_NAME + DATA_SOURCE_NAME_SUFFIX)
+    /**
+     * Spring bean name mybatis sql session template
+     */
+    public static final String SPRING_BEAN_NAME_SQL_SESSION_TEMPLATE = DB_NAME + SQL_SESSION_TEMPLATE_NAME_SUFFIX;
+
+    @Bean(name = SPRING_BEAN_NAME_DATASOURCE)
     @ConfigurationProperties(prefix = DB_NAME + ".datasource")
     @Override
     public DataSource dataSource() {
@@ -107,27 +112,27 @@ public class SupervisorDataSourceConfig extends AbstractDataSourceConfig {
             .build();
     }
 
-    @Bean(name = SQL_SESSION_FACTORY_SPRING_BEAN_NAME)
+    @Bean(name = SPRING_BEAN_NAME_SQL_SESSION_FACTORY)
     public SqlSessionFactory sqlSessionFactory() throws Exception {
         return super.createSqlSessionFactory();
     }
 
-    @Bean(name = SQL_SESSION_TEMPLATE_SPRING_BEAN_NAME)
+    @Bean(name = SPRING_BEAN_NAME_SQL_SESSION_TEMPLATE)
     public SqlSessionTemplate sqlSessionTemplate() throws Exception {
         return new SqlSessionTemplate(sqlSessionFactory());
     }
 
-    @Bean(name = TX_MANAGER_SPRING_BEAN_NAME)
+    @Bean(name = SPRING_BEAN_NAME_TX_MANAGER)
     public DataSourceTransactionManager transactionManager() {
         return new DataSourceTransactionManager(dataSource());
     }
 
-    @Bean(name = TX_TEMPLATE_SPRING_BEAN_NAME)
+    @Bean(name = SPRING_BEAN_NAME_TX_TEMPLATE)
     public TransactionTemplate transactionTemplate() {
         return new TransactionTemplate(transactionManager());
     }
 
-    @Bean(name = JDBC_TEMPLATE_SPRING_BEAN_NAME)
+    @Bean(name = SPRING_BEAN_NAME_JDBC_TEMPLATE)
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }

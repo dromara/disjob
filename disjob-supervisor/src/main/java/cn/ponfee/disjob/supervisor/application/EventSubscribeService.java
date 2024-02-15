@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.application;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.param.supervisor.EventParam;
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * @author Ponfee
  */
 @Service
-public class EventSubscribeService {
+public class EventSubscribeService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(EventSubscribeService.class);
 
     private static final ConcurrentMap<Type, EventParam> MAP = new ConcurrentHashMap<>();
