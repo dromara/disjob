@@ -30,11 +30,13 @@ import org.springframework.objenesis.ObjenesisHelper;
 import org.springframework.util.Assert;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -416,7 +418,7 @@ public final class ClassUtils {
      */
     public static String getClassFilePath(Class<?> clazz) {
         URL url = clazz.getProtectionDomain().getCodeSource().getLocation();
-        String path = new File(URLCodes.decodeURI(url.getPath(), Files.UTF_8)).getAbsolutePath();
+        String path = new File(decodeURL(url)).getAbsolutePath();
 
         if (path.toLowerCase().endsWith(".jar")) {
             path += "!";
@@ -431,8 +433,7 @@ public final class ClassUtils {
      * @return spec classpath
      */
     public static String getClasspath(Class<?> clazz) {
-        URL url = clazz.getProtectionDomain().getCodeSource().getLocation();
-        String path = URLCodes.decodeURI(url.getPath(), Files.UTF_8);
+        String path = decodeURL(clazz.getProtectionDomain().getCodeSource().getLocation());
         if (path.toLowerCase().endsWith(".jar")) {
             path = path.substring(0, path.lastIndexOf("/") + 1);
         }
@@ -445,9 +446,8 @@ public final class ClassUtils {
      * @return current main classpath
      */
     public static String getClasspath() {
-        String path = Thread.currentThread().getContextClassLoader().getResource("").getPath();
-        path = URLCodes.decodeURI(new File(path).getAbsolutePath(), Files.UTF_8);
-        return path + File.separator;
+        URL url = Thread.currentThread().getContextClassLoader().getResource("");
+        return new File(decodeURL(url)).getAbsolutePath() + File.separator;
     }
 
     // -------------------------------------------------------------------------------------------private methods
@@ -582,6 +582,14 @@ public final class ClassUtils {
         return ArrayUtils.isEmpty(parameterTypes)
             ? "()"
             : "(" + Joiner.on(", ").join(parameterTypes) + ")";
+    }
+
+    private static String decodeURL(URL url) {
+        try {
+            return URLDecoder.decode(url.getPath(), Files.UTF_8);
+        } catch (UnsupportedEncodingException e) {
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
 }

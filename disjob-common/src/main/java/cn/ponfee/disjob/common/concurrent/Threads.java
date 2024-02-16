@@ -16,8 +16,11 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.exception.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * Thread utilities
@@ -103,6 +106,29 @@ public final class Threads {
 
     public static String getStackTrace(Thread thread) {
         return buildStackTrace(thread.getStackTrace());
+    }
+
+    public static boolean waitUntil(int round, long[] sleepMillis, BooleanSupplier supplier) {
+        return waitUntil(round, sleepMillis, true, supplier);
+    }
+
+    public static boolean waitUntil(int round, long[] sleepMillis, boolean caught, BooleanSupplier supplier) {
+        int lastIndex = sleepMillis.length - 1;
+        for (int i = 0; i < round; i++) {
+            long sleepTime = sleepMillis[Math.min(i, lastIndex)];
+            if (sleepTime > 0) {
+                if (caught) {
+                    Throwables.ThrowingRunnable.doCaught(() -> Thread.sleep(sleepTime));
+                } else {
+                    Throwables.ThrowingRunnable.doChecked(() -> Thread.sleep(sleepTime));
+                }
+            }
+            if (supplier.getAsBoolean()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // ------------------------------------------------------------private methods

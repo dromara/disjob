@@ -19,7 +19,6 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.common.util.URLCodes;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
@@ -75,15 +74,6 @@ public class CommonTest {
             path = String.join("/", list.subList(0, pos)) + "/**/" + String.join("/", list.subList(pos, list.size())) + "/";
         }
         return MessageFormat.format("classpath*:{0}xml/*.xml", path);
-    }
-
-    @Test
-    public void testURLString() {
-        Assertions.assertEquals("abc%2C123", URLCodes.encodeURIComponent("abc,123"));
-        Assertions.assertEquals("abc,123", URLCodes.decodeURIComponent("abc%2C123"));
-        Assertions.assertEquals("127.0.0.1%3A8080", URLCodes.encodeURIComponent("127.0.0.1:8080"));
-        Assertions.assertEquals("127.0.0.1:8080", URLCodes.decodeURIComponent("127.0.0.1%3A8080"));
-        Assertions.assertEquals("1003164910267351000", URLCodes.encodeURIComponent("1003164910267351000"));
     }
 
     @Test

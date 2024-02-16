@@ -18,9 +18,9 @@ package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.base.TextTokenizer;
+import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.common.util.SleepWaitUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.exception.KeyNotExistsException;
@@ -176,7 +176,7 @@ public class DisjobInstanceController extends BaseController {
         authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
 
         openapiService.pauseInstance(instanceId);
-        SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
+        Threads.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
             return !RunState.Const.PAUSABLE_LIST.contains(RunState.of(instance.getRunState()));
         });
@@ -194,7 +194,7 @@ public class DisjobInstanceController extends BaseController {
         authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
 
         openapiService.resumeInstance(instanceId);
-        SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
+        Threads.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
             SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
             return !RunState.PAUSED.equals(instance.getRunState());
         });
@@ -212,7 +212,7 @@ public class DisjobInstanceController extends BaseController {
         authorizeGroupService.authorizeInstance(getLoginName(), instanceId);
 
         openapiService.cancelInstance(instanceId);
-        SleepWaitUtils.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
+        Threads.waitUntil(WAIT_SLEEP_ROUND, WAIT_SLEEP_MILLIS, () -> {
             SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
             return RunState.of(instance.getRunState()).isTerminal();
         });

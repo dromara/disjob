@@ -19,7 +19,6 @@ package cn.ponfee.disjob.common.util;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AdvisedSupport;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.cglib.proxy.Enhancer;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -29,7 +28,7 @@ import java.lang.reflect.Proxy;
  *
  * @author Ponfee
  */
-public class ProxyUtils {
+public final class ProxyUtils {
 
     /**
      * Creates jdk proxy instance
@@ -64,17 +63,6 @@ public class ProxyUtils {
             return getProxyTargetObject(Fields.get(object, "CGLIB$CALLBACK_0"));
         }
         return object;
-    }
-
-    public static <T> T createBrokenProxy(Class<T> type, Class<?>[] argumentTypes, Object[] arguments) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(type);
-        enhancer.setUseCache(true);
-        enhancer.setInterceptDuringConstruction(false);
-        enhancer.setCallback((org.springframework.cglib.proxy.InvocationHandler) (proxy, method, args) -> {
-            throw new UnsupportedOperationException("Broken proxy cannot execute method: " + method.toGenericString());
-        });
-        return (T) enhancer.create(argumentTypes, arguments);
     }
 
     private static Object getProxyTargetObject(Object proxy) throws Exception {

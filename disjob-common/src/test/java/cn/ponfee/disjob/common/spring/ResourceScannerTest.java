@@ -44,7 +44,8 @@ public class ResourceScannerTest {
         String file = "copy-right.txt";
         Map<String, String> map = new ResourceScanner(file).scan4text();
         assertThat(map.get(file))
-            .startsWith("/*\n * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)\n")
-            .contains("*     https://www.apache.org/licenses/LICENSE-2.0\n");
+            //.startsWith("/*\n * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)\n") // Windows is “\r\n”
+            .contains(" * Copyright 2022-2024 Ponfee (http://www.ponfee.cn/)")
+            .contains("*     https://www.apache.org/licenses/LICENSE-2.0");
     }
 }

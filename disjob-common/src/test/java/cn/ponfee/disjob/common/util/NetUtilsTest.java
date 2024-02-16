@@ -47,7 +47,9 @@ public class NetUtilsTest {
     void testIsAvailablePort() {
         assertFalse(NetUtils.isAvailablePort(0));
         assertFalse(NetUtils.isAvailablePort(65536));
-        assertTrue(NetUtils.isAvailablePort(1024));
+        int availablePort = NetUtils.findAvailablePort();
+        assertTrue(NetUtils.isAvailablePort(availablePort));
+        System.out.println("Available port: " + availablePort);
     }
 
     @Test
@@ -86,10 +88,9 @@ public class NetUtilsTest {
     }
 
     @Test
-    @Disabled
     void testIsConnectable() {
-        assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 300));
-        assertTrue(NetUtils.isConnectableHostPort("www.ponfee.cn", 80, 300));
+        //assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 300));
+        //assertTrue(NetUtils.isConnectableHostPort("www.ponfee.cn", 80, 300));
         assertFalse(NetUtils.isConnectableHostPort("www.unknownhostnamexxxxxxx.com", 80, 300));
     }
 
