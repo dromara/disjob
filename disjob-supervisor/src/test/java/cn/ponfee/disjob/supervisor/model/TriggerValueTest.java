@@ -44,7 +44,7 @@ public class TriggerValueTest {
 
     @Test
     public void testInt() {
-        // 30天的毫秒书转int会溢出，要使用long类型
+        // 30天的毫秒数转int会溢出，要使用long类型
         int num = 30 * 86400 * 1000;
         Assertions.assertTrue(num < 0);
         Assertions.assertEquals(365, TimeUnit.DAYS.toMillis(365) / (1000 * 86400));

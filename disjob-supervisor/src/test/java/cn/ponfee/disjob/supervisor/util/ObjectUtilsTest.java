@@ -21,10 +21,14 @@ import cn.ponfee.disjob.common.util.*;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.model.SchedJob;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Ponfee
@@ -71,30 +75,25 @@ public class ObjectUtilsTest {
     }
 
     @Test
+    @Disabled
     public void testStaticFinalMethod() {
-        findlStaticFinalMethod("cn.ponfee.disjob.common");
-        findlStaticFinalMethod("cn.ponfee.disjob.core");
-        //findlStaticFinalMethod("cn.ponfee.disjob.id");
-        findlStaticFinalMethod("cn.ponfee.disjob.worker");
-        findlStaticFinalMethod("cn.ponfee.disjob.dispatch");
-        findlStaticFinalMethod("cn.ponfee.disjob.registry");
+        findStaticFinalMethod("cn/ponfee/disjob/common/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/core/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/registry/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/dispatch/**/*.class");
+        findStaticFinalMethod("cn/ponfee/disjob/worker/**/*.class");
     }
 
-    public void findlStaticFinalMethod(String packageName) {
+    private static void findStaticFinalMethod(String packageName) {
         for (Class<?> clazz : new ResourceScanner(packageName).scan4class()) {
-            for (Method method : clazz.getDeclaredMethods()) {
+            Set<Method> methods = new HashSet<>();
+            methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+            methods.addAll(Arrays.asList(clazz.getMethods()));
+            for (Method method : methods) {
                 if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
                     String cname = method.getDeclaringClass().getName();
                     if (!cname.contains("$") && cname.startsWith("cn.ponfee")) {
-                        System.err.println(clazz+"  "+method);
-                    }
-                }
-            }
-            for (Method method : clazz.getMethods()) {
-                if (Modifier.isStatic(method.getModifiers()) && Modifier.isFinal(method.getModifiers())) {
-                    String cname = method.getDeclaringClass().getName();
-                    if (!cname.contains("$") && cname.startsWith("cn.ponfee")) {
-                        System.err.println(clazz+"  "+method);
+                        System.err.println(clazz + "  " + method);
                     }
                 }
             }

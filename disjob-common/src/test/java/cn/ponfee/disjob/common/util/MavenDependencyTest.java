@@ -24,6 +24,8 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -39,7 +41,9 @@ import java.util.stream.Collectors;
  */
 public class MavenDependencyTest {
 
-    public static void main(String[] args) throws IOException {
+    @Disabled
+    @Test
+    public void testConflictedVersion() {
         StopWatch stopWatch = StopWatch.createStarted();
         String dependencyTree = dependencyTree();
         stopWatch.stop();
@@ -61,12 +65,12 @@ public class MavenDependencyTest {
     }
 
     private static String dependencyTree() {
-        String path = new File(MavenProjects.getProjectBaseDir()).getParentFile().getAbsolutePath();
+        String path = new File(MavenProjects.getProjectBaseDir()).getParentFile().getAbsolutePath() + "/";
         String installCmd = "bash " + path + "mvnw clean install -DskipTests -U -f " + path + "pom.xml";
 
         // String treeCmd = "mvn dependency:tree -f " + path + "pom.xml";
         // -B: Run in non-interactive (batch) mode (disables output color)
-        // -q: 安静模式,只输出ERROR
+        // -q: 安静模式，只输出ERROR
         String treeCmd = "bash " + path + "mvnw -B dependency:tree -f " + path + "pom.xml";
         try {
             execute(installCmd);

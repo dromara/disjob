@@ -83,7 +83,7 @@
 
     <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
-    <embedded-redis.version>1.3</embedded-redis.version>
+    <embedded-redis.version>1.4</embedded-redis.version>
     <graphviz-java.version>0.18.1</graphviz-java.version>
     <testcontainers.version>1.19.4</testcontainers.version>
 
