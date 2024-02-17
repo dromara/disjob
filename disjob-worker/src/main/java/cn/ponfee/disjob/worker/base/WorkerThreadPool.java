@@ -131,7 +131,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
         super.setPriority(Thread.MAX_PRIORITY);
-        super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+        super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
 
         WorkerConfigurator.setWorkerThreadPool(this);
     }
@@ -673,7 +673,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             super.setDaemon(true);
             super.setName(getClass().getSimpleName() + "-" + NAMED_SEQ.getAndIncrement());
-            super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+            super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
             super.start();
         }
 

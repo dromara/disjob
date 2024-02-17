@@ -586,7 +586,7 @@ public final class ClassUtils {
 
     private static String decodeURL(URL url) {
         try {
-            return URLDecoder.decode(url.getPath(), Files.UTF_8);
+            return URLDecoder.decode(Objects.requireNonNull(url).getPath(), Files.UTF_8);
         } catch (UnsupportedEncodingException e) {
             return ExceptionUtils.rethrow(e);
         }

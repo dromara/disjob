@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.common.concurrent;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Logged uncaught exception handler
@@ -25,21 +24,21 @@ import org.slf4j.LoggerFactory;
  * @author Ponfee
  */
 public final class LoggedUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(LoggedUncaughtExceptionHandler.class);
 
-    public static final LoggedUncaughtExceptionHandler INSTANCE = new LoggedUncaughtExceptionHandler();
+    private final Logger log;
 
-    private LoggedUncaughtExceptionHandler() {
+    public LoggedUncaughtExceptionHandler(Logger log) {
+        this.log = log;
     }
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         if (e instanceof java.lang.ThreadDeath) {
-            LOG.warn("Uncaught exception handle, thread death: {}, {}", t.getName(), e.getMessage());
+            log.warn("Uncaught exception handle, thread death: {}, {}", t.getName(), e.getMessage());
         } else if (e instanceof InterruptedException) {
-            LOG.warn("Uncaught exception handle, thread interrupted: {}, {}", t.getName(), e.getMessage());
+            log.warn("Uncaught exception handle, thread interrupted: {}, {}", t.getName(), e.getMessage());
         } else {
-            LOG.error("Uncaught exception handle, occur error: " + t.getName(), e);
+            log.error("Uncaught exception handle, occur error: " + t.getName(), e);
         }
     }
 

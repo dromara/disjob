@@ -18,6 +18,8 @@ package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
+import cn.ponfee.disjob.common.util.ClassUtils;
+import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -27,6 +29,8 @@ import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.net.URL;
+import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +54,7 @@ public class CommonTest {
         Assertions.assertEquals("classpath*:a/**/xml/*.xml", path(list, 0));
         Assertions.assertEquals("classpath*:/**/a/xml/*.xml", path(list, 1));
 
-        list = Arrays.asList("a","b","c");
+        list = Arrays.asList("a", "b", "c");
         Assertions.assertEquals("classpath*:a/b/c/xml/*.xml", path(list, -1));
         Assertions.assertEquals("classpath*:a/b/c/**/xml/*.xml", path(list, 0));
         Assertions.assertEquals("classpath*:a/b/**/c/xml/*.xml", path(list, 1));
@@ -74,6 +78,33 @@ public class CommonTest {
             path = String.join("/", list.subList(0, pos)) + "/**/" + String.join("/", list.subList(pos, list.size())) + "/";
         }
         return MessageFormat.format("classpath*:{0}xml/*.xml", path);
+    }
+
+    @Test
+    public void testURLString() throws Exception {
+        URL url1 = new URL("https://www.oschina.net/search?scope=bbs&q=C语言");
+        Assertions.assertEquals("https://www.oschina.net/search?scope=bbs&q=C语言", url1.toString());
+
+        Assertions.assertEquals("/search?scope=bbs&q=C语言", url1.getFile());
+        Assertions.assertEquals("https", url1.getProtocol());
+        Assertions.assertEquals("www.oschina.net", url1.getHost());
+        Assertions.assertEquals(-1, url1.getPort());
+        Assertions.assertEquals("/search", url1.getPath());
+        Assertions.assertEquals("scope=bbs&q=C语言", url1.getQuery());
+        Assertions.assertNull(url1.getRef());
+        Assertions.assertNull(url1.getUserInfo());
+        Assertions.assertEquals("www.oschina.net", url1.getAuthority());
+        Assertions.assertEquals(443, url1.getDefaultPort());
+
+        URL url2 = new URL("https://www.oschina.net/search?scope=bbs&q=C%E8%AF%AD%E8%A8%80");
+        Assertions.assertEquals("https://www.oschina.net/search?scope=bbs&q=C%E8%AF%AD%E8%A8%80", url2.toString());
+        Assertions.assertEquals("https://www.oschina.net/search?scope=bbs&q=C语言", URLDecoder.decode(url2.toString(), Files.UTF_8));
+
+        System.out.println(ClassUtils.getClassFilePath(ClassUtils.class));
+        System.out.println(ClassUtils.getClassFilePath(org.apache.commons.lang3.StringUtils.class));
+        System.out.println(ClassUtils.getClasspath(ClassUtils.class));
+        System.out.println(ClassUtils.getClasspath(org.apache.commons.lang3.StringUtils.class));
+        System.out.println(ClassUtils.getClasspath());
     }
 
     @Test

@@ -83,6 +83,8 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
                 List<Worker> newWorkers = workers;
                 oldWorkers.stream().filter(e -> !newWorkers.contains(e)).forEach(router::removeNode);
                 newWorkers.stream().filter(e -> !oldWorkers.contains(e)).forEach(e -> router.addNode(e, virtualCount));
+                pair = Pair.of(workers, router);
+                cache.put(group, pair);
             }
             return pair.getRight();
         }

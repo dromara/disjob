@@ -212,7 +212,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             super.setDaemon(true);
             super.setPriority(Thread.MAX_PRIORITY);
             super.setName("consul_subscriber_thread");
-            super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+            super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(log));
         }
 
         @Override

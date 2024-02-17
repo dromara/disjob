@@ -38,8 +38,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Wrapped spring jdbc template.
@@ -53,7 +53,7 @@ public final class JdbcTemplateWrapper {
     public static final RowMapper<String> STRING_ROW_MAPPER = new SingleColumnRowMapper<>(String.class);
     public static final RowMapper<Long> LONG_ROW_MAPPER = new SingleColumnRowMapper<>(Long.class);
     public static final RowMapper<Integer> INTEGER_ROW_MAPPER = new SingleColumnRowMapper<>(Integer.class);
-    private static final Set<String> EXISTS_TABLE = ConcurrentHashMap.newKeySet();
+    private static final ConcurrentMap<String, Boolean> EXISTS_TABLE = new ConcurrentHashMap<>();
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -137,29 +137,22 @@ public final class JdbcTemplateWrapper {
         });
     }
 
-    public void createTableIfNotExists(String tableName0, String createTableDdl) {
-        String tableName = tableName0.toLowerCase();
-        if (EXISTS_TABLE.contains(tableName)) {
-            return;
-        }
-        synchronized (tableName.intern()) {
-            if (EXISTS_TABLE.contains(tableName)) {
-                return;
-            }
+    public void createTableIfNotExists(String tableName, String createTableDdl) {
+        EXISTS_TABLE.computeIfAbsent(tableName.trim().toLowerCase(), key -> {
             try {
-                RetryTemplate.execute(() -> {
-                    if (existsTable(tableName)) {
-                        return;
+                return RetryTemplate.execute(() -> {
+                    if (existsTable(key)) {
+                        return true;
                     }
                     jdbcTemplate.execute(createTableDdl);
-                    Assert.state(existsTable(tableName), () -> "Create table " + tableName + " failed.");
-                    EXISTS_TABLE.add(tableName);
-                    LOG.info("Created table {} success.", tableName);
+                    Assert.state(existsTable(key), () -> "Create table " + key + " failed.");
+                    LOG.info("Created table {} success.", key);
+                    return true;
                 }, 3, 1000L);
             } catch (Throwable e) {
-                ExceptionUtils.rethrow(e);
+                return ExceptionUtils.rethrow(e);
             }
-        }
+        });
     }
 
     public boolean existsTable(String tableName) {

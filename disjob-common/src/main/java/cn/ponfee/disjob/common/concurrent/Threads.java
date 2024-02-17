@@ -41,7 +41,7 @@ public final class Threads {
         Thread thread = new Thread(run);
         String callerClassName = Thread.currentThread().getStackTrace()[2].getClassName();
         thread.setName(callerClassName.substring(callerClassName.lastIndexOf(".") + 1));
-        thread.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+        thread.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
         return thread;
     }
 
@@ -59,7 +59,7 @@ public final class Threads {
         thread.setName(name);
         thread.setDaemon(daemon);
         thread.setPriority(priority);
-        thread.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+        thread.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
         return thread;
     }
 

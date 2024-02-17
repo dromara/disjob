@@ -78,7 +78,7 @@ public class NamedThreadFactory implements ThreadFactory {
         private String prefix;
         private Boolean daemon;
         private Integer priority;
-        private Thread.UncaughtExceptionHandler uncaughtExceptionHandler = LoggedUncaughtExceptionHandler.INSTANCE;
+        private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
         private Builder() { }
 

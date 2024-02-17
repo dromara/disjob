@@ -62,7 +62,7 @@ public final class Symbol {
         /**
          * Tab symbol
          */
-        String TAB = "	";
+        String TAB = "\t";
 
         /**
          * Backslash symbol
@@ -159,7 +159,7 @@ public final class Symbol {
         /**
          * Tab symbol(the same as '\t')
          */
-        char TAB = '	';
+        char TAB = '\t';
 
         /**
          * Backslash symbol

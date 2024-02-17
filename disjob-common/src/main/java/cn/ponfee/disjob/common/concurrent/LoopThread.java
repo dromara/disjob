@@ -49,7 +49,7 @@ public class LoopThread extends Thread {
         super.setName(name);
         super.setDaemon(daemon);
         super.setPriority(priority);
-        super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+        super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
         this.periodMs = periodMs;
         this.delayMs = delayMs;
         this.action = action;

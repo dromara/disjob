@@ -81,7 +81,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
         super.setName("async_delayed_executor-" + Integer.toHexString(hashCode()));
         super.setDaemon(false);
-        super.setUncaughtExceptionHandler(LoggedUncaughtExceptionHandler.INSTANCE);
+        super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
         super.start();
     }
 
