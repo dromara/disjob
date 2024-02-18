@@ -26,7 +26,6 @@ import cn.ponfee.disjob.registry.Discovery;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.util.function.Function;
 
 import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
@@ -45,7 +44,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
                               Discovery<Worker> discoveryWorker,
                               RetryProperties retryProperties,
                               RestTemplate restTemplate,
-                              @Nullable TaskReceiver taskReceiver) {
+                              TaskReceiver taskReceiver) {
         super(eventPublisher, discoveryWorker, retryProperties, taskReceiver);
 
         Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());

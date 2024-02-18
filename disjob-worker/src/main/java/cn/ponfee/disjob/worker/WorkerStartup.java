@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,8 +63,8 @@ public class WorkerStartup implements Startable {
                           RetryProperties retryProperties,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver,
-                          @Nullable SupervisorRpcService supervisorRpcService,
-                          @Nullable ObjectMapper objectMapper) {
+                          SupervisorRpcService supervisorRpcService,
+                          ObjectMapper objectMapper) {
         Objects.requireNonNull(currentWorker, "Current worker cannot null.");
         Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
         Objects.requireNonNull(httpProperties, "Http properties cannot be null.").check();

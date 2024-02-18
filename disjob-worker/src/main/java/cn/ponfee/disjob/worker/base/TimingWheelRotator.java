@@ -80,7 +80,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
             .maximumPoolSize(actualProcessPoolSize)
             .workQueue(new LinkedBlockingQueue<>(Integer.MAX_VALUE))
             .keepAliveTimeSeconds(300)
-            .threadFactory(NamedThreadFactory.builder().prefix("timing_wheel_process").build())
+            .threadFactory(NamedThreadFactory.builder().prefix("timing_wheel_process").uncaughtExceptionHandler(LOG).build())
             .build();
     }
 

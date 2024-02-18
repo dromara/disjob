@@ -27,7 +27,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -53,7 +52,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
                                Discovery<Worker> discoveryWorker,
                                RetryProperties retryProperties,
                                RedisTemplate<String, String> redisTemplate,
-                               @Nullable TaskReceiver taskReceiver) {
+                               TaskReceiver taskReceiver) {
         super(eventPublisher, discoveryWorker, retryProperties, taskReceiver);
 
         this.redisTemplate = redisTemplate;

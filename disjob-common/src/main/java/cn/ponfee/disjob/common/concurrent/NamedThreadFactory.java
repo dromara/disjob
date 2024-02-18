@@ -16,9 +16,9 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 
-import java.util.Objects;
+import javax.annotation.Nonnull;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,34 +28,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Ponfee
  */
 public class NamedThreadFactory implements ThreadFactory {
-
     private static final AtomicInteger POOL_SEQ = new AtomicInteger(1);
-    private final AtomicInteger threadNo = new AtomicInteger(1);
 
+    private final AtomicInteger threadNo = new AtomicInteger(1);
+    private final ThreadGroup group;
     private final String prefix;
     private final Boolean daemon;
     private final Integer priority;
     private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
-    private final ThreadGroup group;
 
     private NamedThreadFactory(String prefix,
                                Boolean daemon,
                                Integer priority,
                                Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-        if (StringUtils.isBlank(prefix)) {
-            prefix = "pool-" + POOL_SEQ.getAndIncrement();
-        }
-        SecurityManager sm = System.getSecurityManager();
-        this.prefix = prefix + "-thread-";
+        SecurityManager s = System.getSecurityManager();
+        this.group = s != null ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        this.prefix = (prefix == null ? "pool-" + POOL_SEQ.getAndIncrement() : prefix) + "-thread-";
         this.daemon = daemon;
         this.priority = priority;
         this.uncaughtExceptionHandler = uncaughtExceptionHandler;
-        this.group = sm != null ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
     }
 
     @Override
-    public Thread newThread(Runnable runnable) {
-        Thread thread = new Thread(group, Objects.requireNonNull(runnable), prefix + threadNo.getAndIncrement(), 0);
+    public Thread newThread(@Nonnull Runnable runnable) {
+        Thread thread = new Thread(group, runnable, prefix + threadNo.getAndIncrement(), 0);
         thread.setDaemon(daemon != null ? daemon : Thread.currentThread().isDaemon());
         if (priority != null) {
             thread.setPriority(priority);
@@ -97,8 +93,13 @@ public class NamedThreadFactory implements ThreadFactory {
             return this;
         }
 
-        public Builder uncaughtExceptionHandler(Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-            this.uncaughtExceptionHandler = uncaughtExceptionHandler;
+        public Builder uncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+            this.uncaughtExceptionHandler = handler;
+            return this;
+        }
+
+        public Builder uncaughtExceptionHandler(Logger log) {
+            this.uncaughtExceptionHandler = new LoggedUncaughtExceptionHandler(log);
             return this;
         }
 

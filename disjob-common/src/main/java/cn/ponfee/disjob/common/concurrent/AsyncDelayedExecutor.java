@@ -73,7 +73,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
                 .maximumPoolSize(maximumPoolSize)
                 .workQueue(new SynchronousQueue<>())
                 .keepAliveTimeSeconds(300)
-                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_worker").build())
+                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_worker").uncaughtExceptionHandler(LOG).build())
                 .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
                 .build();
         }

@@ -140,7 +140,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             .workQueue(new ArrayBlockingQueue<>(1))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.DISCARD)
-            .threadFactory(NamedThreadFactory.builder().prefix("redis_async_subscribe").priority(Thread.MAX_PRIORITY).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("redis_async_subscribe").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(log).build())
             .build();
 
         // redis pub/sub

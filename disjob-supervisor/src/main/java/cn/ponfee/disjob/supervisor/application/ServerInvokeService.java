@@ -56,7 +56,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Server info service
+ * Invoke remote server service
  *
  * @author Ponfee
  */

@@ -18,8 +18,18 @@ package cn.ponfee.disjob.common.concurrent;
 
 import org.slf4j.Logger;
 
+import java.util.Objects;
+
 /**
+ * <pre>
  * Logged uncaught exception handler
+ *
+ * 1、`ThreadPoolExecutor#submit()`会被封装成`FutureTask`，当抛异常时会通过`FutureTask#setException(ex)`将异常赋值到outcome变量中。
+ *    异常信息不被打印，只有通过`FutureTask#get`获取结果时会重新抛出异常`throw new ExecutionException((Throwable)x);`
+ *
+ * 2、`ScheduledThreadPoolExecutor#scheduleWithFixedDelay()`会被封装成`ScheduledFutureTask`，
+ *    当执行`Runnable#run`内部抛异常时，`ScheduledFutureTask.super.runAndReset()`方法返回false，导致不会设置下次执行时间
+ * </pre>
  *
  * @author Ponfee
  */
@@ -28,7 +38,7 @@ public final class LoggedUncaughtExceptionHandler implements Thread.UncaughtExce
     private final Logger log;
 
     public LoggedUncaughtExceptionHandler(Logger log) {
-        this.log = log;
+        this.log = Objects.requireNonNull(log);
     }
 
     @Override

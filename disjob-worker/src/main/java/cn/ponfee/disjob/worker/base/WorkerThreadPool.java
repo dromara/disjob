@@ -754,7 +754,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     runTask(task);
                 } catch (Throwable t) {
                     LOG.error("Worker thread execute failed: " + task, t);
-                    terminateTask(threadPool, task, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                    final ExecuteTaskParam task0 = task;
+                    ThrowingRunnable.doCaught(() -> terminateTask(threadPool, task0, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t)));
                 }
 
                 // return this to idle thread pool
@@ -868,6 +869,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 stopInstance(task, Operation.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
+                    // 调用`Thread#stop()`时会抛出该异常，如果捕获到`ThreadDeath`异常，建议重新抛出以使线程中止
                     LOG.warn("Task execute thread death: {}, {}", task, t.getMessage());
                 } else if (t instanceof InterruptedException) {
                     LOG.warn("Task executed interrupted: {}, {}", task, t.getMessage());

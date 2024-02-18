@@ -316,7 +316,7 @@ public final class ThreadPoolExecutors {
             .workQueue(new ArrayBlockingQueue<>(poolSize * 10))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
-            .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-thread-pool").priority(Thread.MAX_PRIORITY).build())
+            .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-thread-pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build())
             .build();
 
         Runtime.getRuntime().addShutdownHook(new Thread(threadPool::shutdown));
@@ -326,7 +326,7 @@ public final class ThreadPoolExecutors {
     private static ScheduledThreadPoolExecutor makeCommonScheduledThreadPoolExecutor() {
         ScheduledThreadPoolExecutor scheduledPool = new ScheduledThreadPoolExecutor(
             1,
-            NamedThreadFactory.builder().prefix("disjob-common-scheduled-pool").priority(Thread.MAX_PRIORITY).build(),
+            NamedThreadFactory.builder().prefix("disjob-common-scheduled-pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build(),
             CALLER_RUNS
         );
         Runtime.getRuntime().addShutdownHook(new Thread(scheduledPool::shutdown));
