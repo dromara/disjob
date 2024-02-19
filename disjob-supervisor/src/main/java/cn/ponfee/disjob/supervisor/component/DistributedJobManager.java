@@ -41,6 +41,7 @@ import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
@@ -107,9 +108,10 @@ public class DistributedJobManager extends AbstractJobManager {
                                  IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
-                                 GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient,
+                                 GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient,
+                                 DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient,
                                  @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
-        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, workerRpcServiceClient);
+        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
         this.taskDispatchFailedCountThreshold = supervisorProperties.getTaskDispatchFailedCountThreshold();
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;

@@ -70,7 +70,7 @@ import java.util.function.Predicate;
 public final class DiscoveryServerRestProxy {
 
     private static final ConcurrentMap<Method, Request> METHOD_REQUEST_CACHE = new ConcurrentHashMap<>();
-    private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new NamedThreadLocal<>("discovery_rest_proxy");
+    private static final ThreadLocal<String> GROUP_THREAD_LOCAL = new NamedThreadLocal<>("discovery-group");
 
     /**
      * Creates ungrouped rpc service client proxy.

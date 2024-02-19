@@ -98,7 +98,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             // 1、has waiting state task
 
             // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
-            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, e -> jobManager.isDeadWorker(e.getWorker()));
+            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, jobManager::isNeedRedispatch);
             if (CollectionUtils.isEmpty(redispatchingTasks)) {
                 return;
             }

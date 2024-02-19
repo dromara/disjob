@@ -98,6 +98,11 @@ public class JobConstants {
     public static final String SPRING_BEAN_NAME_CURRENT_WORKER = SPRING_BEAN_NAME_PREFIX + ".current-worker";
 
     /**
+     * Rest template spring bean name
+     */
+    public static final String SPRING_BEAN_NAME_REST_TEMPLATE = SPRING_BEAN_NAME_PREFIX + ".rest-template";
+
+    /**
      * Authenticate header group
      */
     public static final String AUTHENTICATE_HEADER_GROUP = "X-Disjob-Group";

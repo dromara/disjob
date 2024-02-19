@@ -34,13 +34,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Destination server rest proxy
+ * Destination(Designated) server rest proxy
  *
  * @author Ponfee
  */
 public final class DestinationServerRestProxy {
 
-    private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("server_rest_proxy");
+    private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("destination-server");
 
     public static <T, S extends Server> DestinationServerInvoker<T, S> create(Class<T> interfaceType,
                                                                               @Nullable T localServiceProvider,

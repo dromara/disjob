@@ -30,10 +30,12 @@ import cn.ponfee.disjob.core.model.SchedDepend;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.param.worker.ExistsTaskParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
@@ -72,7 +74,8 @@ public abstract class AbstractJobManager {
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
-    private final GroupedServerInvoker<WorkerRpcService> workerRpcServiceClient;
+    private final GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient;
+    private final DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient;
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
@@ -207,10 +210,6 @@ public abstract class AbstractJobManager {
             && isAliveWorker(Worker.deserialize(text));
     }
 
-    public boolean isDeadWorker(String text) {
-        return !isAliveWorker(text);
-    }
-
     public boolean isAliveWorker(Worker worker) {
         return worker != null && workerDiscover.isDiscoveredServer(worker);
     }
@@ -225,6 +224,32 @@ public abstract class AbstractJobManager {
 
     public boolean hasNotDiscoveredWorkers() {
         return !workerDiscover.hasDiscoveredServers();
+    }
+
+    public boolean isNeedRedispatch(SchedTask task) {
+        if (!ExecuteState.WAITING.equals(task.getExecuteState())) {
+            return false;
+        }
+        if (StringUtils.isBlank(task.getWorker())) {
+            return true;
+        }
+
+        Worker worker = Worker.deserialize(task.getWorker());
+        if (isDeadWorker(worker)) {
+            return true;
+        }
+
+        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
+        ExistsTaskParam param = new ExistsTaskParam(supervisorToken, task.getTaskId());
+        try {
+            // `WorkerRpcService#existsTask`判断任务是否在线程池中
+            // 因扫描(WaitingInstanceScanner/RunningInstanceScanner)时间是很滞后的，
+            // 所以若任务已分发成功，不考虑该任务还在时间轮中的可能性，认定任务已在线程池(WorkerThreadPool)中了
+            return !destinationWorkerRpcClient.invoke(worker, client -> client.existsTask(param));
+        } catch (Throwable ignored) {
+            // 若调用异常(如请求超时)，本次不做处理，等下一次扫描时再判断是否要重新分发任务
+            return false;
+        }
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
@@ -277,12 +302,12 @@ public abstract class AbstractJobManager {
     private void verifyJob(SchedJob job) throws JobException {
         JobHandlerParam param = JobHandlerParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
-        workerRpcServiceClient.invokeWithoutResult(job.getGroup(), client -> client.verify(param));
+        groupedWorkerRpcClient.invokeWithoutResult(job.getGroup(), client -> client.verify(param));
     }
 
     private List<SplitTask> splitJob(JobHandlerParam param) throws JobException {
         SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
-        return workerRpcServiceClient.invoke(param.getGroup(), client -> client.split(param));
+        return groupedWorkerRpcClient.invoke(param.getGroup(), client -> client.split(param));
     }
 
     private void parseTriggerConfig(SchedJob job) {

@@ -61,4 +61,8 @@ public class WorkerConfigurator {
         workerThreadPool.clearTaskQueue();
     }
 
+    public static boolean existsTask(long taskId) {
+        return workerThreadPool.existsTask(taskId);
+    }
+
 }

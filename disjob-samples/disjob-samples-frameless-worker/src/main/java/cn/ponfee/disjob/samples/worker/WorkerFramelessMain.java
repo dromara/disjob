@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
@@ -45,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -145,13 +147,17 @@ public class WorkerFramelessMain {
         // --------------------- create receiver(select redis or http) --------------------- //
 
 
+        HttpProperties http = props.extract(HttpProperties.class, HTTP_KEY_PREFIX + ".");
+        http.check();
+        RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), null);
+
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
             .workerProperties(workerProperties)
             .retryProperties(props.extract(RetryProperties.class, RETRY_KEY_PREFIX + "."))
-            .httpProperties(props.extract(HttpProperties.class, HTTP_KEY_PREFIX + "."))
             .taskReceiver(actualTaskReceiver)
             .workerRegistry(workerRegistry)
+            .restTemplate(restTemplate)
             .build();
 
         try {

@@ -342,6 +342,18 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
     }
 
+    boolean existsTask(long taskId) {
+        if (activePool.existsTask(taskId)) {
+            return true;
+        }
+        for (ExecuteTaskParam task : taskQueue) {
+            if (task.getTaskId() == taskId) {
+                return true;
+            }
+        }
+        return activePool.existsTask(taskId);
+    }
+
     // ----------------------------------------------------------------------private methods
 
     /**
@@ -589,6 +601,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         int size() {
             return pool.size();
+        }
+
+        boolean existsTask(Long taskId) {
+            return pool.containsKey(taskId);
         }
     }
 

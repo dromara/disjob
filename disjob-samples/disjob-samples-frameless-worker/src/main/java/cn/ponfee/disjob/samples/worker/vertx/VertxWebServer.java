@@ -24,6 +24,7 @@ import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
+import cn.ponfee.disjob.core.param.worker.ExistsTaskParam;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
@@ -104,30 +105,34 @@ public class VertxWebServer extends AbstractVerticle {
 
         //String[] args = ctx.body().asPojo(String[].class);
         router.post(PREFIX_PATH + "/job/verify").handler(ctx -> handle(() -> {
-            JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
+            JobHandlerParam param = parseBodyArg(ctx, JobHandlerParam.class);
             workerRpcService.verify(param);
         }, ctx, BAD_REQUEST));
 
         router.post(PREFIX_PATH + "/job/split").handler(ctx -> handle(() -> {
-            JobHandlerParam param = parseArg(ctx, JobHandlerParam.class);
+            JobHandlerParam param = parseBodyArg(ctx, JobHandlerParam.class);
             JobHandlerParser.parse(param, "jobHandler");
             return workerRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
+        router.get(PREFIX_PATH + "/task/exists").handler(ctx -> handle(() -> {
+            ExistsTaskParam param = parseParamArg(ctx, ExistsTaskParam.class);
+            return workerRpcService.existsTask(param);
+        }, ctx, INTERNAL_SERVER_ERROR));
+
         router.get(PREFIX_PATH + "/metrics").handler(ctx -> handle(() -> {
-            String json = Collects.get(ctx.queryParam(LocalizedMethodArgumentUtils.getQueryParamName(0)), 0);
-            GetMetricsParam param = Jsons.fromJson(json, GetMetricsParam.class);
+            GetMetricsParam param = parseParamArg(ctx, GetMetricsParam.class);
             return workerRpcService.metrics(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         router.post(PREFIX_PATH + "/worker/configure").handler(ctx -> handle(() -> {
-            ConfigureWorkerParam param = parseArg(ctx, ConfigureWorkerParam.class);
+            ConfigureWorkerParam param = parseBodyArg(ctx, ConfigureWorkerParam.class);
             workerRpcService.configureWorker(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         if (httpTaskReceiver != null) {
             router.post(PREFIX_PATH + "/task/receive").handler(ctx -> handle(() -> {
-                ExecuteTaskParam param = parseArg(ctx, ExecuteTaskParam.class);
+                ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
                 JobHandlerParser.parse(param, "jobHandler");
                 return httpTaskReceiver.receive(param);
             }, ctx, INTERNAL_SERVER_ERROR));
@@ -163,9 +168,15 @@ public class VertxWebServer extends AbstractVerticle {
         }
     }
 
-    private static <T> T parseArg(RoutingContext ctx, Class<T> type) {
+    private static <T> T parseBodyArg(RoutingContext ctx, Class<T> type) {
         Object[] args = Jsons.parseArray(ctx.body().asString(), type);
         return args == null ? null : (T) args[0];
+    }
+
+    private static <T> T parseParamArg(RoutingContext ctx, Class<T> type) {
+        String arg0ParamName = LocalizedMethodArgumentUtils.getQueryParamName(0);
+        String json = Collects.get(ctx.queryParam(arg0ParamName), 0);
+        return Jsons.fromJson(json, type);
     }
 
     private static String toJson(Object obj) {

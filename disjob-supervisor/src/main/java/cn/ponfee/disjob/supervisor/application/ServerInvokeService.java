@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
@@ -39,20 +38,18 @@ import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -66,30 +63,26 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private final SupervisorRegistry supervisorRegistry;
     private final Supervisor.Current currentSupervisor;
-    private final DestinationServerInvoker<SupervisorRpcService, Supervisor> supervisorRpcServiceClient;
-    private final DestinationServerInvoker<WorkerRpcService, Worker> workerRpcServiceClient;
+    private final DestinationServerInvoker<SupervisorRpcService, Supervisor> supervisorRpcClient;
+    private final DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient;
 
-    public ServerInvokeService(@Value("${server.servlet.context-path:/}") String contextPath,
-                               SupervisorRegistry supervisorRegistry,
+    public ServerInvokeService(SupervisorRegistry supervisorRegistry,
                                Supervisor.Current currentSupervisor,
-                               SupervisorRpcService supervisorProvider,
-                               HttpProperties http,
-                               @Nullable WorkerRpcService workerProvider,
-                               @Nullable ObjectMapper objectMapper) {
-        http.check();
-        Function<Supervisor, String> supervisorContextPath = supervisor -> contextPath;
-        Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
-        RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
-        RetryProperties retry = RetryProperties.of(0, 0);
-
+                               @Value("${server.servlet.context-path:/}") String contextPath,
+                               SupervisorRpcService localSupervisorRpcProvider,
+                               @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                               DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient) {
         this.supervisorRegistry = supervisorRegistry;
         this.currentSupervisor = currentSupervisor;
-        this.supervisorRpcServiceClient = DestinationServerRestProxy.create(
-            SupervisorRpcService.class, supervisorProvider, currentSupervisor, supervisorContextPath, restTemplate, retry
+        this.supervisorRpcClient = DestinationServerRestProxy.create(
+            SupervisorRpcService.class,
+            localSupervisorRpcProvider,
+            currentSupervisor,
+            supervisor -> contextPath,
+            restTemplate,
+            RetryProperties.of(0, 0)
         );
-        this.workerRpcServiceClient = DestinationServerRestProxy.create(
-            WorkerRpcService.class, workerProvider, Worker.current(), workerContextPath, restTemplate, retry
-        );
+        this.workerRpcClient = workerRpcClient;
     }
 
     // ------------------------------------------------------------public methods
@@ -166,7 +159,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         Long pingTime = null;
         try {
             long start = System.currentTimeMillis();
-            metrics = supervisorRpcServiceClient.invoke(supervisor, SupervisorRpcService::metrics);
+            metrics = supervisorRpcClient.invoke(supervisor, SupervisorRpcService::metrics);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
@@ -192,7 +185,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         GetMetricsParam param = buildGetMetricsParam(group);
         try {
             long start = System.currentTimeMillis();
-            metrics = workerRpcServiceClient.invoke(worker, client -> client.metrics(param));
+            metrics = workerRpcClient.invoke(worker, client -> client.metrics(param));
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
@@ -222,7 +215,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private void verifyWorkerSignature(Worker worker) {
         String group = worker.getGroup();
         GetMetricsParam param = buildGetMetricsParam(group);
-        WorkerMetrics metrics = workerRpcServiceClient.invoke(worker, client -> client.metrics(param));
+        WorkerMetrics metrics = workerRpcClient.invoke(worker, client -> client.metrics(param));
         if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
         }
@@ -232,11 +225,11 @@ public class ServerInvokeService extends SingletonClassConstraint {
         ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
         param.setAction(action);
         param.setData(data);
-        workerRpcServiceClient.invokeWithoutResult(worker, client -> client.configureWorker(param));
+        workerRpcClient.invokeWithoutResult(worker, client -> client.configureWorker(param));
     }
 
     private void publishSupervisor(Supervisor supervisor, EventParam param) {
-        RetryTemplate.executeQuietly(() -> supervisorRpcServiceClient.invokeWithoutResult(supervisor, client -> client.publish(param)), 1, 2000);
+        RetryTemplate.executeQuietly(() -> supervisorRpcClient.invokeWithoutResult(supervisor, client -> client.publish(param)), 1, 2000);
     }
 
     private GetMetricsParam buildGetMetricsParam(String group) {

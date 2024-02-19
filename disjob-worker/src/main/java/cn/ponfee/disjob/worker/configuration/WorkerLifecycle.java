@@ -16,18 +16,19 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
-import cn.ponfee.disjob.core.base.HttpProperties;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.WorkerStartup;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.lang.Nullable;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -46,21 +47,19 @@ public class WorkerLifecycle implements SmartLifecycle {
     public WorkerLifecycle(Worker.Current currentWorker,
                            WorkerProperties workerProperties,
                            RetryProperties retryProperties,
-                           HttpProperties httpProperties,
                            WorkerRegistry workerRegistry,
                            TaskReceiver taskReceiver,
+                           @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                            // if the current server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
-                           @Nullable SupervisorRpcService supervisorRpcService,
-                           @Nullable ObjectMapper objectMapper) {
+                           @Nullable SupervisorRpcService supervisorRpcService) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
             .workerProperties(workerProperties)
             .retryProperties(retryProperties)
-            .httpProperties(httpProperties)
             .workerRegistry(workerRegistry)
             .taskReceiver(taskReceiver)
             .supervisorRpcService(supervisorRpcService)
-            .objectMapper(objectMapper)
+            .restTemplate(restTemplate)
             .build();
     }
 

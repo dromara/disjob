@@ -25,6 +25,7 @@ import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
+import cn.ponfee.disjob.core.param.worker.ExistsTaskParam;
 import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.registry.WorkerRegistry;
@@ -61,6 +62,12 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
     }
 
     @Override
+    public boolean existsTask(ExistsTaskParam param) {
+        currentWork.verifySupervisorAuthenticationToken(param);
+        return WorkerConfigurator.existsTask(param.getTaskId());
+    }
+
+    @Override
     public WorkerMetrics metrics(GetMetricsParam param) {
         String wGroup = currentWork.getGroup();
         String pGroup = param.getGroup();
@@ -68,12 +75,14 @@ public class WorkerRpcProvider implements WorkerRpcService, RpcController {
             throw new IllegalArgumentException("Inconsistent get metrics group: " + wGroup + " != " + pGroup);
         }
         currentWork.verifySupervisorAuthenticationToken(param);
+
         return WorkerConfigurator.metrics();
     }
 
     @Override
     public void configureWorker(ConfigureWorkerParam param) {
         currentWork.verifySupervisorAuthenticationToken(param);
+
         Action action = param.getAction();
         if (action == Action.MODIFY_MAXIMUM_POOL_SIZE) {
             Integer maximumPoolSize = action.parse(param.getData());

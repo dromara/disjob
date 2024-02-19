@@ -17,8 +17,7 @@
 package cn.ponfee.disjob.dispatch.http.configuration;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.spring.RestTemplateUtils;
-import cn.ponfee.disjob.core.base.HttpProperties;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
@@ -29,7 +28,7 @@ import cn.ponfee.disjob.dispatch.configuration.BaseTaskDispatchingAutoConfigurat
 import cn.ponfee.disjob.dispatch.http.HttpTaskDispatcher;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.ApplicationEventPublisher;
@@ -60,13 +59,10 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     @ConditionalOnBean(Supervisor.Current.class)
     @Bean
     public TaskDispatcher taskDispatcher(ApplicationEventPublisher eventPublisher,
-                                         HttpProperties http,
                                          RetryProperties retry,
                                          SupervisorRegistry discoveryWorker,
-                                         @Nullable ObjectMapper objectMapper,
+                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                          @Nullable TaskReceiver taskReceiver) {
-        http.check();
-        RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         return new HttpTaskDispatcher(eventPublisher, discoveryWorker, retry, restTemplate, taskReceiver);
     }
 

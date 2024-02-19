@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.worker.configuration;
 
 import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
+import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
@@ -25,6 +26,7 @@ import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -35,6 +37,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.lang.Nullable;
+import org.springframework.web.client.RestTemplate;
 
 import java.lang.annotation.*;
 
@@ -96,6 +100,13 @@ public @interface EnableWorker {
                 // cannot happen
                 throw new Error("Setting as current worker occur error.", e);
             }
+        }
+
+        @ConditionalOnMissingBean
+        @Bean(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
+        public RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
+            http.check();
+            return RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
