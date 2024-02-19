@@ -220,7 +220,7 @@ public class DistributedJobManager extends AbstractJobManager {
         Date now = new Date();
         // start sched instance(also possibly started by other task)
         int row = 0;
-        if (RunState.WAITING.equals(instance.getRunState())) {
+        if (RunState.WAITING.equalsValue(instance.getRunState())) {
             row = instanceMapper.start(param.getInstanceId(), now);
         }
 
@@ -373,7 +373,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             // task execute state must not 10
             List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId);
-            if (tasks.stream().anyMatch(e -> ExecuteState.WAITING.equals(e.getExecuteState()))) {
+            if (tasks.stream().anyMatch(e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()))) {
                 LOG.warn("Purge instance failed, has waiting task: {}", tasks);
                 return false;
             }
@@ -398,7 +398,7 @@ public class DistributedJobManager extends AbstractJobManager {
             tasks.stream()
                 .filter(e -> EXECUTE_STATE_PAUSABLE.contains(e.getExecuteState()))
                 .forEach(e -> {
-                    String worker = ExecuteState.EXECUTING.equals(e.getExecuteState()) ? Strings.requireNonBlank(e.getWorker()) : null;
+                    String worker = ExecuteState.EXECUTING.equalsValue(e.getExecuteState()) ? Strings.requireNonBlank(e.getWorker()) : null;
                     taskMapper.terminate(e.getTaskId(), worker, ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null);
                 });
 
@@ -478,7 +478,7 @@ public class DistributedJobManager extends AbstractJobManager {
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
         return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel failed, instance_id not found: " + instanceId);
-            if (!RunState.PAUSED.equals(instance.getRunState())) {
+            if (!RunState.PAUSED.equalsValue(instance.getRunState())) {
                 return false;
             }
 
@@ -489,7 +489,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 assertOneAffectedRow(row, () -> "Resume workflow lead instance failed: " + instanceId);
                 workflowMapper.resumeWaiting(instanceId);
                 for (SchedInstance nodeInstance : instanceMapper.findWorkflowNode(instanceId)) {
-                    if (RunState.PAUSED.equals(nodeInstance.getRunState())) {
+                    if (RunState.PAUSED.equalsValue(nodeInstance.getRunState())) {
                         resumeInstance(nodeInstance);
                         updateWorkflowEdgeState(nodeInstance, RunState.RUNNING.value(), RUN_STATE_PAUSED);
                     }
@@ -538,7 +538,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private boolean shouldTerminateDispatchFailedTask(long taskId) {
         SchedTask task = taskMapper.get(taskId);
-        if (!ExecuteState.WAITING.equals(task.getExecuteState())) {
+        if (!ExecuteState.WAITING.equalsValue(task.getExecuteState())) {
             return false;
         }
         int currentDispatchFailedCount = task.getDispatchFailedCount();
@@ -678,7 +678,7 @@ public class DistributedJobManager extends AbstractJobManager {
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.FINISHED;
             int row = instanceMapper.terminate(instance.getWnstanceId(), state.value(), RUN_STATE_TERMINABLE, new Date());
             assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + ", " + state);
-        } else if (workflows.stream().noneMatch(e -> RunState.RUNNING.equals(e.getRunState()))) {
+        } else if (workflows.stream().noneMatch(e -> RunState.RUNNING.equalsValue(e.getRunState()))) {
             RunState state = RunState.PAUSED;
             int row = instanceMapper.updateState(instance.getWnstanceId(), state.value(), instance.getRunState());
             assertOneAffectedRow(row, () -> "Update workflow lead instance state failed: " + instance + ", " + state);
@@ -714,7 +714,7 @@ public class DistributedJobManager extends AbstractJobManager {
         for (Map.Entry<DAGEdge, SchedWorkflow> entry : map.entrySet()) {
             DAGNode target = entry.getKey().getTarget();
             SchedWorkflow workflow = entry.getValue();
-            if (target.isEnd() || !RunState.WAITING.equals(workflow.getRunState()) || !duplicates.add(target)) {
+            if (target.isEnd() || !RunState.WAITING.equalsValue(workflow.getRunState()) || !duplicates.add(target)) {
                 // 当前节点为结束结点 或 当前节点不为等待状态，则跳过
                 continue;
             }
@@ -787,7 +787,7 @@ public class DistributedJobManager extends AbstractJobManager {
         // 2、必须是SCHEDULE方式运行的实例：不会存在`A -> ... -> A`问题，因为在添加Job时做了不能循环依赖的校验
         long rnstanceId = curr.obtainRnstanceId();
         SchedInstance root = (rnstanceId == curr.getInstanceId()) ? curr : instanceMapper.get(rnstanceId);
-        if (!root.getJobId().equals(curr.getJobId()) || !RunType.SCHEDULE.equals(root.getRunType())) {
+        if (!root.getJobId().equals(curr.getJobId()) || !RunType.SCHEDULE.equalsValue(root.getRunType())) {
             return;
         }
 
@@ -900,7 +900,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 .stream()
                 .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
                 // broadcast task cannot support partial retry
-                .filter(e -> !RouteStrategy.BROADCAST.equals(schedJob.getRouteStrategy()) || super.isAliveWorker(e.getWorker()))
+                .filter(e -> !RouteStrategy.BROADCAST.equalsValue(schedJob.getRouteStrategy()) || super.isAliveWorker(e.getWorker()))
                 .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstanceId, e.getTaskNo(), e.getTaskCount(), now, e.getWorker()))
                 .collect(Collectors.toList());
         } else {
@@ -933,7 +933,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 LOG.error("Child sched job not found: {}, {}", depend.getParentJobId(), depend.getChildJobId());
                 continue;
             }
-            if (JobState.DISABLE.equals(childJob.getJobState())) {
+            if (JobState.DISABLE.equalsValue(childJob.getJobState())) {
                 continue;
             }
 
@@ -971,7 +971,7 @@ public class DistributedJobManager extends AbstractJobManager {
         // immediate trigger
         long triggerTime = 0L;
         for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId())) {
-            if (!ExecuteState.EXECUTING.equals(task.getExecuteState())) {
+            if (!ExecuteState.EXECUTING.equalsValue(task.getExecuteState())) {
                 continue;
             }
             Worker worker = Worker.deserialize(task.getWorker());
@@ -998,7 +998,7 @@ public class DistributedJobManager extends AbstractJobManager {
         Assert.notNull(job, "Not found job: " + instance.getJobId());
         List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceId(instanceId)
             .stream()
-            .filter(e -> ExecuteState.WAITING.equals(e.getExecuteState()))
+            .filter(e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()))
             .collect(Collectors.toList());
         if (waitingTasks.size() != expectTaskSize) {
             throw new IllegalStateException("Invalid dispatching tasks size: expect=" + expectTaskSize + ", actual=" + waitingTasks.size());

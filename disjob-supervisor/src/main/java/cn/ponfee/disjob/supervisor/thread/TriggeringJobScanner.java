@@ -181,7 +181,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      * @return accurate next trigger time milliseconds
      */
     private Long reComputeNextTriggerTime(SchedJob job, Date now) {
-        if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
+        if (TriggerType.FIXED_DELAY.equalsValue(job.getTriggerType())) {
             // 固定延时类型不重新计算nextTriggerTime
             return job.obtainNextTriggerTime();
         }
@@ -201,7 +201,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      * @return newly next trigger time milliseconds
      */
     private static Long doComputeNextTriggerTime(SchedJob job, Date now) {
-        if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
+        if (TriggerType.FIXED_DELAY.equalsValue(job.getTriggerType())) {
             // 固定延时类型的nextTriggerTime：先更新为long最大值，当任务实例运行完成时去主动计算并更新
             // null值已被用作表示没有下次触发时间
             return Long.MAX_VALUE;
@@ -259,7 +259,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     private boolean checkBlockCollidedTrigger(SchedJob job, List<SchedInstance> instances, CollidedStrategy collidedStrategy, Date now) {
-        if (TriggerType.FIXED_DELAY.equals(job.getTriggerType())) {
+        if (TriggerType.FIXED_DELAY.equalsValue(job.getTriggerType())) {
             SchedInstance first = instances.get(0);
             log.error("Fixed delay trigger type cannot happen run collided: {}, {}", first.obtainRnstanceId(), job.getNextTriggerTime());
         }

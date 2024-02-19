@@ -196,7 +196,7 @@ public class DisjobInstanceController extends BaseController {
         openapiService.resumeInstance(instanceId);
         Threads.waitUntil(WAIT_SLEEP_ROUND, new long[]{500, 200}, () -> {
             SchedInstanceResponse instance = openapiService.getInstance(instanceId, false);
-            return !RunState.PAUSED.equals(instance.getRunState());
+            return !RunState.PAUSED.equalsValue(instance.getRunState());
         });
         return success();
     }

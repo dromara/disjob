@@ -272,7 +272,7 @@ public class SchedJob extends BaseEntity {
         if (!runState.isFailure()) {
             return false;
         }
-        return !RetryType.NONE.equals(retryType) && retriedCount < retryCount;
+        return !RetryType.NONE.equalsValue(retryType) && retriedCount < retryCount;
     }
 
     /**
@@ -283,7 +283,7 @@ public class SchedJob extends BaseEntity {
      * @return retry trigger time milliseconds
      */
     public long computeRetryTriggerTime(int failCount, Date current) {
-        Assert.isTrue(!RetryType.NONE.equals(retryType), () -> "Sched job '" + jobId + "' retry type is NONE.");
+        Assert.isTrue(!RetryType.NONE.equalsValue(retryType), () -> "Sched job '" + jobId + "' retry type is NONE.");
         Assert.isTrue(retryCount > 0, () -> "Sched job '" + jobId + "' retry count must greater than 0, but actual " + retryCount);
         Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' retried " + failCount + " exceed " + retryCount + " limit.");
         // exponential backoff

@@ -43,8 +43,24 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
      */
     String desc();
 
-    default boolean equals(Integer value) {
+    /**
+     * Returns IntValueEnum instance is equals Integer value
+     *
+     * @param value the Integer value
+     * @return {@code true} if equals
+     */
+    default boolean equalsValue(Integer value) {
         return value != null && value == value();
+    }
+
+    /**
+     * Returns IntValueEnum instance is equals int value
+     *
+     * @param value the int value
+     * @return {@code true} if equals
+     */
+    default boolean equalsValue(int value) {
+        return value == value();
     }
 
     static <T extends Enum<T> & IntValueEnum<T>> T of(Class<T> type, Integer value) {

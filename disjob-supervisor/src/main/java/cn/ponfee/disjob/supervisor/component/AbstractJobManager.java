@@ -150,7 +150,7 @@ public abstract class AbstractJobManager {
     public void deleteJob(long jobId) {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, "Job id not found: " + jobId);
-        if (JobState.ENABLE.equals(job.getJobState())) {
+        if (JobState.ENABLE.equalsValue(job.getJobState())) {
             throw new IllegalStateException("Please disable job before delete this job.");
         }
         assertOneAffectedRow(jobMapper.softDelete(jobId), "Delete sched job fail or conflict.");
@@ -162,7 +162,7 @@ public abstract class AbstractJobManager {
 
     protected boolean updateFixedDelayNextTriggerTime(SchedJob job, Date baseTime) {
         TriggerType fixedDelay = TriggerType.FIXED_DELAY;
-        if (!fixedDelay.equals(job.getTriggerType())) {
+        if (!fixedDelay.equalsValue(job.getTriggerType())) {
             return false;
         }
         Date date = baseTime == null ? null : fixedDelay.computeNextTriggerTime(job.getTriggerValue(), baseTime);
@@ -200,7 +200,7 @@ public abstract class AbstractJobManager {
             return false;
         }
         return tasks.stream()
-            .filter(e -> ExecuteState.EXECUTING.equals(e.getExecuteState()))
+            .filter(e -> ExecuteState.EXECUTING.equalsValue(e.getExecuteState()))
             .map(SchedTask::getWorker)
             .anyMatch(this::isAliveWorker);
     }
@@ -227,7 +227,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean isNeedRedispatch(SchedTask task) {
-        if (!ExecuteState.WAITING.equals(task.getExecuteState())) {
+        if (!ExecuteState.WAITING.equalsValue(task.getExecuteState())) {
             return false;
         }
         if (StringUtils.isBlank(task.getWorker())) {
@@ -256,7 +256,7 @@ public abstract class AbstractJobManager {
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
         List<ExecuteTaskParam> list;
-        if (RouteStrategy.BROADCAST.equals(job.getRouteStrategy())) {
+        if (RouteStrategy.BROADCAST.equalsValue(job.getRouteStrategy())) {
             list = new ArrayList<>(tasks.size());
             for (SchedTask task : tasks) {
                 Assert.hasText(task.getWorker(), () -> "Broadcast route strategy worker must pre assign: " + task.getTaskId());

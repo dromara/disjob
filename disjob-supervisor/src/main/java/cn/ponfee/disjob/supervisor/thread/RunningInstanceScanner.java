@@ -92,7 +92,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         }
 
         List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(instance.getInstanceId());
-        List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equals(e.getExecuteState()));
+        List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()));
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
             // 1、has waiting state task
