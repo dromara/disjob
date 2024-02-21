@@ -128,23 +128,23 @@ public @interface EnableSupervisor {
         public GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient(RetryProperties retry,
                                                                              @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                                                              SupervisorRegistry discoveryWorker,
-                                                                             @Nullable WorkerRpcService localServiceProvider,
+                                                                             @Nullable WorkerRpcService workerRpcProvider,
                                                                              @Nullable Worker.Current currentWorker) {
             retry.check();
             Predicate<String> serverGroupMatcher = group -> Worker.matchesGroup(currentWorker, group);
             return DiscoveryServerRestProxy.create(
-                WorkerRpcService.class, localServiceProvider, serverGroupMatcher, discoveryWorker, restTemplate, retry
+                WorkerRpcService.class, workerRpcProvider, serverGroupMatcher, discoveryWorker, restTemplate, retry
             );
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @Bean
         public DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient(@Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                                                                             @Nullable WorkerRpcService localServiceProvider) {
+                                                                                             @Nullable WorkerRpcService workerRpcProvider) {
             RetryProperties retry = RetryProperties.of(0, 0);
             Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
             return DestinationServerRestProxy.create(
-                WorkerRpcService.class, localServiceProvider, Worker.current(), workerContextPath, restTemplate, retry
+                WorkerRpcService.class, workerRpcProvider, Worker.current(), workerContextPath, restTemplate, retry
             );
         }
 

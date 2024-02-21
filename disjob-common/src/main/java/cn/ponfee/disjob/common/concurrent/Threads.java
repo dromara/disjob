@@ -34,32 +34,21 @@ public final class Threads {
     /**
      * New thread
      *
-     * @param run the runnable
-     * @return thread instance
-     */
-    public static Thread newThread(Runnable run) {
-        Thread thread = new Thread(run);
-        String callerClassName = Thread.currentThread().getStackTrace()[2].getClassName();
-        thread.setName(callerClassName.substring(callerClassName.lastIndexOf(".") + 1));
-        thread.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
-        return thread;
-    }
-
-    /**
-     * New thread
-     *
      * @param name     the thread name
      * @param daemon   the daemon
      * @param priority the priority
      * @param run      the runnable
+     * @param logger   the uncaught exception handler logger
      * @return thread instance
      */
-    public static Thread newThread(String name, boolean daemon, int priority, Runnable run) {
+    public static Thread newThread(String name, boolean daemon, int priority, Runnable run, Logger logger) {
         Thread thread = new Thread(run);
         thread.setName(name);
         thread.setDaemon(daemon);
         thread.setPriority(priority);
-        thread.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
+        if (logger != null) {
+            thread.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(logger));
+        }
         return thread;
     }
 
@@ -146,8 +135,6 @@ public final class Threads {
             return;
         }
 
-        thread.interrupt();
-
         if (Thread.currentThread() == thread) {
             if (fromAsync) {
                 LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
@@ -157,6 +144,9 @@ public final class Threads {
             }
             return;
         }
+
+        // do interrupt
+        thread.interrupt();
 
         // wait joined
         if (joinMillis > 0) {
@@ -181,7 +171,6 @@ public final class Threads {
             return;
         }
 
-        thread.interrupt();
         try {
             // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
             // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行

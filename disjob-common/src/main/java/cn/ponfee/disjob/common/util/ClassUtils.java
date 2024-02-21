@@ -124,7 +124,7 @@ public final class ClassUtils {
      */
     public static List<Field> listFields(Class<?> clazz) {
         if (clazz.isInterface() || clazz == Object.class) {
-            return null; // error class args
+            throw new IllegalArgumentException("Class cannot be interface or Object.class: " + clazz);
         }
 
         List<Field> list = new ArrayList<>();

@@ -65,7 +65,7 @@ public class CuratorFrameworkClient implements Closeable {
         curatorFramework.getConnectionStateListenable().addListener(new CuratorConnectionStateListener());
 
         curatorFramework.start();
-        boolean isStarted = curatorFramework.getState().equals(CuratorFrameworkState.STARTED);
+        boolean isStarted = curatorFramework.getState() == CuratorFrameworkState.STARTED;
         Assert.state(isStarted, () -> "Curator framework not started: " + curatorFramework.getState());
         boolean isConnected = curatorFramework.blockUntilConnected(config.getMaxWaitTimeMs(), TimeUnit.MILLISECONDS);
         Assert.state(isConnected, () -> "Curator framework not connected: " + curatorFramework.getState());

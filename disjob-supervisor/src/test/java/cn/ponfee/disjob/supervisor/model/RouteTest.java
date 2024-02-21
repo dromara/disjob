@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.dispatch.route.count.AtomicCounter;
 import cn.ponfee.disjob.dispatch.route.count.JdkAtomicCounter;
-import cn.ponfee.disjob.dispatch.route.count.RedisAtomicCounter;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -55,6 +54,7 @@ public class RouteTest extends SpringBootTestBase<StringRedisTemplate> {
         Assertions.assertEquals(1, bean.opsForValue().increment(key2));
         Assertions.assertEquals(2, bean.opsForValue().increment(key2));
 
+        /*
         RedisAtomicCounter counter = new RedisAtomicCounter("disjob:counter3:" + UuidUtils.uuid32(), bean);
         long initValue = counter.get();
         Assertions.assertEquals(initValue, counter.getAndIncrement());
@@ -63,5 +63,6 @@ public class RouteTest extends SpringBootTestBase<StringRedisTemplate> {
         Assertions.assertEquals(6 + initValue, counter.get());
         counter.set(100);
         Assertions.assertEquals(100, counter.get());
+        */
     }
 }

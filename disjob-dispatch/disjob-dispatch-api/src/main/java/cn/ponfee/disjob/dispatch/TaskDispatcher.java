@@ -103,11 +103,11 @@ public abstract class TaskDispatcher implements Startable {
     /**
      * Assign a worker and dispatch to the assigned worker.
      *
-     * @param tasks the list of execution task param
      * @param group the group
+     * @param tasks the list of execution task param
      * @return {@code true} if the first dispatch successful
      */
-    public final boolean dispatch(List<ExecuteTaskParam> tasks, String group) {
+    public final boolean dispatch(String group, List<ExecuteTaskParam> tasks) {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }

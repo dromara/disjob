@@ -45,6 +45,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -64,9 +66,10 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  */
 @RequiredArgsConstructor
 public abstract class AbstractJobManager {
-
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
     private static final int MAX_DEPENDS_LEVEL = 20;
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
@@ -226,27 +229,30 @@ public abstract class AbstractJobManager {
         return !workerDiscover.hasDiscoveredServers();
     }
 
-    public boolean isNeedRedispatch(SchedTask task) {
+    public boolean shouldRedispatch(SchedTask task) {
         if (!ExecuteState.WAITING.equalsValue(task.getExecuteState())) {
             return false;
         }
         if (StringUtils.isBlank(task.getWorker())) {
+            // not dispatched to a worker successfully
             return true;
         }
 
         Worker worker = Worker.deserialize(task.getWorker());
         if (isDeadWorker(worker)) {
+            // dispatched worker are dead
             return true;
         }
 
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
         ExistsTaskParam param = new ExistsTaskParam(supervisorToken, task.getTaskId());
         try {
-            // `WorkerRpcService#existsTask`判断任务是否在线程池中
+            // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发。
             // 因扫描(WaitingInstanceScanner/RunningInstanceScanner)时间是很滞后的，
-            // 所以若任务已分发成功，不考虑该任务还在时间轮中的可能性，认定任务已在线程池(WorkerThreadPool)中了
+            // 所以若任务已分发成功，不考虑该任务还在时间轮中的可能性，认定任务已在线程池(WorkerThreadPool)中了。
             return !destinationWorkerRpcClient.invoke(worker, client -> client.existsTask(param));
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            log.error("Invoke worker exists task error: " + worker, e);
             // 若调用异常(如请求超时)，本次不做处理，等下一次扫描时再判断是否要重新分发任务
             return false;
         }
@@ -259,7 +265,6 @@ public abstract class AbstractJobManager {
         if (RouteStrategy.BROADCAST.equalsValue(job.getRouteStrategy())) {
             list = new ArrayList<>(tasks.size());
             for (SchedTask task : tasks) {
-                Assert.hasText(task.getWorker(), () -> "Broadcast route strategy worker must pre assign: " + task.getTaskId());
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (isDeadWorker(worker)) {
                     cancelWaitingTask(task.getTaskId());
@@ -273,19 +278,11 @@ public abstract class AbstractJobManager {
                 .collect(Collectors.toList());
         }
 
-        return taskDispatcher.dispatch(list, job.getGroup());
+        return taskDispatcher.dispatch(job.getGroup(), list);
     }
 
     public boolean dispatch(List<ExecuteTaskParam> params) {
-        List<ExecuteTaskParam> list = new ArrayList<>(params.size());
-        for (ExecuteTaskParam param : params) {
-            if (RouteStrategy.BROADCAST == param.getRouteStrategy() && isDeadWorker(param.getWorker())) {
-                cancelWaitingTask(param.getTaskId());
-            } else {
-                list.add(param);
-            }
-        }
-        return taskDispatcher.dispatch(list);
+        return taskDispatcher.dispatch(params);
     }
 
     /**

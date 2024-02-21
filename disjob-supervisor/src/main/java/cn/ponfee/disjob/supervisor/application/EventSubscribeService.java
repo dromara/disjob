@@ -54,8 +54,8 @@ public class EventSubscribeService extends SingletonClassConstraint {
 
     public static void subscribe(EventParam param) {
         if (param != null && param.getType() != null) {
-            // putIfAbsent不会更新param
-            MAP.compute(param.getType(), (k, v) -> param);
+            // add or update value
+            MAP.put(param.getType(), param);
         }
     }
 

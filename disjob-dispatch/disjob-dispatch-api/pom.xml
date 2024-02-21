@@ -22,12 +22,6 @@
       <artifactId>disjob-registry-api</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-    <!-- round-robin route: RedisAtomicCounter -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-redis</artifactId>
-      <optional>true</optional>
-    </dependency>
   </dependencies>
 
 </project>

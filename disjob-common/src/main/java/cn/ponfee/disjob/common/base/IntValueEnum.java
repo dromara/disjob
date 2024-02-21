@@ -44,7 +44,7 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
     String desc();
 
     /**
-     * Returns IntValueEnum instance is equals Integer value
+     * Returns this IntValueEnum instance value is equals Integer value
      *
      * @param value the Integer value
      * @return {@code true} if equals
@@ -54,7 +54,7 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
     }
 
     /**
-     * Returns IntValueEnum instance is equals int value
+     * Returns this IntValueEnum instance value is equals int value
      *
      * @param value the int value
      * @return {@code true} if equals
@@ -63,19 +63,16 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
         return value == value();
     }
 
-    static <T extends Enum<T> & IntValueEnum<T>> T of(Class<T> type, Integer value) {
+    static <T extends Enum<T> & IntValueEnum<T>> T of(Class<T> type, int value) {
         if (type == null) {
-            throw new IllegalArgumentException("Enum int type cannot be null: " + type);
-        }
-        if (value == null) {
-            throw new IllegalArgumentException("Enum int value cannot be null.");
+            throw new IllegalArgumentException("Enum class cannot be null.");
         }
         for (T e : type.getEnumConstants()) {
             if (e.value() == value) {
                 return e;
             }
         }
-        throw new IllegalArgumentException("Invalid enum int value: " + value);
+        throw new IllegalArgumentException("Invalid enum " + type + " int value: " + value);
     }
 
     static List<IntValueDesc> values(Class<? extends IntValueEnum<?>> clazz) {

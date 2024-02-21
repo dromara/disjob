@@ -854,7 +854,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 if (task.getExecuteTimeout() > 0) {
                     FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, savepoint));
                     String threadName = getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
-                    Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask);
+                    Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask, LOG);
                     futureTaskThread.start();
                     try {
                         result = futureTask.get(task.getExecuteTimeout(), TimeUnit.MILLISECONDS);

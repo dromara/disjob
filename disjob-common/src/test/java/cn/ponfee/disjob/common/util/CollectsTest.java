@@ -17,14 +17,20 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.collections.Sets;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Collects test
@@ -51,6 +57,46 @@ public class CollectsTest {
         Object[] array2 = list.stream().flatMap(List::stream).toArray(length -> Collects.newArray(Object[].class, length));
         System.out.println(Arrays.toString(array2));
         assertThat(array2).hasSize(9);
+    }
+
+    private static String test = "xxx";
+    private static final String STR = "123";
+
+    @Test
+    public void testReflect() throws IllegalAccessException {
+        // static field
+        Field f = FieldUtils.getField(CollectsTest.class, "test", true);
+        assertThat("xxx").isEqualTo(test);
+        assertThat("xxx").isEqualTo(FieldUtils.readField(f, (Object) null));
+        FieldUtils.writeField(f, (Object) null, "yyy", true);
+        assertThat("yyy").isEqualTo(test);
+        assertThat("yyy").isEqualTo(FieldUtils.readField(f, (Object) null));
+
+        // static final field
+        Field f1 = FieldUtils.getField(CollectsTest.class, "STR", true);
+        Field f2 = FieldUtils.getField(CollectsTest.class, "STR", true);
+        assertThat(f1).isSameAs(f1);
+        assertThat(f1 == f2).isFalse();
+        assertThat(f1).isNotSameAs(f2); // f1 != f2
+        assertThat(f1).isEqualTo(f2);
+
+        assertThat("123").isEqualTo(STR);
+        assertThat("123").isEqualTo(FieldUtils.readField(f1, (Object) null));
+
+        assertThatThrownBy(() -> FieldUtils.writeField(f1, (Object) null, "abc", true))
+            .isInstanceOf(IllegalAccessException.class)
+            .hasMessage("Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to java.lang.String");
+
+        Fields.put(CollectsTest.class, f1, "abc");
+        assertThat("123").isEqualTo(STR); // 编译时直接替换为`123`
+        assertThat("abc").isEqualTo(FieldUtils.readField(f1, (Object) null));
+
+        Method m1 = MethodUtils.getMatchingMethod(ClassUtils.class, "decodeURL", URL.class);
+        Method m2 = MethodUtils.getMatchingMethod(ClassUtils.class, "decodeURL", URL.class);
+        assertThat(m1).isSameAs(m1);
+        assertThat(m1 == m2).isFalse();
+        assertThat(m1).isNotSameAs(m2);
+        assertThat(m1).isEqualTo(m2);
     }
 
 }

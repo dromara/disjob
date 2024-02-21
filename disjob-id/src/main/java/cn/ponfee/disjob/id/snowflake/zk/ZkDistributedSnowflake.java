@@ -361,7 +361,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
         CuratorFramework curatorFramework = builder.build();
 
         curatorFramework.start();
-        boolean isStarted = curatorFramework.getState().equals(CuratorFrameworkState.STARTED);
+        boolean isStarted = curatorFramework.getState() == CuratorFrameworkState.STARTED;
         Assert.state(isStarted, () -> "Snowflake curator framework not started: " + curatorFramework.getState());
         boolean isConnected = curatorFramework.blockUntilConnected(5000, TimeUnit.MILLISECONDS);
         Assert.state(isConnected, () -> "Snowflake curator framework not connected: " + curatorFramework.getState());

@@ -53,8 +53,6 @@ import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -79,7 +77,6 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  */
 @Component
 public class DistributedJobManager extends AbstractJobManager {
-    private static final Logger LOG = LoggerFactory.getLogger(DistributedJobManager.class);
 
     private static final List<Integer> RUN_STATE_TERMINABLE = Collects.convert(RunState.Const.TERMINABLE_LIST, RunState::value);
     private static final List<Integer> RUN_STATE_RUNNABLE = Collects.convert(RunState.Const.RUNNABLE_LIST, RunState::value);
@@ -132,7 +129,7 @@ public class DistributedJobManager extends AbstractJobManager {
         int toState = ExecuteState.DISPATCH_FAILED.value();
         int fromState = ExecuteState.WAITING.value();
         if (isNotAffectedRow(taskMapper.terminate(event.getTaskId(), null, toState, fromState, null, null))) {
-            LOG.warn("Terminate dispatch failed task unsuccessful: {}", event.getTaskId());
+            log.warn("Terminate dispatch failed task unsuccessful: {}", event.getTaskId());
         }
     }
 
@@ -216,7 +213,7 @@ public class DistributedJobManager extends AbstractJobManager {
             return false;
         }
 
-        LOG.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
+        log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
         Date now = new Date();
         // start sched instance(also possibly started by other task)
         int row = 0;
@@ -251,7 +248,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(param.a, param.b, param.c));
             }
 
-            LOG.info("Force change state success {}, {}", instanceId, toExecuteState);
+            log.info("Force change state success {}, {}", instanceId, toExecuteState);
         });
     }
 
@@ -288,7 +285,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 row = taskMapper.deleteByInstanceId(instanceId);
                 assertHasAffectedRow(row, () -> "Delete sched task conflict: " + instanceId);
             }
-            LOG.info("Delete sched instance success {}", instanceId);
+            log.info("Delete sched instance success {}", instanceId);
         });
     }
 
@@ -305,7 +302,7 @@ public class DistributedJobManager extends AbstractJobManager {
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
         Assert.isTrue(!ExecuteState.Const.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
-        LOG.info("Task trace [{}] terminating: {}, {}", param.getTaskId(), param.getOperation(), param.getWorker());
+        log.info("Task trace [{}] terminating: {}, {}, {}", param.getTaskId(), param.getOperation(), param.getToState(), param.getWorker());
         return doTransactionLockInSynchronized(instanceId, param.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Terminate executing task failed, instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Cannot direct terminate workflow lead instance: " + instance);
@@ -318,7 +315,7 @@ public class DistributedJobManager extends AbstractJobManager {
             int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
             if (isNotAffectedRow(row)) {
                 // usual is worker invoke http timeout, then retry
-                LOG.warn("Conflict terminate executing task: {}, {}", param.getTaskId(), toState);
+                log.warn("Conflict terminate executing task: {}, {}", param.getTaskId(), toState);
                 return false;
             }
 
@@ -361,7 +358,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if purged successfully
      */
     public boolean purgeInstance(SchedInstance inst) {
-        LOG.info("Purge instance: {}", inst.getInstanceId());
+        log.info("Purge instance: {}", inst.getInstanceId());
         Long instanceId = inst.getInstanceId();
         return doTransactionLockInSynchronized(instanceId, inst.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Purge instance not found: " + instanceId);
@@ -374,13 +371,13 @@ public class DistributedJobManager extends AbstractJobManager {
             // task execute state must not 10
             List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId);
             if (tasks.stream().anyMatch(e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()))) {
-                LOG.warn("Purge instance failed, has waiting task: {}", tasks);
+                log.warn("Purge instance failed, has waiting task: {}", tasks);
                 return false;
             }
 
             // if task execute state is 20, cannot is alive
             if (hasAliveExecuting(tasks)) {
-                LOG.warn("Purge instance failed, has alive executing task: {}", tasks);
+                log.warn("Purge instance failed, has alive executing task: {}", tasks);
                 return false;
             }
 
@@ -405,7 +402,7 @@ public class DistributedJobManager extends AbstractJobManager {
             instance.markTerminated(tuple.a, tuple.b);
             afterTerminateTask(instance);
 
-            LOG.warn("Purge instance {} to state {}", instanceId, tuple.a);
+            log.warn("Purge instance {} to state {}", instanceId, tuple.a);
             return true;
         });
     }
@@ -417,7 +414,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if paused successfully
      */
     public boolean pauseInstance(long instanceId) {
-        LOG.info("Pause instance: {}", instanceId);
+        log.info("Pause instance: {}", instanceId);
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
         if (wnstanceId != null) {
             Assert.isTrue(instanceId == wnstanceId, () -> "Must pause lead workflow instance: " + instanceId);
@@ -440,7 +437,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if canceled successfully
      */
     public boolean cancelInstance(long instanceId, Operation ops) {
-        LOG.info("Cancel instance: {}, {}", instanceId, ops);
+        log.info("Cancel instance: {}, {}", instanceId, ops);
         Assert.isTrue(ops.toState().isFailure(), () -> "Cancel instance operation invalid: " + ops);
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
         if (wnstanceId != null) {
@@ -836,7 +833,7 @@ public class DistributedJobManager extends AbstractJobManager {
             graph,
             graph.successors(DAGNode.fromString(nodeInstance.parseAttach().getCurNode())),
             throwable -> {
-                LOG.error("Split workflow job task error: " + nodeInstance, throwable);
+                log.error("Split workflow job task error: " + nodeInstance, throwable);
                 onCreateWorkflowNodeFailed(nodeInstance.getWnstanceId());
                 return false;
             }
@@ -856,7 +853,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private void retryJob(SchedInstance prev, LazyLoader<SchedJob> lazyJob) {
         SchedJob schedJob = lazyJob.orElseGet(() -> {
-            LOG.error("Sched job not found {}", prev.getJobId());
+            log.error("Sched job not found {}", prev.getJobId());
             return null;
         });
         int retriedCount = prev.obtainRetriedCount();
@@ -891,7 +888,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 // re-split tasks
                 tasks = splitTasks(JobHandlerParam.from(schedJob), retryInstance.getInstanceId(), now);
             } catch (Throwable t) {
-                LOG.error("Split retry job error: " + schedJob + ", " + prev, t);
+                log.error("Split retry job error: " + schedJob + ", " + prev, t);
                 processWorkflow(prev);
                 return;
             }
@@ -930,7 +927,7 @@ public class DistributedJobManager extends AbstractJobManager {
         for (SchedDepend depend : schedDepends) {
             SchedJob childJob = jobMapper.get(depend.getChildJobId());
             if (childJob == null) {
-                LOG.error("Child sched job not found: {}, {}", depend.getParentJobId(), depend.getChildJobId());
+                log.error("Child sched job not found: {}, {}", depend.getParentJobId(), depend.getChildJobId());
                 continue;
             }
             if (JobState.DISABLE.equalsValue(childJob.getJobState())) {
@@ -954,7 +951,7 @@ public class DistributedJobManager extends AbstractJobManager {
                     createInstance(tInstance);
                     return () -> creator.dispatch(childJob, tInstance);
                 },
-                t -> LOG.error("Depend job instance created fail: " + parentInstance + ", " + childJob, t)
+                t -> log.error("Depend job instance created fail: " + parentInstance + ", " + childJob, t)
             );
 
             if (dispatchAction != null) {
@@ -980,12 +977,11 @@ public class DistributedJobManager extends AbstractJobManager {
             } else {
                 // update dead task
                 Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
-                int row = taskMapper.terminate(task.getTaskId(), task.getWorker(), ops.toState().value(), ExecuteState.EXECUTING.value(), executeEndTime, null);
+                int toState = ExecuteState.EXECUTE_TIMEOUT.value();
+                int fromState = ExecuteState.EXECUTING.value();
+                int row = taskMapper.terminate(task.getTaskId(), task.getWorker(), toState, fromState, executeEndTime, null);
                 if (isNotAffectedRow(row)) {
-                    LOG.error("Cancel the dead task failed: {}", task);
-                    executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));
-                } else {
-                    LOG.info("Cancel the dead task success: {}", task);
+                    log.error("Terminate loaded executing dead worker task failed: {}", task);
                 }
             }
         }
