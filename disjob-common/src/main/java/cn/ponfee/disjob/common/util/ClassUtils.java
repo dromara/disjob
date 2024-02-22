@@ -217,11 +217,11 @@ public final class ClassUtils {
      */
     public static String getName(Class<?> clazz) {
         String name = clazz.getCanonicalName();
-        if (name == null) {
-            name = clazz.getName();
-        }
+        return name != null ? name : clazz.getName();
+    }
 
-        return name;
+    public static String getClassName(Object obj) {
+        return obj == null ? null : getName(obj.getClass());
     }
 
     /**
@@ -229,7 +229,7 @@ public final class ClassUtils {
      * getPackagePath("cn.ponfee.commons.reflect")  ->  cn/ponfee/commons/reflect
      *
      * @param packageName the package name
-     * @return
+     * @return package name
      * @see org.springframework.util.ClassUtils#convertClassNameToResourcePath
      */
     public static String getPackagePath(String packageName) {
@@ -311,10 +311,10 @@ public final class ClassUtils {
      * ClassUtils.newInstance(Tuple3.class, new Object[]{1, 2, 3}) <p>
      * ClassUtils.newInstance(Tuple2.class, new Object[]{new String[]{"a", "b"}, new Integer[]{1, 2}}) <p>
      *
-     * @param type the type
+     * @param type the class
      * @param args the args
-     * @param <T>
-     * @return
+     * @param <T>  class type
+     * @return instance
      */
     public static <T> T newInstance(Class<T> type, Object[] args) {
         checkObjectArray(args);

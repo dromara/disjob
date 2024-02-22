@@ -48,23 +48,29 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(AsyncDelayedExecutor.class);
 
-    private final Consumer<E> processor;            // 数据处理器
-    private final ThreadPoolExecutor asyncExecutor; // 异步执行器
+    /**
+     * 数据处理器
+     */
+    private final Consumer<E> dataProcessor;
+
+    /**
+     * 异步执行器
+     */
+    private final ThreadPoolExecutor asyncExecutor;
 
     private final DelayQueue<DelayedData<E>> queue = new DelayQueue<>();
     private final AtomicBoolean stopped = new AtomicBoolean(false);
 
-    public AsyncDelayedExecutor(Consumer<E> processor) {
-        this(1, processor);
+    public AsyncDelayedExecutor(Consumer<E> dataProcessor) {
+        this(1, dataProcessor);
     }
 
     /**
      * @param maximumPoolSize the maximumPoolSize
-     * @param processor       the data processor
+     * @param dataProcessor   the data processor
      */
-    public AsyncDelayedExecutor(int maximumPoolSize,
-                                Consumer<E> processor) {
-        this.processor = processor;
+    public AsyncDelayedExecutor(int maximumPoolSize, Consumer<E> dataProcessor) {
+        this.dataProcessor = dataProcessor;
 
         ThreadPoolExecutor executor = null;
         if (maximumPoolSize > 1) {
@@ -73,13 +79,13 @@ public final class AsyncDelayedExecutor<E> extends Thread {
                 .maximumPoolSize(maximumPoolSize)
                 .workQueue(new SynchronousQueue<>())
                 .keepAliveTimeSeconds(300)
-                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_worker").uncaughtExceptionHandler(LOG).build())
+                .threadFactory(NamedThreadFactory.builder().prefix("async_delayed_executor").uncaughtExceptionHandler(LOG).build())
                 .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
                 .build();
         }
         this.asyncExecutor = executor;
 
-        super.setName("async_delayed_executor-" + Integer.toHexString(hashCode()));
+        super.setName("async_delayed_boss-" + Integer.toHexString(hashCode()));
         super.setDaemon(false);
         super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOG));
         super.start();
@@ -103,7 +109,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
     public void doStop() {
         toStop();
-        Threads.stopThread(this, 1000);
+        Threads.stopThread(this, 3000);
     }
 
     @Override
@@ -115,10 +121,9 @@ public final class AsyncDelayedExecutor<E> extends Thread {
             }
             DelayedData<E> delayed;
             try {
-                delayed = queue.poll(3000, TimeUnit.MILLISECONDS);
+                delayed = queue.poll(2000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 LOG.error("Delayed queue pool interrupted.", e);
-                toStop();
                 Thread.currentThread().interrupt();
                 break;
             }
@@ -126,13 +131,14 @@ public final class AsyncDelayedExecutor<E> extends Thread {
             if (delayed != null) {
                 E data = delayed.getData();
                 if (asyncExecutor != null) {
-                    asyncExecutor.submit(ThrowingRunnable.toCaught(() -> processor.accept(data)));
+                    asyncExecutor.submit(ThrowingRunnable.toCaught(() -> dataProcessor.accept(data)));
                 } else {
-                    ThrowingRunnable.doCaught(() -> processor.accept(data));
+                    ThrowingRunnable.doCaught(() -> dataProcessor.accept(data));
                 }
             }
         }
 
+        toStop();
         if (asyncExecutor != null) {
             // destroy the async executor
             ThreadPoolExecutors.shutdown(asyncExecutor, 1);

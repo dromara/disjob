@@ -137,7 +137,7 @@ public abstract class TaskDispatcher implements Startable {
      */
     @Override
     public void stop() {
-        // No-op
+        asyncDelayedExecutor.doStop();
     }
 
     // ------------------------------------------------------------private methods

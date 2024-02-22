@@ -29,7 +29,7 @@ public class JdkAtomicCounter extends AtomicCounter {
     private final AtomicLong counter;
 
     public JdkAtomicCounter() {
-        this(1);
+        this(0);
     }
 
     public JdkAtomicCounter(long initialValue) {

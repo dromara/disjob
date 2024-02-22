@@ -241,6 +241,7 @@
 
   <!-- ********************page query******************** -->
 
+  <!-- COUNT(*)是SQL 92定义的标准统计行数的语法，优先走普通索引进行统计 -->
   <select id="queryPageCount" resultType="_long">
     SELECT COUNT(*) cnt
     FROM <include refid="Table_Name" />
