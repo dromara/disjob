@@ -6,10 +6,8 @@
   <properties>
     <!-- 系统属性变量：System.getProperty("log.home")，${sys:variable_name:-default_value} -->
     <!-- pattern: https://logging.apache.org/log4j/2.x/manual/layouts.html -->
-    <!-- Replace ${sys:PID} with %pid in log4j2 configuration: https://github.com/spring-projects/spring-boot/issues/15426 -->
-    <!-- https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot/src/main/resources/org/springframework/boot/logging/log4j2/log4j2.xml -->
     <property name="LOG_HOME">${sys:log.home:-../logs}</property>
-    <property name="APP_NAME">${sys:app.name:-disjob-samples}</property>
+    <property name="APP_NAME">${sys:app.name:-disjob-admin}</property>
     <property name="PATTERN_CONSOLE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %highlight{%-5p} | %t | %c{1} >>>> %msg%n</property>
     <property name="PATTERN_FILE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5p | %pid | %t | %c{1} : %msg%n</property>
   </properties>
@@ -48,30 +46,9 @@
     </Async>
   </Appenders>
 
-  <!--
-  https://blog.csdn.net/HongZeng_CSDN/article/details/130094219
-  Root Logger：提供默认的Level和Appender设置，当一个普通Logger没有显式地设置Level或Appender时，则会继承Root Logger的设置
-  additivity：指定是否同时输出日志到父类的appender，缺省为true
-  Logger查找：沿着类路径(包路径)逐级向上查找匹配的Logger
-
-  Root Logger
-      ├── com.example (package)
-      │   ├── com.example.MyClass1 (class)
-      │   ├── com.example.MyClass2 (class)
-      │   └── ...
-      ├── com.example.subpackage (package)
-      │   ├── com.example.subpackage.MyClass3 (class)
-      │   └── ...
-      └── ...
-  -->
   <Loggers>
+    <Logger name="com.ruoyi" level="INFO" />
     <Logger name="cn.ponfee.disjob" level="INFO" />
-    <!--
-    <Logger name="cn.ponfee.disjob.registry" level="DEBUG" />
-    <Logger name="cn.ponfee.disjob.supervisor" level="DEBUG" />
-    <Logger name="cn.ponfee.disjob.supervisor.dao" level="DEBUG" />
-    <Logger name="cn.ponfee.disjob.worker" level="DEBUG" />
-    -->
 
     <Root level="WARN">
       <AppenderRef ref="Console" />
