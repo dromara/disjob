@@ -17,9 +17,11 @@
 				<label class="col-sm-3 control-label">输入密码：</label>
 				<div class="col-sm-8">
 					<div class="input-group">
-              <input class="form-control" type="password" name="password" id="password" placeholder="请输入重置密码" th:value="${@config.getKey('sys.user.initPassword')}">
-              <span class="input-group-addon" title="重置密码,鼠标按下显示密码" onmousedown="$('#password').attr('type','text')" onmouseup="$('#password').attr('type','password')"><i class="fa fa-key"></i></span>
-          </div>
+                        <input class="form-control" type="password" name="password" id="password" placeholder="请输入重置密码" th:value="${@config.getKey('sys.user.initPassword')}">
+                        <span class="input-group-addon" title="重置密码,鼠标按下显示密码"
+                            onmousedown="$('#password').attr('type','text')"
+                            onmouseup="$('#password').attr('type','password')"><i class="fa fa-key"></i></span>
+                    </div>
 				</div>
 			</div>
 		</form>
@@ -29,9 +31,10 @@
 		$("#form-user-resetPwd").validate({
 			rules:{
 				password:{
-					required:true,
+					required: true,
 					minlength: 5,
-					maxlength: 20
+					maxlength: 20,
+					specialSign: true
 				},
 			},
 			focusCleanup: true

@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.util.ClassUtils;
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -26,7 +26,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -52,13 +51,15 @@ public class SpringContextHolder implements ApplicationContextAware {
         return applicationContext;
     }
 
+    // -----------------------------------------------------------------------getBean
+
     /**
      * Gets spring bean by bean name.
      *
      * @param beanName then bean name
      * @return spring bean
      */
-    public static Object getBean(String beanName) throws BeansException {
+    public static Object getBean(String beanName) {
         if (applicationContext == null) {
             return null;
         }
@@ -92,6 +93,8 @@ public class SpringContextHolder implements ApplicationContextAware {
         return applicationContext.getBean(beanName, beanType);
     }
 
+    // -----------------------------------------------------------------------getPrototypeBean
+
     public static <T> T getPrototypeBean(String beanName) throws IllegalStateException {
         if (applicationContext == null) {
             return null;
@@ -100,14 +103,43 @@ public class SpringContextHolder implements ApplicationContextAware {
         T bean;
         try {
             bean = (T) applicationContext.getBean(beanName);
-        } catch (BeansException ignored) {
+        } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (applicationContext.isPrototype(beanName)) {
-            return bean;
+        if (!applicationContext.isPrototype(beanName)) {
+            throw new IllegalStateException("Bean name is not a prototype bean: " + beanName);
         }
-        throw new IllegalStateException("Bean name is not a prototype bean: " + beanName);
+
+        return bean;
+    }
+
+    /**
+     * Gets spring bean by bean type, if not defined bean then return null
+     *
+     * @param beanType the bean type
+     * @return spring bean
+     * @throws IllegalStateException if not prototype bean
+     */
+    public static <T> T getPrototypeBean(Class<T> beanType) throws IllegalStateException {
+        if (applicationContext == null) {
+            return null;
+        }
+
+        T bean;
+        try {
+            bean = applicationContext.getBean(beanType);
+        } catch (NoSuchBeanDefinitionException ignored) {
+            return null;
+        }
+
+        for (String beanName : applicationContext.getBeanNamesForType(beanType)) {
+            if (!applicationContext.isPrototype(beanName)) {
+                throw new IllegalStateException("Bean type is not a prototype bean: " + beanType);
+            }
+        }
+
+        return bean;
     }
 
     /**
@@ -126,41 +158,18 @@ public class SpringContextHolder implements ApplicationContextAware {
         T bean;
         try {
             bean = applicationContext.getBean(beanName, beanType);
-        } catch (BeansException ignored) {
+        } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (applicationContext.isPrototype(beanName)) {
-            return bean;
+        if (!applicationContext.isPrototype(beanName)) {
+            throw new IllegalStateException("Bean name is not a prototype bean: " + beanName + ", " + beanType);
         }
-        throw new IllegalStateException("Bean name is not a prototype bean: " + beanName + ", " + beanType);
+
+        return bean;
     }
 
-    /**
-     * Gets spring bean by bean type, if not defined bean then return null
-     *
-     * @param beanType the bean type
-     * @return spring bean
-     * @throws IllegalStateException if not prototype bean
-     */
-    public static <T> T getPrototypeBean(Class<T> beanType) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
-        T bean;
-        try {
-            bean = applicationContext.getBean(beanType);
-        } catch (BeansException ignored) {
-            return null;
-        }
-
-        String[] beanNames = applicationContext.getBeanNamesForType(beanType);
-        if (Arrays.stream(beanNames).allMatch(applicationContext::isPrototype)) {
-            return bean;
-        }
-        throw new IllegalStateException("Bean type is not a prototype bean: " + beanType);
-    }
+    // -----------------------------------------------------------------------getSingletonBean
 
     public static <T> T getSingletonBean(String beanName) throws IllegalStateException {
         if (applicationContext == null) {
@@ -170,14 +179,42 @@ public class SpringContextHolder implements ApplicationContextAware {
         T bean;
         try {
             bean = (T) applicationContext.getBean(beanName);
-        } catch (BeansException ignored) {
+        } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (applicationContext.isSingleton(beanName)) {
-            return bean;
+        if (!applicationContext.isSingleton(beanName)) {
+            throw new IllegalStateException("Bean name is not a prototype bean: " + beanName);
         }
-        throw new IllegalStateException("Bean name is not a prototype bean: " + beanName);
+
+        return bean;
+    }
+
+    /**
+     * Gets spring bean by bean type, if not defined bean then return null
+     *
+     * @param beanType the bean type
+     * @return spring bean
+     * @throws IllegalStateException if not singleton bean
+     */
+    public static <T> T getSingletonBean(Class<T> beanType) throws IllegalStateException {
+        if (applicationContext == null) {
+            return null;
+        }
+
+        T bean;
+        try {
+            bean = applicationContext.getBean(beanType);
+        } catch (NoSuchBeanDefinitionException ignored) {
+            return null;
+        }
+
+        for (String beanName : applicationContext.getBeanNamesForType(beanType)) {
+            if (!applicationContext.isSingleton(beanName)) {
+                throw new IllegalStateException("Bean type is not a singleton bean: " + beanType);
+            }
+        }
+        return bean;
     }
 
     /**
@@ -196,41 +233,18 @@ public class SpringContextHolder implements ApplicationContextAware {
         T bean;
         try {
             bean = applicationContext.getBean(beanName, beanType);
-        } catch (BeansException ignored) {
+        } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (applicationContext.isSingleton(beanName)) {
-            return bean;
+        if (!applicationContext.isSingleton(beanName)) {
+            throw new IllegalStateException("Bean name is not a singleton bean: " + beanName + ", " + beanType);
         }
-        throw new IllegalStateException("Bean name is not a singleton bean: " + beanName + ", " + beanType);
+
+        return bean;
     }
 
-    /**
-     * Gets spring bean by bean type, if not defined bean then return null
-     *
-     * @param beanType the bean type
-     * @return spring bean
-     * @throws IllegalStateException if not singleton bean
-     */
-    public static <T> T getSingletonBean(Class<T> beanType) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
-        T bean;
-        try {
-            bean = applicationContext.getBean(beanType);
-        } catch (BeansException ignored) {
-            return null;
-        }
-
-        String[] beanNames = applicationContext.getBeanNamesForType(beanType);
-        if (Arrays.stream(beanNames).allMatch(applicationContext::isSingleton)) {
-            return bean;
-        }
-        throw new IllegalStateException("Bean type is not a singleton bean: " + beanType);
-    }
+    // -----------------------------------------------------------------------
 
     /**
      * Returns spring container contains specified bean name.
