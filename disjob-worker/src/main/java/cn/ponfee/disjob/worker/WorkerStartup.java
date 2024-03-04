@@ -16,10 +16,8 @@
 
 package cn.ponfee.disjob.worker;
 
-import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
@@ -33,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.InvocationHandler;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,8 +65,8 @@ public class WorkerStartup implements Startable {
         Objects.requireNonNull(taskReceiver, "Task receiver cannot null.");
         Objects.requireNonNull(restTemplate, "Rest template cannot null.");
 
-        SupervisorRpcService supervisorRpcClient = createProxy(
-            supervisorRpcService, retryProperties, workerRegistry, restTemplate
+        SupervisorRpcService supervisorRpcClient = DiscoveryServerRestProxy.create(
+            SupervisorRpcService.class, supervisorRpcService, workerRegistry, restTemplate, retryProperties
         );
 
         this.currentWorker = currentWorker;
@@ -176,22 +173,6 @@ public class WorkerStartup implements Startable {
                 supervisorRpcService,
                 restTemplate
             );
-        }
-    }
-
-    // ----------------------------------------------------------------------------------------private methods
-
-    private static SupervisorRpcService createProxy(SupervisorRpcService local,
-                                                    RetryProperties retry,
-                                                    WorkerRegistry discoverySupervisor,
-                                                    RestTemplate restTemplate) {
-        if (local != null) {
-            // cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
-            // 此Worker同时也是Supervisor身份，则是本地调用，并使用动态代理增加重试能力
-            InvocationHandler ih = new RetryInvocationHandler(local, retry.getMaxCount(), retry.getBackoffPeriod());
-            return ProxyUtils.create(ih, SupervisorRpcService.class);
-        } else {
-            return DiscoveryServerRestProxy.create(SupervisorRpcService.class, discoverySupervisor, restTemplate, retry);
         }
     }
 

@@ -102,38 +102,47 @@ public class JobHandlerUtils {
     }
 
     /**
-     * Load jobHandler instance, String parameter can be qualified class name or source code
+     * Load jobHandler instance, String parameter can be spring bean name or qualified class name or source code
      *
-     * @param text qualified class name or source code
+     * @param text spring bean name or qualified class name or source code
      * @return JobHandler instance object
      * @throws JobException if new instance failed
      */
     public static JobHandler load(String text) throws JobException {
-        JobHandler handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);
-        if (handler != null) {
+        if (SpringContextHolder.applicationContext() != null) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-            return handler;
-        }
+            // get by spring bean name
+            JobHandler handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);
+            if (handler != null) {
+                return handler;
+            }
 
-        Class<JobHandler> type = ClassUtils.getClass(text);
+            Class<? extends JobHandler> jobHandlerClass = getJobHandlerClass(text);
+            handler = SpringContextHolder.getPrototypeBean(jobHandlerClass);
+            if (handler != null) {
+                return handler;
+            }
+
+            handler = ClassUtils.newInstance(jobHandlerClass);
+            SpringContextHolder.autowire(handler);
+            return handler;
+        } else {
+            Class<? extends JobHandler> jobHandlerClass = getJobHandlerClass(text);
+            return ClassUtils.newInstance(jobHandlerClass);
+        }
+    }
+
+    private static Class<? extends JobHandler> getJobHandlerClass(String text) throws JobException {
+        Class<? extends JobHandler> type = ClassUtils.getClass(text);
         if (type == null) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal job handler: " + text);
+            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal job handler class: " + text);
         }
 
         // interface type: Modifier.isAbstract(type.getModifiers()) -> true
         if (!JobHandler.class.isAssignableFrom(type) || Modifier.isAbstract(type.getModifiers())) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler: " + ClassUtils.getName(type) + ", " + text);
+            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler class '" + ClassUtils.getName(type) + "': " + text);
         }
-
-        // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-        handler = SpringContextHolder.getPrototypeBean(type);
-        if (handler != null) {
-            return handler;
-        }
-
-        handler = ClassUtils.newInstance(type);
-        SpringContextHolder.autowire(handler);
-        return handler;
+        return type;
     }
 
 }

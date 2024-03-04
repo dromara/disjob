@@ -60,9 +60,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @return spring bean
      */
     public static Object getBean(String beanName) {
-        if (applicationContext == null) {
-            return null;
-        }
         return applicationContext.getBean(beanName);
     }
 
@@ -73,9 +70,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @return spring bean
      */
     public static <T> T getBean(Class<T> beanType) {
-        if (applicationContext == null) {
-            return null;
-        }
         return applicationContext.getBean(beanType);
     }
 
@@ -87,19 +81,12 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @return spring bean
      */
     public static <T> T getBean(String beanName, Class<T> beanType) {
-        if (applicationContext == null) {
-            return null;
-        }
         return applicationContext.getBean(beanName, beanType);
     }
 
     // -----------------------------------------------------------------------getPrototypeBean
 
     public static <T> T getPrototypeBean(String beanName) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
         T bean;
         try {
             bean = (T) applicationContext.getBean(beanName);
@@ -122,10 +109,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @throws IllegalStateException if not prototype bean
      */
     public static <T> T getPrototypeBean(Class<T> beanType) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
         T bean;
         try {
             bean = applicationContext.getBean(beanType);
@@ -151,10 +134,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @throws IllegalStateException if not prototype bean
      */
     public static <T> T getPrototypeBean(String beanName, Class<T> beanType) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
         T bean;
         try {
             bean = applicationContext.getBean(beanName, beanType);
@@ -172,10 +151,6 @@ public class SpringContextHolder implements ApplicationContextAware {
     // -----------------------------------------------------------------------getSingletonBean
 
     public static <T> T getSingletonBean(String beanName) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
         T bean;
         try {
             bean = (T) applicationContext.getBean(beanName);
@@ -198,10 +173,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @throws IllegalStateException if not singleton bean
      */
     public static <T> T getSingletonBean(Class<T> beanType) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
         T bean;
         try {
             bean = applicationContext.getBean(beanType);
@@ -226,10 +197,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @throws IllegalStateException if not singleton bean
      */
     public static <T> T getSingletonBean(String beanName, Class<T> beanType) throws IllegalStateException {
-        if (applicationContext == null) {
-            return null;
-        }
-
         T bean;
         try {
             bean = applicationContext.getBean(beanName, beanType);
@@ -244,7 +211,7 @@ public class SpringContextHolder implements ApplicationContextAware {
         return bean;
     }
 
-    // -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------other methods
 
     /**
      * Returns spring container contains specified bean name.
@@ -253,9 +220,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @return {@code true} if contains bean
      */
     public static boolean containsBean(String beanName) {
-        if (applicationContext == null) {
-            return false;
-        }
         return applicationContext.containsBean(beanName);
     }
 
@@ -266,9 +230,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @return bean name type
      */
     public static Class<?> getType(String beanName) {
-        if (applicationContext == null) {
-            return null;
-        }
         return applicationContext.getType(beanName);
     }
 
@@ -279,9 +240,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @return other alias name
      */
     public static String[] getAliases(String beanName) {
-        if (applicationContext == null) {
-            return null;
-        }
         return applicationContext.getAliases(beanName);
     }
 
@@ -332,9 +290,6 @@ public class SpringContextHolder implements ApplicationContextAware {
      * @param bean the spring bean
      */
     public static void autowire(Object bean) {
-        if (applicationContext == null) {
-            return;
-        }
         applicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
     }
 

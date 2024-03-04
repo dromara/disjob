@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry.rpc;
 
+import cn.ponfee.disjob.common.base.RetryInvocationHandler;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
@@ -75,22 +76,31 @@ public final class DiscoveryServerRestProxy {
     /**
      * Creates ungrouped rpc service client proxy.
      *
-     * @param interfaceType   the interface class
-     * @param discoveryServer the discoveryServer
-     * @param restTemplate    the restTemplate
-     * @param retry           the retry config
-     * @param <T>             interface type
-     * @param <D>             discovery server type
+     * @param interfaceType        the interface class
+     * @param localServiceProvider the localServiceProvider
+     * @param discoveryServer      the discoveryServer
+     * @param restTemplate         the restTemplate
+     * @param retry                the retry config
+     * @param <T>                  interface type
+     * @param <D>                  discovery server type
      * @return rpc service client proxy
      */
     public static <T, D extends Server> T create(Class<T> interfaceType,
+                                                 @Nullable T localServiceProvider,
                                                  Discovery<D> discoveryServer,
                                                  RestTemplate restTemplate,
                                                  RetryProperties retry) {
-        DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
-        String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
-        InvocationHandler ungroupedInvocationHandler = new UngroupedInvocationHandler(template, prefixPath);
-        return ProxyUtils.create(ungroupedInvocationHandler, interfaceType);
+        InvocationHandler invocationHandler;
+        if (localServiceProvider != null) {
+            // 本地调用：使用动态代理来增加重试能力
+            invocationHandler = new RetryInvocationHandler(localServiceProvider, retry.getMaxCount(), retry.getBackoffPeriod());
+        } else {
+            // 远程调用：通过Discovery<D>来获取目标服务器
+            DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
+            String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
+            invocationHandler = new UngroupedInvocationHandler(template, prefixPath);
+        }
+        return ProxyUtils.create(invocationHandler, interfaceType);
     }
 
     /**
