@@ -33,7 +33,7 @@ import org.springframework.boot.SpringApplication;
 public class WorkerApplication extends AbstractSamplesApplication {
 
     static {
-        // for log4j log file dir
+        // for log4j2 log file name
         System.setProperty("app.name", "springboot-worker");
     }
 

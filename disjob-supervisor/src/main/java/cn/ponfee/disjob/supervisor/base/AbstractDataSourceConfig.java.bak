@@ -116,45 +116,6 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
 
     /**
      * 使用该方式时，基于注解方式的事务不生效
-     */
-    @Override
-    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory listableBeanFactory) throws BeansException {
-        // -------------------------data source
-        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) listableBeanFactory;
-        DataSource dataSource = DataSourceBuilder.create()
-            //.type(com.zaxxer.hikari.HikariDataSource.class)
-            .build();
-        Binder binder = Binder.get(environment);
-        binder.bind(databaseName + ".datasource", Bindable.ofInstance(dataSource));
-        beanFactory.registerSingleton(databaseName + DATA_SOURCE_NAME_SUFFIX, dataSource);
-
-        // -------------------------register to spring as singleton bean
-        SqlSessionFactory sqlSessionFactory;
-        try {
-            sqlSessionFactory = createSqlSessionFactory(dataSource);
-        } catch (Exception e) {
-            throw new BeanInstantiationException(SqlSessionFactory.class, "Create mybatis SqlSessionFactory error.", e);
-        }
-        beanFactory.registerSingleton(databaseName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactory);
-        beanFactory.registerSingleton(databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX, new SqlSessionTemplate(sqlSessionFactory));
-        beanFactory.registerSingleton(databaseName + JDBC_TEMPLATE_NAME_SUFFIX, new JdbcTemplate(dataSource));
-        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
-        beanFactory.registerSingleton(databaseName + TX_MANAGER_NAME_SUFFIX, transactionManager);
-        beanFactory.registerSingleton(databaseName + TX_TEMPLATE_NAME_SUFFIX, new TransactionTemplate(transactionManager));
-
-        // -------------------------mybatis mapper scanner
-        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
-        mapperScannerConfigurer.setBasePackage(this.getClass().getPackage().getName() + ".mapper");
-        mapperScannerConfigurer.setSqlSessionTemplateBeanName(databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX);
-        mapperScannerConfigurer.setBeanName(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX);
-        mapperScannerConfigurer.postProcessBeanDefinitionRegistry(beanFactory);
-        mapperScannerConfigurer.setProcessPropertyPlaceHolders(true);
-        mapperScannerConfigurer.setApplicationContext(applicationContext);
-        beanFactory.registerSingleton(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurer);
-    }
-
-    /**
-     * 使用该方式时，基于注解方式的事务不生效
      * 要加`@EnableTransactionManagement`才能使事务生效
      */
     @Override
@@ -218,6 +179,45 @@ public abstract class AbstractDataSourceConfig implements ApplicationContextAwar
         // annotation transaction
         //registry.registerBeanDefinition(AutoProxyRegistrar.class.getName(), new RootBeanDefinition(AutoProxyRegistrar.class));
         //registry.registerBeanDefinition(ProxyTransactionManagementConfiguration.class.getName(), new RootBeanDefinition(ProxyTransactionManagementConfiguration.class));
+    }
+
+    /**
+     * 使用该方式时，基于注解方式的事务不生效
+     */
+    @Override
+    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory listableBeanFactory) throws BeansException {
+        // -------------------------data source
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) listableBeanFactory;
+        DataSource dataSource = DataSourceBuilder.create()
+            //.type(com.zaxxer.hikari.HikariDataSource.class)
+            .build();
+        Binder binder = Binder.get(environment);
+        binder.bind(databaseName + ".datasource", Bindable.ofInstance(dataSource));
+        beanFactory.registerSingleton(databaseName + DATA_SOURCE_NAME_SUFFIX, dataSource);
+
+        // -------------------------register to spring as singleton bean
+        SqlSessionFactory sqlSessionFactory;
+        try {
+            sqlSessionFactory = createSqlSessionFactory(dataSource);
+        } catch (Exception e) {
+            throw new BeanInstantiationException(SqlSessionFactory.class, "Create mybatis SqlSessionFactory error.", e);
+        }
+        beanFactory.registerSingleton(databaseName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactory);
+        beanFactory.registerSingleton(databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX, new SqlSessionTemplate(sqlSessionFactory));
+        beanFactory.registerSingleton(databaseName + JDBC_TEMPLATE_NAME_SUFFIX, new JdbcTemplate(dataSource));
+        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+        beanFactory.registerSingleton(databaseName + TX_MANAGER_NAME_SUFFIX, transactionManager);
+        beanFactory.registerSingleton(databaseName + TX_TEMPLATE_NAME_SUFFIX, new TransactionTemplate(transactionManager));
+
+        // -------------------------mybatis mapper scanner
+        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
+        mapperScannerConfigurer.setBasePackage(this.getClass().getPackage().getName() + ".mapper");
+        mapperScannerConfigurer.setSqlSessionTemplateBeanName(databaseName + SQL_SESSION_TEMPLATE_NAME_SUFFIX);
+        mapperScannerConfigurer.setBeanName(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX);
+        mapperScannerConfigurer.postProcessBeanDefinitionRegistry(beanFactory);
+        mapperScannerConfigurer.setProcessPropertyPlaceHolders(true);
+        mapperScannerConfigurer.setApplicationContext(applicationContext);
+        beanFactory.registerSingleton(databaseName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurer);
     }
 
     private SqlSessionFactory createSqlSessionFactory(DataSource dataSource) throws Exception {

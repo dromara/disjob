@@ -98,7 +98,7 @@ disjob                                        # 主项目①
 - [管理后台—disjob-admin](disjob-admin/pom.xml)
 - [范例项目—disjob-samples](disjob-samples/pom.xml)
 
-2. 启动以下各应用组成分布式调度集群
+2. 启动以下各应用(执行java main方法)组成分布式调度集群
 
 > 已配置不同的端口可同时启动。可以在开发工具中运行Java类，也可通过`java -jar`命令运行构建好的jar包。
 

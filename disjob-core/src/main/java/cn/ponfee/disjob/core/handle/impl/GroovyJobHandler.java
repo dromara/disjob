@@ -35,20 +35,24 @@ import java.util.Objects;
  *  import java.util.*
  *  def uuid = UUID.randomUUID().toString()
  *  savepoint.save(new Date().toString() + ": " + uuid)
- *  return "execute at: " + new Date() + ", " + jobHandler.toString()
+ *  return "taskId: " + executingTask.getTaskId() + ", execute at: " + new Date() + ", " + jobHandler.toString()
  * }</pre>
  *
  * @author Ponfee
  */
 public class GroovyJobHandler extends JobHandler {
 
+    public static final String JOB_HANDLER = "jobHandler";
+    public static final String EXECUTING_TASK = "executingTask";
+    public static final String SAVEPOINT = "savepoint";
+
     @Override
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
         String scriptText = executingTask.getTaskParam();
         Map<String, Object> params = ImmutableMap.of(
-            "jobHandler", this,
-            "executingTask", executingTask,
-            "savepoint", savepoint
+            JOB_HANDLER, this,
+            EXECUTING_TASK, executingTask,
+            SAVEPOINT, savepoint
         );
 
         Object result = GroovyUtils.Evaluator.SCRIPT.eval(scriptText, params);

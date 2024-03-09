@@ -40,7 +40,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
 public class SupervisorApplication extends AbstractSamplesApplication {
 
     static {
-        // for log4j log file dir
+        // for log4j2 log file name
         System.setProperty("app.name", "springboot-supervisor");
     }
 

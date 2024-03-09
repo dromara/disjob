@@ -67,7 +67,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.*;
 public class WorkerFramelessMain {
 
     static {
-        // for log4j log file dir
+        // for log4j2 log file name
         System.setProperty("app.name", "frameless-worker");
         JobHandlerParser.init();
     }
