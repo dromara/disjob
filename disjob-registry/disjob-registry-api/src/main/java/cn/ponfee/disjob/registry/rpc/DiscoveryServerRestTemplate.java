@@ -75,9 +75,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    DiscoveryServerRestTemplate(Discovery<D> discoveryServer,
-                                RestTemplate restTemplate,
-                                RetryProperties retry) {
+    DiscoveryServerRestTemplate(Discovery<D> discoveryServer, RestTemplate restTemplate, RetryProperties retry) {
         retry.check();
         this.discoveryServer = Objects.requireNonNull(discoveryServer);
         this.restTemplate = Objects.requireNonNull(restTemplate);
@@ -94,12 +92,12 @@ final class DiscoveryServerRestTemplate<D extends Server> {
      * @param path       the url path
      * @param httpMethod the http method
      * @param returnType the return type
-     * @param arguments  the arguments
+     * @param args       the arguments
      * @param <T>        return type
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T execute(String group, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
+    <T> T execute(String group, String path, HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
         List<D> servers = discoveryServer.getDiscoveredServers(group);
         ServerRole discoveryServerRole = discoveryServer.discoveryRole();
         if (CollectionUtils.isEmpty(servers)) {
@@ -125,10 +123,10 @@ final class DiscoveryServerRestTemplate<D extends Server> {
             Server server = servers.get((start + i) % serverNumber);
             String url = server.buildHttpUrlPrefix() + Strings.concatUrlPath(serverContextPath, path);
             try {
-                return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
+                return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, args);
             } catch (Throwable e) {
                 ex = e;
-                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(arguments), e.getMessage());
+                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), e.getMessage());
                 if (isNotRetry(e)) {
                     break;
                 }

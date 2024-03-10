@@ -16,7 +16,8 @@
 
 package cn.ponfee.disjob.registry.rpc;
 
-import cn.ponfee.disjob.common.util.Functions;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
 import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.RetryProperties;
@@ -30,7 +31,6 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -66,7 +66,7 @@ public final class DestinationServerRestProxy {
             this.currentServer = currentServer;
         }
 
-        public <R> R invoke(S destinationServer, Function<T, R> function) {
+        public <R, E extends Throwable> R invoke(S destinationServer, ThrowingFunction<T, R, E> function) throws E {
             Objects.requireNonNull(destinationServer);
             if (localServiceProvider != null && destinationServer.equals(currentServer)) {
                 return function.apply(localServiceProvider);
@@ -80,8 +80,8 @@ public final class DestinationServerRestProxy {
             }
         }
 
-        public void invokeWithoutResult(S destinationServer, Consumer<T> consumer) {
-            invoke(destinationServer, Functions.convert(consumer, null));
+        public <E extends Throwable> void invokeWithoutResult(S destinationServer, ThrowingConsumer<T, E> consumer) throws E {
+            invoke(destinationServer, consumer.toFunction(null));
         }
     }
 

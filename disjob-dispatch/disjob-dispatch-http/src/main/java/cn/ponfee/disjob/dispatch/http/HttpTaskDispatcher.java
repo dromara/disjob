@@ -21,7 +21,6 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.Discovery;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.client.RestTemplate;
@@ -44,7 +43,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
                               Discovery<Worker> discoveryWorker,
                               RetryProperties retryProperties,
                               RestTemplate restTemplate,
-                              TaskReceiver taskReceiver) {
+                              HttpTaskReceiver taskReceiver) {
         super(eventPublisher, discoveryWorker, retryProperties, taskReceiver);
 
         Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());

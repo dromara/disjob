@@ -60,7 +60,7 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
                                          SupervisorRegistry discoveryWorker,
                                          RetryProperties retryProperties,
                                          StringRedisTemplate stringRedisTemplate,
-                                         @Nullable TaskReceiver taskReceiver) {
+                                         @Nullable RedisTaskReceiver taskReceiver) {
         return new RedisTaskDispatcher(eventPublisher, discoveryWorker, retryProperties, stringRedisTemplate, taskReceiver);
     }
 

@@ -62,7 +62,7 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
                                          RetryProperties retry,
                                          SupervisorRegistry discoveryWorker,
                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                         @Nullable TaskReceiver taskReceiver) {
+                                         @Nullable HttpTaskReceiver taskReceiver) {
         return new HttpTaskDispatcher(eventPublisher, discoveryWorker, retry, restTemplate, taskReceiver);
     }
 

@@ -21,7 +21,6 @@ import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.registry.Discovery;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisCallback;
@@ -52,7 +51,7 @@ public class RedisTaskDispatcher extends TaskDispatcher {
                                Discovery<Worker> discoveryWorker,
                                RetryProperties retryProperties,
                                RedisTemplate<String, String> redisTemplate,
-                               TaskReceiver taskReceiver) {
+                               RedisTaskReceiver taskReceiver) {
         super(eventPublisher, discoveryWorker, retryProperties, taskReceiver);
 
         this.redisTemplate = redisTemplate;

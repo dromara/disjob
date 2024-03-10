@@ -57,12 +57,12 @@ final class DestinationServerRestTemplate {
      * @param destinationServer the destination server
      * @param httpMethod        the http method
      * @param returnType        the return type
-     * @param arguments         the arguments
+     * @param args              the arguments
      * @param <T>               return type
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T invoke(Server destinationServer, String path, HttpMethod httpMethod, Type returnType, Object... arguments) throws Exception {
+    <T> T invoke(Server destinationServer, String path, HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
         Map<String, String> authenticationHeaders = null;
         Worker.Current currentWorker = Worker.current();
         if (destinationServer instanceof Supervisor && currentWorker != null) {
@@ -75,10 +75,10 @@ final class DestinationServerRestTemplate {
         Throwable ex = null;
         for (int i = 0; i <= retryMaxCount; i++) {
             try {
-                return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, arguments);
+                return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, args);
             } catch (Throwable e) {
                 ex = e;
-                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(arguments), e.getMessage());
+                LOG.error("Invoke server rpc failed [{}]: {}, {}, {}", i, url, Jsons.toJson(args), e.getMessage());
                 if (DiscoveryServerRestTemplate.isNotRetry(e)) {
                     break;
                 }
