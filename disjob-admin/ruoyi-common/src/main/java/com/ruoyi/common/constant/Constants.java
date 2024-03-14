@@ -3,6 +3,8 @@ package com.ruoyi.common.constant;
 import org.springframework.util.AlternativeJdkIdGenerator;
 import org.springframework.util.IdGenerator;
 
+import java.util.Locale;
+
 /**
  * 通用常量信息
  * 
@@ -19,6 +21,11 @@ public class Constants
      * GBK 字符集
      */
     public static final String GBK = "GBK";
+
+    /**
+     * 系统语言
+     */
+    public static final Locale DEFAULT_LOCALE = Locale.SIMPLIFIED_CHINESE;
 
     /**
      * http请求
