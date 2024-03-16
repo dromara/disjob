@@ -230,7 +230,7 @@ public class DAGExpressionParser {
             Assert.notEmpty(list, () -> "Invalid expression: " + String.join("", expressions));
             if (list.size() == 1) {
                 String name = list.get(0);
-                DAGNode node = DAGNode.of(section, increment(name), name);
+                DAGNode node = DAGNode.of(section, incrementOrdinal(name), name);
                 graphBuilder.putEdge(prev, node);
                 if (remains == null) {
                     graphBuilder.putEdge(node, next);
@@ -294,8 +294,9 @@ public class DAGExpressionParser {
         return result;
     }
 
-    private int increment(String name) {
+    private int incrementOrdinal(String name) {
         List<Tuple2<String, Integer>> list = incrementer.computeIfAbsent(name, k -> new LinkedList<>());
+        // compare object address
         Tuple2<String, Integer> tuple = list.stream().filter(e -> name == e.a).findAny().orElse(null);
         if (tuple == null) {
             // increment name ordinal

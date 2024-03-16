@@ -45,6 +45,9 @@ public class ConsistentHash<T> {
          */
         int hash(String key);
 
+        /**
+         * MD5 hash
+         */
         HashFunction MD5 = key -> {
             byte[] digest = DigestUtils.md5(key);
 
@@ -62,7 +65,7 @@ public class ConsistentHash<T> {
         };
 
         /**
-         * Fowler-Noll-Vo
+         * Fowler-Noll-Vo hash
          */
         HashFunction FNV = key -> {
             int p = 16777619;
@@ -78,8 +81,14 @@ public class ConsistentHash<T> {
             return h;
         };
 
+        /**
+         * Sip hash
+         */
         HashFunction SIP_HASH = key -> Hashing.sipHash24().hashBytes(key.getBytes(UTF_8)).asInt();
 
+        /**
+         * Murmur3 hash
+         */
         HashFunction MURMUR3_32 = key -> Hashing.murmur3_32_fixed().hashBytes(key.getBytes(UTF_8)).asInt();
     }
 
@@ -107,13 +116,13 @@ public class ConsistentHash<T> {
     private final HashFunction hashFunction;
 
     public ConsistentHash(Collection<T> pNodes, int vNodeCount) {
-        this(pNodes, vNodeCount, String::valueOf, HashFunction.MD5);
+        this(pNodes, vNodeCount, String::valueOf, HashFunction.SIP_HASH);
     }
 
     public ConsistentHash(Collection<T> pNodes,
                           int vNodeCount,
                           Function<T, String> keyMapper) {
-        this(pNodes, vNodeCount, keyMapper, HashFunction.MD5);
+        this(pNodes, vNodeCount, keyMapper, HashFunction.SIP_HASH);
     }
 
     /**

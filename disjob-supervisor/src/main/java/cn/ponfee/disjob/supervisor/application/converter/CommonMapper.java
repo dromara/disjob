@@ -23,7 +23,7 @@ import java.text.ParseException;
 import java.util.Date;
 
 /**
- * Common data mapper
+ * Common data type convert mapper
  *
  * @author Ponfee
  */

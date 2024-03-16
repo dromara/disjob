@@ -148,7 +148,7 @@
     FROM <include refid="Table_Name" />
     WHERE job_state = 1
       AND next_trigger_time &lt; #{maxNextTriggerTime}
-      AND next_scan_time &lt; NOW(3)
+      AND next_scan_time &lt; CURRENT_TIMESTAMP(3)
       AND is_deleted = 0
     ORDER BY next_trigger_time
     LIMIT #{size}

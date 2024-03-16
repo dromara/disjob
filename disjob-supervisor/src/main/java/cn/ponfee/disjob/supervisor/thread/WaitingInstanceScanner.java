@@ -35,7 +35,7 @@ import java.util.List;
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
 /**
- * Scan exceed the trigger time, but still is waiting state sched_instance record.
+ * Scan expired trigger time, but still is waiting state sched_instance record.
  *
  * @author Ponfee
  */

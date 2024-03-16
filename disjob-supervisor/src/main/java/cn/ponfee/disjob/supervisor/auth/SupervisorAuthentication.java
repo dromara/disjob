@@ -31,14 +31,17 @@ public @interface SupervisorAuthentication {
     Subject value();
 
     enum Subject {
+
         /**
          * Worker
          */
         WORKER,
+
         /**
          * User
          */
         USER,
+
         /**
          * Anonymous
          */

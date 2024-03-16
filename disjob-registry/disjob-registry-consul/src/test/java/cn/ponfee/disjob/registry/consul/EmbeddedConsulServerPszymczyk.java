@@ -42,6 +42,7 @@ public final class EmbeddedConsulServerPszymczyk {
             .withConsulBinaryDownloadDirectory(createConsulBinaryDownloadDirectory())
             .withHttpPort(8500)
             .buildAndStart();
+        System.out.println("------------ http://127.0.0.1:8500 ------------");
         System.out.println("Embedded pszymczyk consul server started!");
 
         Runtime.getRuntime().addShutdownHook(new Thread(consul::close));

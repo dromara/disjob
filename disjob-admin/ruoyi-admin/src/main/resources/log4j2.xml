@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--日志级别以及优先级排序： OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL -->
-<!-- Log4j 2.x 配置文件：每30秒自动检查和应用配置文件的更新；log4j-core-2.11.0.jar!/Log4j-config.xsd -->
 <Configuration status="WARN" monitorInterval="1800" strict="true" name="disjob-log">
 
   <properties>
-    <!-- 系统属性变量：System.getProperty("log.home")，${sys:variable_name:-default_value} -->
-    <!-- pattern: https://logging.apache.org/log4j/2.x/manual/layouts.html -->
     <property name="LOG_HOME">${sys:log.home:-../logs}</property>
     <property name="APP_NAME">${sys:app.name:-disjob-admin}</property>
     <property name="PATTERN_CONSOLE">%d{yyyy-MM-dd HH:mm:ss.SSS} | %highlight{%-5p} | %t | %c{1} >>>> %msg%n</property>
@@ -19,24 +15,12 @@
 
     <!-- 输出到文件，按天或者超过100MB分割 -->
     <RollingFile name="RollingFile" fileName="${LOG_HOME}/${APP_NAME}.log" filePattern="${LOG_HOME}/$${date:yyyy-MM}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
-      <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
       <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY" />
       <PatternLayout pattern="${PATTERN_FILE}" />
       <Policies>
-        <!-- 启动时就重新滚动日志 -->
-        <!-- <OnStartupTriggeringPolicy /> -->
-
-        <!-- 如果启用此配置，则日志会按文件名生成新压缩文件，即如果filePattern配置的日期格式为 %d{yyyy-MM-dd HH}，
-             则每小时生成一个压缩文件，如果filePattern配置的日期格式为 %d{yyyy-MM-dd} ，则天生成一个压缩文件，
-             modulate=true用来调整时间，interval属性用来指定多久滚动一次，默认是1 hour，
-             比如现在是早上3am，interval=4，那么第一次滚动是在4am，接着是8am，而不是7am
-        -->
-        <!-- <TimeBasedTriggeringPolicy interval="1" modulate="true" /> -->
         <TimeBasedTriggeringPolicy />
-
         <SizeBasedTriggeringPolicy size="100 MB" />
       </Policies>
-      <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件 -->
       <DefaultRolloverStrategy max="100" />
     </RollingFile>
 
