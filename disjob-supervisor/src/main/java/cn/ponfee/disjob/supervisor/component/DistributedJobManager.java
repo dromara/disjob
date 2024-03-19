@@ -194,7 +194,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (CollectionUtils.isNotEmpty(list)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
             list.sort(Comparator.comparingLong(UpdateTaskWorkerParam::getTaskId));
-            Collects.batchProcess(list, taskMapper::batchUpdateWorker, PROCESS_BATCH_SIZE);
+            Collects.batchProcess(list, taskMapper::batchUpdateWorker, 20);
         }
     }
 

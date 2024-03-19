@@ -169,7 +169,7 @@ public class Supervisor extends Server {
         private static synchronized Current create(final String host, final int port,
                                                    final UnaryOperator<String> workerContextPath) {
             if (instance != null) {
-                throw new Error("Current supervisor already set.");
+                throw new Error("Current supervisor already created.");
             }
 
             instance = new Current(host, port) {

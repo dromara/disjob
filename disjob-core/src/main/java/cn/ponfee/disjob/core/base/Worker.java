@@ -268,7 +268,7 @@ public class Worker extends Server {
                                                    final String wToken, final String sToken,
                                                    final String supervisorContextPath) {
             if (instance != null) {
-                throw new Error("Current worker already set.");
+                throw new Error("Current worker already created.");
             }
 
             instance = new Current(group, workerId, host, port) {

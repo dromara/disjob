@@ -137,15 +137,16 @@
       AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state &lt; 40) t)=0
   </delete>
 
-  <!-- allowMultiQueries=true -->
-  <update id="batchUpdateWorker" parameterType="collection">
-    <foreach collection="collection" item="item" separator=";">
-      UPDATE <include refid="Table_Name" />
-      SET worker = #{item.worker,jdbcType=VARCHAR},
-          version = version+1
-      WHERE task_id = #{item.taskId,jdbcType=BIGINT}
-        AND execute_state = 10
-    </foreach>
+  <update id="batchUpdateWorker" parameterType="list">
+    UPDATE <include refid="Table_Name" />
+    SET version = version+1,
+        worker =
+          CASE
+            <foreach collection="list" item="item" separator=" ">
+              WHEN task_id = #{item.taskId,jdbcType=BIGINT} THEN #{item.worker,jdbcType=VARCHAR}
+            </foreach>
+          END
+    WHERE task_id IN (<foreach collection="list" separator="," item="item">#{item.taskId,jdbcType=BIGINT}</foreach>)
   </update>
 
 </mapper>
