@@ -51,8 +51,6 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     private static final String CHECK_TTL_SECONDS = (CHECK_PASS_INTERVAL_SECONDS * 8) + "s";
     private static final String DEREGISTER_TIME_SECONDS = "20s";
 
-    // --------------------------------------------------------------registry
-
     /**
      * Consul client
      */

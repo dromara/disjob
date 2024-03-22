@@ -193,6 +193,13 @@ public class DistributedJobManager extends AbstractJobManager {
     public void updateTaskWorker(List<UpdateTaskWorkerParam> list) {
         if (CollectionUtils.isNotEmpty(list)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
+            // 其实`CASE WHEN`这种sql语法不排序也不会死锁：
+            // UPDATE sched_task SET worker =
+            //   CASE
+            //     WHEN task_id = 1 THEN 'a'
+            //     WHEN task_id = 2 THEN 'b'
+            //   END
+            // WHERE id IN (1, 2)
             list.sort(Comparator.comparingLong(UpdateTaskWorkerParam::getTaskId));
             Collects.batchProcess(list, taskMapper::batchUpdateWorker, 20);
         }

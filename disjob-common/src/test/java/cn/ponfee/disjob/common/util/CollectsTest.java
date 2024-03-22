@@ -59,7 +59,7 @@ public class CollectsTest {
         assertThat(array2).hasSize(9);
     }
 
-    private static String test = "xxx";
+    private static final String test = "xxx";
     private static final String STR = "123";
 
     @Test
