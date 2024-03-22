@@ -63,7 +63,7 @@ public class ExcelUtil<T>
     /**
      * Excel sheet最大行数，默认65536
      */
-    public static final int sheetSize = 65536;
+    public static final int SHEET_SIZE = 65536;
 
     /**
      * 工作表名称
@@ -164,7 +164,6 @@ public class ExcelUtil<T>
      * 隐藏Excel中列属性
      *
      * @param fields 列属性名 示例[单个"name"/多个"id","name"]
-     * @throws Exception
      */
     public void hideColumn(String... fields)
     {
@@ -485,7 +484,6 @@ public class ExcelUtil<T>
      * @param response 返回数据
      * @param list 导出数据集合
      * @param sheetName 工作表的名称
-     * @return 结果
      */
     public void exportExcel(HttpServletResponse response, List<T> list, String sheetName)
     {
@@ -499,7 +497,6 @@ public class ExcelUtil<T>
      * @param list 导出数据集合
      * @param sheetName 工作表的名称
      * @param title 标题
-     * @return 结果
      */
     public void exportExcel(HttpServletResponse response, List<T> list, String sheetName, String title)
     {
@@ -536,8 +533,8 @@ public class ExcelUtil<T>
     /**
      * 对list数据源将其里面的数据导入到excel表单
      *
+     * @param response response
      * @param sheetName 工作表的名称
-     * @return 结果
      */
     public void importTemplateExcel(HttpServletResponse response, String sheetName)
     {
@@ -547,9 +544,9 @@ public class ExcelUtil<T>
     /**
      * 对list数据源将其里面的数据导入到excel表单
      *
+     * @param response http servlert response
      * @param sheetName 工作表的名称
      * @param title 标题
-     * @return 结果
      */
     public void importTemplateExcel(HttpServletResponse response, String sheetName, String title)
     {
@@ -561,8 +558,6 @@ public class ExcelUtil<T>
 
     /**
      * 对list数据源将其里面的数据导入到excel表单
-     *
-     * @return 结果
      */
     public void exportExcel(HttpServletResponse response)
     {
@@ -615,7 +610,7 @@ public class ExcelUtil<T>
     public void writeSheet()
     {
         // 取出一共有多少个sheet.
-        int sheetNo = Math.max(1, (int) Math.ceil(list.size() * 1.0 / sheetSize));
+        int sheetNo = Math.max(1, (int) Math.ceil(list.size() * 1.0 / SHEET_SIZE));
         for (int index = 0; index < sheetNo; index++)
         {
             createSheet(sheetNo, index);
@@ -658,8 +653,8 @@ public class ExcelUtil<T>
     @SuppressWarnings("unchecked")
     public void fillExcelData(int index, Row row)
     {
-        int startNo = index * sheetSize;
-        int endNo = Math.min(startNo + sheetSize, list.size());
+        int startNo = index * SHEET_SIZE;
+        int endNo = Math.min(startNo + SHEET_SIZE, list.size());
         int rowNo = (1 + rownum) - startNo;
         for (int i = startNo; i < endNo; i++)
         {
@@ -738,6 +733,8 @@ public class ExcelUtil<T>
         titleFont.setFontHeightInPoints((short) 16);
         titleFont.setBold(true);
         style.setFont(titleFont);
+        DataFormat dataFormat = wb.createDataFormat();
+        style.setDataFormat(dataFormat.getFormat("@"));
         styles.put("title", style);
 
         style = wb.createCellStyle();
@@ -800,6 +797,9 @@ public class ExcelUtil<T>
                 headerFont.setBold(true);
                 headerFont.setColor(excel.headerColor().index);
                 style.setFont(headerFont);
+                // 设置表格头单元格文本形式
+                DataFormat dataFormat = wb.createDataFormat();
+                style.setDataFormat(dataFormat.getFormat("@"));
                 headerStyles.put(key, style);
             }
         }
@@ -817,32 +817,64 @@ public class ExcelUtil<T>
         Map<String, CellStyle> styles = new HashMap<>();
         for (Object[] os : fields)
         {
+            Field field = (Field) os[0];
             Excel excel = (Excel) os[1];
-            String key = StringUtils.format("data_{}_{}_{}", excel.align(), excel.color(), excel.backgroundColor());
-            if (!styles.containsKey(key))
+            if (Collection.class.isAssignableFrom(field.getType()))
             {
-                CellStyle style = wb.createCellStyle();
-                style.setAlignment(excel.align());
-                style.setVerticalAlignment(VerticalAlignment.CENTER);
-                style.setBorderRight(BorderStyle.THIN);
-                style.setRightBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
-                style.setBorderLeft(BorderStyle.THIN);
-                style.setLeftBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
-                style.setBorderTop(BorderStyle.THIN);
-                style.setTopBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
-                style.setBorderBottom(BorderStyle.THIN);
-                style.setBottomBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
-                style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                style.setFillForegroundColor(excel.backgroundColor().getIndex());
-                Font dataFont = wb.createFont();
-                dataFont.setFontName("Arial");
-                dataFont.setFontHeightInPoints((short) 10);
-                dataFont.setColor(excel.color().index);
-                style.setFont(dataFont);
-                styles.put(key, style);
+                ParameterizedType pt = (ParameterizedType) field.getGenericType();
+                Class<?> subClass = (Class<?>) pt.getActualTypeArguments()[0];
+                List<Field> subFields = FieldUtils.getFieldsListWithAnnotation(subClass, Excel.class);
+                for (Field subField : subFields)
+                {
+                    Excel subExcel = subField.getAnnotation(Excel.class);
+                    annotationDataStyles(styles, subField, subExcel);
+                }
+            }
+            else
+            {
+                annotationDataStyles(styles, field, excel);
             }
         }
         return styles;
+    }
+
+    /**
+     * 根据Excel注解创建表格列样式
+     * 
+     * @param styles 自定义样式列表
+     * @param field  属性列信息
+     * @param excel  注解信息
+     */
+    public void annotationDataStyles(Map<String, CellStyle> styles, Field field, Excel excel)
+    {
+        String key = StringUtils.format("data_{}_{}_{}_{}", excel.align(), excel.color(), excel.backgroundColor(), excel.cellType());
+        if (!styles.containsKey(key))
+        {
+            CellStyle style = wb.createCellStyle();
+            style.setAlignment(excel.align());
+            style.setVerticalAlignment(VerticalAlignment.CENTER);
+            style.setBorderRight(BorderStyle.THIN);
+            style.setRightBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            style.setBorderLeft(BorderStyle.THIN);
+            style.setLeftBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            style.setBorderTop(BorderStyle.THIN);
+            style.setTopBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            style.setBorderBottom(BorderStyle.THIN);
+            style.setBottomBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            style.setFillForegroundColor(excel.backgroundColor().getIndex());
+            Font dataFont = wb.createFont();
+            dataFont.setFontName("Arial");
+            dataFont.setFontHeightInPoints((short) 10);
+            dataFont.setColor(excel.color().index);
+            style.setFont(dataFont);
+            if (ColumnType.TEXT == excel.cellType())
+            {
+                DataFormat dataFormat = wb.createDataFormat();
+                style.setDataFormat(dataFormat.getFormat("@"));
+            }
+            styles.put(key, style);
+        }
     }
 
     /**
@@ -859,7 +891,7 @@ public class ExcelUtil<T>
         if (isSubList())
         {
             // 填充默认样式，防止合并单元格样式失效
-            sheet.setDefaultColumnStyle(column, styles.get(StringUtils.format("data_{}_{}_{}", attr.align(), attr.color(), attr.backgroundColor())));
+            sheet.setDefaultColumnStyle(column, styles.get(StringUtils.format("data_{}_{}_{}_{}", attr.align(), attr.color(), attr.backgroundColor(), attr.cellType())));
             if (attr.needMerge())
             {
                 sheet.addMergedRegion(new CellRangeAddress(rownum - 1, rownum, column, column));
@@ -877,7 +909,7 @@ public class ExcelUtil<T>
      */
     public void setCellVo(Object value, Excel attr, Cell cell)
     {
-        if (ColumnType.STRING == attr.cellType())
+        if (ColumnType.STRING == attr.cellType() || ColumnType.TEXT == attr.cellType())
         {
             String cellValue = Convert.toStr(value);
             // 对于任何以表达式触发字符 =-+@开头的单元格，直接使用tab字符作为前缀，防止CSV注入。
@@ -989,7 +1021,7 @@ public class ExcelUtil<T>
                     CellRangeAddress cellAddress = new CellRangeAddress(subMergedFirstRowNum, subMergedLastRowNum, column, column);
                     sheet.addMergedRegion(cellAddress);
                 }
-                cell.setCellStyle(styles.get(StringUtils.format("data_{}_{}_{}", attr.align(), attr.color(), attr.backgroundColor())));
+                cell.setCellStyle(styles.get(StringUtils.format("data_{}_{}_{}_{}", attr.align(), attr.color(), attr.backgroundColor(), attr.cellType())));
 
                 // 用于读取对象中的属性
                 Object value = getTargetValue(vo, field, attr);
@@ -1032,7 +1064,7 @@ public class ExcelUtil<T>
         }
         catch (Exception e)
         {
-            log.error("导出Excel失败{}", e);
+            log.error("导出Excel失败.", e);
         }
         return cell;
     }
@@ -1231,7 +1263,8 @@ public class ExcelUtil<T>
      *
      * @param value 数据值
      * @param excel 数据注解
-     * @return
+     * @param cell 单元格
+     * @return value
      */
     public String dataFormatHandlerAdapter(Object value, Excel excel, Cell cell)
     {
@@ -1243,7 +1276,7 @@ public class ExcelUtil<T>
         }
         catch (Exception e)
         {
-            log.error("不能格式化数据 " + excel.handler(), e.getMessage());
+            log.error("不能格式化数据 " + excel.handler(), e);
         }
         return Convert.toStr(value);
     }

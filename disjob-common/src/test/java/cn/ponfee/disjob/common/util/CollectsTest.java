@@ -59,7 +59,7 @@ public class CollectsTest {
         assertThat(array2).hasSize(9);
     }
 
-    private static final String test = "xxx";
+    private static String test = "xxx";
     private static final String STR = "123";
 
     @Test
@@ -71,6 +71,8 @@ public class CollectsTest {
         FieldUtils.writeField(f, (Object) null, "yyy", true);
         assertThat("yyy").isEqualTo(test);
         assertThat("yyy").isEqualTo(FieldUtils.readField(f, (Object) null));
+        test = "123";
+        assertThat("123").isEqualTo(test);
 
         // static final field
         Field f1 = FieldUtils.getField(CollectsTest.class, "STR", true);
