@@ -443,7 +443,9 @@ public class DAGExpressionParser {
             String item = list.get(i);
             if (StringUtils.isBlank(item)) {
                 // skip empty string
-            } else if (ALL_SYMBOLS.contains(item)) {
+                continue;
+            }
+            if (ALL_SYMBOLS.contains(item)) {
                 builder.append(item);
             } else if (Str.OPEN.equals(Collects.get(list, i - 1)) && Str.CLOSE.equals(Collects.get(list, i + 1))) {
                 builder.append(item);
