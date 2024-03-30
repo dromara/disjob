@@ -61,7 +61,20 @@
     const prefix = ctx + "disjob/mygroup";
 
     $("#form-mygroup-edit").validate({
-      focusCleanup: true
+      focusCleanup: true,
+      onkeyup: false,
+      rules: {
+        ownUser: {
+          required: true,
+          regex: /^(?!.*,).*/    // /^[^,]*$/
+        }
+      },
+      messages: {
+        ownUser: {
+          required: "Own user cannot empty",
+          regex: "Own user cannot contains char ','"
+        }
+      }
     });
 
     function submitHandler() {
@@ -84,6 +97,7 @@
 
       if (![(${isOwnUser})]) {
         $("input[name='ownUser']").attr("readonly", "true")
+        $("input[name='workerContextPath']").attr("readonly", "true")
       }
     });
   </script>

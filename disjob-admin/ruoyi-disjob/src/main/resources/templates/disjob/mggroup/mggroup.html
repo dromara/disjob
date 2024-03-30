@@ -207,10 +207,16 @@
 
     function updateOwnUser(field, row, rowIndex, oldValue) {
       if (field !== "ownUser") {
+        row[field] = oldValue;
         $.modal.msgError("只能更新['ownUser']字段");
         return;
       }
       const newValue = row[field].trim();
+      if (newValue.includes(",")) {
+        row[field] = oldValue;
+        $.modal.msgError("cannot contains char ','");
+        return;
+      }
       if (oldValue === newValue) {
         // reset to oldValue(none left or right blank)
         row[field] = oldValue;

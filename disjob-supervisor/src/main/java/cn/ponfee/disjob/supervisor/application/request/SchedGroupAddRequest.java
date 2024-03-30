@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
@@ -46,6 +47,7 @@ public class SchedGroupAddRequest extends ToJsonString implements Serializable {
     public void checkAndTrim() {
         Assert.hasText(group, "Group cannot be blank.");
         Assert.hasText(ownUser, "Own user cannot be blank.");
+        Assert.isTrue(!ownUser.contains(Str.COMMA), "Own user cannot contains ','");
         Assert.hasText(createdBy, "Created by cannot be blank.");
 
         group = group.trim();

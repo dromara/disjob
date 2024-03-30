@@ -55,6 +55,7 @@ public class SchedGroupUpdateRequest extends ToJsonString implements Serializabl
 
     public void checkAndTrim() {
         Assert.hasText(ownUser, "Own user cannot be blank.");
+        Assert.isTrue(!ownUser.contains(Str.COMMA), "Own user cannot contains ','");
         Assert.hasText(updatedBy, "Updated by cannot be blank.");
         this.ownUser = StringUtils.trim(ownUser);
         this.devUsers = prune(devUsers);

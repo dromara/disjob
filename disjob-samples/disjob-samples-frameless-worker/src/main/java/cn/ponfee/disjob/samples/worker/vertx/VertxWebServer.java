@@ -74,7 +74,9 @@ public class VertxWebServer extends AbstractVerticle {
         // here super.vertx is null
 
         vertx0.deployVerticle(this);
-        assert super.vertx == vertx0;
+        if (super.vertx != vertx0) {
+            throw new Error("Not a same vertx object: " + vertx + " != " + vertx0);
+        }
     }
 
     public final void close() {

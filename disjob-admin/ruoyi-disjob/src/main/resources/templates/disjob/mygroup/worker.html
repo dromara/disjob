@@ -144,6 +144,7 @@
 
     function modifyOneWorkerMaximumPoolSize(field, row, rowIndex, oldValue) {
       if (field !== "maximumPoolSize") {
+        row[field] = oldValue;
         $.modal.msgError("只能更新['maximumPoolSize']字段");
         return;
       }

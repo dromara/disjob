@@ -24,7 +24,7 @@ import cn.ponfee.disjob.id.snowflake.db.DbDistributedSnowflake;
 import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
-import de.codecentric.boot.admin.server.config.EnableAdminServer;
+//import de.codecentric.boot.admin.server.config.EnableAdminServer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -40,7 +40,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  */
 @EnableSupervisor
 @EnableWorker
-@EnableAdminServer
+//@EnableAdminServer
 public class MergedApplication extends AbstractSamplesApplication {
 
     static {

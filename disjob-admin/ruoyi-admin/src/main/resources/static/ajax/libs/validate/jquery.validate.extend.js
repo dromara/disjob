@@ -77,6 +77,13 @@ $(document).ready(function(){
 			 return false;
 		}
 		});
+	jQuery.validator.addMethod(
+		"regex",
+		function(value, element, regexp) {
+			return this.optional(element) || new RegExp(regexp).test(value);
+		},
+		"格式错误"
+	);
 	// 校验基础信息表单
 	$("#basicInfoForm").validate({
 		errorElement:'span',

@@ -34,7 +34,7 @@
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
 
     <spring-boot.version>2.7.18</spring-boot.version>
-    <spring-boot-admin.version>2.7.15</spring-boot-admin.version>
+    <!--<spring-boot-admin.version>2.7.15</spring-boot-admin.version>-->
 
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
@@ -71,49 +71,25 @@
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-registry-redis</artifactId>
-    </dependency>
-    <!--
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-registry-redis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-registry-consul</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-registry-nacos</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-registry-zookeeper</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-registry-etcd</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
+      <!--
       <artifactId>disjob-registry-database</artifactId>
+      <artifactId>disjob-registry-redis</artifactId>
+      <artifactId>disjob-registry-consul</artifactId>
+      <artifactId>disjob-registry-nacos</artifactId>
+      <artifactId>disjob-registry-zookeeper</artifactId>
+      <artifactId>disjob-registry-etcd</artifactId>
+      -->
     </dependency>
-    -->
 
     <!-- Dispatching: select one implementation for task dispatching -->
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-http</artifactId>
-    </dependency>
-    <!--
-    <dependency>
-      <groupId>cn.ponfee</groupId>
+      <!--
       <artifactId>disjob-dispatch-redis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>cn.ponfee</groupId>
       <artifactId>disjob-dispatch-http</artifactId>
+      -->
     </dependency>
-    -->
   </dependencies>
 
   <build>
