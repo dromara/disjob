@@ -50,7 +50,8 @@ public class SpringBootTestCollector {
     }
 
     public static void collect(ApplicationContext applicationContext, Class<?> testClasses) {
-        TEST_CLASSES_MAP.computeIfAbsent(applicationContext, k -> ConcurrentHashMap.newKeySet()).add(testClasses);
+        TEST_CLASSES_MAP.computeIfAbsent(applicationContext, k -> ConcurrentHashMap.newKeySet())
+                        .add(testClasses);
     }
 
 }

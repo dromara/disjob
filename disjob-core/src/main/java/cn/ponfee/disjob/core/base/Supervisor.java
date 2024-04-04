@@ -51,7 +51,6 @@ public class Supervisor extends Server {
     public Supervisor(String host, int port) {
         super(host, port);
 
-        Assert.isTrue(!host.contains(COLON), "Host cannot contains symbol ':'");
         this.serializedValue = host + COLON + port;
     }
 
@@ -127,7 +126,7 @@ public class Supervisor extends Server {
         }
     }
 
-    // -------------------------------------------------------------------------------class
+    // -------------------------------------------------------------------------------current Supervisor
 
     /**
      * Supervisor.class.getDeclaredClasses()[0]

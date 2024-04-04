@@ -81,7 +81,6 @@ public class Worker extends Server {
 
         Assert.isTrue(!group.contains(COLON), "Group cannot contains symbol ':'");
         Assert.isTrue(!workerId.contains(COLON), "Worker id cannot contains symbol ':'");
-        Assert.isTrue(!host.contains(COLON), "Host cannot contains symbol ':'");
         this.group = Strings.requireNonBlank(group.trim());
         this.workerId = workerId;
 
@@ -205,7 +204,7 @@ public class Worker extends Server {
         }
     }
 
-    // -------------------------------------------------------------------------------class
+    // -------------------------------------------------------------------------------current Worker
 
     public abstract static class Current extends Worker {
         private static final long serialVersionUID = -480329874106279202L;

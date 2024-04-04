@@ -74,8 +74,13 @@ public interface SupervisorRpcService {
     @PostMapping("/publish")
     void publish(EventParam param);
 
-    // ---------------------------------------------------------------------------savepoint
-
+    /**
+     * Savepoint the task execution snapshot data
+     *
+     * @param taskId          the taskId
+     * @param executeSnapshot the execution snapshot data
+     * @throws Exception if occur exception
+     */
     @PostMapping("/task/savepoint")
     void savepoint(long taskId, String executeSnapshot) throws Exception;
 
