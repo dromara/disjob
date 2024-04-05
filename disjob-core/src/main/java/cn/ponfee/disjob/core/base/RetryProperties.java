@@ -31,9 +31,10 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.RETRY_KEY_PREFIX)
+@ConfigurationProperties(prefix = RetryProperties.KEY_PREFIX)
 public class RetryProperties extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -2300492906607942870L;
+    public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".retry";
 
     /**
      * Retry max count, default 3.

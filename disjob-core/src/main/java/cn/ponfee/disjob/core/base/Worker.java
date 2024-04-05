@@ -18,7 +18,6 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.util.Numbers;
-import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.TokenType;
@@ -79,12 +78,14 @@ public class Worker extends Server {
     public Worker(String group, String workerId, String host, int port) {
         super(host, port);
 
+        Assert.hasText(group, "Group cannot be empty.");
+        Assert.hasText(workerId, "Worker id cannot be empty.");
         Assert.isTrue(!group.contains(COLON), "Group cannot contains symbol ':'");
         Assert.isTrue(!workerId.contains(COLON), "Worker id cannot contains symbol ':'");
-        this.group = Strings.requireNonBlank(group.trim());
-        this.workerId = workerId;
+        this.group = group.trim();
+        this.workerId = workerId.trim();
 
-        this.serializedValue = group + COLON + workerId + COLON + host + COLON + port;
+        this.serializedValue = this.group + COLON + this.workerId + COLON + super.host + COLON + super.port;
     }
 
     @Override

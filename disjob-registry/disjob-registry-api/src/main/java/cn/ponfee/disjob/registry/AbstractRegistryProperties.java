@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.base.JobConstants;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +32,11 @@ import java.io.Serializable;
 @Setter
 public abstract class AbstractRegistryProperties extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -4967408535982883608L;
+
+    /**
+     * Disjob server registry key prefix
+     */
+    public static final String DISJOB_REGISTRY_KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".registry";
 
     /**
      * Registry namespace

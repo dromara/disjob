@@ -51,7 +51,7 @@ public class Supervisor extends Server {
     public Supervisor(String host, int port) {
         super(host, port);
 
-        this.serializedValue = host + COLON + port;
+        this.serializedValue = super.host + COLON + super.port;
     }
 
     @Override

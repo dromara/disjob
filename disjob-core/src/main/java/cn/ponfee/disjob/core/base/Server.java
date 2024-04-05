@@ -42,10 +42,10 @@ public abstract class Server implements Serializable {
     protected final int port;
 
     protected Server(String host, int port) {
+        Assert.hasText(host, "Host cannot be empty.");
         Assert.isTrue(!host.contains(Str.COLON), "Host cannot contains symbol ':'");
-        // -1 for test case
         Assert.isTrue(0 < port && port <= 65535, "Port must be range (0, 65535].");
-        this.host = host;
+        this.host = host.trim();
         this.port = port;
     }
 

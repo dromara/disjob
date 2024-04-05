@@ -55,7 +55,7 @@ public class HttpTaskDispatcher extends TaskDispatcher {
 
     @Override
     protected boolean doDispatch(ExecuteTaskParam param) {
-        return httpTaskReceiverClient.invoke(param.getWorker(), client -> client.receive(param));
+        return httpTaskReceiverClient.call(param.getWorker(), client -> client.receive(param));
     }
 
 }

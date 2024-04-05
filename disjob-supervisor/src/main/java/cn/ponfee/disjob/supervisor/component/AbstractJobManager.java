@@ -250,7 +250,7 @@ public abstract class AbstractJobManager {
             // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发。
             // 因扫描(WaitingInstanceScanner/RunningInstanceScanner)时间是很滞后的，
             // 所以若任务已分发成功，不考虑该任务还在时间轮中的可能性，认定任务已在线程池(WorkerThreadPool)中了。
-            return !destinationWorkerRpcClient.invoke(worker, client -> client.existsTask(param));
+            return !destinationWorkerRpcClient.call(worker, client -> client.existsTask(param));
         } catch (Throwable e) {
             log.error("Invoke worker exists task error: " + worker, e);
             // 若调用异常(如请求超时)，本次不做处理，等下一次扫描时再判断是否要重新分发任务
@@ -299,12 +299,12 @@ public abstract class AbstractJobManager {
     private void verifyJob(SchedJob job) throws JobException {
         JobHandlerParam param = JobHandlerParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
-        groupedWorkerRpcClient.invokeWithoutResult(job.getGroup(), client -> client.verify(param));
+        groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verify(param));
     }
 
     private List<SplitTask> splitJob(JobHandlerParam param) throws JobException {
         SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
-        return groupedWorkerRpcClient.invoke(param.getGroup(), client -> client.split(param));
+        return groupedWorkerRpcClient.call(param.getGroup(), client -> client.split(param));
     }
 
     private void parseTriggerConfig(SchedJob job) {

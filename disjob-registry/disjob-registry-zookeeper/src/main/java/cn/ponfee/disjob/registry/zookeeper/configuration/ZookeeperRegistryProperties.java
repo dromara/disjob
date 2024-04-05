@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.zookeeper.configuration;
 
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.registry.AbstractRegistryProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,9 +30,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".zookeeper")
+@ConfigurationProperties(prefix = ZookeeperRegistryProperties.KEY_PREFIX)
 public class ZookeeperRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -8395535372974631095L;
+    public static final String KEY_PREFIX = DISJOB_REGISTRY_KEY_PREFIX + ".zookeeper";
 
     private String connectString = "localhost:2181";
     private String username;

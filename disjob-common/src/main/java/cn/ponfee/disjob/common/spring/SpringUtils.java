@@ -52,8 +52,11 @@ public final class SpringUtils {
             return port;
         }
 
+        // Ahead start web server for get actual port
         WebServer webServer = webServerApplicationContext.getWebServer();
         webServer.start();
+        // port=null ->  default 8080
+        // port=0    ->  random available port
         return webServer.getPort();
     }
 

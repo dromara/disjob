@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.redis.configuration;
 
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.registry.AbstractRegistryProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,9 +28,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".redis")
+@ConfigurationProperties(prefix = RedisRegistryProperties.KEY_PREFIX)
 public class RedisRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -6079627443420731390L;
+    public static final String KEY_PREFIX = DISJOB_REGISTRY_KEY_PREFIX + ".redis";
 
     /**
      * Session timeout milliseconds

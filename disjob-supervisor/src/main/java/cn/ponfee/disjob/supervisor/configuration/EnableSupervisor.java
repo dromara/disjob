@@ -171,7 +171,7 @@ public @interface EnableSupervisor {
     }
 
     @Order
-    @ConditionalOnProperty(prefix = JobConstants.SUPERVISOR_KEY_PREFIX, name = "locker", havingValue = "default", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = SupervisorProperties.KEY_PREFIX, name = "locker", havingValue = "default", matchIfMissing = true)
     class EnableScanLockerConfiguration {
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)

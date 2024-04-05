@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.consul.configuration;
 
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.registry.AbstractRegistryProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,9 +28,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".consul")
+@ConfigurationProperties(prefix = ConsulRegistryProperties.KEY_PREFIX)
 public class ConsulRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -851364562631134942L;
+    public static final String KEY_PREFIX = DISJOB_REGISTRY_KEY_PREFIX + ".consul";
 
     /**
      * Consul client host

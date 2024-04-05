@@ -18,7 +18,6 @@ package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
@@ -26,7 +25,9 @@ import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.base.HttpProperties;
+import cn.ponfee.disjob.core.base.RetryProperties;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
@@ -42,22 +43,19 @@ import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.util.Assert;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
-import static cn.ponfee.disjob.core.base.JobConstants.*;
+import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
+import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_KEY_PREFIX;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Job worker configuration.
@@ -78,42 +76,25 @@ public class WorkerFramelessMain {
     public static void main(String[] args) throws Exception {
         printBanner();
 
-        YamlProperties props;
-        try (InputStream inputStream = loadConfigStream(args)) {
-            props = new YamlProperties(inputStream);
-        }
+        YamlProperties config = loadConfig(args);
+        HttpProperties httpProps = config.extract(HttpProperties.class, HttpProperties.KEY_PREFIX);
+        httpProps.check();
+        WorkerProperties workerProps = config.extract(WorkerProperties.class, WorkerProperties.KEY_PREFIX);
+        workerProps.check();
+        TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(workerProps.getTimingWheelTickMs(), workerProps.getTimingWheelRingSize());
+        LazyLoader<StringRedisTemplate> srtLoader = LazyLoader.of(() -> AbstractRedisTemplateCreator.create(DISJOB_KEY_PREFIX + ".redis", config).getStringRedisTemplate());
+        Worker.Current currentWorker = createCurrentWorker(config, workerProps);
 
-        WorkerProperties workerProperties = props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + ".");
-        int port = Optional.ofNullable(props.getInt(SpringUtils.SERVER_PORT)).orElse(NetUtils.findAvailablePort(10000));
-
-        String group = props.getString(WORKER_KEY_PREFIX + ".group");
-        Assert.hasText(group, "Worker group name cannot empty.");
-        String host = JobUtils.getLocalHost(props.getString(DISJOB_BOUND_SERVER_HOST));
-        String workerToken = workerProperties.getWorkerToken();
-        String supervisorToken = workerProperties.getSupervisorToken();
-        String supervisorContextPath = workerProperties.getSupervisorContextPath();
-
-        Object[] array = {group, UuidUtils.uuid32(), host, port, workerToken, supervisorToken, supervisorContextPath};
-        Worker.Current currentWorker = ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", array);
-
-        TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(
-            props.getLong(WORKER_KEY_PREFIX + ".timing-wheel-tick-ms", 100),
-            props.getInt(WORKER_KEY_PREFIX + ".timing-wheel-ring-size", 60)
-        );
-
-        LazyLoader<StringRedisTemplate> stringRedisTemplateLoader = LazyLoader.of(
-            () -> AbstractRedisTemplateCreator.create(DISJOB_KEY_PREFIX + ".redis.", props, null).getStringRedisTemplate()
-        );
 
 
         // --------------------- create registry(select redis or consul) --------------------- //
         WorkerRegistry workerRegistry;
         {
-            // redis registry
-            workerRegistry = createRedisWorkerRegistry(JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".redis", props, stringRedisTemplateLoader);
+            // 1）redis registry
+            workerRegistry = new RedisWorkerRegistry(srtLoader.get(), config.extract(RedisRegistryProperties.class, RedisRegistryProperties.KEY_PREFIX));
 
-            // consul registry
-            //workerRegistry = createConsulWorkerRegistry(JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".consul", props);
+            // 2）consul registry
+            //workerRegistry = new ConsulWorkerRegistry(config.extract(ConsulRegistryProperties.class, ConsulRegistryProperties.KEY_PREFIX));
         }
         // --------------------- create registry(select redis or consul) --------------------- //
 
@@ -121,9 +102,9 @@ public class WorkerFramelessMain {
         // --------------------- create receiver(select redis or http) --------------------- //
         TaskReceiver actualTaskReceiver, paramTaskReceiver;
         {
-            // redis receiver
+            // 1）redis receiver
             /*
-            actualTaskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplateLoader.get()) {
+            actualTaskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, srtLoader.get()) {
                 @Override
                 public boolean receive(ExecuteTaskParam param) {
                     JobHandlerParser.parse(param, "jobHandler");
@@ -138,35 +119,24 @@ public class WorkerFramelessMain {
             };
             */
 
-            // http receiver
+            // 2）http receiver
             paramTaskReceiver = actualTaskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
         }
-
-        // `verify/split/metrics/configure` 等接口还是要走http
-        WorkerRpcService workerRpcProvider = new WorkerRpcProvider(currentWorker, workerRegistry);
-        VertxWebServer vertxWebServer = new VertxWebServer(port, paramTaskReceiver, workerRpcProvider);
         // --------------------- create receiver(select redis or http) --------------------- //
 
 
-        HttpProperties http = props.extract(HttpProperties.class, HTTP_KEY_PREFIX + ".");
-        http.check();
-        RestTemplate restTemplate = RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), null);
 
+        // `verify/split/metrics/configure` 接口还是要走http
+        VertxWebServer vertxWebServer = new VertxWebServer(currentWorker.getPort(), paramTaskReceiver, new WorkerRpcProvider(currentWorker, workerRegistry));
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
-            .workerProperties(workerProperties)
-            .retryProperties(props.extract(RetryProperties.class, RETRY_KEY_PREFIX + "."))
+            .workerProperties(workerProps)
+            .retryProperties(config.extract(RetryProperties.class, RetryProperties.KEY_PREFIX))
             .taskReceiver(actualTaskReceiver)
             .workerRegistry(workerRegistry)
-            .restTemplate(restTemplate)
+            .restTemplate(RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null))
             .build();
-
         try {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                ThrowingRunnable.doCaught(workerStartup::close);
-                ThrowingRunnable.doCaught(vertxWebServer::close);
-            }));
-
             vertxWebServer.deploy();
             workerStartup.start();
 
@@ -175,43 +145,36 @@ public class WorkerFramelessMain {
             LOG.error("Sleep interrupted.", e);
             Thread.currentThread().interrupt();
         } finally {
-            workerStartup.close();
+            ThrowingRunnable.doCaught(workerStartup::close);
+            ThrowingRunnable.doCaught(vertxWebServer::close);
         }
     }
 
-    private static InputStream loadConfigStream(String[] args) throws FileNotFoundException {
-        String filePath;
-        if (StringUtils.isEmpty(filePath = Collects.get(args, 0))) {
-            return Thread.currentThread().getContextClassLoader().getResourceAsStream("worker-conf.yml");
-        } else {
-            return new FileInputStream(filePath);
-        }
-    }
+    // -----------------------------------------------------------------------------------------------private methods
 
     private static void printBanner() throws IOException {
-        String banner = IOUtils.resourceToString(
-            "banner.txt", StandardCharsets.UTF_8, WorkerStartup.class.getClassLoader()
-        );
+        String banner = IOUtils.resourceToString("banner.txt", UTF_8, WorkerStartup.class.getClassLoader());
         System.out.println(banner);
     }
 
-    private static WorkerRegistry createRedisWorkerRegistry(String keyPrefix, YamlProperties props,
-                                                            LazyLoader<StringRedisTemplate> stringRedisTemplateLoader) {
-        RedisRegistryProperties config = new RedisRegistryProperties();
-        config.setNamespace(props.getString(keyPrefix + ".namespace"));
-        config.setSessionTimeoutMs(props.getLong(keyPrefix + ".session-timeout-ms", 30000));
-        return new RedisWorkerRegistry(stringRedisTemplateLoader.get(), config);
+    private static YamlProperties loadConfig(String[] args) throws IOException {
+        String path = Optional.ofNullable(args).filter(e -> e.length > 0).map(e -> e[0]).orElse("");
+        try (InputStream stream = path.isEmpty() ? WorkerFramelessMain.class.getResourceAsStream("/worker-conf.yml") : new FileInputStream(path)) {
+            return new YamlProperties(stream);
+        }
     }
 
-    /*
-    private static WorkerRegistry createConsulWorkerRegistry(String keyPrefix, YamlProperties props) {
-        ConsulRegistryProperties config = new ConsulRegistryProperties();
-        config.setNamespace(props.getString(keyPrefix + ".namespace"));
-        config.setHost(props.getString(keyPrefix + ".host", "localhost"));
-        config.setPort(props.getInt(keyPrefix + ".port", 8500));
-        config.setToken(props.getString(keyPrefix + ".token"));
-        return new ConsulWorkerRegistry(config);
+    private static Worker.Current createCurrentWorker(YamlProperties config, WorkerProperties workerProps) throws Exception {
+        Object[] args = {
+            workerProps.getGroup(),
+            UuidUtils.uuid32(),
+            JobUtils.getLocalHost(config.getString(DISJOB_BOUND_SERVER_HOST)),
+            Optional.ofNullable(config.getInt(SpringUtils.SERVER_PORT)).orElseGet(() -> NetUtils.findAvailablePort(10000)),
+            workerProps.getWorkerToken(),
+            workerProps.getSupervisorToken(),
+            workerProps.getSupervisorContextPath()
+        };
+        return ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", args);
     }
-    */
 
 }

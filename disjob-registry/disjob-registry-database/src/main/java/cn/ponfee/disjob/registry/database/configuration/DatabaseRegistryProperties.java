@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.database.configuration;
 
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.registry.AbstractRegistryProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,9 +30,10 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".database")
+@ConfigurationProperties(prefix = DatabaseRegistryProperties.KEY_PREFIX)
 public class DatabaseRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -7144285250901660738L;
+    public static final String KEY_PREFIX = DISJOB_REGISTRY_KEY_PREFIX + ".database";
 
     /**
      * Session timeout milliseconds

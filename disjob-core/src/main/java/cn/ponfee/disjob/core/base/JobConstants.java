@@ -25,7 +25,7 @@ import org.springframework.http.MediaType;
  *
  * @author Ponfee
  */
-public class JobConstants {
+public final class JobConstants {
 
     /**
      * Version
@@ -46,31 +46,6 @@ public class JobConstants {
      * Server bound host
      */
     public static final String DISJOB_BOUND_SERVER_HOST = DISJOB_KEY_PREFIX + ".bound.server.host";
-
-    /**
-     * Disjob server registry key prefix
-     */
-    public static final String DISJOB_REGISTRY_KEY_PREFIX = DISJOB_KEY_PREFIX + ".registry";
-
-    /**
-     * Disjob worker configuration key prefix.
-     */
-    public static final String WORKER_KEY_PREFIX = DISJOB_KEY_PREFIX + ".worker";
-
-    /**
-     * Disjob supervisor configuration key prefix.
-     */
-    public static final String SUPERVISOR_KEY_PREFIX = DISJOB_KEY_PREFIX + ".supervisor";
-
-    /**
-     * Http rest configuration key prefix.
-     */
-    public static final String HTTP_KEY_PREFIX = DISJOB_KEY_PREFIX + ".http";
-
-    /**
-     * Retry configuration key prefix.
-     */
-    public static final String RETRY_KEY_PREFIX = DISJOB_KEY_PREFIX + ".retry";
 
     /**
      * Spring container bean name prefix.

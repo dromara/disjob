@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.dao;
 
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.supervisor.base.AbstractDataSourceConfig;
+import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -50,7 +50,7 @@ import javax.sql.DataSource;
  *
  * @author Ponfee
  */
-@ConditionalOnProperty(prefix = JobConstants.SUPERVISOR_KEY_PREFIX + ".datasource", name = "custom", havingValue = "false", matchIfMissing = true)
+@ConditionalOnProperty(prefix = SupervisorProperties.KEY_PREFIX + ".datasource", name = "custom", havingValue = "false", matchIfMissing = true)
 @Configuration
 @MapperScan(
     basePackages = SupervisorDataSourceConfig.BASE_PACKAGE + ".mapper",

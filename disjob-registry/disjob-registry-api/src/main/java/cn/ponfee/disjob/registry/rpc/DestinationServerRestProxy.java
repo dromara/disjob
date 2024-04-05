@@ -66,7 +66,7 @@ public final class DestinationServerRestProxy {
             this.currentServer = currentServer;
         }
 
-        public <R, E extends Throwable> R invoke(S destinationServer, ThrowingFunction<T, R, E> function) throws E {
+        public <R, E extends Throwable> R call(S destinationServer, ThrowingFunction<T, R, E> function) throws E {
             Objects.requireNonNull(destinationServer);
             if (localServiceProvider != null && destinationServer.equals(currentServer)) {
                 return function.apply(localServiceProvider);
@@ -80,8 +80,8 @@ public final class DestinationServerRestProxy {
             }
         }
 
-        public <E extends Throwable> void invokeWithoutResult(S destinationServer, ThrowingConsumer<T, E> consumer) throws E {
-            invoke(destinationServer, consumer.toFunction(null));
+        public <E extends Throwable> void invoke(S destinationServer, ThrowingConsumer<T, E> consumer) throws E {
+            call(destinationServer, consumer.toFunction(null));
         }
     }
 

@@ -159,7 +159,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         Long pingTime = null;
         try {
             long start = System.currentTimeMillis();
-            metrics = supervisorRpcClient.invoke(supervisor, SupervisorRpcService::metrics);
+            metrics = supervisorRpcClient.call(supervisor, SupervisorRpcService::metrics);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
@@ -185,7 +185,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         GetMetricsParam param = buildGetMetricsParam(group);
         try {
             long start = System.currentTimeMillis();
-            metrics = workerRpcClient.invoke(worker, client -> client.metrics(param));
+            metrics = workerRpcClient.call(worker, client -> client.metrics(param));
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
@@ -215,7 +215,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private void verifyWorkerSignature(Worker worker) {
         String group = worker.getGroup();
         GetMetricsParam param = buildGetMetricsParam(group);
-        WorkerMetrics metrics = workerRpcClient.invoke(worker, client -> client.metrics(param));
+        WorkerMetrics metrics = workerRpcClient.call(worker, client -> client.metrics(param));
         if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
         }
@@ -225,11 +225,11 @@ public class ServerInvokeService extends SingletonClassConstraint {
         ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
         param.setAction(action);
         param.setData(data);
-        workerRpcClient.invokeWithoutResult(worker, client -> client.configureWorker(param));
+        workerRpcClient.invoke(worker, client -> client.configureWorker(param));
     }
 
     private void publishSupervisor(Supervisor supervisor, EventParam param) {
-        RetryTemplate.executeQuietly(() -> supervisorRpcClient.invokeWithoutResult(supervisor, client -> client.publish(param)), 1, 2000);
+        RetryTemplate.executeQuietly(() -> supervisorRpcClient.invoke(supervisor, client -> client.publish(param)), 1, 2000);
     }
 
     private GetMetricsParam buildGetMetricsParam(String group) {

@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.nacos.configuration;
 
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.registry.AbstractRegistryProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,9 +32,10 @@ import java.util.Properties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".nacos")
+@ConfigurationProperties(prefix = NacosRegistryProperties.KEY_PREFIX)
 public class NacosRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = 2961908276104522907L;
+    public static final String KEY_PREFIX = DISJOB_REGISTRY_KEY_PREFIX + ".nacos";
 
     /**
      * Nacos server address

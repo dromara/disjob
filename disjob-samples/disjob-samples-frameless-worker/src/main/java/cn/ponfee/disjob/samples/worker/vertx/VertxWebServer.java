@@ -75,7 +75,7 @@ public class VertxWebServer extends AbstractVerticle {
 
         vertx0.deployVerticle(this);
         if (super.vertx != vertx0) {
-            throw new Error("Not a same vertx object: " + vertx + " != " + vertx0);
+            LOG.warn("Not a same vertx: super.vertx({}) != vertx0({})", super.vertx, vertx0);
         }
     }
 
@@ -92,8 +92,8 @@ public class VertxWebServer extends AbstractVerticle {
             countDownLatch.countDown();
         });
         try {
-            countDownLatch.await(60, TimeUnit.SECONDS);
-            LOG.info("Close vertx success.");
+            boolean res = countDownLatch.await(60, TimeUnit.SECONDS);
+            LOG.info("Close vertx success {}.", res);
         } catch (InterruptedException e) {
             LOG.error("Close vertx interrupted.", e);
             Thread.currentThread().interrupt();
@@ -172,7 +172,7 @@ public class VertxWebServer extends AbstractVerticle {
 
     private static <T> T parseBodyArg(RoutingContext ctx, Class<T> type) {
         Object[] args = Jsons.parseArray(ctx.body().asString(), type);
-        return args == null ? null : (T) args[0];
+        return (T) Collects.get(args, 0);
     }
 
     private static <T> T parseParamArg(RoutingContext ctx, Class<T> type) {

@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.etcd.configuration;
 
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.registry.AbstractRegistryProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,9 +31,10 @@ import java.util.Arrays;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = JobConstants.DISJOB_REGISTRY_KEY_PREFIX + ".etcd")
+@ConfigurationProperties(prefix = EtcdRegistryProperties.KEY_PREFIX)
 public class EtcdRegistryProperties extends AbstractRegistryProperties {
     private static final long serialVersionUID = -7448688693230439783L;
+    public static final String KEY_PREFIX = DISJOB_REGISTRY_KEY_PREFIX + ".etcd";
 
     /**
      * Server endpoints, multiple addresses separated by ","

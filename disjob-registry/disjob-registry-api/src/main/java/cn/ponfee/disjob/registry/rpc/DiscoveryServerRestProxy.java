@@ -140,7 +140,7 @@ public final class DiscoveryServerRestProxy {
             this.serverGroupMatcher = serverGroupMatcher;
         }
 
-        public <R, E extends Throwable> R invoke(String group, ThrowingFunction<T, R, E> function) throws E {
+        public <R, E extends Throwable> R call(String group, ThrowingFunction<T, R, E> function) throws E {
             if (localServiceProvider != null && serverGroupMatcher.test(group)) {
                 return function.apply(localServiceProvider);
             } else {
@@ -153,8 +153,8 @@ public final class DiscoveryServerRestProxy {
             }
         }
 
-        public <E extends Throwable> void invokeWithoutResult(String group, ThrowingConsumer<T, E> consumer) throws E {
-            invoke(group, consumer.toFunction(null));
+        public <E extends Throwable> void invoke(String group, ThrowingConsumer<T, E> consumer) throws E {
+            call(group, consumer.toFunction(null));
         }
     }
 
