@@ -82,7 +82,7 @@ import java.util.stream.Collectors;
 // PER_METHOD(默认)：每个测试方法都会创建一个新的测试类实例；PER_CLASS：所有测试方法只创建一个测试类的实例；
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     classes = SpringBootTestApplication.class
 )
 //@ContextConfiguration(classes = { XXX.class })

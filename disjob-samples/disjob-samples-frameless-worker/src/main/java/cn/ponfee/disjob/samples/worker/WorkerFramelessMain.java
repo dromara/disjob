@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
+import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
@@ -83,7 +84,7 @@ public class WorkerFramelessMain {
         }
 
         WorkerProperties workerProperties = props.extract(WorkerProperties.class, WORKER_KEY_PREFIX + ".");
-        int port = Optional.ofNullable(props.getInt("server.port")).orElse(NetUtils.findAvailablePort(10000));
+        int port = Optional.ofNullable(props.getInt(SpringUtils.SERVER_PORT)).orElse(NetUtils.findAvailablePort(10000));
 
         String group = props.getString(WORKER_KEY_PREFIX + ".group");
         Assert.hasText(group, "Worker group name cannot empty.");

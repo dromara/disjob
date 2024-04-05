@@ -17,6 +17,8 @@
 package cn.ponfee.disjob.common.spring;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.boot.web.context.WebServerApplicationContext;
+import org.springframework.boot.web.server.WebServer;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
@@ -32,11 +34,27 @@ import java.net.URL;
  */
 public final class SpringUtils {
 
+    /**
+     * Spring-boot web server port name
+     */
+    public static final String SERVER_PORT = "server.port";
+
     public static Resource getResource(String resourceLocation) throws IOException {
         // return new DefaultResourceLoader().getResource(resourceLocation);
         URL url = ResourceUtils.getURL(resourceLocation);
         byte[] bytes = IOUtils.toByteArray(url);
         return new InputStreamResource(new ByteArrayInputStream(bytes));
+    }
+
+    public static int getActualWebServerPort(WebServerApplicationContext webServerApplicationContext) {
+        Integer port = webServerApplicationContext.getEnvironment().getProperty(SpringUtils.SERVER_PORT, Integer.class);
+        if (port != null && port > 0) {
+            return port;
+        }
+
+        WebServer webServer = webServerApplicationContext.getWebServer();
+        webServer.start();
+        return webServer.getPort();
     }
 
 }

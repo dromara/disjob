@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
+import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.JobUtils;
@@ -39,15 +40,14 @@ import cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
@@ -97,16 +97,15 @@ public @interface EnableSupervisor {
     class EnableHttpProperties {
     }
 
-    @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
     class EnableSupervisorConfiguration {
 
-        @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-        @Order(Ordered.HIGHEST_PRECEDENCE)
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        public Supervisor.Current currentSupervisor(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
+        public Supervisor.Current currentSupervisor(WebServerApplicationContext webServerApplicationContext,
                                                     @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
             UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
-            Object[] args = {JobUtils.getLocalHost(boundHost), port, workerCtxPath};
+            String host = JobUtils.getLocalHost(boundHost);
+            int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
+            Object[] args = {host, port, workerCtxPath};
             try {
                 // inject current supervisor: Supervisor.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Supervisor.Current.class.getName()), "create", args);
@@ -194,7 +193,6 @@ public @interface EnableSupervisor {
         }
     }
 
-    @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
     class EnableSupervisorAdapter {
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)

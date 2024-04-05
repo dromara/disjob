@@ -38,11 +38,6 @@ public class JobConstants {
     public static final int PROCESS_BATCH_SIZE = 200;
 
     /**
-     * Spring web server port
-     */
-    public static final String SPRING_WEB_SERVER_PORT = "server.port";
-
-    /**
      * Disjob configuration key prefix
      */
     public static final String DISJOB_KEY_PREFIX = "disjob";

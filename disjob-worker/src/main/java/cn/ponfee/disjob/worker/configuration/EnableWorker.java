@@ -19,6 +19,7 @@ package cn.ponfee.disjob.worker.configuration;
 import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
+import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.*;
@@ -30,8 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
@@ -70,7 +71,6 @@ public @interface EnableWorker {
     class EnableHttpProperties {
     }
 
-    @ConditionalOnProperty(JobConstants.SPRING_WEB_SERVER_PORT)
     class EnableWorkerConfiguration {
 
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
@@ -80,11 +80,9 @@ public @interface EnableWorker {
             return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
         }
 
-        @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-        @Order(Ordered.HIGHEST_PRECEDENCE)
         @DependsOn(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        public Worker.Current currentWorker(@Value("${" + JobConstants.SPRING_WEB_SERVER_PORT + "}") int port,
+        public Worker.Current currentWorker(WebServerApplicationContext webServerApplicationContext,
                                             @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
                                             WorkerProperties config) {
             config.check();
@@ -92,6 +90,8 @@ public @interface EnableWorker {
             String workerToken = config.getWorkerToken();
             String supervisorToken = config.getSupervisorToken();
             String supervisorContextPath = config.getSupervisorContextPath();
+            int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
+
             Object[] args = {config.getGroup(), UuidUtils.uuid32(), host, port, workerToken, supervisorToken, supervisorContextPath};
             try {
                 // inject current worker: Worker.class.getDeclaredClasses()[0]
