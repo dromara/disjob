@@ -149,7 +149,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
      */
     @Override
     public final void register(R server) {
-        if (closed.get()) {
+        if (state.isStopped()) {
             return;
         }
 
@@ -198,7 +198,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     @PreDestroy
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
+        if (!state.stop()) {
             return;
         }
 

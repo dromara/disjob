@@ -188,6 +188,13 @@ public final class Strings {
         return str;
     }
 
+    public static String withDotSuffix(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str + Str.DOT;
+    }
+
     public static String trimUrlPath(String urlPath) {
         if (StringUtils.isBlank(urlPath) || Str.SLASH.equals(urlPath)) {
             return Str.SLASH;

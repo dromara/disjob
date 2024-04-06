@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry;
 
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.discovery.DiscoveryServer;
@@ -29,7 +30,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -55,9 +55,9 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected final Set<R> registered = ConcurrentHashMap.newKeySet();
 
     /**
-     * Server registry is whether closed status
+     * Server registry state
      */
-    protected final AtomicBoolean closed = new AtomicBoolean(false);
+    protected final TripState state = TripState.createStarted();
 
     protected ServerRegistry(String namespace, char separator) {
         this.separator = separator;

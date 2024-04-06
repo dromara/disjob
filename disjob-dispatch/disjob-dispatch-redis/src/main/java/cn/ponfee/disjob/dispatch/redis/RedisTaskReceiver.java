@@ -18,6 +18,7 @@ package cn.ponfee.disjob.dispatch.redis;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.core.base.JobConstants;
@@ -30,7 +31,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static cn.ponfee.disjob.common.spring.RedisTemplateUtils.evalScript;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -79,7 +79,7 @@ public class RedisTaskReceiver extends TaskReceiver {
      */
     private static final byte[] LIST_POP_BATCH_SIZE_BYTES = Integer.toString(JobConstants.PROCESS_BATCH_SIZE).getBytes(UTF_8);
 
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final TripState state = TripState.create();
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
     public RedisTaskReceiver(Worker.Current currentWorker,
@@ -98,7 +98,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
     @Override
     public void start() {
-        if (!started.compareAndSet(false, true)) {
+        if (!state.start()) {
             log.warn("Repeat call start method.");
             return;
         }
@@ -107,7 +107,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
     @Override
     public void stop() {
-        if (!started.compareAndSet(true, false)) {
+        if (!state.stop()) {
             log.warn("Repeat call stop method.");
             return;
         }

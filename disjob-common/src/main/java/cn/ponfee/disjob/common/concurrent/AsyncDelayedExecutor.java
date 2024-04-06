@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,6 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
@@ -59,7 +59,8 @@ public final class AsyncDelayedExecutor<E> extends Thread {
     private final ThreadPoolExecutor asyncExecutor;
 
     private final DelayQueue<DelayedData<E>> queue = new DelayQueue<>();
-    private final AtomicBoolean stopped = new AtomicBoolean(false);
+
+    private final TripState state = TripState.createStarted();
 
     public AsyncDelayedExecutor(Consumer<E> dataProcessor) {
         this(1, dataProcessor);
@@ -97,14 +98,14 @@ public final class AsyncDelayedExecutor<E> extends Thread {
      * @param delayedData the delayed data
      */
     public boolean put(DelayedData<E> delayedData) {
-        if (stopped.get()) {
+        if (state.isStopped()) {
             return false;
         }
         return queue.offer(delayedData);
     }
 
     public boolean toStop() {
-        return stopped.compareAndSet(false, true);
+        return state.stop();
     }
 
     public void doStop() {
@@ -114,7 +115,7 @@ public final class AsyncDelayedExecutor<E> extends Thread {
 
     @Override
     public void run() {
-        while (!stopped.get()) {
+        while (state.isRunning()) {
             if (super.isInterrupted()) {
                 LOG.error("Async delayed thread interrupted.");
                 break;

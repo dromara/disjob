@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.base.Symbol.Char;
-import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.TypedMap;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Fields;
@@ -60,9 +59,7 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
             return null;
         }
 
-        if (!prefix.isEmpty() && !prefix.endsWith(Str.DOT)) {
-            prefix += Str.DOT;
-        }
+        prefix = Strings.withDotSuffix(prefix);
 
         T bean = ClassUtils.newInstance(beanType);
         char[] separators = {Char.HYPHEN, Char.DOT};

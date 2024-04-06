@@ -114,7 +114,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     @Override
     public final void register(R server) {
-        if (closed.get()) {
+        if (state.isStopped()) {
             return;
         }
 
@@ -148,7 +148,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     @PreDestroy
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
+        if (!state.stop()) {
             return;
         }
 

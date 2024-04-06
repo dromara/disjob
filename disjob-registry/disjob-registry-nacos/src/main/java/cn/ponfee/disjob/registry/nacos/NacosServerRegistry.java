@@ -88,7 +88,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public final void register(R server) {
-        if (closed.get()) {
+        if (state.isStopped()) {
             return;
         }
 
@@ -125,7 +125,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
     @PreDestroy
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
+        if (!state.stop()) {
             return;
         }
 

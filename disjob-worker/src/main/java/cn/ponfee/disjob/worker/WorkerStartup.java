@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.worker;
 
 import cn.ponfee.disjob.common.base.Startable;
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Startup worker.
@@ -49,7 +49,7 @@ public class WorkerStartup implements Startable {
     private final TaskReceiver taskReceiver;
     private final WorkerRegistry workerRegistry;
 
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final TripState state = TripState.create();
 
     private WorkerStartup(Worker.Current currentWorker,
                           WorkerProperties workerProperties,
@@ -88,7 +88,7 @@ public class WorkerStartup implements Startable {
 
     @Override
     public void start() {
-        if (!started.compareAndSet(false, true)) {
+        if (!state.start()) {
             LOG.warn("Worker startup already started.");
             return;
         }
@@ -100,7 +100,7 @@ public class WorkerStartup implements Startable {
 
     @Override
     public void stop() {
-        if (!started.compareAndSet(true, false)) {
+        if (!state.stop()) {
             LOG.warn("Worker startup already stopped.");
             return;
         }

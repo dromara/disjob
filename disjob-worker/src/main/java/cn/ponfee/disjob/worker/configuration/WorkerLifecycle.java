@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
@@ -30,8 +31,6 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * Worker lifecycle
  *
@@ -41,7 +40,7 @@ public class WorkerLifecycle implements SmartLifecycle {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerLifecycle.class);
 
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final TripState state = TripState.create();
     private final WorkerStartup workerStartup;
 
     public WorkerLifecycle(Worker.Current currentWorker,
@@ -65,12 +64,12 @@ public class WorkerLifecycle implements SmartLifecycle {
 
     @Override
     public boolean isRunning() {
-        return started.get();
+        return state.isRunning();
     }
 
     @Override
     public void start() {
-        if (!started.compareAndSet(false, true)) {
+        if (!state.start()) {
             LOG.error("Disjob worker lifecycle already stated!");
         }
 
@@ -81,7 +80,7 @@ public class WorkerLifecycle implements SmartLifecycle {
 
     @Override
     public void stop(Runnable callback) {
-        if (!started.compareAndSet(true, false)) {
+        if (!state.stop()) {
             LOG.error("Disjob worker lifecycle already stopped!");
         }
 

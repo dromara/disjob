@@ -16,11 +16,10 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Loop thread
@@ -31,11 +30,7 @@ public class LoopThread extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoopThread.class);
 
-    private static final int NEW        = 0;
-    private static final int RUNNING    = 1;
-    private static final int TERMINATED = 2;
-
-    private final AtomicInteger state = new AtomicInteger(NEW);
+    private final TripState state = TripState.create();
     private final long periodMs;
     private final long delayMs;
     private final ThrowingRunnable<?> action;
@@ -72,7 +67,7 @@ public class LoopThread extends Thread {
         if (delayMs > 0) {
             ThrowingRunnable.doChecked(() -> Thread.sleep(delayMs));
         }
-        while (state.get() == RUNNING) {
+        while (state.isRunning()) {
             try {
                 action.run();
                 Thread.sleep(periodMs);
@@ -89,7 +84,7 @@ public class LoopThread extends Thread {
 
     @Override
     public synchronized void start() {
-        if (state.compareAndSet(NEW, RUNNING)) {
+        if (state.start()) {
             super.start();
         } else {
             throw new IllegalStateException("Loop process thread already started.");
@@ -97,7 +92,7 @@ public class LoopThread extends Thread {
     }
 
     public boolean terminate() {
-        if (state.compareAndSet(RUNNING, TERMINATED)) {
+        if (state.stop()) {
             ThrowingRunnable.doCaught(super::interrupt);
             return true;
         } else {

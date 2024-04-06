@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -27,8 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.SmartLifecycle;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.*;
 
@@ -45,7 +44,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorLifecycle.class);
 
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final TripState state = TripState.create();
     private final SupervisorStartup supervisorStartup;
 
     public SupervisorLifecycle(Supervisor.Current currentSupervisor,
@@ -72,12 +71,12 @@ public class SupervisorLifecycle implements SmartLifecycle {
 
     @Override
     public boolean isRunning() {
-        return started.get();
+        return state.isRunning();
     }
 
     @Override
     public void start() {
-        if (!started.compareAndSet(false, true)) {
+        if (!state.start()) {
             LOG.error("Disjob supervisor lifecycle already stated!");
         }
 
@@ -88,7 +87,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
 
     @Override
     public void stop(Runnable callback) {
-        if (!started.compareAndSet(true, false)) {
+        if (!state.stop()) {
             LOG.error("Disjob supervisor lifecycle already stopped!");
         }
 

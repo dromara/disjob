@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -53,7 +54,6 @@ import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -113,9 +113,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private final AtomicLong completedTaskCounter = new AtomicLong(0);
 
     /**
-     * Pool is whether closed status
+     * Thread pool state
      */
-    private final AtomicBoolean closed = new AtomicBoolean(false);
+    private final TripState threadPoolState = TripState.createStarted();
 
     public WorkerThreadPool(int maximumPoolSize,
                             long keepAliveTimeSeconds,
@@ -143,7 +143,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * @return {@code true} if thread pool accepted
      */
     public boolean submit(ExecuteTaskParam task) {
-        if (closed.get()) {
+        if (threadPoolState.isStopped()) {
             return false;
         }
 
@@ -165,7 +165,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         Operation ops = stopParam.operation();
         Assert.isTrue(ops != null && ops.isNotTrigger(), () -> "Invalid stop operation: " + ops);
 
-        if (closed.get()) {
+        if (threadPoolState.isStopped()) {
             return;
         }
 
@@ -193,7 +193,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     @PreDestroy
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
+        if (!threadPoolState.stop()) {
             LOG.warn("Repeat call close method{}{}", "\n", Threads.getStackTrace());
             return;
         }
@@ -226,7 +226,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private WorkerThread takeWorkerThread() throws InterruptedException {
         for (; ; ) {
-            if (closed.get() || super.isInterrupted()) {
+            if (threadPoolState.isStopped() || super.isInterrupted()) {
                 throw new IllegalStateException("Take worker thread interrupted.");
             }
             WorkerThread workerThread = createWorkerThreadIfNecessary();
@@ -243,7 +243,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     @Override
     public void run() {
         try {
-            while (!closed.get()) {
+            while (threadPoolState.isRunning()) {
                 if (super.isInterrupted()) {
                     throw new IllegalStateException("Boss thread run interrupted.");
                 }
@@ -309,7 +309,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     WorkerMetrics.ThreadPoolMetrics metrics() {
         WorkerMetrics.ThreadPoolMetrics metrics = new WorkerMetrics.ThreadPoolMetrics();
-        metrics.setClosed(closed.get());
+        metrics.setClosed(threadPoolState.isStopped());
         metrics.setKeepAliveTime(keepAliveTimeSeconds);
         metrics.setMaximumPoolSize(maximumPoolSize);
         metrics.setCurrentPoolSize(workerThreadCounter.get());
@@ -674,9 +674,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private final BlockingQueue<ExecuteTaskParam> workQueue = new SynchronousQueue<>();
 
         /**
-         * Thread is whether stopped status
+         * Worker thread state
          */
-        private final AtomicBoolean stopped = new AtomicBoolean(false);
+        private final TripState workerThreadState = TripState.createStarted();
 
         /**
          * Atomic reference object of current task
@@ -703,7 +703,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private void toStop() {
-            if (stopped.compareAndSet(false, true)) {
+            if (workerThreadState.stop()) {
                 threadPool.workerThreadCounter.decrementAndGet();
                 super.interrupt();
                 ExecuteTaskParam task = currentTask();
@@ -727,12 +727,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         public final boolean isStopped() {
-            return stopped.get() || Threads.isStopped(this);
+            return workerThreadState.isStopped() || Threads.isStopped(this);
         }
 
         @Override
         public void run() {
-            while (!stopped.get()) {
+            while (workerThreadState.isRunning()) {
                 if (super.isInterrupted()) {
                     LOG.warn("Worker thread run interrupted.");
                     break;

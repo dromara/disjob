@@ -90,7 +90,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     @Override
     public final void register(R server) {
-        if (closed.get()) {
+        if (state.isStopped()) {
             return;
         }
 
@@ -135,7 +135,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     @PreDestroy
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
+        if (!state.stop()) {
             return;
         }
 
@@ -178,7 +178,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     }
 
     private void checkPass() {
-        if (closed.get()) {
+        if (state.isStopped()) {
             return;
         }
         for (R server : registered) {
@@ -215,7 +215,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
         @Override
         public void run() {
-            while (!closed.get()) {
+            while (state.isRunning()) {
                 try {
                     Response<List<HealthService>> response = getDiscoveryServers(lastConsulIndex, WAIT_TIME_SECONDS);
                     Long currentIndex = response.getConsulIndex();

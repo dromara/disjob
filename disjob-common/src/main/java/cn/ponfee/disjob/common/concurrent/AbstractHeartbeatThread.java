@@ -16,13 +16,13 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
+import cn.ponfee.disjob.common.base.TripState;
 import com.google.common.base.CaseFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The abstract heartbeat thread.
@@ -37,9 +37,9 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
-     * Thread is whether stopped status
+     * Thread heartbeat state
      */
-    private final AtomicBoolean stopped = new AtomicBoolean(false);
+    private final TripState state = TripState.createStarted();
 
     /**
      * Heartbeat period milliseconds.
@@ -66,7 +66,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
 
         try {
             int processedCount = 0;
-            while (!stopped.get()) {
+            while (state.isRunning()) {
                 if (super.isInterrupted()) {
                     log.error("Thread exit by interrupted.");
                     break;
@@ -80,7 +80,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                     isBusyLoop = heartbeat();
                 } catch (Throwable t) {
                     isBusyLoop = true;
-                    log.error("Heartbeat occur error, stopped=" + stopped, t);
+                    log.error("Heartbeat occur error, state=" + state, t);
                 }
 
                 long end = System.currentTimeMillis();
@@ -101,7 +101,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("Sleep occur error in loop, stopped={}, error={}", stopped, e.getMessage());
+            log.warn("Sleep occur error in loop, state={}, error={}", state, e.getMessage());
             Thread.currentThread().interrupt();
         }
 
@@ -129,7 +129,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
     }
 
     public boolean toStop() {
-        return stopped.compareAndSet(false, true);
+        return state.stop();
     }
 
     /**

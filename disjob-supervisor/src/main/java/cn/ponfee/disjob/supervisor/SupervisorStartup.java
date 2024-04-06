@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.base.Startable;
+import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.core.base.Supervisor;
@@ -32,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Startup supervisor.
@@ -50,7 +50,7 @@ public class SupervisorStartup implements Startable {
     private final TaskDispatcher taskDispatcher;
     private final SupervisorRegistry supervisorRegistry;
 
-    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final TripState state = TripState.create();
 
     private SupervisorStartup(Supervisor.Current currentSupervisor,
                               SupervisorProperties supervisorProperties,
@@ -95,7 +95,7 @@ public class SupervisorStartup implements Startable {
 
     @Override
     public void start() {
-        if (!started.compareAndSet(false, true)) {
+        if (!state.start()) {
             LOG.warn("Supervisor startup already started.");
             return;
         }
@@ -107,7 +107,7 @@ public class SupervisorStartup implements Startable {
 
     @Override
     public void stop() {
-        if (!started.compareAndSet(true, false)) {
+        if (!state.stop()) {
             LOG.warn("Supervisor startup already Stopped.");
             return;
         }

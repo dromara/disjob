@@ -16,9 +16,9 @@
 
 package cn.ponfee.disjob.samples.worker.redis;
 
-import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Strings;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.ClientOptions;
@@ -126,9 +126,7 @@ public abstract class AbstractRedisTemplateCreator {
     }
 
     public static RedisTemplateWrapper create(String prefix, YamlProperties props, ObjectMapper objectMapper) {
-        if (!prefix.isEmpty() && !prefix.endsWith(Str.DOT)) {
-            prefix += Str.DOT;
-        }
+        prefix = Strings.withDotSuffix(prefix);
 
         AbstractRedisTemplateCreatorBuilder<?, ?> builder;
         if (props.hasKey(prefix + "host")) {

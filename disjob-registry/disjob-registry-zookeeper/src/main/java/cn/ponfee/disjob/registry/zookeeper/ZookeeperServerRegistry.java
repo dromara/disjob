@@ -52,7 +52,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         CountDownLatch latch = new CountDownLatch(1);
         try {
             this.client = new CuratorFrameworkClient(config, client0 -> {
-                if (closed.get()) {
+                if (state.isStopped()) {
                     return;
                 }
                 for (R server : registered) {
@@ -83,7 +83,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     @Override
     public final void register(R server) {
-        if (closed.get()) {
+        if (state.isStopped()) {
             return;
         }
 
@@ -118,7 +118,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     @PreDestroy
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
+        if (!state.stop()) {
             return;
         }
 
