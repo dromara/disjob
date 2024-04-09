@@ -34,12 +34,12 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(EnableJacksonDateConfigurer.ObjectMapperConfigurer.class)
-public @interface EnableJacksonDateConfigurer {
+@Import(JacksonDateConfigurer.Configurer.class)
+public @interface JacksonDateConfigurer {
 
-    class ObjectMapperConfigurer {
+    class Configurer {
 
-        public ObjectMapperConfigurer(@Nullable ObjectMapper objectMapper) {
+        public Configurer(@Nullable ObjectMapper objectMapper) {
             if (objectMapper == null) {
                 return;
             }

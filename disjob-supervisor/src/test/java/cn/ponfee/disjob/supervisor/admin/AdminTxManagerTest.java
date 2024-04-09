@@ -14,28 +14,30 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.transaction;
+package cn.ponfee.disjob.supervisor.admin;
 
 import cn.ponfee.disjob.common.tuple.Tuple2;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
+import cn.ponfee.disjob.supervisor.transaction.TxManagerTestBase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * test job transaction
  *
  * @author Ponfee
  */
-public class JobTxManagerTest extends TxManagerTestBase<JobTxManagerTestService, Long> {
+public class AdminTxManagerTest extends TxManagerTestBase<AdminTxManagerTestService, String> {
 
-    public JobTxManagerTest(@Autowired SchedJobMapper schedJobMapper) {
+    public AdminTxManagerTest(@Autowired UserMapper userMapper) {
         super(() -> {
-            List<Long> list = schedJobMapper.testListLimit(2);
+            List<Map<String, Object>> list = userMapper.findByLoginName(Arrays.asList("disjob", "admin"));
             if (list.size() < 2) {
                 throw new IllegalStateException("Not find enough sched job data.");
             }
-            return Tuple2.of(list.get(0), list.get(1));
+            return Tuple2.of((String) list.get(0).get("login_name"), (String) list.get(1).get("login_name"));
         });
     }
 

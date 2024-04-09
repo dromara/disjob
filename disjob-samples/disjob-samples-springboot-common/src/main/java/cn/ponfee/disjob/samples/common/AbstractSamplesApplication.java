@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.samples.common;
 
-import cn.ponfee.disjob.common.spring.EnableJacksonDateConfigurer;
+import cn.ponfee.disjob.common.spring.JacksonDateConfigurer;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ComponentScan({"cn.ponfee.disjob.samples.common", "cn.ponfee.disjob.test.handler"})
-@EnableJacksonDateConfigurer // 解决日期反序列化报错的问题
+@JacksonDateConfigurer // 解决日期反序列化报错的问题
 public abstract class AbstractSamplesApplication {
 
 }

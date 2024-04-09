@@ -96,6 +96,14 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     private final Snowflake snowflake;
     private volatile boolean closed = false;
 
+    /**
+     * workerIdBitLength: [0, 255]
+     * sequenceBitLength: [0, 16383]
+     *
+     * @param jdbcTemplate the jdbcTemplate
+     * @param bizTag       the bizTag
+     * @param serverTag    the serverTag
+     */
     public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
         this(jdbcTemplate, bizTag, serverTag, 14, 8);
     }

@@ -16,18 +16,12 @@
 
 package cn.ponfee.disjob.admin;
 
-import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.spring.EnableJacksonDateConfigurer;
-import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.id.snowflake.db.DbDistributedSnowflake;
+import cn.ponfee.disjob.common.spring.JacksonDateConfigurer;
+import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
 
@@ -37,16 +31,11 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  * @author Ponfee
  */
 @Configuration
+@DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @ComponentScan("cn.ponfee.disjob.test.handler") // 加载一些测试的JobHandler，只用于demo演示使用(开发时建议删掉这行)
-@EnableJacksonDateConfigurer                    // 解决日期反序列化报错的问题
+@JacksonDateConfigurer                          // 解决日期反序列化报错的问题
 @EnableSupervisor                               // disjob-admin必须启用Supervisor角色，即：必须加@EnableSupervisor注解
 @EnableWorker                                   // 若要取消worker角色可去掉@EnableWorker注解(生产建议Supervisor与Worker分开部署，即去掉@EnableWorker注解)
 public class DisjobAdminConfiguration {
-
-    @Bean
-    public IdGenerator idGenerator(Supervisor supervisor,
-                                   @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-        return new DbDistributedSnowflake(jdbcTemplate, JobConstants.DISJOB_KEY_PREFIX, supervisor.serialize());
-    }
 
 }

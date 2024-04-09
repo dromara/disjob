@@ -16,18 +16,11 @@
 
 package cn.ponfee.disjob.samples.merged;
 
-import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.id.snowflake.db.DbDistributedSnowflake;
+import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator;
 import cn.ponfee.disjob.samples.common.AbstractSamplesApplication;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor;
 import cn.ponfee.disjob.worker.configuration.EnableWorker;
-//import de.codecentric.boot.admin.server.config.EnableAdminServer;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
 
@@ -36,9 +29,10 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  *
  * @author Ponfee
  */
+@DbSnowflakeIdGenerator(jdbcTemplateRef = SPRING_BEAN_NAME_JDBC_TEMPLATE)
 @EnableSupervisor
 @EnableWorker
-//@EnableAdminServer
+//@de.codecentric.boot.admin.server.config.EnableAdminServer
 public class MergedApplication extends AbstractSamplesApplication {
 
     static {
@@ -48,12 +42,6 @@ public class MergedApplication extends AbstractSamplesApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MergedApplication.class, args);
-    }
-
-    @Bean
-    public IdGenerator idGenerator(Supervisor supervisor,
-                                   @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-        return new DbDistributedSnowflake(jdbcTemplate, JobConstants.DISJOB_KEY_PREFIX, supervisor.serialize());
     }
 
 }

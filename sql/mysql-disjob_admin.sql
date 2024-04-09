@@ -81,7 +81,8 @@ create table sys_user (
   update_by         varchar(64)     default ''                 comment '更新者',
   update_time       datetime                                   comment '更新时间',
   remark            varchar(500)    default null               comment '备注',
-  primary key (user_id)
+  primary key (user_id),
+  UNIQUE KEY `uk_loginname` (`login_name`)
 ) engine=innodb auto_increment=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin comment = '用户信息表';
 
 -- ----------------------------

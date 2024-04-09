@@ -158,7 +158,7 @@ public final class JdbcTemplateWrapper {
     public boolean existsTable(String tableName) {
         Boolean result = jdbcTemplate.execute((ConnectionCallback<Boolean>) conn -> {
             DatabaseMetaData meta = conn.getMetaData();
-            ResultSet rs = meta.getTables(null, null, tableName, null);
+            ResultSet rs = meta.getTables(null, null, tableName, new String[]{"TABLE"});
             boolean exists = rs.next() && tableName.equalsIgnoreCase(rs.getString(3));
             JdbcUtils.closeResultSet(rs);
             return exists;

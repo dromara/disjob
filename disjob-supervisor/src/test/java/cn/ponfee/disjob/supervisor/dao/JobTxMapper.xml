@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.disjob.supervisor.dao.JobTxMapper">
+
+  <sql id="Table_Name">sched_job</sql>
+
+  <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
+    SELECT job_id jobId, remark
+    FROM <include refid="Table_Name" />
+    WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
+  </select>
+
+  <select id="listLimit" parameterType="int" resultType="long">
+    SELECT job_id FROM <include refid="Table_Name" /> LIMIT #{limit,jdbcType=INTEGER}
+  </select>
+
+  <update id="updateRemark">
+    UPDATE <include refid="Table_Name" />
+    SET remark = #{remark,jdbcType=VARCHAR}, version = version+1
+    WHERE job_id = #{jobId,jdbcType=BIGINT}
+  </update>
+
+</mapper>

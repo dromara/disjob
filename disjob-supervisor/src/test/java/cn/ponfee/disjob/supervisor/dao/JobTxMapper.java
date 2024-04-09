@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob;
+package cn.ponfee.disjob.supervisor.dao;
+
+import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Test suite for supervisor
+ * test disjob tx
  *
  * @author Ponfee
  */
+public interface JobTxMapper {
 
-/*
-@org.junit.runner.RunWith(org.junit.runners.Suite.class)
-@org.junit.runners.Suite.SuiteClasses({
-    cn.ponfee.disjob.supervisor.util.CommonTest.class,
-    cn.ponfee.disjob.supervisor.dao.JobTxManagerTest.class
-})
-*/
+    List<SchedJob> findByJobIds(List<Long> jobIds);
 
-/*
-@org.junit.runner.RunWith(org.junit.platform.runner.JUnitPlatform.class)
-@org.junit.platform.suite.api.SelectPackages("cn.ponfee.disjob.supervisor")
-*/
+    List<Long> listLimit(int limit);
 
-@org.junit.platform.suite.api.Suite
-@org.junit.platform.suite.api.SelectPackages("cn.ponfee.disjob.supervisor")
-@org.junit.platform.suite.api.SuiteDisplayName("Disjob supervisor test suite")
-public class AllTestSuite {
+    int updateRemark(@Param("jobId") Long jobId, @Param("remark") String remark);
 
 }

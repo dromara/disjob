@@ -64,9 +64,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * │   ├── serverTag-b   data=workerId-2
  * │   └── serverTag-c   data=workerId-3
  * └── id (children are EPHEMERAL node)
- *     ├── workerId-1    data=lastHeartbeatTime
- *     ├── workerId-2    data=lastHeartbeatTime
- *     └── workerId-3    data=lastHeartbeatTime
+ *     ├── workerId-1    data=lastHeartbeatTime + serverTag
+ *     ├── workerId-2    data=lastHeartbeatTime + serverTag
+ *     └── workerId-3    data=lastHeartbeatTime + serverTag
  *
  * </pre>
  *

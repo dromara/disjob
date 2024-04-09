@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ponfee.disjob.supervisor.admin.UserMapper">
+
+  <select id="getByLoginName" resultType="map">
+    SELECT * FROM sys_user WHERE login_name=#{loginName,jdbcType=VARCHAR}
+  </select>
+
+  <select id="findByLoginName" resultType="map">
+    SELECT * FROM sys_user
+    WHERE login_name IN (<foreach collection="list" separator="," item="loginName">#{loginName,jdbcType=VARCHAR}</foreach>)
+  </select>
+
+  <update id="updateRemark">
+    UPDATE sys_user
+    SET remark = #{remark,jdbcType=VARCHAR},
+        update_time = NOW()
+    WHERE login_name = #{loginName,jdbcType=VARCHAR}
+  </update>
+
+</mapper>

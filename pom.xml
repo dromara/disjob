@@ -265,6 +265,14 @@
         <directory>src/test/resources</directory>
         <filtering>false</filtering>
       </testResource>
+      <testResource>
+        <!-- mybatis xml -->
+        <directory>src/test/java</directory>
+        <includes>
+          <include>**/*.xml</include>
+        </includes>
+        <filtering>false</filtering>
+      </testResource>
     </testResources>
 
     <pluginManagement>

@@ -24,6 +24,7 @@ import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
+import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -46,7 +47,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Resource
     private SchedJobMapper jobMapper;
 
-    @Resource
+    @Resource(name = SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE)
     private JdbcTemplate jdbcTemplate;
 
     @Test

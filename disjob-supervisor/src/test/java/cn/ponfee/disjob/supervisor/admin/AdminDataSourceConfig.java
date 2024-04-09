@@ -14,40 +14,30 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.dao;
+package cn.ponfee.disjob.supervisor.admin;
 
 import cn.ponfee.disjob.common.spring.MybatisDataSourceConfigurer;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Supervisor datasource configuration
- *
- * <pre>
- *  disjob.datasource:
- *    driver-class-name: com.mysql.cj.jdbc.Driver
- *    jdbc-url: jdbc:mysql://localhost:3306/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
- *    username: disjob
- *    password:
- *    minimum-idle: 10
- *    maximum-pool-size: 100
- *    connection-timeout: 2000
- *    pool-name: disjob
- * </pre>
+ * Admin DataSource Config
  *
  * @author Ponfee
  */
 @Configuration
 @MybatisDataSourceConfigurer(
-    dataSourceName = SupervisorDataSourceConfig.DATA_SOURCE_NAME,
-    mapperLocations = "classpath*:cn/ponfee/disjob/supervisor/dao/xml/*.xml",
-    basePackageClasses = SupervisorDataSourceConfig.class
+    dataSourceName = AdminDataSourceConfig.DATA_SOURCE_NAME
 )
-public class SupervisorDataSourceConfig {
+public class AdminDataSourceConfig /*extends cn.ponfee.disjob.common.spring.AbstractMybatisDataSourceConfig*/ {
+
+    //public AdminDataSourceConfig() {
+    //    super(DATA_SOURCE_NAME);
+    //}
 
     /**
      * database name
      */
-    static final String DATA_SOURCE_NAME = "disjob";
+    static final String DATA_SOURCE_NAME = "disjob-admin";
 
     /**
      * Spring bean name transaction manager

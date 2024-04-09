@@ -14,30 +14,24 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob;
+package cn.ponfee.disjob.supervisor.admin;
+
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Test suite for supervisor
+ * Mybatis mapper of sched_depend database table.
  *
  * @author Ponfee
  */
+public interface UserMapper {
 
-/*
-@org.junit.runner.RunWith(org.junit.runners.Suite.class)
-@org.junit.runners.Suite.SuiteClasses({
-    cn.ponfee.disjob.supervisor.util.CommonTest.class,
-    cn.ponfee.disjob.supervisor.dao.JobTxManagerTest.class
-})
-*/
+    Map<String, Object> getByLoginName(String loginName);
 
-/*
-@org.junit.runner.RunWith(org.junit.platform.runner.JUnitPlatform.class)
-@org.junit.platform.suite.api.SelectPackages("cn.ponfee.disjob.supervisor")
-*/
+    List<Map<String, Object>> findByLoginName(List<String> loginNames);
 
-@org.junit.platform.suite.api.Suite
-@org.junit.platform.suite.api.SelectPackages("cn.ponfee.disjob.supervisor")
-@org.junit.platform.suite.api.SuiteDisplayName("Disjob supervisor test suite")
-public class AllTestSuite {
+    int updateRemark(@Param("loginName") String loginName, @Param("remark") String remark);
 
 }

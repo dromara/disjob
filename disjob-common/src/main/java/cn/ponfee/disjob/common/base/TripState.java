@@ -19,7 +19,7 @@ package cn.ponfee.disjob.common.base;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Trip state
+ * Trip state: New -> Running -> Stopped
  *
  * @author Ponfee
  */

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.transaction;
+package cn.ponfee.disjob.supervisor.dao;
 
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
+import cn.ponfee.disjob.supervisor.transaction.AbstractTxManagerTestService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,34 +26,31 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Arrays;
 
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
-
 /**
- * test db_order_base
+ * test disjob transaction
  *
  * @author Ponfee
  */
 @Service
 public class JobTxManagerTestService extends AbstractTxManagerTestService<SchedJob, Long> {
 
-    public JobTxManagerTestService(SchedJobMapper mapper,
-                                   @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
+    public JobTxManagerTestService(JobTxMapper jobTxMapper,
+                                   @Qualifier(SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
         super(
             transactionTemplate,
-            (id1, id2) -> mapper.testFindByJobIds(Arrays.asList(id1, id2)),
-            mapper::testUpdateRemark,
+            (id1, id2) -> jobTxMapper.findByJobIds(Arrays.asList(id1, id2)),
+            jobTxMapper::updateRemark,
             e -> Tuple2.of(e.getJobId(), e.getRemark())
         );
     }
 
-    @Transactional(value = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
+    @Transactional(value = SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     @Override
     public void testWithAnnotationTxHasError(Long id1, Long id2) {
         super.testWithAnnotationTxHasError(id1, id2);
     }
 
-    @Transactional(value = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
+    @Transactional(value = SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     @Override
     public void testWithAnnotationTxNoneError(Long id1, Long id2) {
         super.testWithAnnotationTxNoneError(id1, id2);
