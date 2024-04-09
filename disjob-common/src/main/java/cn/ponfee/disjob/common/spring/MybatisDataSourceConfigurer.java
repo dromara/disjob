@@ -103,13 +103,13 @@ public @interface MybatisDataSourceConfigurer {
 
         private final Environment environment;
 
-        public MybatisDataSourceRegistrar(Environment environment) {
+        MybatisDataSourceRegistrar(Environment environment) {
             this.environment = environment;
         }
 
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-            AnnotationAttributes attrs = AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(MybatisDataSourceConfigurer.class.getName()));
+            AnnotationAttributes attrs = SpringUtils.getAnnotationAttributes(importingClassMetadata, MybatisDataSourceConfigurer.class);
             if (attrs == null) {
                 return;
             }

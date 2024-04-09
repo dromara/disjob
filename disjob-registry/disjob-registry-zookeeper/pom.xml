@@ -37,6 +37,14 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!--
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-x-discovery</artifactId>
+      <version>${curator-recipes.version}</version>
+    </dependency>
+    -->
+
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-test</artifactId>

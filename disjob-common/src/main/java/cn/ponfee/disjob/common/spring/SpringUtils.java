@@ -19,12 +19,15 @@ package cn.ponfee.disjob.common.spring;
 import org.apache.commons.io.IOUtils;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.boot.web.server.WebServer;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ResourceUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 
 /**
@@ -58,6 +61,11 @@ public final class SpringUtils {
         // port=null ->  default 8080
         // port=0    ->  random available port
         return webServer.getPort();
+    }
+
+    public static AnnotationAttributes getAnnotationAttributes(AnnotatedTypeMetadata metadata,
+                                                               Class<? extends Annotation> annotationClass) {
+        return AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(annotationClass.getName()));
     }
 
 }

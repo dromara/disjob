@@ -29,7 +29,7 @@
           <i class="fa fa-edit"></i> 修改全部
         </a>
         <a class="btn btn-success" onclick="addWorker()">
-          <i class="fa fa-plus"></i> 注册Worker
+          <i class="fa fa-plus"></i> 添加Worker
         </a>
       </div>
 
@@ -221,9 +221,9 @@
     function addWorker() {
       layer.open({
         type: 1,
-        title: '注册Worker',
+        title: '添加Worker',
         btn: ['确定', '取消'],
-        content: '<input type="text" class="layui-layer-input" placeholder="请输入待注册Worker的`host:port`">',
+        content: '<input type="text" class="layui-layer-input" placeholder="请输入待添加Worker的`host:port`">',
         skin: 'layui-layer-prompt',
         resize: false,
         success: function (layero, index) {

@@ -90,7 +90,7 @@ public class EtcdClient implements Closeable {
      */
     private final LoopThread healthCheckThread;
 
-    private final Map<String, Pair<Watch.Watcher, ChildChangedListener>> childWatchers = new HashMap<>();
+    private final Map<String, Pair<Watch.Watcher, ChildChangedListener>> childWatchers = new ConcurrentHashMap<>();
 
     private final Set<ConnectionStateListener<EtcdClient>> connectionStateListeners = ConcurrentHashMap.newKeySet();
 
@@ -224,9 +224,11 @@ public class EtcdClient implements Closeable {
             throw new IllegalStateException("Parent key already watched: " + parentKey);
         }
 
-        ChildChangedListener innerListener = new ChildChangedListener(parentKey, latch, listener);
-        Watch.Watcher watcher = client.getWatchClient().watch(utf8(parentKey), WATCH_PREFIX_OPTION, innerListener);
-        childWatchers.put(parentKey, Pair.of(watcher, innerListener));
+        childWatchers.computeIfAbsent(parentKey, key -> {
+            ChildChangedListener innerListener = new ChildChangedListener(key, latch, listener);
+            Watch.Watcher watcher = client.getWatchClient().watch(utf8(key), WATCH_PREFIX_OPTION, innerListener);
+            return Pair.of(watcher, innerListener);
+        });
     }
 
     public synchronized boolean unwatchChildChanged(String parentKey) {

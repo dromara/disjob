@@ -39,8 +39,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @MybatisDataSourceConfigurer(
     dataSourceName = SupervisorDataSourceConfig.DATA_SOURCE_NAME,
-    mapperLocations = "classpath*:cn/ponfee/disjob/supervisor/dao/xml/*.xml",
-    basePackageClasses = SupervisorDataSourceConfig.class
+    mapperLocations = "classpath*:cn/ponfee/disjob/supervisor/dao/xml/*.xml"
 )
 public class SupervisorDataSourceConfig {
 

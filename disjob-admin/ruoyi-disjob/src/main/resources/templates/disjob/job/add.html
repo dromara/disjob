@@ -86,7 +86,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-sm-3 control-label is-required">执行超时时间(毫秒)：</label>
+        <label class="col-sm-3 control-label">执行超时时间(毫秒)：</label>
         <div class="col-sm-9">
           <input name="executeTimeout" class="form-control" th:field="*{executeTimeout}" type="text" placeholder="不填写或设置为0则表示无超时时间" autocomplete="off" />
         </div>
@@ -192,6 +192,16 @@
         retryInterval: {
           digits: true,
           min: 0
+        },
+        executeTimeout: {
+          digits: true,
+          min: 0
+        }
+      },
+      messages: {
+        executeTimeout: {
+          digits: "请输入正数",
+          min: "请输入正数"
         }
       }
     });

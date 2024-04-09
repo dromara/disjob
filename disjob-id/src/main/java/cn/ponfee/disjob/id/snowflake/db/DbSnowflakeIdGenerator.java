@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.id.snowflake.db;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
+import cn.ponfee.disjob.common.spring.SpringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,11 +66,11 @@ public @interface DbSnowflakeIdGenerator {
     int workerIdBitLength() default 8;
 
     /**
-     * Named DbDistributedSnowflake
+     * Basic DbDistributedSnowflake
      */
-    class NamedDbdSnowflake extends DbDistributedSnowflake {
+    class BasicDbdSnowflake extends DbDistributedSnowflake {
 
-        NamedDbdSnowflake(JdbcTemplate jdbcTemplate,
+        BasicDbdSnowflake(JdbcTemplate jdbcTemplate,
                           Object supervisor,
                           String bizTag,
                           int sequenceBitLength,
@@ -103,7 +104,7 @@ public @interface DbSnowflakeIdGenerator {
     /**
      * Annotated DbDistributedSnowflake
      */
-    class AnnotatedDbSnowflake extends NamedDbdSnowflake {
+    class AnnotatedDbSnowflake extends BasicDbdSnowflake {
 
         AnnotatedDbSnowflake(@Autowired JdbcTemplate jdbcTemplate, // use @Primary JdbcTemplate bean
                              @Autowired @Qualifier(SPRING_BEAN_NAME_CURRENT_SUPERVISOR) Object supervisor,
@@ -118,7 +119,7 @@ public @interface DbSnowflakeIdGenerator {
 
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-            AnnotationAttributes attrs = AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(DbSnowflakeIdGenerator.class.getName()));
+            AnnotationAttributes attrs = SpringUtils.getAnnotationAttributes(importingClassMetadata, DbSnowflakeIdGenerator.class);
             if (attrs == null) {
                 return;
             }
@@ -129,9 +130,9 @@ public @interface DbSnowflakeIdGenerator {
                 bd = new AnnotatedGenericBeanDefinition(AnnotatedDbSnowflake.class);
             } else {
                 bd = new GenericBeanDefinition();
-                bd.setBeanClass(NamedDbdSnowflake.class);
+                bd.setBeanClass(BasicDbdSnowflake.class);
                 bd.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(jdbcTemplateRef));
-                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(NamedDbdSnowflake.SPRING_BEAN_NAME_CURRENT_SUPERVISOR));
+                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbdSnowflake.SPRING_BEAN_NAME_CURRENT_SUPERVISOR));
             }
 
             bd.getConstructorArgumentValues().addIndexedArgumentValue(2, attrs.getString("bizTag"));

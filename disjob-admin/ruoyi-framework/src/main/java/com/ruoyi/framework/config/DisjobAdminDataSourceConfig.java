@@ -6,10 +6,10 @@ import com.alibaba.druid.spring.boot.autoconfigure.properties.DruidStatPropertie
 import com.alibaba.druid.util.Utils;
 import com.ruoyi.common.enums.DataSourceType;
 import com.ruoyi.common.utils.MybatisUtils;
-import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.config.properties.DruidProperties;
 import com.ruoyi.framework.config.properties.SimpleJdbcProperties;
 import com.ruoyi.framework.datasource.DynamicDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.VFS;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -78,7 +78,7 @@ public class DisjobAdminDataSourceConfig {
         druidProperties.dataSource(masterDataSource);
         targetDataSources.put(DataSourceType.MASTER.name(), masterDataSource);
 
-        if (ruoyiSlaveJdbcConfig.isValid()) {
+        if (StringUtils.isNotBlank(ruoyiSlaveJdbcConfig.getUrl())) {
             DruidDataSource slaveDataSource = DruidDataSourceBuilder.create().build();
             slaveDataSource.setUrl(ruoyiSlaveJdbcConfig.getUrl());
             slaveDataSource.setUsername(ruoyiSlaveJdbcConfig.getUsername());

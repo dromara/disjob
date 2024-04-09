@@ -16,8 +16,6 @@
 
 package com.ruoyi.framework.config.properties;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Simple jdbc properties
  *
@@ -51,10 +49,6 @@ public class SimpleJdbcProperties {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public boolean isValid() {
-        return StringUtils.isNotBlank(url);
     }
 
 }
