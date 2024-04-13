@@ -72,7 +72,7 @@ public class LoopThread extends Thread {
                 action.run();
                 Thread.sleep(periodMs);
             } catch (InterruptedException e) {
-                LOG.warn("Loop process thread interrupted: {}", e.getMessage());
+                LOG.warn("Loop process thread interrupted {}: {}", super.getName(), e.getMessage());
                 terminate();
                 Thread.currentThread().interrupt();
             } catch (Throwable e) {

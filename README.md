@@ -106,7 +106,7 @@ disjob                                        # 主项目①
   - MacOS系统若报`MariaDB`的“[Library not loaded](disjob-test/src/main/DB/MariaDB/MariaDB.md)”错误时参考
   - 使用客户端工具连接mysql时，用户名为`root`，无需密码
   - 启动时已经自动执行了初始化的SQL脚本
-  - 启动失败检需要查下端口是否被占用（mysql端口3306，redis端口6379）
+  - 启动失败需要检查下端口是否被占用（mysql端口3306，redis端口6379）
 - [启动Worker单独部署的Spring-boot应用](disjob-samples/disjob-samples-springboot-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerApplication.java)
 - [启动Worker单独部署的普通Java-main应用](disjob-samples/disjob-samples-frameless-worker/src/main/java/cn/ponfee/disjob/samples/worker/WorkerFramelessMain.java)
 - [启动Supervisor+Worker合并部署的Spring-boot应用](disjob-samples/disjob-samples-springboot-merged/src/main/java/cn/ponfee/disjob/samples/merged/MergedApplication.java)

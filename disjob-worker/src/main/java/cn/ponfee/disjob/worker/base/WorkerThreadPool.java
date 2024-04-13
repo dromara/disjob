@@ -202,21 +202,24 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         // 1、prepare close
         // 1.1、change executing pool thread state
-        ThrowingRunnable.doCaught(activePool::stopPool);
+        ThrowingRunnable.doCaught(activePool::toStopPool);
 
         // 1.2、change idle pool thread state
         idlePool.forEach(e -> ThrowingRunnable.doCaught(e::toStop));
 
         // 2、do close
         // 2.1、stop this boss thread
-        ThrowingRunnable.doCaught(() -> Threads.stopThread(this, 1000));
+        ThrowingRunnable.doCaught(() -> {
+            super.interrupt();
+            Threads.stopThread(this, 3000);
+        });
 
         // 2.2、stop idle pool thread
         idlePool.forEach(e -> ThrowingRunnable.doCaught(() -> stopWorkerThread(e, true)));
         ThrowingRunnable.doCaught(idlePool::clear);
 
         // 2.3、stop executing pool thread
-        ThrowingRunnable.doCaught(activePool::closePool);
+        ThrowingRunnable.doCaught(activePool::doStopPool);
 
         // 2.4、clear task execution task queue
         ThrowingRunnable.doCaught(taskQueue::clear);
@@ -409,7 +412,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * @param workerThread the worker thread
      * @param doStop       if whether do stop the thread
      */
-    private void stopWorkerThread(WorkerThread workerThread, boolean doStop) {
+    private static void stopWorkerThread(WorkerThread workerThread, boolean doStop) {
         workerThread.toStop();
         if (doStop) {
             LOG.info("Do stop the worker thread: {}", workerThread.getName());
@@ -558,7 +561,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return task;
         }
 
-        synchronized void stopPool() {
+        synchronized void toStopPool() {
             pool.forEach((taskId, workerThread) -> {
                 workerThread.toStop();
                 ExecuteTaskParam task = workerThread.currentTask();
@@ -568,7 +571,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             });
         }
 
-        synchronized void closePool() {
+        synchronized void doStopPool() {
             pool.entrySet()
                 .parallelStream()
                 .forEach(entry -> {
@@ -581,7 +584,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
                     // 2、then stop the work thread
                     try {
-                        WorkerThreadPool.this.stopWorkerThread(workerThread, true);
+                        stopWorkerThread(workerThread, true);
                     } catch (Throwable t) {
                         LOG.error("Stop worker thread occur error on thread pool close: " + task + ", " + workerThread, t);
                     }
@@ -697,7 +700,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (isStopped()) {
                 throw new BrokenThreadException("Worker thread already stopped: " + super.getName());
             }
-            if (!workQueue.offer(task, 1000, TimeUnit.MILLISECONDS)) {
+            if (!workQueue.offer(task, 5000, TimeUnit.MILLISECONDS)) {
                 throw new BrokenThreadException("Put to worker thread queue timeout: " + super.getName());
             }
         }
@@ -705,7 +708,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private void toStop() {
             if (workerThreadState.stop()) {
                 threadPool.workerThreadCounter.decrementAndGet();
-                super.interrupt();
                 ExecuteTaskParam task = currentTask();
                 if (task != null) {
                     task.stop();
@@ -715,7 +717,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void doStop() {
             toStop();
-            Threads.stopThread(this, 2000);
+            Threads.stopThread(this, 5000);
         }
 
         private boolean updateCurrentTask(ExecuteTaskParam expect, ExecuteTaskParam update) {

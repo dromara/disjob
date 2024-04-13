@@ -145,18 +145,17 @@ public final class Threads {
             return;
         }
 
+        // wait joined
+        join(thread, joinMillis / 2);
+
+        if (isStopped(thread)) {
+            return;
+        }
+
         // do interrupt
         thread.interrupt();
-
-        // wait joined
-        if (joinMillis > 0) {
-            try {
-                thread.join(joinMillis);
-            } catch (InterruptedException e) {
-                LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
-                Thread.currentThread().interrupt();
-            }
-        }
+        // again wait joined
+        join(thread, joinMillis / 2);
 
         stopThread(thread);
     }
@@ -178,6 +177,18 @@ public final class Threads {
             LOG.warn("Invoke java.lang.Thread#stop() method finished: {}", thread.getName());
         } catch (Throwable t) {
             LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
+        }
+    }
+
+    private static void join(Thread thread, long joinTimeoutMills) {
+        if (joinTimeoutMills <= 0) {
+            return;
+        }
+        try {
+            thread.join(joinTimeoutMills);
+        } catch (InterruptedException e) {
+            LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
+            Thread.currentThread().interrupt();
         }
     }
 
