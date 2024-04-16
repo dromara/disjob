@@ -18,8 +18,10 @@ package cn.ponfee.disjob.supervisor.component;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.enums.*;
@@ -335,7 +337,7 @@ public abstract class AbstractJobManager {
                 list.add(new SchedDepend(parentJobIds.get(i), jobId, i + 1));
             }
 
-            dependMapper.batchInsert(list);
+            Collects.batchProcess(list, dependMapper::batchInsert, JobConstants.PROCESS_BATCH_SIZE);
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {

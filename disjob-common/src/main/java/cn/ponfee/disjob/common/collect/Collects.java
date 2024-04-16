@@ -172,7 +172,9 @@ public class Collects {
     }
 
     public static <T> void batchProcess(List<T> list, Consumer<List<T>> processor, int batchSize) {
-        Assert.notEmpty(list, "Process records cannot be empty.");
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
         if (list.size() <= batchSize) {
             processor.accept(list);
         } else {

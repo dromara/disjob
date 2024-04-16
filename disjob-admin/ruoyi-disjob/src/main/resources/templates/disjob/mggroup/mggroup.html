@@ -74,13 +74,6 @@
           }
         },
         {
-          field: 'workerContextPath',
-          title: 'Context-path',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 30, "open");
-          }
-        },
-        {
           field: 'ownUser',
           title: '负责人',
           editable: {
@@ -96,27 +89,6 @@
           }
         },
         {
-          field: 'devUsers',
-          title: '开发人员',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 72, "open");
-          }
-        },
-        {
-          field: 'alarmUsers',
-          title: '告警人员',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 72, "open");
-          }
-        },
-        {
-          field: 'webHook',
-          title: 'Web Hook',
-          formatter: function (value, row, index) {
-            return $.table.tooltip(value, 72, "open");
-          }
-        },
-        {
           field: 'updatedBy',
           title: '更新人'
         },
@@ -126,13 +98,11 @@
         },
         {
           field: 'createdBy',
-          title: '创建人',
-          visible: false
+          title: '创建人'
         },
         {
           field: 'createdAt',
-          title: '创建时间',
-          visible: false
+          title: '创建时间'
         },
         {
           title: '操作',

@@ -151,42 +151,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (task.operation().isTrigger()) {
             return taskQueue.offerLast(task);
         } else {
-            ThreadPoolExecutors.commonThreadPool().execute(() -> stop(task));
+            ThreadPoolExecutors.commonThreadPool().execute(() -> stopTask(task));
             return true;
-        }
-    }
-
-    /**
-     * Stop(Pause or Cancel) specified task
-     *
-     * @param stopParam the stops task param
-     */
-    private void stop(ExecuteTaskParam stopParam) {
-        Operation ops = stopParam.operation();
-        Assert.isTrue(ops != null && ops.isNotTrigger(), () -> "Invalid stop operation: " + ops);
-
-        if (threadPoolState.isStopped()) {
-            return;
-        }
-
-        long taskId = stopParam.getTaskId();
-        Pair<WorkerThread, ExecuteTaskParam> pair = activePool.stopTask(taskId, ops);
-        if (pair == null) {
-            LOG.warn("Not found executing task: {}, {}", taskId, ops);
-            // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
-            // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
-            terminateTask(this, stopParam, ops, ops.toState(), ops.name() + " aborted EXECUTING state task");
-            return;
-        }
-
-        WorkerThread workerThread = pair.getLeft();
-        ExecuteTaskParam task = pair.getRight();
-        LOG.info("Stop task: {}, {}, {}", taskId, ops, workerThread.getName());
-        try {
-            // stop the work thread
-            stopWorkerThread(workerThread, true);
-        } finally {
-            terminateTask(this, task, ops, ops.toState(), null);
         }
     }
 
@@ -200,103 +166,37 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         LOG.info("Close worker thread pool start...");
 
-        // 1、prepare close
-        // 1.1、change executing pool thread state
-        ThrowingRunnable.doCaught(activePool::toStopPool);
-
-        // 1.2、change idle pool thread state
-        idlePool.forEach(e -> ThrowingRunnable.doCaught(e::toStop));
-
-        // 2、do close
-        // 2.1、stop this boss thread
+        // stop this boss thread
         ThrowingRunnable.doCaught(() -> {
             super.interrupt();
             Threads.stopThread(this, 3000);
         });
 
-        // 2.2、stop idle pool thread
+        // change executing pool thread state
+        ThrowingRunnable.doCaught(activePool::toStopPool);
+        // change idle pool thread state
+        idlePool.forEach(e -> ThrowingRunnable.doCaught(e::toStop));
+
+        // stop idle pool thread
         idlePool.forEach(e -> ThrowingRunnable.doCaught(() -> stopWorkerThread(e, true)));
         ThrowingRunnable.doCaught(idlePool::clear);
-
-        // 2.3、stop executing pool thread
+        // stop executing pool thread
         ThrowingRunnable.doCaught(activePool::doStopPool);
-
-        // 2.4、clear task execution task queue
+        // clear task execution task queue
         ThrowingRunnable.doCaught(taskQueue::clear);
 
         LOG.info("Close worker thread pool end.");
     }
 
-    private WorkerThread takeWorkerThread() throws InterruptedException {
-        for (; ; ) {
-            if (threadPoolState.isStopped() || super.isInterrupted()) {
-                throw new IllegalStateException("Take worker thread interrupted.");
-            }
-            WorkerThread workerThread = createWorkerThreadIfNecessary();
-            if (workerThread == null) {
-                LOG.info("Take worker thread with timeout from idle pool.");
-                workerThread = idlePool.pollFirst(1000, TimeUnit.MILLISECONDS);
-            }
-            if (workerThread != null) {
-                return workerThread;
-            }
-        }
-    }
-
     @Override
     public void run() {
         try {
-            while (threadPoolState.isRunning()) {
-                if (super.isInterrupted()) {
-                    throw new IllegalStateException("Boss thread run interrupted.");
-                }
-                ExecuteTaskParam task = taskQueue.takeFirst();
-
-                // take a worker
-                WorkerThread workerThread = idlePool.pollFirst();
-                if (workerThread == null) {
-                    workerThread = takeWorkerThread();
-                }
-
-                if (workerThread.isStopped()) {
-                    LOG.info("Worker thread already stopped.");
-                    // re-execute this execution task
-                    taskQueue.putFirst(task);
-                    // destroy this worker thread
-                    stopWorkerThread(workerThread, true);
-                    continue;
-                }
-
-                try {
-                    activePool.doExecute(workerThread, task);
-                } catch (InterruptedException e) {
-                    // destroy this worker thread
-                    stopWorkerThread(workerThread, true);
-                    throw e;
-                } catch (BrokenThreadException e) {
-                    LOG.error(e.getMessage());
-                    // re-execute this execution task
-                    taskQueue.putFirst(task);
-                    // destroy this worker thread
-                    stopWorkerThread(workerThread, true);
-                } catch (IllegalTaskException e) {
-                    LOG.error(e.getMessage());
-                    // return this worker thread
-                    idlePool.putFirst(workerThread);
-                } catch (DuplicateTaskException e) {
-                    LOG.error(e.getMessage());
-                    // cancel this execution task
-                    terminateTask(this, task, Operation.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
-
-                    // return this worker thread
-                    idlePool.putFirst(workerThread);
-                }
+            while (threadPoolState.isRunning() && !super.isInterrupted()) {
+                executeTask();
             }
-        } catch (InterruptedException e) {
-            LOG.warn("Thread pool running interrupted: {}", e.getMessage());
-            Thread.currentThread().interrupt();
         } catch (Throwable t) {
             LOG.error("Thread pool running occur error.", t);
+            Threads.interruptIfNecessary(t);
         }
 
         close();
@@ -360,6 +260,116 @@ public class WorkerThreadPool extends Thread implements Closeable {
     // ----------------------------------------------------------------------private methods
 
     /**
+     * Stop(Pause or Cancel) specified task
+     *
+     * @param stopParam the stops task param
+     */
+    private void stopTask(ExecuteTaskParam stopParam) {
+        Operation ops = stopParam.operation();
+        Assert.isTrue(ops != null && ops.isNotTrigger(), () -> "Invalid stop operation: " + ops);
+
+        if (threadPoolState.isStopped()) {
+            return;
+        }
+
+        long taskId = stopParam.getTaskId();
+        Pair<WorkerThread, ExecuteTaskParam> pair = activePool.stopTask(taskId, ops);
+        if (pair == null) {
+            LOG.warn("Not found executing task: {}, {}", taskId, ops);
+            // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
+            // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
+            terminateTask(this, stopParam, ops, ops.toState(), ops.name() + " aborted EXECUTING state task");
+            return;
+        }
+
+        WorkerThread workerThread = pair.getLeft();
+        ExecuteTaskParam task = pair.getRight();
+        LOG.info("Stop task: {}, {}, {}", taskId, ops, workerThread.getName());
+        try {
+            // stop the work thread
+            stopWorkerThread(workerThread, true);
+        } finally {
+            terminateTask(this, task, ops, ops.toState(), null);
+        }
+    }
+
+    private void executeTask() throws InterruptedException {
+        ExecuteTaskParam task = taskQueue.takeFirst();
+
+        // take a worker
+        WorkerThread workerThread = idlePool.pollFirst();
+        if (workerThread == null) {
+            workerThread = takeWorkerThread();
+        }
+
+        if (workerThread.isStopped()) {
+            LOG.info("Worker thread already stopped.");
+            // re-execute this execution task
+            taskQueue.putFirst(task);
+            // destroy this worker thread
+            stopWorkerThread(workerThread, true);
+            return;
+        }
+
+        try {
+            activePool.doExecute(workerThread, task);
+        } catch (InterruptedException e) {
+            // destroy this worker thread
+            stopWorkerThread(workerThread, true);
+            throw e;
+        } catch (BrokenThreadException e) {
+            LOG.error(e.getMessage());
+            // re-execute this execution task
+            taskQueue.putFirst(task);
+            // destroy this worker thread
+            stopWorkerThread(workerThread, true);
+        } catch (IllegalTaskException e) {
+            LOG.error(e.getMessage());
+            // return this worker thread
+            idlePool.putFirst(workerThread);
+        } catch (DuplicateTaskException e) {
+            LOG.error(e.getMessage());
+            // cancel this execution task
+            terminateTask(this, task, Operation.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
+
+            // return this worker thread
+            idlePool.putFirst(workerThread);
+        }
+    }
+
+    private WorkerThread takeWorkerThread() throws InterruptedException {
+        for (; ; ) {
+            if (threadPoolState.isStopped() || super.isInterrupted()) {
+                throw new IllegalStateException("Take worker thread interrupted.");
+            }
+            WorkerThread workerThread = createWorkerThreadIfNecessary();
+            if (workerThread == null) {
+                LOG.info("Take worker thread with timeout from idle pool.");
+                workerThread = idlePool.pollFirst(1000, TimeUnit.MILLISECONDS);
+            }
+            if (workerThread != null) {
+                return workerThread;
+            }
+        }
+    }
+
+    /**
+     * if current thread count less than maximumPoolSize, then create new thread to pool.
+     *
+     * @return created worker thread object
+     */
+    private WorkerThread createWorkerThreadIfNecessary() {
+        for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
+            if (workerThreadCounter.compareAndSet(count, count + 1)) {
+                WorkerThread thread = new WorkerThread(this, keepAliveTimeSeconds);
+                LOG.info("Created worker thread, current size: {}", count + 1);
+                return thread;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Task executed finished, then return the worker thread to idle pool.
      * <p>Called this method current thread is WorkerThread
      *
@@ -418,22 +428,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.info("Do stop the worker thread: {}", workerThread.getName());
             workerThread.doStop();
         }
-    }
-
-    /**
-     * if current thread count less than maximumPoolSize, then create new thread to pool.
-     *
-     * @return created worker thread object
-     */
-    private WorkerThread createWorkerThreadIfNecessary() {
-        for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
-            if (workerThreadCounter.compareAndSet(count, count + 1)) {
-                WorkerThread thread = new WorkerThread(this, keepAliveTimeSeconds);
-                LOG.info("Created worker thread, current size: {}", count + 1);
-                return thread;
-            }
-        }
-        return null;
     }
 
     // -------------------------------------------------------------------private static definitions
