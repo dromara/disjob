@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.admin;
+package cn.ponfee.disjob.supervisor.disjob_admin;
 
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.supervisor.transaction.AbstractTxManagerTestService;

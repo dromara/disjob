@@ -16,6 +16,7 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -34,8 +35,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.ruoyi.framework.config.properties.DruidProperties.DRUID_PREFIX_KEY;
-
 /**
  * druid 配置多数据源
  *
@@ -46,47 +45,47 @@ import static com.ruoyi.framework.config.properties.DruidProperties.DRUID_PREFIX
 @MapperScan({"com.ruoyi.**.mapper"})
 public class DisjobAdminDataSourceConfig {
 
+    private static final String DRUID_PREFIX_KEY = "spring.datasource.druid";
+    public static final String RUOYI_DRUID_PROPERTIES = "ruoyiDruidProperties";
+    public static final String RUOYI_MASTER_JDBC_PROPERTIES = "ruoyiMasterJdbcProperties";
+    public static final String RUOYI_SLAVE_JDBC_PROPERTIES = "ruoyiSlaveJdbcProperties";
+
     private final Environment env;
 
     public DisjobAdminDataSourceConfig(Environment env) {
         this.env = env;
     }
 
-    @Bean
-    @ConfigurationProperties(DRUID_PREFIX_KEY + "master")
-    public SimpleJdbcProperties ruoyiMasterJdbcConfig() {
+    @ConfigurationProperties(DRUID_PREFIX_KEY)
+    @Bean(RUOYI_DRUID_PROPERTIES)
+    public DruidProperties ruoyiDruidProperties() {
+        return new DruidProperties();
+    }
+
+    @ConfigurationProperties(DRUID_PREFIX_KEY + ".master")
+    @Bean(RUOYI_MASTER_JDBC_PROPERTIES)
+    public SimpleJdbcProperties ruoyiMasterJdbcProperties() {
         return new SimpleJdbcProperties();
     }
 
-    @Bean
-    @ConfigurationProperties(DRUID_PREFIX_KEY + "slave")
-    public SimpleJdbcProperties ruoyiSlaveJdbcConfig() {
+    @ConfigurationProperties(DRUID_PREFIX_KEY + ".slave")
+    @Bean(RUOYI_SLAVE_JDBC_PROPERTIES)
+    public SimpleJdbcProperties ruoyiSlaveJdbcProperties() {
         return new SimpleJdbcProperties();
     }
 
     @Bean
     @Primary
-    public DynamicDataSource ruoyiDynamicDataSource(SimpleJdbcProperties ruoyiMasterJdbcConfig,
-                                                    SimpleJdbcProperties ruoyiSlaveJdbcConfig,
-                                                    DruidProperties druidProperties) {
+    public DynamicDataSource ruoyiDynamicDataSource(@Qualifier(RUOYI_DRUID_PROPERTIES) DruidProperties druidProperties,
+                                                    @Qualifier(RUOYI_MASTER_JDBC_PROPERTIES) SimpleJdbcProperties masterJdbcProperties,
+                                                    @Qualifier(RUOYI_SLAVE_JDBC_PROPERTIES) SimpleJdbcProperties slaveJdbcProperties) {
         Map<Object, Object> targetDataSources = new HashMap<>(4);
-
-        DruidDataSource masterDataSource = DruidDataSourceBuilder.create().build();
-        masterDataSource.setUrl(ruoyiMasterJdbcConfig.getUrl());
-        masterDataSource.setUsername(ruoyiMasterJdbcConfig.getUsername());
-        masterDataSource.setPassword(ruoyiMasterJdbcConfig.getPassword());
-        druidProperties.dataSource(masterDataSource);
+        DruidDataSource masterDataSource = createDruidDataSource(masterJdbcProperties, druidProperties);
         targetDataSources.put(DataSourceType.MASTER.name(), masterDataSource);
-
-        if (StringUtils.isNotBlank(ruoyiSlaveJdbcConfig.getUrl())) {
-            DruidDataSource slaveDataSource = DruidDataSourceBuilder.create().build();
-            slaveDataSource.setUrl(ruoyiSlaveJdbcConfig.getUrl());
-            slaveDataSource.setUsername(ruoyiSlaveJdbcConfig.getUsername());
-            slaveDataSource.setPassword(ruoyiSlaveJdbcConfig.getPassword());
-            druidProperties.dataSource(slaveDataSource);
+        if (StringUtils.isNotBlank(slaveJdbcProperties.getUrl())) {
+            DruidDataSource slaveDataSource = createDruidDataSource(slaveJdbcProperties, druidProperties);
             targetDataSources.put(DataSourceType.SLAVE.name(), slaveDataSource);
         }
-
         return new DynamicDataSource(masterDataSource, targetDataSources);
     }
 
@@ -179,6 +178,15 @@ public class DisjobAdminDataSourceConfig {
         @Override
         public void destroy() {
         }
+    }
+
+    private static DruidDataSource createDruidDataSource(SimpleJdbcProperties jdbcProperties, DruidProperties druidProperties) {
+        DruidDataSource druidDataSource = DruidDataSourceBuilder.create().build();
+        druidDataSource.setUrl(jdbcProperties.getUrl());
+        druidDataSource.setUsername(jdbcProperties.getUsername());
+        druidDataSource.setPassword(jdbcProperties.getPassword());
+        druidProperties.configureDataSource(druidDataSource);
+        return druidDataSource;
     }
 
 }

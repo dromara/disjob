@@ -16,6 +16,9 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.util.Strings;
+import com.google.common.base.CaseFormat;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +39,6 @@ import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -83,7 +85,7 @@ public @interface MybatisDataSourceConfigurer {
     String JDBC_TEMPLATE_NAME_SUFFIX             = "JdbcTemplate";
     String MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX = "MapperScannerConfigurer";
 
-    String dataSourceName();
+    String dataSourceName() default "";
 
     String[] mapperLocations() default {};
 
@@ -97,6 +99,8 @@ public @interface MybatisDataSourceConfigurer {
 
     int defaultStatementTimeout() default 25;
 
+    boolean primary() default false;
+
     // ----------------------------------------------------------------------------------------class defined
 
     class MybatisDataSourceRegistrar implements /*EnvironmentAware,*/ ImportBeanDefinitionRegistrar {
@@ -109,25 +113,35 @@ public @interface MybatisDataSourceConfigurer {
 
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-            AnnotationAttributes attrs = SpringUtils.getAnnotationAttributes(importingClassMetadata, MybatisDataSourceConfigurer.class);
-            if (attrs == null) {
+            MybatisDataSourceConfigurer config = SpringUtils.parseAnnotation(MybatisDataSourceConfigurer.class, importingClassMetadata);
+            if (config == null) {
                 return;
             }
 
-            String dataSourceName = attrs.getString("dataSourceName");
+            List<String> basePackages = resolveBasePackages(config, importingClassMetadata);
+            Assert.notEmpty(basePackages, "Base package is empty.");
+
+            String dataSourceName = config.dataSourceName();
+            if (StringUtils.isBlank(dataSourceName)) {
+                dataSourceName = extractPackageDatasourceName(basePackages.get(0));
+            }
             Assert.hasText(dataSourceName, "DataSource name cannot be empty.");
+
             String dataSourceConfigPrefixKey = dataSourceName + ".datasource";
             String jdbcUrl = environment.getProperty(dataSourceConfigPrefixKey + ".jdbc-url");
             if (StringUtils.isBlank(jdbcUrl)) {
                 return;
             }
 
+            boolean primary = config.primary();
+
             // MapperScannerConfigurer bean definition
             BeanDefinitionBuilder mapperScannerConfigurerBdb = BeanDefinitionBuilder.genericBeanDefinition(MapperScannerConfigurer.class);
             mapperScannerConfigurerBdb.addPropertyValue("processPropertyPlaceHolders", true);
-            mapperScannerConfigurerBdb.addPropertyValue("basePackage", String.join(",", resolveBasePackages(importingClassMetadata, attrs)));
+            mapperScannerConfigurerBdb.addPropertyValue("basePackage", String.join(",", basePackages));
             mapperScannerConfigurerBdb.addPropertyValue("sqlSessionTemplateBeanName", dataSourceName + SQL_SESSION_TEMPLATE_NAME_SUFFIX);
             mapperScannerConfigurerBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            mapperScannerConfigurerBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurerBdb.getBeanDefinition());
 
             // DataSource bean definition
@@ -141,59 +155,77 @@ public @interface MybatisDataSourceConfigurer {
                 binder.bind(dataSourceConfigPrefixKey, Bindable.ofInstance(dataSource));
                 return dataSource;
             });
+            dataSourceBd.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + DATA_SOURCE_NAME_SUFFIX, dataSourceBd);
 
             // SqlSessionFactoryBean bean definition
             BeanDefinitionBuilder sqlSessionFactoryBeanBdb = BeanDefinitionBuilder.genericBeanDefinition(SqlSessionFactoryBean.class);
             sqlSessionFactoryBeanBdb.addPropertyReference("dataSource", dataSourceName + DATA_SOURCE_NAME_SUFFIX);
-            sqlSessionFactoryBeanBdb.addPropertyValue("configuration", createMybatisConfiguration(attrs));
-            sqlSessionFactoryBeanBdb.addPropertyValue("mapperLocations", resolveMapperLocations(importingClassMetadata, attrs));
+            sqlSessionFactoryBeanBdb.addPropertyValue("configuration", createMybatisConfiguration(config));
+            sqlSessionFactoryBeanBdb.addPropertyValue("mapperLocations", resolveMapperLocations(config, basePackages));
             sqlSessionFactoryBeanBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            sqlSessionFactoryBeanBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactoryBeanBdb.getBeanDefinition());
 
             // SqlSessionTemplate bean definition
             BeanDefinitionBuilder sqlSessionTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(SqlSessionTemplate.class);
             sqlSessionTemplateBdb.addConstructorArgReference(dataSourceName + SQL_SESSION_FACTORY_NAME_SUFFIX);
             sqlSessionTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            sqlSessionTemplateBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + SQL_SESSION_TEMPLATE_NAME_SUFFIX, sqlSessionTemplateBdb.getBeanDefinition());
 
             // JdbcTemplate bean definition
             BeanDefinitionBuilder jdbcTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(JdbcTemplate.class);
             jdbcTemplateBdb.addConstructorArgReference(dataSourceName + DATA_SOURCE_NAME_SUFFIX);
             jdbcTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            jdbcTemplateBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + JDBC_TEMPLATE_NAME_SUFFIX, jdbcTemplateBdb.getBeanDefinition());
 
             // DataSourceTransactionManager bean definition
             BeanDefinitionBuilder dataSourceTransactionManagerBdb = BeanDefinitionBuilder.genericBeanDefinition(DataSourceTransactionManager.class);
             dataSourceTransactionManagerBdb.addConstructorArgReference(dataSourceName + DATA_SOURCE_NAME_SUFFIX);
             dataSourceTransactionManagerBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            dataSourceTransactionManagerBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + TX_MANAGER_NAME_SUFFIX, dataSourceTransactionManagerBdb.getBeanDefinition());
 
             // TransactionTemplate bean definition
             BeanDefinitionBuilder transactionTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(TransactionTemplate.class);
             transactionTemplateBdb.addConstructorArgReference(dataSourceName + TX_MANAGER_NAME_SUFFIX);
             transactionTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            transactionTemplateBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + TX_TEMPLATE_NAME_SUFFIX, transactionTemplateBdb.getBeanDefinition());
         }
 
-        private static List<String> resolveBasePackages(AnnotationMetadata importingClassMetadata, AnnotationAttributes attrs) {
-            List<String> basePackages = new ArrayList<>();
-            Arrays.stream(attrs.getStringArray("basePackages")).filter(StringUtils::isNotBlank).forEach(basePackages::add);
-            Arrays.stream(attrs.getClassArray("basePackageClasses")).map(ClassUtils::getPackageName).forEach(basePackages::add);
+        public static void checkPackageDatasourceName(Class<?> basePackageClass, String actualDsName) {
+            String expectDsName = extractPackageDatasourceName(ClassUtils.getPackageName(basePackageClass));
+            if (!expectDsName.equals(actualDsName)) {
+                throw new IllegalStateException("Invalid data source name: expect=" + expectDsName + ", actual=" + actualDsName);
+            }
+        }
+
+        // ----------------------------------------------------------------------------------------private methods
+
+        private static String extractPackageDatasourceName(String packageName) {
+            String packageLastName = Strings.substringAfterLast(packageName, ".");
+            // Spring boot的配置属性名只能包含{"a-z", "0-9", "-"}，它们必须为小写字母，且必须以字母或数字开头。"-"仅用于格式化，即"foo-bar"和"foobar"被认为是等效的。
+            // org.springframework.boot.context.properties.source.ConfigurationPropertyName.ElementsParser#isValidChar
+            // java包名不能包含"-"，所以在包名命名时使用"_"来代替"-"。到了读取spring配置属性名时，需要把包名中的"_"转为spring boot配置中合法的属性名"-"。
+            return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, packageLastName);
+        }
+
+        private static List<String> resolveBasePackages(MybatisDataSourceConfigurer config, AnnotationMetadata importingClassMetadata) {
+            List<String> basePackages = new ArrayList<>(Arrays.asList(config.basePackages()));
+            Arrays.stream(config.basePackageClasses()).map(ClassUtils::getPackageName).forEach(basePackages::add);
             if (basePackages.isEmpty()) {
                 basePackages.add(ClassUtils.getPackageName(importingClassMetadata.getClassName()));
             }
-            return basePackages;
+            return basePackages.stream().filter(StringUtils::isNotBlank).collect(ImmutableList.toImmutableList());
         }
 
-        private static Resource[] resolveMapperLocations(AnnotationMetadata importingClassMetadata, AnnotationAttributes attrs) {
-            String[] mapperLocations = attrs.getStringArray("mapperLocations");
+        private static Resource[] resolveMapperLocations(MybatisDataSourceConfigurer config, List<String> basePackages) {
+            String[] mapperLocations = config.mapperLocations();
             if (ArrayUtils.isEmpty(mapperLocations)) {
-                mapperLocations = resolveBasePackages(importingClassMetadata, attrs)
-                    .stream()
-                    .filter(StringUtils::isNotBlank)
-                    .map(e -> "classpath*:" + e.replace('.', '/') + "/**/*.xml")
-                    .toArray(String[]::new);
+                mapperLocations = basePackages.stream().map(e -> "classpath*:" + e.replace('.', '/') + "/**/*.xml").toArray(String[]::new);
             }
 
             try {
@@ -203,21 +235,21 @@ public @interface MybatisDataSourceConfigurer {
                 }
                 return resources.toArray(new Resource[0]);
             } catch (IOException e) {
-                String locations = Arrays.toString(mapperLocations);
-                throw new BeanInstantiationException(SqlSessionFactory.class, "Load mybatis mapper locations error: " + locations, e);
+                String msg = Arrays.toString(mapperLocations);
+                throw new BeanInstantiationException(SqlSessionFactory.class, "Load mybatis mapper locations error: " + msg, e);
             }
         }
 
-        private static Configuration createMybatisConfiguration(AnnotationAttributes attrs) {
+        private static Configuration createMybatisConfiguration(MybatisDataSourceConfigurer config) {
             VFS.addImplClass(SpringBootVFS.class);
 
             Configuration configuration = new Configuration();
             // 下划线转驼峰：默认false
-            configuration.setMapUnderscoreToCamelCase(attrs.getBoolean("mapUnderscoreToCamelCase"));
+            configuration.setMapUnderscoreToCamelCase(config.mapUnderscoreToCamelCase());
             // 为驱动的结果集获取数量（fetchSize）设置一个建议值，此参数只可以在查询设置中被覆盖：默认null
-            configuration.setDefaultFetchSize(attrs.getNumber("defaultFetchSize"));
+            configuration.setDefaultFetchSize(config.defaultFetchSize());
             // 超时时间，它决定数据库驱动等待数据库响应的秒数：默认null
-            configuration.setDefaultStatementTimeout(attrs.getNumber("defaultStatementTimeout"));
+            configuration.setDefaultStatementTimeout(config.defaultStatementTimeout());
             return configuration;
         }
     }

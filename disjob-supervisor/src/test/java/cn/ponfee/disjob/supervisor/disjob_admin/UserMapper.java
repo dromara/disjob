@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.admin;
+package cn.ponfee.disjob.supervisor.disjob_admin;
 
 import org.apache.ibatis.annotations.Param;
 

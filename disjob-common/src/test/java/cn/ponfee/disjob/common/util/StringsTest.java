@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.util;
 
+import com.google.common.base.CaseFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +59,25 @@ public class StringsTest {
         Assertions.assertEquals("/", Strings.trimUrlPath(" / // /// "));
         Assertions.assertEquals("/test/abc", Strings.trimUrlPath(" /test/abc/ / / "));
         Assertions.assertEquals("  abc/a / b/ c", "  abc/a / b/ c / /// /".replaceAll("[/\\s]+$", ""));
+    }
+
+    @Test
+    public void testSubstringAfterLast() {
+        Assertions.assertNull(Strings.substringAfterLast(null, "."));
+        Assertions.assertEquals("", Strings.substringAfterLast("", "."));
+        Assertions.assertEquals("abc", Strings.substringAfterLast("abc", "."));
+        Assertions.assertEquals("def", Strings.substringAfterLast("abc.def", "."));
+        Assertions.assertEquals("abc", Strings.substringAfterLast(".abc", "."));
+        Assertions.assertEquals("", Strings.substringAfterLast("abc.", "."));
+    }
+
+    @Test
+    public void testCaseFormat() {
+        Assertions.assertEquals("disjob-admin", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, "disjob_admin"));
+        Assertions.assertEquals("disjob-admin", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, "disjob-admin"));
+        Assertions.assertEquals("disjob", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, "disjob"));
+        Assertions.assertEquals("", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, ""));
+        Assertions.assertEquals(" ", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, " "));
     }
 
 }

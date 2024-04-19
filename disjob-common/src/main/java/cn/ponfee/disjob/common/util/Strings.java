@@ -231,4 +231,24 @@ public final class Strings {
         return prefixPath + suffixPath;
     }
 
+    /**
+     * substringAfterLast(null, ".")      = null
+     * substringAfterLast("", ".")        = ""
+     * substringAfterLast("abc", ".")     = "abc"
+     * substringAfterLast("abc.def", ".") = "def"
+     * substringAfterLast(".abc", ".")    = "abc"
+     * substringAfterLast("abc.", ".")    = ""
+     *
+     * @param str       the string
+     * @param separator the separator
+     * @return the substring after the last occurrence of the separator
+     */
+    public static String substringAfterLast(String str, String separator) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        int lastIndexOf = str.lastIndexOf(separator);
+        return lastIndexOf == -1 ? str : str.substring(lastIndexOf + 1);
+    }
+
 }

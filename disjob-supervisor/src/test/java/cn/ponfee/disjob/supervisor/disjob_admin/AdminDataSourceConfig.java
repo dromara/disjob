@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.admin;
+package cn.ponfee.disjob.supervisor.disjob_admin;
 
 import cn.ponfee.disjob.common.spring.MybatisDataSourceConfigurer;
 import org.springframework.context.annotation.Configuration;
@@ -25,9 +25,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Ponfee
  */
 @Configuration
-@MybatisDataSourceConfigurer(
-    dataSourceName = AdminDataSourceConfig.DATA_SOURCE_NAME
-)
+@MybatisDataSourceConfigurer
 public class AdminDataSourceConfig /*extends cn.ponfee.disjob.common.spring.AbstractMybatisDataSourceConfig*/ {
 
     //public AdminDataSourceConfig() {
@@ -39,6 +37,10 @@ public class AdminDataSourceConfig /*extends cn.ponfee.disjob.common.spring.Abst
      */
     static final String DATA_SOURCE_NAME = "disjob-admin";
 
+    static {
+        MybatisDataSourceConfigurer.MybatisDataSourceRegistrar.checkPackageDatasourceName(AdminDataSourceConfig.class, DATA_SOURCE_NAME);
+    }
+
     /**
      * Spring bean name transaction manager
      */
@@ -48,10 +50,5 @@ public class AdminDataSourceConfig /*extends cn.ponfee.disjob.common.spring.Abst
      * Spring bean name transaction template
      */
     public static final String SPRING_BEAN_NAME_TX_TEMPLATE = DATA_SOURCE_NAME + MybatisDataSourceConfigurer.TX_TEMPLATE_NAME_SUFFIX;
-
-    /**
-     * Spring bean name JDBC template
-     */
-    public static final String SPRING_BEAN_NAME_JDBC_TEMPLATE = DATA_SOURCE_NAME + MybatisDataSourceConfigurer.JDBC_TEMPLATE_NAME_SUFFIX;
 
 }

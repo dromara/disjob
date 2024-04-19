@@ -24,11 +24,14 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ResourceUtils;
+import sun.reflect.annotation.AnnotationParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Spring utils
@@ -63,9 +66,20 @@ public final class SpringUtils {
         return webServer.getPort();
     }
 
-    public static AnnotationAttributes getAnnotationAttributes(AnnotatedTypeMetadata metadata,
-                                                               Class<? extends Annotation> annotationClass) {
-        return AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(annotationClass.getName()));
+    public static AnnotationAttributes getAnnotationAttributes(Class<? extends Annotation> type, AnnotatedTypeMetadata metadata) {
+        return AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(type.getName()));
+    }
+
+    public static <T extends Annotation> T parseAnnotation(Class<? extends Annotation> type, AnnotatedTypeMetadata metadata) {
+        Map<String, Object> attributes = metadata.getAnnotationAttributes(type.getName());
+        if (attributes == null) {
+            throw new IllegalArgumentException("Not found annotated type: " + type);
+        }
+        return parseAnnotation(type, attributes);
+    }
+
+    public static <T extends Annotation> T parseAnnotation(Class<? extends Annotation> type, Map<String, Object> attributes) {
+        return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
     }
 
 }

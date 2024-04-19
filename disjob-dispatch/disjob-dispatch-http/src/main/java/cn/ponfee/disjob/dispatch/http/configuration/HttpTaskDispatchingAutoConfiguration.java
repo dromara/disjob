@@ -30,7 +30,6 @@ import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.lang.Nullable;
@@ -55,15 +54,14 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     /**
      * Configuration http task dispatcher.
      */
-    @ConditionalOnClass(RestTemplate.class)
     @ConditionalOnBean(Supervisor.Current.class)
     @Bean
     public TaskDispatcher taskDispatcher(ApplicationEventPublisher eventPublisher,
                                          RetryProperties retry,
                                          SupervisorRegistry discoveryWorker,
                                          @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                         @Nullable HttpTaskReceiver taskReceiver) {
-        return new HttpTaskDispatcher(eventPublisher, discoveryWorker, retry, restTemplate, taskReceiver);
+                                         @Nullable TaskReceiver taskReceiver) {
+        return new HttpTaskDispatcher(eventPublisher, discoveryWorker, retry, restTemplate, (HttpTaskReceiver) taskReceiver);
     }
 
 }

@@ -28,7 +28,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
@@ -119,12 +118,12 @@ public @interface DbSnowflakeIdGenerator {
 
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-            AnnotationAttributes attrs = SpringUtils.getAnnotationAttributes(importingClassMetadata, DbSnowflakeIdGenerator.class);
-            if (attrs == null) {
+            DbSnowflakeIdGenerator config = SpringUtils.parseAnnotation(DbSnowflakeIdGenerator.class, importingClassMetadata);
+            if (config == null) {
                 return;
             }
 
-            String jdbcTemplateRef = attrs.getString("jdbcTemplateRef");
+            String jdbcTemplateRef = config.jdbcTemplateRef();
             GenericBeanDefinition bd;
             if (StringUtils.isBlank(jdbcTemplateRef)) {
                 bd = new AnnotatedGenericBeanDefinition(AnnotatedDbSnowflake.class);
@@ -135,9 +134,9 @@ public @interface DbSnowflakeIdGenerator {
                 bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbdSnowflake.SPRING_BEAN_NAME_CURRENT_SUPERVISOR));
             }
 
-            bd.getConstructorArgumentValues().addIndexedArgumentValue(2, attrs.getString("bizTag"));
-            bd.getConstructorArgumentValues().addIndexedArgumentValue(3, attrs.getNumber("sequenceBitLength"));
-            bd.getConstructorArgumentValues().addIndexedArgumentValue(4, attrs.getNumber("workerIdBitLength"));
+            bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());
+            bd.getConstructorArgumentValues().addIndexedArgumentValue(3, config.sequenceBitLength());
+            bd.getConstructorArgumentValues().addIndexedArgumentValue(4, config.workerIdBitLength());
 
             bd.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
             bd.setScope(BeanDefinition.SCOPE_SINGLETON);

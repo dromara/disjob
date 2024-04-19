@@ -477,7 +477,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         //final BiMap<Long, WorkerThread> pool = Maps.synchronizedBiMap(HashBiMap.create());
         final Map<Long, WorkerThread> pool = new HashMap<>();
 
-        synchronized void doExecute(WorkerThread workerThread, ExecuteTaskParam task) throws InterruptedException {
+        private synchronized void doExecute(WorkerThread workerThread, ExecuteTaskParam task) throws InterruptedException {
             Operation operation = (task == null) ? null : task.operation();
             if (operation == null || operation.isNotTrigger()) {
                 // cannot happen
@@ -511,7 +511,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             pool.put(task.getTaskId(), workerThread);
         }
 
-        synchronized Pair<WorkerThread, ExecuteTaskParam> stopTask(long taskId, Operation ops) {
+        private synchronized Pair<WorkerThread, ExecuteTaskParam> stopTask(long taskId, Operation ops) {
             WorkerThread thread = pool.get(taskId);
             ExecuteTaskParam task;
             if (thread == null || (task = thread.currentTask()) == null) {
@@ -532,7 +532,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return Pair.of(thread, task);
         }
 
-        synchronized ExecuteTaskParam removeThread(WorkerThread workerThread) {
+        private synchronized ExecuteTaskParam removeThread(WorkerThread workerThread) {
             ExecuteTaskParam task = workerThread.currentTask();
             if (task == null) {
                 return null;
@@ -555,7 +555,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return task;
         }
 
-        synchronized void toStopPool() {
+        private synchronized void toStopPool() {
             pool.forEach((taskId, workerThread) -> {
                 workerThread.toStop();
                 ExecuteTaskParam task = workerThread.currentTask();
@@ -565,7 +565,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             });
         }
 
-        synchronized void doStopPool() {
+        private synchronized void doStopPool() {
             pool.entrySet()
                 .parallelStream()
                 .forEach(entry -> {
@@ -596,11 +596,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
             pool.clear();
         }
 
-        int size() {
+        private int size() {
             return pool.size();
         }
 
-        boolean existsTask(Long taskId) {
+        private boolean existsTask(Long taskId) {
             return pool.containsKey(taskId);
         }
     }
@@ -608,7 +608,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private static class IllegalTaskException extends RuntimeException {
         private static final long serialVersionUID = -1273937229826200274L;
 
-        public IllegalTaskException(String message) {
+        private IllegalTaskException(String message) {
             super(message);
         }
     }
@@ -616,7 +616,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private static class DuplicateTaskException extends RuntimeException {
         private static final long serialVersionUID = -5210570253941551115L;
 
-        public DuplicateTaskException(String message) {
+        private DuplicateTaskException(String message) {
             super(message);
         }
     }
@@ -624,7 +624,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private static class BrokenThreadException extends RuntimeException {
         private static final long serialVersionUID = 3475868254991118684L;
 
-        public BrokenThreadException(String message) {
+        private BrokenThreadException(String message) {
             super(message);
         }
     }
@@ -634,7 +634,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private final SupervisorRpcService client;
         private final long taskId;
 
-        public TaskSavepoint(SupervisorRpcService client, long taskId) {
+        private TaskSavepoint(SupervisorRpcService client, long taskId) {
             this.client = client;
             this.taskId = taskId;
         }
@@ -718,11 +718,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return currentTask.compareAndSet(expect, update);
         }
 
-        public final ExecuteTaskParam currentTask() {
+        private ExecuteTaskParam currentTask() {
             return currentTask.get();
         }
 
-        public final boolean isStopped() {
+        private boolean isStopped() {
             return workerThreadState.isStopped() || Threads.isStopped(this);
         }
 
