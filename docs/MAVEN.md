@@ -31,7 +31,7 @@
 - flatten-maven-plugin
 ```xml
 <!-- https://www.mojohaus.org/flatten-maven-plugin/usage.html -->
-<!-- ./mvnw clean deploy -Prelease -DskipTests -->
+<!-- ./mvnw clean install && ./mvnw deploy -Prelease -Dmaven.test.skip=true -->
 <plugin>
   <groupId>org.codehaus.mojo</groupId>
   <artifactId>flatten-maven-plugin</artifactId>
