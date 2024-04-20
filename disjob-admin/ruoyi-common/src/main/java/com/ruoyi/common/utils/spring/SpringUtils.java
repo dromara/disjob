@@ -163,10 +163,10 @@ public final class SpringUtils implements ApplicationContextAware, BeanFactoryPo
 
     public static Set<String> findAllAnonymousRequestMappings() {
         Set<String> anonymousUrls = new HashSet<>();
-        RequestMappingHandlerMapping mappings = applicationContext.getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
-        mappings.getHandlerMethods().forEach((requestMappingInfo, handlerMethod) -> {
+        RequestMappingHandlerMapping mapping = applicationContext.getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
+        mapping.getHandlerMethods().forEach((requestMappingInfo, handlerMethod) -> {
             if (getAnnotation(handlerMethod, Anonymous.class) != null) {
-                // #getPatternValues()会包含：`/system/menu/add/{parentId}`
+                // #getPatternValues()会包含占位符路径：`/system/menu/add/{parentId}`
                 anonymousUrls.addAll(requestMappingInfo.getDirectPaths());
             }
         });
