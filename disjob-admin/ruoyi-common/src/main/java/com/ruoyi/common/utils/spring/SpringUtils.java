@@ -1,5 +1,6 @@
 package com.ruoyi.common.utils.spring;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.utils.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeansException;
@@ -9,6 +10,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * spring工具类 方便在非spring管理环境中获取bean
@@ -16,23 +23,21 @@ import org.springframework.stereotype.Component;
  * @author ruoyi
  */
 @Component
-public final class SpringUtils implements BeanFactoryPostProcessor, ApplicationContextAware
+public final class SpringUtils implements ApplicationContextAware, BeanFactoryPostProcessor
 {
+    private static ApplicationContext applicationContext;
+
     /** Spring应用上下文环境 */
     private static ConfigurableListableBeanFactory beanFactory;
 
-    private static ApplicationContext applicationContext;
-
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
-    {
-        SpringUtils.beanFactory = beanFactory;
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        SpringUtils.applicationContext = applicationContext;
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        SpringUtils.applicationContext = applicationContext;
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        SpringUtils.beanFactory = beanFactory;
     }
 
     /**
@@ -154,6 +159,23 @@ public final class SpringUtils implements BeanFactoryPostProcessor, ApplicationC
     public static String getRequiredProperty(String key)
     {
         return applicationContext.getEnvironment().getRequiredProperty(key);
+    }
+
+    public static Set<String> findAllAnonymousRequestMappings() {
+        Set<String> anonymousUrls = new HashSet<>();
+        RequestMappingHandlerMapping mappings = applicationContext.getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
+        mappings.getHandlerMethods().forEach((requestMappingInfo, handlerMethod) -> {
+            if (getAnnotation(handlerMethod, Anonymous.class) != null) {
+                // #getPatternValues()会包含：`/system/menu/add/{parentId}`
+                anonymousUrls.addAll(requestMappingInfo.getDirectPaths());
+            }
+        });
+        return anonymousUrls;
+    }
+
+    public static <T extends Annotation> T getAnnotation(HandlerMethod hm, Class<T> type) {
+        T annotation = hm.getMethodAnnotation(type);
+        return annotation != null ? annotation : hm.getBeanType().getAnnotation(type);
     }
 
 }

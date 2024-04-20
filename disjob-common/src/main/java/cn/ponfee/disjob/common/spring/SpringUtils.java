@@ -24,6 +24,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.method.HandlerMethod;
 import sun.reflect.annotation.AnnotationParser;
 
 import java.io.ByteArrayInputStream;
@@ -66,11 +67,16 @@ public final class SpringUtils {
         return webServer.getPort();
     }
 
+    public static <T extends Annotation> T getAnnotation(Class<T> type, HandlerMethod handlerMethod) {
+        T annotation = handlerMethod.getMethodAnnotation(type);
+        return annotation != null ? annotation : handlerMethod.getBeanType().getAnnotation(type);
+    }
+
     public static AnnotationAttributes getAnnotationAttributes(Class<? extends Annotation> type, AnnotatedTypeMetadata metadata) {
         return AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(type.getName()));
     }
 
-    public static <T extends Annotation> T parseAnnotation(Class<? extends Annotation> type, AnnotatedTypeMetadata metadata) {
+    public static <T extends Annotation> T parseAnnotation(Class<T> type, AnnotatedTypeMetadata metadata) {
         Map<String, Object> attributes = metadata.getAnnotationAttributes(type.getName());
         if (attributes == null) {
             throw new IllegalArgumentException("Not found annotated type: " + type);
@@ -78,7 +84,7 @@ public final class SpringUtils {
         return parseAnnotation(type, attributes);
     }
 
-    public static <T extends Annotation> T parseAnnotation(Class<? extends Annotation> type, Map<String, Object> attributes) {
+    public static <T extends Annotation> T parseAnnotation(Class<T> type, Map<String, Object> attributes) {
         return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
     }
 

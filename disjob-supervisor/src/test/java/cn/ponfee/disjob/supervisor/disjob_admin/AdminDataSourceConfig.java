@@ -33,7 +33,7 @@ public class AdminDataSourceConfig /*extends cn.ponfee.disjob.common.spring.Abst
     //}
 
     /**
-     * database name
+     * Data source name
      */
     static final String DATA_SOURCE_NAME = "disjob-admin";
 

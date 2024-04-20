@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
 public class SupervisorDataSourceConfig {
 
     /**
-     * database name
+     * Data source name
      */
     static final String DATA_SOURCE_NAME = "disjob";
 

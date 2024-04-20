@@ -17,14 +17,18 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.util.ClassUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.Environment;
 
 import java.util.Objects;
 
@@ -33,17 +37,28 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
-public class SpringContextHolder implements ApplicationContextAware {
+public class SpringContextHolder implements ApplicationContextAware, BeanFactoryPostProcessor {
 
     private static ApplicationContext applicationContext;
+    private static ConfigurableListableBeanFactory beanFactory;
 
     @Override
     public void setApplicationContext(ApplicationContext ctx) {
         synchronized (SpringContextHolder.class) {
-            if (applicationContext != null) {
+            if (SpringContextHolder.applicationContext != null) {
                 throw new IllegalStateException("Spring context holder already initialized.");
             }
-            applicationContext = Objects.requireNonNull(ctx);
+            SpringContextHolder.applicationContext = Objects.requireNonNull(ctx);
+        }
+    }
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        synchronized (SpringContextHolder.class) {
+            if (SpringContextHolder.beanFactory != null) {
+                throw new IllegalStateException("Spring context holder already initialized.");
+            }
+            SpringContextHolder.beanFactory = Objects.requireNonNull(beanFactory);
         }
     }
 
@@ -212,6 +227,10 @@ public class SpringContextHolder implements ApplicationContextAware {
     }
 
     // -----------------------------------------------------------------------other methods
+
+    public static Environment getEnvironment() {
+        return applicationContext.getEnvironment();
+    }
 
     /**
      * Returns spring container contains specified bean name.

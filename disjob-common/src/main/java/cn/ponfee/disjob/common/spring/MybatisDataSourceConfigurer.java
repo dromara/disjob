@@ -148,7 +148,6 @@ public @interface MybatisDataSourceConfigurer {
             BeanDefinitionBuilder dataSourceBdb = BeanDefinitionBuilder.genericBeanDefinition(DataSource.class);
             dataSourceBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
             AbstractBeanDefinition dataSourceBd = dataSourceBdb.getBeanDefinition();
-
             dataSourceBd.setInstanceSupplier(() -> {
                 Binder binder = Binder.get(environment);
                 DataSource dataSource = DataSourceBuilder.create().build();
