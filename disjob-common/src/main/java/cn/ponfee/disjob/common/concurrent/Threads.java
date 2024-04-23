@@ -65,11 +65,35 @@ public final class Threads {
     /**
      * Stops the thread
      *
-     * @param thread      the thread
-     * @param joinMillis  the joinMillis
+     * @param thread     the thread
+     * @param joinMillis the joinMillis
      */
     public static void stopThread(Thread thread, long joinMillis) {
-        stopThread(thread, joinMillis, false);
+        if (thread == null || thread == Thread.currentThread() || isStopped(thread)) {
+            return;
+        }
+
+        // wait joined
+        join(thread, joinMillis / 2);
+        if (isStopped(thread)) {
+            return;
+        }
+
+        // again with interrupt wait joined
+        thread.interrupt();
+        join(thread, joinMillis / 2);
+        if (isStopped(thread)) {
+            return;
+        }
+
+        try {
+            // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
+            // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行
+            thread.stop();
+            LOG.warn("Invoke java.lang.Thread#stop() method finished: {}", thread.getName());
+        } catch (Throwable t) {
+            LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
+        }
     }
 
     public static void interruptIfNecessary(Throwable t) {
@@ -130,65 +154,15 @@ public final class Threads {
         return builder.toString();
     }
 
-    private static void stopThread(Thread thread, long joinMillis, boolean fromAsync) {
-        if (isStopped(thread)) {
-            return;
-        }
-
-        if (Thread.currentThread() == thread) {
-            if (fromAsync) {
-                LOG.warn("Call stop on self thread: {}\n{}", thread.getName(), getStackTrace());
-                stopThread(thread);
-            } else {
-                ThreadPoolExecutors.commonThreadPool().execute(() -> stopThread(thread, Math.max(joinMillis, 5), true));
-            }
-            return;
-        }
-
-        // wait joined
-        join(thread, joinMillis / 2);
-
-        if (isStopped(thread)) {
-            return;
-        }
-
-        // do interrupt
-        thread.interrupt();
-        // again wait joined
-        join(thread, joinMillis / 2);
-
-        stopThread(thread);
-    }
-
-    /**
-     * Stop the thread
-     *
-     * @param thread the thread
-     */
-    private static void stopThread(Thread thread) {
-        if (isStopped(thread)) {
-            return;
-        }
-
-        try {
-            // 调用后，thread中正在执行的run方法内部会抛出java.lang.ThreadDeath异常
-            // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行
-            thread.stop();
-            LOG.warn("Invoke java.lang.Thread#stop() method finished: {}", thread.getName());
-        } catch (Throwable t) {
-            LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
-        }
-    }
-
     private static void join(Thread thread, long joinTimeoutMills) {
         if (joinTimeoutMills <= 0) {
             return;
         }
         try {
             thread.join(joinTimeoutMills);
-        } catch (InterruptedException e) {
+        } catch (Throwable e) {
             LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
-            Thread.currentThread().interrupt();
+            interruptIfNecessary(e);
         }
     }
 

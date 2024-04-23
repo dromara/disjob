@@ -144,8 +144,8 @@ public class DistributedJobManager extends AbstractJobManager {
         return isOneAffectedRow(taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED.value(), ExecuteState.WAITING.value(), null, null));
     }
 
-    public void savepoint(long taskId, String executeSnapshot) {
-        assertOneAffectedRow(taskMapper.savepoint(taskId, executeSnapshot), () -> "Save point failed: " + taskId + ", " + executeSnapshot);
+    public boolean savepoint(long taskId, String executeSnapshot) {
+        return isOneAffectedRow(taskMapper.savepoint(taskId, executeSnapshot));
     }
 
     // ------------------------------------------------------------------database operation within spring transactional

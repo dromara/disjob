@@ -43,16 +43,17 @@ import java.util.Map;
  */
 @Configuration
 @MapperScan({"com.ruoyi.**.mapper"})
-public class DisjobAdminDataSourceConfig {
+public class DruidDataSourceConfig {
 
     private static final String DRUID_PREFIX_KEY = "spring.datasource.druid";
+
     private static final String RUOYI_DRUID_PROPERTIES = "ruoyiDruidProperties";
     private static final String RUOYI_MASTER_JDBC_PROPERTIES = "ruoyiMasterJdbcProperties";
     private static final String RUOYI_SLAVE_JDBC_PROPERTIES = "ruoyiSlaveJdbcProperties";
 
     private final Environment env;
 
-    public DisjobAdminDataSourceConfig(Environment env) {
+    public DruidDataSourceConfig(Environment env) {
         this.env = env;
     }
 

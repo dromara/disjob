@@ -33,6 +33,7 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.CancelTaskException;
 import cn.ponfee.disjob.core.exception.PauseTaskException;
+import cn.ponfee.disjob.core.exception.SavepointFailedException;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.Savepoint;
@@ -166,11 +167,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         LOG.info("Close worker thread pool start...");
 
-        // stop this boss thread
-        ThrowingRunnable.doCaught(() -> {
-            super.interrupt();
-            Threads.stopThread(this, 3000);
-        });
+        if (Thread.currentThread() != this) {
+            // stop this boss thread
+            ThrowingRunnable.doCaught(super::interrupt);
+            ThrowingRunnable.doCaught(() -> Threads.stopThread(this, 5000));
+        }
 
         // change executing pool thread state
         ThrowingRunnable.doCaught(activePool::toStopPool);
@@ -295,12 +296,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private void executeTask() throws InterruptedException {
         ExecuteTaskParam task = taskQueue.takeFirst();
-
-        // take a worker
-        WorkerThread workerThread = idlePool.pollFirst();
-        if (workerThread == null) {
-            workerThread = takeWorkerThread();
-        }
+        WorkerThread workerThread = takeWorkerThread();
 
         if (workerThread.isStopped()) {
             LOG.info("Worker thread already stopped.");
@@ -338,13 +334,18 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     private WorkerThread takeWorkerThread() throws InterruptedException {
+        // take a worker
+        WorkerThread workerThread = idlePool.pollFirst();
+        if (workerThread != null) {
+            return workerThread;
+        }
+
         for (; ; ) {
             if (threadPoolState.isStopped() || super.isInterrupted()) {
                 throw new IllegalStateException("Take worker thread interrupted.");
             }
-            WorkerThread workerThread = createWorkerThreadIfNecessary();
+            workerThread = createWorkerThreadIfNecessary();
             if (workerThread == null) {
-                LOG.info("Take worker thread with timeout from idle pool.");
                 workerThread = idlePool.pollFirst(1000, TimeUnit.MILLISECONDS);
             }
             if (workerThread != null) {
@@ -430,8 +431,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
     }
 
-    // -------------------------------------------------------------------private static definitions
-
     private static String toErrorMsg(Throwable t) {
         if (t == null) {
             return null;
@@ -465,7 +464,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
             }
         } catch (Throwable t) {
-            LOG.error("Terminate task error: {}, {}, {}", task.getTaskId(), ops, toState);
+            LOG.error("Terminate task occur error: {}, {}, {}", task.getTaskId(), ops, toState);
             Threads.interruptIfNecessary(t);
         }
     }
@@ -566,32 +565,25 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private synchronized void doStopPool() {
-            pool.entrySet()
-                .parallelStream()
-                .forEach(entry -> {
-                    WorkerThread workerThread = entry.getValue();
-                    ExecuteTaskParam task = workerThread.currentTask();
-                    Operation ops = Operation.PAUSE;
+            pool.values().parallelStream().forEach(workerThread -> {
+                ExecuteTaskParam task = workerThread.currentTask();
+                Operation ops = Operation.PAUSE;
 
-                    // 1、first change the execution task operation
-                    boolean success = (task != null) && task.updateOperation(Operation.TRIGGER, ops);
+                // 1、first change the execution task operation
+                boolean success = (task != null) && task.updateOperation(Operation.TRIGGER, ops);
 
-                    // 2、then stop the work thread
-                    try {
-                        stopWorkerThread(workerThread, true);
-                    } catch (Throwable t) {
-                        LOG.error("Stop worker thread occur error on thread pool close: " + task + ", " + workerThread, t);
-                    }
+                // 2、then stop the work thread
+                ThrowingRunnable.doCaught(() -> stopWorkerThread(workerThread, true), () -> "Stop worker thread error: " + task + ", " + workerThread);
 
-                    // 3、finally update the sched task state
-                    if (success) {
-                        terminateTask(WorkerThreadPool.this, task, ops, ops.toState(), null);
-                    } else {
-                        LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
-                    }
+                // 3、finally update the sched task state
+                if (success) {
+                    ThrowingRunnable.doCaught(() -> terminateTask(WorkerThreadPool.this, task, ops, ops.toState(), null), () -> "Terminate task error: " + task);
+                } else {
+                    LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
+                }
 
-                    workerThread.updateCurrentTask(task, null);
-                });
+                workerThread.updateCurrentTask(task, null);
+            });
 
             pool.clear();
         }
@@ -642,9 +634,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
         @Override
         public void save(String executeSnapshot) throws Exception {
             if (executeSnapshot != null && executeSnapshot.length() > SNAPSHOT_MAX_LENGTH) {
-                throw new IllegalArgumentException("Execution snapshot too large: " + executeSnapshot.length() + " > " + SNAPSHOT_MAX_LENGTH);
+                throw new SavepointFailedException("Execution snapshot length to large " + executeSnapshot.length());
             }
-            client.savepoint(taskId, executeSnapshot);
+            if (!client.savepoint(taskId, executeSnapshot)) {
+                throw new SavepointFailedException("Save execution snapshot data occur error.");
+            }
         }
     }
 

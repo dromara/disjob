@@ -195,9 +195,9 @@ public @interface MybatisDataSourceConfigurer {
             registry.registerBeanDefinition(dataSourceName + TX_TEMPLATE_NAME_SUFFIX, transactionTemplateBdb.getBeanDefinition());
         }
 
-        public static void checkPackageDatasourceName(Class<?> basePackageClass, String actualDsName) {
-            String expectDsName = extractPackageDatasourceName(ClassUtils.getPackageName(basePackageClass));
-            if (!expectDsName.equals(actualDsName)) {
+        public static void checkPackageDatasourceName(Class<?> basePackageClass, String expectDsName) {
+            String actualDsName = extractPackageDatasourceName(ClassUtils.getPackageName(basePackageClass));
+            if (!actualDsName.equals(expectDsName)) {
                 throw new IllegalStateException("Invalid data source name: expect=" + expectDsName + ", actual=" + actualDsName);
             }
         }

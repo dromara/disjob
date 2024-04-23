@@ -136,21 +136,20 @@ public class WorkerFramelessMain {
             .workerRegistry(workerRegistry)
             .restTemplate(RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null))
             .build();
-        try {
-            vertxWebServer.deploy();
-            workerStartup.start();
 
-            new CountDownLatch(1).await();
-        } catch (InterruptedException e) {
-            LOG.error("Sleep interrupted.", e);
-            Thread.currentThread().interrupt();
-        } finally {
-            ThrowingRunnable.doCaught(workerStartup::close);
-            ThrowingRunnable.doCaught(vertxWebServer::close);
-        }
+        // do start
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> close(workerStartup, vertxWebServer)));
+        vertxWebServer.deploy();
+        workerStartup.start();
+        new CountDownLatch(1).await();
     }
 
     // -----------------------------------------------------------------------------------------------private methods
+
+    private static void close(WorkerStartup workerStartup, VertxWebServer vertxWebServer) {
+        ThrowingRunnable.doCaught(workerStartup::close);
+        ThrowingRunnable.doCaught(vertxWebServer::close);
+    }
 
     private static void printBanner() throws IOException {
         String banner = IOUtils.resourceToString("banner.txt", UTF_8, WorkerStartup.class.getClassLoader());

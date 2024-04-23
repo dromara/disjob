@@ -74,7 +74,7 @@ public class JobHandlerParser {
         List<String> list = JOB_HANDLER_MAP
             .entrySet()
             .stream()
-            .map(e -> "|   " + e.getKey() + " -> " + e.getValue().getName())
+            .map(e -> "|   " + e.getKey() + "  ->  " + e.getValue().getName())
             .collect(Collectors.toList());
         int maxLen = list.stream().mapToInt(String::length).max().getAsInt();
 

@@ -79,9 +79,10 @@ public interface SupervisorRpcService {
      *
      * @param taskId          the taskId
      * @param executeSnapshot the execution snapshot data
+     * @return {@code true} if saved successful
      * @throws Exception if occur exception
      */
     @PostMapping("/task/savepoint")
-    void savepoint(long taskId, String executeSnapshot) throws Exception;
+    boolean savepoint(long taskId, String executeSnapshot) throws Exception;
 
 }

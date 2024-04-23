@@ -125,7 +125,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
 
     @Override
     public void close() {
-        doStop(1000);
+        doStop(2000);
     }
 
     public boolean toStop() {

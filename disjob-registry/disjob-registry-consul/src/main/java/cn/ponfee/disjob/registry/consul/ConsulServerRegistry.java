@@ -142,7 +142,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         consulTtlCheckThread.terminate();
         registered.forEach(this::deregister);
         registered.clear();
-        ThrowingRunnable.doCaught(() -> Threads.stopThread(consulSubscriberThread, 100));
+        ThrowingRunnable.doCaught(() -> Threads.stopThread(consulSubscriberThread, 1000));
         super.close();
     }
 

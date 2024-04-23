@@ -102,8 +102,8 @@ public class SupervisorRpcProvider implements SupervisorRpcService, RpcControlle
     }
 
     @Override
-    public void savepoint(long taskId, String executeSnapshot) {
-        jobManager.savepoint(taskId, executeSnapshot);
+    public boolean savepoint(long taskId, String executeSnapshot) {
+        return jobManager.savepoint(taskId, executeSnapshot);
     }
 
 }
