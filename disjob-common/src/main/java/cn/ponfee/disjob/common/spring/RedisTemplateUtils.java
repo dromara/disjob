@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.data.redis.serializer.RedisSerializer;
+
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -38,6 +42,12 @@ public class RedisTemplateUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisTemplateUtils.class);
 
+    public static <T> T evalScript(RedisTemplate<?, ?> redisTemplate,
+                                   RedisScript<T> script, byte[][] keys, byte[]... args) {
+        int numKeys = keys == null ? 0 : keys.length;
+        return evalScript(redisTemplate, script, numKeys, Collects.concat(keys, args));
+    }
+
     /**
      * <pre>
      * Execute lua script for redis
@@ -50,19 +60,22 @@ public class RedisTemplateUtils {
      *
      * @param redisTemplate the redis template
      * @param script        the lua script
-     * @param returnType    the return type
      * @param numKeys       the number of keys
      * @param keysAndArgs   the keys and arguments
      * @param <T>           the return type
      * @return scrip executed result
+     * @see RedisTemplate#execute(RedisScript, List, Object...)
+     * @see RedisTemplate#execute(RedisScript, RedisSerializer, RedisSerializer, List, Object...)
      */
     public static <T> T evalScript(RedisTemplate<?, ?> redisTemplate,
-                                   RedisScript<T> script, ReturnType returnType, int numKeys, byte[][] keysAndArgs) {
+                                   RedisScript<T> script, int numKeys, byte[][] keysAndArgs) {
+        ReturnType returnType = ReturnType.fromJavaType(script.getResultType());
         return redisTemplate.execute((RedisCallback<T>) conn -> {
             if (conn.isPipelined() || conn.isQueueing()) {
-                // 在exec/closePipeline中会添加lua script sha1，所以这里只需要使用eval
-                // return conn.eval(script.getScriptAsString().getBytes(UTF_8), returnType, numKeys, keysAndArgs);
-                throw new UnsupportedOperationException("Unsupported pipelined or queueing eval redis lua script.");
+                // We could script load first and then do evalsha to ensure sha is present,
+                // but this adds a sha1 to exec/closePipeline results. Instead, just eval
+                conn.eval(script.getScriptAsString().getBytes(UTF_8), returnType, numKeys, keysAndArgs);
+                return null;
             }
             try {
                 return conn.evalSha(script.getSha1(), returnType, numKeys, keysAndArgs);

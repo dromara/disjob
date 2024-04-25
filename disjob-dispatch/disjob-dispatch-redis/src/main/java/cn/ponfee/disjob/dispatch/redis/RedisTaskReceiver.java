@@ -21,18 +21,17 @@ import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
+import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 
 import java.util.List;
 
-import static cn.ponfee.disjob.common.spring.RedisTemplateUtils.evalScript;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -131,7 +130,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
         @Override
         protected boolean heartbeat() {
-            List<byte[]> received = evalScript(redisTemplate, BATCH_POP_SCRIPT, ReturnType.MULTI, 1, gropedWorker.keysAndArgs);
+            List<byte[]> received = RedisTemplateUtils.evalScript(redisTemplate, BATCH_POP_SCRIPT, 1, gropedWorker.keysAndArgs);
             gropedWorker.redisKeyRenewal.renewIfNecessary();
             if (CollectionUtils.isEmpty(received)) {
                 return true;

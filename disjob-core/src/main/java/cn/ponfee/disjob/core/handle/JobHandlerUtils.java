@@ -124,7 +124,7 @@ public class JobHandlerUtils {
             }
 
             handler = ClassUtils.newInstance(jobHandlerClass);
-            SpringContextHolder.autowire(handler);
+            SpringContextHolder.autowireBean(handler);
             return handler;
         } else {
             Class<? extends JobHandler> jobHandlerClass = getJobHandlerClass(text);

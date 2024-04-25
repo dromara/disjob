@@ -59,6 +59,28 @@ public class CollectsTest {
         assertThat(array2).hasSize(9);
     }
 
+    @Test
+    public void testConcat() {
+        String[] b = {"a", "b", "c"};
+
+        Integer[] a1 = {1, 2, 3};
+        assertThatThrownBy(() -> Collects.concat(a1, b))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Cannot store java.lang.String into java.lang.Integer[]");
+
+        Object[] a2 = a1;
+        assertThatThrownBy(() -> Collects.concat(a2, b))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Cannot store java.lang.String into java.lang.Integer[]");
+
+        Object[] a3 = {1, 2, 3};
+        assertThat(Collects.concat(a3, b)).hasSize(6);
+
+        assertThatThrownBy(() -> Collects.concat(b, a3))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Cannot store java.lang.Object into java.lang.String[]");
+    }
+
     private static String test = "xxx";
     private static final String STR = "123";
 

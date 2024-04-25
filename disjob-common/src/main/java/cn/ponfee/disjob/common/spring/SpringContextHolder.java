@@ -74,8 +74,8 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @param beanName then bean name
      * @return spring bean
      */
-    public static Object getBean(String beanName) {
-        return applicationContext.getBean(beanName);
+    public static <T> T getBean(String beanName) {
+        return (T) applicationContext.getBean(beanName);
     }
 
     /**
@@ -308,7 +308,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      *
      * @param bean the spring bean
      */
-    public static void autowire(Object bean) {
+    public static void autowireBean(Object bean) {
         applicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
     }
 

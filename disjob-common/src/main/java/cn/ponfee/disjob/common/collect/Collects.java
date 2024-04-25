@@ -259,6 +259,26 @@ public class Collects {
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    public static <T> T[] concat(T[] a1, T... a2) {
+        if (a1 == null) {
+            return a2;
+        }
+        if (a2 == null) {
+            return a1;
+        }
+
+        T[] result = newArray((Class<? extends T[]>) a1.getClass(), a1.length + a2.length);
+        System.arraycopy(a1, 0, result, 0, a1.length);
+        try {
+            System.arraycopy(a2, 0, result, a1.length, a2.length);
+        } catch (ArrayStoreException e) {
+            Class<?> t1 = a1.getClass().getComponentType();
+            Class<?> t2 = a2.getClass().getComponentType();
+            throw t1.isAssignableFrom(t2) ? e : new IllegalArgumentException("Cannot store " + t2.getName() + " into " + t1.getName() + "[]", e);
+        }
+        return result;
+    }
+
     public static <T> T[] newArray(Class<? extends T[]> arrayType, int length) {
         return arrayType.equals(Object[].class)
             ? (T[]) new Object[length]

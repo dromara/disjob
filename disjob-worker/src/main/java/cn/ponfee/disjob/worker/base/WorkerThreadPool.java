@@ -363,7 +363,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
             if (workerThreadCounter.compareAndSet(count, count + 1)) {
                 WorkerThread thread = new WorkerThread(this, keepAliveTimeSeconds);
-                LOG.info("Created worker thread, current size: {}", count + 1);
+                LOG.info("Created worker thread {}, current size: {}", thread, count + 1);
                 return thread;
             }
         }
