@@ -1,13 +1,17 @@
 #!/bin/sh
 
-echo "build disjob"
-
 cd `dirname $0`
 cd ..
 
 path="$1/"
-if [ -z "$path" ]; then
-  path ""
+name="$1"
+
+if [ -z "$1" ]; then
+  path=""
+  name="disjob"
 fi
 
-sh ./mvnw clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U -f ./"$path"pom.xml
+path=./"$path"pom.xml
+
+echo build "$name": "$path"
+sh ./mvnw clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U -f "$path"
