@@ -109,7 +109,9 @@ public class CollectsTest {
 
         assertThatThrownBy(() -> FieldUtils.writeField(f1, (Object) null, "abc", true))
             .isInstanceOf(IllegalAccessException.class)
-            .hasMessage("Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to java.lang.String");
+            // Windows message: Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to null value
+            // Linux message  : Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to java.lang.String
+            .hasMessageStartingWith("Can not set static final java.lang.String field cn.ponfee.disjob.common.util.CollectsTest.STR to ");
 
         Fields.put(CollectsTest.class, f1, "abc");
         assertThat("123").isEqualTo(STR); // 编译时直接替换为`123`

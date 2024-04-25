@@ -260,10 +260,10 @@ public class Collects {
     }
 
     public static <T> T[] concat(T[] a1, T... a2) {
-        if (a1 == null) {
+        if (a1 == null || a1.length == 0) {
             return a2;
         }
-        if (a2 == null) {
+        if (a2 == null || a2.length == 0) {
             return a1;
         }
 
