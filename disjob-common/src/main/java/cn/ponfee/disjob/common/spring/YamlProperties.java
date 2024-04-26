@@ -59,7 +59,7 @@ public class YamlProperties extends Properties implements TypedMap<Object, Objec
             return null;
         }
 
-        prefix = Strings.withDotSuffix(prefix);
+        prefix = Strings.withSuffix(prefix, ".");
 
         T bean = ClassUtils.newInstance(beanType);
         char[] separators = {Char.HYPHEN, Char.DOT};

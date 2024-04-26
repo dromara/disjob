@@ -19,6 +19,7 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -27,8 +28,6 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-
-import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
 
 /**
  * Object utility class
@@ -50,44 +49,11 @@ public final class ObjectUtils {
     public static String toString(Object obj, String defaultStr) {
         return (obj == null)
              ? defaultStr
-             : reflectionToString(obj, ToStringStyle.JSON_STYLE);
+             : ToStringBuilder.reflectionToString(obj, ToStringStyle.JSON_STYLE);
     }
 
     public static <T, R> R applyIfNotNull(T object, Function<T, R> mapper) {
         return object == null ? null : mapper.apply(object);
-    }
-
-    /**
-     * Compare two object numerically
-     *
-     * @param a the object a
-     * @param b the object b
-     * @return 0(a==b), 1(a>b), -1(a<b)
-     */
-    public static int compare(Object a, Object b) {
-        if (a == b) {
-            return Comparators.EQ;
-        }
-        if (a == null) {
-            // null last
-            return Comparators.GT;
-        }
-        if (b == null) {
-            // null last
-            return Comparators.LT;
-        }
-
-        if ((a instanceof Comparable) && (b instanceof Comparable)) {
-            if (a.getClass().isInstance(b)) {
-                return ((Comparable) a).compareTo(b);
-            } else if (b.getClass().isInstance(a)) {
-                return ((Comparable) b).compareTo(a);
-            }
-        }
-
-        // Fields.addressOf
-        int res = Integer.compare(System.identityHashCode(a.getClass()), System.identityHashCode(b.getClass()));
-        return res != Comparators.EQ ? res : Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
     }
 
     /**
@@ -192,13 +158,13 @@ public final class ObjectUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> T newInstance(Class<T> type) {
-        if (Map.class == type) { // interface
+        if (Map.class == type) {
             return (T) new HashMap<>(8);
-        } else if (Set.class == type) { // interface
+        } else if (Set.class == type) {
             return (T) new HashSet<>();
-        } else if (Collection.class == type || List.class == type) { // interface
+        } else if (Collection.class == type || List.class == type) {
             return (T) new ArrayList<>();
-        } else if (Dictionary.class == type) { // abstract
+        } else if (Dictionary.class == type) {
             return (T) new Hashtable<>();
         } else if (type.isPrimitive() || PrimitiveTypes.isWrapperType(type)) {
             Class<?> wrapper = PrimitiveTypes.ofPrimitiveOrWrapper(type).wrapper();
@@ -228,6 +194,7 @@ public final class ObjectUtils {
         return text != null && PATTERN_DATE.matcher(text).matches();
     }
 
+    @SuppressWarnings("all")
     private enum PrimitiveOrWrapperConvertors {
 
         BOOLEAN(boolean.class) {

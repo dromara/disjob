@@ -66,7 +66,7 @@ public class DisjobGroup {
             ownUser,
             parse(schedGroup.getDevUsers(), ownUser),
             parse(schedGroup.getAlarmUsers(), ownUser),
-            Strings.trimUrlPath(schedGroup.getWorkerContextPath()),
+            Strings.trimPath(schedGroup.getWorkerContextPath()),
             schedGroup.getWebHook()
         );
     }

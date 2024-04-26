@@ -53,11 +53,11 @@ public class StringsTest {
 
     @Test
     public void testTrimUrlPath() {
-        Assertions.assertEquals("/test", Strings.trimUrlPath("test///"));
-        Assertions.assertEquals("/test/abc", Strings.trimUrlPath("test/abc///"));
-        Assertions.assertEquals("/test/abc", Strings.trimUrlPath(" /test/abc/// "));
-        Assertions.assertEquals("/", Strings.trimUrlPath(" / // /// "));
-        Assertions.assertEquals("/test/abc", Strings.trimUrlPath(" /test/abc/ / / "));
+        Assertions.assertEquals("/test", Strings.trimPath("test///"));
+        Assertions.assertEquals("/test/abc", Strings.trimPath("test/abc///"));
+        Assertions.assertEquals("/test/abc", Strings.trimPath(" /test/abc/// "));
+        Assertions.assertEquals("/", Strings.trimPath(" / // /// "));
+        Assertions.assertEquals("/test/abc", Strings.trimPath(" /test/abc/ / / "));
         Assertions.assertEquals("  abc/a / b/ c", "  abc/a / b/ c / /// /".replaceAll("[/\\s]+$", ""));
     }
 

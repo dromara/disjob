@@ -41,4 +41,37 @@ public final class Comparators {
         return asc ? asc() : desc();
     }
 
+    /**
+     * Compare two object numerically
+     *
+     * @param a the object a
+     * @param b the object b
+     * @return 0(a==b), 1(a>b), -1(a<b)
+     */
+    public static int compare(Object a, Object b) {
+        if (a == b) {
+            return Comparators.EQ;
+        }
+        if (a == null) {
+            // null last
+            return Comparators.GT;
+        }
+        if (b == null) {
+            // null last
+            return Comparators.LT;
+        }
+
+        if ((a instanceof Comparable) && (b instanceof Comparable)) {
+            if (a.getClass().isInstance(b)) {
+                return ((Comparable) a).compareTo(b);
+            } else if (b.getClass().isInstance(a)) {
+                return ((Comparable) b).compareTo(a);
+            }
+        }
+
+        // Fields.addressOf
+        int res = Integer.compare(System.identityHashCode(a.getClass()), System.identityHashCode(b.getClass()));
+        return res != Comparators.EQ ? res : Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
+    }
+
 }

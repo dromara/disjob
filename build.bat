@@ -9,21 +9,21 @@
 
 cd /d %~dp0
 
-set path=%~1
-set name=%~1
+set p_path=%~1
+set p_name=%~1
 
-if not "%path%" == "" (
-  set path=%path%/
+if not "%p_path%" == "" (
+  set p_path=%p_path%/
 ) else (
-  set name=disjob
+  set p_name=disjob
 )
 
-set path=./%path%pom.xml
+set p_path=./%p_path%pom.xml
 
 echo.
-echo build %name%: %path%
+echo build %p_name%: %p_path%
 echo.
 
-call mvnw.cmd clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U -f %path%
+call mvnw.cmd clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U -f %p_path%
 
 pause

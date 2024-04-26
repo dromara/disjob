@@ -126,7 +126,7 @@ public abstract class AbstractRedisTemplateCreator {
     }
 
     public static RedisTemplateWrapper create(String prefix, YamlProperties props, ObjectMapper objectMapper) {
-        prefix = Strings.withDotSuffix(prefix);
+        prefix = Strings.withSuffix(prefix, ".");
 
         AbstractRedisTemplateCreatorBuilder<?, ?> builder;
         if (props.hasKey(prefix + "host")) {

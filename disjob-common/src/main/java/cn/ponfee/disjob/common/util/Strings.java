@@ -125,7 +125,7 @@ public final class Strings {
      * @return camelcase format string
      * @see CaseFormat#to(CaseFormat, String)
      */
-    public static String toCamelcaseFormat(String separatedFormat, char separator) {
+    public static String toCamelCaseFormat(String separatedFormat, char separator) {
         if (StringUtils.isEmpty(separatedFormat)) {
             return separatedFormat;
         }
@@ -188,31 +188,45 @@ public final class Strings {
         return str;
     }
 
-    public static String withDotSuffix(String str) {
+    public static String withSuffix(String str, String suffix) {
         if (str == null || str.isEmpty()) {
             return str;
         }
-        return str + Str.DOT;
+        return str + suffix;
     }
 
-    public static String trimUrlPath(String urlPath) {
-        if (StringUtils.isBlank(urlPath) || Str.SLASH.equals(urlPath)) {
+    /**
+     * Returns trim path.
+     *
+     * <pre>
+     *  trimPath("test///")          = "/test"
+     *  trimPath("test/abc///")      = "/test/abc"
+     *  trimPath(" /test/abc/// ")   = "/test/abc"
+     *  trimPath(" / // /// ")       = "/"
+     *  trimPath(" /test/abc/ / / ") = "/test/abc"
+     * </pre>
+     *
+     * @param path the path
+     * @return trim path
+     */
+    public static String trimPath(String path) {
+        if (StringUtils.isBlank(path) || Str.SLASH.equals(path)) {
             return Str.SLASH;
         }
 
-        urlPath = urlPath.replaceAll("[/\\s]+$", "").trim();
-        return urlPath.startsWith(Str.SLASH) ? urlPath : Str.SLASH + urlPath;
+        path = path.replaceAll("[/\\s]+$", "").trim();
+        return path.startsWith(Str.SLASH) ? path : Str.SLASH + path;
     }
 
     /**
      * 拼接两个路径，以“/”开头，不以“/”结尾
-     * <p> e.g.: concatUrlPath("/a", "/b/c") -> /a/b/c
+     * <p> e.g.: concatPath("/a", "/b/c") -> /a/b/c
      *
      * @param prefixPath the prefix path
      * @param suffixPath the suffix path
      * @return concat path
      */
-    public static String concatUrlPath(String prefixPath, String suffixPath) {
+    public static String concatPath(String prefixPath, String suffixPath) {
         Assert.isTrue(prefixPath.startsWith(Str.SLASH), "Prefix path must start with '/'");
         if (prefixPath.length() > 1) {
             Assert.isTrue(!prefixPath.endsWith(Str.SLASH), "Prefix path cannot end with '/'");
@@ -232,12 +246,14 @@ public final class Strings {
     }
 
     /**
-     * substringAfterLast(null, ".")      = null
-     * substringAfterLast("", ".")        = ""
-     * substringAfterLast("abc", ".")     = "abc"
-     * substringAfterLast("abc.def", ".") = "def"
-     * substringAfterLast(".abc", ".")    = "abc"
-     * substringAfterLast("abc.", ".")    = ""
+     * <pre>
+     *  substringAfterLast(null, ".")      = null
+     *  substringAfterLast("", ".")        = ""
+     *  substringAfterLast("abc", ".")     = "abc"
+     *  substringAfterLast("abc.def", ".") = "def"
+     *  substringAfterLast(".abc", ".")    = "abc"
+     *  substringAfterLast("abc.", ".")    = ""
+     * </pre>
      *
      * @param str       the string
      * @param separator the separator

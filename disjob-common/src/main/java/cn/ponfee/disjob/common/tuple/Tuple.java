@@ -19,7 +19,6 @@ package cn.ponfee.disjob.common.tuple;
 import cn.ponfee.disjob.common.collect.DelegatedIntSpliterator;
 import cn.ponfee.disjob.common.collect.ImmutableArrayList;
 import cn.ponfee.disjob.common.util.Comparators;
-import cn.ponfee.disjob.common.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -156,13 +155,13 @@ public abstract class Tuple implements Comparable<Object>, Iterable<Object>, Ser
         if (this == o) {
             return Comparators.EQ;
         }
-        if (!(o instanceof Tuple)) {
-            return ObjectUtils.compare(this, o);
+        if (this.getClass() != o.getClass()) {
+            return Comparators.compare(this, o);
         }
 
         Tuple other = (Tuple) o;
         for (int c, i = 0, n = this.length(); i < n; i++) {
-            c = ObjectUtils.compare(this.get(i), other.get(i));
+            c = Comparators.compare(this.get(i), other.get(i));
             if (c != Comparators.EQ) {
                 return c;
             }

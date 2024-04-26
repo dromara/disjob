@@ -9,15 +9,15 @@
 
 cd `dirname $0`
 
-path="$1/"
-name="$1"
+p_path="$1/"
+p_name="$1"
 
 if [ -z "$1" ]; then
-  path=""
-  name="disjob"
+  p_path=""
+  p_name="disjob"
 fi
 
-path=./"$path"pom.xml
+p_path=./"$p_path"pom.xml
 
-echo build "$name": "$path"
-sh ./mvnw clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U -f "$path"
+echo build "$p_name": "$p_path"
+sh ./mvnw clean install -DskipTests -Dcheckstyle.skip=true -Dmaven.javadoc.skip=true -U -f "$p_path"

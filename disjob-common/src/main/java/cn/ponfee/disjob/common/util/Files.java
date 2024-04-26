@@ -210,8 +210,7 @@ public final class Files {
 
     public static String toString(File file, Charset charset) {
         try (FileInputStream input = new FileInputStream(file);
-             FileChannel channel = input.getChannel()
-        ) {
+             FileChannel channel = input.getChannel()) {
             //FileLock lock = channel.lock();
             //lock.release();
             ByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, channel.size());

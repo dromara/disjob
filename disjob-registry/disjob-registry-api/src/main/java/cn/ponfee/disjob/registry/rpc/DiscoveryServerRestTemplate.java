@@ -121,7 +121,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
         Throwable ex = null;
         for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
-            String url = server.buildHttpUrlPrefix() + Strings.concatUrlPath(serverContextPath, path);
+            String url = server.buildHttpUrlPrefix() + Strings.concatPath(serverContextPath, path);
             try {
                 return RestTemplateUtils.invoke(restTemplate, url, httpMethod, returnType, authenticationHeaders, args);
             } catch (Throwable e) {

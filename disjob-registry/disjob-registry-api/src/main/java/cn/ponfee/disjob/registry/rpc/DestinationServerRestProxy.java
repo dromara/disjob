@@ -103,7 +103,7 @@ public final class DestinationServerRestProxy {
             DiscoveryServerRestProxy.Request req = DiscoveryServerRestProxy.buildRequest(prefixPath, method);
             Server destinationServer = SERVER_THREAD_LOCAL.get();
             String contextPath = serverContextPath.apply((S) destinationServer);
-            String urlPath = Strings.concatUrlPath(contextPath, req.path);
+            String urlPath = Strings.concatPath(contextPath, req.path);
             return template.invoke(destinationServer, urlPath, req.httpMethod, method.getGenericReturnType(), args);
         }
     }

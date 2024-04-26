@@ -11,10 +11,12 @@
 /**/*.ipr
 
 # NetBeans
-nbproject/private/
+**/nbproject/private/
+**/nbproject/Makefile-*.mk
+**/nbproject/Package-*.bash
 nbbuild/
 nbdist/
-/**/.nb-gradle/
+**/.nb-gradle/
 
 # Mac
 /**/.DS_Store
@@ -31,6 +33,11 @@ dist/*
 target/
 lib_managed/
 src_managed/
+project/boot/
+project/plugins/project/
+.history
+.cache
+.lib/
 
 # STS(Spring tool suite)
 /**/.apt_generated

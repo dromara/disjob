@@ -212,7 +212,7 @@ public final class DiscoveryServerRestProxy {
             }
 
             String suffixPath = getMappingPath(mapping);
-            String urlPath = Strings.concatUrlPath(prefixPath, suffixPath);
+            String urlPath = Strings.concatPath(prefixPath, suffixPath);
             return Arrays.stream(mapping.method())
                 .filter(Objects::nonNull)
                 .findAny()
@@ -244,7 +244,7 @@ public final class DiscoveryServerRestProxy {
             return Str.SLASH;
         }
         String firstPath = Collects.get(mapping.path(), 0);
-        return Strings.trimUrlPath(firstPath);
+        return Strings.trimPath(firstPath);
     }
 
 }
