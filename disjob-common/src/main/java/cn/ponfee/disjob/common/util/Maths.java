@@ -139,7 +139,7 @@ public class Maths {
 
     // ------------------------------------------------------------------------long plus/minus
 
-    public static long plus(long a, long b) {
+    public static long add(long a, long b) {
         if (a > 0 && b > 0) {
             return Long.MAX_VALUE - b < a ? Long.MAX_VALUE : a + b;
         } else if (a < 0 && b < 0) {
@@ -149,7 +149,7 @@ public class Maths {
         }
     }
 
-    public static long minus(long a, long b) {
+    public static long subtract(long a, long b) {
         if (a > 0 && b < 0) {
             return Long.MAX_VALUE + b < a ? Long.MAX_VALUE : a - b;
         } else if (a < 0 && b > 0) {

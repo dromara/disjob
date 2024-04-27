@@ -42,7 +42,6 @@ public class JsonsTest {
         assertThat(new StringBuffer().toString().equals("")).isTrue();
     }
 
-
     @Test
     public void testJson2() throws Exception {
         String json =

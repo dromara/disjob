@@ -24,7 +24,7 @@ package cn.ponfee.disjob.common.base;
 @FunctionalInterface
 public interface Destroyable {
 
-    NoArgMethodInvoker DEFAULT = new NoArgMethodInvoker("destroy", "close", "release");
+    NoArgMethodInvoker DEFAULT = new NoArgMethodInvoker("destroy", "close", "release", "stop");
 
     /**
      * Destroy resources
@@ -42,7 +42,9 @@ public interface Destroyable {
             return;
         }
 
-        if (target instanceof AutoCloseable) {
+        if (target instanceof Startable) {
+            ((Startable) target).stop();
+        } else if (target instanceof AutoCloseable) {
             ((AutoCloseable) target).close();
         } else if (target instanceof Destroyable) {
             Destroyable destroyable = (Destroyable) target;

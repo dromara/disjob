@@ -161,11 +161,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
     @Override
     public void close() {
         if (!threadPoolState.stop()) {
-            LOG.warn("Repeat call close method{}{}", "\n", Threads.getStackTrace());
+            LOG.warn("Close worker thread pool repeat.\n{}", Threads.getStackTrace());
             return;
         }
 
-        LOG.info("Close worker thread pool start...");
+        LOG.info("Close worker thread pool start...\n{}", Threads.getStackTrace());
 
         if (Thread.currentThread() != this) {
             // stop this boss thread
@@ -196,7 +196,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 executeTask();
             }
         } catch (Throwable t) {
-            LOG.error("Thread pool running occur error.", t);
+            LOG.error("Worker thread pool boss thread run error.", t);
             Threads.interruptIfNecessary(t);
         }
 

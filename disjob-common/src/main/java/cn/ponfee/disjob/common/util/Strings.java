@@ -19,7 +19,6 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
@@ -114,11 +113,13 @@ public final class Strings {
 
     /**
      * 带分隔符名字转驼峰，如下划线转换为驼峰：CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, underscoreName);
+     * <pre>
      * 1、LOWER_HYPHEN      ->  连字符的变量命名规范如lower-hyphen
      * 2、LOWER_UNDERSCORE  ->  c++变量命名规范如lower_underscore
      * 3、LOWER_CAMEL       ->  java变量命名规范如lowerCamel
      * 4、UPPER_CAMEL       ->  java和c++类的命名规范如UpperCamel
      * 5、UPPER_UNDERSCORE  ->  java和c++常量的命名规范如UPPER_UNDERSCORE
+     * </pre>
      *
      * @param separatedFormat the separated format
      * @param separator       the separator character
@@ -142,18 +143,6 @@ public final class Strings {
             }
         }
         return result.toString();
-    }
-
-    public static boolean containsAny(String str, List<String> searches) {
-        if (StringUtils.isEmpty(str) || CollectionUtils.isEmpty(searches)) {
-            return false;
-        }
-        for (String search : searches) {
-            if (StringUtils.contains(str, search)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static String requireNonBlank(String str) {
@@ -189,7 +178,7 @@ public final class Strings {
     }
 
     public static String withSuffix(String str, String suffix) {
-        if (str == null || str.isEmpty()) {
+        if (str == null || str.isEmpty() || str.endsWith(suffix)) {
             return str;
         }
         return str + suffix;

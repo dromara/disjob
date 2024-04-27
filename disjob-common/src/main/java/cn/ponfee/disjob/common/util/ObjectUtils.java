@@ -47,9 +47,7 @@ public final class ObjectUtils {
     }
 
     public static String toString(Object obj, String defaultStr) {
-        return (obj == null)
-             ? defaultStr
-             : ToStringBuilder.reflectionToString(obj, ToStringStyle.JSON_STYLE);
+        return (obj == null) ? defaultStr : ToStringBuilder.reflectionToString(obj, ToStringStyle.JSON_STYLE);
     }
 
     public static <T, R> R applyIfNotNull(T object, Function<T, R> mapper) {

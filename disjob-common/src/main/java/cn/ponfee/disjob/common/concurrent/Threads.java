@@ -149,7 +149,11 @@ public final class Threads {
     private static String buildStackTrace(StackTraceElement[] traces) {
         StringBuilder builder = new StringBuilder();
         for (int i = 2, n = traces.length; i < n; i++) {
-            builder.append("--\t").append(traces[i].toString()).append("\n");
+            builder.append("\t").append(traces[i].toString()).append("\n");
+        }
+        if (builder.length() > 0) {
+            // delete end with '\n'
+            builder.setLength(builder.length() - 1);
         }
         return builder.toString();
     }

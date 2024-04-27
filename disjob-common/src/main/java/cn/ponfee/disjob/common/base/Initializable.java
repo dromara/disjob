@@ -24,7 +24,7 @@ package cn.ponfee.disjob.common.base;
 @FunctionalInterface
 public interface Initializable {
 
-    NoArgMethodInvoker DEFAULT = new NoArgMethodInvoker("init", "initialize", "open");
+    NoArgMethodInvoker DEFAULT = new NoArgMethodInvoker("init", "initialize", "open", "start");
 
     /**
      * Initialize resources
@@ -41,7 +41,9 @@ public interface Initializable {
             return;
         }
 
-        if (target instanceof Initializable) {
+        if (target instanceof Startable) {
+            ((Startable) target).start();
+        } else if (target instanceof Initializable) {
             ((Initializable) target).init();
         } else {
             DEFAULT.invoke(target);
