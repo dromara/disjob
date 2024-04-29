@@ -51,15 +51,15 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseServerRegistryAutoConfiguration.class);
 
     /**
-     * JdbcTemplateWrapper spring bean name
+     * Database registry JdbcTemplateWrapper spring bean name
      */
-    public static final String SPRING_BEAN_NAME_JTW = JobConstants.SPRING_BEAN_NAME_PREFIX + ".database-registry-jtw";
+    public static final String REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER = JobConstants.SPRING_BEAN_NAME_PREFIX + ".registry.database.jdbc-template-wrapper";
 
     /**
      * Configuration database registry datasource.
      */
-    @ConditionalOnMissingBean
-    @Bean(SPRING_BEAN_NAME_JTW)
+    @ConditionalOnMissingBean(name = REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER)
+    @Bean(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER)
     public JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties config) {
         DatabaseRegistryProperties.DataSourceProperties props = config.getDatasource();
         HikariConfig hikariConfig = new HikariConfig();
@@ -67,9 +67,13 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
         hikariConfig.setJdbcUrl(props.getJdbcUrl());
         hikariConfig.setUsername(props.getUsername());
         hikariConfig.setPassword(props.getPassword());
+        hikariConfig.setAutoCommit(props.isAutoCommit());
         hikariConfig.setMinimumIdle(props.getMinimumIdle());
+        hikariConfig.setIdleTimeout(props.getIdleTimeout());
         hikariConfig.setMaximumPoolSize(props.getMaximumPoolSize());
+        hikariConfig.setMaxLifetime(props.getMaxLifetime());
         hikariConfig.setConnectionTimeout(props.getConnectionTimeout());
+        hikariConfig.setConnectionTestQuery(props.getConnectionTestQuery());
         hikariConfig.setPoolName(props.getPoolName());
         DataSource dataSource = new HikariDataSource(hikariConfig);
         return JdbcTemplateWrapper.of(new JdbcTemplate(dataSource));
@@ -81,7 +85,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnBean(Supervisor.Current.class)
     @Bean
     public SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
-                                                 @Qualifier(SPRING_BEAN_NAME_JTW) JdbcTemplateWrapper wrapper) {
+                                                 @Qualifier(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
         return new DatabaseSupervisorRegistry(config, wrapper);
     }
 
@@ -91,14 +95,14 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnBean(Worker.Current.class)
     @Bean
     public WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
-                                         @Qualifier(SPRING_BEAN_NAME_JTW) JdbcTemplateWrapper wrapper) {
+                                         @Qualifier(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
         return new DatabaseWorkerRegistry(config, wrapper);
     }
 
     // -------------------------------------------------------------------------destroy datasource
 
     @Bean
-    private DatabaseRegistryDataSourceDestroy databaseRegistryDataSourceDestroy(@Qualifier(SPRING_BEAN_NAME_JTW) JdbcTemplateWrapper wrapper) {
+    private DatabaseRegistryDataSourceDestroy databaseRegistryDataSourceDestroy(@Qualifier(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
         return new DatabaseRegistryDataSourceDestroy(wrapper);
     }
 

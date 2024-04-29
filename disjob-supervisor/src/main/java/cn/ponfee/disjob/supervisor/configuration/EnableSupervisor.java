@@ -48,7 +48,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
@@ -115,7 +114,7 @@ public @interface EnableSupervisor {
             }
         }
 
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(name = JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
         @Bean(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
         public RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
             http.check();
@@ -170,7 +169,6 @@ public @interface EnableSupervisor {
     class EnableComponentScan {
     }
 
-    @Order
     @ConditionalOnProperty(prefix = SupervisorProperties.KEY_PREFIX, name = "locker", havingValue = "default", matchIfMissing = true)
     class EnableScanLockerConfiguration {
 

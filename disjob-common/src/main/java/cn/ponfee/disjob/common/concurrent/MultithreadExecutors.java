@@ -39,9 +39,11 @@ public class MultithreadExecutors {
     /**
      * Run async, action the T collection
      *
-     * @param coll     the T collection
-     * @param action   the T action
-     * @param executor thread executor service
+     * @param coll              the collection
+     * @param action            the action
+     * @param executor          the executor
+     * @param dataSizeThreshold the dataSizeThreshold
+     * @param <T>               the collection element type
      */
     public static <T> void run(Collection<T> coll, Consumer<T> action, Executor executor, int dataSizeThreshold) {
         if (coll == null || coll.isEmpty()) {
@@ -62,12 +64,15 @@ public class MultithreadExecutors {
     }
 
     /**
-     * Call async, mapped T to U
+     * Convert collection element data
      *
-     * @param coll     the T collection
-     * @param mapper   the mapper of T to U
-     * @param executor thread executor service
-     * @return the U collection
+     * @param coll              the collection
+     * @param mapper            the mapper
+     * @param executor          the executor
+     * @param dataSizeThreshold the executor
+     * @param <T>               the source collection element type
+     * @param <U>               the target collection element type
+     * @return target collection
      */
     public static <T, U> List<U> call(Collection<T> coll, Function<T, U> mapper, Executor executor, int dataSizeThreshold) {
         if (coll == null) {

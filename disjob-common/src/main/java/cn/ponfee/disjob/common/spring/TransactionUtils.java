@@ -52,6 +52,18 @@ public class TransactionUtils {
         return totalAffectedRow >= AFFECTED_ONE_ROW;
     }
 
+    public static void assertNotAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
+        if (totalAffectedRow >= AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsgSupplier.get());
+        }
+    }
+
+    public static void assertNotAffectedRow(int totalAffectedRow, String errorMsg) {
+        if (totalAffectedRow >= AFFECTED_ONE_ROW) {
+            throw new IllegalStateException(errorMsg);
+        }
+    }
+
     public static void assertOneAffectedRow(int totalAffectedRow, Supplier<String> errorMsgSupplier) {
         if (totalAffectedRow != AFFECTED_ONE_ROW) {
             throw new IllegalStateException(errorMsgSupplier.get());

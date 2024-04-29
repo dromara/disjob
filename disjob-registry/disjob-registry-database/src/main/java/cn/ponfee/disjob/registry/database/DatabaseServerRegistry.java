@@ -25,7 +25,6 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.util.Assert;
 
 import javax.annotation.PreDestroy;
 import java.sql.PreparedStatement;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.disjob.common.spring.JdbcTemplateWrapper.AFFECTED_ONE_ROW;
+import static cn.ponfee.disjob.common.spring.TransactionUtils.*;
 
 /**
  * Registry server based database.
@@ -160,19 +159,19 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             update.setString(2, namespace);
             update.setString(3, registerRoleName);
             update.setString(4, serialize);
-            int updateRowsAffected = update.executeUpdate();
-            Assert.isTrue(updateRowsAffected <= AFFECTED_ONE_ROW, () -> "Invalid update rows affected: " + updateRowsAffected);
-            if (updateRowsAffected == AFFECTED_ONE_ROW) {
+            int updateAffectedRows = update.executeUpdate();
+            if (isOneAffectedRow(updateAffectedRows)) {
                 log.info("Database register update: {}, {}, {}", namespace, registerRoleName, serialize);
             } else {
+                assertNotAffectedRow(updateAffectedRows, () -> "Invalid update affected rows: " + updateAffectedRows);
                 PreparedStatement insert = psCreator.apply(REGISTER_SQL);
                 insert.setString(1, namespace);
                 insert.setString(2, registerRoleName);
                 insert.setString(3, serialize);
                 insert.setLong(4, System.currentTimeMillis());
-                int insertRowsAffected = insert.executeUpdate();
-                Assert.isTrue(insertRowsAffected == AFFECTED_ONE_ROW, () -> "Invalid insert rows affected: " + insertRowsAffected);
-                log.info("Database register insert: {}, {}, {}", namespace, insertRowsAffected, serialize);
+                int insertAffectedRows = insert.executeUpdate();
+                assertOneAffectedRow(insertAffectedRows, () -> "Invalid insert affected rows: " + insertAffectedRows);
+                log.info("Database register insert: {}, {}, {}", namespace, insertAffectedRows, serialize);
             }
         });
 
@@ -219,7 +218,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             final String serialize = server.serialize();
             RetryTemplate.executeQuietly(() -> {
                 Object[] updateArgs = {System.currentTimeMillis(), namespace, registerRoleName, serialize};
-                if (jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs) == AFFECTED_ONE_ROW) {
+                if (isOneAffectedRow(jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs))) {
                     log.debug("Database heartbeat register update: {}, {}, {}, {}", updateArgs);
                     return;
                 }

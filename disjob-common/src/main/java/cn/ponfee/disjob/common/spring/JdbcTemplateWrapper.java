@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentMap;
 public final class JdbcTemplateWrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcTemplateWrapper.class);
-    public static final int AFFECTED_ONE_ROW = 1;
+
     public static final RowMapper<String> STRING_ROW_MAPPER = new SingleColumnRowMapper<>(String.class);
     public static final RowMapper<Long> LONG_ROW_MAPPER = new SingleColumnRowMapper<>(Long.class);
     public static final RowMapper<Integer> INTEGER_ROW_MAPPER = new SingleColumnRowMapper<>(Integer.class);
@@ -185,9 +185,7 @@ public final class JdbcTemplateWrapper {
 
         @Override
         public void close() {
-            for (PreparedStatement ps : Lists.reverse(psList)) {
-                JdbcUtils.closeStatement(ps);
-            }
+            Lists.reverse(psList).forEach(JdbcUtils::closeStatement);
         }
     }
 

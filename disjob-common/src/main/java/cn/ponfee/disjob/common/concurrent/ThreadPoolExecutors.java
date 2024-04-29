@@ -38,7 +38,8 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 public final class ThreadPoolExecutors {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
-    private static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.pool.size";
+
+    public static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.pool.size";
 
     private static volatile ThreadPoolExecutor          commonThreadPool;
     private static volatile ScheduledThreadPoolExecutor commonScheduledPool;

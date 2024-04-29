@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-@Service("disjobService")
+@Service
 public class DisjobService {
 
     /**

@@ -37,7 +37,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 
@@ -74,7 +73,6 @@ public @interface EnableWorker {
     class EnableWorkerConfiguration {
 
         @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-        @Order(Ordered.HIGHEST_PRECEDENCE)
         @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         public TaskTimingWheel timingWheel(WorkerProperties config) {
             return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
@@ -102,7 +100,7 @@ public @interface EnableWorker {
             }
         }
 
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(name = JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
         @Bean(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
         public RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
             http.check();

@@ -4,27 +4,14 @@
 [personal group id](https://central.sonatype.org/publish/requirements/#supported-code-hosting-services-for-personal-groupid)
 
 ## Deploy to maven central
-> maven phase: `clean > validate > compile > test > package > integration > verify > install > deploy`
+> maven phase: `clean -> validate -> compile -> test -> package -> integration -> verify -> install -> deploy`
 
-### deploy plugin
+### deploy
 ```xml
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-deploy-plugin</artifactId>
   <version>2.8.2</version>
-</plugin>
-```
-
-- versions-maven-plugin
-```xml
-<!-- ./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && ./mvnw clean deploy -Prelease -DskipTests -->
-<plugin>
-  <groupId>org.codehaus.mojo</groupId>
-  <artifactId>versions-maven-plugin</artifactId>
-  <version>2.13.0</version>
-  <configuration>
-    <generateBackupPoms>false</generateBackupPoms>
-  </configuration>
 </plugin>
 ```
 
@@ -35,7 +22,7 @@
 <plugin>
   <groupId>org.codehaus.mojo</groupId>
   <artifactId>flatten-maven-plugin</artifactId>
-  <version>1.5.0</version>
+  <version>1.6.0</version>
   <configuration>
     <updatePomFile>true</updatePomFile>
     <flattenMode>resolveCiFriendliesOnly</flattenMode>
@@ -43,7 +30,7 @@
   </configuration>
   <executions>
     <execution>
-      <id>flatten</id>
+      <id>flatten.process-resources</id>
       <phase>process-resources</phase>
       <goals>
         <goal>flatten</goal>
@@ -60,12 +47,25 @@
 </plugin>
 ```
 
-### release plugin
+- versions-maven-plugin
+```xml
+<!-- ./mvnw -Drevision=_ versions:set -DnewVersion=1.10-SNAPSHOT && ./mvnw clean deploy -Prelease -DskipTests -->
+<plugin>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>versions-maven-plugin</artifactId>
+  <version>2.13.0</version>
+  <configuration>
+    <generateBackupPoms>false</generateBackupPoms>
+  </configuration>
+</plugin>
+```
+
+### release
 ```xml
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-release-plugin</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
   <configuration>
     <autoVersionSubmodules>true</autoVersionSubmodules>
     <useReleaseProfile>false</useReleaseProfile>

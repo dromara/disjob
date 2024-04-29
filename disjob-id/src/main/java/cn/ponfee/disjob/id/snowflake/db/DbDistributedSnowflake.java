@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
-import static cn.ponfee.disjob.common.spring.JdbcTemplateWrapper.AFFECTED_ONE_ROW;
+import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 
 /**
  * Snowflake server based database
@@ -199,7 +199,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     private int reuseWorkerId(DbSnowflakeWorker current, int workerIdMaxCount) {
         Integer workerId = current.getWorkerId();
         if (workerId < 0 || workerId >= workerIdMaxCount) {
-            if (jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizTag, serverTag) != AFFECTED_ONE_ROW) {
+            if (!isOneAffectedRow(jdbcTemplateWrapper.delete(REMOVE_INVALID_SQL, bizTag, serverTag))) {
                 LOG.error("Deleting invalid db worker id failed.");
             }
             throw new IllegalStateException("Invalid db worker id: " + workerId);
@@ -208,10 +208,11 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
         long currentTime = System.currentTimeMillis();
         long lastHeartbeatTime = current.getHeartbeatTime();
         if (currentTime < lastHeartbeatTime) {
-            throw new ClockMovedBackwardsException(String.format("Clock moved backwards: %s, %s, %d, %d", bizTag, serverTag, currentTime, lastHeartbeatTime));
+            String msg = String.format("Clock moved backwards: %s, %s, %d, %d", bizTag, serverTag, currentTime, lastHeartbeatTime);
+            throw new ClockMovedBackwardsException(msg);
         }
         Object[] args = {currentTime, bizTag, serverTag, lastHeartbeatTime};
-        if (jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
+        if (isOneAffectedRow(jdbcTemplateWrapper.update(REUSE_WORKER_SQL, args))) {
             LOG.info("Reuse db worker id success: {}, {}, {}, {}", args);
             return workerId;
         }
@@ -225,7 +226,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
                 return;
             }
             Object[] args = {System.currentTimeMillis(), bizTag, serverTag};
-            if (jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args) == AFFECTED_ONE_ROW) {
+            if (isOneAffectedRow(jdbcTemplateWrapper.update(HEARTBEAT_WORKER_SQL, args))) {
                 LOG.debug("Heartbeat db worker id success: {}, {}, {}", args);
             } else {
                 LOG.error("Heartbeat db worker id failed: {}, {}, {}", args);
