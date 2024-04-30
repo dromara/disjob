@@ -31,11 +31,11 @@ public abstract class BaseRuntimeException extends RuntimeException {
      */
     private final int code;
 
-    public BaseRuntimeException(int code) {
+    protected BaseRuntimeException(int code) {
         this(code, null, null);
     }
 
-    public BaseRuntimeException(CodeMsg codeMsg) {
+    protected BaseRuntimeException(CodeMsg codeMsg) {
         this(codeMsg.getCode(), codeMsg.getMsg(), null);
     }
 
@@ -43,11 +43,11 @@ public abstract class BaseRuntimeException extends RuntimeException {
      * @param code    error code
      * @param message error message
      */
-    public BaseRuntimeException(int code, String message) {
+    protected BaseRuntimeException(int code, String message) {
         this(code, message, null);
     }
 
-    public BaseRuntimeException(CodeMsg codeMsg, Throwable cause) {
+    protected BaseRuntimeException(CodeMsg codeMsg, Throwable cause) {
         this(codeMsg.getCode(), codeMsg.getMsg(), cause);
     }
 
@@ -56,7 +56,7 @@ public abstract class BaseRuntimeException extends RuntimeException {
      * @param message error message
      * @param cause   root cause
      */
-    public BaseRuntimeException(int code, String message, Throwable cause) {
+    protected BaseRuntimeException(int code, String message, Throwable cause) {
         super(message, cause);
         this.code = code;
     }
@@ -68,11 +68,11 @@ public abstract class BaseRuntimeException extends RuntimeException {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace then writableStackTrace
      */
-    public BaseRuntimeException(int code,
-                                String message,
-                                Throwable cause,
-                                boolean enableSuppression,
-                                boolean writableStackTrace) {
+    protected BaseRuntimeException(int code,
+                                   String message,
+                                   Throwable cause,
+                                   boolean enableSuppression,
+                                   boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
     }

@@ -31,11 +31,11 @@ public abstract class BaseException extends Exception {
      */
     private final int code;
 
-    public BaseException(int code) {
+    protected BaseException(int code) {
         this(code, null, null);
     }
 
-    public BaseException(CodeMsg codeMsg) {
+    protected BaseException(CodeMsg codeMsg) {
         this(codeMsg.getCode(), codeMsg.getMsg(), null);
     }
 
@@ -43,11 +43,11 @@ public abstract class BaseException extends Exception {
      * @param code    error code
      * @param message error message
      */
-    public BaseException(int code, String message) {
+    protected BaseException(int code, String message) {
         this(code, message, null);
     }
 
-    public BaseException(CodeMsg codeMsg, Throwable cause) {
+    protected BaseException(CodeMsg codeMsg, Throwable cause) {
         this(codeMsg.getCode(), codeMsg.getMsg(), cause);
     }
 
@@ -56,7 +56,7 @@ public abstract class BaseException extends Exception {
      * @param message error message
      * @param cause   root cause
      */
-    public BaseException(int code, String message, Throwable cause) {
+    protected BaseException(int code, String message, Throwable cause) {
         super(message, cause);
         this.code = code;
     }
@@ -68,11 +68,11 @@ public abstract class BaseException extends Exception {
      * @param enableSuppression  the enableSuppression
      * @param writableStackTrace then writableStackTrace
      */
-    public BaseException(int code,
-                         String message,
-                         Throwable cause,
-                         boolean enableSuppression,
-                         boolean writableStackTrace) {
+    protected BaseException(int code,
+                            String message,
+                            Throwable cause,
+                            boolean enableSuppression,
+                            boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
     }
