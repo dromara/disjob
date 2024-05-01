@@ -16,29 +16,23 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
-import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
-import cn.ponfee.disjob.common.spring.RestTemplateUtils;
-import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.base.DisjobCoreDeferredImportSelector;
+import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.util.JobUtils;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.Ordered;
-import org.springframework.lang.Nullable;
-import org.springframework.web.client.RestTemplate;
 
 import java.lang.annotation.*;
 
@@ -53,26 +47,14 @@ import java.lang.annotation.*;
 @Documented
 @EnableConfigurationProperties(WorkerProperties.class)
 @Import({
-    EnableWorker.EnableRetryProperties.class,
-    EnableWorker.EnableHttpProperties.class,
     EnableWorker.EnableWorkerConfiguration.class,
+    DisjobCoreDeferredImportSelector.class,
     WorkerLifecycle.class,
 })
 public @interface EnableWorker {
 
-    @ConditionalOnMissingBean(RetryProperties.class)
-    @EnableConfigurationProperties(RetryProperties.class)
-    class EnableRetryProperties {
-    }
-
-    @ConditionalOnMissingBean(HttpProperties.class)
-    @EnableConfigurationProperties(HttpProperties.class)
-    class EnableHttpProperties {
-    }
-
     class EnableWorkerConfiguration {
 
-        @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
         @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         public TaskTimingWheel timingWheel(WorkerProperties config) {
             return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
@@ -94,17 +76,10 @@ public @interface EnableWorker {
             try {
                 // inject current worker: Worker.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", args);
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 // cannot happen
                 throw new Error("Setting as current worker occur error.", e);
             }
-        }
-
-        @ConditionalOnMissingBean(name = JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
-        @Bean(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
-        public RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
-            http.check();
-            return RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
@@ -112,18 +87,6 @@ public @interface EnableWorker {
         public WorkerRpcService workerRpcService(Worker.Current currentWork,
                                                  WorkerRegistry registry) {
             return new WorkerRpcProvider(currentWork, registry);
-        }
-
-        @ConditionalOnMissingBean
-        @Bean
-        public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {
-            return new LocalizedMethodArgumentConfigurer();
-        }
-
-        @ConditionalOnMissingBean
-        @Bean
-        public SpringContextHolder springContextHolder() {
-            return new SpringContextHolder();
         }
     }
 

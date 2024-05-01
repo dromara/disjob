@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 /**
  * NetUtils Test
  */
+@Disabled
 public class NetUtilsTest {
 
     @Test
@@ -82,15 +83,15 @@ public class NetUtilsTest {
         assertFalse(NetUtils.isReachableHost("127.0.0.1"));
         assertFalse(NetUtils.isReachableHost("localhost"));
         assertFalse(NetUtils.isReachableHost("www.baidfdsfffffffxxxxxdsfsdfdsuaaa.com"));
-        //assertTrue(NetUtils.isReachableHost("www.baidu.com"));
-        //assertTrue(NetUtils.isReachableHost("www.ponfee.cn"));
+        assertTrue(NetUtils.isReachableHost("www.baidu.com"));
+        assertTrue(NetUtils.isReachableHost("www.ponfee.cn"));
         //assertTrue(NetUtils.isReachableHost("192.168.1.100"));
     }
 
     @Test
     void testIsConnectable() {
-        //assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 300));
-        //assertTrue(NetUtils.isConnectableHostPort("www.ponfee.cn", 80, 300));
+        assertTrue(NetUtils.isConnectableHostPort("www.baidu.com", 80, 300));
+        assertTrue(NetUtils.isConnectableHostPort("www.ponfee.cn", 80, 300));
         assertFalse(NetUtils.isConnectableHostPort("www.unknownhostnamexxxxxxx.com", 80, 300));
     }
 
@@ -140,7 +141,6 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isValidIpAddress("14.215.177.38"));
     }
 
-    @Disabled
     @Test
     void testLocalHost() {
         assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));

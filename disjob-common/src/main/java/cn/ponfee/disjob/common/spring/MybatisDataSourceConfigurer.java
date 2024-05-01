@@ -67,6 +67,9 @@ import java.util.List;
  *   5）afterPropertiesSet：Bean属性设置
  *   6）init-method：初始化方法对Bean做修改
  *   7）BeanPostProcessor#postProcessAfterInitialization：Bean实例化之后且属性已经设置，然后可以在Initialization之后对Bean做修改
+ *
+ * 不用显示声明`@EnableTransactionManagement`
+ *   1）`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`配置了`TransactionAutoConfiguration`
  * </pre>
  *
  * @author Ponfee

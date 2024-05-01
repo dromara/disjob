@@ -19,7 +19,6 @@ package cn.ponfee.disjob.registry.database.configuration;
 import cn.ponfee.disjob.common.base.Destroyable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -33,19 +32,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+
+import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
 
 /**
  * Spring autoconfiguration for database server registry
  *
  * @author Ponfee
  */
+@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(DatabaseRegistryProperties.class)
 public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryAutoConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseServerRegistryAutoConfiguration.class);
@@ -53,7 +57,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Database registry JdbcTemplateWrapper spring bean name
      */
-    public static final String REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER = JobConstants.SPRING_BEAN_NAME_PREFIX + ".registry.database.jdbc-template-wrapper";
+    public static final String REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER = SPRING_BEAN_NAME_PREFIX + ".registry.database.jdbc-template-wrapper";
 
     /**
      * Configuration database registry datasource.
@@ -101,24 +105,26 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
 
     // -------------------------------------------------------------------------destroy datasource
 
+    @ConditionalOnBean(name = REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER)
     @Bean
-    private DatabaseRegistryDataSourceDestroy databaseRegistryDataSourceDestroy(@Qualifier(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
-        return new DatabaseRegistryDataSourceDestroy(wrapper);
+    private DataSourceDestroy dataSourceDestroy(@Qualifier(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
+        return new DataSourceDestroy(wrapper.jdbcTemplate());
     }
 
-    private static class DatabaseRegistryDataSourceDestroy implements DisposableBean {
-        final JdbcTemplateWrapper wrapper;
+    private static class DataSourceDestroy implements DisposableBean {
+        final JdbcTemplate jdbcTemplate;
 
-        DatabaseRegistryDataSourceDestroy(JdbcTemplateWrapper wrapper) {
-            this.wrapper = wrapper;
+        DataSourceDestroy(JdbcTemplate jdbcTemplate) {
+            this.jdbcTemplate = jdbcTemplate;
         }
 
         @Override
         public void destroy() {
-            DataSource dataSource = wrapper.jdbcTemplate().getDataSource();
+            DataSource dataSource = jdbcTemplate.getDataSource();
             if (dataSource != null) {
+                LOG.info("Database registry datasource destroy begin.");
                 ThrowingRunnable.doCaught(() -> Destroyable.destroy(dataSource), () -> "Database registry datasource destroy error.");
-                LOG.info("Database registry datasource destroy finished.");
+                LOG.info("Database registry datasource destroy end.");
             }
         }
     }

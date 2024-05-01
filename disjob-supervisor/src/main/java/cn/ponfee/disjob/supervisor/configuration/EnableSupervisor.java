@@ -16,11 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
-import cn.ponfee.disjob.common.lock.DoInDatabaseLocked;
-import cn.ponfee.disjob.common.lock.DoInLocked;
-import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
-import cn.ponfee.disjob.common.spring.RestTemplateUtils;
-import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
@@ -33,22 +28,17 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvok
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
-import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 
@@ -57,16 +47,23 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE;
-
 /**
  * Enable supervisor role
  * <p>必须注解到具有@Component的类上且该类能被spring扫描到
  *
  * <pre>
- * `@Order、Order接口、@AutoConfigureBefore、@AutoConfigureAfter、@AutoConfigureOrder的顺序：
- *   1）用户自定义的类之间的顺序是按照文件的目录结构从上到下排序且无法干预，在这里这些方式都是无效的；
- *   2）自动装配的类之间可以使用这五种方式去改变加载的顺序（用户自定义的类 排在 EnableAutoConfiguration自动配置加载的类 的前面）；
+ * `@AutoConfigureBefore、@AutoConfigureAfter、@AutoConfigureOrder：
+ *   1）专门用于控制Spring-boot自动配置类之间的加载顺序（用户自定义的类是排在自动配置类`EnableAutoConfiguration`的前面）；
+ *   2）Spring-boot`2.7.x`配置文件位置：`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`；
+ *
+ * `@Order、@Priority、PriorityOrdered、Ordered
+ *   1）用户自定义的类之间的创建顺序是按照文件的目录结构从上到下排序且无法干预；
+ *   2）影响List<Bean>元素的顺序，间接影响列表中bean的方法执行顺序，本质上是beanList.sort(AnnotationAwareOrderComparator.INSTANCE)；
+ *   3）`@Priority/PriorityOrdered`优先于`@Order/Ordered`；
+ *
+ * `@Import(DisjobCoreDeferredImportSelector.class)
+ *   1）多处@Import(XXX.class)同一个类，只会有一个生效，后面的会被去重忽略；
+ *   2）如果一个类即有@Component注解，又被@Import引入，则@Component生效，@Import被忽略；
  * </pre>
  *
  * @author Ponfee
@@ -76,26 +73,14 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
 @Documented
 @EnableConfigurationProperties(SupervisorProperties.class)
 @Import({
-    EnableSupervisor.EnableRetryProperties.class,
-    EnableSupervisor.EnableHttpProperties.class,
     EnableSupervisor.EnableSupervisorConfiguration.class,
-    EnableSupervisor.EnableComponentScan.class,
-    EnableSupervisor.EnableScanLockerConfiguration.class,
-    EnableSupervisor.EnableSupervisorAdapter.class,
+    DisjobCoreDeferredImportSelector.class,
+    SupervisorDeferredImportSelector.class,
     SupervisorLifecycle.class
 })
 public @interface EnableSupervisor {
 
-    @ConditionalOnMissingBean(RetryProperties.class)
-    @EnableConfigurationProperties(RetryProperties.class)
-    class EnableRetryProperties {
-    }
-
-    @ConditionalOnMissingBean(HttpProperties.class)
-    @EnableConfigurationProperties(HttpProperties.class)
-    class EnableHttpProperties {
-    }
-
+    @ComponentScan(basePackageClasses = SupervisorStartup.class)
     class EnableSupervisorConfiguration {
 
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
@@ -108,17 +93,10 @@ public @interface EnableSupervisor {
             try {
                 // inject current supervisor: Supervisor.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Supervisor.Current.class.getName()), "create", args);
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 // cannot happen
                 throw new Error("Setting as current supervisor occur error.", e);
             }
-        }
-
-        @ConditionalOnMissingBean(name = JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
-        @Bean(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE)
-        public RestTemplate restTemplate(HttpProperties http, @Nullable ObjectMapper objectMapper) {
-            http.check();
-            return RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         }
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
@@ -150,48 +128,6 @@ public @interface EnableSupervisor {
         public AuthenticationConfigurer authenticationConfigurer() {
             return new AuthenticationConfigurer();
         }
-
-        // 如果注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`LocalizedMethodArgumentConfigurer`的实例才创建
-        @ConditionalOnMissingBean
-        @Bean
-        public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {
-            return new LocalizedMethodArgumentConfigurer();
-        }
-
-        @ConditionalOnMissingBean
-        @Bean
-        public SpringContextHolder springContextHolder() {
-            return new SpringContextHolder();
-        }
-    }
-
-    @ComponentScan(basePackageClasses = SupervisorStartup.class)
-    class EnableComponentScan {
-    }
-
-    @ConditionalOnProperty(prefix = SupervisorProperties.KEY_PREFIX, name = "locker", havingValue = "default", matchIfMissing = true)
-    class EnableScanLockerConfiguration {
-
-        @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public DoInLocked scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
-        }
-
-        @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_WAITING_INSTANCE);
-        }
-
-        @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public DoInLocked scanRunningInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_RUNNING_INSTANCE);
-        }
-    }
-
-    class EnableSupervisorAdapter {
 
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @Bean

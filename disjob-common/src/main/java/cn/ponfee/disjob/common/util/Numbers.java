@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
@@ -54,6 +55,7 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 public final class Numbers {
 
     private static final Logger LOG = LoggerFactory.getLogger(Numbers.class);
+    private static final Pattern ALL_ZERO_PATTERN = Pattern.compile("^0+$");
 
     public static final int     ZERO_INT     = 0;
     public static final Integer ZERO_INTEGER = 0;
@@ -579,7 +581,7 @@ public final class Numbers {
      */
     public static String toHex(BigInteger num) {
         String hex = Hex.encodeHexString(num.toByteArray(), false);
-        if (hex.matches("^0+$")) {
+        if (ALL_ZERO_PATTERN.matcher(hex).matches()) {
             return "0";
         }
         return hex.replaceFirst("^0*", "");

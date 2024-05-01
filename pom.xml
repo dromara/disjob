@@ -225,7 +225,8 @@
               </execution>
             </executions>
           </plugin>
-          <!-- <plugin>
+          <!--
+           <plugin>
             Note: 加上会导致把可执行的jar包(如spring boot jar)deploy到sonatype上
             Nexus-bug: https://issues.sonatype.org/browse/NEXUS-9138
             <groupId>org.sonatype.plugins</groupId>
@@ -237,7 +238,8 @@
               <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
               <autoReleaseAfterClose>false</autoReleaseAfterClose>
             </configuration>
-          </plugin> -->
+          </plugin>
+          -->
         </plugins>
       </build>
     </profile>
@@ -368,7 +370,8 @@
           <compilerVersion>${java.version}</compilerVersion>
           <encoding>${file.encoding}</encoding>
           <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
-          <!-- <annotationProcessorPaths>
+          <!--
+           <annotationProcessorPaths>
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
@@ -384,7 +387,8 @@
               <artifactId>spring-boot-configuration-processor</artifactId>
               <version>${spring-boot.version}</version>
             </path>
-          </annotationProcessorPaths> -->
+          </annotationProcessorPaths>
+          -->
         </configuration>
       </plugin>
       <plugin>
