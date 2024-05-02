@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.exception;
+package cn.ponfee.disjob.supervisor.exception;
 
 import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
- * Authentication exception
+ * Ket exists exception
  *
  * @author Ponfee
  */
-public class AuthenticationException extends BaseRuntimeException {
-    private static final long serialVersionUID = 8570435384253358862L;
+public class KeyExistsException extends BaseRuntimeException {
+    private static final long serialVersionUID = -6198294663343359692L;
 
-    public AuthenticationException() {
-        this("Un authenticated. ");
+    public KeyExistsException() {
+        this("Key already exists.");
     }
 
-    public AuthenticationException(String message) {
-        super(JobCodeMsg.UN_AUTHENTICATED.getCode(), message);
+    public KeyExistsException(String message) {
+        super(JobCodeMsg.INVALID_PARAM.getCode(), message);
     }
 }

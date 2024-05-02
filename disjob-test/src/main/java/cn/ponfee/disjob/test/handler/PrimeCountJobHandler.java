@@ -17,13 +17,13 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.exception.PauseTaskException;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.test.util.Prime;
+import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;

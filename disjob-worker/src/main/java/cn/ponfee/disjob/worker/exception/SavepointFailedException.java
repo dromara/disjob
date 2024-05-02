@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.exception;
-
-import cn.ponfee.disjob.common.exception.BaseRuntimeException;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
+package cn.ponfee.disjob.worker.exception;
 
 /**
- * Ket not exists exception
+ * Savepoint failed exception.
  *
  * @author Ponfee
  */
-public class KeyNotExistsException extends BaseRuntimeException {
-    private static final long serialVersionUID = -5304388166455122511L;
+public class SavepointFailedException extends Exception {
+    private static final long serialVersionUID = -3461401416673580272L;
 
-    public KeyNotExistsException() {
-        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), "Key not exists.");
+    public SavepointFailedException() {
+        super("Savepoint failed.");
     }
 
-    public KeyNotExistsException(String message) {
-        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), message);
+    public SavepointFailedException(String message) {
+        super(message);
     }
+
 }

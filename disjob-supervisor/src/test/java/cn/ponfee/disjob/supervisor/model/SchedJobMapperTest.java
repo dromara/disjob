@@ -21,18 +21,20 @@ import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.handle.impl.ScriptJobHandler;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
-import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
+import cn.ponfee.disjob.supervisor.util.SupervisorUtils;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -58,7 +60,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Test
     public void testQuerySql() throws Exception {
         String jobParam = jobMapper.get(1003164910267351003L).getJobParam();
-        ScriptJobHandler.ScriptParam scriptParam = Jsons.JSON5.readValue(jobParam, ScriptJobHandler.ScriptParam.class);
+        ScriptParam scriptParam = Jsons.JSON5.readValue(jobParam, ScriptParam.class);
         System.out.println("----------------------");
         System.out.println(scriptParam.getScript());
         System.out.println("----------------------");
@@ -87,7 +89,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(SupervisorUtils.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -125,7 +127,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(SupervisorUtils.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -163,7 +165,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(SupervisorUtils.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -181,6 +183,21 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
 
         SchedJob job2 = LazyLoader.of(SchedJob.class, jobMapper::get, 0L);
         Assertions.assertThrows(NullPointerException.class, job2::getJobId);
+    }
+
+    enum ScriptType {
+        CMD,SHELL
+    }
+
+    @Getter
+    @Setter
+    static class ScriptParam implements Serializable {
+        private static final long serialVersionUID = -7130726567342879284L;
+
+        private ScriptType type;
+        private String charset;
+        private String script;
+        private String[] envp;
     }
 
 }

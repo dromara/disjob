@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.event;
-
-import lombok.Getter;
+package cn.ponfee.disjob.worker.exception;
 
 /**
- * Task dispatch failed event
+ * Executing task failure then should be pausing.
  *
  * @author Ponfee
  */
-@Getter
-public class TaskDispatchFailedEvent {
+public class PauseTaskException extends Exception {
+    private static final long serialVersionUID = 409247238969878885L;
 
-    private final long jobId;
-    private final long instanceId;
-    private final long taskId;
+    public PauseTaskException() {
+        super("Pause task.");
+    }
 
-    public TaskDispatchFailedEvent(long jobId, long instanceId, long taskId) {
-        this.jobId = jobId;
-        this.instanceId = instanceId;
-        this.taskId = taskId;
+    public PauseTaskException(String message) {
+        super(message);
+    }
+
+    public PauseTaskException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

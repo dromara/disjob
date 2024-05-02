@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.dispatch.redis.configuration;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
@@ -27,6 +28,7 @@ import cn.ponfee.disjob.dispatch.configuration.BaseTaskDispatchingAutoConfigurat
 import cn.ponfee.disjob.dispatch.redis.RedisTaskDispatcher;
 import cn.ponfee.disjob.dispatch.redis.RedisTaskReceiver;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -46,7 +48,7 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
     @ConditionalOnBean(Worker.Current.class)
     @Bean
     public TaskReceiver taskReceiver(Worker.Current currentWorker,
-                                     TimingWheel<ExecuteTaskParam> timingWheel,
+                                     @Qualifier(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL) TimingWheel<ExecuteTaskParam> timingWheel,
                                      StringRedisTemplate stringRedisTemplate) {
         return new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
     }

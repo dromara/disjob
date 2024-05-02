@@ -23,7 +23,7 @@ import cn.ponfee.disjob.common.concurrent.DelayedData;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.event.TaskDispatchFailedEvent;
+import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.dispatch.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.math.IntMath;
@@ -162,7 +162,7 @@ public abstract class TaskDispatcher implements Startable {
                 continue;
             }
 
-            log.info("Task trace [{}] dispatching: {}, {}, {}", param.retried(), task.getTaskId(), task.getOperation(), task.getWorker());
+            log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), param.retried(), task.getOperation(), task.getWorker());
             try {
                 doDispatch0(task);
                 log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());

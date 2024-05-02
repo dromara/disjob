@@ -55,7 +55,7 @@ public class XssFilter implements Filter
         String url = request.getServletPath();
         String method = request.getMethod();
         // GET DELETE 不过滤
-        if (method == null || method.matches("GET") || method.matches("DELETE"))
+        if (method == null || "GET".equals(method) || "DELETE".equals(method))
         {
             return true;
         }

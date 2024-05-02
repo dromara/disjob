@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.exception;
+package cn.ponfee.disjob.supervisor.exception;
 
-import cn.ponfee.disjob.common.exception.BaseException;
+import cn.ponfee.disjob.common.exception.BaseRuntimeException;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 
 /**
- * Executing task failure then should be canceling.
+ * Group not found exception
  *
  * @author Ponfee
  */
-public class CancelTaskException extends BaseException {
-    private static final long serialVersionUID = -3461401416673580272L;
+public class GroupNotFoundException extends BaseRuntimeException {
+    private static final long serialVersionUID = -8974006648944765503L;
 
-    public CancelTaskException() {
-        super(JobCodeMsg.CANCEL_TASK_EXCEPTION);
+    public GroupNotFoundException() {
+        this("Not found group.");
+    }
+
+    public GroupNotFoundException(String message) {
+        super(JobCodeMsg.KEY_NOT_FOUND.getCode(), message);
     }
 }

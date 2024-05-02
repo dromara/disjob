@@ -14,42 +14,35 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
+package cn.ponfee.disjob.worker.handle;
 
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
+import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import cn.ponfee.disjob.core.handle.impl.CommandJobHandler;
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.Date;
 
 /**
  * @author Ponfee
  */
-public class CommandJobHandlerTest {
+@Disabled
+public class HttpJobHandlerTest {
 
     @Test
-    public void testCommand() throws Exception {
-        if (!SystemUtils.IS_OS_UNIX) {
-            return;
-        }
-
+    public void testHttpJobHandler() {
         ExecutingTask executingTask = new ExecutingTask();
         executingTask.setTaskId(1L);
+        HttpJobHandler.HttpJobRequest req = new HttpJobHandler.HttpJobRequest();
+        req.setMethod("GET");
+        req.setUrl("https://www.baidu.com");
+        executingTask.setTaskParam(Jsons.toJson(req));
+        HttpJobHandler httpJobHandler = new HttpJobHandler();
 
-        CommandJobHandler.CommandParam commandParam = new CommandJobHandler.CommandParam();
-        commandParam.setCmdarray(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
-        executingTask.setTaskParam(Jsons.toJson(commandParam));
-
-        CommandJobHandler commandJobHandler = new CommandJobHandler();
-
-        ExecuteResult result = commandJobHandler.execute(executingTask, Savepoint.DISCARD);
-
-        String expect = "{\"code\":0,\"msg\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
-        Assertions.assertEquals(expect, Jsons.toJson(result));
+        ExecuteResult result = httpJobHandler.execute(executingTask, Savepoint.DISCARD);
+        System.out.println(Jsons.toJson(result));
+        Assertions.assertTrue(result.isSuccess());
     }
 
 }

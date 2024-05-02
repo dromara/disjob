@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor.configuration;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
-import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
@@ -71,7 +71,6 @@ import java.util.function.UnaryOperator;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@EnableConfigurationProperties(SupervisorProperties.class)
 @Import({
     EnableSupervisor.EnableSupervisorConfiguration.class,
     DisjobCoreDeferredImportSelector.class,
@@ -80,6 +79,7 @@ import java.util.function.UnaryOperator;
 })
 public @interface EnableSupervisor {
 
+    @EnableConfigurationProperties(SupervisorProperties.class)
     @ComponentScan(basePackageClasses = SupervisorStartup.class)
     class EnableSupervisorConfiguration {
 
@@ -87,7 +87,7 @@ public @interface EnableSupervisor {
         public Supervisor.Current currentSupervisor(WebServerApplicationContext webServerApplicationContext,
                                                     @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
             UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
-            String host = JobUtils.getLocalHost(boundHost);
+            String host = DisjobUtils.getLocalHost(boundHost);
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
             Object[] args = {host, port, workerCtxPath};
             try {
@@ -124,16 +124,16 @@ public @interface EnableSupervisor {
             );
         }
 
-        @Bean
-        public AuthenticationConfigurer authenticationConfigurer() {
-            return new AuthenticationConfigurer();
-        }
-
         @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @Bean
         public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
                                                          DistributedJobQuerier jobQuerier) {
             return new SupervisorRpcProvider(jobManager, jobQuerier);
+        }
+
+        @Bean
+        public AuthenticationConfigurer authenticationConfigurer() {
+            return new AuthenticationConfigurer();
         }
     }
 

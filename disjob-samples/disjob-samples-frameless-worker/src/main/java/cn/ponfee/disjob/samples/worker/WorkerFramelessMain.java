@@ -28,7 +28,7 @@ import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
@@ -51,7 +51,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 
 import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
 import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_KEY_PREFIX;
@@ -137,11 +136,15 @@ public class WorkerFramelessMain {
             .restTemplate(RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null))
             .build();
 
-        // do start
         Runtime.getRuntime().addShutdownHook(new Thread(() -> close(workerStartup, vertxWebServer)));
+
+        // do start
+        LOG.info("Frameless worker starting...");
         vertxWebServer.deploy();
         workerStartup.start();
-        new CountDownLatch(1).await();
+        LOG.info("Frameless worker started.");
+
+        //new CountDownLatch(1).await();
     }
 
     // -----------------------------------------------------------------------------------------------private methods
@@ -167,7 +170,7 @@ public class WorkerFramelessMain {
         Object[] args = {
             workerProps.getGroup(),
             UuidUtils.uuid32(),
-            JobUtils.getLocalHost(config.getString(DISJOB_BOUND_SERVER_HOST)),
+            DisjobUtils.getLocalHost(config.getString(DISJOB_BOUND_SERVER_HOST)),
             Optional.ofNullable(config.getInt(SpringUtils.SERVER_PORT)).orElseGet(() -> NetUtils.findAvailablePort(10000)),
             workerProps.getWorkerToken(),
             workerProps.getSupervisorToken(),

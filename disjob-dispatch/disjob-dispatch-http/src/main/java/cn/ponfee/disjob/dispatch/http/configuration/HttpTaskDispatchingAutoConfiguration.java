@@ -47,7 +47,8 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
      */
     @ConditionalOnBean(Worker.Current.class)
     @Bean
-    public TaskReceiver taskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+    public TaskReceiver taskReceiver(Worker.Current currentWorker,
+                                     @Qualifier(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL) TimingWheel<ExecuteTaskParam> timingWheel) {
         return new HttpTaskReceiver(currentWorker, timingWheel);
     }
 

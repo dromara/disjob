@@ -41,9 +41,6 @@ public enum JobCodeMsg implements CodeMsg {
     NOT_DISCOVERED_WORKER(550, "Not Discovered worker."),
     JOB_EXECUTE_FAILED(561, "Job execute failed."),
     JOB_EXECUTE_ERROR(562, "Job execute error."),
-    PAUSE_TASK_EXCEPTION(563, "Pause task when exception."),
-    CANCEL_TASK_EXCEPTION(564, "Cancel task when exception."),
-    SAVEPOINT_FAILED(565, "Savepoint failed."),
 
     ;
 

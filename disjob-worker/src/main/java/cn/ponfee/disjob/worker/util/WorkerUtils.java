@@ -14,32 +14,26 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.util;
+package cn.ponfee.disjob.worker.util;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables;
-import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
 /**
- * Job utility
+ * Worker utility
  *
  * @author Ponfee
  */
-public class JobUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JobUtils.class);
+public class WorkerUtils {
 
     public static ExecuteResult completeProcess(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
@@ -59,44 +53,6 @@ public class JobUtils {
         } finally {
             ProcessUtils.destroy(process);
         }
-    }
-
-    public static String getLocalHost(String specifiedHost) {
-        String host = specifiedHost;
-        if (isValidHost(host, "specified")) {
-            return host;
-        }
-
-        host = System.getProperty(JobConstants.DISJOB_BOUND_SERVER_HOST);
-        if (isValidHost(host, "System#getProperty")) {
-            return host;
-        }
-
-        host = System.getenv(JobConstants.DISJOB_BOUND_SERVER_HOST);
-        if (isValidHost(host, "System#getenv")) {
-            return host;
-        }
-
-        host = NetUtils.getLocalHost();
-        if (isValidHost(host, "NetUtils#getLocalHost")) {
-            return host;
-        }
-
-        throw new Error("Not found available server host.");
-    }
-
-    private static boolean isValidHost(String host, String from) {
-        if (StringUtils.isBlank(host)) {
-            return false;
-        }
-        if (!NetUtils.isValidLocalHost(host)) {
-            LOG.warn("Invalid server host configured {}: {}", from, host);
-            return false;
-        }
-        if (!NetUtils.isReachableHost(host)) {
-            LOG.warn("Unreachable server host configured {}: {}", from, host);
-        }
-        return true;
     }
 
 }

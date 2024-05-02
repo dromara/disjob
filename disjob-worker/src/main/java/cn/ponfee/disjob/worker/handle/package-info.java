@@ -14,24 +14,9 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.exception;
-
-import cn.ponfee.disjob.common.exception.BaseRuntimeException;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
-
 /**
- * Ket exists exception
+ * Build-in JobHandler
  *
  * @author Ponfee
  */
-public class KeyExistsException extends BaseRuntimeException {
-    private static final long serialVersionUID = -6198294663343359692L;
-
-    public KeyExistsException() {
-        super(JobCodeMsg.INVALID_PARAM.getCode(), "Key already exists.");
-    }
-
-    public KeyExistsException(String message) {
-        super(JobCodeMsg.INVALID_PARAM.getCode(), message);
-    }
-}
+package cn.ponfee.disjob.worker.handle;

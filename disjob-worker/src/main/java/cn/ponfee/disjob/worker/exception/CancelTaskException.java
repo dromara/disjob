@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.exception;
-
-import cn.ponfee.disjob.common.exception.BaseException;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
+package cn.ponfee.disjob.worker.exception;
 
 /**
- * Savepoint failed exception.
+ * Executing task failure then should be canceling.
  *
  * @author Ponfee
  */
-public class SavepointFailedException extends BaseException {
+public class CancelTaskException extends Exception {
     private static final long serialVersionUID = -3461401416673580272L;
 
-    public SavepointFailedException() {
-        this(null);
+    public CancelTaskException() {
+        super("Cancel task.");
     }
 
-    public SavepointFailedException(String message) {
-        super(JobCodeMsg.SAVEPOINT_FAILED.getCode(), message);
+    public CancelTaskException(String message) {
+        super(message);
+    }
+
+    public CancelTaskException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.exception;
+package cn.ponfee.disjob.dispatch.event;
 
-import cn.ponfee.disjob.common.exception.BaseException;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
+import lombok.Getter;
 
 /**
- * Executing task failure then should be pausing.
+ * Task dispatch failed event
  *
  * @author Ponfee
  */
-public class PauseTaskException extends BaseException {
-    private static final long serialVersionUID = 409247238969878885L;
+@Getter
+public class TaskDispatchFailedEvent {
 
-    public PauseTaskException() {
-        super(JobCodeMsg.PAUSE_TASK_EXCEPTION);
+    private final long jobId;
+    private final long instanceId;
+    private final long taskId;
+
+    public TaskDispatchFailedEvent(long jobId, long instanceId, long taskId) {
+        this.jobId = jobId;
+        this.instanceId = instanceId;
+        this.taskId = taskId;
     }
+
 }

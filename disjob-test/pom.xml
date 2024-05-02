@@ -19,7 +19,7 @@
   <dependencies>
     <dependency>
       <groupId>cn.ponfee</groupId>
-      <artifactId>disjob-core</artifactId>
+      <artifactId>disjob-worker</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <!-- mysql driver class-->

@@ -23,7 +23,7 @@ import cn.ponfee.disjob.core.base.DisjobCoreDeferredImportSelector;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
-import cn.ponfee.disjob.core.util.JobUtils;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
@@ -45,7 +45,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@EnableConfigurationProperties(WorkerProperties.class)
 @Import({
     EnableWorker.EnableWorkerConfiguration.class,
     DisjobCoreDeferredImportSelector.class,
@@ -53,6 +52,7 @@ import java.lang.annotation.*;
 })
 public @interface EnableWorker {
 
+    @EnableConfigurationProperties(WorkerProperties.class)
     class EnableWorkerConfiguration {
 
         @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
@@ -66,7 +66,7 @@ public @interface EnableWorker {
                                             @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
                                             WorkerProperties config) {
             config.check();
-            String host = JobUtils.getLocalHost(boundHost);
+            String host = DisjobUtils.getLocalHost(boundHost);
             String workerToken = config.getWorkerToken();
             String supervisorToken = config.getSupervisorToken();
             String supervisorContextPath = config.getSupervisorContextPath();

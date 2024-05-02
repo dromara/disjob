@@ -26,7 +26,6 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.exception.KeyExistsException;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.model.SchedDepend;
 import cn.ponfee.disjob.core.model.SchedInstance;
@@ -42,6 +41,7 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvok
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
+import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
 import com.google.common.base.Joiner;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
@@ -69,7 +69,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
 @RequiredArgsConstructor
 public abstract class AbstractJobManager {
     private static final int MAX_SPLIT_TASK_SIZE = 1000;
-    private static final int MAX_DEPENDS_LEVEL = 20;
+    private static final int MAX_DEPENDS_DEPTH = 20;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -371,8 +371,8 @@ public abstract class AbstractJobManager {
             if (map.containsKey(jobId)) {
                 throw new IllegalArgumentException("Circular depends job: " + map.get(jobId));
             }
-            if (i >= MAX_DEPENDS_LEVEL) {
-                throw new IllegalArgumentException("Too many depends level: " + outerDepends);
+            if (i >= MAX_DEPENDS_DEPTH) {
+                throw new IllegalArgumentException("Exceed depends depth: " + outerDepends);
             }
             parentJobIds = map.keySet();
         }
