@@ -27,6 +27,8 @@ import cn.ponfee.disjob.worker.WorkerStartup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.Lifecycle;
+import org.springframework.context.Phased;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
@@ -96,6 +98,18 @@ public class WorkerLifecycle implements SmartLifecycle {
         stop(() -> {});
     }
 
+    /**
+     * <pre>
+     * 值越小
+     *  {@link Lifecycle#start()}方法越先执行
+     *  {@link Lifecycle#stop()}方法越后执行
+     *
+     * A1#start() -> A2#start() -> A2#stop() -> A1#stop()
+     * </pre>
+     *
+     * @return int value of phase
+     * @see Phased#getPhase()
+     */
     @Override
     public int getPhase() {
         return DEFAULT_PHASE - 1;

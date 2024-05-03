@@ -19,7 +19,9 @@ package cn.ponfee.disjob.test.util;
 import com.google.common.math.LongMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,16 +34,12 @@ import java.util.List;
 public class Prime {
 
     private static final Logger LOG = LoggerFactory.getLogger(Prime.class);
+    private static final boolean[] PRIME_0_9 = {false, false, true, true, false, true, false, true, false, false};
 
     public static class Power {
         public static long countPrimes(long m, long n) {
-            assert m > 0;
-            assert m <= n;
+            check(m, n);
             int count = 0;
-            if (m < 4) {
-                m = 4;
-                count += (m == 2 ? 1 : 2);
-            }
             for (; m <= n; ++m) {
                 if (isPrime(m)) {
                     count += 1;
@@ -51,6 +49,10 @@ public class Prime {
         }
 
         private static boolean isPrime(long x) {
+            if (x < PRIME_0_9.length) {
+                return PRIME_0_9[(int) x];
+            }
+
             // 6n,    6n+1, 6n+2,    6n+3,    6n+4,    6n+5
             // 3(2n), 6n+1, 2(3n+1), 3(2n+1), 2(3n+2), 6n+5
             long a = x % 6;
@@ -68,13 +70,8 @@ public class Prime {
 
     public static class Sqrt {
         public static int countPrimes(long m, long n) {
-            assert m > 0;
-            assert m <= n;
+            check(m, n);
             int count = 0;
-            if (m < 4) {
-                m = 4;
-                count += (m == 2 ? 1 : 2);
-            }
             for (; m <= n; ++m) {
                 if (isPrime(m)) {
                     count += 1;
@@ -84,15 +81,22 @@ public class Prime {
         }
 
         public static boolean isPrime(long x) {
+            if (x < PRIME_0_9.length) {
+                return PRIME_0_9[(int) x];
+            }
+
+            // 6n,    6n+1, 6n+2,    6n+3,    6n+4,    6n+5
+            // 3(2n), 6n+1, 2(3n+1), 3(2n+1), 2(3n+2), 6n+5
             long a = x % 6;
             if (a != 1L && a != 5L) {
                 return false;
             }
 
-            //for (long i = 4, sqrt = LongMath.sqrt(x, RoundingMode.CEILING); i <= sqrt; i++) {
-            for (long i = 4, sqrt = (long) Math.sqrt(x) + 1; i <= sqrt; i++) {
-            //for (long i = 4, sqrt = sqrtNewton(x); i <= sqrt; i++) {
-            //for (long i = 4, sqrt = sqrtBinary(x); i <= sqrt; i++) {
+            long sqrt = LongMath.sqrt(x, RoundingMode.CEILING);
+            //long sqrt = (long) Math.ceil(Math.sqrt(x));
+            //long sqrt = sqrtNewton(x);
+            //long sqrt = sqrtBinary(x);
+            for (long i = 4; i <= sqrt; i++) {
                 if (x % i == 0) {
                     return false;
                 }
@@ -135,21 +139,21 @@ public class Prime {
      */
     public static class EratosthenesSieve {
         public static int countPrimes(int n) {
-            assert n > 0;
-            boolean[] isPrime = new boolean[n];
+            check(n);
+            boolean[] isPrime = new boolean[n + 1];
             Arrays.fill(isPrime, true);
-            int ans = 0;
-            for (int i = 2; i < n; ++i) {
+            int count = 0;
+            for (int i = 2; i <= n; ++i) {
                 if (isPrime[i]) {
-                    ans += 1;
-                    if ((long) i * i < n) {
-                        for (int j = i * i; j < n; j += i) {
+                    count += 1;
+                    if ((long) i * i <= n) {
+                        for (int j = i * i; j <= n; j += i) {
                             isPrime[j] = false;
                         }
                     }
                 }
             }
-            return ans;
+            return count;
         }
     }
 
@@ -158,15 +162,15 @@ public class Prime {
      */
     public static class EulerSieve {
         public static int countPrimes(int n) {
-            assert n > 0;
+            check(n);
             List<Integer> primes = new ArrayList<>(5761455);
-            boolean[] isPrime = new boolean[n];
+            boolean[] isPrime = new boolean[n + 1];
             Arrays.fill(isPrime, true);
-            for (int i = 2; i < n; ++i) {
+            for (int i = 2; i <= n; ++i) {
                 if (isPrime[i]) {
                     primes.add(i);
                 }
-                for (int j = 0, t; j < primes.size() && (t = i * primes.get(j)) < n; ++j) {
+                for (int j = 0, t; j < primes.size() && (t = i * primes.get(j)) <= n; ++j) {
                     isPrime[t] = false;
                     if (i % primes.get(j) == 0) {
                         break;
@@ -184,22 +188,25 @@ public class Prime {
      */
     public static class MillerRabin {
         public static long countPrimes(long m, long n) {
-            long  a = m, size = n - m + 1;
-            assert m > 0;
-            assert m <= n;
-            long ans = 0;
+            check(m, n);
+            long a = m, size = n - m + 1;
+            long count = 0;
             for (; m <= n; ++m) {
-                if (isPrime(m)) {
-                    ans += 1;
+                if (LongMath.isPrime(m)) {
+                    count += 1;
                 }
             }
-            LOG.info("Count primes: [{}, {}]({})={}", a, n, size, ans);
-            return ans;
+            LOG.info("Count primes: [{}, {}]({})={}", a, n, size, count);
+            return count;
         }
+    }
 
-        private static boolean isPrime(long x) {
-            return LongMath.isPrime(x);
-        }
+    private static void check(long m, long n) {
+        Assert.isTrue(0 <= m && m <= n, "Invalid [" + m + ", " + n + "]");
+    }
+
+    private static void check(long n) {
+        Assert.isTrue(n >= 0, "N must greater than 0.");
     }
 
 }

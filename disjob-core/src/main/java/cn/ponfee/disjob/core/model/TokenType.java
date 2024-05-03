@@ -24,17 +24,17 @@ package cn.ponfee.disjob.core.model;
 public enum TokenType {
 
     /**
-     * supervisor_token
+     * supervisor_token, also is sched_group.supervisor_token
      */
     supervisor,
 
     /**
-     * worker_token
+     * worker_token, also is sched_group.worker_token
      */
     worker,
 
     /**
-     * user_token
+     * user_token, also is sched_group.user_token
      */
     user,
 

@@ -16,14 +16,10 @@
 
 package cn.ponfee.disjob.test.util;
 
-import cn.ponfee.disjob.common.util.Jsons;
-import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author Ponfee
@@ -33,30 +29,36 @@ public class PrimeTest {
     private static final long NUMBER = 5000000L;
 
     @Test
-    public void test() {
-        int n = new Random().nextInt(1000000) + 1;
-        long count1 = Prime.Power.countPrimes(2, n);
-        long count2 = Prime.Sqrt.countPrimes(2, n);
-        long count3 = Prime.EratosthenesSieve.countPrimes(n);
-        long count4 = Prime.MillerRabin.countPrimes(2, n);
-        long count5 = Prime.EulerSieve.countPrimes(n);
-        System.out.println(n + "  -->  " + count1);
-        Assertions.assertEquals(count1, count2);
-        //Assertions.assertEquals(count1, count3);
-        Assertions.assertEquals(count1, count4);
-        //Assertions.assertEquals(count1, count5);
+    public void test0() {
+        for (int i = 0; i <= 127; i++) {
+            assertPrime(i);
+        }
+
+        int randomNumber = ThreadLocalRandom.current().nextInt(1000000);
+
+        for (int i = 0; i < 10; i++) {
+            assertPrime(ThreadLocalRandom.current().nextInt(randomNumber));
+        }
+
+        for (int i = 0; i < 10; i++) {
+            int m = ThreadLocalRandom.current().nextInt(randomNumber);
+            int n = m + ThreadLocalRandom.current().nextInt(randomNumber);
+            long count1 = Prime.Power.countPrimes(m, n);
+            long count2 = Prime.Sqrt.countPrimes(m, n);
+            long count3 = Prime.MillerRabin.countPrimes(m, n);
+            Assertions.assertEquals(count1, count2);
+            Assertions.assertEquals(count1, count3);
+        }
     }
 
     @Test
     public void testPower() {
-        System.out.println(Prime.Power.countPrimes(2, NUMBER));
-        //System.out.println(Power.countPrimes(number * 1000, number * 1001));
+        System.out.println(Prime.Power.countPrimes(0, NUMBER));
     }
 
     @Test
     public void testSqrt() {
-        System.out.println(Prime.Sqrt.countPrimes(2, NUMBER));
-        //System.out.println(Sqrt.countPrimes(number * 1000, number * 1001));
+        System.out.println(Prime.Sqrt.countPrimes(0, NUMBER));
     }
 
     @Test
@@ -74,18 +76,16 @@ public class PrimeTest {
         System.out.println(Prime.MillerRabin.countPrimes(2, NUMBER));
     }
 
-    @Test
-    public void test1() {
-        String script = "#!/bin/sh\necho \"hello shell!\"";
-        System.out.println("--------------------");
-        System.out.println(script);
-        System.out.println("--------------------\n");
-        script = StringUtils.replaceEach(script, new String[]{"\r", "\n", "\""}, new String[]{"\\r", "\\n", "\\\""});
-        Map<String, String> map = ImmutableMap.of(
-            "type", "SHELL",
-            "script", script
-        );
-        System.out.println(Jsons.toJson(map));
+    private static void assertPrime(int n) {
+        long count1 = Prime.Power.countPrimes(0, n);
+        long count2 = Prime.Sqrt.countPrimes(0, n);
+        long count3 = Prime.EratosthenesSieve.countPrimes(n);
+        long count4 = Prime.MillerRabin.countPrimes(0, n);
+        long count5 = Prime.EulerSieve.countPrimes(n);
+        Assertions.assertEquals(count1, count2);
+        Assertions.assertEquals(count1, count3);
+        Assertions.assertEquals(count1, count4);
+        Assertions.assertEquals(count1, count5);
     }
 
 }
