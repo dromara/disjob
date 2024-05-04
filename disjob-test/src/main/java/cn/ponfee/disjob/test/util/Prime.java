@@ -120,7 +120,6 @@ public class Prime {
                 root = lower + (upper - lower) / 2;
                 square = root * root;
                 if (square == value) {
-                    //System.out.println(value + ": [" + root + ", " + lower + ", " + upper + "]");
                     return root;
                 } else if (square > value) {
                     upper = root;
@@ -128,7 +127,6 @@ public class Prime {
                     lower = root;
                 }
             } while (upper - lower > 1);
-            //System.out.println(value + ": (" + root + ", " + lower + ", " + upper + ")");
 
             return upper;
         }

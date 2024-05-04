@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class PrimeTest {
 
-    private static final long NUMBER = 5000000L;
+    private static final long NUMBER = 10000000L;
 
     @Test
     public void test0() {

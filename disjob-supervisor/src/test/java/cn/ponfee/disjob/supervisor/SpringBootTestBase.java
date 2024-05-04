@@ -18,52 +18,25 @@ package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.GenericUtils;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.lang.NonNull;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.annotation.Resource;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <pre>
  * Spring boot test base class
  *
- * 1、TestInstance：可以在非static方法上加@BeforeAll/@AfterAll注解
- *   LifeCycle.PER_METHOD(default)：每个测试方法单独创建测试类的实例
- *   Lifecycle.PER_CLASS：整个测试的过程之中创建一个测试类的实例
- *
- * 2、@MockitoSettings(strictness = Strictness.STRICT_STUBS)
- *   等同于：@ExtendWith(MockitoExtension.class)
- *
- * 3、mock对象不执行具体逻辑，spy对象执行具体逻辑
- *
- * 4、用spy时会有区别：when().thenReturn()在返回指定值之前会调用真实方法；doReturn().when()根本不调用真实方法；
- *
- * 5、Mockito官方建议优先考虑使用when(...).thenReturn(...)，而不是doReturn(...).when(...)
- *
- * 6、Mockito语法：
- *   When/Then: when(yourMethod()).thenReturn(5);
- *   Given/Will: given(yourMethod()).willThrow(OutOfMemoryException.class);
- *   Do/When: doReturn(7).when(yourMock.fizzBuzz());
- *   Will/Given/Do: willReturn(any()).given(yourMethod()).doNothing();
- *   Verify/Do: verify(yourMethod()).doThrow(SomeException.class);
+ * TestInstance：可以在非static方法上加@BeforeAll/@AfterAll注解
+ *   LifeCycle.PER_METHOD(默认)：每个测试方法都会创建一个新的测试类实例；
+ *   Lifecycle.PER_CLASS：所有测试方法只创建一个测试类的实例；
  * </pre>
  *
  * @param <T> bean type
@@ -72,49 +45,23 @@ import java.util.stream.Collectors;
 
 /*
 @org.junit.runner.RunWith(org.springframework.test.context.junit4.SpringRunner.class)
-@SpringBootTest(classes = DisjobApplication.class)
+@SpringBootTest(classes = SpringBootTestApplication.class)
 */
 
-// 测试类(方法)要使用“@org.junit.jupiter.api.Test”来注解
-@MockitoSettings(strictness = Strictness.STRICT_STUBS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@ExtendWith(SpringExtension.class)
-// PER_METHOD(默认)：每个测试方法都会创建一个新的测试类实例；PER_CLASS：所有测试方法只创建一个测试类的实例；
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     classes = SpringBootTestApplication.class
 )
+@ExtendWith(SpringExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"DEV"})
-public abstract class SpringBootTestBase<T> {
-    private static final Logger LOG = LoggerFactory.getLogger(SpringBootTestBase.class);
-
-    // Only reset mock bean which is defined on SpringBootTestBase
-    private static final List<Field> MOCK_BEAN_FIELDS = FieldUtils.getAllFieldsList(SpringBootTestBase.class)
-        .stream()
-        .filter(e -> !Modifier.isStatic(e.getModifiers()))
-        .filter(e -> e.isAnnotationPresent(MockBean.class))
-        .peek(e -> {
-            if (!Modifier.isProtected(e.getModifiers())) {
-                throw new AssertionError("Mock bean must protected: " + e.toGenericString());
-            }
-        })
-        .collect(Collectors.toList());
-
-    // --------------------------------------mock bean definition
-
-    @MockBean
-    protected WorkerRpcService workerRpcService;
-
-    // --------------------------------------member fields definition
+public abstract class SpringBootTestBase<T> extends MockitoTestBase implements ApplicationContextAware {
 
     private final String beanName;
-
-    protected T bean;
-
-    @Resource
     protected ApplicationContext applicationContext;
+    protected T bean;
 
     public SpringBootTestBase() {
         this(null);
@@ -124,28 +71,28 @@ public abstract class SpringBootTestBase<T> {
         this.beanName = beanName;
     }
 
-    // --------------------------------------annotated junit methods definition
+    @Override
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
+    // --------------------------------------annotated junit jupiter methods definition
 
     /**
      * 一个测试类执行一次
+     * <p>`beforeClass`与`beforeAllMethod`不存在固定的先后执行顺序，当更换方法名后两个的先后执行顺序可能会改变
      */
     @BeforeAll
     public static void beforeClass() {
-        System.out.println("before test class: " + Dates.format(new Date()));
+        System.out.println("Before test class: " + Dates.format(new Date(), Dates.DATEFULL_PATTERN));
     }
 
     /**
      * 一个测试类执行一次，先于Spring初始化
      */
     @BeforeAll
-    public final void beforeAll0() {
-        LOG.info("before test all: " + getClass());
-        beforeAll();
-    }
-
-    @BeforeEach
-    public final void beforeEach0() {
-        LOG.info("before test each");
+    public final void beforeAllMethod() {
+        log.info("Before all test method.");
         Class<T> type = GenericUtils.getActualTypeArgument(getClass(), 0);
         if (!Arrays.asList(Void.class, Object.class).contains(type)) {
             this.bean = StringUtils.isBlank(beanName)
@@ -154,26 +101,32 @@ public abstract class SpringBootTestBase<T> {
         }
         SpringBootTestCollector.collect(applicationContext, getClass());
 
-        initMock();
+        beforeAll();
+    }
+
+    @BeforeEach
+    public final void beforeEachMethod() {
+        log.info("Before each test method.");
+        super.initMock();
         beforeEach();
     }
 
     @AfterEach
-    public final void afterEach0() {
-        LOG.info("after test each");
+    public final void afterEachMethod() {
+        log.info("After each test method.");
         afterEach();
-        resetMock();
+        super.destroyMock();
     }
 
     @AfterAll
-    public final void afterAll0() {
-        LOG.info("after test all: " + getClass());
+    public final void afterAllMethod() {
+        log.info("After all test method.");
         afterAll();
     }
 
     @AfterAll
     public static void afterClass() {
-        System.out.println("after test class: " + Dates.format(new Date()));
+        System.out.println("After test class: " + Dates.format(new Date(), Dates.DATEFULL_PATTERN));
     }
 
     // --------------------------------------sub-class can override methods definition
@@ -192,26 +145,6 @@ public abstract class SpringBootTestBase<T> {
 
     protected void afterAll() {
         // default no-operation
-    }
-
-    // --------------------------------------private methods definition
-
-    private void initMock() {
-    }
-
-    private void resetMock() {
-        for (Field field : MOCK_BEAN_FIELDS) {
-            try {
-                Object mockBean = field.get(this);
-                if (mockBean == null) {
-                    LOG.error("Mock bean is null: " + field.toGenericString());
-                } else {
-                    Mockito.reset(mockBean);
-                }
-            } catch (Exception ex) {
-                LOG.error("Mock bean reset error: " + field.toGenericString(), ex);
-            }
-        }
     }
 
 }

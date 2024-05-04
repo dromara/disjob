@@ -66,8 +66,8 @@ public final class NetUtils {
     private static final int MIN_PORT = 1;
     private static final int MAX_PORT = 65535;
 
-    private static final String LOCAL_HOST_NAME  = "localhost";
-    private static final String LOCAL_IP_ADDRESS = "127.0.0.1";
+    public static final String LOCAL_HOST_NAME  = "localhost";
+    public static final String LOCAL_IP_ADDRESS = "127.0.0.1";
     private static final String ANY_IP_ADDRESS   = "0.0.0.0";
     private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
 
