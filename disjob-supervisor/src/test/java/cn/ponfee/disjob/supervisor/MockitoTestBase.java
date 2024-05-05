@@ -69,6 +69,7 @@ public abstract class MockitoTestBase {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     static {
+        // Mock DisjobUtils.getLocalHost返回`127.0.0.1`，支持在断网时能跑测试用例
         MockedStatic<DisjobUtils> mocked = mockStatic(DisjobUtils.class);
         mocked.when(() -> DisjobUtils.getLocalHost(any())).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
         Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, DisjobUtils.getLocalHost(null));

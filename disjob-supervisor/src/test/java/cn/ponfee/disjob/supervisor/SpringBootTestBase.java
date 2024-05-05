@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor;
 
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.GenericUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
@@ -28,7 +27,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * <pre>
@@ -79,16 +77,19 @@ public abstract class SpringBootTestBase<T> extends MockitoTestBase implements A
     // --------------------------------------annotated junit jupiter methods definition
 
     /**
-     * 一个测试类执行一次
+     * 在当前测试类的所有测试方法之前执行一次，必须是void返回类型且不能为private，可以按junit jupiter的规范带上参数
+     * <p>超类的`@BeforeAll`方法将在当前类的方法之前运行，除非它们在当前类中被遮蔽(shadowed)
      * <p>`beforeClass`与`beforeAllMethod`不存在固定的先后执行顺序，当更换方法名后两个的先后执行顺序可能会改变
      */
+    /*
     @BeforeAll
     public static void beforeClass() {
         System.out.println("Before test class: " + Dates.format(new Date(), Dates.DATEFULL_PATTERN));
     }
+    */
 
     /**
-     * 一个测试类执行一次，先于Spring初始化
+     * 在当前测试类的所有测试方法之前执行一次：@TestInstance(TestInstance.Lifecycle.PER_CLASS)
      */
     @BeforeAll
     public final void beforeAllMethod() {
@@ -124,10 +125,12 @@ public abstract class SpringBootTestBase<T> extends MockitoTestBase implements A
         afterAll();
     }
 
+    /*
     @AfterAll
     public static void afterClass() {
         System.out.println("After test class: " + Dates.format(new Date(), Dates.DATEFULL_PATTERN));
     }
+    */
 
     // --------------------------------------sub-class can override methods definition
 
