@@ -171,7 +171,7 @@ public class WorkerFramelessMain {
             workerProps.getGroup(),
             UuidUtils.uuid32(),
             DisjobUtils.getLocalHost(config.getString(DISJOB_BOUND_SERVER_HOST)),
-            Optional.ofNullable(config.getInt(SpringUtils.SERVER_PORT)).orElseGet(() -> NetUtils.findAvailablePort(10000)),
+            Optional.ofNullable(config.getInt(SpringUtils.SPRING_BOOT_SERVER_PORT)).orElseGet(() -> NetUtils.findAvailablePort(10000)),
             workerProps.getWorkerToken(),
             workerProps.getSupervisorToken(),
             workerProps.getSupervisorContextPath()

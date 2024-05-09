@@ -42,9 +42,14 @@ import java.util.Map;
 public final class SpringUtils {
 
     /**
-     * Spring-boot web server port name
+     * Spring-boot web server port key
      */
-    public static final String SERVER_PORT = "server.port";
+    public static final String SPRING_BOOT_SERVER_PORT = "server.port";
+
+    /**
+     * Spring-boot web server servlet context-path key
+     */
+    public static final String SPRING_BOOT_CONTEXT_PATH = "server.servlet.context-path";
 
     public static Resource getResource(String resourceLocation) throws IOException {
         // return new DefaultResourceLoader().getResource(resourceLocation);
@@ -54,7 +59,7 @@ public final class SpringUtils {
     }
 
     public static int getActualWebServerPort(WebServerApplicationContext webServerApplicationContext) {
-        Integer port = webServerApplicationContext.getEnvironment().getProperty(SpringUtils.SERVER_PORT, Integer.class);
+        Integer port = webServerApplicationContext.getEnvironment().getProperty(SPRING_BOOT_SERVER_PORT, Integer.class);
         if (port != null && port > 0) {
             return port;
         }

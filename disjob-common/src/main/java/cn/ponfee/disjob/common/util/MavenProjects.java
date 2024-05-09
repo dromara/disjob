@@ -152,4 +152,30 @@ public class MavenProjects {
         return getWebAppPath() + webappPath;
     }
 
+    // --------------------------------------------------------------------------------------class
+
+    public static String getMainClassPath(String basePackage) {
+        return getProjectBaseDir() + "/target/classes/" + basePackage.replace('.', '/');
+    }
+
+    public static File getMainClassFile(Class<?> clazz) {
+        return new File(getMainClassPath("") + clazz.getName().replace('.', '/') + ".class");
+    }
+
+    public static byte[] getMainClassFileAsBytes(Class<?> clazz) {
+        return Files.toByteArray(MavenProjects.getMainClassFile(clazz));
+    }
+
+    public static String getTestClassPath(String basePackage) {
+        return getProjectBaseDir() + "/target/test-classes/" + basePackage.replace('.', '/');
+    }
+
+    public static File getTestClassFile(Class<?> clazz) {
+        return new File(getTestClassPath("") + clazz.getName().replace('.', '/') + ".class");
+    }
+
+    public static byte[] getTestClassFileAsBytes(Class<?> clazz) {
+        return Files.toByteArray(MavenProjects.getTestClassFile(clazz));
+    }
+
 }

@@ -201,27 +201,15 @@ public final class ClassUtils {
             if (Modifier.isStatic(field.getModifiers())) {
                 return field;
             } else {
-                throw new IllegalArgumentException("Non-static field " + getName(clazz) + "#" + staticFieldName);
+                throw new IllegalArgumentException("Non-static field " + clazz + "#" + staticFieldName);
             }
         } catch (Exception e) {
             return ExceptionUtils.rethrow(e);
         }
     }
 
-    /**
-     * 获取类名称<p>
-     * ClassUtils.getClassName(ClassUtils.class)  ->  cn.ponfee.commons.reflect.ClassUtils
-     *
-     * @param clazz the class
-     * @return class full name
-     */
-    public static String getName(Class<?> clazz) {
-        String name = clazz.getCanonicalName();
-        return name != null ? name : clazz.getName();
-    }
-
-    public static String getClassName(Object obj) {
-        return obj == null ? null : getName(obj.getClass());
+    public static String getObjectClassName(Object obj) {
+        return obj == null ? null : obj.getClass().getName();
     }
 
     /**
@@ -244,7 +232,7 @@ public final class ClassUtils {
      * @return spec class file path
      */
     public static String getPackagePath(Class<?> clazz) {
-        String className = getName(clazz);
+        String className = clazz.getName();
         if (className.indexOf('.') < 0) {
             return ""; // none package name
         }
@@ -297,7 +285,7 @@ public final class ClassUtils {
 
         Constructor<T> constructor = getConstructor(type, parameterTypes);
         if (constructor == null) {
-            throw new IllegalArgumentException("No such constructor: " + getName(type) + toString(parameterTypes));
+            throw new IllegalArgumentException("No such constructor: " + type + toString(parameterTypes));
         }
         return newInstance(constructor, args);
     }
@@ -326,7 +314,7 @@ public final class ClassUtils {
         Class<?>[] parameterTypes = parseParameterTypes(args);
         Constructor<T> constructor = obtainConstructor(type, parameterTypes);
         if (constructor == null) {
-            throw new IllegalArgumentException("Not found constructor: " + getName(type) + toString(parameterTypes));
+            throw new IllegalArgumentException("Not found constructor: " + type + toString(parameterTypes));
         }
         return newInstance(constructor, args);
     }
@@ -376,9 +364,7 @@ public final class ClassUtils {
         checkSameLength(parameterTypes, args);
         Method method = getMethod(caller, methodName, parameterTypes);
         if (method == null) {
-            throw new IllegalArgumentException(
-                "No such method: " + getName(caller.getClass()) + "#" + methodName + toString(parameterTypes)
-            );
+            throw new IllegalArgumentException("No such method: " + caller.getClass() + "#" + methodName + toString(parameterTypes));
         }
         return invoke(caller, method, args);
     }
@@ -393,7 +379,7 @@ public final class ClassUtils {
         Method method = obtainMethod(caller, methodName, parameterTypes);
         if (method == null) {
             Class<?> clazz = (caller instanceof Class<?>) ? (Class<?>) caller : caller.getClass();
-            throw new IllegalArgumentException("Not found method: " + getName(clazz) + "#" + methodName + toString(parameterTypes));
+            throw new IllegalArgumentException("Not found method: " + clazz + "#" + methodName + toString(parameterTypes));
         }
         return invoke(caller, method, args);
     }
@@ -423,7 +409,7 @@ public final class ClassUtils {
         if (path.toLowerCase().endsWith(".jar")) {
             path += "!";
         }
-        return path + File.separator + getName(clazz).replace('.', File.separatorChar) + ".class";
+        return path + File.separator + clazz.getName().replace('.', File.separatorChar) + ".class";
     }
 
     /**

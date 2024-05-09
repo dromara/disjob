@@ -36,7 +36,7 @@ public class SpringContextTest extends SpringBootTestBase<Object> {
     public void testClassName() {
         String[] beanDefinitionNames = applicationContext.getBeanNamesForType(Object.class, false, true);
         for (String beanDefinitionName : beanDefinitionNames) {
-            String className = ClassUtils.getName(applicationContext.getBean(beanDefinitionName).getClass());
+            String className = applicationContext.getBean(beanDefinitionName).getClass().getName();
             if (!className.contains("/")) {
                 // exclude such as org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration$$Lambda$1323/394591403
                 Assertions.assertTrue(ClassUtils.QUALIFIED_CLASS_NAME_PATTERN.matcher(className).matches(), className);

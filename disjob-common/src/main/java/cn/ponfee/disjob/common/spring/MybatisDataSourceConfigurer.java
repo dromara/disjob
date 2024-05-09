@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Strings;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
@@ -118,7 +119,7 @@ public @interface MybatisDataSourceConfigurer {
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
             MybatisDataSourceConfigurer config = SpringUtils.parseAnnotation(MybatisDataSourceConfigurer.class, importingClassMetadata);
             if (config == null) {
-                return;
+                throw new IllegalArgumentException("MybatisDataSourceConfigurer cannot be null.");
             }
 
             List<String> basePackages = resolveBasePackages(config, importingClassMetadata);
@@ -126,7 +127,7 @@ public @interface MybatisDataSourceConfigurer {
 
             String dataSourceName = config.dataSourceName();
             if (StringUtils.isBlank(dataSourceName)) {
-                dataSourceName = extractPackageDatasourceName(basePackages.get(0));
+                dataSourceName = resolvePackageDatasourceName(basePackages.get(0));
             }
             Assert.hasText(dataSourceName, "DataSource name cannot be empty.");
 
@@ -199,7 +200,7 @@ public @interface MybatisDataSourceConfigurer {
         }
 
         public static void checkPackageDatasourceName(Class<?> basePackageClass, String expectDsName) {
-            String actualDsName = extractPackageDatasourceName(ClassUtils.getPackageName(basePackageClass));
+            String actualDsName = resolvePackageDatasourceName(ClassUtils.getPackageName(basePackageClass));
             if (!actualDsName.equals(expectDsName)) {
                 throw new IllegalStateException("Invalid data source name: expect=" + expectDsName + ", actual=" + actualDsName);
             }
@@ -207,7 +208,7 @@ public @interface MybatisDataSourceConfigurer {
 
         // ----------------------------------------------------------------------------------------private methods
 
-        private static String extractPackageDatasourceName(String packageName) {
+        private static String resolvePackageDatasourceName(String packageName) {
             String packageLastName = Strings.substringAfterLast(packageName, ".");
             // Spring boot的配置属性名只能包含{"a-z", "0-9", "-"}，它们必须为小写字母，且必须以字母或数字开头。"-"仅用于格式化，即"foo-bar"和"foobar"被认为是等效的。
             // org.springframework.boot.context.properties.source.ConfigurationPropertyName.ElementsParser#isValidChar
@@ -216,7 +217,7 @@ public @interface MybatisDataSourceConfigurer {
         }
 
         private static List<String> resolveBasePackages(MybatisDataSourceConfigurer config, AnnotationMetadata importingClassMetadata) {
-            List<String> basePackages = new ArrayList<>(Arrays.asList(config.basePackages()));
+            List<String> basePackages = Collects.asArrayList(config.basePackages());
             Arrays.stream(config.basePackageClasses()).map(ClassUtils::getPackageName).forEach(basePackages::add);
             if (basePackages.isEmpty()) {
                 basePackages.add(ClassUtils.getPackageName(importingClassMetadata.getClassName()));

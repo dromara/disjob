@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.util.ClassUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -31,6 +30,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 
 import java.util.Objects;
+
+import static cn.ponfee.disjob.common.util.ClassUtils.getObjectClassName;
 
 /**
  * Spring container context holder
@@ -269,7 +270,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      */
     public static void removeBean(String beanName) {
         if (!(applicationContext instanceof ConfigurableApplicationContext)) {
-            throw new UnsupportedOperationException("Remove bean failed: " + ClassUtils.getClassName(applicationContext));
+            throw new UnsupportedOperationException("Remove bean failed: " + getObjectClassName(applicationContext));
         }
 
         ConfigurableApplicationContext cac = (ConfigurableApplicationContext) applicationContext;
@@ -288,7 +289,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      */
     public static <T> T registerBean(String beanName, Class<T> beanType, Object... args) {
         if (!(applicationContext instanceof ConfigurableApplicationContext)) {
-            throw new BeanDefinitionValidationException("Register bean failed: " + ClassUtils.getClassName(applicationContext));
+            throw new BeanDefinitionValidationException("Register bean failed: " + getObjectClassName(applicationContext));
         }
 
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(beanType);

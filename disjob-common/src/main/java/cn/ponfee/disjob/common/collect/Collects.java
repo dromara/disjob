@@ -279,6 +279,14 @@ public class Collects {
         return result;
     }
 
+    public static <T> ArrayList<T> asArrayList(T... array) {
+        ArrayList<T> list = new ArrayList<>();
+        if (array != null && array.length > 0) {
+            Collections.addAll(list, array);
+        }
+        return list;
+    }
+
     public static <T> T[] newArray(Class<? extends T[]> arrayType, int length) {
         return arrayType.equals(Object[].class)
             ? (T[]) new Object[length]

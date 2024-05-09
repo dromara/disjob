@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
@@ -68,7 +69,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     public ServerInvokeService(SupervisorRegistry supervisorRegistry,
                                Supervisor.Current currentSupervisor,
-                               @Value("${server.servlet.context-path:/}") String contextPath,
+                               @Value("${" + SpringUtils.SPRING_BOOT_CONTEXT_PATH + ":/}") String supervisorContextPath,
                                SupervisorRpcService localSupervisorRpcProvider,
                                @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient) {
@@ -78,7 +79,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
             SupervisorRpcService.class,
             localSupervisorRpcProvider,
             currentSupervisor,
-            supervisor -> contextPath,
+            supervisor -> supervisorContextPath,
             restTemplate,
             RetryProperties.of(0, 0)
         );

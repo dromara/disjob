@@ -140,7 +140,7 @@ public class JobHandlerUtils {
 
         // interface type: Modifier.isAbstract(type.getModifiers()) -> true
         if (!JobHandler.class.isAssignableFrom(type) || Modifier.isAbstract(type.getModifiers())) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler class '" + ClassUtils.getName(type) + "': " + text);
+            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler '" + type + "': " + text);
         }
         return type;
     }

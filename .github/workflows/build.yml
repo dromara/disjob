@@ -20,7 +20,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '8'
-        distribution: 'temurin'
+        distribution: 'zulu'
         cache: maven
     - name: Build with Maven
       run: ./mvnw clean package -DskipTests -B -V -U --file pom.xml
