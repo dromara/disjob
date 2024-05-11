@@ -27,10 +27,7 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
-import cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
-import cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider;
+import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -72,7 +69,7 @@ import java.util.function.UnaryOperator;
 @Target(ElementType.TYPE)
 @Documented
 @Import({
-    EnableSupervisor.EnableSupervisorConfiguration.class,
+    EnableSupervisorConfiguration.class,
     DisjobCoreDeferredImportSelector.class,
     SupervisorDeferredImportSelector.class,
     SupervisorLifecycle.class
@@ -122,18 +119,6 @@ public @interface EnableSupervisor {
             return DestinationServerRestProxy.create(
                 WorkerRpcService.class, workerRpcProvider, Worker.current(), workerContextPath, restTemplate, retry
             );
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        @Bean
-        public SupervisorRpcService supervisorRpcService(DistributedJobManager jobManager,
-                                                         DistributedJobQuerier jobQuerier) {
-            return new SupervisorRpcProvider(jobManager, jobQuerier);
-        }
-
-        @Bean
-        public AuthenticationConfigurer authenticationConfigurer() {
-            return new AuthenticationConfigurer();
         }
     }
 

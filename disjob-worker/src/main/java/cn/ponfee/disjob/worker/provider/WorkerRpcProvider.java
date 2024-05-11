@@ -38,7 +38,8 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class WorkerRpcProvider implements WorkerRpcService, RpcController {
+@RpcController
+public class WorkerRpcProvider implements WorkerRpcService {
 
     private final Worker.Current currentWork;
     private final WorkerRegistry workerRegistry;

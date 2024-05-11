@@ -20,8 +20,10 @@ import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication.Subject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.HandlerMethod;
@@ -37,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Ponfee
  */
+@Component
 public class AuthenticationConfigurer implements WebMvcConfigurer {
 
     @Override
@@ -54,7 +57,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
             }
 
             SupervisorAuthentication annotation = SpringUtils.getAnnotation(SupervisorAuthentication.class, (HandlerMethod) handler);
-            if (annotation == null || annotation.value() == SupervisorAuthentication.Subject.ANON) {
+            if (annotation == null || annotation.value() == Subject.ANON) {
                 return true;
             }
 
@@ -63,10 +66,10 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            SupervisorAuthentication.Subject value = annotation.value();
-            if (value == SupervisorAuthentication.Subject.WORKER) {
+            Subject value = annotation.value();
+            if (value == Subject.WORKER) {
                 authenticateWorker(group);
-            } else if (value == SupervisorAuthentication.Subject.USER) {
+            } else if (value == Subject.USER) {
                 authenticateUser(group);
             } else {
                 throw new UnsupportedOperationException("Unsupported supervisor authentication subject: " + value);

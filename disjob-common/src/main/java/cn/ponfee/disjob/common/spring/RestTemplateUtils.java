@@ -173,8 +173,7 @@ public class RestTemplateUtils {
      * @param arguments    the arguments
      * @param <T>          result type
      * @return result object
-     * @see LocalizedMethodArguments
-     * @see LocalizedMethodArgumentResolver
+     * @see RpcControllerConfigurer
      */
     public static <T> T invoke(RestTemplate restTemplate, String url, HttpMethod httpMethod,
                                Type returnType, Map<String, String> headersMap, Object... arguments) {
@@ -187,7 +186,7 @@ public class RestTemplateUtils {
         if (QUERY_PARAM_METHODS.contains(httpMethod)) {
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
             if (ArrayUtils.isNotEmpty(arguments)) {
-                builder.queryParams(LocalizedMethodArgumentUtils.buildQueryParams(arguments));
+                builder.queryParams(RpcControllerUtils.buildQueryParameters(arguments));
             }
             uri = builder.build().encode().toUri();
             arguments = null;

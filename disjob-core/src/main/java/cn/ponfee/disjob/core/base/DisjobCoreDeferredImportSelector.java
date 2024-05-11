@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentConfigurer;
+import cn.ponfee.disjob.common.spring.RpcControllerConfigurer;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +44,11 @@ public class DisjobCoreDeferredImportSelector implements DeferredImportSelector 
      */
     private static class DisjobCoreDeferredConfiguration {
 
+        /**
+         * 如果注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
+         *
+         * @return SpringContextHolder
+         */
         @ConditionalOnMissingBean
         @Bean
         public SpringContextHolder springContextHolder() {
@@ -69,15 +74,10 @@ public class DisjobCoreDeferredImportSelector implements DeferredImportSelector 
             return RestTemplateUtils.create(http.getConnectTimeout(), http.getReadTimeout(), objectMapper);
         }
 
-        /**
-         * 如果注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`LocalizedMethodArgumentConfigurer`的实例才创建
-         *
-         * @return LocalizedMethodArgumentConfigurer
-         */
         @ConditionalOnMissingBean
         @Bean
-        public LocalizedMethodArgumentConfigurer localizedMethodArgumentConfigurer() {
-            return new LocalizedMethodArgumentConfigurer();
+        public RpcControllerConfigurer rpcControllerConfigurer() {
+            return new RpcControllerConfigurer();
         }
     }
 

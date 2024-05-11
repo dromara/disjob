@@ -22,15 +22,15 @@ import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.DisjobCoreDeferredImportSelector;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.util.DisjobUtils;
-import cn.ponfee.disjob.registry.WorkerRegistry;
+import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
-import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
+import cn.ponfee.disjob.worker.configuration.EnableWorker.EnableWorkerConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
@@ -46,13 +46,14 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 @Import({
-    EnableWorker.EnableWorkerConfiguration.class,
+    EnableWorkerConfiguration.class,
     DisjobCoreDeferredImportSelector.class,
     WorkerLifecycle.class,
 })
 public @interface EnableWorker {
 
     @EnableConfigurationProperties(WorkerProperties.class)
+    @ComponentScan(basePackageClasses = WorkerStartup.class)
     class EnableWorkerConfiguration {
 
         @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
@@ -80,13 +81,6 @@ public @interface EnableWorker {
                 // cannot happen
                 throw new Error("Setting as current worker occur error.", e);
             }
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        @Bean
-        public WorkerRpcService workerRpcService(Worker.Current currentWork,
-                                                 WorkerRegistry registry) {
-            return new WorkerRpcProvider(currentWork, registry);
         }
     }
 

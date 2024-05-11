@@ -18,6 +18,7 @@ package cn.ponfee.disjob.id.snowflake.db;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.spring.SpringUtils;
+import cn.ponfee.disjob.id.snowflake.db.DbSnowflakeIdGenerator.DbSnowFlakeWorkerRegistrar;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(DbSnowflakeIdGenerator.DbSnowFlakeWorkerRegistrar.class)
+@Import(DbSnowFlakeWorkerRegistrar.class)
 public @interface DbSnowflakeIdGenerator {
 
     String jdbcTemplateRef() default "";

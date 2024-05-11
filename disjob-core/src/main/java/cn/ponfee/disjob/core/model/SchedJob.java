@@ -197,14 +197,14 @@ public class SchedJob extends BaseEntity {
             && Objects.equals(triggerValue, triggerValue0);
     }
 
-    public void verifyBeforeAdd() {
+    public void verifyForAdd() {
         verify();
         Assert.isTrue(isNotBlank(group), "Group cannot be blank.");
         this.group = group.trim();
         Assert.isTrue(length(group) <= 60, "Group length cannot exceed 60.");
     }
 
-    public void verifyBeforeUpdate() {
+    public void verifyForUpdate() {
         verify();
         Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
         Assert.isTrue(version != null && version > 0, () -> "Invalid version: " + version);

@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
+import cn.ponfee.disjob.common.spring.JacksonDateConfigurer.JacksonDateConfiguration;
 import cn.ponfee.disjob.common.util.Jsons;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,12 +35,11 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(JacksonDateConfigurer.Configurer.class)
+@Import(JacksonDateConfiguration.class)
 public @interface JacksonDateConfigurer {
 
-    class Configurer {
-
-        public Configurer(@Nullable ObjectMapper objectMapper) {
+    class JacksonDateConfiguration {
+        public JacksonDateConfiguration(@Nullable ObjectMapper objectMapper) {
             if (objectMapper == null) {
                 return;
             }

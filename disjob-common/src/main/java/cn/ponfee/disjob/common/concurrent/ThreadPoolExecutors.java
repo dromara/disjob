@@ -50,6 +50,7 @@ public final class ThreadPoolExecutors {
     public static final int MAX_CAP = 0x7FFF;
 
     // ----------------------------------------------------------build-in rejected policy
+
     /**
      * Throw RejectedExecutionException
      */

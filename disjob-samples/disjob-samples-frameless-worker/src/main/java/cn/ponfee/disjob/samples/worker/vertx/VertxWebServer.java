@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
-import cn.ponfee.disjob.common.spring.LocalizedMethodArgumentUtils;
+import cn.ponfee.disjob.common.spring.RpcControllerUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
@@ -176,7 +176,7 @@ public class VertxWebServer extends AbstractVerticle {
     }
 
     private static <T> T parseParamArg(RoutingContext ctx, Class<T> type) {
-        String arg0ParamName = LocalizedMethodArgumentUtils.getQueryParamName(0);
+        String arg0ParamName = RpcControllerUtils.getQueryParameterName(0);
         String json = Collects.get(ctx.queryParam(arg0ParamName), 0);
         return Jsons.fromJson(json, type);
     }

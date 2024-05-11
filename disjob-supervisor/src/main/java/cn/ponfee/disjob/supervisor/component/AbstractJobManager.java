@@ -113,7 +113,7 @@ public abstract class AbstractJobManager {
             throw new KeyExistsException("[" + job.getGroup() + "] already exists job name: " + job.getJobName());
         }
         job.setUpdatedBy(job.getCreatedBy());
-        job.verifyBeforeAdd();
+        job.verifyForAdd();
         job.checkAndDefaultSetting();
         verifyJob(job);
         job.setJobId(generateId());
@@ -125,7 +125,7 @@ public abstract class AbstractJobManager {
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
-        job.verifyBeforeUpdate();
+        job.verifyForUpdate();
         job.checkAndDefaultSetting();
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");

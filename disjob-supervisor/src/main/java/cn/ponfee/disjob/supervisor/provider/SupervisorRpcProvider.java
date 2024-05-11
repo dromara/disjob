@@ -38,8 +38,9 @@ import java.util.List;
  *
  * @author Ponfee
  */
+@RpcController
 @SupervisorAuthentication(SupervisorAuthentication.Subject.WORKER)
-public class SupervisorRpcProvider implements SupervisorRpcService, RpcController {
+public class SupervisorRpcProvider implements SupervisorRpcService {
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;

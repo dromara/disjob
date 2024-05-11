@@ -16,14 +16,23 @@
 
 package cn.ponfee.disjob.common.spring;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.annotation.*;
+
 /**
- * Mark this subclass is a spring web controller and with rpc({@code LocalizedMethodArguments}) trait
+ * RPC based spring mvc RestController
  *
  * @author Ponfee
  */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
 @RestController
-@LocalizedMethodArguments
-public interface RpcController {
+public @interface RpcController {
+
+    @AliasFor(annotation = RestController.class)
+    String value() default "";
+
 }

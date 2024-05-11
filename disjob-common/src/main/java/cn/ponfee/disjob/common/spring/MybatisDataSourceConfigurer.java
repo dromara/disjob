@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.spring.MybatisDataSourceConfigurer.MybatisDataSourceRegistrar;
 import cn.ponfee.disjob.common.util.Strings;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
@@ -78,7 +79,7 @@ import java.util.List;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(MybatisDataSourceConfigurer.MybatisDataSourceRegistrar.class)
+@Import(MybatisDataSourceRegistrar.class)
 public @interface MybatisDataSourceConfigurer {
 
     String DATA_SOURCE_NAME_SUFFIX               = "DataSource";

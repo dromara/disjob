@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ObjectUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -29,19 +28,21 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
- * Localized method argument utils
+ * RpcController utility
  *
  * @author Ponfee
  */
-public final class LocalizedMethodArgumentUtils {
+public final class RpcControllerUtils {
 
-    public static Object[] parseQueryParams(Method method, Map<String, String[]> parameterMap) {
+    public static Object[] parseQueryParameters(Method method, Map<String, String[]> parameterMap) {
         int parameterCount = method.getParameterCount();
         Object[] arguments = new Object[parameterCount];
         for (int i = 0; i < parameterCount; i++) {
-            String argName = getQueryParamName(i);
+            String argName = getQueryParameterName(i);
             String[] array = parameterMap.get(argName);
-            Assert.isTrue(array == null || array.length <= 1, () -> "Param cannot be multiple value: " + argName + "=" + Jsons.toJson(array));
+            if (array != null && array.length > 1) {
+                throw new IllegalArgumentException(argName + " cannot be multiple value: " + Jsons.toJson(array));
+            }
             String argValue = Collects.get(array, 0);
             Type argType = method.getGenericParameterTypes()[i];
             if (argValue == null) {
@@ -54,20 +55,20 @@ public final class LocalizedMethodArgumentUtils {
         return arguments;
     }
 
-    public static MultiValueMap<String, String> buildQueryParams(Object... arguments) {
+    public static MultiValueMap<String, String> buildQueryParameters(Object... arguments) {
         if (ArrayUtils.isEmpty(arguments)) {
             return null;
         }
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>(arguments.length << 1);
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i] != null) {
-                params.add(getQueryParamName(i), Jsons.toJson(arguments[i]));
+                params.add(getQueryParameterName(i), Jsons.toJson(arguments[i]));
             }
         }
         return params;
     }
 
-    public static String getQueryParamName(int argIndex) {
+    public static String getQueryParameterName(int argIndex) {
         return "args[" + argIndex + "]";
     }
 

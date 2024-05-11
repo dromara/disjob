@@ -19,6 +19,7 @@ package cn.ponfee.disjob.common.collect;
 import cn.ponfee.disjob.common.util.Numbers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -237,6 +238,16 @@ public class Collects {
             return Collections.emptyList();
         }
         return source.stream().map(mapper).collect(ImmutableList.toImmutableList());
+    }
+
+    public static <S, T> Set<T> convert(Set<S> source, Function<S, T> mapper) {
+        if (source == null) {
+            return null;
+        }
+        if (source.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return source.stream().map(mapper).collect(ImmutableSet.toImmutableSet());
     }
 
     @SafeVarargs
