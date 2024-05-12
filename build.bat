@@ -3,6 +3,7 @@
 @REM build disjob        : .\build.bat
 @REM build disjob-samples: .\build.bat disjob-samples
 @REM build disjob-admin  : .\build.bat disjob-admin
+@REM build all           : .\build.bat && .\build.bat disjob-samples && .\build.bat disjob-admin
 @REM --------------------------------------------------
 
 @echo off

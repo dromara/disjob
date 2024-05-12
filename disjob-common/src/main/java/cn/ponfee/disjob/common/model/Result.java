@@ -169,17 +169,17 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
         }
 
         @Override
-        public void setCode(int code) {
+        public final void setCode(int code) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void setMsg(String msg) {
+        public final void setMsg(String msg) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void setData(T data) {
+        public final void setData(T data) {
             throw new UnsupportedOperationException();
         }
     }

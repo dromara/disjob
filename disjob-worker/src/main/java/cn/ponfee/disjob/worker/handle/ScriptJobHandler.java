@@ -71,8 +71,9 @@ public class ScriptJobHandler extends JobHandler {
 
     @Override
     protected void onStop() {
-        if (pid != null) {
-            ProcessUtils.killProcess(pid, charset);
+        final Long processId = pid;
+        if (processId != null) {
+            ProcessUtils.killProcess(processId, charset);
         }
     }
 

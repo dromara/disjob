@@ -47,19 +47,20 @@ import java.util.function.Predicate;
 /**
  * Discovery server rest proxy
  *
- * <p>Alias for value: {@link AnnotationUtils#findAnnotation(Class, Class)}
+ * <p>{@link AnnotationUtils#findAnnotation(Class, Class)}
+ * <p>在提供的类上查找指定注解的单个注解，如果注解不直接出现在提供的类上，则遍历其注解的元注解(如`@RpcController`上的元注解)、接口和超类。
  * <pre>{@code
- *   public @interface RequestMapping {
- *       @AliasFor("path")
- *       String[] value() default {};
- *
- *       @AliasFor("value")
- *       String[] path() default {};
- *   }
+ *   @RequestMapping("/test")
+ *   public class SupClass { }
+
+ *   public class SubClass { }
  * }</pre>
  *
- * <p>Alias for annotation: {@link AnnotatedElementUtils#findMergedAnnotation(AnnotatedElement, Class)}
+ * <p>{@link AnnotatedElementUtils#findMergedAnnotation(AnnotatedElement, Class)}
+ * <p>在提供的元素上方的注解层次结构中查找指定注解类型的第一个注解，将注解的属性与注解层次结构的较低级别中的注解的匹配属性合并，并将结果合成为指定注解类型的注解。
+ * <p>@AliasFor语义在单个注解和注解层次结构中都完全受支持。
  * <pre>{@code
+ *   @RequestMapping(method = RequestMethod.POST)
  *   public @interface PostMapping {
  *     @AliasFor(annotation = RequestMapping.class)
  *     String name() default "";

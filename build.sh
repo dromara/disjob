@@ -5,6 +5,7 @@
 # build disjob        : sh build.sh
 # build disjob-samples: sh build.sh disjob-samples
 # build disjob-admin  : sh build.sh disjob-admin
+# build all           : sh build.sh && sh build.sh disjob-samples && sh build.sh disjob-admin
 # --------------------------------------------------
 
 cd `dirname $0`

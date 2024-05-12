@@ -55,18 +55,21 @@ public abstract class BaseController implements TypedKeyValue<String, String> {
                 }
             }
         });
+
         binder.registerCustomEditor(LocalDateTime.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) {
                 super.setValue(LocalDateTimeFormat.DEFAULT.parse(text));
             }
         });
+
         binder.registerCustomEditor(LocalDate.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) {
                 super.setValue(LocalDateFormat.DEFAULT.parse(text));
             }
         });
+
         binder.registerCustomEditor(LocalTime.class, new PropertyEditorSupport() {
             private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 

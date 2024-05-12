@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.util.Jsons;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -47,25 +46,25 @@ public class RpcControllerConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new RpcControllerResolver());
+        resolvers.add(new RpcControllerArgumentResolver());
     }
 
     /**
      * Configure rpc invocation for spring web {@code org.springframework.stereotype.Controller} methods.
      * <p>Can defined multiple object arguments for {@code org.springframework.web.bind.annotation.RequestMapping} method.
      */
-    private static class RpcControllerResolver implements HandlerMethodArgumentResolver {
+    private static class RpcControllerArgumentResolver implements HandlerMethodArgumentResolver {
         static final Set<String> QUERY_PARAM_METHODS = Collects.convert(RestTemplateUtils.QUERY_PARAM_METHODS, HttpMethod::name);
         static final String CACHE_ATTRIBUTE_KEY = "$disjob$RpcController#method(args)";
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
-            if (!(parameter.getExecutable() instanceof Method)) {
-                return false;
+            if (parameter.getExecutable() instanceof Method) {
+                //return AnnotationUtils.findAnnotation(parameter.getDeclaringClass(), RpcController.class) != null;
+                return parameter.getDeclaringClass().isAnnotationPresent(RpcController.class);
             }
 
-            //return AnnotationUtils.findAnnotation(parameter.getDeclaringClass(), RpcController.class) != null;
-            return parameter.getDeclaringClass().isAnnotationPresent(RpcController.class);
+            return false;
         }
 
         @Override

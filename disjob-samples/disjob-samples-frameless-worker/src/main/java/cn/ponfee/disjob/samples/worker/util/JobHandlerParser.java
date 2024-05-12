@@ -31,9 +31,7 @@ import org.springframework.util.ClassUtils;
 import java.beans.Introspector;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Job handler parser
@@ -70,20 +68,19 @@ public class JobHandlerParser {
 
     public static void init() {
         String ls = Files.SYSTEM_LINE_SEPARATOR;
+        int lMaxLen = JOB_HANDLER_MAP.keySet().stream().mapToInt(String::length).max().getAsInt();
+        int rMaxLen = JOB_HANDLER_MAP.values().stream().mapToInt(e -> e.getName().length()).max().getAsInt();
+
         StringBuilder builder = new StringBuilder(ls);
-        List<String> list = JOB_HANDLER_MAP
-            .entrySet()
-            .stream()
-            .map(e -> "|   " + e.getKey() + "  ->  " + e.getValue().getName())
-            .collect(Collectors.toList());
-        int maxLen = list.stream().mapToInt(String::length).max().getAsInt();
-
-        builder.append(StringUtils.rightPad("/", maxLen + 1, "-")).append("\\").append(ls);
-        builder.append(StringUtils.rightPad("| Job handler map:", maxLen, " ")).append(" |").append(ls);
-
-        list.forEach(e -> builder.append(StringUtils.rightPad(e, maxLen, " ")).append(" |").append(ls));
-
-        builder.append(StringUtils.rightPad("\\", maxLen + 1, "-")).append("/").append(ls);
+        builder.append(StringUtils.rightPad("/", lMaxLen + rMaxLen + 9, "-")).append("\\").append(ls);
+        builder.append(StringUtils.rightPad("| Job handler mapping:", lMaxLen + rMaxLen + 8, " ")).append(" |").append(ls);
+        JOB_HANDLER_MAP.forEach((k, v) -> builder
+            .append("|   ").append(StringUtils.rightPad(k, lMaxLen, " "))
+            .append(" -> ")
+            .append(StringUtils.rightPad(v.getName(), rMaxLen, " ")).append(" |")
+            .append(ls)
+        );
+        builder.append(StringUtils.rightPad("\\", lMaxLen + rMaxLen + 9, "-")).append("/").append(ls);
 
         System.out.println(builder);
     }

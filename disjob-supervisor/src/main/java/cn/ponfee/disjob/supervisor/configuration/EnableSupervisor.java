@@ -44,6 +44,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
+import static cn.ponfee.disjob.core.base.JobConstants.*;
+
 /**
  * Enable supervisor role
  * <p>必须注解到具有@Component的类上且该类能被spring扫描到
@@ -80,9 +82,9 @@ public @interface EnableSupervisor {
     @ComponentScan(basePackageClasses = SupervisorStartup.class)
     class EnableSupervisorConfiguration {
 
-        @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        public Supervisor.Current currentSupervisor(WebServerApplicationContext webServerApplicationContext,
-                                                    @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost) {
+        @Bean(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        public Supervisor.Current currentSupervisor(@Value("${" + DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
+                                                    WebServerApplicationContext webServerApplicationContext) {
             UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
             String host = DisjobUtils.getLocalHost(boundHost);
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
@@ -96,11 +98,11 @@ public @interface EnableSupervisor {
             }
         }
 
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @DependsOn(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @Bean
         public GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient(RetryProperties retry,
-                                                                             @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                                                              SupervisorRegistry discoveryWorker,
+                                                                             @Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                                                              @Nullable WorkerRpcService workerRpcProvider,
                                                                              @Nullable Worker.Current currentWorker) {
             retry.check();
@@ -110,9 +112,9 @@ public @interface EnableSupervisor {
             );
         }
 
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @DependsOn(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
         @Bean
-        public DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient(@Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+        public DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient(@Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                                                                              @Nullable WorkerRpcService workerRpcProvider) {
             RetryProperties retry = RetryProperties.of(0, 0);
             Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
