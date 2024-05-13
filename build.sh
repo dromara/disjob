@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # --------------------------------------------------
-# direct execute      : ./mvnw clean install
+# direct execution    : ./mvnw clean install
 # build disjob        : sh build.sh
 # build disjob-samples: sh build.sh disjob-samples
 # build disjob-admin  : sh build.sh disjob-admin

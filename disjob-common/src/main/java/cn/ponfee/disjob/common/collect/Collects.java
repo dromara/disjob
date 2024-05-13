@@ -23,10 +23,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -94,7 +96,7 @@ public class Collects {
             .entrySet()
             .stream()
             .filter(e -> e.getValue() > 1)
-            .map(Map.Entry::getKey)
+            .map(Entry::getKey)
             .collect(Collectors.toList());
     }
 
@@ -110,6 +112,34 @@ public class Collects {
         }
 
         return list.stream().sorted(comparator).collect(Collectors.toList());
+    }
+
+    public static <K, V, T> LinkedHashMap<K, T> sorted(Map<K, V> map, Function<V, T> converter, Comparator<Entry<K, T>> comparator) {
+        return map.entrySet()
+            .stream()
+            .map(e -> Pair.of(e.getKey(), converter.apply(e.getValue())))
+            .sorted(comparator)
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, LinkedHashMap::new));
+    }
+
+    public static <K, V> LinkedHashMap<K, V> sorted(Map<K, V> map, Comparator<Entry<K, V>> comparator) {
+        return map.entrySet()
+            .stream()
+            .sorted(comparator)
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, LinkedHashMap::new));
+    }
+
+    public static <E, T> LinkedHashSet<T> sorted(Set<E> set, Function<E, T> converter, Comparator<T> comparator) {
+        return set.stream()
+            .map(converter)
+            .sorted(comparator)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    public static <E> LinkedHashSet<E> sorted(Set<E> set, Comparator<E> comparator) {
+        return set.stream()
+            .sorted(comparator)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -267,7 +297,7 @@ public class Collects {
     public static <K, V> Map<K, V> concat(Map<K, V>... maps) {
         return Arrays.stream(maps)
             .flatMap(e -> e.entrySet().stream())
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     }
 
     public static <T> T[] concat(T[] a1, T... a2) {

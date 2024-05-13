@@ -25,9 +25,7 @@ import org.mockito.internal.util.collections.Sets;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -123,6 +121,15 @@ public class CollectsTest {
         assertThat(m1 == m2).isFalse();
         assertThat(m1).isNotSameAs(m2);
         assertThat(m1).isEqualTo(m2);
+    }
+
+    @Test
+    public void testSorted() {
+        Set<String> set = Sets.newSet("testSorted".split(""));
+
+        assertThat(set.toString()).isEqualTo("[t, e, s, S, o, r, d]");
+        assertThat(Collects.sorted(set, Comparator.naturalOrder()).toString()).isEqualTo("[S, d, e, o, r, s, t]");
+        assertThat(Collects.sorted(set, Comparator.reverseOrder()).toString()).isEqualTo("[t, s, r, o, e, d, S]");
     }
 
 }

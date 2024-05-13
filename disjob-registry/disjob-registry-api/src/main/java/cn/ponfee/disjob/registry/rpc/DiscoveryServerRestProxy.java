@@ -50,21 +50,31 @@ import java.util.function.Predicate;
  * <p>{@link AnnotationUtils#findAnnotation(Class, Class)}
  * <p>在提供的类上查找指定注解的单个注解，如果注解不直接出现在提供的类上，则遍历其注解的元注解(如`@RpcController`上的元注解)、接口和超类。
  * <pre>{@code
- *   @RequestMapping("/test")
- *   public class SupClass { }
-
- *   public class SubClass { }
+ *   @RpcController("super")
+ *   class SupClass { }
+ *
+ *   class SubClass extends SupClass { }
+ *
+ *   // 不支持`@AliasFor`语义
+ *   assertEquals("", AnnotationUtils.findAnnotation(SubClass.class, Component.class).value());
+ *   assertEquals("super", AnnotatedElementUtils.findMergedAnnotation(SubClass.class, Component.class).value());
  * }</pre>
  *
  * <p>{@link AnnotatedElementUtils#findMergedAnnotation(AnnotatedElement, Class)}
  * <p>在提供的元素上方的注解层次结构中查找指定注解类型的第一个注解，将注解的属性与注解层次结构的较低级别中的注解的匹配属性合并，并将结果合成为指定注解类型的注解。
  * <p>@AliasFor语义在单个注解和注解层次结构中都完全受支持。
  * <pre>{@code
- *   @RequestMapping(method = RequestMethod.POST)
- *   public @interface PostMapping {
- *     @AliasFor(annotation = RequestMapping.class)
- *     String name() default "";
+ *   class HelloController {
+ *     @GetMapping("/hello")
+ *     public String hello(String name) {
+ *       return "Hello " + name + "!";
+ *     }
  *   }
+ *
+ *   Method method = HelloController.class.getMethod("hello", String.class);
+ *   RequestMapping mapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
+ *   assertEquals(1, mapping.value().length);
+ *   assertEquals("/hello", mapping.value()[0]);
  * }</pre>
  *
  * @author Ponfee

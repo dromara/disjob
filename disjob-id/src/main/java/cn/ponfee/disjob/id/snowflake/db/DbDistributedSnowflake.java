@@ -47,7 +47,7 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 
 /**
- * Snowflake server based database
+ * Snowflake worker configuration based database
  *
  * @author Ponfee
  */
@@ -60,7 +60,10 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
     private static final RowMapper<DbSnowflakeWorker> ROW_MAPPER = new BeanPropertyRowMapper<>(DbSnowflakeWorker.class);
 
-    private static final String TABLE_NAME = "snowflake_worker";
+    /**
+     * Store snowflake worker configuration
+     */
+    private static final String TABLE_NAME = "disjob_snowflake";
 
     private static final String CREATE_TABLE_DDL =
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                    \n" +

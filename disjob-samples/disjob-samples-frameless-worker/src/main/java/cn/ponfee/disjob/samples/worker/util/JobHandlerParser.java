@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.samples.worker.util;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.spring.ResourceScanner;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Files;
@@ -30,8 +31,10 @@ import org.springframework.util.ClassUtils;
 
 import java.beans.Introspector;
 import java.lang.reflect.Modifier;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Job handler parser
@@ -67,20 +70,22 @@ public class JobHandlerParser {
     }
 
     public static void init() {
-        String ls = Files.SYSTEM_LINE_SEPARATOR;
+        Comparator<Entry<String, String>> comparator = Comparator.<Entry<String, String>>nullsLast(Entry.comparingByValue()).thenComparing(Entry.comparingByKey());
+        String newLine = Files.SYSTEM_LINE_SEPARATOR;
         int lMaxLen = JOB_HANDLER_MAP.keySet().stream().mapToInt(String::length).max().getAsInt();
         int rMaxLen = JOB_HANDLER_MAP.values().stream().mapToInt(e -> e.getName().length()).max().getAsInt();
+        int contentLen = lMaxLen + rMaxLen + 9;
 
-        StringBuilder builder = new StringBuilder(ls);
-        builder.append(StringUtils.rightPad("/", lMaxLen + rMaxLen + 9, "-")).append("\\").append(ls);
-        builder.append(StringUtils.rightPad("| Job handler mapping:", lMaxLen + rMaxLen + 8, " ")).append(" |").append(ls);
-        JOB_HANDLER_MAP.forEach((k, v) -> builder
+        StringBuilder builder = new StringBuilder(newLine);
+        builder.append(StringUtils.rightPad("/", contentLen, "-")).append("\\").append(newLine);
+        builder.append(StringUtils.rightPad("| Job handler mapping:", contentLen, " ")).append("|").append(newLine);
+        Collects.sorted(JOB_HANDLER_MAP, Class::getName, comparator).forEach((k, v) -> builder
             .append("|   ").append(StringUtils.rightPad(k, lMaxLen, " "))
             .append(" -> ")
-            .append(StringUtils.rightPad(v.getName(), rMaxLen, " ")).append(" |")
-            .append(ls)
+            .append(StringUtils.rightPad(v, rMaxLen, " ")).append(" |")
+            .append(newLine)
         );
-        builder.append(StringUtils.rightPad("\\", lMaxLen + rMaxLen + 9, "-")).append("/").append(ls);
+        builder.append(StringUtils.rightPad("\\", contentLen, "-")).append("/").append(newLine);
 
         System.out.println(builder);
     }

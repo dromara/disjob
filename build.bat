@@ -1,5 +1,5 @@
 @REM --------------------------------------------------
-@REM direct execute      : .\mvnw.cmd clean install
+@REM direct execution    : .\mvnw.cmd clean install
 @REM build disjob        : .\build.bat
 @REM build disjob-samples: .\build.bat disjob-samples
 @REM build disjob-admin  : .\build.bat disjob-admin
