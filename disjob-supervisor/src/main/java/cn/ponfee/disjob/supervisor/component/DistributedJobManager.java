@@ -108,7 +108,7 @@ public class DistributedJobManager extends AbstractJobManager {
                                  GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient,
                                  DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient,
                                  @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
-        super(jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
+        super(supervisorProperties, jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
         this.taskDispatchFailedCountThreshold = supervisorProperties.getTaskDispatchFailedCountThreshold();
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;

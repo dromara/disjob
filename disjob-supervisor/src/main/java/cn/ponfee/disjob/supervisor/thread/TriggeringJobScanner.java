@@ -80,7 +80,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         this.afterMilliseconds = (heartbeatPeriodMs * 3);
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
-            .maximumPoolSize(Math.max(1, supervisorProperties.getProcessJobMaximumPoolSize()))
+            .maximumPoolSize(Math.max(1, supervisorProperties.getMaximumProcessJobPoolSize()))
             .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(300)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)

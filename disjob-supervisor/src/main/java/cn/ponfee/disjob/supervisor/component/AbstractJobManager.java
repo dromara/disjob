@@ -39,11 +39,11 @@ import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
 import com.google.common.base.Joiner;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,13 +66,12 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  *
  * @author Ponfee
  */
-@RequiredArgsConstructor
 public abstract class AbstractJobManager {
-    private static final int MAX_SPLIT_TASK_SIZE = 1000;
-    private static final int MAX_DEPENDS_DEPTH = 20;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    protected final int maximumSplitTaskSize;
+    protected final int maximumJobDependsDepth;
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
 
@@ -81,6 +80,26 @@ public abstract class AbstractJobManager {
     private final TaskDispatcher taskDispatcher;
     private final GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient;
     private final DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient;
+
+    protected AbstractJobManager(SupervisorProperties supervisorProperties,
+                                 SchedJobMapper jobMapper,
+                                 SchedDependMapper dependMapper,
+                                 IdGenerator idGenerator,
+                                 SupervisorRegistry workerDiscover,
+                                 TaskDispatcher taskDispatcher,
+                                 GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient,
+                                 DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient) {
+        supervisorProperties.check();
+        this.maximumSplitTaskSize = supervisorProperties.getMaximumSplitTaskSize();
+        this.maximumJobDependsDepth = supervisorProperties.getMaximumJobDependsDepth();
+        this.jobMapper = jobMapper;
+        this.dependMapper = dependMapper;
+        this.idGenerator = idGenerator;
+        this.workerDiscover = workerDiscover;
+        this.taskDispatcher = taskDispatcher;
+        this.groupedWorkerRpcClient = groupedWorkerRpcClient;
+        this.destinationWorkerRpcClient = destinationWorkerRpcClient;
+    }
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
@@ -192,7 +211,7 @@ public abstract class AbstractJobManager {
         } else {
             List<SplitTask> split = splitJob(param);
             Assert.notEmpty(split, () -> "Not split any task: " + param);
-            Assert.isTrue(split.size() <= MAX_SPLIT_TASK_SIZE, () -> "Split task size must less than " + MAX_SPLIT_TASK_SIZE + ", job=" + param);
+            Assert.isTrue(split.size() <= maximumSplitTaskSize, () -> "Split task size must less than " + maximumSplitTaskSize + ", job=" + param);
             int count = split.size();
             return IntStream.range(0, count)
                 .mapToObj(i -> SchedTask.create(Optional.ofNullable(split.get(i)).map(SplitTask::getTaskParam).orElse(null), generateId(), instanceId, i + 1, count, date, null))
@@ -371,7 +390,7 @@ public abstract class AbstractJobManager {
             if (map.containsKey(jobId)) {
                 throw new IllegalArgumentException("Circular depends job: " + map.get(jobId));
             }
-            if (i >= MAX_DEPENDS_DEPTH) {
+            if (i >= maximumJobDependsDepth) {
                 throw new IllegalArgumentException("Exceed depends depth: " + outerDepends);
             }
             parentJobIds = map.keySet();

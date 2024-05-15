@@ -38,6 +38,16 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".supervisor";
 
     /**
+     * Maximum split task size
+     */
+    private int maximumSplitTaskSize = 1000;
+
+    /**
+     * Maximum job depends depth
+     */
+    private int maximumJobDependsDepth = 20;
+
+    /**
      * Scan triggering job period milliseconds
      */
     private long scanTriggeringJobPeriodMs = 3000;
@@ -53,9 +63,9 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private long scanRunningInstancePeriodMs = 30000;
 
     /**
-     * Process job maximum thread pool size, default 5
+     * Maximum process job thread pool size, default 5
      */
-    private int processJobMaximumPoolSize = 5;
+    private int maximumProcessJobPoolSize = 5;
 
     /**
      * Group data refresh period seconds.
@@ -73,10 +83,12 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private int taskDispatchFailedCountThreshold = 3;
 
     public void check() {
+        Assert.isTrue(maximumSplitTaskSize > 0, "Maximum split task size must be greater than 0.");
+        Assert.isTrue(maximumJobDependsDepth > 0, "Maximum job depends depth must be greater than 0.");
         Assert.isTrue(scanTriggeringJobPeriodMs > 0, "Scan triggering job period ms must be greater than 0.");
         Assert.isTrue(scanWaitingInstancePeriodMs > 0, "Scan waiting instance period ms must be greater than 0.");
         Assert.isTrue(scanRunningInstancePeriodMs > 0, "Scan running instance period ms must be greater than 0.");
-        Assert.isTrue(processJobMaximumPoolSize > 0, "Process job maximum pool size must be greater than 0.");
+        Assert.isTrue(maximumProcessJobPoolSize > 0, "Maximum process job pool size must be greater than 0.");
         Assert.isTrue(groupRefreshPeriodSeconds >= 30, "group refresh period seconds cannot less than 30s.");
         Assert.isTrue(jobScanFailedCountThreshold >= 0, "Job scan failed count threshold cannot less than 0.");
         Assert.isTrue(taskDispatchFailedCountThreshold >= 0, "Task dispatch failed count threshold cannot less than 0.");
