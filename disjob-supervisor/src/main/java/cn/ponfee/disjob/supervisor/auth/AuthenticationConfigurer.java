@@ -22,8 +22,8 @@ import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication.Subject;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.HandlerMethod;
@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Ponfee
  */
-@Component
+@Configuration
 public class AuthenticationConfigurer implements WebMvcConfigurer {
 
     @Override
