@@ -83,10 +83,10 @@ public class JobHandlerParser {
             .stream()
             .map(e -> Pair.of(e.getKey(), e.getValue().getName()))
             .sorted(Comparator.<Entry<String, String>>nullsLast(Entry.comparingByValue()).thenComparing(Entry.comparingByKey()))
-            .forEach(pair -> builder
-                .append("|   ").append(StringUtils.rightPad(pair.getKey(), lMaxLen, " "))
+            .forEach(e -> builder
+                .append("|   ").append(StringUtils.rightPad(e.getKey(), lMaxLen, " "))
                 .append(" -> ")
-                .append(StringUtils.rightPad(pair.getKey(), rMaxLen, " ")).append(" |")
+                .append(StringUtils.rightPad(e.getValue(), rMaxLen, " ")).append(" |")
                 .append(newLine)
             );
         builder.append(StringUtils.rightPad("\\", contentLen, "-")).append("/").append(newLine);
