@@ -25,7 +25,7 @@ import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
-import cn.ponfee.disjob.supervisor.util.SupervisorUtils;
+import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -89,7 +89,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(SupervisorUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -127,7 +127,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(SupervisorUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -165,7 +165,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(SupervisorUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());

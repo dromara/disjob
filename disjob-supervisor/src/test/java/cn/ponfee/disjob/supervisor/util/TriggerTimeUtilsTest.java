@@ -36,7 +36,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class SupervisorUtilsTest {
+public class TriggerTimeUtilsTest {
 
     @Test
     public void testComputeNextTriggerTimeCRON_DISCARD() {
@@ -50,11 +50,11 @@ public class SupervisorUtilsTest {
 
         Date now = new Date();
 
-        Date date1 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date1 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date1.after(new Date()));
 
         job.setLastTriggerTime(date1.getTime());
-        Date date2 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date2 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date2.after(date1));
     }
 
@@ -69,24 +69,24 @@ public class SupervisorUtilsTest {
         job.setLastTriggerTime(null);
         job.setMisfireStrategy(MisfireStrategy.LAST.value());
 
-        Date date1 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date1 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date1.after(now));
         System.out.println("date1: " + Dates.format(date1));
 
         job.setLastTriggerTime(date1.getTime());
-        Date date2 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date2 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date2.after(date1));
         System.out.println("date2: " + Dates.format(date2));
 
         // test last non null
         Date last = JavaUtilDateFormat.DEFAULT.parse("2022-05-31 10:00:00");
         job.setLastTriggerTime(last.getTime());
-        Date date3 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date3 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date3.before(now));
         System.out.println("date3: " + Dates.format(date3));
 
         job.setLastTriggerTime(date3.getTime());
-        Date date4 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date4 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date4.after(now));
         System.out.println("date4: " + Dates.format(date4));
     }
@@ -102,27 +102,27 @@ public class SupervisorUtilsTest {
         job.setLastTriggerTime(null);
         job.setMisfireStrategy(MisfireStrategy.EVERY.value());
 
-        Date date1 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date1 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date1.after(now));
         System.out.println("date1: " + Dates.format(date1));
 
         job.setLastTriggerTime(date1.getTime());
-        Date date2 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date2 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date2.after(date1));
         System.out.println("date2: " + Dates.format(date2));
 
         // test last non null
         Date last = JavaUtilDateFormat.DEFAULT.parse("2022-05-20 10:00:00");
         job.setLastTriggerTime(last.getTime());
-        Date date3 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date3 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertEquals("2022-05-21 01:00:00", Dates.format(date3));
 
         job.setLastTriggerTime(date3.getTime());
-        Date date4 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date4 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertEquals("2022-05-22 01:00:00", Dates.format(date4));
 
         job.setLastTriggerTime(date4.getTime());
-        Date date5 = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date5 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertEquals("2022-05-23 01:00:00", Dates.format(date5));
     }
 
@@ -148,17 +148,17 @@ public class SupervisorUtilsTest {
 
         // DISCARD
         job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
-        Assertions.assertNull(SupervisorUtils.computeNextTriggerTime(job, now));
+        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-01 23:00:00").getTime());
-        Assertions.assertNull(SupervisorUtils.computeNextTriggerTime(job, now));
+        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         job.setTriggerValue(Dates.format(Dates.plusSeconds(new Date(), 5)));
-        Assertions.assertNull(SupervisorUtils.computeNextTriggerTime(job, now));
+        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         job.setLastTriggerTime(null);
         job.setTriggerValue(Dates.format(Dates.plusSeconds(new Date(), 100)));
-        Assertions.assertTrue(new Date(SupervisorUtils.computeNextTriggerTime(job, now)).after(new Date()));
+        Assertions.assertTrue(new Date(TriggerTimeUtils.computeNextTriggerTime(job, now)).after(new Date()));
 
         // EVERY
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-01 23:00:00").getTime());
@@ -166,22 +166,22 @@ public class SupervisorUtilsTest {
         job.setMisfireStrategy(MisfireStrategy.EVERY.value());
 
         //
-        Assertions.assertNull(SupervisorUtils.computeNextTriggerTime(job, now));
+        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         //
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime());
-        Assertions.assertNull(SupervisorUtils.computeNextTriggerTime(job, now));
+        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         //
         job.setLastTriggerTime(null);
         job.setTriggerValue("2022-05-03 00:00:00");
-        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime(), SupervisorUtils.computeNextTriggerTime(job, now));
+        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime(), TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         // LAST
         job.setMisfireStrategy(MisfireStrategy.LAST.value());
         job.setTriggerValue("2022-05-03 00:00:00");
         job.setLastTriggerTime(null);
-        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime(), SupervisorUtils.computeNextTriggerTime(job, now));
+        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime(), TriggerTimeUtils.computeNextTriggerTime(job, now));
     }
 
     @Test
@@ -200,14 +200,14 @@ public class SupervisorUtilsTest {
 
         // DISCARD
         job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
-        Assertions.assertEquals(SupervisorUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
+        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 23:00:00").getTime());
-        Assertions.assertEquals(SupervisorUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
+        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         triggerValue.setStart(tomorrow);
         job.setTriggerValue(Jsons.toJson(triggerValue));
-        Assertions.assertEquals(SupervisorUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
+        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         System.out.println("---------------");
         List<Date> triggerTimes = TriggerType.PERIOD.computeNextTriggerTimes(job.getTriggerValue(), now, 4);
@@ -218,27 +218,27 @@ public class SupervisorUtilsTest {
         job.setMisfireStrategy(MisfireStrategy.LAST.value());
         job.setTriggerValue("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}");
         job.setLastTriggerTime(null);
-        Assertions.assertEquals(SupervisorUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
+        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-05 03:12:21").getTime());
-        Assertions.assertEquals(SupervisorUtils.computeNextTriggerTime(job, now), Dates.startOfDay(now).getTime());
+        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), Dates.startOfDay(now).getTime());
 
 
         job.setMisfireStrategy(MisfireStrategy.EVERY.value());
         job.setTriggerValue("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}");
         job.setLastTriggerTime(null);
-        Assertions.assertEquals(SupervisorUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
+        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-05 03:12:21").getTime());
-        Date date = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        Date date = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertEquals(Dates.format(date), "2022-05-06 00:00:00");
 
         job.setLastTriggerTime(date.getTime());
-        date = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        date = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertEquals(Dates.format(date), "2022-05-07 00:00:00");
 
         job.setLastTriggerTime(date.getTime());
-        date = new Date(SupervisorUtils.computeNextTriggerTime(job, now));
+        date = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertEquals(Dates.format(date), "2022-05-08 00:00:00");
     }
 

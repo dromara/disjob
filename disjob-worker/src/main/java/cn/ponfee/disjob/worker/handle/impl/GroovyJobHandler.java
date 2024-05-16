@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.handle.impl;
 
 import cn.ponfee.disjob.common.util.GroovyUtils;
 import cn.ponfee.disjob.core.handle.ExecuteResult;

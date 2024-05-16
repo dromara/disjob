@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.handle.impl;
 
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -23,7 +23,7 @@ import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.JobHandler;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
-import cn.ponfee.disjob.worker.util.WorkerUtils;
+import cn.ponfee.disjob.worker.handle.JobHandlerUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -81,7 +81,7 @@ public class CommandJobHandler extends JobHandler {
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
         LOG.info("Command process id: {}, {}", executingTask.getTaskId(), pid);
-        return WorkerUtils.completeProcess(process, charset, executingTask, LOG);
+        return JobHandlerUtils.completeProcess(process, charset, executingTask, LOG);
     }
 
     @Getter

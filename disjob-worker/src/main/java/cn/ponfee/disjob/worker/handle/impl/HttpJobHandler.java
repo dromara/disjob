@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.handle.impl;
 
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;

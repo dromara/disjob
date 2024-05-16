@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
+package cn.ponfee.disjob.worker.handle;
+
+import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.SplitTask;
 
 import java.util.List;
 

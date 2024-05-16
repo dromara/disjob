@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.handle.ExecuteResult;
 import cn.ponfee.disjob.core.handle.Savepoint;
 import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.impl.HttpJobHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

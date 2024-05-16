@@ -21,7 +21,6 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.handle.JobHandlerUtils;
 import cn.ponfee.disjob.core.handle.SplitTask;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
@@ -30,6 +29,7 @@ import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
+import cn.ponfee.disjob.worker.handle.JobHandlerUtils;
 
 import java.util.List;
 

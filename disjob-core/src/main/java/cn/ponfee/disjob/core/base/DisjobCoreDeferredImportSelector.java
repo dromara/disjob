@@ -45,7 +45,7 @@ public class DisjobCoreDeferredImportSelector implements DeferredImportSelector 
     private static class DisjobCoreDeferredConfiguration {
 
         /**
-         * 如果注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
+         * 如果@ConditionalOnMissingBean注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
          *
          * @return SpringContextHolder
          */

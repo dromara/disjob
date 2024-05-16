@@ -24,11 +24,11 @@ import cn.ponfee.disjob.core.model.SchedJob;
 import java.util.Date;
 
 /**
- * Supervisor utility
+ * Trigger time utility
  *
  * @author Ponfee
  */
-public final class SupervisorUtils {
+public final class TriggerTimeUtils {
 
     /**
      * Returns the next trigger time

@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.spring.ResourceScanner;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.handle.JobHandlerUtils;
+import cn.ponfee.disjob.worker.handle.JobHandlerUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -109,6 +109,8 @@ public class JobHandlerParser {
                 // maybe spring bean name
                 Fields.put(param, fieldName, handlerClass.getName());
                 LOG.info("Parse jobHandler: [{}] -> [{}]", jobHandler, handlerClass.getName());
+            } else {
+                LOG.error("Parse jobHandler error: {}, {}", param, fieldName);
             }
         }
     }

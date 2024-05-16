@@ -14,23 +14,35 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
+package cn.ponfee.disjob.worker.handle;
 
+import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.dag.DAGExpressionParser;
 import cn.ponfee.disjob.common.dag.DAGNode;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Predicates;
+import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
+import cn.ponfee.disjob.core.handle.ExecuteResult;
+import cn.ponfee.disjob.core.handle.JobHandler;
+import cn.ponfee.disjob.core.handle.JobSplitter;
+import cn.ponfee.disjob.core.handle.SplitTask;
+import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
 import org.springframework.util.Assert;
 
+import java.io.InputStream;
 import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -129,6 +141,26 @@ public class JobHandlerUtils {
         } else {
             Class<? extends JobHandler> jobHandlerClass = getJobHandlerClass(text);
             return ClassUtils.newInstance(jobHandlerClass);
+        }
+    }
+
+    public static ExecuteResult completeProcess(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
+        try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
+            // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
+            String verbose = IOUtils.toString(is, charset);
+            String error = IOUtils.toString(es, charset);
+            int code = process.waitFor();
+            if (code == ProcessUtils.SUCCESS_CODE) {
+                return ExecuteResult.success(verbose);
+            } else {
+                return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
+            }
+        } catch (Throwable t) {
+            log.error("Process execute error: " + executingTask, t);
+            Threads.interruptIfNecessary(t);
+            return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
+        } finally {
+            ProcessUtils.destroy(process);
         }
     }
 
