@@ -109,7 +109,7 @@ public class JobHandlerUtils {
      * @throws JobException if new instance failed
      */
     public static JobHandler load(String text) throws JobException {
-        if (SpringContextHolder.applicationContext() != null) {
+        if (SpringContextHolder.getApplicationContext() != null) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
             // get by spring bean name
             JobHandler handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);

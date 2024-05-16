@@ -16,12 +16,14 @@
 
 package cn.ponfee.disjob.common.tuple;
 
+import java.util.Map;
+
 /**
  * Tuple2 consisting of two elements.
  *
  * @author Ponfee
  */
-public final class Tuple2<A, B> extends Tuple {
+public final class Tuple2<A, B> extends Tuple implements Map.Entry<A, B> {
     private static final long serialVersionUID = -3627925720098458172L;
 
     public A a;
@@ -71,6 +73,23 @@ public final class Tuple2<A, B> extends Tuple {
      */
     public Tuple2<B, A> swap() {
         return new Tuple2<>(b, a);
+    }
+
+    @Override
+    public A getKey() {
+        return a;
+    }
+
+    @Override
+    public B getValue() {
+        return b;
+    }
+
+    @Override
+    public B setValue(B value) {
+        B result = b;
+        this.b = value;
+        return result;
     }
 
 }

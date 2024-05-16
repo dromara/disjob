@@ -78,7 +78,6 @@ public class JobHandlerParser {
         StringBuilder builder = new StringBuilder(newLine);
         builder.append(StringUtils.rightPad("/", contentLen, "-")).append("\\").append(newLine);
         builder.append(StringUtils.rightPad("| Job handler mapping:", contentLen, " ")).append("|").append(newLine);
-
         JOB_HANDLER_MAP.entrySet()
             .stream()
             .map(e -> Pair.of(e.getKey(), e.getValue().getName()))

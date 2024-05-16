@@ -17,13 +17,13 @@
 package cn.ponfee.disjob.common.spring;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionValidationException;
+import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -46,25 +46,56 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
     @Override
     public void setApplicationContext(ApplicationContext ctx) {
         synchronized (SpringContextHolder.class) {
-            if (SpringContextHolder.applicationContext != null) {
+            if (applicationContext != null) {
                 throw new IllegalStateException("Spring context holder already initialized.");
             }
-            SpringContextHolder.applicationContext = Objects.requireNonNull(ctx);
+            applicationContext = Objects.requireNonNull(ctx);
         }
     }
 
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory bf) throws BeansException {
         synchronized (SpringContextHolder.class) {
-            if (SpringContextHolder.beanFactory != null) {
+            if (beanFactory != null) {
                 throw new IllegalStateException("Spring context holder already initialized.");
             }
-            SpringContextHolder.beanFactory = Objects.requireNonNull(beanFactory);
+            beanFactory = Objects.requireNonNull(bf);
         }
     }
 
-    public static ApplicationContext applicationContext() {
-        return applicationContext;
+    // -----------------------------------------------------------------------get bean factory
+
+    public static ApplicationContext getApplicationContext() {
+        return Objects.requireNonNull(applicationContext, "ApplicationContext is null.");
+    }
+
+    public static ListableBeanFactory getListableBeanFactory() {
+        if (beanFactory != null) {
+            return beanFactory;
+        }
+        return Objects.requireNonNull(applicationContext, "ListableBeanFactory is null.");
+    }
+
+    public static ConfigurableListableBeanFactory getConfigurableListableBeanFactory() {
+        if (beanFactory != null) {
+            return beanFactory;
+        }
+        if (applicationContext instanceof ConfigurableApplicationContext) {
+            return ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
+        }
+        throw (applicationContext == null)
+            ? new NullPointerException("ConfigurableListableBeanFactory is null.")
+            : new UnsupportedOperationException("ApplicationContext is not ConfigurableListableBeanFactory.");
+    }
+
+    public static Environment getEnvironment() {
+        return applicationContext != null ? applicationContext.getEnvironment() : null;
+    }
+
+    public static void publishEvent(Object event) {
+        if (applicationContext != null) {
+            applicationContext.publishEvent(event);
+        }
     }
 
     // -----------------------------------------------------------------------getBean
@@ -76,7 +107,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @return spring bean
      */
     public static <T> T getBean(String beanName) {
-        return (T) applicationContext.getBean(beanName);
+        return (T) getListableBeanFactory().getBean(beanName);
     }
 
     /**
@@ -86,7 +117,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @return spring bean
      */
     public static <T> T getBean(Class<T> beanType) {
-        return applicationContext.getBean(beanType);
+        return getListableBeanFactory().getBean(beanType);
     }
 
     /**
@@ -97,20 +128,21 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @return spring bean
      */
     public static <T> T getBean(String beanName, Class<T> beanType) {
-        return applicationContext.getBean(beanName, beanType);
+        return getListableBeanFactory().getBean(beanName, beanType);
     }
 
     // -----------------------------------------------------------------------getPrototypeBean
 
     public static <T> T getPrototypeBean(String beanName) throws IllegalStateException {
+        ListableBeanFactory factory = getListableBeanFactory();
         T bean;
         try {
-            bean = (T) applicationContext.getBean(beanName);
+            bean = (T) factory.getBean(beanName);
         } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (!applicationContext.isPrototype(beanName)) {
+        if (!factory.isPrototype(beanName)) {
             throw new IllegalStateException("Bean name is not a prototype bean: " + beanName);
         }
 
@@ -125,15 +157,16 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @throws IllegalStateException if not prototype bean
      */
     public static <T> T getPrototypeBean(Class<T> beanType) throws IllegalStateException {
+        ListableBeanFactory factory = getListableBeanFactory();
         T bean;
         try {
-            bean = applicationContext.getBean(beanType);
+            bean = factory.getBean(beanType);
         } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        for (String beanName : applicationContext.getBeanNamesForType(beanType)) {
-            if (!applicationContext.isPrototype(beanName)) {
+        for (String beanName : factory.getBeanNamesForType(beanType)) {
+            if (!factory.isPrototype(beanName)) {
                 throw new IllegalStateException("Bean type is not a prototype bean: " + beanType);
             }
         }
@@ -150,14 +183,15 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @throws IllegalStateException if not prototype bean
      */
     public static <T> T getPrototypeBean(String beanName, Class<T> beanType) throws IllegalStateException {
+        ListableBeanFactory factory = getListableBeanFactory();
         T bean;
         try {
-            bean = applicationContext.getBean(beanName, beanType);
+            bean = factory.getBean(beanName, beanType);
         } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (!applicationContext.isPrototype(beanName)) {
+        if (!factory.isPrototype(beanName)) {
             throw new IllegalStateException("Bean name is not a prototype bean: " + beanName + ", " + beanType);
         }
 
@@ -167,14 +201,15 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
     // -----------------------------------------------------------------------getSingletonBean
 
     public static <T> T getSingletonBean(String beanName) throws IllegalStateException {
+        ListableBeanFactory factory = getListableBeanFactory();
         T bean;
         try {
-            bean = (T) applicationContext.getBean(beanName);
+            bean = (T) factory.getBean(beanName);
         } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (!applicationContext.isSingleton(beanName)) {
+        if (!factory.isSingleton(beanName)) {
             throw new IllegalStateException("Bean name is not a prototype bean: " + beanName);
         }
 
@@ -189,15 +224,16 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @throws IllegalStateException if not singleton bean
      */
     public static <T> T getSingletonBean(Class<T> beanType) throws IllegalStateException {
+        ListableBeanFactory factory = getListableBeanFactory();
         T bean;
         try {
-            bean = applicationContext.getBean(beanType);
+            bean = factory.getBean(beanType);
         } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        for (String beanName : applicationContext.getBeanNamesForType(beanType)) {
-            if (!applicationContext.isSingleton(beanName)) {
+        for (String beanName : factory.getBeanNamesForType(beanType)) {
+            if (!factory.isSingleton(beanName)) {
                 throw new IllegalStateException("Bean type is not a singleton bean: " + beanType);
             }
         }
@@ -213,14 +249,15 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @throws IllegalStateException if not singleton bean
      */
     public static <T> T getSingletonBean(String beanName, Class<T> beanType) throws IllegalStateException {
+        ListableBeanFactory factory = getListableBeanFactory();
         T bean;
         try {
-            bean = applicationContext.getBean(beanName, beanType);
+            bean = factory.getBean(beanName, beanType);
         } catch (NoSuchBeanDefinitionException ignored) {
             return null;
         }
 
-        if (!applicationContext.isSingleton(beanName)) {
+        if (!factory.isSingleton(beanName)) {
             throw new IllegalStateException("Bean name is not a singleton bean: " + beanName + ", " + beanType);
         }
 
@@ -229,10 +266,6 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
 
     // -----------------------------------------------------------------------other methods
 
-    public static Environment getEnvironment() {
-        return applicationContext.getEnvironment();
-    }
-
     /**
      * Returns spring container contains specified bean name.
      *
@@ -240,7 +273,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @return {@code true} if contains bean
      */
     public static boolean containsBean(String beanName) {
-        return applicationContext.containsBean(beanName);
+        return getListableBeanFactory().containsBean(beanName);
     }
 
     /**
@@ -250,7 +283,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @return bean name type
      */
     public static Class<?> getType(String beanName) {
-        return applicationContext.getType(beanName);
+        return getListableBeanFactory().getType(beanName);
     }
 
     /**
@@ -260,22 +293,21 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @return other alias name
      */
     public static String[] getAliases(String beanName) {
-        return applicationContext.getAliases(beanName);
+        return getApplicationContext().getAliases(beanName);
     }
 
-    /**
-     * Removes bean from spring container.
-     *
-     * @param beanName the bean name
-     */
-    public static void removeBean(String beanName) {
-        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
-            throw new UnsupportedOperationException("Remove bean failed: " + getObjectClassName(applicationContext));
-        }
+    public static void registerSingleton(String beanName, Object bean) {
+        ConfigurableListableBeanFactory factory = getConfigurableListableBeanFactory();
+        factory.autowireBean(bean);
+        factory.registerSingleton(beanName, bean);
+    }
 
-        ConfigurableApplicationContext cac = (ConfigurableApplicationContext) applicationContext;
-        BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) cac.getBeanFactory();
-        beanFactory.removeBeanDefinition(beanName);
+    public static void destroySingleton(String beanName) {
+        ConfigurableListableBeanFactory factory = getConfigurableListableBeanFactory();
+        if (factory instanceof DefaultSingletonBeanRegistry) {
+            ((DefaultSingletonBeanRegistry) factory).destroySingleton(beanName);
+        }
+        throw new UnsupportedOperationException("Unsupported destroy Singleton: " + getObjectClassName(factory));
     }
 
     /**
@@ -287,21 +319,36 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @param <T>      bean type
      * @return spring container bean instance
      */
-    public static <T> T registerBean(String beanName, Class<T> beanType, Object... args) {
-        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
-            throw new BeanDefinitionValidationException("Register bean failed: " + getObjectClassName(applicationContext));
+    public static <T> T registerBeanDefinition(String beanName, Class<T> beanType, Object... args) {
+        ApplicationContext ac = getApplicationContext();
+        if (!(ac instanceof ConfigurableApplicationContext)) {
+            throw new UnsupportedOperationException("Unsupported register bean definition: " + getObjectClassName(ac));
         }
 
-        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(beanType);
+        BeanDefinitionBuilder bdb = BeanDefinitionBuilder.genericBeanDefinition(beanType);
         for (Object arg : args) {
-            beanDefinitionBuilder.addConstructorArgValue(arg);
+            bdb.addConstructorArgValue(arg);
         }
-        BeanDefinition beanDefinition = beanDefinitionBuilder.getRawBeanDefinition();
+        ConfigurableApplicationContext cac = (ConfigurableApplicationContext) ac;
+        BeanDefinitionRegistry bdr = (BeanDefinitionRegistry) cac.getBeanFactory();
+        bdr.registerBeanDefinition(beanName, bdb.getRawBeanDefinition());
 
-        ConfigurableApplicationContext cac = (ConfigurableApplicationContext) applicationContext;
-        BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) cac.getBeanFactory();
-        beanFactory.registerBeanDefinition(beanName, beanDefinition);
         return cac.getBean(beanName, beanType);
+    }
+
+    /**
+     * Removes bean definition from spring container.
+     *
+     * @param beanName the bean name
+     */
+    public static void removeBeanDefinition(String beanName) {
+        ApplicationContext ac = getApplicationContext();
+        if (!(ac instanceof ConfigurableApplicationContext)) {
+            throw new UnsupportedOperationException("Unsupported remove bean definition: " + getObjectClassName(ac));
+        }
+
+        ConfigurableApplicationContext cac = (ConfigurableApplicationContext) ac;
+        ((BeanDefinitionRegistry) cac.getBeanFactory()).removeBeanDefinition(beanName);
     }
 
     /**
@@ -310,7 +357,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
      * @param bean the spring bean
      */
     public static void autowireBean(Object bean) {
-        applicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
+        getApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
     }
 
 }
