@@ -9,7 +9,7 @@
   <a href="https://www.oracle.com/java/technologies/downloads/#java8"><img src="https://img.shields.io/badge/JDK-8+-green.svg?logo=oracle&logoColor=crimson" alt="JDK8+"></a>
   <a href="https://central.sonatype.com/namespace/cn.ponfee"><img src="https://img.shields.io/badge/maven--central-2.0.10-orange.svg?style=plastic&logo=apachemaven" alt="Maven Central"></a>
   <a href="https://github.com/dromara/disjob/actions"><img src="https://github.com/dromara/disjob/workflows/build/badge.svg" alt="Build status"></a>
-  <a href="http://ponfee.cn:8000/"><img src="https://img.shields.io/badge/online-Demo-blue.svg?logo=deepgram&logoColor=brown" alt="Demo"></a>
+  <a href="http://ponfee.cn:8000/"><img src="https://img.shields.io/badge/online-Demo-blue.svg?logo=airplayvideo&logoColor=green" alt="Demo"></a>
 </p>
 <p align="center">
   online demo：<a href="http://ponfee.cn:8000/">http://ponfee.cn:8000/</a>

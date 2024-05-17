@@ -32,6 +32,7 @@ public final class SystemUtils {
     public static String getConfig(String name) {
         String value = null;
         try {
+            // 获取JVM环境变量(-D即为define的意思)：java -jar -Dkey=value
             value = System.getProperty(name);
             if (StringUtils.isNotEmpty(value)) {
                 return value;
@@ -41,6 +42,7 @@ public final class SystemUtils {
         }
 
         try {
+            // 获取操作系统环境变量
             value = System.getenv(name);
             if (StringUtils.isNotEmpty(value)) {
                 return value;
