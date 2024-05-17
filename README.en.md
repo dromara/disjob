@@ -1,4 +1,21 @@
-# <img src="docs/images/logo.png" width="125" alt="Logo" /> [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0.html) [![JDK](https://img.shields.io/badge/jdk-8+-green.svg)](https://www.oracle.com/java/technologies/downloads/#java8) [![Maven Central](https://img.shields.io/badge/maven--central-2.0.10-orange.svg?style=plastic&logo=apachemaven)](https://central.sonatype.com/namespace/cn.ponfee) [![Build status](https://github.com/dromara/disjob/workflows/build/badge.svg)](https://github.com/dromara/disjob/actions)
+<p align="center">
+  <img src="docs/images/logo.png" width="160" alt="Logo" />
+</p>
+<p align="center">
+  <strong>A distributed task scheduling and distributed computing framework</strong>
+</p>
+<p align="center">
+  <a href="https://www.apache.org/licenses/LICENSE-2.0.html"><img src="https://img.shields.io/badge/license-Apache--2.0-green.svg?logo=apache" alt="License"></a>
+  <a href="https://www.oracle.com/java/technologies/downloads/#java8"><img src="https://img.shields.io/badge/JDK-8+-green.svg?logo=oracle&logoColor=crimson" alt="JDK8+"></a>
+  <a href="https://central.sonatype.com/namespace/cn.ponfee"><img src="https://img.shields.io/badge/maven--central-2.0.10-orange.svg?style=plastic&logo=apachemaven" alt="Maven Central"></a>
+  <a href="https://github.com/dromara/disjob/actions"><img src="https://github.com/dromara/disjob/workflows/build/badge.svg" alt="Build status"></a>
+  <a href="http://ponfee.cn:8000/"><img src="https://img.shields.io/badge/online-Demo-blue.svg?logo=deepgram&logoColor=brown" alt="Demo"></a>
+</p>
+<p align="center">
+  online demo：<a href="http://ponfee.cn:8000/">http://ponfee.cn:8000/</a>
+</p>
+
+---
 
 **`English`** | [简体中文](README.md)
 
