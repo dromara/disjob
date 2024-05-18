@@ -25,26 +25,23 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.handle.TaskExecutor;
 import cn.ponfee.disjob.core.model.InstanceAttach;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.param.worker.AuthenticationParam;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static cn.ponfee.disjob.common.util.Numbers.nullZero;
 import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Task execution parameter.
+ * Task execute parameter.
  *
  * @author Ponfee
  */
@@ -53,7 +50,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel.Timing<ExecuteTaskParam> {
     private static final long serialVersionUID = -6493747747321536680L;
 
-    private AtomicReference<Operation> operation;
+    private Operation operation;
     private long taskId;
     private long instanceId;
     private Long wnstanceId;
@@ -64,38 +61,6 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     private int executeTimeout;
     private String jobHandler;
     private Worker worker;
-
-    /**
-     * 任务执行处理器
-     */
-    @Getter(AccessLevel.NONE)
-    @Setter(AccessLevel.NONE)
-    private transient AtomicReference<TaskExecutor> taskExecutor = new AtomicReference<>();
-
-    // --------------------------------------------------------other methods
-
-    public boolean updateOperation(Operation expect, Operation update) {
-        return this.operation.compareAndSet(expect, update);
-    }
-
-    public Operation operation() {
-        return this.operation.get();
-    }
-
-    public void taskExecutor(TaskExecutor taskExecutor) {
-        this.taskExecutor.set(taskExecutor);
-    }
-
-    public void stop() {
-        TaskExecutor executor = taskExecutor.get();
-        if (executor != null) {
-            executor.stop();
-        }
-    }
-
-    public static Builder builder(SchedInstance instance, SchedJob schedJob, String supervisorToken) {
-        return new Builder(instance, schedJob, supervisorToken);
-    }
 
     @Override
     public long timing() {
@@ -111,17 +76,17 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             return false;
         }
         ExecuteTaskParam other = (ExecuteTaskParam) o;
-        return this.operation.get() == other.operation.get()
-            && this.taskId          == other.taskId
-            && this.instanceId      == other.instanceId
-            && this.triggerTime     == other.triggerTime
-            && this.jobId           == other.jobId
+        return this.operation   == other.operation
+            && this.taskId      == other.taskId
+            && this.instanceId  == other.instanceId
+            && this.triggerTime == other.triggerTime
+            && this.jobId       == other.jobId
             && Objects.equals(this.wnstanceId, other.wnstanceId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(operation.get(), taskId, instanceId, triggerTime, jobId, wnstanceId);
+        return Objects.hash(operation, taskId, instanceId, triggerTime, jobId, wnstanceId);
     }
 
     /**
@@ -139,7 +104,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         int length = 55 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobHandlerBytes.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(length)
-            .put((byte) operation.get().ordinal()) // 1: operation
+            .put((byte) operation.ordinal())       // 1: operation
             .putLong(taskId)                       // 8: taskId
             .putLong(instanceId)                   // 8: instanceId
             .putLong(nullZero(wnstanceId))         // 8: wnstanceId
@@ -155,7 +120,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         buffer.put(workerBytes);                   // x: byte array of worker data
         buffer.put(jobHandlerBytes);               // x: byte array of jobHandler data
 
-        // unnecessary do flip
+        // buffer.flip(): unnecessary do flip
         return buffer.array();
     }
 
@@ -169,7 +134,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         ByteBuffer buf = ByteBuffer.wrap(bytes);
 
         ExecuteTaskParam param = new ExecuteTaskParam();
-        param.setOperation(new AtomicReference<>(Operation.values()[buf.get()]));  //   1: operation
+        param.setOperation(Operation.values()[buf.get()]);                         //   1: operation
         param.setTaskId(buf.getLong());                                            //   8: taskId
         param.setInstanceId(buf.getLong());                                        //   8: instanceId
         param.setWnstanceId(zeroNull(buf.getLong()));                              //   8: wnstanceId
@@ -183,6 +148,10 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));  // 4+x: worker
         param.setJobHandler(Strings.of(Bytes.remained(buf), UTF_8));               //   x: jobHandlerBytes
         return param;
+    }
+
+    public static Builder builder(SchedInstance instance, SchedJob schedJob, String supervisorToken) {
+        return new Builder(instance, schedJob, supervisorToken);
     }
 
     public static class Builder {
@@ -203,7 +172,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         public ExecuteTaskParam build(Operation operation, long taskId, long triggerTime, Worker worker) {
             Assert.notNull(operation, "Operation cannot be null.");
             ExecuteTaskParam param = new ExecuteTaskParam();
-            param.setOperation(new AtomicReference<>(operation));
+            param.setOperation(operation);
             param.setTaskId(taskId);
             param.setInstanceId(instance.getInstanceId());
             param.setWnstanceId(instance.getWnstanceId());

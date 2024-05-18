@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -136,7 +135,7 @@ public class ConsistentHashExecutionRouterTest {
                                                           int executeTimeout,
                                                           String jobHandler) {
         ExecuteTaskParam param = new ExecuteTaskParam();
-        param.setOperation(new AtomicReference<>(operation));
+        param.setOperation(operation);
         param.setTaskId(taskId);
         param.setInstanceId(instanceId);
         param.setWnstanceId(wnstanceId);

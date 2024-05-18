@@ -21,10 +21,6 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.handle.ExecuteResult;
-import cn.ponfee.disjob.core.handle.Savepoint;
-import cn.ponfee.disjob.core.handle.TaskExecutor;
-import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.supervisor.util.CommonTest;
 import org.junit.jupiter.api.Assertions;
@@ -43,12 +39,6 @@ public class ExecuteParamTest {
 
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
-        param.taskExecutor(new TaskExecutor() {
-            @Override
-            public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) {
-                return null;
-            }
-        });
         String json = param.toString();
         System.out.println(json);
         Assertions.assertEquals("{\"supervisorToken\":\"supervisor token\",\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":3,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":\"g:i:h:8081\"}", json);
@@ -59,12 +49,6 @@ public class ExecuteParamTest {
         ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operation.TRIGGER, 1, 2, 1L, 4, 5, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, 5, "jobHandler", new Worker("default", "workerId", "host", 1));
         Worker worker = new Worker("g", "i", "h", 8081);
         param.setWorker(worker);
-        param.taskExecutor(new TaskExecutor() {
-            @Override
-            public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) {
-                return null;
-            }
-        });
         String json = param.toString();
         System.out.println(json);
         Assertions.assertEquals("{\"supervisorToken\":\"supervisor token\",\"operation\":\"TRIGGER\",\"taskId\":1,\"instanceId\":2,\"wnstanceId\":1,\"triggerTime\":4,\"jobId\":5,\"jobType\":\"GENERAL\",\"routeStrategy\":\"ROUND_ROBIN\",\"executeTimeout\":5,\"jobHandler\":\"jobHandler\",\"worker\":\"g:i:h:8081\"}", json);

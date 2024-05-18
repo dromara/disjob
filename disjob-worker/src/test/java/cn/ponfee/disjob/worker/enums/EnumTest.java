@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
+package cn.ponfee.disjob.worker.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
 import cn.ponfee.disjob.common.spring.ResourceScanner;

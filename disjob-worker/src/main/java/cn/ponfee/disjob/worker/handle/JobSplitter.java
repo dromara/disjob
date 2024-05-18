@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle.execution;
+package cn.ponfee.disjob.worker.handle;
 
-import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.model.SchedTask;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import cn.ponfee.disjob.core.exception.JobException;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
- * Execution task converter
+ * Split schedule job to one instance and many tasks.
  *
  * @author Ponfee
  */
-@Mapper(uses = {ExecuteState.class})
-public interface ExecutionTaskConverter {
+public interface JobSplitter {
 
-    ExecutionTaskConverter INSTANCE = Mappers.getMapper(ExecutionTaskConverter.class);
-
-    ExecutingTask toExecutingTask(SchedTask task);
-
-    ExecutedTask toExecutedTask(SchedTask task);
+    /**
+     * Provides default split single task.
+     * <p>Subclass can override this method to customize implementation.
+     *
+     * @param jobParam the job param
+     * @return list of SplitTask
+     * @throws JobException if split failed
+     */
+    default List<SplitTask> split(String jobParam) throws JobException {
+        return Collections.singletonList(new SplitTask(jobParam));
+    }
 
 }

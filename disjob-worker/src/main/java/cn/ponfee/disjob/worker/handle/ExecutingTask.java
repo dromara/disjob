@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle.execution;
+package cn.ponfee.disjob.worker.handle;
 
+import cn.ponfee.disjob.core.model.AbstractExecutionTask;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.param.supervisor.WorkflowPredecessorNodeParam;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -56,16 +58,27 @@ public class ExecutingTask extends AbstractExecutionTask {
     /**
      * 工作流(DAG)任务的前驱节点列表数据
      */
-    private List<WorkflowPredecessorNode> workflowPredecessorNodes;
+    private List<WorkflowPredecessorNodeParam> workflowPredecessorNodeParams;
 
     public static ExecutingTask of(Long jobId,
                                    Long wnstanceId,
                                    SchedTask task,
-                                   List<WorkflowPredecessorNode> workflowPredecessorNodes) {
-        ExecutingTask executingTask = ExecutionTaskConverter.INSTANCE.toExecutingTask(task);
+                                   List<WorkflowPredecessorNodeParam> workflowPredecessorNodeParams) {
+        if (task == null) {
+            return null;
+        }
+
+        ExecutingTask executingTask = new ExecutingTask();
+        executingTask.setTaskId(task.getTaskId());
+        executingTask.setTaskNo(task.getTaskNo());
+        executingTask.setTaskCount(task.getTaskCount());
+        executingTask.setExecuteSnapshot(task.getExecuteSnapshot());
+
         executingTask.setJobId(jobId);
+        executingTask.setInstanceId(task.getInstanceId());
         executingTask.setWnstanceId(wnstanceId);
-        executingTask.setWorkflowPredecessorNodes(workflowPredecessorNodes);
+        executingTask.setTaskParam(task.getTaskParam());
+        executingTask.setWorkflowPredecessorNodeParams(workflowPredecessorNodeParams);
         return executingTask;
     }
 

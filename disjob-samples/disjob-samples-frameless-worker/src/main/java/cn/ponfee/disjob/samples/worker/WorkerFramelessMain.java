@@ -18,6 +18,7 @@ package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
@@ -67,14 +68,13 @@ public class WorkerFramelessMain {
     static {
         // for log4j2 log file name
         System.setProperty("app.name", "frameless-worker");
+        printBanner();
         JobHandlerParser.init();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerFramelessMain.class);
 
     public static void main(String[] args) throws Exception {
-        printBanner();
-
         YamlProperties config = loadConfig(args);
         HttpProperties httpProps = config.extract(HttpProperties.class, HttpProperties.KEY_PREFIX);
         httpProps.check();
@@ -154,8 +154,9 @@ public class WorkerFramelessMain {
         ThrowingRunnable.doCaught(vertxWebServer::close);
     }
 
-    private static void printBanner() throws IOException {
-        String banner = IOUtils.resourceToString("banner.txt", UTF_8, WorkerStartup.class.getClassLoader());
+    private static void printBanner() {
+        ClassLoader classLoader = WorkerStartup.class.getClassLoader();
+        String banner = Throwables.ThrowingSupplier.doChecked(() -> IOUtils.resourceToString("banner.txt", UTF_8, classLoader));
         System.out.println(banner);
     }
 

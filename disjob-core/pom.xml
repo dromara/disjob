@@ -17,12 +17,6 @@
   <url>https://github.com/dromara/disjob</url>
 
   <dependencies>
-    <!-- https://mapstruct.org/documentation/1.5/reference/html/ -->
-    <dependency>
-      <groupId>org.mapstruct</groupId>
-      <artifactId>mapstruct</artifactId>
-      <version>${mapstruct.version}</version>
-    </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
       <artifactId>disjob-common</artifactId>

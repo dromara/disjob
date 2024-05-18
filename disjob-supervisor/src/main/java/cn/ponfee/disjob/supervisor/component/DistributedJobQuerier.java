@@ -22,11 +22,11 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.enums.RunState;
-import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.model.SchedWorkflow;
+import cn.ponfee.disjob.core.param.supervisor.WorkflowPredecessorNodeParam;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobPageRequest;
@@ -114,7 +114,7 @@ public class DistributedJobQuerier {
         return taskMapper.get(taskId);
     }
 
-    public List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+    public List<WorkflowPredecessorNodeParam> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
         if (CollectionUtils.isEmpty(workflows)) {
             return null;
@@ -145,9 +145,9 @@ public class DistributedJobQuerier {
             .map(e -> {
                 List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId());
                 tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
-                return WorkflowPredecessorNode.of(e, tasks);
+                return WorkflowPredecessorNodeParam.of(e, tasks);
             })
-            .sorted(Comparator.comparing(WorkflowPredecessorNode::getSequence))
+            .sorted(Comparator.comparing(WorkflowPredecessorNodeParam::getSequence))
             .collect(Collectors.toList());
     }
 

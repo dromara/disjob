@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
-
-import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
+package cn.ponfee.disjob.worker.handle;
 
 /**
  * Task executor

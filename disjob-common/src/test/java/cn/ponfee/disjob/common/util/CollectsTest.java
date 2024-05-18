@@ -28,6 +28,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -45,6 +47,9 @@ public class CollectsTest {
         assertThat(Collects.truncate(Collections.emptySet(), 2)).isEmpty();
         assertThat(Collects.truncate(Sets.newSet(1), 0)).size().isEqualTo(1);
         assertThat(Collects.truncate(Sets.newSet(1, 2, 3, 4, 5), 3)).size().isEqualTo(3);
+        assertThat(Stream.of().anyMatch(Objects::isNull)).isFalse();
+        assertThat(Stream.of(1).anyMatch(Objects::isNull)).isFalse();
+        assertThat(Stream.of(1, null).anyMatch(Objects::isNull)).isTrue();
     }
 
     @Test

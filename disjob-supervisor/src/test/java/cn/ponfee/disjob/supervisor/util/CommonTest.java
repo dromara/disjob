@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 /**
@@ -222,7 +221,7 @@ public class CommonTest {
                                                           String jobHandler,
                                                           Worker worker) {
         ExecuteTaskParam param = new ExecuteTaskParam();
-        param.setOperation(new AtomicReference<>(operation));
+        param.setOperation(operation);
         param.setTaskId(taskId);
         param.setInstanceId(instanceId);
         param.setWnstanceId(wnstanceId);

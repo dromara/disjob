@@ -17,12 +17,8 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.param.supervisor.EventParam;
-import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
-import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
+import cn.ponfee.disjob.core.param.supervisor.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,7 +53,7 @@ public interface SupervisorRpcService {
      * @throws Exception if occur error
      */
     @GetMapping("/workflow/predecessor/nodes")
-    List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) throws Exception;
+    List<WorkflowPredecessorNodeParam> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) throws Exception;
 
     @PostMapping("/task/terminate")
     boolean terminateTask(TerminateTaskParam param) throws Exception;

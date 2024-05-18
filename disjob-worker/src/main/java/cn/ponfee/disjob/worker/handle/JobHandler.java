@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
+package cn.ponfee.disjob.worker.handle;
 
 /**
- * Save task execution snapshot
+ * Schedule job handler base class.
+ *
+ * <p>Note: if in spring context and a stateful bean, must be annotated with @Scope("prototype")
  *
  * @author Ponfee
+ * @see org.springframework.context.annotation.Scope
+ * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#SCOPE_PROTOTYPE
  */
-@FunctionalInterface
-public interface Savepoint {
+public abstract class JobHandler extends TaskExecutor implements JobSplitter {
 
-    /**
-     * Save the task execution snapshot
-     *
-     * @param executeSnapshot the task execution snapshot data
-     * @throws Exception if saved occur exception
-     */
-    void save(String executeSnapshot) throws Exception;
-
-    Savepoint DISCARD = executeSnapshot -> {};
 }

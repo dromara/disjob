@@ -17,9 +17,6 @@
 package cn.ponfee.disjob.worker.handle;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.handle.ExecuteResult;
-import cn.ponfee.disjob.core.handle.Savepoint;
-import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.worker.handle.impl.ScriptJobHandler;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;

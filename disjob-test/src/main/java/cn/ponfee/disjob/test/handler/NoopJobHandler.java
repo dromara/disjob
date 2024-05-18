@@ -17,11 +17,7 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.core.handle.ExecuteResult;
-import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.handle.Savepoint;
-import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

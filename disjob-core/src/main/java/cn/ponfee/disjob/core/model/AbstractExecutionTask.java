@@ -14,38 +14,42 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle.execution;
+package cn.ponfee.disjob.core.model;
 
-import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.Serializable;
 
 /**
- * Executed task
+ * Abstract execution task
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class ExecutedTask extends AbstractExecutionTask {
-    private static final long serialVersionUID = -4625053001297718912L;
+public abstract class AbstractExecutionTask extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = 6002495716472663520L;
 
     /**
-     * 执行状态
+     * 任务ID
      */
-    private ExecuteState executeState;
+    private Long taskId;
 
-    public static List<ExecutedTask> convert(List<SchedTask> tasks) {
-        if (tasks == null) {
-            return null;
-        }
-        return tasks.stream()
-            .map(ExecutionTaskConverter.INSTANCE::toExecutedTask)
-            .collect(Collectors.toList());
-    }
+    /**
+     * 当前任务序号(从1开始)
+     */
+    private Integer taskNo;
+
+    /**
+     * 任务总数量
+     */
+    private Integer taskCount;
+
+    /**
+     * 保存的执行快照数据
+     */
+    private String executeSnapshot;
 
 }

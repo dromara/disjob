@@ -14,32 +14,23 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package cn.ponfee.disjob.worker.handle;
 
 /**
- * Split task structure.
+ * Save task execution snapshot
  *
  * @author Ponfee
  */
-@Getter
-@Setter
-@NoArgsConstructor
-public class SplitTask implements java.io.Serializable {
-    private static final long serialVersionUID = 5200874217689134007L;
+@FunctionalInterface
+public interface Savepoint {
 
-    private String taskParam;
+    /**
+     * Save the task execution snapshot
+     *
+     * @param executeSnapshot the task execution snapshot data
+     * @throws Exception if saved occur exception
+     */
+    void save(String executeSnapshot) throws Exception;
 
-    public SplitTask(String taskParam) {
-        this.taskParam = taskParam;
-    }
-
-    @Override
-    public String toString() {
-        return taskParam;
-    }
-
+    Savepoint DISCARD = executeSnapshot -> {};
 }

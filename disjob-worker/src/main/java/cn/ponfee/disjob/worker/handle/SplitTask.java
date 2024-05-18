@@ -14,42 +14,37 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle.execution;
+package cn.ponfee.disjob.worker.handle;
 
-import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.param.worker.SplitTaskParam;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 /**
- * Abstract execution task
+ * Split task structure.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public abstract class AbstractExecutionTask extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 6002495716472663520L;
+@NoArgsConstructor
+public class SplitTask implements java.io.Serializable {
+    private static final long serialVersionUID = 5200874217689134007L;
 
-    /**
-     * 全局唯一ID
-     */
-    private Long taskId;
+    private String taskParam;
 
-    /**
-     * 当前任务序号(从1开始)
-     */
-    private Integer taskNo;
+    public SplitTask(String taskParam) {
+        this.taskParam = taskParam;
+    }
 
-    /**
-     * 任务总数量
-     */
-    private Integer taskCount;
+    @Override
+    public String toString() {
+        return taskParam;
+    }
 
-    /**
-     * 保存的执行快照数据
-     */
-    private String executeSnapshot;
+    public SplitTaskParam convert() {
+        return new SplitTaskParam(taskParam);
+    }
 
 }

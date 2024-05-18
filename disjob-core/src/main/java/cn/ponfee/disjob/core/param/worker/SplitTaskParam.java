@@ -14,17 +14,32 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.handle;
+package cn.ponfee.disjob.core.param.worker;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * Schedule job handler base class.
- *
- * <p>Note: if in spring context and a stateful bean, must be annotated with @Scope("prototype")
+ * Split task parameter.
  *
  * @author Ponfee
- * @see org.springframework.context.annotation.Scope
- * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#SCOPE_PROTOTYPE
  */
-public abstract class JobHandler extends TaskExecutor implements JobSplitter {
+@Getter
+@Setter
+@NoArgsConstructor
+public class SplitTaskParam implements java.io.Serializable {
+    private static final long serialVersionUID = -7020990825612520665L;
+
+    private String taskParam;
+
+    public SplitTaskParam(String taskParam) {
+        this.taskParam = taskParam;
+    }
+
+    @Override
+    public String toString() {
+        return taskParam;
+    }
 
 }

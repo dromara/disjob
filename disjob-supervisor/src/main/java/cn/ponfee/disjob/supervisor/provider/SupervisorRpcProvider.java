@@ -20,12 +20,8 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.handle.execution.WorkflowPredecessorNode;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.param.supervisor.EventParam;
-import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
-import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
+import cn.ponfee.disjob.core.param.supervisor.*;
 import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
@@ -67,7 +63,7 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
     }
 
     @Override
-    public List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+    public List<WorkflowPredecessorNodeParam> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
         return jobQuerier.findWorkflowPredecessorNodes(wnstanceId, instanceId);
     }
 

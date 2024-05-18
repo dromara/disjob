@@ -17,10 +17,10 @@
 package cn.ponfee.disjob.worker.handle.impl;
 
 import cn.ponfee.disjob.common.util.GroovyUtils;
-import cn.ponfee.disjob.core.handle.ExecuteResult;
-import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.handle.Savepoint;
-import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteResult;
+import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.JobHandler;
+import cn.ponfee.disjob.worker.handle.Savepoint;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;

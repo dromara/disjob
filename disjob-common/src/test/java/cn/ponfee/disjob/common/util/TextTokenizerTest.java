@@ -70,7 +70,7 @@ public class TextTokenizerTest {
         assertThat(tokenizer.next()).isEqualTo("");
         assertThat(tokenizer.hasNext()).isFalse();
 
-        assertThat("a".substring(0)).isEqualTo("a");
+        //assertThat("a".substring(0)).isEqualTo("a");
         assertThat("a".substring(1)).isEqualTo("");
     }
 

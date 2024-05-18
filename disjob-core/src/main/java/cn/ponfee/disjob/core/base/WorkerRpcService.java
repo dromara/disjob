@@ -17,11 +17,7 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
-import cn.ponfee.disjob.core.param.worker.ExistsTaskParam;
-import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
-import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import cn.ponfee.disjob.core.param.worker.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,7 +40,7 @@ public interface WorkerRpcService {
     void verify(JobHandlerParam param) throws JobException;
 
     @PostMapping("/job/split")
-    List<SplitTask> split(JobHandlerParam param) throws JobException;
+    List<SplitTaskParam> split(JobHandlerParam param) throws JobException;
 
     @GetMapping("/task/exists")
     boolean existsTask(ExistsTaskParam param);

@@ -29,11 +29,6 @@ import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
-import cn.ponfee.disjob.core.handle.ExecuteResult;
-import cn.ponfee.disjob.core.handle.JobHandler;
-import cn.ponfee.disjob.core.handle.JobSplitter;
-import cn.ponfee.disjob.core.handle.SplitTask;
-import cn.ponfee.disjob.core.handle.execution.ExecutingTask;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -45,6 +40,7 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -104,6 +100,9 @@ public class JobHandlerUtils {
             List<SplitTask> splitTasks = jobSplitter.split(param.getJobParam());
             if (CollectionUtils.isEmpty(splitTasks)) {
                 throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
+            }
+            if (splitTasks.stream().anyMatch(Objects::isNull)) {
+                throw new JobException(SPLIT_JOB_FAILED, "Job split null task.");
             }
             return splitTasks;
         } catch (JobException | JobRuntimeException e) {

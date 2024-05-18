@@ -91,8 +91,8 @@ public abstract class TaskDispatcher implements Startable {
         }
         List<DispatchTaskParam> params = tasks.stream()
             .peek(e -> {
-                Assert.notNull(e.operation(), () -> "Dispatch task operation cannot be null: " + e);
-                Assert.isTrue(e.operation().isNotTrigger(), () -> "Specific dispatch task operation cannot be trigger: " + e);
+                Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
+                Assert.isTrue(e.getOperation().isNotTrigger(), () -> "Specific dispatch task operation cannot be trigger: " + e);
                 Assert.notNull(e.getWorker(), () -> "Specific dispatch task worker cannot be null: " + e);
             })
             .map(e -> new DispatchTaskParam(e, null))
@@ -113,8 +113,8 @@ public abstract class TaskDispatcher implements Startable {
         }
         List<DispatchTaskParam> params = tasks.stream()
             .peek(e -> {
-                Assert.notNull(e.operation(), () -> "Dispatch task operation cannot be null: " + e);
-                Assert.isTrue(e.operation().isTrigger(), () -> "Assign dispatch task operation must be trigger: " + e);
+                Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
+                Assert.isTrue(e.getOperation().isTrigger(), () -> "Assign dispatch task operation must be trigger: " + e);
                 if (e.getRouteStrategy() == RouteStrategy.BROADCAST) {
                     Assert.notNull(e.getWorker(), () -> "Broadcast dispatch task worker cannot be null: " + e);
                 }
@@ -144,7 +144,7 @@ public abstract class TaskDispatcher implements Startable {
 
     private boolean dispatch0(List<DispatchTaskParam> params) {
         params.stream()
-            .filter(e -> e.task().operation().isTrigger())
+            .filter(e -> e.task().getOperation().isTrigger())
             .filter(e -> e.task().getRouteStrategy() != RouteStrategy.BROADCAST)
             // setWorker(null): reset worker
             .peek(e -> e.task().setWorker(null))

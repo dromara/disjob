@@ -19,6 +19,8 @@ package cn.ponfee.disjob.common.util;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Objects;
+
 /**
  * ClassUtils test
  *
@@ -32,6 +34,7 @@ public class ClassUtilsTest {
         Assertions.assertTrue(int.class.getClass() == int.class.getClass().getClass());
         Assertions.assertTrue(int.class.getClass() == Object.class.getClass());
         Assertions.assertTrue(int.class.getClass() == Object.class.getClass().getClass());
+        Assertions.assertTrue(Objects.equals(null, null));
     }
 
 }
