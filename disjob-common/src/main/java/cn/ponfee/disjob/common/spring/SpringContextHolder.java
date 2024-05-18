@@ -88,14 +88,16 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
             : new UnsupportedOperationException("ApplicationContext is not ConfigurableListableBeanFactory.");
     }
 
+    public static boolean isNotNull() {
+        return beanFactory != null || applicationContext != null;
+    }
+
     public static Environment getEnvironment() {
-        return applicationContext != null ? applicationContext.getEnvironment() : null;
+        return getApplicationContext().getEnvironment();
     }
 
     public static void publishEvent(Object event) {
-        if (applicationContext != null) {
-            applicationContext.publishEvent(event);
-        }
+        getApplicationContext().publishEvent(event);
     }
 
     // -----------------------------------------------------------------------getBean

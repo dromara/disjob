@@ -21,7 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * <pre>
  * System utility.
+ *
+ * 1）VM options(-D即为define)：java -Dkey=value -jar app.jar
+ * 2）Program arguments，即main方法的args[]：java -jar app.jar --server.port=8080
+ * </pre>
  *
  * @author Ponfee
  */
@@ -32,7 +37,7 @@ public final class SystemUtils {
     public static String getConfig(String name) {
         String value = null;
         try {
-            // 获取JVM环境变量(-D即为define的意思)：java -jar -Dkey=value
+            // JVM options
             value = System.getProperty(name);
             if (StringUtils.isNotEmpty(value)) {
                 return value;
