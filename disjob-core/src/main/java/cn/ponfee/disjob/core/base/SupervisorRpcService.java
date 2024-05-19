@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.supervisor.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,25 +34,11 @@ import java.util.List;
 @RequestMapping("/supervisor/rpc")
 public interface SupervisorRpcService {
 
-    @GetMapping("/task/get")
-    SchedTask getTask(long taskId) throws Exception;
-
     @PostMapping("/task/start")
-    boolean startTask(StartTaskParam param) throws Exception;
+    StartTaskResult startTask(StartTaskParam param) throws Exception;
 
     @PostMapping("/task/worker/update")
     void updateTaskWorker(List<UpdateTaskWorkerParam> list) throws Exception;
-
-    /**
-     * Finds workflow predecessor nodes
-     *
-     * @param wnstanceId the workflow lead instance id
-     * @param instanceId the current node instance id
-     * @return list of predecessor nodes
-     * @throws Exception if occur error
-     */
-    @GetMapping("/workflow/predecessor/nodes")
-    List<WorkflowPredecessorNodeParam> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) throws Exception;
 
     @PostMapping("/task/terminate")
     boolean terminateTask(TerminateTaskParam param) throws Exception;

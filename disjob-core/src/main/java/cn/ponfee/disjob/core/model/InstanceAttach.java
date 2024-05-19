@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.core.model;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,7 +32,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @NoArgsConstructor
-public class InstanceAttach implements Serializable {
+public class InstanceAttach extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -7365475674760089839L;
 
     /**

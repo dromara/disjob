@@ -18,6 +18,7 @@ package cn.ponfee.disjob.core.param.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.enums.JobType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,14 +37,18 @@ import java.io.Serializable;
 public class StartTaskParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7700836087189718161L;
 
+    private Long wnstanceId;
     private long instanceId;
     private long taskId;
     private String worker;
+    private JobType jobType;
 
-    public StartTaskParam(long instanceId, long taskId, Worker worker) {
+    public StartTaskParam(Long wnstanceId, long instanceId, long taskId, JobType jobType, Worker worker) {
         Assert.notNull(worker, "Start task worker param cannot be null.");
+        this.wnstanceId = wnstanceId;
         this.instanceId = instanceId;
         this.taskId = taskId;
+        this.jobType = jobType;
         this.worker = worker.serialize();
     }
 

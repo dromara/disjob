@@ -31,7 +31,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class SchedTask extends BaseEntity {
-
     private static final long serialVersionUID = 4882055618593707631L;
 
     /**

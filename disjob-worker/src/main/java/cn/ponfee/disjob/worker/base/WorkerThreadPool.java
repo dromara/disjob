@@ -28,14 +28,12 @@ import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
-import cn.ponfee.disjob.core.param.supervisor.WorkflowPredecessorNodeParam;
 import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
@@ -67,6 +65,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
     private static final int ERROR_MSG_MAX_LENGTH = 2048;
+    private static final int SNAPSHOT_MAX_LENGTH = 65535;
+    private static final AtomicInteger NAMED_SEQ = new AtomicInteger(1);
+    private static final AtomicInteger FUTURE_TASK_NAMED_SEQ = new AtomicInteger(1);
 
     /**
      * Supervisor rpc client
@@ -113,9 +114,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
      */
     private final TripState threadPoolState = TripState.createStarted();
 
-    public WorkerThreadPool(int maximumPoolSize,
-                            long keepAliveTimeSeconds,
-                            SupervisorRpcService supervisorRpcClient) {
+    public WorkerThreadPool(int maximumPoolSize, long keepAliveTimeSeconds, SupervisorRpcService supervisorRpcClient) {
         SingletonClassConstraint.constrain(this);
 
         Assert.isTrue(maximumPoolSize > 0, "Maximum pool size must be positive number.");
@@ -274,7 +273,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.warn("Not found executing task: {}, {}", taskId, ops);
             // 支持某些异常场景时手动结束任务（如断网数据库连接不上，任务执行结束后状态无法更新，一直停留在EXECUTING）：EXECUTING -> (PAUSED|CANCELED)
             // 但要注意可能存在的操作流程上的`ABA`问题：EXECUTING -> PAUSED -> WAITING -> EXECUTING -> (PAUSED|CANCELED)
-            terminateTask(this, stopParam, ops, ops.toState(), ops.name() + " aborted EXECUTING state task");
+            terminateTask(stopParam, ops, ops.toState(), ops.name() + " aborted EXECUTING state task");
             return;
         }
 
@@ -285,7 +284,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             // stop the work thread
             stopWorkerThread(workerThread, true);
         } finally {
-            terminateTask(this, task, ops, ops.toState(), null);
+            terminateTask(task, ops, ops.toState(), null);
         }
     }
 
@@ -321,7 +320,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         } catch (DuplicateTaskException e) {
             LOG.error(e.getMessage());
             // cancel this execution task
-            terminateTask(this, task, Operation.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
+            terminateTask(task, Operation.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
 
             // return this worker thread
             idlePool.putFirst(workerThread);
@@ -357,7 +356,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private WorkerThread createWorkerThreadIfNecessary() {
         for (int count; (count = workerThreadCounter.get()) < maximumPoolSize; ) {
             if (workerThreadCounter.compareAndSet(count, count + 1)) {
-                WorkerThread thread = new WorkerThread(this, keepAliveTimeSeconds);
+                WorkerThread thread = new WorkerThread(keepAliveTimeSeconds);
                 LOG.info("Created worker thread {}, current size: {}", thread, count + 1);
                 return thread;
             }
@@ -437,7 +436,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         return errorMsg;
     }
 
-    private static void terminateTask(WorkerThreadPool threadPool, WorkerTask task, Operation ops, ExecuteState toState, String errorMsg) {
+    private void terminateTask(WorkerTask task, Operation ops, ExecuteState toState, String errorMsg) {
         Assert.notNull(ops, "Terminate task operation cannot be null.");
         Assert.notNull(task.getWorker(), "Execute task param worker cannot be null.");
         if (!task.updateOperation(ops, null)) {
@@ -450,11 +449,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
             task.getInstanceId(), task.getWnstanceId(), task.getTaskId(),
             task.getWorker().serialize(), ops, toState, errorMsg
         );
-        threadPool.completedTaskCounter.incrementAndGet();
+        completedTaskCounter.incrementAndGet();
         long lockInstanceId = task.getWnstanceId() != null ? task.getWnstanceId() : task.getInstanceId();
         try {
             synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
-                if (!threadPool.supervisorRpcClient.terminateTask(terminateTaskParam)) {
+                if (!supervisorRpcClient.terminateTask(terminateTaskParam)) {
                     LOG.warn("Terminate task failed: {}, {}, {}", task.getTaskId(), ops, toState);
                 }
             }
@@ -572,7 +571,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
                 // 3、finally update the sched task state
                 if (success) {
-                    ThrowingRunnable.doCaught(() -> terminateTask(WorkerThreadPool.this, task, ops, ops.toState(), null), () -> "Terminate task error: " + task);
+                    ThrowingRunnable.doCaught(() -> terminateTask(task, ops, ops.toState(), null), () -> "Terminate task error: " + task);
                 } else {
                     LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
                 }
@@ -616,13 +615,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
     }
 
-    private static class TaskSavepoint implements Savepoint {
-        private static final int SNAPSHOT_MAX_LENGTH = 65535;
-        private final SupervisorRpcService client;
+    private class TaskSavepoint implements Savepoint {
         private final long taskId;
 
-        private TaskSavepoint(SupervisorRpcService client, long taskId) {
-            this.client = client;
+        private TaskSavepoint(long taskId) {
             this.taskId = taskId;
         }
 
@@ -631,7 +627,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (executeSnapshot != null && executeSnapshot.length() > SNAPSHOT_MAX_LENGTH) {
                 throw new SavepointFailedException("Execution snapshot length to large " + executeSnapshot.length());
             }
-            if (!client.savepoint(taskId, executeSnapshot)) {
+            if (!supervisorRpcClient.savepoint(taskId, executeSnapshot)) {
                 throw new SavepointFailedException("Save execution snapshot data occur error.");
             }
         }
@@ -640,14 +636,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     /**
      * Worker thread
      */
-    private static class WorkerThread extends Thread {
-        private static final AtomicInteger NAMED_SEQ = new AtomicInteger(1);
-        private static final AtomicInteger FUTURE_TASK_NAMED_SEQ = new AtomicInteger(1);
-
-        /**
-         * Worker thread pool reference
-         */
-        private final WorkerThreadPool threadPool;
+    private class WorkerThread extends Thread {
 
         /**
          * Thread keep alive time
@@ -669,8 +658,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
          */
         private final AtomicReference<WorkerTask> currentTask = new AtomicReference<>();
 
-        private WorkerThread(WorkerThreadPool threadPool, long keepAliveTimeSeconds) {
-            this.threadPool = threadPool;
+        private WorkerThread(long keepAliveTimeSeconds) {
             this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
 
             super.setDaemon(true);
@@ -690,7 +678,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void toStop() {
             if (workerThreadState.stop()) {
-                threadPool.workerThreadCounter.decrementAndGet();
+                workerThreadCounter.decrementAndGet();
                 WorkerTask task = currentTask();
                 if (task != null) {
                     task.stop();
@@ -757,54 +745,37 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } catch (Throwable t) {
                     LOG.error("Worker thread execute failed: " + task, t);
                     final WorkerTask task0 = task;
-                    ThrowingRunnable.doCaught(() -> terminateTask(threadPool, task0, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t)));
+                    ThrowingRunnable.doCaught(() -> terminateTask(task0, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t)));
                 }
 
                 // return this to idle thread pool
-                if (!threadPool.returnWorkerThread(this)) {
+                if (!returnWorkerThread(this)) {
                     break;
                 }
             }
 
-            threadPool.removeWorkerThread(this);
+            removeWorkerThread(this);
         }
 
         private void runTask(WorkerTask task) {
-            SchedTask schedTask;
             ExecutingTask executingTask;
-            SupervisorRpcService client = threadPool.supervisorRpcClient;
             try {
-                if ((schedTask = client.getTask(task.getTaskId())) == null) {
-                    LOG.error("Sched task not found {}", task);
-                    return;
-                }
-
-                ExecuteState fromState = ExecuteState.of(schedTask.getExecuteState());
-                if (fromState != WAITING) {
-                    LOG.warn("Task state not executable: {}, {}, {}", schedTask.getTaskId(), fromState, task.getOperation());
-                    return;
-                }
-
-                // build executing task
-                List<WorkflowPredecessorNodeParam> nodes = null;
-                if (task.getJobType() == JobType.WORKFLOW) {
-                    nodes = client.findWorkflowPredecessorNodes(task.getWnstanceId(), task.getInstanceId());
-                }
-                executingTask = ExecutingTask.of(task.getJobId(), task.getWnstanceId(), schedTask, nodes);
-
                 // update database records start state(sched_instance, sched_task)
                 // 这里存在调用超时，但实际supervisor启动task成功的情况
                 // 后续版本可考虑加一个请求ID标识，返回值也加上启动成功的那个请求ID。在重试时通过判断返回的请求ID是否等于本次的请求ID，来识别是否本次启动成功的
-                if (!client.startTask(new StartTaskParam(task.getInstanceId(), task.getTaskId(), task.getWorker()))) {
-                    LOG.warn("Task start conflicted {}", task);
+                StartTaskParam param = new StartTaskParam(task.getWnstanceId(), task.getInstanceId(), task.getTaskId(), task.getJobType(), task.getWorker());
+                StartTaskResult startTaskResult = supervisorRpcClient.startTask(param);
+                if (!startTaskResult.isSuccess()) {
+                    LOG.warn("Start task failed: {}, {}", task, startTaskResult.getMessage());
                     return;
                 }
+                executingTask = ExecutingTask.of(startTaskResult);
             } catch (Throwable t) {
-                LOG.warn("Start task fail: " + task, t);
+                LOG.warn("Start task error: " + task, t);
                 if (task.getRouteStrategy() != RouteStrategy.BROADCAST) {
                     // reset task worker
                     List<UpdateTaskWorkerParam> list = Collections.singletonList(new UpdateTaskWorkerParam(task.getTaskId(), null));
-                    ThrowingRunnable.doCaught(() -> client.updateTaskWorker(list), () -> "Reset task worker occur error: " + task);
+                    ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + task);
                 }
                 Threads.interruptIfNecessary(t);
                 // discard task
@@ -818,7 +789,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 task.bindTaskExecutor(taskExecutor);
             } catch (Throwable t) {
                 LOG.error("Load job handler error: " + task, t);
-                terminateTask(threadPool, task, Operation.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
+                terminateTask(task, Operation.TRIGGER, INSTANCE_FAILED, toErrorMsg(t));
                 return;
             }
 
@@ -828,7 +799,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.info("Initiated sched task {}", task.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Task init error: " + task, t);
-                terminateTask(threadPool, task, Operation.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
+                terminateTask(task, Operation.TRIGGER, INIT_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
                 return;
             }
@@ -836,7 +807,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             // 3、execute
             try {
                 ExecuteResult result;
-                Savepoint savepoint = new TaskSavepoint(client, executingTask.getTaskId());
+                Savepoint savepoint = new TaskSavepoint(executingTask.getTaskId());
                 if (task.getExecuteTimeout() > 0) {
                     FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, savepoint));
                     String threadName = getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
@@ -854,15 +825,15 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 // 4、execute end
                 if (result != null && result.isSuccess()) {
                     LOG.info("Task execute finished: {}, {}", task.getTaskId(), result.getMsg());
-                    terminateTask(threadPool, task, Operation.TRIGGER, FINISHED, null);
+                    terminateTask(task, Operation.TRIGGER, FINISHED, null);
                 } else {
                     LOG.error("Task execute failed: {}, {}", task, result);
                     String msg = (result == null) ? "null result" : result.getMsg();
-                    terminateTask(threadPool, task, Operation.TRIGGER, EXECUTE_FAILED, msg);
+                    terminateTask(task, Operation.TRIGGER, EXECUTE_FAILED, msg);
                 }
             } catch (TimeoutException e) {
                 LOG.error("Task execute timeout: " + task, e);
-                terminateTask(threadPool, task, Operation.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
+                terminateTask(task, Operation.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
             } catch (PauseTaskException e) {
                 LOG.error("Pause task exception: {}, {}", task, e.getMessage());
                 stopInstance(task, Operation.PAUSE, toErrorMsg(e));
@@ -878,7 +849,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } else {
                     LOG.error("Task execute occur error: " + task, t);
                 }
-                terminateTask(threadPool, task, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
+                terminateTask(task, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
             } finally {
                 // 5、destroy
@@ -898,16 +869,16 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
 
             LOG.info("Stop instance task: {}, {}", task.getTaskId(), ops);
-            terminateTask(threadPool, task, ops, ops.toState(), errorMsg);
+            terminateTask(task, ops, ops.toState(), errorMsg);
 
             boolean res = true;
             long lockInstanceId = task.getWnstanceId() != null ? task.getWnstanceId() : task.getInstanceId();
             try {
                 synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
                     if (ops == Operation.PAUSE) {
-                        res = threadPool.supervisorRpcClient.pauseInstance(lockInstanceId);
+                        res = supervisorRpcClient.pauseInstance(lockInstanceId);
                     } else if (ops == Operation.EXCEPTION_CANCEL) {
-                        res = threadPool.supervisorRpcClient.cancelInstance(lockInstanceId, ops);
+                        res = supervisorRpcClient.cancelInstance(lockInstanceId, ops);
                     } else {
                         LOG.error("Stop instance unsupported operation: {}, {}", task.getTaskId(), ops);
                     }

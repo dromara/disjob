@@ -14,25 +14,36 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.core.param.supervisor;
 
 import cn.ponfee.disjob.core.model.AbstractExecutionTask;
+import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.model.WorkflowPredecessorNode;
-import cn.ponfee.disjob.core.param.supervisor.StartTaskResult;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
 
 /**
- * Executing task
+ * Start task result
  *
  * @author Ponfee
  */
-@Getter
 @Setter
-public class ExecutingTask extends AbstractExecutionTask {
-    private static final long serialVersionUID = 8910065837652403459L;
+@Getter
+public class StartTaskResult extends AbstractExecutionTask {
+
+    private static final long serialVersionUID = 2873837797283062411L;
+
+    /**
+     * Is start successful
+     */
+    private boolean success;
+
+    /**
+     * Start message
+     */
+    private String message;
 
     /**
      * sched_job.job_id
@@ -60,23 +71,27 @@ public class ExecutingTask extends AbstractExecutionTask {
      */
     private List<WorkflowPredecessorNode> workflowPredecessorNodes;
 
-    public static ExecutingTask of(StartTaskResult source) {
-        if (source == null) {
-            return null;
-        }
+    public static StartTaskResult failure(String message) {
+        StartTaskResult res = new StartTaskResult();
+        res.setSuccess(false);
+        res.setMessage(message);
+        return res;
+    }
 
-        ExecutingTask target = new ExecutingTask();
-        target.setTaskId(source.getTaskId());
-        target.setTaskNo(source.getTaskNo());
-        target.setTaskCount(source.getTaskCount());
-        target.setExecuteSnapshot(source.getExecuteSnapshot());
+    public static StartTaskResult success(long jobId, Long wnstanceId, SchedTask task, List<WorkflowPredecessorNode> nodes) {
+        StartTaskResult res = new StartTaskResult();
+        res.setSuccess(true);
+        res.setTaskId(task.getTaskId());
+        res.setTaskNo(task.getTaskNo());
+        res.setTaskCount(task.getTaskCount());
+        res.setExecuteSnapshot(task.getExecuteSnapshot());
 
-        target.setJobId(source.getJobId());
-        target.setInstanceId(source.getInstanceId());
-        target.setWnstanceId(source.getWnstanceId());
-        target.setTaskParam(source.getTaskParam());
-        target.setWorkflowPredecessorNodes(source.getWorkflowPredecessorNodes());
-        return target;
+        res.setJobId(jobId);
+        res.setInstanceId(task.getInstanceId());
+        res.setWnstanceId(wnstanceId);
+        res.setTaskParam(task.getTaskParam());
+        res.setWorkflowPredecessorNodes(nodes);
+        return res;
     }
 
 }

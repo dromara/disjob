@@ -34,6 +34,7 @@ import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.param.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
@@ -52,6 +53,7 @@ import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
@@ -62,6 +64,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.LongFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -209,32 +212,36 @@ public class DistributedJobManager extends AbstractJobManager {
      * Starts the task
      *
      * @param param the start task param
-     * @return {@code true} if start successfully
+     * @return StartTaskResult, if not null start successfully
      */
-    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public boolean startTask(StartTaskParam param) {
-        SchedInstance instance = instanceMapper.get(param.getInstanceId());
-        Assert.notNull(instance, () -> "Sched instance not found: " + param);
-        // sched_instance.run_state must in (WAITING, RUNNING)
-        if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
-            return false;
-        }
+    public StartTaskResult startTask(StartTaskParam param) {
+        return doTransactionLockInSynchronized0(param.getInstanceId(), param.getWnstanceId(), lockedKey -> {
+            log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
+            Date now = new Date();
 
-        log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
-        Date now = new Date();
-        // start sched instance(also possibly started by other task)
-        int row = 0;
-        if (RunState.WAITING.equalsValue(instance.getRunState())) {
-            row = instanceMapper.start(param.getInstanceId(), now);
-        }
+            // start instance: if row=0 means started by other task
+            int instanceAffectedRow = instanceMapper.start(param.getInstanceId(), now);
+            SchedInstance instance = instanceMapper.get(param.getInstanceId());
+            if (instance == null) {
+                return StartTaskResult.failure("Instance not found");
+            }
+            if (!RunState.RUNNING.equalsValue(instance.getRunState())) {
+                return StartTaskResult.failure("Instance cannot startable: " + RunState.of(instance.getRunState()));
+            }
 
-        // start sched task
-        if (isOneAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), now))) {
-            return true;
-        } else {
-            Assert.state(row == 0, () -> "Start task failed: " + param);
-            return false;
-        }
+            // start task
+            if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), now))) {
+                // if instanceAffectedRow > 0, then throw exception for rollback transaction
+                Assert.state(instanceAffectedRow == 0, () -> "Start task failed: " + param);
+                return StartTaskResult.failure("Task stat failed");
+            }
+            SchedTask task = taskMapper.get(param.getTaskId());
+            List<WorkflowPredecessorNode> nodes = null;
+            if (param.getJobType() == JobType.WORKFLOW) {
+                nodes = findWorkflowPredecessorNodes(instance.getWnstanceId(), task.getInstanceId());
+            }
+            return StartTaskResult.success(instance.getJobId(), instance.getWnstanceId(), task, nodes);
+        });
     }
 
     public void changeInstanceState(long instanceId, ExecuteState toExecuteState) {
@@ -510,6 +517,14 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
+    private <T> T doTransactionLockInSynchronized0(long instanceId, Long wnstanceId, LongFunction<T> action) {
+        // Long.toString(lockKey).intern()
+        Long lockedKey = (wnstanceId == null) ? (Long) instanceId : wnstanceId;
+        synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedKey)) {
+            return transactionTemplate.execute(status -> action.apply(lockedKey));
+        }
+    }
+
     private void doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Consumer<SchedInstance> action) {
         doTransactionLockInSynchronized(instanceId, wnstanceId, Functions.convert(action, true));
     }
@@ -523,21 +538,16 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return boolean value of action result
      */
     private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Predicate<SchedInstance> action) {
-        // Long.toString(lockKey).intern()
-        Long lockInstanceId = (wnstanceId == null) ? instanceId : wnstanceId;
-        synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
-            Boolean result = transactionTemplate.execute(status -> {
-                SchedInstance lockedInstance = instanceMapper.lock(lockInstanceId);
-                Assert.notNull(lockedInstance, () -> "Lock instance not found: " + lockInstanceId);
-                SchedInstance instance = (instanceId == lockInstanceId) ? lockedInstance : instanceMapper.get(instanceId);
-                Assert.notNull(instance, () -> "Instance not found: " + instance);
-                if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
-                    throw new IllegalArgumentException("Invalid workflow instance id: " + wnstanceId + ", " + instance);
-                }
-                return action.test(instance);
-            });
-            return Boolean.TRUE.equals(result);
-        }
+        return doTransactionLockInSynchronized0(instanceId, wnstanceId, lockedKey -> {
+            SchedInstance lockedInstance = instanceMapper.lock(lockedKey);
+            Assert.notNull(lockedInstance, () -> "Locked instance not found: " + lockedKey);
+            SchedInstance instance = (instanceId == lockedKey) ? lockedInstance : instanceMapper.get(instanceId);
+            Assert.notNull(instance, () -> "Instance not found: " + instance);
+            if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
+                throw new IllegalArgumentException("Inconsistent workflow instanceId: expect=" + wnstanceId + ", actual=" + instance);
+            }
+            return action.test(instance);
+        });
     }
 
     private boolean shouldTerminateDispatchFailedTask(long taskId) {
@@ -848,7 +858,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void onCreateWorkflowNodeFailed(Long wnstanceId) {
-        Integer canceled = RunState.CANCELED.value();
+        int canceled = RunState.CANCELED.value();
         workflowMapper.update(wnstanceId, null, canceled, null, RUN_STATE_RUNNABLE, null);
         WorkflowGraph graph = new WorkflowGraph(workflowMapper.findByWnstanceId(wnstanceId));
         updateWorkflowEndState(graph);
@@ -1007,6 +1017,43 @@ public class DistributedJobManager extends AbstractJobManager {
             throw new IllegalStateException("Invalid dispatching tasks size: expect=" + expectTaskSize + ", actual=" + waitingTasks.size());
         }
         return Tuple3.of(job, instance, waitingTasks);
+    }
+
+    private List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+        List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
+        if (CollectionUtils.isEmpty(workflows)) {
+            return null;
+        }
+
+        SchedWorkflow curWorkflow = workflows.stream()
+            .filter(e -> e.getInstanceId() != null)
+            .filter(e -> e.getInstanceId() == instanceId)
+            .findAny()
+            .orElse(null);
+        if (curWorkflow == null) {
+            return null;
+        }
+
+        if (DAGNode.fromString(curWorkflow.getPreNode()).isStart()) {
+            return null;
+        }
+
+        DAGNode curNode = DAGNode.fromString(curWorkflow.getCurNode());
+        WorkflowGraph workflowGraph = new WorkflowGraph(workflows);
+        Map<DAGEdge, SchedWorkflow> predecessors = workflowGraph.predecessors(curNode);
+        if (MapUtils.isEmpty(predecessors)) {
+            return null;
+        }
+
+        return predecessors.values()
+            .stream()
+            .map(e -> {
+                List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId());
+                tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
+                return WorkflowPredecessorNode.of(e, tasks);
+            })
+            .sorted(Comparator.comparing(WorkflowPredecessorNode::getSequence))
+            .collect(Collectors.toList());
     }
 
 }

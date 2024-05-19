@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.param.supervisor.*;
 import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
@@ -48,23 +47,13 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
     }
 
     @Override
-    public SchedTask getTask(long taskId) {
-        return jobQuerier.getTask(taskId);
-    }
-
-    @Override
-    public boolean startTask(StartTaskParam param) {
+    public StartTaskResult startTask(StartTaskParam param) {
         return jobManager.startTask(param);
     }
 
     @Override
     public void updateTaskWorker(List<UpdateTaskWorkerParam> list) {
         jobManager.updateTaskWorker(list);
-    }
-
-    @Override
-    public List<WorkflowPredecessorNodeParam> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
-        return jobQuerier.findWorkflowPredecessorNodes(wnstanceId, instanceId);
     }
 
     @Override

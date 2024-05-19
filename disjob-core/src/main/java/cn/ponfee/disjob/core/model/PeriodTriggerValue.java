@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.core.model;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.date.DatePeriods;
 import cn.ponfee.disjob.core.enums.TriggerType;
 import lombok.Getter;
@@ -34,7 +35,7 @@ import java.util.Date;
  */
 @Setter
 @Getter
-public class PeriodTriggerValue implements Serializable {
+public class PeriodTriggerValue extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -8395535372974631095L;
 
     /**

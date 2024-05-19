@@ -39,7 +39,7 @@ public class PrimeAccumulateJobHandler extends JobHandler {
 
     @Override
     public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        long sum = executingTask.getWorkflowPredecessorNodeParams()
+        long sum = executingTask.getWorkflowPredecessorNodes()
             .stream()
             .peek(e -> Assert.state(RunState.FINISHED == e.getRunState(), "Previous instance unfinished: " + e.getInstanceId()))
             .flatMap(e -> e.getExecutedTasks().stream())

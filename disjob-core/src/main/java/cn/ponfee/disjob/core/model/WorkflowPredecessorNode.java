@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.param.supervisor;
+package cn.ponfee.disjob.core.model;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.RunState;
-import cn.ponfee.disjob.core.model.AbstractExecutionTask;
-import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.model.SchedWorkflow;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,23 +27,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Workflow predecessor node param
+ * Workflow predecessor node
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class WorkflowPredecessorNodeParam extends ToJsonString implements Serializable {
+public class WorkflowPredecessorNode extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 422243686633743869L;
 
-    private Long instanceId;
-    private Integer sequence;
+    private long instanceId;
+    private int sequence;
     private String curNode;
     private RunState runState;
     private List<ExecutedTask> executedTasks;
 
-    public static WorkflowPredecessorNodeParam of(SchedWorkflow workflow, List<SchedTask> tasks) {
-        WorkflowPredecessorNodeParam node = new WorkflowPredecessorNodeParam();
+    public static WorkflowPredecessorNode of(SchedWorkflow workflow, List<SchedTask> tasks) {
+        WorkflowPredecessorNode node = new WorkflowPredecessorNode();
         node.setInstanceId(workflow.getInstanceId());
         node.setSequence(workflow.getSequence());
         node.setCurNode(workflow.getCurNode());
@@ -72,21 +69,21 @@ public class WorkflowPredecessorNodeParam extends ToJsonString implements Serial
         if (tasks == null) {
             return null;
         }
-        return tasks.stream().map(WorkflowPredecessorNodeParam::convert).collect(Collectors.toList());
+        return tasks.stream().map(WorkflowPredecessorNode::convert).collect(Collectors.toList());
     }
 
-    private static ExecutedTask convert(SchedTask task) {
-        if (task == null) {
+    private static ExecutedTask convert(SchedTask source) {
+        if (source == null) {
             return null;
         }
 
-        ExecutedTask executedTask = new ExecutedTask();
-        executedTask.setTaskId(task.getTaskId());
-        executedTask.setTaskNo(task.getTaskNo());
-        executedTask.setTaskCount(task.getTaskCount());
-        executedTask.setExecuteSnapshot(task.getExecuteSnapshot());
-        executedTask.setExecuteState(ExecuteState.of(task.getExecuteState()));
-        return executedTask;
+        ExecutedTask target = new ExecutedTask();
+        target.setTaskId(source.getTaskId());
+        target.setTaskNo(source.getTaskNo());
+        target.setTaskCount(source.getTaskCount());
+        target.setExecuteSnapshot(source.getExecuteSnapshot());
+        target.setExecuteState(ExecuteState.of(source.getExecuteState()));
+        return target;
     }
 
 }
