@@ -450,15 +450,45 @@ public class WorkerThreadPool extends Thread implements Closeable {
             task.getWorker().serialize(), ops, toState, errorMsg
         );
         completedTaskCounter.incrementAndGet();
-        long lockInstanceId = task.getWnstanceId() != null ? task.getWnstanceId() : task.getInstanceId();
+        Long lockedInstanceId = task.getLockedKey();
         try {
-            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
+            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedInstanceId)) {
                 if (!supervisorRpcClient.terminateTask(terminateTaskParam)) {
                     LOG.warn("Terminate task failed: {}, {}, {}", task.getTaskId(), ops, toState);
                 }
             }
         } catch (Throwable t) {
             LOG.error("Terminate task occur error: {}, {}, {}", task.getTaskId(), ops, toState);
+            Threads.interruptIfNecessary(t);
+        }
+    }
+
+    private void stopInstance(WorkerTask task, Operation ops, String errorMsg) {
+        if (!task.updateOperation(Operation.TRIGGER, ops)) {
+            LOG.info("Stop instance conflict: {}, {}", task, ops);
+            return;
+        }
+
+        LOG.info("Stop instance task: {}, {}", task.getTaskId(), ops);
+        terminateTask(task, ops, ops.toState(), errorMsg);
+
+        boolean res = true;
+        Long lockedInstanceId = task.getLockedKey();
+        try {
+            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedInstanceId)) {
+                if (ops == Operation.PAUSE) {
+                    res = supervisorRpcClient.pauseInstance(lockedInstanceId);
+                } else if (ops == Operation.EXCEPTION_CANCEL) {
+                    res = supervisorRpcClient.cancelInstance(lockedInstanceId, ops);
+                } else {
+                    LOG.error("Stop instance unsupported operation: {}, {}", task.getTaskId(), ops);
+                }
+            }
+            if (!res) {
+                LOG.info("Stop instance conflict: {}, {}, {}", task.getInstanceId(), task.getTaskId(), ops);
+            }
+        } catch (Throwable t) {
+            LOG.error("Stop instance error: " + task.getTaskId() + ", " + ops, t);
             Threads.interruptIfNecessary(t);
         }
     }
@@ -861,37 +891,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
             }
         }
-
-        private void stopInstance(WorkerTask task, Operation ops, String errorMsg) {
-            if (!task.updateOperation(Operation.TRIGGER, ops)) {
-                LOG.info("Stop instance conflict: {}, {}", task, ops);
-                return;
-            }
-
-            LOG.info("Stop instance task: {}, {}", task.getTaskId(), ops);
-            terminateTask(task, ops, ops.toState(), errorMsg);
-
-            boolean res = true;
-            long lockInstanceId = task.getWnstanceId() != null ? task.getWnstanceId() : task.getInstanceId();
-            try {
-                synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
-                    if (ops == Operation.PAUSE) {
-                        res = supervisorRpcClient.pauseInstance(lockInstanceId);
-                    } else if (ops == Operation.EXCEPTION_CANCEL) {
-                        res = supervisorRpcClient.cancelInstance(lockInstanceId, ops);
-                    } else {
-                        LOG.error("Stop instance unsupported operation: {}, {}", task.getTaskId(), ops);
-                    }
-                }
-                if (!res) {
-                    LOG.info("Stop instance conflict: {}, {}, {}", task.getInstanceId(), task.getTaskId(), ops);
-                }
-            } catch (Throwable t) {
-                LOG.error("Stop instance error: " + task.getTaskId() + ", " + ops, t);
-                Threads.interruptIfNecessary(t);
-            }
-        }
-
     } // end of worker thread class definition
 
 }

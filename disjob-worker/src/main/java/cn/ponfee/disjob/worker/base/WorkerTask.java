@@ -75,6 +75,10 @@ class WorkerTask {
 
     // --------------------------------------------------------other methods
 
+    Long getLockedKey() {
+        return wnstanceId != null ? wnstanceId : instanceId;
+    }
+
     boolean updateOperation(Operation expect, Operation update) {
         return operation.compareAndSet(expect, update);
     }

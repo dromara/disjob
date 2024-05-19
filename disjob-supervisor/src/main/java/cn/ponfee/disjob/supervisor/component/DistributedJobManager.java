@@ -219,7 +219,7 @@ public class DistributedJobManager extends AbstractJobManager {
             log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
             Date now = new Date();
 
-            // start instance: if row=0 means started by other task
+            // start instance: if instanceAffectedRow=0 means started by other task
             int instanceAffectedRow = instanceMapper.start(param.getInstanceId(), now);
             SchedInstance instance = instanceMapper.get(param.getInstanceId());
             if (instance == null) {
@@ -519,7 +519,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private <T> T doTransactionLockInSynchronized0(long instanceId, Long wnstanceId, LongFunction<T> action) {
         // Long.toString(lockKey).intern()
-        Long lockedKey = (wnstanceId == null) ? (Long) instanceId : wnstanceId;
+        Long lockedKey = wnstanceId != null ? wnstanceId : (Long) instanceId;
         synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedKey)) {
             return transactionTemplate.execute(status -> action.apply(lockedKey));
         }
