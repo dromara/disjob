@@ -17,7 +17,7 @@
 //
 //package cn.ponfee.disjob.supervisor.config;
 //
-//import cn.ponfee.disjob.core.param.worker.AuthenticationParam;
+//import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 //import org.apache.commons.lang3.ArrayUtils;
 //import org.aspectj.lang.JoinPoint;
 //import org.aspectj.lang.annotation.Aspect;
@@ -33,7 +33,7 @@
 //@Component
 //public class AuthenticationCallWorker {
 //
-//    @Before("execution(* cn.ponfee.disjob..*.*(..,cn.ponfee.disjob.core.param.worker.AuthenticationParam+,..))")
+//    @Before("execution(* cn.ponfee.disjob..*.*(..,cn.ponfee.disjob.core.dto.worker.AuthenticationParam+,..))")
 //    public void doBefore(JoinPoint point) {
 //        Object[] args = point.getArgs();
 //        if (ArrayUtils.isEmpty(args)) {

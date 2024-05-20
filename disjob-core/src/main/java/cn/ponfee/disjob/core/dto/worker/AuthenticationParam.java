@@ -14,32 +14,27 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.param.worker;
+package cn.ponfee.disjob.core.dto.worker;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
- * Split task parameter.
+ * Worker authentication param
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-@NoArgsConstructor
-public class SplitTaskParam implements java.io.Serializable {
-    private static final long serialVersionUID = -7020990825612520665L;
+public abstract class AuthenticationParam extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -6147946999789807933L;
 
-    private String taskParam;
-
-    public SplitTaskParam(String taskParam) {
-        this.taskParam = taskParam;
-    }
-
-    @Override
-    public String toString() {
-        return taskParam;
-    }
+    /**
+     * 从Supervisor侧传过来的token
+     */
+    private String supervisorToken;
 
 }

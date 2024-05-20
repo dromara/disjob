@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.core.dto.supervisor.*;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.param.supervisor.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

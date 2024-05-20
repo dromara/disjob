@@ -16,9 +16,9 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
+import cn.ponfee.disjob.core.dto.worker.SplitTaskResult;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
-import cn.ponfee.disjob.core.param.worker.SplitTaskParam;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import org.junit.jupiter.api.Test;
 
@@ -46,9 +46,9 @@ public class WorkerRpcServiceTest extends SpringBootTestBase<Object> {
     public void testSplit() throws JobException {
         String taskParam = "taskParam";
         //doReturn(Collections.singletonList(new SplitTask(taskParam))).when(workerRpcService).split(any());
-        when(workerRpcService.split(any())).thenReturn(Collections.singletonList(new SplitTaskParam(taskParam)));
+        when(workerRpcService.split(any())).thenReturn(Collections.singletonList(new SplitTaskResult(taskParam)));
 
-        List<SplitTaskParam> result = workerRpcService.split(new JobHandlerParam("group", null, null, null, null));
+        List<SplitTaskResult> result = workerRpcService.split(new SplitJobParam("group", null, null, null, null));
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(taskParam, result.get(0).getTaskParam());

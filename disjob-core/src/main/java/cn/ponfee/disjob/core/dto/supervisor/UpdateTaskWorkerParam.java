@@ -14,28 +14,33 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.param.worker;
+package cn.ponfee.disjob.core.dto.supervisor;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.base.Worker;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
- * Exists task param
+ * Update task worker parameter
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class ExistsTaskParam extends AuthenticationParam {
-    private static final long serialVersionUID = -2212057097314433737L;
+public class UpdateTaskWorkerParam extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -6622646278492874535L;
 
     private long taskId;
+    private String worker;
 
-    public ExistsTaskParam(String supervisorToken, long taskId) {
-        super.setSupervisorToken(supervisorToken);
+    public UpdateTaskWorkerParam(long taskId, Worker worker) {
         this.taskId = taskId;
+        this.worker = worker == null ? null : worker.serialize();
     }
 
 }

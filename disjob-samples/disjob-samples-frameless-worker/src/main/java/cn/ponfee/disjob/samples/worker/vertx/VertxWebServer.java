@@ -23,10 +23,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.RpcControllerUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
-import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam;
-import cn.ponfee.disjob.core.param.worker.ExistsTaskParam;
-import cn.ponfee.disjob.core.param.worker.GetMetricsParam;
-import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
+import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.samples.worker.util.JobHandlerParser;
@@ -107,12 +104,12 @@ public class VertxWebServer extends AbstractVerticle {
 
         //String[] args = ctx.body().asPojo(String[].class);
         router.post(PREFIX_PATH + "/job/verify").handler(ctx -> handle(() -> {
-            JobHandlerParam param = parseBodyArg(ctx, JobHandlerParam.class);
+            VerifyJobParam param = parseBodyArg(ctx, VerifyJobParam.class);
             workerRpcService.verify(param);
         }, ctx, BAD_REQUEST));
 
         router.post(PREFIX_PATH + "/job/split").handler(ctx -> handle(() -> {
-            JobHandlerParam param = parseBodyArg(ctx, JobHandlerParam.class);
+            SplitJobParam param = parseBodyArg(ctx, SplitJobParam.class);
             JobHandlerParser.parse(param, "jobHandler");
             return workerRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));

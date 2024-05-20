@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.param.supervisor;
+package cn.ponfee.disjob.core.dto.supervisor;
 
 import cn.ponfee.disjob.core.model.AbstractExecutionTask;
 import cn.ponfee.disjob.core.model.SchedTask;

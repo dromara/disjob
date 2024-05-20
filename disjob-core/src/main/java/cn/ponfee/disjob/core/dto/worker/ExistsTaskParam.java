@@ -14,31 +14,28 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.param.worker;
+package cn.ponfee.disjob.core.dto.worker;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Get worker metrics param
+ * Exists task param
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class GetMetricsParam extends AuthenticationParam {
-    private static final long serialVersionUID = 6100003437491314940L;
+public class ExistsTaskParam extends AuthenticationParam {
+    private static final long serialVersionUID = -2212057097314433737L;
 
-    /**
-     * Group
-     */
-    private String group;
+    private long taskId;
 
-    public GetMetricsParam(String supervisorToken, String group) {
+    public ExistsTaskParam(String supervisorToken, long taskId) {
         super.setSupervisorToken(supervisorToken);
-        this.group = group;
+        this.taskId = taskId;
     }
 
 }

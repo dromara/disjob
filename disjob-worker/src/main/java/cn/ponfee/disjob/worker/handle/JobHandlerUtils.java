@@ -25,11 +25,11 @@ import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
-import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ import static cn.ponfee.disjob.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
  */
 public class JobHandlerUtils {
 
-    public static void verify(JobHandlerParam param) throws JobException {
+    public static void verify(VerifyJobParam param) throws JobException {
         Assert.hasText(param.getJobHandler(), "Job handler cannot be blank.");
         Set<String> jobHandlers;
         if (param.getJobType() == JobType.WORKFLOW) {
@@ -77,7 +77,7 @@ public class JobHandlerUtils {
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
                 } else {
                     param.setJobHandler(jobHandler);
-                    Assert.notEmpty(split(param), () -> "Not split any task: " + jobHandler);
+                    Assert.notEmpty(split(param.getJobHandler(), param.getJobParam()), () -> "Not split any task: " + jobHandler);
                 }
             }
         } catch (JobException | JobRuntimeException e) {
@@ -90,14 +90,15 @@ public class JobHandlerUtils {
     /**
      * Splits job to many sched task.
      *
-     * @param param the job handler parameter
+     * @param jobHandler the job handler
+     * @param jobParam   the job param
      * @return list of SplitTask
      * @throws JobException if split failed
      */
-    public static List<SplitTask> split(JobHandlerParam param) throws JobException {
+    public static List<SplitTask> split(String jobHandler, String jobParam) throws JobException {
         try {
-            JobSplitter jobSplitter = load(param.getJobHandler());
-            List<SplitTask> splitTasks = jobSplitter.split(param.getJobParam());
+            JobSplitter jobSplitter = load(jobHandler);
+            List<SplitTask> splitTasks = jobSplitter.split(jobParam);
             if (CollectionUtils.isEmpty(splitTasks)) {
                 throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
             }

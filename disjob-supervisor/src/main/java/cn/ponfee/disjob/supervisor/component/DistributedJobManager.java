@@ -30,14 +30,14 @@ import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
+import cn.ponfee.disjob.core.dto.supervisor.TerminateTaskParam;
+import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
+import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
-import cn.ponfee.disjob.core.param.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.param.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.param.supervisor.TerminateTaskParam;
-import cn.ponfee.disjob.core.param.supervisor.UpdateTaskWorkerParam;
-import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
@@ -748,7 +748,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             try {
                 long nextInstanceId = generateId();
-                List<SchedTask> tasks = splitTasks(JobHandlerParam.from(job, target.getName()), nextInstanceId, new Date());
+                List<SchedTask> tasks = splitJob(SplitJobParam.from(job, target.getName()), nextInstanceId, new Date());
                 long triggerTime = leadInstance.getTriggerTime() + workflow.getSequence();
                 SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), RunType.of(leadInstance.getRunType()), triggerTime, 0, now);
                 nextInstance.setRnstanceId(wnstanceId);
@@ -903,7 +903,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (retryType == RetryType.ALL) {
             try {
                 // re-split tasks
-                tasks = splitTasks(JobHandlerParam.from(schedJob), retryInstance.getInstanceId(), now);
+                tasks = splitJob(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
             } catch (Throwable t) {
                 log.error("Split retry job error: " + schedJob + ", " + prev, t);
                 processWorkflow(prev);

@@ -14,27 +14,31 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.param.worker;
+package cn.ponfee.disjob.core.dto.worker;
 
-import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 /**
- * Worker authentication param
+ * Get worker metrics param
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public abstract class AuthenticationParam extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = -6147946999789807933L;
+@NoArgsConstructor
+public class GetMetricsParam extends AuthenticationParam {
+    private static final long serialVersionUID = 6100003437491314940L;
 
     /**
-     * 从Supervisor侧传过来的token
+     * Group
      */
-    private String supervisorToken;
+    private String group;
+
+    public GetMetricsParam(String supervisorToken, String group) {
+        super.setSupervisorToken(supervisorToken);
+        this.group = group;
+    }
 
 }

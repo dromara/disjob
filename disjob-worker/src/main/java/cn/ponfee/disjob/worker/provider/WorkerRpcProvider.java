@@ -20,13 +20,12 @@ import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.dto.worker.*;
+import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.param.worker.*;
-import cn.ponfee.disjob.core.param.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.handle.JobHandlerUtils;
-import cn.ponfee.disjob.worker.handle.SplitTask;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,17 +48,17 @@ public class WorkerRpcProvider implements WorkerRpcService {
     }
 
     @Override
-    public void verify(JobHandlerParam param) throws JobException {
+    public void verify(VerifyJobParam param) throws JobException {
         currentWork.verifySupervisorAuthenticationToken(param);
         JobHandlerUtils.verify(param);
     }
 
     @Override
-    public List<SplitTaskParam> split(JobHandlerParam param) throws JobException {
+    public List<SplitTaskResult> split(SplitJobParam param) throws JobException {
         currentWork.verifySupervisorAuthenticationToken(param);
-        return JobHandlerUtils.split(param)
+        return JobHandlerUtils.split(param.getJobHandler(), param.getJobParam())
             .stream()
-            .map(SplitTask::convert)
+            .map(e -> new SplitTaskResult(e.getTaskParam()))
             .collect(Collectors.toList());
     }
 

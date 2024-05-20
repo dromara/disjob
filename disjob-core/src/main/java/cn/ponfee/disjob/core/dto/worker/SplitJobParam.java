@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.param.worker;
+package cn.ponfee.disjob.core.dto.worker;
 
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
@@ -24,14 +24,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Job handler param
+ * Split job parameter.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class JobHandlerParam extends AuthenticationParam {
+public class SplitJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
     private String group;
@@ -40,8 +40,8 @@ public class JobHandlerParam extends AuthenticationParam {
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
-    public JobHandlerParam(String group, String jobHandler, String jobParam,
-                           JobType jobType, RouteStrategy routeStrategy) {
+    public SplitJobParam(String group, String jobHandler, String jobParam,
+                         JobType jobType, RouteStrategy routeStrategy) {
         this.group = group;
         this.jobHandler = jobHandler;
         this.jobParam = jobParam;
@@ -49,12 +49,12 @@ public class JobHandlerParam extends AuthenticationParam {
         this.routeStrategy = routeStrategy;
     }
 
-    public static JobHandlerParam from(SchedJob job) {
+    public static SplitJobParam from(SchedJob job) {
         return from(job, job.getJobHandler());
     }
 
-    public static JobHandlerParam from(SchedJob job, String jobHandler) {
-        return new JobHandlerParam(
+    public static SplitJobParam from(SchedJob job, String jobHandler) {
+        return new SplitJobParam(
             job.getGroup(),
             jobHandler,
             job.getJobParam(),

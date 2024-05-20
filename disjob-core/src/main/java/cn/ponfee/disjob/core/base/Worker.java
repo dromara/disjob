@@ -18,10 +18,10 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.util.Numbers;
+import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.TokenType;
-import cn.ponfee.disjob.core.param.worker.AuthenticationParam;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

@@ -22,11 +22,11 @@ import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
-import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import lombok.Getter;
@@ -85,8 +85,8 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
             nodeInstance.setWnstanceId(wnstanceId);
             nodeInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
 
-            JobHandlerParam param = JobHandlerParam.from(job, node.getName());
-            List<SchedTask> tasks = jobManager.splitTasks(param, nodeInstance.getInstanceId(), now);
+            SplitJobParam param = SplitJobParam.from(job, node.getName());
+            List<SchedTask> tasks = jobManager.splitJob(param, nodeInstance.getInstanceId(), now);
             nodeInstances.add(Tuple2.of(nodeInstance, tasks));
         }
 

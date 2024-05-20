@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.worker.handle;
 
-import cn.ponfee.disjob.core.param.worker.SplitTaskParam;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,10 +40,6 @@ public class SplitTask implements java.io.Serializable {
     @Override
     public String toString() {
         return taskParam;
-    }
-
-    public SplitTaskParam convert() {
-        return new SplitTaskParam(taskParam);
     }
 
 }

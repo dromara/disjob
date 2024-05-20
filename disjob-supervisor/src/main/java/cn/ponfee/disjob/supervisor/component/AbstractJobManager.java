@@ -24,15 +24,16 @@ import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.dto.worker.ExistsTaskParam;
+import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
+import cn.ponfee.disjob.core.dto.worker.SplitTaskResult;
+import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.SchedDepend;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.param.worker.ExistsTaskParam;
-import cn.ponfee.disjob.core.param.worker.JobHandlerParam;
-import cn.ponfee.disjob.core.param.worker.SplitTaskParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -198,7 +199,7 @@ public abstract class AbstractJobManager {
         return idGenerator.generateId();
     }
 
-    public List<SchedTask> splitTasks(JobHandlerParam param, long instanceId, Date date) throws JobException {
+    public List<SchedTask> splitJob(SplitJobParam param, long instanceId, Date date) throws JobException {
         if (RouteStrategy.BROADCAST == param.getRouteStrategy()) {
             List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getGroup());
             if (discoveredServers.isEmpty()) {
@@ -209,12 +210,12 @@ public abstract class AbstractJobManager {
                 .mapToObj(i -> SchedTask.create(param.getJobParam(), generateId(), instanceId, i + 1, count, date, discoveredServers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
-            List<SplitTaskParam> split = splitJob(param);
+            List<SplitTaskResult> split = splitJob(param);
             Assert.notEmpty(split, () -> "Not split any task: " + param);
             Assert.isTrue(split.size() <= maximumSplitTaskSize, () -> "Split task size must less than " + maximumSplitTaskSize + ", job=" + param);
             int count = split.size();
             return IntStream.range(0, count)
-                .mapToObj(i -> SchedTask.create(Optional.ofNullable(split.get(i)).map(SplitTaskParam::getTaskParam).orElse(null), generateId(), instanceId, i + 1, count, date, null))
+                .mapToObj(i -> SchedTask.create(split.get(i).getTaskParam(), generateId(), instanceId, i + 1, count, date, null))
                 .collect(Collectors.toList());
         }
     }
@@ -318,12 +319,12 @@ public abstract class AbstractJobManager {
     // ------------------------------------------------------------------private methods
 
     private void verifyJob(SchedJob job) throws JobException {
-        JobHandlerParam param = JobHandlerParam.from(job);
+        VerifyJobParam param = VerifyJobParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verify(param));
     }
 
-    private List<SplitTaskParam> splitJob(JobHandlerParam param) throws JobException {
+    private List<SplitTaskResult> splitJob(SplitJobParam param) throws JobException {
         SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
         return groupedWorkerRpcClient.call(param.getGroup(), client -> client.split(param));
     }

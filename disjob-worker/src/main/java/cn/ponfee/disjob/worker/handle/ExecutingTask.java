@@ -16,9 +16,9 @@
 
 package cn.ponfee.disjob.worker.handle;
 
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.model.AbstractExecutionTask;
 import cn.ponfee.disjob.core.model.WorkflowPredecessorNode;
-import cn.ponfee.disjob.core.param.supervisor.StartTaskResult;
 import lombok.Getter;
 import lombok.Setter;
 

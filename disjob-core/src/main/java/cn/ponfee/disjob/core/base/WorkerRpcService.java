@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.core.base;
 
+import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.param.worker.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,10 +37,10 @@ public interface WorkerRpcService {
     String PREFIX_PATH = "/worker/rpc";
 
     @PostMapping("/job/verify")
-    void verify(JobHandlerParam param) throws JobException;
+    void verify(VerifyJobParam param) throws JobException;
 
     @PostMapping("/job/split")
-    List<SplitTaskParam> split(JobHandlerParam param) throws JobException;
+    List<SplitTaskResult> split(SplitJobParam param) throws JobException;
 
     @GetMapping("/task/exists")
     boolean existsTask(ExistsTaskParam param);
