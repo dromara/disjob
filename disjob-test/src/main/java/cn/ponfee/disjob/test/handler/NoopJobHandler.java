@@ -17,7 +17,10 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.worker.handle.*;
+import cn.ponfee.disjob.worker.handle.ExecuteResult;
+import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.JobHandler;
+import cn.ponfee.disjob.worker.handle.Savepoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +42,9 @@ public class NoopJobHandler extends JobHandler {
     public static volatile long minor = 19997;
 
     @Override
-    public List<SplitTask> split(String jobParamString) {
+    public List<String> split(String jobParamString) {
         return IntStream.range(0, 1 + ThreadLocalRandom.current().nextInt(5))
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
-            .map(SplitTask::new)
             .collect(Collectors.toList());
     }
 

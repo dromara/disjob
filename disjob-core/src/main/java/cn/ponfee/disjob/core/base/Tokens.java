@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.core.model.TokenType;
+import cn.ponfee.disjob.core.enums.TokenType;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -19,7 +19,10 @@ package cn.ponfee.disjob.test.handler;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.test.util.Prime;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
-import cn.ponfee.disjob.worker.handle.*;
+import cn.ponfee.disjob.worker.handle.ExecuteResult;
+import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.JobHandler;
+import cn.ponfee.disjob.worker.handle.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +58,7 @@ public class PrimeCountJobHandler extends JobHandler {
      * @return task list
      */
     @Override
-    public List<SplitTask> split(String jobParamString) {
+    public List<String> split(String jobParamString) {
         JobParam jobParam = Jsons.fromJson(jobParamString, JobParam.class);
         long m = jobParam.getM();
         long n = jobParam.getN();
@@ -66,14 +69,14 @@ public class PrimeCountJobHandler extends JobHandler {
         Assert.isTrue(jobParam.getParallel() > 0, "Parallel must be greater than zero.");
 
         int parallel = n == m ? 1 : (int) Math.min(((n - m) + blockSize - 1) / blockSize, jobParam.getParallel());
-        List<SplitTask> result = new ArrayList<>(parallel);
+        List<String> result = new ArrayList<>(parallel);
         for (int i = 0; i < parallel; i++) {
             TaskParam taskParam = new TaskParam();
             taskParam.setStart(m + blockSize * i);
             taskParam.setBlockSize(blockSize);
             taskParam.setStep(blockSize * parallel);
             taskParam.setN(n);
-            result.add(new SplitTask(Jsons.toJson(taskParam)));
+            result.add(Jsons.toJson(taskParam));
         }
         return result;
     }

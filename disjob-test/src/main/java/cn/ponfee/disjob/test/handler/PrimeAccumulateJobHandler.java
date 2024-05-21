@@ -19,7 +19,10 @@ package cn.ponfee.disjob.test.handler;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.AbstractExecutionTask;
-import cn.ponfee.disjob.worker.handle.*;
+import cn.ponfee.disjob.worker.handle.ExecuteResult;
+import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.JobHandler;
+import cn.ponfee.disjob.worker.handle.Savepoint;
 import org.springframework.util.Assert;
 
 import java.util.Collections;
@@ -33,8 +36,8 @@ import java.util.List;
 public class PrimeAccumulateJobHandler extends JobHandler {
 
     @Override
-    public List<SplitTask> split(String jobParamString) {
-        return Collections.singletonList(new SplitTask(null));
+    public List<String> split(String jobParamString) {
+        return Collections.singletonList(null);
     }
 
     @Override

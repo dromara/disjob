@@ -19,7 +19,7 @@ package cn.ponfee.disjob.admin.controller;
 import cn.ponfee.disjob.admin.util.PageUtils;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.model.TokenType;
+import cn.ponfee.disjob.core.enums.TokenType;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerInvokeService;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;

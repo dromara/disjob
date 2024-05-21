@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.core.model.TokenType;
+import cn.ponfee.disjob.core.enums.TokenType;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

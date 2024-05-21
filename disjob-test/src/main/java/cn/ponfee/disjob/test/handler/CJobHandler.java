@@ -18,7 +18,10 @@ package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.test.util.Constants;
-import cn.ponfee.disjob.worker.handle.*;
+import cn.ponfee.disjob.worker.handle.ExecuteResult;
+import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.JobHandler;
+import cn.ponfee.disjob.worker.handle.Savepoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -43,10 +46,9 @@ public class CJobHandler extends JobHandler {
     private static final Logger LOG = LoggerFactory.getLogger(CJobHandler.class);
 
     @Override
-    public List<SplitTask> split(String jobParamString) {
+    public List<String> split(String jobParamString) {
         return IntStream.range(0, Constants.TASK_COUNT)
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
-            .map(SplitTask::new)
             .collect(Collectors.toList());
     }
 

@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
-
 /**
  * Worker rpc service, provides for supervisor communication.
  *
@@ -40,7 +38,7 @@ public interface WorkerRpcService {
     void verify(VerifyJobParam param) throws JobException;
 
     @PostMapping("/job/split")
-    List<SplitTaskResult> split(SplitJobParam param) throws JobException;
+    SplitJobResult split(SplitJobParam param) throws JobException;
 
     @GetMapping("/task/exists")
     boolean existsTask(ExistsTaskParam param);

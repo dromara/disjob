@@ -28,7 +28,6 @@ import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.handle.JobHandlerUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Worker rpc service provider.
@@ -54,12 +53,10 @@ public class WorkerRpcProvider implements WorkerRpcService {
     }
 
     @Override
-    public List<SplitTaskResult> split(SplitJobParam param) throws JobException {
+    public SplitJobResult split(SplitJobParam param) throws JobException {
         currentWork.verifySupervisorAuthenticationToken(param);
-        return JobHandlerUtils.split(param.getJobHandler(), param.getJobParam())
-            .stream()
-            .map(e -> new SplitTaskResult(e.getTaskParam()))
-            .collect(Collectors.toList());
+        List<String> taskParams = JobHandlerUtils.split(param.getJobHandler(), param.getJobParam());
+        return new SplitJobResult(taskParams);
     }
 
     @Override

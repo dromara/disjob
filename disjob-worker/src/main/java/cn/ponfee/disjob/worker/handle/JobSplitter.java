@@ -33,11 +33,11 @@ public interface JobSplitter {
      * <p>Subclass can override this method to customize implementation.
      *
      * @param jobParam the job param
-     * @return list of SplitTask
+     * @return list of task param
      * @throws JobException if split failed
      */
-    default List<SplitTask> split(String jobParam) throws JobException {
-        return Collections.singletonList(new SplitTask(jobParam));
+    default List<String> split(String jobParam) throws JobException {
+        return Collections.singletonList(jobParam);
     }
 
 }

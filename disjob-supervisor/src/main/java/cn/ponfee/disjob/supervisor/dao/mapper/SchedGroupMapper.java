@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
+import cn.ponfee.disjob.core.enums.TokenType;
 import cn.ponfee.disjob.core.model.SchedGroup;
-import cn.ponfee.disjob.core.model.TokenType;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import org.apache.ibatis.annotations.Param;
 

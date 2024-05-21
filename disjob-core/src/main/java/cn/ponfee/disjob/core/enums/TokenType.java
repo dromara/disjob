@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.model;
+package cn.ponfee.disjob.core.enums;
 
 /**
  * Token type

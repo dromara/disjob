@@ -21,7 +21,6 @@ import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.test.handler.PrimeCountJobHandler;
 import cn.ponfee.disjob.worker.handle.ExecutingTask;
 import cn.ponfee.disjob.worker.handle.Savepoint;
-import cn.ponfee.disjob.worker.handle.SplitTask;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -46,13 +45,13 @@ public class PrimeCountJobHandlerTest {
         System.out.println(json);
 
         PrimeCountJobHandler jobHandler = new PrimeCountJobHandler();
-        List<SplitTask> split = jobHandler.split(schedJob.getJobParam());
-        System.out.println(Jsons.toJson(split));
+        List<String> taskParams = jobHandler.split(schedJob.getJobParam());
+        System.out.println(Jsons.toJson(taskParams));
 
-        for (SplitTask splitTask : split) {
+        for (String taskParam : taskParams) {
             ExecutingTask executingTask = new ExecutingTask();
             executingTask.setTaskId(System.nanoTime());
-            executingTask.setTaskParam(splitTask.getTaskParam());
+            executingTask.setTaskParam(taskParam);
             jobHandler.execute(executingTask, Savepoint.DISCARD);
             System.out.println("-------------------");
         }

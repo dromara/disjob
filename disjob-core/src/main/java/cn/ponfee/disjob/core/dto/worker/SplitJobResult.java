@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.core.dto.worker;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
- * Split task structure.
+ * Split job result.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class SplitTask implements java.io.Serializable {
-    private static final long serialVersionUID = 5200874217689134007L;
+public class SplitJobResult extends ToJsonString implements java.io.Serializable {
+    private static final long serialVersionUID = -7020990825612520665L;
 
-    private String taskParam;
+    /**
+     * List of task param
+     */
+    private List<String> taskParams;
 
-    public SplitTask(String taskParam) {
-        this.taskParam = taskParam;
-    }
-
-    @Override
-    public String toString() {
-        return taskParam;
+    public SplitJobResult(List<String> taskParams) {
+        this.taskParams = taskParams;
     }
 
 }

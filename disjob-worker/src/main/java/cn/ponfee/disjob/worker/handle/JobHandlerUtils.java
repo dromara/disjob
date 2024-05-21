@@ -40,7 +40,6 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -77,7 +76,7 @@ public class JobHandlerUtils {
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
                 } else {
                     param.setJobHandler(jobHandler);
-                    Assert.notEmpty(split(param.getJobHandler(), param.getJobParam()), () -> "Not split any task: " + jobHandler);
+                    split(param.getJobHandler(), param.getJobParam());
                 }
             }
         } catch (JobException | JobRuntimeException e) {
@@ -92,20 +91,17 @@ public class JobHandlerUtils {
      *
      * @param jobHandler the job handler
      * @param jobParam   the job param
-     * @return list of SplitTask
+     * @return list of task param
      * @throws JobException if split failed
      */
-    public static List<SplitTask> split(String jobHandler, String jobParam) throws JobException {
+    public static List<String> split(String jobHandler, String jobParam) throws JobException {
         try {
             JobSplitter jobSplitter = load(jobHandler);
-            List<SplitTask> splitTasks = jobSplitter.split(jobParam);
-            if (CollectionUtils.isEmpty(splitTasks)) {
+            List<String> taskParams = jobSplitter.split(jobParam);
+            if (CollectionUtils.isEmpty(taskParams)) {
                 throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
             }
-            if (splitTasks.stream().anyMatch(Objects::isNull)) {
-                throw new JobException(SPLIT_JOB_FAILED, "Job split null task.");
-            }
-            return splitTasks;
+            return taskParams;
         } catch (JobException | JobRuntimeException e) {
             throw e;
         } catch (Throwable t) {
