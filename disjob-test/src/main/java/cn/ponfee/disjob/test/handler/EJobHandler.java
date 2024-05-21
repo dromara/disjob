@@ -19,7 +19,7 @@ package cn.ponfee.disjob.test.handler;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.test.util.Constants;
 import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.JobHandler;
 import cn.ponfee.disjob.worker.handle.Savepoint;
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ public class EJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000L);
         LOG.info("Execution finished.");
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());

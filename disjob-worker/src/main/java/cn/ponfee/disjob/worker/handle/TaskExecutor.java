@@ -52,20 +52,20 @@ public abstract class TaskExecutor {
     /**
      * Initializes task
      *
-     * @param task the executing task
+     * @param task the execution task
      * @throws Exception if init failed
      */
-    public void init(ExecutingTask task) throws Exception { }
+    public void init(ExecuteTask task) throws Exception { }
 
     /**
      * Executes task
      *
-     * @param task      the executing task
+     * @param task      the execution task
      * @param savepoint the savepoint
      * @return execute result
      * @throws Exception if execute failed
      */
-    public abstract ExecuteResult execute(ExecutingTask task, Savepoint savepoint) throws Exception;
+    public abstract ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception;
 
     /**
      * Destroy this task executor

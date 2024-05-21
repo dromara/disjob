@@ -19,7 +19,7 @@ package cn.ponfee.disjob.test.util;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.test.handler.PrimeCountJobHandler;
-import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.Savepoint;
 import org.junit.jupiter.api.Test;
 
@@ -49,10 +49,10 @@ public class PrimeCountJobHandlerTest {
         System.out.println(Jsons.toJson(taskParams));
 
         for (String taskParam : taskParams) {
-            ExecutingTask executingTask = new ExecutingTask();
-            executingTask.setTaskId(System.nanoTime());
-            executingTask.setTaskParam(taskParam);
-            jobHandler.execute(executingTask, Savepoint.DISCARD);
+            ExecuteTask task = new ExecuteTask();
+            task.setTaskId(System.nanoTime());
+            task.setTaskParam(taskParam);
+            jobHandler.execute(task, Savepoint.DISCARD);
             System.out.println("-------------------");
         }
     }

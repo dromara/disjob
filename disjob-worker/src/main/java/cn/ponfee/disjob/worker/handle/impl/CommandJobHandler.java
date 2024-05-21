@@ -67,8 +67,8 @@ public class CommandJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        String taskParam = executingTask.getTaskParam();
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+        String taskParam = task.getTaskParam();
         Assert.hasText(taskParam, "Command param cannot be empty.");
         CommandParam commandParam = Jsons.JSON5.readValue(taskParam, CommandParam.class);
         Assert.notEmpty(commandParam.cmdarray, "Command array cannot be empty.");
@@ -76,8 +76,8 @@ public class CommandJobHandler extends JobHandler {
 
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
-        LOG.info("Command process id: {}, {}", executingTask.getTaskId(), pid);
-        return JobHandlerUtils.completeProcess(process, charset, executingTask, LOG);
+        LOG.info("Command process id: {}, {}", task.getTaskId(), pid);
+        return JobHandlerUtils.completeProcess(process, charset, task, LOG);
     }
 
     @Getter

@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.JobHandler;
 import cn.ponfee.disjob.worker.handle.Savepoint;
 import lombok.Getter;
@@ -66,8 +66,8 @@ public class HttpJobHandler extends JobHandler {
     private static final RestTemplate REST_TEMPLATE = RestTemplateUtils.create(DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT, null);
 
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) {
-        HttpJobRequest req = Jsons.fromJson(executingTask.getTaskParam(), HttpJobRequest.class);
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) {
+        HttpJobRequest req = Jsons.fromJson(task.getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");
         HttpMethod method = HttpMethod.valueOf(req.method.toUpperCase());
@@ -122,7 +122,7 @@ public class HttpJobHandler extends JobHandler {
                 return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
             }
         } catch (Throwable t) {
-            LOG.error("Http request error: " + executingTask, t);
+            LOG.error("Http request error: " + task, t);
             return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         }
     }

@@ -42,13 +42,13 @@ public class ScriptJobHandlerTest {
         scriptParam.setType(ScriptJobHandler.ScriptType.SHELL);
         scriptParam.setScript("#!/bin/sh\necho \"hello, shell!\"\n");
 
-        ExecutingTask executingTask = new ExecutingTask();
-        executingTask.setTaskId(1L);
-        executingTask.setTaskParam(Jsons.toJson(scriptParam));
+        ExecuteTask task = new ExecuteTask();
+        task.setTaskId(1L);
+        task.setTaskParam(Jsons.toJson(scriptParam));
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
 
-        ExecuteResult execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
+        ExecuteResult execute = scriptJobHandler.execute(task, Savepoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
     }
 
@@ -59,13 +59,13 @@ public class ScriptJobHandlerTest {
         scriptParam.setType(ScriptJobHandler.ScriptType.PYTHON);
         scriptParam.setScript("print('hello, python!')\n");
 
-        ExecutingTask executingTask = new ExecutingTask();
-        executingTask.setTaskId(1L);
-        executingTask.setTaskParam(Jsons.toJson(scriptParam));
+        ExecuteTask task = new ExecuteTask();
+        task.setTaskId(1L);
+        task.setTaskParam(Jsons.toJson(scriptParam));
 
         ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
 
-        ExecuteResult execute = scriptJobHandler.execute(executingTask, Savepoint.DISCARD);
+        ExecuteResult execute = scriptJobHandler.execute(task, Savepoint.DISCARD);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
 

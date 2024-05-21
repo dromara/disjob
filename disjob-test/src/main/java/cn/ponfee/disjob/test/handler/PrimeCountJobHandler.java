@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.test.util.Prime;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.JobHandler;
 import cn.ponfee.disjob.worker.handle.Savepoint;
 import lombok.Getter;
@@ -84,13 +84,14 @@ public class PrimeCountJobHandler extends JobHandler {
     /**
      * 执行任务的逻辑实现
      *
+     * @param task      the execution task
      * @param savepoint the savepoint
      * @return execute result
      * @throws Exception if execute occur error
      */
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        TaskParam taskParam = Jsons.fromJson(executingTask.getTaskParam(), TaskParam.class);
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+        TaskParam taskParam = Jsons.fromJson(task.getTaskParam(), TaskParam.class);
         long start = taskParam.getStart();
         long blockSize = taskParam.getBlockSize();
         long step = taskParam.getStep();
@@ -101,10 +102,10 @@ public class PrimeCountJobHandler extends JobHandler {
         Assert.isTrue(n > 0, "N must be greater than zero.");
 
         ExecuteSnapshot execution;
-        if (StringUtils.isEmpty(executingTask.getExecuteSnapshot())) {
+        if (StringUtils.isEmpty(task.getExecuteSnapshot())) {
             execution = new ExecuteSnapshot(start);
         } else {
-            execution = Jsons.fromJson(executingTask.getExecuteSnapshot(), ExecuteSnapshot.class);
+            execution = Jsons.fromJson(task.getExecuteSnapshot(), ExecuteSnapshot.class);
             if (execution.getNext() == null || execution.isFinished()) {
                 Assert.isTrue(execution.isFinished() && execution.getNext() == null, "Invalid execute snapshot data.");
                 return ExecuteResult.success();

@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.AbstractExecutionTask;
 import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.JobHandler;
 import cn.ponfee.disjob.worker.handle.Savepoint;
 import org.springframework.util.Assert;
@@ -41,8 +41,8 @@ public class PrimeAccumulateJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        long sum = executingTask.getWorkflowPredecessorNodes()
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+        long sum = task.getWorkflowPredecessorNodes()
             .stream()
             .peek(e -> Assert.state(RunState.FINISHED == e.getRunState(), "Previous instance unfinished: " + e.getInstanceId()))
             .flatMap(e -> e.getExecutedTasks().stream())

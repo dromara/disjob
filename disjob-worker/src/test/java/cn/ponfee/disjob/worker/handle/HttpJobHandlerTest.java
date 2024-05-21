@@ -30,15 +30,15 @@ public class HttpJobHandlerTest {
 
     @Test
     public void testHttpJobHandler() {
-        ExecutingTask executingTask = new ExecutingTask();
-        executingTask.setTaskId(1L);
+        ExecuteTask task = new ExecuteTask();
+        task.setTaskId(1L);
         HttpJobHandler.HttpJobRequest req = new HttpJobHandler.HttpJobRequest();
         req.setMethod("GET");
         req.setUrl("https://www.baidu.com");
-        executingTask.setTaskParam(Jsons.toJson(req));
+        task.setTaskParam(Jsons.toJson(req));
         HttpJobHandler httpJobHandler = new HttpJobHandler();
 
-        ExecuteResult result = httpJobHandler.execute(executingTask, Savepoint.DISCARD);
+        ExecuteResult result = httpJobHandler.execute(task, Savepoint.DISCARD);
         System.out.println(Jsons.toJson(result));
         Assertions.assertTrue(result.isSuccess());
     }

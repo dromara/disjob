@@ -140,7 +140,7 @@ public class JobHandlerUtils {
         }
     }
 
-    public static ExecuteResult completeProcess(Process process, Charset charset, ExecutingTask executingTask, Logger log) {
+    public static ExecuteResult completeProcess(Process process, Charset charset, ExecuteTask task, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
             // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
             String verbose = IOUtils.toString(is, charset);
@@ -152,7 +152,7 @@ public class JobHandlerUtils {
                 return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
             }
         } catch (Throwable t) {
-            log.error("Process execute error: " + executingTask, t);
+            log.error("Process execute error: " + task, t);
             Threads.interruptIfNecessary(t);
             return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         } finally {

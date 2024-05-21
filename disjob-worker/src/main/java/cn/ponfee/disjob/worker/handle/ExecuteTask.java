@@ -25,13 +25,13 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * Executing task
+ * The execution task
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class ExecutingTask extends AbstractExecutionTask {
+public class ExecuteTask extends AbstractExecutionTask {
     private static final long serialVersionUID = 8910065837652403459L;
 
     /**
@@ -60,12 +60,12 @@ public class ExecutingTask extends AbstractExecutionTask {
      */
     private List<WorkflowPredecessorNode> workflowPredecessorNodes;
 
-    public static ExecutingTask of(StartTaskResult source) {
+    public static ExecuteTask of(StartTaskResult source) {
         if (source == null) {
             return null;
         }
 
-        ExecutingTask target = new ExecutingTask();
+        ExecuteTask target = new ExecuteTask();
         target.setTaskId(source.getTaskId());
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());

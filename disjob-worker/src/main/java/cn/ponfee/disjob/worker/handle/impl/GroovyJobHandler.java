@@ -18,7 +18,7 @@ package cn.ponfee.disjob.worker.handle.impl;
 
 import cn.ponfee.disjob.common.util.GroovyUtils;
 import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.JobHandler;
 import cn.ponfee.disjob.worker.handle.Savepoint;
 import com.google.common.collect.ImmutableMap;
@@ -47,11 +47,11 @@ public class GroovyJobHandler extends JobHandler {
     public static final String SAVEPOINT = "savepoint";
 
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        String scriptText = executingTask.getTaskParam();
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+        String scriptText = task.getTaskParam();
         Map<String, Object> params = ImmutableMap.of(
             JOB_HANDLER, this,
-            EXECUTING_TASK, executingTask,
+            EXECUTING_TASK, task,
             SAVEPOINT, savepoint
         );
 

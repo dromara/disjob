@@ -74,20 +74,20 @@ public class ScriptJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        ScriptParam scriptParam = Jsons.JSON5.readValue(executingTask.getTaskParam(), ScriptParam.class);
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+        ScriptParam scriptParam = Jsons.JSON5.readValue(task.getTaskParam(), ScriptParam.class);
         Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
         this.charset = Files.charset(scriptParam.charset);
 
-        String scriptFileName = scriptParam.type.buildFileName(executingTask.getTaskId());
+        String scriptFileName = scriptParam.type.buildFileName(task.getTaskId());
         String scriptPath = prepareScriptFile(scriptParam.script, scriptFileName, charset);
 
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
-        LOG.info("Script process id: {}, {}", executingTask.getTaskId(), pid);
-        return JobHandlerUtils.completeProcess(process, charset, executingTask, LOG);
+        LOG.info("Script process id: {}, {}", task.getTaskId(), pid);
+        return JobHandlerUtils.completeProcess(process, charset, task, LOG);
     }
 
     public enum ScriptType {

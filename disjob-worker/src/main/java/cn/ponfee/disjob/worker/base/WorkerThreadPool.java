@@ -788,7 +788,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private void runTask(WorkerTask task) {
-            ExecutingTask executingTask;
+            ExecuteTask executeTask;
             try {
                 // update database records start state(sched_instance, sched_task)
                 // 这里存在调用超时，但实际supervisor启动task成功的情况
@@ -799,7 +799,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.warn("Start task failed: {}, {}", task, startTaskResult.getMessage());
                     return;
                 }
-                executingTask = ExecutingTask.of(startTaskResult);
+                executeTask = ExecuteTask.of(startTaskResult);
             } catch (Throwable t) {
                 LOG.warn("Start task error: " + task, t);
                 if (task.getRouteStrategy() != RouteStrategy.BROADCAST) {
@@ -825,7 +825,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             // 2、init
             try {
-                taskExecutor.init(executingTask);
+                taskExecutor.init(executeTask);
                 LOG.info("Initiated sched task {}", task.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Task init error: " + task, t);
@@ -837,9 +837,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             // 3、execute
             try {
                 ExecuteResult result;
-                Savepoint savepoint = new TaskSavepoint(executingTask.getTaskId());
+                Savepoint savepoint = new TaskSavepoint(executeTask.getTaskId());
                 if (task.getExecuteTimeout() > 0) {
-                    FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executingTask, savepoint));
+                    FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executeTask, savepoint));
                     String threadName = getClass().getSimpleName() + "#FutureTaskThread" + "-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
                     Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask, LOG);
                     futureTaskThread.start();
@@ -849,7 +849,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                         Threads.stopThread(futureTaskThread, 0);
                     }
                 } else {
-                    result = taskExecutor.execute(executingTask, savepoint);
+                    result = taskExecutor.execute(executeTask, savepoint);
                 }
 
                 // 4、execute end

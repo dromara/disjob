@@ -36,16 +36,16 @@ public class CommandJobHandlerTest {
             return;
         }
 
-        ExecutingTask executingTask = new ExecutingTask();
-        executingTask.setTaskId(1L);
+        ExecuteTask task = new ExecuteTask();
+        task.setTaskId(1L);
 
         CommandJobHandler.CommandParam commandParam = new CommandJobHandler.CommandParam();
         commandParam.setCmdarray(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
-        executingTask.setTaskParam(Jsons.toJson(commandParam));
+        task.setTaskParam(Jsons.toJson(commandParam));
 
         CommandJobHandler commandJobHandler = new CommandJobHandler();
 
-        ExecuteResult result = commandJobHandler.execute(executingTask, Savepoint.DISCARD);
+        ExecuteResult result = commandJobHandler.execute(task, Savepoint.DISCARD);
 
         String expect = "{\"code\":0,\"msg\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
         Assertions.assertEquals(expect, Jsons.toJson(result));

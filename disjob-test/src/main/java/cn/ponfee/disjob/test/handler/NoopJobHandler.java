@@ -18,7 +18,7 @@ package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecutingTask;
+import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.JobHandler;
 import cn.ponfee.disjob.worker.handle.Savepoint;
 import org.slf4j.Logger;
@@ -49,15 +49,15 @@ public class NoopJobHandler extends JobHandler {
     }
 
     @Override
-    public void init(ExecutingTask executingTask) {
+    public void init(ExecuteTask task) {
         LOG.debug("Noop job init.");
     }
 
     @Override
-    public ExecuteResult execute(ExecutingTask executingTask, Savepoint savepoint) throws Exception {
-        LOG.info("task execute start: {}", executingTask.getTaskId());
+    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+        LOG.info("task execute start: {}", task.getTaskId());
         Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
-        LOG.info("task execute done: {}", executingTask.getTaskId());
+        LOG.info("task execute done: {}", task.getTaskId());
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecuteResult.success();
     }
