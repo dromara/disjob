@@ -30,6 +30,7 @@ import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.TerminateTaskParam;
@@ -236,11 +237,11 @@ public class DistributedJobManager extends AbstractJobManager {
                 return StartTaskResult.failure("Task stat failed");
             }
             SchedTask task = taskMapper.get(param.getTaskId());
-            List<WorkflowPredecessorNode> nodes = null;
+            List<PredecessorInstance> predecessorInstances = null;
             if (param.getJobType() == JobType.WORKFLOW) {
-                nodes = findWorkflowPredecessorNodes(instance.getWnstanceId(), task.getInstanceId());
+                predecessorInstances = findPredecessorInstances(instance.getWnstanceId(), task.getInstanceId());
             }
-            return StartTaskResult.success(instance.getJobId(), instance.getWnstanceId(), task, nodes);
+            return StartTaskResult.success(instance.getJobId(), instance.getWnstanceId(), task, predecessorInstances);
         });
     }
 
@@ -1019,7 +1020,7 @@ public class DistributedJobManager extends AbstractJobManager {
         return Tuple3.of(job, instance, waitingTasks);
     }
 
-    private List<WorkflowPredecessorNode> findWorkflowPredecessorNodes(long wnstanceId, long instanceId) {
+    private List<PredecessorInstance> findPredecessorInstances(long wnstanceId, long instanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
         if (CollectionUtils.isEmpty(workflows)) {
             return null;
@@ -1050,9 +1051,9 @@ public class DistributedJobManager extends AbstractJobManager {
             .map(e -> {
                 List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId());
                 tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
-                return WorkflowPredecessorNode.of(e, tasks);
+                return PredecessorInstance.of(e, tasks);
             })
-            .sorted(Comparator.comparing(WorkflowPredecessorNode::getSequence))
+            .sorted(Comparator.comparing(PredecessorInstance::getSequence))
             .collect(Collectors.toList());
     }
 

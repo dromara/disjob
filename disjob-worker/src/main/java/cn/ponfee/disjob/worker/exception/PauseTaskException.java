@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.worker.exception;
 
 /**
- * Executing task failure then should be pausing.
+ * Exception for pause the executing task.
  *
  * @author Ponfee
  */

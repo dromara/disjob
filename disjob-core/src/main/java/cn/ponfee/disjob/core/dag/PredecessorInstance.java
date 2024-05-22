@@ -14,70 +14,50 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.model;
+package cn.ponfee.disjob.core.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.model.SchedWorkflow;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Workflow predecessor node
+ * Workflow dag predecessor instance
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public class WorkflowPredecessorNode extends ToJsonString implements Serializable {
+public class PredecessorInstance extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 422243686633743869L;
 
     private long instanceId;
     private int sequence;
     private String curNode;
     private RunState runState;
-    private List<ExecutedTask> executedTasks;
+    private List<PredecessorTask> tasks;
 
-    public static WorkflowPredecessorNode of(SchedWorkflow workflow, List<SchedTask> tasks) {
-        WorkflowPredecessorNode node = new WorkflowPredecessorNode();
-        node.setInstanceId(workflow.getInstanceId());
-        node.setSequence(workflow.getSequence());
-        node.setCurNode(workflow.getCurNode());
-        node.setRunState(RunState.of(workflow.getRunState()));
-        node.setExecutedTasks(convert(tasks));
-        return node;
-    }
-
-    @Getter
-    @Setter
-    public static class ExecutedTask extends AbstractExecutionTask {
-        private static final long serialVersionUID = -4625053001297718912L;
-
-        /**
-         * 执行状态
-         */
-        private ExecuteState executeState;
+    public static PredecessorInstance of(SchedWorkflow workflow, List<SchedTask> tasks) {
+        PredecessorInstance instance = new PredecessorInstance();
+        instance.setInstanceId(workflow.getInstanceId());
+        instance.setSequence(workflow.getSequence());
+        instance.setCurNode(workflow.getCurNode());
+        instance.setRunState(RunState.of(workflow.getRunState()));
+        instance.setTasks(Collects.convert(tasks, PredecessorInstance::convert));
+        return instance;
     }
 
     // ----------------------------------------------------------------------private methods
 
-    private static List<ExecutedTask> convert(List<SchedTask> tasks) {
-        if (tasks == null) {
-            return null;
-        }
-        return tasks.stream().map(WorkflowPredecessorNode::convert).collect(Collectors.toList());
-    }
-
-    private static ExecutedTask convert(SchedTask source) {
-        if (source == null) {
-            return null;
-        }
-
-        ExecutedTask target = new ExecutedTask();
+    private static PredecessorTask convert(SchedTask source) {
+        PredecessorTask target = new PredecessorTask();
         target.setTaskId(source.getTaskId());
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());

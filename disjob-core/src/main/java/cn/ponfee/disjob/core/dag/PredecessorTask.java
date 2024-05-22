@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.model;
+package cn.ponfee.disjob.core.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.enums.ExecuteState;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 
 /**
- * Abstract execution task
+ * Workflow dag predecessor task
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-public abstract class AbstractExecutionTask extends ToJsonString implements Serializable {
-    private static final long serialVersionUID = 6002495716472663520L;
+public class PredecessorTask extends ToJsonString implements Serializable {
+    private static final long serialVersionUID = -4625053001297718912L;
 
     /**
      * 任务ID
@@ -48,8 +49,12 @@ public abstract class AbstractExecutionTask extends ToJsonString implements Seri
     private int taskCount;
 
     /**
+     * 执行状态
+     */
+    private ExecuteState executeState;
+
+    /**
      * 保存的执行快照数据
      */
     private String executeSnapshot;
-
 }

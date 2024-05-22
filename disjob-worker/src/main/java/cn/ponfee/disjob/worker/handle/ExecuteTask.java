@@ -16,12 +16,13 @@
 
 package cn.ponfee.disjob.worker.handle;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.model.AbstractExecutionTask;
-import cn.ponfee.disjob.core.model.WorkflowPredecessorNode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class ExecuteTask extends AbstractExecutionTask {
+public class ExecuteTask extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 8910065837652403459L;
 
     /**
@@ -51,14 +52,34 @@ public class ExecuteTask extends AbstractExecutionTask {
     private Long wnstanceId;
 
     /**
+     * 任务ID
+     */
+    private long taskId;
+
+    /**
+     * 当前任务序号(从1开始)
+     */
+    private int taskNo;
+
+    /**
+     * 任务总数量
+     */
+    private int taskCount;
+
+    /**
      * job_handler执行task的参数
      */
     private String taskParam;
 
     /**
-     * 工作流(DAG)任务的前驱节点列表数据
+     * 保存的执行快照数据
      */
-    private List<WorkflowPredecessorNode> workflowPredecessorNodes;
+    private String executeSnapshot;
+
+    /**
+     * 工作流(DAG)任务的前驱节点实例列表
+     */
+    private List<PredecessorInstance> predecessorInstances;
 
     public static ExecuteTask of(StartTaskResult source) {
         if (source == null) {
@@ -75,7 +96,7 @@ public class ExecuteTask extends AbstractExecutionTask {
         target.setInstanceId(source.getInstanceId());
         target.setWnstanceId(source.getWnstanceId());
         target.setTaskParam(source.getTaskParam());
-        target.setWorkflowPredecessorNodes(source.getWorkflowPredecessorNodes());
+        target.setPredecessorInstances(source.getPredecessorInstances());
         return target;
     }
 

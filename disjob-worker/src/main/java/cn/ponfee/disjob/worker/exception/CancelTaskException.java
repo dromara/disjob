@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.worker.exception;
 
 /**
- * Executing task failure then should be canceling.
+ * Exception for cancel the executing task.
  *
  * @author Ponfee
  */

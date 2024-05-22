@@ -35,7 +35,7 @@ import java.util.Objects;
  *  import java.util.*
  *  def uuid = UUID.randomUUID().toString()
  *  savepoint.save(new Date().toString() + ": " + uuid)
- *  return "taskId: " + executingTask.getTaskId() + ", execute at: " + new Date() + ", " + jobHandler.toString()
+ *  return "taskId: " + executeTask.getTaskId() + ", execute at: " + new Date() + ", " + jobHandler.toString()
  * }</pre>
  *
  * @author Ponfee
@@ -43,7 +43,7 @@ import java.util.Objects;
 public class GroovyJobHandler extends JobHandler {
 
     public static final String JOB_HANDLER = "jobHandler";
-    public static final String EXECUTING_TASK = "executingTask";
+    public static final String EXECUTING_TASK = "executeTask";
     public static final String SAVEPOINT = "savepoint";
 
     @Override

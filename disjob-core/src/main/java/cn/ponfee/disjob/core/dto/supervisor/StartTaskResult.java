@@ -16,12 +16,13 @@
 
 package cn.ponfee.disjob.core.dto.supervisor;
 
-import cn.ponfee.disjob.core.model.AbstractExecutionTask;
+import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.model.WorkflowPredecessorNode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ import java.util.List;
  */
 @Setter
 @Getter
-public class StartTaskResult extends AbstractExecutionTask {
+public class StartTaskResult extends ToJsonString implements Serializable {
 
     private static final long serialVersionUID = 2873837797283062411L;
 
@@ -62,36 +63,57 @@ public class StartTaskResult extends AbstractExecutionTask {
     private Long wnstanceId;
 
     /**
+     * 任务ID
+     */
+    private long taskId;
+
+    /**
+     * 当前任务序号(从1开始)
+     */
+    private int taskNo;
+
+    /**
+     * 任务总数量
+     */
+    private int taskCount;
+
+    /**
      * job_handler执行task的参数
      */
     private String taskParam;
 
     /**
-     * 工作流(DAG)任务的前驱节点列表数据
+     * 保存的执行快照数据
      */
-    private List<WorkflowPredecessorNode> workflowPredecessorNodes;
+    private String executeSnapshot;
+
+    /**
+     * 工作流(DAG)任务的前驱节点实例列表
+     */
+    private List<PredecessorInstance> predecessorInstances;
 
     public static StartTaskResult failure(String message) {
-        StartTaskResult res = new StartTaskResult();
-        res.setSuccess(false);
-        res.setMessage(message);
-        return res;
+        StartTaskResult result = new StartTaskResult();
+        result.setSuccess(false);
+        result.setMessage(message);
+        return result;
     }
 
-    public static StartTaskResult success(long jobId, Long wnstanceId, SchedTask task, List<WorkflowPredecessorNode> nodes) {
-        StartTaskResult res = new StartTaskResult();
-        res.setSuccess(true);
-        res.setTaskId(task.getTaskId());
-        res.setTaskNo(task.getTaskNo());
-        res.setTaskCount(task.getTaskCount());
-        res.setExecuteSnapshot(task.getExecuteSnapshot());
+    public static StartTaskResult success(long jobId, Long wnstanceId, SchedTask task,
+                                          List<PredecessorInstance> predecessorInstances) {
+        StartTaskResult result = new StartTaskResult();
+        result.setSuccess(true);
+        result.setTaskId(task.getTaskId());
+        result.setTaskNo(task.getTaskNo());
+        result.setTaskCount(task.getTaskCount());
+        result.setExecuteSnapshot(task.getExecuteSnapshot());
 
-        res.setJobId(jobId);
-        res.setInstanceId(task.getInstanceId());
-        res.setWnstanceId(wnstanceId);
-        res.setTaskParam(task.getTaskParam());
-        res.setWorkflowPredecessorNodes(nodes);
-        return res;
+        result.setJobId(jobId);
+        result.setInstanceId(task.getInstanceId());
+        result.setWnstanceId(wnstanceId);
+        result.setTaskParam(task.getTaskParam());
+        result.setPredecessorInstances(predecessorInstances);
+        return result;
     }
 
 }

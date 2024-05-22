@@ -17,8 +17,8 @@
 package cn.ponfee.disjob.test.handler;
 
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.core.dag.PredecessorTask;
 import cn.ponfee.disjob.core.enums.RunState;
-import cn.ponfee.disjob.core.model.AbstractExecutionTask;
 import cn.ponfee.disjob.worker.handle.ExecuteResult;
 import cn.ponfee.disjob.worker.handle.ExecuteTask;
 import cn.ponfee.disjob.worker.handle.JobHandler;
@@ -42,11 +42,11 @@ public class PrimeAccumulateJobHandler extends JobHandler {
 
     @Override
     public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
-        long sum = task.getWorkflowPredecessorNodes()
+        long sum = task.getPredecessorInstances()
             .stream()
             .peek(e -> Assert.state(RunState.FINISHED == e.getRunState(), "Previous instance unfinished: " + e.getInstanceId()))
-            .flatMap(e -> e.getExecutedTasks().stream())
-            .map(AbstractExecutionTask::getExecuteSnapshot)
+            .flatMap(e -> e.getTasks().stream())
+            .map(PredecessorTask::getExecuteSnapshot)
             .map(e -> Jsons.fromJson(e, PrimeCountJobHandler.ExecuteSnapshot.class))
             .mapToLong(PrimeCountJobHandler.ExecuteSnapshot::getCount)
             .sum();
