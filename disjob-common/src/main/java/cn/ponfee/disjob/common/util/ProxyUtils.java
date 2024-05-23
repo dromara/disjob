@@ -19,6 +19,7 @@ package cn.ponfee.disjob.common.util;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AdvisedSupport;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.cglib.proxy.Enhancer;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -31,15 +32,39 @@ import java.lang.reflect.Proxy;
 public final class ProxyUtils {
 
     /**
-     * Creates jdk proxy instance
+     * Creates proxy instance based jdk
      *
-     * @param invocationHandler jdk invocation handler
-     * @param interfaceTypes    the interface class array
+     * @param invocationHandler the jdk invocation handler
+     * @param interfaces        the interface class array
      * @param <T>               the interface type
      * @return jdk proxy instance
      */
-    public static <T> T create(InvocationHandler invocationHandler, Class<?>... interfaceTypes) {
-        return (T) Proxy.newProxyInstance(interfaceTypes[0].getClassLoader(), interfaceTypes, invocationHandler);
+    public static <T> T create(InvocationHandler invocationHandler, Class<?>... interfaces) {
+        return (T) Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, invocationHandler);
+    }
+
+    /**
+     * Creates proxy instance based cglib
+     * <p>需要默认的无参构造函数
+     *
+     * @param invocationHandler the spring cglib invocation handler
+     * @param superClass        the super class
+     * @param <T>               the super class type
+     * @return cglib proxy instance
+     */
+    public static <T> T create(org.springframework.cglib.proxy.InvocationHandler invocationHandler, Class<?> superClass) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(superClass);
+        enhancer.setCallback(invocationHandler);
+        return (T) enhancer.create();
+    }
+
+    public static <T, H extends InvocationHandler & org.springframework.cglib.proxy.InvocationHandler> T create(H invocationHandler, Class<?> cls) {
+        if (cls.isInterface()) {
+            return create((InvocationHandler) invocationHandler, cls);
+        } else {
+            return create((org.springframework.cglib.proxy.InvocationHandler) invocationHandler, cls);
+        }
     }
 
     /**

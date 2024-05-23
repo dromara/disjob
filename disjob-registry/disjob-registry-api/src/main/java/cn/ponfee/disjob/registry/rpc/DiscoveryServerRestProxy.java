@@ -87,7 +87,7 @@ public final class DiscoveryServerRestProxy {
     /**
      * Creates ungrouped rpc service client proxy.
      *
-     * @param interfaceType        the interface class
+     * @param interfaceCls         the interface class
      * @param localServiceProvider the localServiceProvider
      * @param discoveryServer      the discoveryServer
      * @param restTemplate         the restTemplate
@@ -96,7 +96,7 @@ public final class DiscoveryServerRestProxy {
      * @param <D>                  discovery server type
      * @return rpc service client proxy
      */
-    public static <T, D extends Server> T create(Class<T> interfaceType,
+    public static <T, D extends Server> T create(Class<T> interfaceCls,
                                                  @Nullable T localServiceProvider,
                                                  Discovery<D> discoveryServer,
                                                  RestTemplate restTemplate,
@@ -108,16 +108,16 @@ public final class DiscoveryServerRestProxy {
         } else {
             // 远程调用：通过Discovery<D>来获取目标服务器
             DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
-            String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
+            String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
             invocationHandler = new UngroupedInvocationHandler(template, prefixPath);
         }
-        return ProxyUtils.create(invocationHandler, interfaceType);
+        return ProxyUtils.create(invocationHandler, interfaceCls);
     }
 
     /**
      * Creates grouped rpc service client proxy.
      *
-     * @param interfaceType        the interface class
+     * @param interfaceCls         the interface class
      * @param localServiceProvider the localServiceProvider
      * @param serverGroupMatcher   the serverGroupMatcher
      * @param discoveryServer      the discoveryServer
@@ -127,16 +127,16 @@ public final class DiscoveryServerRestProxy {
      * @param <D>                  discovery server type
      * @return rpc service client proxy
      */
-    public static <T, D extends Server> GroupedServerInvoker<T> create(Class<T> interfaceType,
+    public static <T, D extends Server> GroupedServerInvoker<T> create(Class<T> interfaceCls,
                                                                        @Nullable T localServiceProvider,
                                                                        Predicate<String> serverGroupMatcher,
                                                                        Discovery<D> discoveryServer,
                                                                        RestTemplate restTemplate,
                                                                        RetryProperties retry) {
         DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
-        String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
+        String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
         InvocationHandler groupedInvocationHandler = new GroupedInvocationHandler(template, prefixPath);
-        T remoteServiceClient = ProxyUtils.create(groupedInvocationHandler, interfaceType);
+        T remoteServiceClient = ProxyUtils.create(groupedInvocationHandler, interfaceCls);
         return new GroupedServerInvoker<>(localServiceProvider, remoteServiceClient, serverGroupMatcher);
     }
 

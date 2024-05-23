@@ -43,14 +43,14 @@ public class HttpTaskDispatcher extends TaskDispatcher {
                               Discovery<Worker> discoveryWorker,
                               RetryProperties retryProperties,
                               RestTemplate restTemplate,
-                              HttpTaskReceiver taskReceiver) {
-        super(eventPublisher, discoveryWorker, retryProperties, taskReceiver);
+                              HttpTaskReceiver httpTaskReceiver) {
+        super(eventPublisher, discoveryWorker, retryProperties, httpTaskReceiver);
 
         Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
         RetryProperties retry = RetryProperties.of(0, 0);
         // `TaskDispatcher#dispatch0`内部有处理本地worker的分派逻辑，这里不需要本地的HttpTaskReceiverService，所以传null
         this.httpTaskReceiverClient = create(HttpTaskReceiverService.class, null, null, workerContextPath, restTemplate, retry);
-        //this.httpTaskReceiverClient = create(HttpTaskReceiverService.class, httpTaskReceiverService, Worker.current(), workerContextPath, restTemplate, retry);
+        //this.httpTaskReceiverClient = create(HttpTaskReceiverService.class, httpTaskReceiver, Worker.current(), workerContextPath, restTemplate, retry);
     }
 
     @Override

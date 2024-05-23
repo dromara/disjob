@@ -51,8 +51,8 @@ public class RedisTaskDispatcher extends TaskDispatcher {
                                Discovery<Worker> discoveryWorker,
                                RetryProperties retryProperties,
                                RedisTemplate<String, String> redisTemplate,
-                               RedisTaskReceiver taskReceiver) {
-        super(eventPublisher, discoveryWorker, retryProperties, taskReceiver);
+                               RedisTaskReceiver redisTaskReceiver) {
+        super(eventPublisher, discoveryWorker, retryProperties, redisTaskReceiver);
 
         this.redisTemplate = redisTemplate;
     }

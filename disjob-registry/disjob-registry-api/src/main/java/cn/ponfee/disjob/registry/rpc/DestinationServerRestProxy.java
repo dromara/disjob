@@ -42,16 +42,16 @@ public final class DestinationServerRestProxy {
 
     private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("destination-server");
 
-    public static <T, S extends Server> DestinationServerInvoker<T, S> create(Class<T> interfaceType,
+    public static <T, S extends Server> DestinationServerInvoker<T, S> create(Class<T> interfaceCls,
                                                                               @Nullable T localServiceProvider,
                                                                               @Nullable S currentServer,
                                                                               Function<S, String> serverContextPath,
                                                                               RestTemplate restTemplate,
                                                                               RetryProperties retry) {
         DestinationServerRestTemplate template = new DestinationServerRestTemplate(restTemplate, retry);
-        String prefixPath = DiscoveryServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceType, RequestMapping.class));
+        String prefixPath = DiscoveryServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
         InvocationHandler invocationHandler = new ServerInvocationHandler<>(template, serverContextPath, prefixPath);
-        T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceType);
+        T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceCls);
         return new DestinationServerInvoker<>(remoteServiceClient, localServiceProvider, currentServer);
     }
 
