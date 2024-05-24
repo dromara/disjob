@@ -43,10 +43,10 @@ public class EventSubscribeService extends SingletonClassConstraint {
 
     private static final ConcurrentMap<Type, EventParam> MAP = new ConcurrentHashMap<>();
 
-    private final SchedGroupService schedGroupService;
+    private final SchedGroupService groupService;
 
-    public EventSubscribeService(SchedGroupService schedGroupService) {
-        this.schedGroupService = schedGroupService;
+    public EventSubscribeService(SchedGroupService groupService) {
+        this.groupService = groupService;
 
         long initialDelay = 5000 + ThreadLocalRandom.current().nextLong(5000);
         ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::process, initialDelay, 5000, TimeUnit.MILLISECONDS);
@@ -73,7 +73,7 @@ public class EventSubscribeService extends SingletonClassConstraint {
         Type type = param.getType();
 
         if (type == Type.REFRESH_GROUP) {
-            schedGroupService.refresh();
+            groupService.refresh();
 
         } else {
             LOG.error("Unsupported subscribe event type: {}", type);

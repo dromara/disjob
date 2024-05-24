@@ -27,7 +27,6 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
@@ -791,10 +790,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
             ExecuteTask executeTask;
             try {
                 // update database records start state(sched_instance, sched_task)
-                // 这里存在调用超时，但实际supervisor启动task成功的情况
-                // 后续版本可考虑加一个请求ID标识，返回值也加上启动成功的那个请求ID。在重试时通过判断返回的请求ID是否等于本次的请求ID，来识别是否本次启动成功的
-                StartTaskParam param = new StartTaskParam(task.getWnstanceId(), task.getInstanceId(), task.getTaskId(), task.getJobType(), task.getWorker());
-                StartTaskResult startTaskResult = supervisorRpcClient.startTask(param);
+                // 存在调用超时但实际task启动成功的问题：计划增加start_id参数写入sched_task表，接口返回启动成功的start_id，若超时重试成功时可判断返回的start_id是否与本次的相等
+                StartTaskResult startTaskResult = supervisorRpcClient.startTask(task.toStartTaskParam());
                 if (!startTaskResult.isSuccess()) {
                     LOG.warn("Start task failed: {}, {}", task, startTaskResult.getMessage());
                     return;

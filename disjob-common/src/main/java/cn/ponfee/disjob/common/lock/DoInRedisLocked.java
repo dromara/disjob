@@ -38,17 +38,17 @@ public class DoInRedisLocked implements DoInLocked {
 
     @Override
     public <T> T action(Callable<T> caller) {
-        if (!redisLock.tryLock()) {
+        if (redisLock.tryLock()) {
+            try {
+                return caller.call();
+            } catch (Throwable t) {
+                LOG.error("Do in redis lock occur error.", t);
+                return null;
+            } finally {
+                redisLock.unlock();
+            }
+        } else {
             return null;
-        }
-
-        try {
-            return caller.call();
-        } catch (Throwable t) {
-            LOG.error("Do in redis lock occur error.", t);
-            return null;
-        } finally {
-            redisLock.unlock();
         }
     }
 }

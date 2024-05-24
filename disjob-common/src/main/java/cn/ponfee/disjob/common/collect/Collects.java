@@ -231,6 +231,13 @@ public class Collects {
         return list.stream().filter(predicate).collect(Collectors.toList());
     }
 
+    public static <T> T findAny(Collection<T> coll, Predicate<T> predicate) {
+        if (CollectionUtils.isEmpty(coll)) {
+            return null;
+        }
+        return coll.stream().filter(predicate).findAny().orElse(null);
+    }
+
     public static <S, T> List<T> convert(List<S> source, Function<S, T> mapper) {
         if (source == null) {
             return null;

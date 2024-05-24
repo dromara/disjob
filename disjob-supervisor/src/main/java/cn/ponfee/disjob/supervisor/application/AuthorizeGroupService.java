@@ -20,8 +20,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
+import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -52,8 +51,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
      */
     public static final int SQL_GROUP_IN_MAX_SIZE = 50;
 
-    private final SchedJobMapper schedJobMapper;
-    private final SchedInstanceMapper schedInstanceMapper;
+    private final DistributedJobQuerier jobQuerier;
 
     private final Cache<Long, String> jobGroupCache = CacheBuilder.newBuilder()
         .initialCapacity(1_000)
@@ -64,11 +62,8 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         .expireAfterAccess(Duration.ofDays(1))
         .build();
 
-    public AuthorizeGroupService(SchedJobMapper schedJobMapper,
-                                 SchedInstanceMapper schedInstanceMapper) {
-        this.schedJobMapper = schedJobMapper;
-        this.schedInstanceMapper = schedInstanceMapper;
-
+    public AuthorizeGroupService(DistributedJobQuerier jobQuerier) {
+        this.jobQuerier = jobQuerier;
         commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 2, 2, TimeUnit.DAYS);
     }
 
@@ -116,7 +111,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     }
 
     public void authorizeInstance(String user, long instanceId) {
-        Long jobId = schedInstanceMapper.getJobId(instanceId);
+        Long jobId = jobQuerier.getInstanceJobId(instanceId);
         if (jobId == null) {
             throw new KeyNotExistsException("Instance id not exists: " + instanceId);
         }
@@ -124,7 +119,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
     }
 
     public void authorizeInstance(String user, String authGroup, long instanceId) {
-        Long jobId = schedInstanceMapper.getJobId(instanceId);
+        Long jobId = jobQuerier.getInstanceJobId(instanceId);
         if (jobId == null) {
             throw new KeyNotExistsException("Instance id not exists: " + instanceId);
         }
@@ -137,7 +132,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
             return group;
         }
 
-        group = schedJobMapper.getGroup(jobId);
+        group = jobQuerier.getJobGroup(jobId);
         if (group != null) {
             LOG.info("Loaded caching group: {}, {}", jobId, group);
             jobGroupCache.put(jobId, group);

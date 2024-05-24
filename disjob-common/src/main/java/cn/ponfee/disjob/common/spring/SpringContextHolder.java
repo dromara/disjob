@@ -27,7 +27,6 @@ import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.Environment;
 
 import java.util.Objects;
 
@@ -92,8 +91,9 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
         return beanFactory != null || applicationContext != null;
     }
 
-    public static Environment getEnvironment() {
-        return getApplicationContext().getEnvironment();
+    public static String getProperty(String key) {
+        final ApplicationContext ctx = applicationContext;
+        return ctx != null ? ctx.getEnvironment().getProperty(key) : null;
     }
 
     public static void publishEvent(Object event) {

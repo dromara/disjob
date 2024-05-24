@@ -70,15 +70,15 @@ public class SchedGroupService extends SingletonClassConstraint {
     private static volatile Map<String, DisjobGroup> groupMap;
     private static volatile Map<String, Set<String>> userMap;
 
-    private final SchedGroupMapper schedGroupMapper;
+    private final SchedGroupMapper groupMapper;
     private final SupervisorRegistry supervisorRegistry;
     private final ServerInvokeService serverInvokeService;
 
-    public SchedGroupService(SchedGroupMapper schedGroupMapper,
+    public SchedGroupService(SchedGroupMapper groupMapper,
                              SupervisorRegistry supervisorRegistry,
                              ServerInvokeService serverInvokeService,
                              SupervisorProperties supervisorProperties) {
-        this.schedGroupMapper = schedGroupMapper;
+        this.groupMapper = groupMapper;
         this.supervisorRegistry = supervisorRegistry;
         this.serverInvokeService = serverInvokeService;
         int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 30);
@@ -90,13 +90,13 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     public long add(SchedGroupAddRequest request) {
         request.checkAndTrim();
-        if (schedGroupMapper.exists(request.getGroup())) {
+        if (groupMapper.exists(request.getGroup())) {
             throw new KeyExistsException("Group already exists: " + request.getGroup());
         }
         SchedGroup schedGroup = request.toSchedGroup();
         schedGroup.setUpdatedBy(schedGroup.getCreatedBy());
-        schedGroupMapper.insert(schedGroup);
-        refresh0();
+        groupMapper.insert(schedGroup);
+        refreshAndPublish();
         return schedGroup.getId();
     }
 
@@ -106,47 +106,46 @@ public class SchedGroupService extends SingletonClassConstraint {
             throw new KeyExistsException("Group '" + group + "' has registered workers, cannot delete.");
         }
         return Functions.doIfTrue(
-            isOneAffectedRow(schedGroupMapper.softDelete(group, updatedBy)),
-            this::refresh0
+            isOneAffectedRow(groupMapper.softDelete(group, updatedBy)),
+            this::refreshAndPublish
         );
     }
 
     public boolean edit(SchedGroupUpdateRequest request) {
         request.checkAndTrim();
         return Functions.doIfTrue(
-            isOneAffectedRow(schedGroupMapper.edit(request.toSchedGroup())),
-            this::refresh0
+            isOneAffectedRow(groupMapper.edit(request.toSchedGroup())),
+            this::refreshAndPublish
         );
     }
 
     public SchedGroupResponse get(String group) {
-        SchedGroup schedGroup = schedGroupMapper.get(group);
-        return SchedGroupConverter.INSTANCE.convert(schedGroup);
+        return SchedGroupConverter.INSTANCE.convert(groupMapper.get(group));
     }
 
     public boolean updateToken(String group, TokenType type, String newToken, String updatedBy, String oldToken) {
         return Functions.doIfTrue(
-            isOneAffectedRow(schedGroupMapper.updateToken(group, type, newToken, updatedBy, oldToken)),
-            this::refresh0
+            isOneAffectedRow(groupMapper.updateToken(group, type, newToken, updatedBy, oldToken)),
+            this::refreshAndPublish
         );
     }
 
     public boolean updateOwnUser(String group, String ownUser, String updatedBy) {
         Assert.hasText(ownUser, "Own user cannot be blank.");
         return Functions.doIfTrue(
-            isOneAffectedRow(schedGroupMapper.updateOwnUser(group, ownUser.trim(), updatedBy)),
-            this::refresh0
+            isOneAffectedRow(groupMapper.updateOwnUser(group, ownUser.trim(), updatedBy)),
+            this::refreshAndPublish
         );
     }
 
     public List<String> searchGroup(String term) {
-        return schedGroupMapper.searchGroup(term);
+        return groupMapper.searchGroup(term);
     }
 
     public PageResponse<SchedGroupResponse> queryForPage(SchedGroupPageRequest pageRequest) {
         PageResponse<SchedGroupResponse> page = pageRequest.query(
-            schedGroupMapper::queryPageCount,
-            schedGroupMapper::queryPageRecords,
+            groupMapper::queryPageCount,
+            groupMapper::queryPageRecords,
             SchedGroupConverter.INSTANCE::convert
         );
 
@@ -200,26 +199,24 @@ public class SchedGroupService extends SingletonClassConstraint {
     // ------------------------------------------------------------private methods
 
     void refresh() {
-        if (!LOCK.tryLock()) {
-            return;
-        }
+        if (LOCK.tryLock()) {
+            try {
+                List<SchedGroup> list = groupMapper.findAll();
+                Map<String, DisjobGroup> groupMap0 = list.stream().collect(Collectors.toMap(SchedGroup::getGroup, DisjobGroup::of));
+                Map<String, Set<String>> userMap0 = toUserMap(list);
 
-        try {
-            List<SchedGroup> list = schedGroupMapper.findAll();
-            Map<String, DisjobGroup> groupMap0 = list.stream().collect(Collectors.toMap(SchedGroup::getGroup, DisjobGroup::of));
-            Map<String, Set<String>> userMap0 = toUserMap(list);
-
-            SchedGroupService.groupMap = groupMap0;
-            SchedGroupService.userMap = userMap0;
-        } catch (Throwable t) {
-            LOG.error("Refresh sched group error.", t);
-            Threads.interruptIfNecessary(t);
-        } finally {
-            LOCK.unlock();
+                SchedGroupService.groupMap = groupMap0;
+                SchedGroupService.userMap = userMap0;
+            } catch (Throwable t) {
+                LOG.error("Refresh sched group error.", t);
+                Threads.interruptIfNecessary(t);
+            } finally {
+                LOCK.unlock();
+            }
         }
     }
 
-    private void refresh0() {
+    private void refreshAndPublish() {
         refresh();
         serverInvokeService.publishOtherSupervisors(new EventParam(EventParam.Type.REFRESH_GROUP));
     }

@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.dto.supervisor.EventParam;
@@ -44,7 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -69,12 +68,13 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     public ServerInvokeService(SupervisorRegistry supervisorRegistry,
                                Supervisor.Current currentSupervisor,
-                               @Value("${" + SpringUtils.SPRING_BOOT_CONTEXT_PATH + ":/}") String supervisorContextPath,
+                               ServerProperties serverProperties,
                                SupervisorRpcService localSupervisorRpcProvider,
                                @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient) {
         this.supervisorRegistry = supervisorRegistry;
         this.currentSupervisor = currentSupervisor;
+        String supervisorContextPath = serverProperties.getServlet().getContextPath();
         this.supervisorRpcClient = DestinationServerRestProxy.create(
             SupervisorRpcService.class,
             localSupervisorRpcProvider,

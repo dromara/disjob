@@ -53,10 +53,7 @@ public final class ProxyUtils {
      * @return cglib proxy instance
      */
     public static <T> T create(org.springframework.cglib.proxy.InvocationHandler invocationHandler, Class<?> superClass) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(superClass);
-        enhancer.setCallback(invocationHandler);
-        return (T) enhancer.create();
+        return (T) Enhancer.create(superClass, invocationHandler);
     }
 
     public static <T, H extends InvocationHandler & org.springframework.cglib.proxy.InvocationHandler> T create(H invocationHandler, Class<?> cls) {

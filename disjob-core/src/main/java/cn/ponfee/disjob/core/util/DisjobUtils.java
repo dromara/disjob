@@ -16,11 +16,13 @@
 
 package cn.ponfee.disjob.core.util;
 
+import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
-import cn.ponfee.disjob.core.base.JobConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
 
 /**
  * Disjob utility
@@ -31,18 +33,22 @@ public class DisjobUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(DisjobUtils.class);
 
+    public static String getLocalHost() {
+        return getLocalHost(SpringContextHolder.getProperty(DISJOB_BOUND_SERVER_HOST));
+    }
+
     public static String getLocalHost(String specifiedHost) {
         String host = specifiedHost;
         if (isValidHost(host, "specified")) {
             return host;
         }
 
-        host = System.getProperty(JobConstants.DISJOB_BOUND_SERVER_HOST);
+        host = System.getProperty(DISJOB_BOUND_SERVER_HOST);
         if (isValidHost(host, "System#getProperty")) {
             return host;
         }
 
-        host = System.getenv(JobConstants.DISJOB_BOUND_SERVER_HOST);
+        host = System.getenv(DISJOB_BOUND_SERVER_HOST);
         if (isValidHost(host, "System#getenv")) {
             return host;
         }

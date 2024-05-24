@@ -35,7 +35,7 @@ import java.util.concurrent.Callable;
  */
 public final class DoInDatabaseLocked implements DoInLocked {
 
-    private static final String TABLE_NAME = "disjob_lock";
+    private static final String TABLE_NAME = "sched_lock";
 
     private static final String CREATE_TABLE_DDL =
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                       \n" +

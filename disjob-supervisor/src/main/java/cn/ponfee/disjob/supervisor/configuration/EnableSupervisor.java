@@ -29,7 +29,6 @@ import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -44,7 +43,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import static cn.ponfee.disjob.core.base.JobConstants.*;
+import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR;
+import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE;
 
 /**
  * Enable supervisor role
@@ -83,10 +83,9 @@ public @interface EnableSupervisor {
     class EnableSupervisorConfiguration {
 
         @Bean(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        public Supervisor.Current currentSupervisor(@Value("${" + DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
-                                                    WebServerApplicationContext webServerApplicationContext) {
+        public Supervisor.Current currentSupervisor(WebServerApplicationContext webServerApplicationContext) {
             UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
-            String host = DisjobUtils.getLocalHost(boundHost);
+            String host = DisjobUtils.getLocalHost();
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
             Object[] args = {host, port, workerCtxPath};
             try {
@@ -94,7 +93,7 @@ public @interface EnableSupervisor {
                 return ClassUtils.invoke(Class.forName(Supervisor.Current.class.getName()), "create", args);
             } catch (Exception e) {
                 // cannot happen
-                throw new Error("Setting as current supervisor occur error.", e);
+                throw new Error("Creates Supervisor.Current instance occur error.", e);
             }
         }
 

@@ -108,15 +108,6 @@ public abstract class AbstractJobManager {
         return isOneAffectedRow(jobMapper.disable(job));
     }
 
-    public boolean changeJobState(long jobId, JobState to) {
-        boolean flag = isOneAffectedRow(jobMapper.updateState(jobId, to.value(), 1 ^ to.value()));
-        if (flag && to == JobState.ENABLE) {
-            SchedJob job = jobMapper.get(jobId);
-            updateFixedDelayNextTriggerTime(job, Dates.ofTimeMillis(job.getLastTriggerTime()));
-        }
-        return flag;
-    }
-
     public boolean updateJobNextTriggerTime(SchedJob job) {
         return isOneAffectedRow(jobMapper.updateNextTriggerTime(job));
     }
@@ -126,6 +117,16 @@ public abstract class AbstractJobManager {
     }
 
     // ------------------------------------------------------------------database operation within spring transactional
+
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
+    public boolean changeJobState(long jobId, JobState to) {
+        boolean flag = isOneAffectedRow(jobMapper.updateState(jobId, to.value(), 1 ^ to.value()));
+        if (flag && to == JobState.ENABLE) {
+            SchedJob job = jobMapper.get(jobId);
+            updateFixedDelayNextTriggerTime(job, Dates.ofTimeMillis(job.getLastTriggerTime()));
+        }
+        return flag;
+    }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
@@ -184,16 +185,6 @@ public abstract class AbstractJobManager {
     }
 
     // ------------------------------------------------------------------others operation
-
-    protected boolean updateFixedDelayNextTriggerTime(SchedJob job, Date baseTime) {
-        TriggerType fixedDelay = TriggerType.FIXED_DELAY;
-        if (!fixedDelay.equalsValue(job.getTriggerType())) {
-            return false;
-        }
-        Date date = baseTime == null ? null : fixedDelay.computeNextTriggerTime(job.getTriggerValue(), baseTime);
-        Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
-        return isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime()));
-    }
 
     public long generateId() {
         return idGenerator.generateId();
@@ -306,6 +297,16 @@ public abstract class AbstractJobManager {
 
     public boolean dispatch(List<ExecuteTaskParam> params) {
         return taskDispatcher.dispatch(params);
+    }
+
+    protected boolean updateFixedDelayNextTriggerTime(SchedJob job, Date baseTime) {
+        TriggerType fixedDelay = TriggerType.FIXED_DELAY;
+        if (!fixedDelay.equalsValue(job.getTriggerType())) {
+            return false;
+        }
+        Date date = baseTime == null ? null : fixedDelay.computeNextTriggerTime(job.getTriggerValue(), baseTime);
+        Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
+        return isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime()));
     }
 
     /**

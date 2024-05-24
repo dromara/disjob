@@ -292,16 +292,15 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     }
 
     private void tryDiscoverServers() {
-        if (!asyncRefreshLock.tryLock()) {
-            return;
-        }
-        try {
-            doDiscoverServers();
-        } catch (Throwable t) {
-            Threads.interruptIfNecessary(t);
-            log.error("Redis discover servers occur error.", t);
-        } finally {
-            asyncRefreshLock.unlock();
+        if (asyncRefreshLock.tryLock()) {
+            try {
+                doDiscoverServers();
+            } catch (Throwable t) {
+                Threads.interruptIfNecessary(t);
+                log.error("Redis discover servers occur error.", t);
+            } finally {
+                asyncRefreshLock.unlock();
+            }
         }
     }
 

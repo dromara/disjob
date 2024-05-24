@@ -46,11 +46,6 @@ public final class SpringUtils {
      */
     public static final String SPRING_BOOT_SERVER_PORT = "server.port";
 
-    /**
-     * Spring-boot web server servlet context-path key
-     */
-    public static final String SPRING_BOOT_CONTEXT_PATH = "server.servlet.context-path";
-
     public static Resource getResource(String resourceLocation) throws IOException {
         // return new DefaultResourceLoader().getResource(resourceLocation);
         URL url = ResourceUtils.getURL(resourceLocation);

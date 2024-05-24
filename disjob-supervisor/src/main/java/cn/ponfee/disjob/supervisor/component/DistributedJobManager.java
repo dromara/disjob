@@ -216,7 +216,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return StartTaskResult, if not null start successfully
      */
     public StartTaskResult startTask(StartTaskParam param) {
-        return doTransactionLockInSynchronized0(param.getInstanceId(), param.getWnstanceId(), lockedKey -> {
+        return doInSynchronizedTransaction0(param.getInstanceId(), param.getWnstanceId(), lockedKey -> {
             log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
             Date now = new Date();
 
@@ -239,7 +239,7 @@ public class DistributedJobManager extends AbstractJobManager {
             SchedTask task = taskMapper.get(param.getTaskId());
             List<PredecessorInstance> predecessorInstances = null;
             if (param.getJobType() == JobType.WORKFLOW) {
-                predecessorInstances = findPredecessorInstances(instance.getWnstanceId(), task.getInstanceId());
+                predecessorInstances = findPredecessorInstances(task.getInstanceId(), instance.getWnstanceId());
             }
             return StartTaskResult.success(instance.getJobId(), instance.getWnstanceId(), task, predecessorInstances);
         });
@@ -248,7 +248,7 @@ public class DistributedJobManager extends AbstractJobManager {
     public void changeInstanceState(long instanceId, ExecuteState toExecuteState) {
         RunState toRunState = toExecuteState.runState();
         Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, "Cannot force update state to EXECUTING");
-        doTransactionLockInSynchronized(instanceId, null, instance -> {
+        doInSynchronizedTransaction(instanceId, null, instance -> {
             Assert.notNull(instance, () -> "Sched instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflow(), () -> "Unsupported force change workflow instance state: " + instanceId);
 
@@ -269,7 +269,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     public void deleteInstance(long instanceId) {
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
-        doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+        doInSynchronizedTransaction(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Sched instance not found: " + instanceId);
             Assert.isTrue(RunState.of(instance.getRunState()).isTerminal(), () -> "Deleting instance must be terminal: " + instance);
 
@@ -318,7 +318,7 @@ public class DistributedJobManager extends AbstractJobManager {
         long instanceId = param.getInstanceId();
         Assert.isTrue(!ExecuteState.Const.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
         log.info("Task trace [{}] terminating: {}, {}, {}", param.getTaskId(), param.getOperation(), param.getToState(), param.getWorker());
-        return doTransactionLockInSynchronized(instanceId, param.getWnstanceId(), instance -> {
+        return doInSynchronizedTransaction(instanceId, param.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Terminate executing task failed, instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Cannot direct terminate workflow lead instance: " + instance);
             if (RunState.of(instance.getRunState()).isTerminal()) {
@@ -375,7 +375,7 @@ public class DistributedJobManager extends AbstractJobManager {
     public boolean purgeInstance(SchedInstance inst) {
         log.info("Purge instance: {}", inst.getInstanceId());
         Long instanceId = inst.getInstanceId();
-        return doTransactionLockInSynchronized(instanceId, inst.getWnstanceId(), instance -> {
+        return doInSynchronizedTransaction(instanceId, inst.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Purge instance not found: " + instanceId);
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Cannot purge workflow lead instance: " + instance);
             // instance run state must in (10, 20)
@@ -434,7 +434,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (wnstanceId != null) {
             Assert.isTrue(instanceId == wnstanceId, () -> "Must pause lead workflow instance: " + instanceId);
         }
-        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+        return doInSynchronizedTransaction(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Pause instance not found: " + instanceId);
             if (!RUN_STATE_PAUSABLE.contains(instance.getRunState())) {
                 return false;
@@ -458,7 +458,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (wnstanceId != null) {
             Assert.isTrue(instanceId == wnstanceId, () -> "Must pause lead workflow instance: " + instanceId);
         }
-        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+        return doInSynchronizedTransaction(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel instance not found: " + instanceId);
             if (RunState.of(instance.getRunState()).isTerminal()) {
                 return false;
@@ -488,7 +488,7 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     public boolean resumeInstance(long instanceId) {
         Long wnstanceId = instanceMapper.getWnstanceId(instanceId);
-        return doTransactionLockInSynchronized(instanceId, wnstanceId, instance -> {
+        return doInSynchronizedTransaction(instanceId, wnstanceId, instance -> {
             Assert.notNull(instance, () -> "Cancel failed, instance_id not found: " + instanceId);
             if (!RunState.PAUSED.equalsValue(instance.getRunState())) {
                 return false;
@@ -518,7 +518,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private <T> T doTransactionLockInSynchronized0(long instanceId, Long wnstanceId, LongFunction<T> action) {
+    private <T> T doInSynchronizedTransaction0(long instanceId, Long wnstanceId, LongFunction<T> action) {
         // Long.toString(lockKey).intern()
         Long lockedKey = wnstanceId != null ? wnstanceId : (Long) instanceId;
         synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedKey)) {
@@ -526,8 +526,8 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
-    private void doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Consumer<SchedInstance> action) {
-        doTransactionLockInSynchronized(instanceId, wnstanceId, Functions.convert(action, true));
+    private void doInSynchronizedTransaction(long instanceId, Long wnstanceId, Consumer<SchedInstance> action) {
+        doInSynchronizedTransaction(instanceId, wnstanceId, Functions.convert(action, true));
     }
 
     /**
@@ -538,8 +538,8 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param action     the action
      * @return boolean value of action result
      */
-    private boolean doTransactionLockInSynchronized(long instanceId, Long wnstanceId, Predicate<SchedInstance> action) {
-        return doTransactionLockInSynchronized0(instanceId, wnstanceId, lockedKey -> {
+    private boolean doInSynchronizedTransaction(long instanceId, Long wnstanceId, Predicate<SchedInstance> action) {
+        return doInSynchronizedTransaction0(instanceId, wnstanceId, lockedKey -> {
             SchedInstance lockedInstance = instanceMapper.lock(lockedKey);
             Assert.notNull(lockedInstance, () -> "Locked instance not found: " + lockedKey);
             SchedInstance instance = (instanceId == lockedKey) ? lockedInstance : instanceMapper.get(instanceId);
@@ -1020,32 +1020,18 @@ public class DistributedJobManager extends AbstractJobManager {
         return Tuple3.of(job, instance, waitingTasks);
     }
 
-    private List<PredecessorInstance> findPredecessorInstances(long wnstanceId, long instanceId) {
+    private List<PredecessorInstance> findPredecessorInstances(long instanceId, long wnstanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
-        if (CollectionUtils.isEmpty(workflows)) {
+        SchedWorkflow curWorkflow = Collects.findAny(workflows, e -> Long.valueOf(instanceId).equals(e.getInstanceId()));
+        if (curWorkflow == null || DAGNode.fromString(curWorkflow.getPreNode()).isStart()) {
             return null;
         }
-
-        SchedWorkflow curWorkflow = workflows.stream()
-            .filter(e -> e.getInstanceId() != null)
-            .filter(e -> e.getInstanceId() == instanceId)
-            .findAny()
-            .orElse(null);
-        if (curWorkflow == null) {
-            return null;
-        }
-
-        if (DAGNode.fromString(curWorkflow.getPreNode()).isStart()) {
-            return null;
-        }
-
         DAGNode curNode = DAGNode.fromString(curWorkflow.getCurNode());
         WorkflowGraph workflowGraph = new WorkflowGraph(workflows);
         Map<DAGEdge, SchedWorkflow> predecessors = workflowGraph.predecessors(curNode);
         if (MapUtils.isEmpty(predecessors)) {
             return null;
         }
-
         return predecessors.values()
             .stream()
             .map(e -> {

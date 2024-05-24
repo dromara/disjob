@@ -43,7 +43,7 @@ import static cn.ponfee.disjob.common.spring.TransactionUtils.*;
 public abstract class DatabaseServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
     private static final long DEAD_TIME_MILLIS = TimeUnit.HOURS.toMillis(12);
-    private static final String TABLE_NAME = "disjob_registry";
+    private static final String TABLE_NAME = "sched_registry";
 
     private static final String CREATE_TABLE_DDL =
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                         \n" +

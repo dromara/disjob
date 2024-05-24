@@ -28,7 +28,6 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.EnableWorker.EnableWorkerConfiguration;
 import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -64,10 +63,9 @@ public @interface EnableWorker {
         @DependsOn(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         public Worker.Current currentWorker(WebServerApplicationContext webServerApplicationContext,
-                                            @Value("${" + JobConstants.DISJOB_BOUND_SERVER_HOST + ":}") String boundHost,
                                             WorkerProperties config) {
             config.check();
-            String host = DisjobUtils.getLocalHost(boundHost);
+            String host = DisjobUtils.getLocalHost();
             String workerToken = config.getWorkerToken();
             String supervisorToken = config.getSupervisorToken();
             String supervisorContextPath = config.getSupervisorContextPath();
@@ -79,7 +77,7 @@ public @interface EnableWorker {
                 return ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", args);
             } catch (Exception e) {
                 // cannot happen
-                throw new Error("Setting as current worker occur error.", e);
+                throw new Error("Creates Worker.Current instance occur error.", e);
             }
         }
 

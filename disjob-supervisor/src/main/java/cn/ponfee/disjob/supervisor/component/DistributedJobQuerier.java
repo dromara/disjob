@@ -65,8 +65,16 @@ public class DistributedJobQuerier {
         return jobMapper.get(jobId);
     }
 
+    public String getJobGroup(long jobId) {
+        return jobMapper.getGroup(jobId);
+    }
+
     public SchedInstance getInstance(long instanceId) {
         return instanceMapper.get(instanceId);
+    }
+
+    public Long getInstanceJobId(long instanceId) {
+        return instanceMapper.getJobId(instanceId);
     }
 
     public SchedInstance getInstance(long jobId, long triggerTime, int runType) {
@@ -98,10 +106,6 @@ public class DistributedJobQuerier {
 
     public List<SchedTask> findBaseInstanceTasks(long instanceId) {
         return taskMapper.findBaseByInstanceId(instanceId);
-    }
-
-    public SchedTask getTask(long taskId) {
-        return taskMapper.get(taskId);
     }
 
     public List<SchedTask> findLargeInstanceTasks(long instanceId) {

@@ -71,9 +71,16 @@ public abstract class MockitoTestBase {
     static {
         // Mock DisjobUtils.getLocalHost返回`127.0.0.1`，支持在断网时能跑测试用例
         MockedStatic<DisjobUtils> mocked = mockStatic(DisjobUtils.class);
+
+        // Mock DisjobUtils#getLocalHost(String)
         mocked.when(() -> DisjobUtils.getLocalHost(any())).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
         Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, DisjobUtils.getLocalHost(null));
         mocked.verify(() -> DisjobUtils.getLocalHost(any()));
+
+        // Mock DisjobUtils#getLocalHost()
+        mocked.when(DisjobUtils::getLocalHost).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
+        Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, DisjobUtils.getLocalHost());
+        mocked.verify(DisjobUtils::getLocalHost);
     }
 
     // Only reset mock field which is defined in MockitoTestBase

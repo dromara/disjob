@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
@@ -74,6 +75,10 @@ class WorkerTask {
     }
 
     // --------------------------------------------------------other methods
+
+    StartTaskParam toStartTaskParam() {
+        return new StartTaskParam(wnstanceId, instanceId, taskId, jobType, worker);
+    }
 
     Long getLockedKey() {
         return wnstanceId != null ? wnstanceId : instanceId;

@@ -19,6 +19,7 @@ package cn.ponfee.disjob.id.snowflake.db;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
@@ -63,7 +64,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
     /**
      * Store snowflake worker configuration
      */
-    private static final String TABLE_NAME = "disjob_snowflake";
+    private static final String TABLE_NAME = "sched_snowflake";
 
     private static final String CREATE_TABLE_DDL =
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                    \n" +
@@ -155,7 +156,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
     private int registerWorkerId(int workerIdMaxCount) {
         List<DbSnowflakeWorker> registeredWorkers = jdbcTemplateWrapper.list(QUERY_ALL_SQL, ROW_MAPPER, bizTag);
-        DbSnowflakeWorker current = registeredWorkers.stream().filter(e -> e.equals(bizTag, serverTag)).findAny().orElse(null);
+        DbSnowflakeWorker current = Collects.findAny(registeredWorkers, e -> e.equals(bizTag, serverTag));
         if (current == null) {
             return findUsableWorkerId(registeredWorkers, workerIdMaxCount);
         } else {
