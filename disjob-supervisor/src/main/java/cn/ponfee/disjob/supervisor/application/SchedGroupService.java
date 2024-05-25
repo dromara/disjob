@@ -67,8 +67,8 @@ public class SchedGroupService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
 
     private static final Lock LOCK = new ReentrantLock();
-    private static volatile Map<String, DisjobGroup> groupMap;
-    private static volatile Map<String, Set<String>> userMap;
+    private static volatile Map<String, DisjobGroup> groupCache;
+    private static volatile Map<String, Set<String>> userCache;
 
     private final SchedGroupMapper groupMapper;
     private final SupervisorRegistry supervisorRegistry;
@@ -156,12 +156,12 @@ public class SchedGroupService extends SingletonClassConstraint {
     // ------------------------------------------------------------other static methods
 
     public static Set<String> myGroups(String user) {
-        Set<String> groups = userMap.get(user);
+        Set<String> groups = userCache.get(user);
         return groups == null ? Collections.emptySet() : groups;
     }
 
     public static DisjobGroup getGroup(String group) {
-        DisjobGroup disjobGroup = groupMap.get(group);
+        DisjobGroup disjobGroup = groupCache.get(group);
         if (disjobGroup == null) {
             throw new GroupNotFoundException("Not found worker group: " + group);
         }
@@ -205,8 +205,8 @@ public class SchedGroupService extends SingletonClassConstraint {
                 Map<String, DisjobGroup> groupMap0 = list.stream().collect(Collectors.toMap(SchedGroup::getGroup, DisjobGroup::of));
                 Map<String, Set<String>> userMap0 = toUserMap(list);
 
-                SchedGroupService.groupMap = groupMap0;
-                SchedGroupService.userMap = userMap0;
+                SchedGroupService.groupCache = groupMap0;
+                SchedGroupService.userCache = userMap0;
             } catch (Throwable t) {
                 LOG.error("Refresh sched group error.", t);
                 Threads.interruptIfNecessary(t);

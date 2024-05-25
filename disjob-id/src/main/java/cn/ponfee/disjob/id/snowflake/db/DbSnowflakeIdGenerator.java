@@ -61,9 +61,9 @@ public @interface DbSnowflakeIdGenerator {
 
     String bizTag() default "disjob";
 
-    int sequenceBitLength() default 14;
-
     int workerIdBitLength() default 8;
+
+    int sequenceBitLength() default 14;
 
     /**
      * Basic DbDistributedSnowflake
@@ -136,8 +136,8 @@ public @interface DbSnowflakeIdGenerator {
             }
 
             bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());
-            bd.getConstructorArgumentValues().addIndexedArgumentValue(3, config.sequenceBitLength());
-            bd.getConstructorArgumentValues().addIndexedArgumentValue(4, config.workerIdBitLength());
+            bd.getConstructorArgumentValues().addIndexedArgumentValue(3, config.workerIdBitLength());
+            bd.getConstructorArgumentValues().addIndexedArgumentValue(4, config.sequenceBitLength());
 
             bd.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
             bd.setScope(BeanDefinition.SCOPE_SINGLETON);

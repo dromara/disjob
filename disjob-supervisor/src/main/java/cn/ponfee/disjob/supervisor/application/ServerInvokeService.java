@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.util.Numbers;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.dto.supervisor.EventParam;
 import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam;
@@ -74,7 +75,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
                                DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient) {
         this.supervisorRegistry = supervisorRegistry;
         this.currentSupervisor = currentSupervisor;
-        String supervisorContextPath = serverProperties.getServlet().getContextPath();
+        String supervisorContextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
         this.supervisorRpcClient = DestinationServerRestProxy.create(
             SupervisorRpcService.class,
             localSupervisorRpcProvider,

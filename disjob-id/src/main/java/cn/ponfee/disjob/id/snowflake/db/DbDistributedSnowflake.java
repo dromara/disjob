@@ -109,15 +109,15 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
      * @param serverTag    the serverTag
      */
     public DbDistributedSnowflake(JdbcTemplate jdbcTemplate, String bizTag, String serverTag) {
-        this(jdbcTemplate, bizTag, serverTag, 14, 8);
+        this(jdbcTemplate, bizTag, serverTag, 8, 14);
     }
 
     public DbDistributedSnowflake(JdbcTemplate jdbcTemplate,
                                   String bizTag,
                                   String serverTag,
-                                  int sequenceBitLength,
-                                  int workerIdBitLength) {
-        int len = sequenceBitLength + workerIdBitLength;
+                                  int workerIdBitLength,
+                                  int sequenceBitLength) {
+        int len = workerIdBitLength + sequenceBitLength;
         Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
 
         this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
@@ -131,7 +131,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
             // workerId取值范围：[0, workerIdMaxCount)
             int workerIdMaxCount = 1 << workerIdBitLength;
             int workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdMaxCount), 5, 2000L);
-            this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
+            this.snowflake = new Snowflake(workerIdBitLength, sequenceBitLength, workerId);
         } catch (Throwable e) {
             Threads.interruptIfNecessary(e);
             throw new Error("Db snowflake server initialize error.", e);

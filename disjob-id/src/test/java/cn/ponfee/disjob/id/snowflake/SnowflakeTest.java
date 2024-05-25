@@ -35,10 +35,10 @@ public class SnowflakeTest {
 
     @Test
     public void testNew() {
-        new Snowflake(0, sequenceBits, workerIdBits);
-        new Snowflake(255, sequenceBits, workerIdBits);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new Snowflake(256, sequenceBits, workerIdBits));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new Snowflake(-1, sequenceBits, workerIdBits));
+        new Snowflake(workerIdBits, sequenceBits, 0);
+        new Snowflake(workerIdBits, sequenceBits, 255);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new Snowflake(workerIdBits, sequenceBits, 256));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new Snowflake(workerIdBits, sequenceBits, -1));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class SnowflakeTest {
 
     @Test
     public void testGenerateId() {
-        Snowflake snowflake = new Snowflake(16, sequenceBits, workerIdBits);
+        Snowflake snowflake = new Snowflake(workerIdBits, sequenceBits, 16);
         for (int i = 0; i < 10; i++) {
             long num = snowflake.generateId();
             System.out.println(num + ": " + Bytes.toBinary(Bytes.toBytes(num)));

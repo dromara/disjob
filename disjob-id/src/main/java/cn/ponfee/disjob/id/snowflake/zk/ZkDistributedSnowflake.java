@@ -111,17 +111,17 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
     private volatile boolean closed = false;
 
     public ZkDistributedSnowflake(ZkConfig zkConfig, String bizTag, String serverTag) {
-        this(zkConfig, bizTag, serverTag, 14, 8);
+        this(zkConfig, bizTag, serverTag, 8, 14);
     }
 
     public ZkDistributedSnowflake(ZkConfig zkConfig,
                                   String bizTag,
                                   String serverTag,
-                                  int sequenceBitLength,
-                                  int workerIdBitLength) {
+                                  int workerIdBitLength,
+                                  int sequenceBitLength) {
         Assert.isTrue(!bizTag.contains(SEP), () -> "Biz tag cannot contains '/': " + bizTag);
         Assert.isTrue(!serverTag.contains(SEP), () -> "Server tag cannot contains '/': " + serverTag);
-        int len = sequenceBitLength + workerIdBitLength;
+        int len = workerIdBitLength + sequenceBitLength;
         Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker) cannot greater than 22, but actual=" + len);
         this.serverTag = serverTag;
         String snowflakeRootPath = "/snowflake/" + bizTag;
@@ -144,7 +144,7 @@ public class ZkDistributedSnowflake extends SingletonClassConstraint implements 
             int workerIdMaxCount = 1 << workerIdBitLength;
             this.workerId = RetryTemplate.execute(() -> registerWorkerId(workerIdMaxCount), 5, 2000L);
             this.workerIdPath = workerIdParentPath + SEP + workerId;
-            this.snowflake = new Snowflake(workerId, sequenceBitLength, workerIdBitLength);
+            this.snowflake = new Snowflake(workerIdBitLength, sequenceBitLength, workerId);
         } catch (Throwable e) {
             Threads.interruptIfNecessary(e);
             throw new Error("Zk snowflake server registry worker error.", e);

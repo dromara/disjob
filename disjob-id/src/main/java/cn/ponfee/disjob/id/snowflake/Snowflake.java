@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.Maths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 /**
  * <pre>
@@ -59,6 +58,26 @@ public final class Snowflake implements IdGenerator {
     private static final long TWEPOCH = 1425139200000L;
 
     /**
+     * Timestamp left shift bits length: datacenterIdBitLength + workerIdBitLength + sequenceBitLength
+     */
+    private final int timestampShift;
+
+    /**
+     * Datacenter id left shift bits length: workerIdBitLength + sequenceBitLength
+     */
+    private final int datacenterIdShift;
+
+    /**
+     * Worker id left shift bits length: sequenceBitLength
+     */
+    private final int workerIdShift;
+
+    /**
+     * Sequence mask, such as: 1111111111 11
+     */
+    private final long sequenceMask;
+
+    /**
      * 数据中心ID
      */
     private final long datacenterId;
@@ -68,52 +87,49 @@ public final class Snowflake implements IdGenerator {
      */
     private final long workerId;
 
-    private final int workerIdShift;
-    private final int datacenterIdShift;
-    private final int timestampShift;
-
-    private final long sequenceMask;
-
+    /**
+     * Last timestamp
+     */
     private long lastTimestamp = -1L;
-    private long sequence      = 0L;
 
-    public Snowflake(int workerId,
-                     int datacenterId,
-                     int sequenceBitLength,
-                     int workerIdBitLength,
-                     int datacenterIdBitLength) {
-        int len = sequenceBitLength + workerIdBitLength + datacenterIdBitLength;
-        Assert.isTrue(len <= 22, () -> "Bit length(sequence + worker + datacenter) cannot greater than 22, but actual=" + len);
+    /**
+     * Current sequence
+     */
+    private long sequence = 0L;
 
-        long maxWorkerId = Maths.bitsMask(workerIdBitLength);
-        if (workerId > maxWorkerId || workerId < 0) {
-            throw new IllegalArgumentException("Worker id must be range [0, " + maxWorkerId + "], but was " + workerId);
+    public Snowflake(int datacenterIdBitLength, int workerIdBitLength, int sequenceBitLength, int datacenterId, int workerId) {
+        int len = datacenterIdBitLength + workerIdBitLength + sequenceBitLength;
+        if (len > 22) {
+            throw new IllegalArgumentException("Bit length(datacenter + worker + sequence) cannot greater than 22, but actual=" + len);
         }
 
         long maxDatacenterId = Maths.bitsMask(datacenterIdBitLength);
-        if (datacenterId > maxDatacenterId || datacenterId < 0) {
-            throw new IllegalArgumentException("Worker id must be range [0, " + maxDatacenterId + "], but was " + datacenterId);
+        if (datacenterId < 0 || datacenterId > maxDatacenterId) {
+            throw new IllegalArgumentException("Datacenter id must be range [0, " + maxDatacenterId + "], but actual " + datacenterId);
         }
 
+        long maxWorkerId = Maths.bitsMask(workerIdBitLength);
+        if (workerId < 0 || workerId > maxWorkerId) {
+            throw new IllegalArgumentException("Worker id must be range [0, " + maxWorkerId + "], but actual " + workerId);
+        }
+
+        this.timestampShift    = datacenterIdBitLength + workerIdBitLength + sequenceBitLength;
+        this.datacenterIdShift = workerIdBitLength + sequenceBitLength;
         this.workerIdShift     = sequenceBitLength;
-        this.datacenterIdShift = sequenceBitLength + workerIdBitLength;
-        this.timestampShift    = sequenceBitLength + workerIdBitLength + datacenterIdBitLength;
-
         this.sequenceMask      = Maths.bitsMask(sequenceBitLength);
-
-        this.workerId          = workerId;
         this.datacenterId      = datacenterId;
+        this.workerId          = workerId;
     }
 
     /**
      * Without datacenter id
      *
-     * @param workerId          the worker id
-     * @param sequenceBitLength the sequence bit length
      * @param workerIdBitLength the worker id bit length
+     * @param sequenceBitLength the sequence bit length
+     * @param workerId          the worker id
      */
-    public Snowflake(int workerId, int sequenceBitLength, int workerIdBitLength) {
-        this(workerId, 0, sequenceBitLength, workerIdBitLength, 0);
+    public Snowflake(int workerIdBitLength, int sequenceBitLength, int workerId) {
+        this(0, workerIdBitLength, sequenceBitLength, 0, workerId);
     }
 
     @Override

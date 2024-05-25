@@ -26,8 +26,8 @@ import cn.ponfee.disjob.core.base.Worker;
  */
 final class RedisTaskDispatchingUtils {
 
-    static String buildDispatchTasksKey(Worker worker) {
-        return JobConstants.DISJOB_KEY_PREFIX + ".tasks.dispatch." + worker.serialize();
+    static String buildTaskDispatchKey(Worker worker) {
+        return JobConstants.DISJOB_KEY_PREFIX + ".task.dispatch." + worker.serialize();
     }
 
 }
