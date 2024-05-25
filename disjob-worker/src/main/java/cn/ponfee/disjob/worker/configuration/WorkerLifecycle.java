@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.worker.configuration;
 
-import cn.ponfee.disjob.common.base.TripState;
+import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
@@ -51,7 +51,7 @@ public class WorkerLifecycle implements SmartLifecycle {
                            WorkerRegistry workerRegistry,
                            TaskReceiver taskReceiver,
                            @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                           // if the current server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.rpc.SupervisorRpcProvider
+                           // if the current server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider
                            @Nullable SupervisorRpcService supervisorRpcService) {
         this.workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)

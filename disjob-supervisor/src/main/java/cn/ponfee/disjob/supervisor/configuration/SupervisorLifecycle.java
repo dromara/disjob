@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
-import cn.ponfee.disjob.common.base.TripState;
+import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;

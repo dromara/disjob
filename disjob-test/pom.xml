@@ -22,6 +22,7 @@
       <artifactId>disjob-worker</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+
     <!-- mysql driver class-->
     <dependency>
       <groupId>com.mysql</groupId>
@@ -49,6 +50,16 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>embedded-redis</artifactId>
       <version>${embedded-redis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- testcontainers redis-->
     <dependency>

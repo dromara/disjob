@@ -40,8 +40,7 @@ public class WorkerRpcProvider implements WorkerRpcService {
     private final Worker.Current currentWork;
     private final WorkerRegistry workerRegistry;
 
-    public WorkerRpcProvider(Worker.Current currentWork,
-                             WorkerRegistry workerRegistry) {
+    public WorkerRpcProvider(Worker.Current currentWork, WorkerRegistry workerRegistry) {
         this.currentWork = currentWork;
         this.workerRegistry = workerRegistry;
     }

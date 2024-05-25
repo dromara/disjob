@@ -146,16 +146,16 @@ public final class Threads {
             return;
         }
 
+        long halfJoinMillis = joinMillis / 2;
+
         // wait joined
-        joinThread(thread, joinMillis / 2);
-        if (isStopped(thread)) {
+        if (isStoppedAfterJoin(thread, halfJoinMillis)) {
             return;
         }
 
         // again wait joined with interrupt
         thread.interrupt();
-        joinThread(thread, joinMillis / 2);
-        if (isStopped(thread)) {
+        if (isStoppedAfterJoin(thread, halfJoinMillis)) {
             return;
         }
 
@@ -164,22 +164,22 @@ public final class Threads {
             // 如果在run方法内用 try{...} catch(Throwable e){} 捕获住，则线程不会停止执行
             LOG.warn("Invoke java.lang.Thread#stop() method begin: {}", thread.getName());
             thread.stop();
-            LOG.warn("Invoke java.lang.Thread#stop() method finished: {}", thread.getName());
+            LOG.warn("Invoke java.lang.Thread#stop() method end: {}", thread.getName());
         } catch (Throwable t) {
             LOG.error("Invoke java.lang.Thread#stop() method failed: " + thread.getName(), t);
         }
     }
 
-    private static void joinThread(Thread thread, long joinTimeoutMills) {
-        if (joinTimeoutMills <= 0) {
-            return;
+    private static boolean isStoppedAfterJoin(Thread thread, long joinTimeoutMills) {
+        if (joinTimeoutMills > 0) {
+            try {
+                thread.join(joinTimeoutMills);
+            } catch (Throwable e) {
+                LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
+                interruptIfNecessary(e);
+            }
         }
-        try {
-            thread.join(joinTimeoutMills);
-        } catch (Throwable e) {
-            LOG.error("Join thread terminal interrupted: " + thread.getName(), e);
-            interruptIfNecessary(e);
-        }
+        return isStopped(thread);
     }
 
 }

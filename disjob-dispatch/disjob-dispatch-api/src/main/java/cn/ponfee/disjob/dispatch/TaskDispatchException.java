@@ -21,7 +21,7 @@ package cn.ponfee.disjob.dispatch;
  *
  * @author Ponfee
  */
-public class TaskDispatchException extends Exception {
+class TaskDispatchException extends Exception {
     private static final long serialVersionUID = 2626305365213783551L;
 
     public TaskDispatchException(String msg) {

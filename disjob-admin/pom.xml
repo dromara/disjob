@@ -37,7 +37,7 @@
     <spring-boot.version>2.7.18</spring-boot.version>
     <shiro-core.version>1.13.0</shiro-core.version>
     <thymeleaf-extras-shiro.version>2.1.0</thymeleaf-extras-shiro.version>
-    <druid-spring-boot-starter.version>1.2.21</druid-spring-boot-starter.version>
+    <druid-spring-boot-starter.version>1.2.22</druid-spring-boot-starter.version>
     <UserAgentUtils.version>1.21</UserAgentUtils.version>
     <kaptcha.version>2.3.3</kaptcha.version>
     <pagehelper-spring-boot-starter.version>1.4.7</pagehelper-spring-boot-starter.version>

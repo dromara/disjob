@@ -410,15 +410,15 @@ public final class Numbers {
     /**
      * Returns a string value of double
      *
-     * @param d      the double value
-     * @param scale  the scale
+     * @param value the double value
+     * @param scale the scale
      * @return a string
      */
-    public static String format(double d, int scale) {
+    public static String format(double value, int scale) {
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(scale);
         nf.setGroupingUsed(false);
-        return nf.format(d);
+        return nf.format(value);
     }
 
     /**
@@ -503,56 +503,45 @@ public final class Numbers {
 
         List<Tuple2<Integer, Integer>> result = new ArrayList<>(size);
         int last = -1;
-        for (int a : slice(number, size)) {
-            if (a == 0) {
+        for (int value : slice(number, size)) {
+            if (value == 0) {
                 break;
             }
-            result.add(Tuple2.of(last += 1, last += a - 1));
+            result.add(Tuple2.of(last += 1, last += value - 1));
         }
 
         return result;
     }
 
     /**
-     * Split the bill for coupon amount<br/>
+     * Prorate the value for array
+     * <p>split(new int[]{249, 249, 249, 3}, 748)  -> [249, 249, 248, 2]
      *
-     * split(new int[]{249, 249, 249, 3}, 748)  -> [249, 249, 248, 2]
-     *
-     * @param bills the bills
-     * @param value the coupon amount value
-     * @return split result
+     * @param array the array
+     * @param value the value
+     * @return prorate result
      */
-    public static int[] split(Long orderId, int[] bills, int value) {
-        int total = IntStream.of(bills).sum();
-        if (total < value) {
-            // value = total;
-            LOG.warn("Total bill amount={} cannot less than coupon amount={}: {}", total, value, orderId);
-        }
-
-        int[] result = new int[bills.length];
-        if (bills.length == 0 || value == 0) {
+    public static int[] prorate(int[] array, int value) {
+        int[] result = new int[array.length];
+        if (array.length == 0 || value == 0) {
             return result;
         }
 
-        float rate;
-        int i = 0, n = bills.length - 1;
+        int total = IntStream.of(array).sum();
+        double rate;
+        int i = 0, n = array.length - 1;
         for (; i < n; i++) {
             // rate <= 1.0
-            rate = value / (float) total;
-
-            // 不能用Math.round：面值为748分钱的券 去平摊账单 [249, 249, 249, 3]，最后金额为3分钱的账单项要平摊掉4分钱
-            result[i] = Math.min(Math.round(bills[i] * rate), value);
-            // 因为result[i]是ceil后的结果，所以按比率上来算value减得会更多，即rate只会递减，所以不会出现溢出(后面的费用项不够抵扣)的情况
-            //result[i] = Math.min((int) Math.ceil(bills[i] * rate), value);
+            rate = value / (double) total;
+            result[i] = Math.min((int) Math.ceil(array[i] * rate), value);
             value -= result[i];
-            total -= bills[i];
+            total -= array[i];
 
             if (value == 0) {
                 break;
             }
         }
 
-        // the last bill item
         if (i == n) {
             result[i] = value;
         }
@@ -576,11 +565,11 @@ public final class Numbers {
     /**
      * To upper hex string and remove prefix 0
      *
-     * @param num the BigInteger
+     * @param value the BigInteger value
      * @return upper hex string
      */
-    public static String toHex(BigInteger num) {
-        String hex = Hex.encodeHexString(num.toByteArray(), false);
+    public static String toHex(BigInteger value) {
+        String hex = Hex.encodeHexString(value.toByteArray(), false);
         if (ALL_ZERO_PATTERN.matcher(hex).matches()) {
             return "0";
         }

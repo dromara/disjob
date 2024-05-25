@@ -41,7 +41,7 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
     /**
      * Worker ID
      */
-    String workerId;
+    private String workerId;
 
     /**
      * 启动时间

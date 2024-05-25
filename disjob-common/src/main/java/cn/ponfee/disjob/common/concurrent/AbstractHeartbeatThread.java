@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import cn.ponfee.disjob.common.base.TripState;
 import com.google.common.base.CaseFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

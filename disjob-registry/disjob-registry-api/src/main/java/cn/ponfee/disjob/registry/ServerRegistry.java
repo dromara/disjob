@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.registry;
 
-import cn.ponfee.disjob.common.base.TripState;
+import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.util.GenericUtils;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.discovery.DiscoveryServer;

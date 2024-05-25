@@ -18,8 +18,8 @@ package cn.ponfee.disjob.dispatch.redis;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.base.TripState;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
+import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.spring.RedisKeyRenewal;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.core.base.JobConstants;

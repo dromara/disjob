@@ -14,21 +14,30 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.registry.rpc;
+package cn.ponfee.disjob.dispatch.http;
+
+import cn.ponfee.disjob.core.base.WorkerRpcService;
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import io.swagger.v3.oas.annotations.Hidden;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * RPC invoke exception
+ * Http task receiver controller
  *
  * @author Ponfee
  */
-public class RpcInvokeException extends RuntimeException {
-    private static final long serialVersionUID = -2137715994975702313L;
+@Hidden
+@RequestMapping(WorkerRpcService.PREFIX_PATH)
+interface Controller {
 
-    public RpcInvokeException() {
-    }
-
-    public RpcInvokeException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    /**
+     * Receive task http method
+     *
+     * @param param the task
+     * @return {@code true} if received successfully
+     */
+    @PostMapping("/task/receive")
+    boolean receive(ExecuteTaskParam param);
 
 }

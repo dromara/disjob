@@ -19,12 +19,8 @@ package cn.ponfee.disjob.dispatch.http;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
-import io.swagger.v3.oas.annotations.Hidden;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Task receiver based http.
@@ -45,17 +41,4 @@ public class HttpTaskReceiver extends TaskReceiver implements Controller {
 
 }
 
-@Hidden
-@RequestMapping(WorkerRpcService.PREFIX_PATH)
-interface Controller {
 
-    /**
-     * Receive task http method
-     *
-     * @param param the task
-     * @return {@code true} if received successfully
-     */
-    @PostMapping("/task/receive")
-    boolean receive(ExecuteTaskParam param);
-
-}

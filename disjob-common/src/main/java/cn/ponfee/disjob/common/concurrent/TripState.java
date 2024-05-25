@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.common.base;
+package cn.ponfee.disjob.common.concurrent;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

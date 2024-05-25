@@ -47,8 +47,6 @@ import java.util.concurrent.ThreadLocalRandom;
 final class DiscoveryServerRestTemplate<D extends Server> {
     private static final Logger LOG = LoggerFactory.getLogger(DiscoveryServerRestTemplate.class);
 
-
-
     private final Discovery<D> discoveryServer;
     private final RestTemplate restTemplate;
     private final int retryMaxCount;

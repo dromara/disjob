@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.base.Startable;
-import cn.ponfee.disjob.common.base.TripState;
+import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.lock.DoInLocked;
 import cn.ponfee.disjob.core.base.Supervisor;
