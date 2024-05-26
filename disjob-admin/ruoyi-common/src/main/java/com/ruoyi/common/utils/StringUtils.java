@@ -670,4 +670,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
         }
         return sb.toString();
     }
+
+    public static String uuid32() {
+        return Constants.UUID_GENERATOR.generateId().toString().replace("-", "");
+    }
+
 }

@@ -122,8 +122,7 @@ public class FileUploadUtils
      */
     public static String extractFilename(MultipartFile file) {
         String baseName = FilenameUtils.getBaseName(file.getOriginalFilename());
-        String uuid = Constants.UUID_GENERATOR.generateId().toString().replaceAll("-", "");
-        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(), baseName, uuid, getExtension(file));
+        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(), baseName, StringUtils.uuid32(), getExtension(file));
     }
 
     public static File getAbsoluteFile(String uploadDir, String fileName) throws IOException
