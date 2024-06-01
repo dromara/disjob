@@ -38,12 +38,12 @@ public final class DoInDatabaseLocked implements DoInLocked {
     private static final String TABLE_NAME = "sched_lock";
 
     private static final String CREATE_TABLE_DDL =
-        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                       \n" +
-        "  `id`    BIGINT       UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id', \n" +
-        "  `name`  VARCHAR(60)            NOT NULL                  COMMENT 'lock name',         \n" +
-         "  PRIMARY KEY (`id`),                                                                  \n" +
-        "  UNIQUE KEY `uk_name` (`name`)                                                         \n" +
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='database lock';    \n" ;
+        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                      \n" +
+        "  `id`    BIGINT       UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment primary key id',    \n" +
+        "  `name`  VARCHAR(60)            NOT NULL                  COMMENT 'lock name',                        \n" +
+        "  PRIMARY KEY (`id`),                                                                                  \n" +
+        "  UNIQUE KEY `uk_name` (`name`)                                                                        \n" +
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Distributed lock based database'; \n" ;
 
     private static final String INSERT_SQL = "INSERT INTO " + TABLE_NAME + " (name) VALUES (?)";
 

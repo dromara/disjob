@@ -32,6 +32,7 @@ public class NumbersTest {
     public void testProrate() {
         Assertions.assertEquals("[95, 3, 102]", Arrays.toString(Numbers.prorate(new int[]{43, 1, 47}, 200)));
         Assertions.assertEquals("[29, 1, 31]", Arrays.toString(Numbers.prorate(new int[]{43, 1, 47}, 61)));
+        Assertions.assertEquals("[249, 249, 248, 2]", Arrays.toString(Numbers.prorate(new int[]{249, 249, 249, 3}, 748)));
     }
 
     @Test

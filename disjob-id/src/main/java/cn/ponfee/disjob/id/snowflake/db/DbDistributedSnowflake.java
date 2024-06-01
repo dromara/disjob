@@ -68,7 +68,7 @@ public class DbDistributedSnowflake extends SingletonClassConstraint implements 
 
     private static final String CREATE_TABLE_DDL =
         "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                    \n" +
-        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',                   \n" +
+        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment primary key id',       \n" +
         "  `biz_tag`         VARCHAR(60)             NOT NULL                  COMMENT 'biz tag',                             \n" +
         "  `server_tag`      VARCHAR(128)            NOT NULL                  COMMENT 'server tag, for example ip:port',     \n" +
         "  `worker_id`       INT           UNSIGNED  NOT NULL                  COMMENT 'snowflake worker-id',                 \n" +

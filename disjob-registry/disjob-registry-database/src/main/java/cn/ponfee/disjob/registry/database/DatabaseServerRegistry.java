@@ -46,15 +46,15 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private static final String TABLE_NAME = "sched_registry";
 
     private static final String CREATE_TABLE_DDL =
-        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                         \n" +
-        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment id',        \n" +
-        "  `namespace`       VARCHAR(60)             NOT NULL                  COMMENT 'registry namespace',       \n" +
-        "  `role`            VARCHAR(30)             NOT NULL                  COMMENT 'role(worker, supervisor)', \n" +
-        "  `server`          VARCHAR(255)            NOT NULL                  COMMENT 'server serialization',     \n" +
-        "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',      \n" +
-        "  PRIMARY KEY (`id`),                                                                                     \n" +
-        "  UNIQUE KEY `uk_namespace_role_server` (`namespace`, `role`, `server`)                                   \n" +
-        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Database registry'; \n" ;
+        "CREATE TABLE IF NOT EXISTS `" + TABLE_NAME + "` (                                                                      \n" +
+        "  `id`              BIGINT        UNSIGNED  NOT NULL  AUTO_INCREMENT  COMMENT 'auto increment primary key id',         \n" +
+        "  `namespace`       VARCHAR(60)             NOT NULL                  COMMENT 'registry namespace',                    \n" +
+        "  `role`            VARCHAR(30)             NOT NULL                  COMMENT 'role(worker, supervisor)',              \n" +
+        "  `server`          VARCHAR(255)            NOT NULL                  COMMENT 'server serialization',                  \n" +
+        "  `heartbeat_time`  BIGINT        UNSIGNED  NOT NULL                  COMMENT 'last heartbeat time',                   \n" +
+        "  PRIMARY KEY (`id`),                                                                                                  \n" +
+        "  UNIQUE KEY `uk_namespace_role_server` (`namespace`, `role`, `server`)                                                \n" +
+        ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='Disjob registry based database'; \n" ;
 
     private static final String REMOVE_DEAD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time<?";
 
@@ -211,12 +211,13 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     // ------------------------------------------------------------------private methods
 
     /**
-     * 心跳注册，不需要事务及原子性保证
+     * 心跳注册
      */
     private void registerServers() {
         for (R server : registered) {
             final String serialize = server.serialize();
             RetryTemplate.executeQuietly(() -> {
+                // 此处不需要使用Spring事务
                 Object[] updateArgs = {System.currentTimeMillis(), namespace, registerRoleName, serialize};
                 if (isOneAffectedRow(jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs))) {
                     log.debug("Database heartbeat register update: {}, {}, {}, {}", updateArgs);

@@ -62,7 +62,7 @@ public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<
     /**
      * Parameter of query condition
      */
-    private Map<String, Object> params;
+    private Map<String, Object> params = Collections.emptyMap();
 
     @Override
     public Object getValue(String key) {

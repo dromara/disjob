@@ -515,7 +515,10 @@ public final class Numbers {
 
     /**
      * Prorate the value for array
-     * <p>split(new int[]{249, 249, 249, 3}, 748)  -> [249, 249, 248, 2]
+     * <pre>
+     *  prorate(new int[]{249, 249, 249, 3}, 748) = [249, 249, 248, 2]
+     *  prorate(new int[]{43, 1, 47}       , 61 ) = [29, 1, 31]
+     * </pre>
      *
      * @param array the array
      * @param value the value

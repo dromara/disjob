@@ -81,12 +81,12 @@ public final class Threads {
     }
 
     /**
-     * 获取堆栈信息
+     * 获取栈帧
      *
      * @param depth the depth
      * @return stack trace
      */
-    public static String getStackTrace(int depth) {
+    public static String getStackFrame(int depth) {
         StackTraceElement[] traces = Thread.currentThread().getStackTrace();
         return depth < traces.length ? traces[depth].toString() : null;
     }

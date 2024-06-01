@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
+import cn.ponfee.disjob.common.concurrent.Threads;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -68,4 +69,11 @@ class ThreadTest {
         Assertions.assertFalse(t.isAlive());
     }
 
+    @Test
+    void testGetStackFrame() {
+        System.out.println(Threads.getStackFrame(0));
+        System.out.println(Threads.getStackFrame(1));
+        System.out.println(Threads.getStackFrame(2));
+        System.out.println(Threads.getStackFrame(3));
+    }
 }

@@ -206,7 +206,7 @@ public class GenController extends BaseController
                     MySqlCreateTableStatement createTableStatement = (MySqlCreateTableStatement) sqlStatement;
                     if (genTableService.createTable(createTableStatement.toString()))
                     {
-                        String tableName = createTableStatement.getTableName().replaceAll("`", "");
+                        String tableName = createTableStatement.getTableName().replace("`", "");
                         tableNames.add(tableName);
                     }
                 }
