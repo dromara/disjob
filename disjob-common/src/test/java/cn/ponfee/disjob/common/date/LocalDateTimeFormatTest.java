@@ -64,6 +64,8 @@ public class LocalDateTimeFormatTest {
 
         assertEquals("1970-01-01 08:00:00", format(zoneConvert(JavaUtilDateFormat.DEFAULT.parse("1970-01-01 00:00:00"), ZoneId.of("UTC+0"), ZoneId.of("UTC+8"))));
         assertEquals("1970-01-01 00:00:00", format(zoneConvert(JavaUtilDateFormat.DEFAULT.parse("1970-01-01 08:00:00"), ZoneId.of("UTC+8"), ZoneId.of("UTC+0"))));
+        assertEquals("1970-01-01 08:00:00", format(zoneConvert(JavaUtilDateFormat.DEFAULT.parse("1970-01-01 20:00:00"), ZoneId.of("UTC+8"), ZoneId.of("UTC-4"))));
+        assertEquals("1970-01-01 08:00:00", format(zoneConvert(Dates.toDate("1970-01-01 20:00:00", Dates.DATETIME_PATTERN), ZoneId.of("UTC+8"), ZoneId.of("UTC-4"))));
     }
 
     @Test

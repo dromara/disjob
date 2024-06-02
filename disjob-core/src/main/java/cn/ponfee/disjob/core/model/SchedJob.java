@@ -202,15 +202,63 @@ public class SchedJob extends BaseEntity {
         Assert.isTrue(isNotBlank(group), "Group cannot be blank.");
         this.group = group.trim();
         Assert.isTrue(length(group) <= 60, "Group length cannot exceed 60.");
+        verifyAndDefaultSetting();
     }
 
     public void verifyForUpdate() {
         verify();
         Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
         Assert.isTrue(version != null && version > 0, () -> "Invalid version: " + version);
+        verifyAndDefaultSetting();
     }
 
-    public void checkAndDefaultSetting() {
+    public int incrementAndGetScanFailedCount() {
+        return ++this.scanFailedCount;
+    }
+
+    public boolean retryable(RunState runState, int retriedCount) {
+        Assert.state(runState.isTerminal(), "Run state must be terminated.");
+        if (!runState.isFailure()) {
+            return false;
+        }
+        return !RetryType.NONE.equalsValue(retryType) && retriedCount < retryCount;
+    }
+
+    /**
+     * Returns the retry trigger time
+     *
+     * @param failCount the failure times
+     * @param current   the current date time
+     * @return retry trigger time milliseconds
+     */
+    public long computeRetryTriggerTime(int failCount, Date current) {
+        Assert.isTrue(!RetryType.NONE.equalsValue(retryType), () -> "Sched job '" + jobId + "' retry type is NONE.");
+        Assert.isTrue(retryCount > 0, () -> "Sched job '" + jobId + "' retry count must greater than 0, but actual " + retryCount);
+        Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' retried " + failCount + " exceed " + retryCount + " limit.");
+        // exponential backoff
+        return current.getTime() + (long) retryInterval * IntMath.pow(failCount, 2);
+    }
+
+    // ----------------------------------------------------------------private methods
+
+    private void verify() {
+        TriggerType type = TriggerType.of(triggerType);
+        Assert.isTrue(type.validate(triggerValue), () -> "Invalid trigger value: " + triggerType + ", " + triggerValue);
+        this.triggerValue = triggerValue.trim();
+        Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
+
+        Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
+        this.jobName = jobName.trim();
+        Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
+
+        Assert.hasText(jobHandler, "Job handler cannot be empty.");
+        this.jobHandler = jobHandler.trim();
+
+        this.remark = StringUtils.trim(remark);
+        Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
+    }
+
+    private void verifyAndDefaultSetting() {
         if (jobState == null) {
             this.jobState = JobState.DISABLE.value();
         }
@@ -261,52 +309,6 @@ public class SchedJob extends BaseEntity {
         if (jobParam == null) {
             this.jobParam = "";
         }
-    }
-
-    public int incrementAndGetScanFailedCount() {
-        return ++this.scanFailedCount;
-    }
-
-    public boolean retryable(RunState runState, int retriedCount) {
-        Assert.state(runState.isTerminal(), "Run state must be terminated.");
-        if (!runState.isFailure()) {
-            return false;
-        }
-        return !RetryType.NONE.equalsValue(retryType) && retriedCount < retryCount;
-    }
-
-    /**
-     * Returns the retry trigger time
-     *
-     * @param failCount the failure times
-     * @param current   the current date time
-     * @return retry trigger time milliseconds
-     */
-    public long computeRetryTriggerTime(int failCount, Date current) {
-        Assert.isTrue(!RetryType.NONE.equalsValue(retryType), () -> "Sched job '" + jobId + "' retry type is NONE.");
-        Assert.isTrue(retryCount > 0, () -> "Sched job '" + jobId + "' retry count must greater than 0, but actual " + retryCount);
-        Assert.isTrue(failCount <= retryCount, () -> "Sched job '" + jobId + "' retried " + failCount + " exceed " + retryCount + " limit.");
-        // exponential backoff
-        return current.getTime() + (long) retryInterval * IntMath.pow(failCount, 2);
-    }
-
-    // ----------------------------------------------------------------private methods
-
-    private void verify() {
-        TriggerType type = TriggerType.of(triggerType);
-        Assert.isTrue(type.validate(triggerValue), () -> "Invalid trigger value: " + triggerType + ", " + triggerValue);
-        this.triggerValue = triggerValue.trim();
-        Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
-
-        Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
-        this.jobName = jobName.trim();
-        Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
-
-        Assert.hasText(jobHandler, "Job handler cannot be empty.");
-        this.jobHandler = jobHandler.trim();
-
-        this.remark = StringUtils.trim(remark);
-        Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
     }
 
 }

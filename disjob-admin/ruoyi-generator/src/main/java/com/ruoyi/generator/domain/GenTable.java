@@ -62,6 +62,9 @@ public class GenTable extends BaseEntity
     @NotBlank(message = "作者不能为空")
     private String functionAuthor;
 
+    /** 表单布局（单列 双列 三列） */
+    private int formColNum;
+
     /** 生成代码方式（0zip压缩包 1自定义路径） */
     private String genType;
 
@@ -214,6 +217,16 @@ public class GenTable extends BaseEntity
     public void setFunctionAuthor(String functionAuthor)
     {
         this.functionAuthor = functionAuthor;
+    }
+
+    public int getFormColNum()
+    {
+        return formColNum;
+    }
+
+    public void setFormColNum(int formColNum)
+    {
+        this.formColNum = formColNum;
     }
 
     public String getGenType()

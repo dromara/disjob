@@ -26,7 +26,7 @@ import cn.ponfee.disjob.common.util.Jsons;
 public abstract class ToJsonString {
 
     @Override
-    public final String toString() {
+    public String toString() {
         return Jsons.toJson(this);
     }
 

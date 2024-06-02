@@ -17,18 +17,13 @@
 package cn.ponfee.disjob.common.date;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.Test;
 
-import java.text.ParseException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.Date;
 import java.util.Locale;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * DateFormat Test
@@ -85,12 +80,4 @@ public class DateFormatTest {
         System.out.println(Lists.newArrayList(1,2,3).stream().reduce(Integer::sum));
     }
 
-    @Test
-    public void test4() throws ParseException {
-        Date zero = JavaUtilDateFormat.PATTERN_41.parse(Dates.ZERO_DATETIME);
-        assertEquals(-62170185600000L, zero.getTime());
-        assertEquals(zero, JavaUtilDateFormat.DEFAULT.parse(Dates.ZERO_DATETIME));
-        assertEquals(zero, DateUtils.parseDate(Dates.ZERO_DATETIME, Dates.DATETIME_PATTERN));
-
-    }
 }

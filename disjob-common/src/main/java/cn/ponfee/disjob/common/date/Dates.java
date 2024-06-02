@@ -81,11 +81,6 @@ public class Dates {
     public static final String DATE_TO_STRING_PATTERN = "EEE MMM dd HH:mm:ss zzz yyyy";
 
     /**
-     * Zero time millis: -62170185600000L
-     */
-    public static final String ZERO_DATETIME = "0000-00-00 00:00:00";
-
-    /**
      * Fast date format for datetime pattern
      */
     public static final FastDateFormat DATETIME_FORMAT = FastDateFormat.getInstance(Dates.DATETIME_PATTERN);
@@ -108,16 +103,6 @@ public class Dates {
         } catch (Exception ignored) {
             return false;
         }
-    }
-
-    /**
-     * Check the date is whether zero date
-     *
-     * @param date the date
-     * @return is zero if {@code true}
-     */
-    public static boolean isZeroDate(Date date) {
-        return date != null && date.getTime() == -62170185600000L;
     }
 
     /**

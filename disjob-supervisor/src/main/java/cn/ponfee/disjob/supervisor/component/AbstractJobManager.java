@@ -135,7 +135,6 @@ public abstract class AbstractJobManager {
         }
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyForAdd();
-        job.checkAndDefaultSetting();
         verifyJob(job);
         job.setJobId(generateId());
         parseTriggerConfig(job);
@@ -147,7 +146,6 @@ public abstract class AbstractJobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
         job.verifyForUpdate();
-        job.checkAndDefaultSetting();
         if (StringUtils.isEmpty(job.getJobHandler())) {
             Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
         } else {

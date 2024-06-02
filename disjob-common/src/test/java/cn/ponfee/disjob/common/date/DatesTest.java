@@ -21,8 +21,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -59,10 +57,7 @@ public class DatesTest {
         Assertions.assertFalse(isValidDate(null, DATETIME_PATTERN));
         Assertions.assertFalse(isValidDate("2020-xx-00 00:00:00", DATETIME_PATTERN));
 
-        Assertions.assertTrue(isZeroDate(JavaUtilDateFormat.DEFAULT.parse(ZERO_DATETIME)));
-        Assertions.assertTrue(isZeroDate(toDate(ZERO_DATETIME, DATETIME_PATTERN)));
         Assertions.assertEquals("0002-11-30 00:00:00.000", format(ofTimeMillis(-62170185600000L), DATEFULL_PATTERN));
-        Assertions.assertEquals("0002-11-30 00:00:00.000", format(JavaUtilDateFormat.DEFAULT.parse(ZERO_DATETIME), DATEFULL_PATTERN));
 
         Assertions.assertEquals("1970-01-01 08:00:01", format(ofUnixTimestamp(1)));
         Assertions.assertEquals("1970-01-01 08:00:00", format(ofTimeMillis(1)));
@@ -136,30 +131,9 @@ public class DatesTest {
     }
 
     @Test
-    public void testDateFormat() throws ParseException {
-        String json = "{\"createTime\":\"" + Dates.ZERO_DATETIME + "\"}";
-       DateEntity dateEntity = Jsons.fromJson(json,DateEntity.class);
-
-
+    public void testDateFormat() {
        DateEntity entity = Jsons.fromJson("{\"createTime\":\"2000-03-01 00:00:00\"}",DateEntity.class);
         Assertions.assertEquals("2000-03-01 00:00:00", Dates.format(entity.getCreateTime()));
-
-        // test format
-        Assertions.assertEquals("0002-11-30 00:00:00", DateFormatUtils.format(dateEntity.getCreateTime(), Dates.DATETIME_PATTERN));
-        Assertions.assertEquals("0002-11-30 00:00:00", Dates.DATETIME_FORMAT.format(dateEntity.getCreateTime()));
-        //Assertions.assertEquals("-0001-11-28 00:05:43", Dates.format(orderDriverEntity.getCreateTime(), Dates.DEFAULT_DATETIME_FORMAT)); error
-
-        long time = -62170185600000L;
-        Assertions.assertEquals(time, new Date(time).getTime());
-        Assertions.assertTrue(Dates.isZeroDate(new Date(time)));
-
-        // test parse
-        Date zeroDate = new Date(time);
-        Assertions.assertEquals(zeroDate, dateEntity.getCreateTime());
-        Assertions.assertEquals(zeroDate, new Date(zeroDate.getTime()));
-        Assertions.assertEquals(zeroDate, DateUtils.parseDate(Dates.ZERO_DATETIME, Dates.DATETIME_PATTERN));
-        Assertions.assertEquals(zeroDate, Dates.DATETIME_FORMAT.parse(Dates.ZERO_DATETIME));
-        //Assertions.assertEquals(time, Dates.toDate(zeroDateStr, Dates.DEFAULT_DATETIME_FORMAT).getTime()); error
     }
 
     @Test

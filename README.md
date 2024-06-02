@@ -2,7 +2,7 @@
   <img src="docs/images/logo.png" width="160" alt="Logo" />
 </p>
 <p align="center">
-  <strong>一款分布式的任务调度及分布式计算框架</strong>
+  <strong>一款分布式的任务调度与分布式计算框架</strong>
 </p>
 <p align="center">
   <a href="https://www.apache.org/licenses/LICENSE-2.0.html"><img src="https://img.shields.io/badge/license-Apache--2.0-green.svg?logo=apache" alt="License"></a>
@@ -19,7 +19,7 @@
 
 **`简体中文`** | [English](README.en.md)
 
-一款分布式的任务调度及分布式计算框架，除了具备常规的任务调度功能外，还提供暂停/取消运行中的任务、恢复执行被暂停的任务、任务分片、失败重试、广播任务、任务依赖、工作流任务(DAG)、管理器与执行器分离部署、Web管理后台等能力。
+一款分布式的任务调度与分布式计算框架，除了具备常规的任务调度功能外，还提供暂停/取消运行中的任务、恢复执行被暂停的任务、任务分片、失败重试、广播任务、任务依赖、工作流任务(DAG)、管理器与执行器分离部署、Web管理后台等能力。
 
 轻量级，简单易用，特别适合长任务的执行。有较好的伸缩性、扩展性、稳定性，历经生产检验。
 
