@@ -277,8 +277,8 @@ public final class Fields {
             // static
             // field.get(null);
             // field.set(null, value); 使用field设置final属性会报错，只能使用Unsafe
-            return ClassUtils.getStaticFieldInClassChain(tuple.a, name);
-            //return Tuple2.of(obj, ClassUtils.getStaticField(tuple.a, name));
+            Field field = ClassUtils.findStaticFieldIncludeSuperClass(tuple.a, name);
+            return Tuple2.of(field.getDeclaringClass(), field);
         } else {
             // member
             return Tuple2.of(obj, ClassUtils.getField(tuple.a, name));

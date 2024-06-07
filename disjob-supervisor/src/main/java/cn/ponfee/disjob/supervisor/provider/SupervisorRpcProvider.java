@@ -24,7 +24,6 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 
 import java.util.List;
 
@@ -38,12 +37,9 @@ import java.util.List;
 public class SupervisorRpcProvider implements SupervisorRpcService {
 
     private final DistributedJobManager jobManager;
-    private final DistributedJobQuerier jobQuerier;
 
-    public SupervisorRpcProvider(DistributedJobManager jobManager,
-                                 DistributedJobQuerier jobQuerier) {
+    public SupervisorRpcProvider(DistributedJobManager jobManager) {
         this.jobManager = jobManager;
-        this.jobQuerier = jobQuerier;
     }
 
     @Override

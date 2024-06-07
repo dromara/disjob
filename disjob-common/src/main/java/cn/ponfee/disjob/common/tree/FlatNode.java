@@ -57,6 +57,7 @@ public final class FlatNode<T extends Serializable & Comparable<T>, A> extends B
     }
 
     // ----------------------------------------------getter/setter
+
     public boolean isLeaf() {
         return leaf;
     }

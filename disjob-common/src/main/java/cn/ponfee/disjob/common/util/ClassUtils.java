@@ -152,9 +152,9 @@ public final class ClassUtils {
      * @param staticFieldName the static field name
      * @return static field object
      */
-    public static Tuple2<Class<?>, Field> getStaticFieldInClassChain(Class<?> clazz, String staticFieldName) {
+    public static Field findStaticFieldIncludeSuperClass(Class<?> clazz, String staticFieldName) {
         if (clazz == Object.class) {
-            return null;
+            throw new IllegalArgumentException("Cannot be Object.class");
         }
 
         Exception firstOccurException = null;
@@ -166,7 +166,7 @@ public final class ClassUtils {
                 try {
                     Field field = type.getDeclaredField(staticFieldName);
                     if (Modifier.isStatic(field.getModifiers())) {
-                        return Tuple2.of(type, field);
+                        return field;
                     }
                 } catch (Exception e) {
                     if (firstOccurException == null) {

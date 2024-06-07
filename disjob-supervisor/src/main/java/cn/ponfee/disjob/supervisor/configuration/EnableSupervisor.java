@@ -52,17 +52,17 @@ import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_REST_TEMP
  *
  * <pre>
  * `@AutoConfigureBefore、@AutoConfigureAfter、@AutoConfigureOrder：
- *   1）专门用于控制Spring-boot自动配置类之间的加载顺序（用户自定义的类是排在自动配置类`EnableAutoConfiguration`的前面）；
- *   2）Spring-boot`2.7.x`配置文件位置：`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`；
+ *   1）专门用于控制Spring-boot自动配置类之间的加载顺序（用户自定义的类是排在自动配置类`EnableAutoConfiguration`的前面）
+ *   2）Spring-boot`2.7.x`配置文件位置：`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
  *
  * `@Order、@Priority、PriorityOrdered、Ordered
- *   1）用户自定义的类之间的创建顺序是按照文件的目录结构从上到下排序且无法干预；
- *   2）影响List<Bean>元素的顺序，间接影响列表中bean的方法执行顺序，本质上是beanList.sort(AnnotationAwareOrderComparator.INSTANCE)；
- *   3）`@Priority/PriorityOrdered`优先于`@Order/Ordered`；
+ *   1）用户自定义的类之间的创建顺序是按照文件的目录结构从上到下排序且无法干预
+ *   2）影响List<Bean>元素的顺序，间接影响列表中bean的方法执行顺序，本质上是beanList.sort(AnnotationAwareOrderComparator.INSTANCE)
+ *   3）`@Priority/PriorityOrdered`优先于`@Order/Ordered`
  *
  * `@Import(DisjobCoreDeferredImportSelector.class)
- *   1）多处@Import(XXX.class)同一个类，只会有一个生效，后面的会被去重忽略；
- *   2）如果一个类即有@Component注解，又被@Import引入，则@Component生效，@Import被忽略；
+ *   1）多处@Import(XXX.class)同一个类，只会有一个生效，后面的会被去重忽略
+ *   2）如果一个类即有@Component注解，又被@Import引入，则@Component生效，@Import被忽略
  * </pre>
  *
  * @author Ponfee
@@ -105,7 +105,7 @@ public @interface EnableSupervisor {
                                                                              @Nullable WorkerRpcService workerRpcProvider,
                                                                              @Nullable Worker.Current currentWorker) {
             retry.check();
-            Predicate<String> serverGroupMatcher = group -> Worker.matchesGroup(currentWorker, group);
+            Predicate<String> serverGroupMatcher = currentWorker != null ? currentWorker::equalsGroup : g -> false;
             return DiscoveryServerRestProxy.create(
                 WorkerRpcService.class, workerRpcProvider, serverGroupMatcher, discoveryWorker, restTemplate, retry
             );

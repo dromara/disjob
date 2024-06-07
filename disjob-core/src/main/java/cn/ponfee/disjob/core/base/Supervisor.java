@@ -147,16 +147,6 @@ public class Supervisor extends Server {
             return startupAt;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            return super.equals(o);
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
         /**
          * Get worker context-path
          *

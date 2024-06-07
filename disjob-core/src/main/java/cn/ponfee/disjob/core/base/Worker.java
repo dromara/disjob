@@ -120,12 +120,12 @@ public class Worker extends Server {
     }
 
     /**
-     * 判断当前Worker的group是否匹配任务分派的Worker的group
+     * 判断当前Worker的group是否等于任务分派的Worker的group
      *
      * @param group the group
      * @return {@code true} if matched
      */
-    public boolean matchesGroup(String group) {
+    public boolean equalsGroup(String group) {
         return this.group.equals(group);
     }
 
@@ -138,7 +138,7 @@ public class Worker extends Server {
      */
     public boolean sameWorker(Worker other) {
         return super.sameServer(other)
-            && this.matchesGroup(other.group);
+            && this.equalsGroup(other.group);
     }
 
     // --------------------------------------------------------static method
@@ -173,10 +173,6 @@ public class Worker extends Server {
 
     public static Worker.Current current() {
         return Current.instance;
-    }
-
-    public static boolean matchesGroup(Worker worker, String group) {
-        return worker != null && worker.matchesGroup(group);
     }
 
     // --------------------------------------------------------custom jackson serialize & deserialize
@@ -251,16 +247,6 @@ public class Worker extends Server {
          */
         public abstract void verifySupervisorAuthenticationToken(AuthenticationParam param);
 
-        @Override
-        public boolean equals(Object o) {
-            return super.equals(o);
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
         // need do reflection call
         // use synchronized modify for help multiple thread read reference(write to main memory)
         private static synchronized Current create(final String group, final String workerId,
@@ -307,7 +293,6 @@ public class Worker extends Server {
 
             return instance;
         }
-
     }
 
 }

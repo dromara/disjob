@@ -35,7 +35,7 @@ public final class JobConstants {
     /**
      * Process batch size
      */
-    public static final int PROCESS_BATCH_SIZE = 100;
+    public static final int PROCESS_BATCH_SIZE = 50;
 
     /**
      * Disjob configuration key prefix
