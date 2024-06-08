@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * 数据过滤处理
- *
+ * 
  * @author ruoyi
  */
 @Aspect
@@ -80,7 +80,7 @@ public class DataScopeAspect
 
     /**
      * 数据范围过滤
-     *
+     * 
      * @param joinPoint 切点
      * @param user 用户
      * @param deptAlias 部门别名
@@ -91,16 +91,22 @@ public class DataScopeAspect
     {
         StringBuilder sqlString = new StringBuilder();
         List<String> conditions = new ArrayList<>();
+        List<String> scopeCustomIds = new ArrayList<>();
+        user.getRoles().forEach(role -> {
+            if (DATA_SCOPE_CUSTOM.equals(role.getDataScope()) && StringUtils.containsAny(role.getPermissions(), Convert.toStrArray(permission)))
+            {
+                scopeCustomIds.add(Convert.toStr(role.getRoleId()));
+            }
+        });
 
         for (SysRole role : user.getRoles())
         {
             String dataScope = role.getDataScope();
-            if (!DATA_SCOPE_CUSTOM.equals(dataScope) && conditions.contains(dataScope))
+            if (conditions.contains(dataScope))
             {
                 continue;
             }
-            if (StringUtils.isNotEmpty(permission) && StringUtils.isNotEmpty(role.getPermissions())
-                    && !StringUtils.containsAny(role.getPermissions(), Convert.toStrArray(permission)))
+            if (!StringUtils.containsAny(role.getPermissions(), Convert.toStrArray(permission)))
             {
                 continue;
             }
@@ -112,9 +118,15 @@ public class DataScopeAspect
             }
             else if (DATA_SCOPE_CUSTOM.equals(dataScope))
             {
-                sqlString.append(StringUtils.format(
-                        " OR {}.dept_id IN ( SELECT dept_id FROM sys_role_dept WHERE role_id = {} ) ", deptAlias,
-                        role.getRoleId()));
+                if (scopeCustomIds.size() > 1)
+                {
+                    // 多个自定数据权限使用in查询，避免多次拼接。
+                    sqlString.append(StringUtils.format(" OR {}.dept_id IN ( SELECT dept_id FROM sys_role_dept WHERE role_id in ({}) ) ", deptAlias, String.join(",", scopeCustomIds)));
+                }
+                else
+                {
+                    sqlString.append(StringUtils.format(" OR {}.dept_id IN ( SELECT dept_id FROM sys_role_dept WHERE role_id = {} ) ", deptAlias, role.getRoleId()));
+                }
             }
             else if (DATA_SCOPE_DEPT.equals(dataScope))
             {
@@ -122,9 +134,7 @@ public class DataScopeAspect
             }
             else if (DATA_SCOPE_DEPT_AND_CHILD.equals(dataScope))
             {
-                sqlString.append(StringUtils.format(
-                        " OR {}.dept_id IN ( SELECT dept_id FROM sys_dept WHERE dept_id = {} or find_in_set( {} , ancestors ) )",
-                        deptAlias, user.getDeptId(), user.getDeptId()));
+                sqlString.append(StringUtils.format(" OR {}.dept_id IN ( SELECT dept_id FROM sys_dept WHERE dept_id = {} or find_in_set( {} , ancestors ) )", deptAlias, user.getDeptId(), user.getDeptId()));
             }
             else if (DATA_SCOPE_SELF.equals(dataScope))
             {

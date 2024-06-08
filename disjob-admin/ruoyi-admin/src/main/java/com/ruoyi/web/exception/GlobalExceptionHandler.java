@@ -7,8 +7,11 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.JobConstants;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.html.EscapeUtil;
 import com.ruoyi.common.utils.security.PermissionUtils;
 import org.apache.shiro.authz.AuthorizationException;
 import org.slf4j.Logger;
@@ -79,7 +82,11 @@ public class GlobalExceptionHandler {
     public AjaxResult handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e,
                                                                 HttpServletRequest request) {
         log.error("请求参数类型不匹配：path={}，error={}", request.getRequestURI(), e.getMessage());
-        return AjaxResult.error(String.format("请求参数类型不匹配，参数[%s]要求类型为：'%s'，但输入值为：'%s'", e.getName(), e.getRequiredType(), e.getValue()));
+        String value = Convert.toStr(e.getValue());
+        if (StringUtils.isNotEmpty(value)) {
+            value = EscapeUtil.clean(value);
+        }
+        return AjaxResult.error(String.format("请求参数类型不匹配，参数[%s]要求类型为：'%s'，但输入值为：'%s'", e.getName(), e.getRequiredType(), value));
     }
 
     /**

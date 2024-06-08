@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 
 /**
  * 自定义导出Excel数据注解
- *
+ * 
  * @author ruoyi
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -88,6 +88,11 @@ public @interface Excel
      * 设置只能选择不能输入的列内容.
      */
     String[] combo() default {};
+
+    /**
+     * 是否从字典读数据到combo,默认不读取,如读取需要设置dictType注解.
+     */
+    boolean comboReadDict() default false;
 
     /**
      * 是否需要纵向合并单元格,应对需求:含有list集合单元格)
