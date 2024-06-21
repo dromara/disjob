@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public class MavenDependencyTest {
+public class MavenDependencyConflictTest {
 
     @Disabled
     @Test
@@ -48,20 +48,26 @@ public class MavenDependencyTest {
         String dependencyTree = dependencyTree();
         stopWatch.stop();
 
-        System.out.println("\n\n<<<-----------------------------------dependency tree----------------------------------->>>");
-        System.out.println(dependencyTree);
-        System.out.println("<<<-----------------------------------dependency tree----------------------------------->>>\n\n");
+        String line = "───────────────────────────────────────────────────────────────────────────────────────────────────";
 
-        System.out.println("\n\n<<<-----------------------------------dependency jar conflict----------------------------------->>>");
+        System.out.println("\n\n");
+        System.out.println(line);
+        System.out.println(dependencyTree);
+        System.out.println(line);
+        System.out.println("\n\n");
+
+        System.out.println("\n\n");
+        System.out.println(line);
         String result = parseConflictedVersionJar(dependencyTree);
         if (StringUtils.isBlank(result)) {
             System.out.println("Not conflicted version jar");
         } else {
             System.out.println(result);
         }
-        System.out.println("<<<-----------------------------------dependency jar conflict----------------------------------->>>\n\n");
+        System.out.println(line);
+        System.out.println("\n\n");
 
-        System.out.println("\n\nExecute maven install & dependency tree cost time: " + stopWatch);
+        System.out.println("Execute maven install & dependency tree cost time: " + stopWatch);
     }
 
     private static String dependencyTree() {

@@ -62,7 +62,7 @@ public final class SpringUtils {
         // Ahead start web server for get actual port
         WebServer webServer = webServerApplicationContext.getWebServer();
         webServer.start();
-        // port=null ->  default 8080
+        // port=null ->  default 8080(如果默认的8080端口被占用，则启动时会抛异常)
         // port=0    ->  random available port
         return webServer.getPort();
     }

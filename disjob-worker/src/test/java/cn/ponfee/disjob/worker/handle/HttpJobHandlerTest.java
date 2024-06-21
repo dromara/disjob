@@ -38,7 +38,7 @@ public class HttpJobHandlerTest {
         task.setTaskParam(Jsons.toJson(req));
         HttpJobHandler httpJobHandler = new HttpJobHandler();
 
-        ExecuteResult result = httpJobHandler.execute(task, Savepoint.DISCARD);
+        ExecuteResult result = httpJobHandler.execute(task, Savepoint.NOOP);
         System.out.println(Jsons.toJson(result));
         Assertions.assertTrue(result.isSuccess());
     }

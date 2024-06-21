@@ -38,6 +38,7 @@ import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
  */
 public class DAGExpressionParserTest {
 
+    /*
     private static final MultiwayTreePrinter<TreeNode<DAGExpressionParser.TreeNodeId, Object>> TREE_PRINTER =
         new MultiwayTreePrinter<>(System.out, e -> e.getNid().toString(), TreeNode::getChildren);
 
@@ -91,6 +92,7 @@ public class DAGExpressionParserTest {
         System.out.println("\n------------------");
         TREE_PRINTER.print(root);
     }
+    */
 
     @Test
     public void testSameExpression() {
@@ -137,7 +139,7 @@ public class DAGExpressionParserTest {
     @Test
     public void testGraph() {
         String expression = "(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)";
-        Graph<DAGNode> graph = new DAGExpressionParser(expression).parse();
+        Graph<DAGNode> graph = DAGExpressionParser.parse(expression);
         Assertions.assertEquals("[1:1:A, 2:3:A]", graph.successors(DAGNode.START).toString());
         Assertions.assertTrue(graph.predecessors(DAGNode.START).isEmpty());
 
@@ -153,7 +155,7 @@ public class DAGExpressionParserTest {
     @Test
     public void testGraphSequence() {
         String expression = "A -> B,C -> E,(F->G) -> H";
-        Graph<DAGNode> graph = new DAGExpressionParser(expression).parse();
+        Graph<DAGNode> graph = DAGExpressionParser.parse(expression);
         for (EndpointPair<DAGNode> edge : graph.edges()) {
             System.out.println(edge.source() + " -> " + edge.target());
         }
@@ -181,13 +183,13 @@ public class DAGExpressionParserTest {
 
     private static void assertSameExpression(String text1, String text2) {
         System.out.println("\n\n------\n\n");
-        Assertions.assertEquals(new DAGExpressionParser(text1).parse(), new DAGExpressionParser(text2).parse());
+        Assertions.assertEquals(DAGExpressionParser.parse(text1), DAGExpressionParser.parse(text2));
     }
 
     private static void assertEdgesEquals(String expression, String edges) {
         System.out.println("\n\n------\n\n");
         System.out.println(expression);
-        Graph<DAGNode> graph = new DAGExpressionParser(expression).parse();
+        Graph<DAGNode> graph = DAGExpressionParser.parse(expression);
         Assertions.assertEquals(edges, graph.edges().toString());
         System.out.println(expression + " graph result: " + graph);
     }

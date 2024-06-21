@@ -32,5 +32,5 @@ public interface Savepoint {
      */
     void save(String executeSnapshot) throws Exception;
 
-    Savepoint DISCARD = executeSnapshot -> {};
+    Savepoint NOOP = executeSnapshot -> {};
 }

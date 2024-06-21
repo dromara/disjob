@@ -52,7 +52,7 @@ public class PrimeCountJobHandlerTest {
             ExecuteTask task = new ExecuteTask();
             task.setTaskId(System.nanoTime());
             task.setTaskParam(taskParam);
-            jobHandler.execute(task, Savepoint.DISCARD);
+            jobHandler.execute(task, Savepoint.NOOP);
             System.out.println("-------------------");
         }
     }

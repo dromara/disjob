@@ -34,7 +34,6 @@ import lombok.Setter;
 import org.springframework.util.Assert;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import static cn.ponfee.disjob.common.util.Numbers.nullZero;
 import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
@@ -65,28 +64,6 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     @Override
     public long timing() {
         return triggerTime;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ExecuteTaskParam other = (ExecuteTaskParam) o;
-        return this.operation   == other.operation
-            && this.taskId      == other.taskId
-            && this.instanceId  == other.instanceId
-            && this.triggerTime == other.triggerTime
-            && this.jobId       == other.jobId
-            && Objects.equals(this.wnstanceId, other.wnstanceId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(operation, taskId, instanceId, triggerTime, jobId, wnstanceId);
     }
 
     /**

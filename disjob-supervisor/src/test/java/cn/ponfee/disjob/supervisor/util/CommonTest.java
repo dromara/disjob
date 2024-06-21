@@ -124,7 +124,7 @@ public class CommonTest {
         System.out.println(param1);
         ExecuteTaskParam param2 = ExecuteTaskParam.deserialize(param1.serialize());
         Assertions.assertNotSame(param1, param2);
-        Assertions.assertEquals(param1, param2);
+        Assertions.assertEquals(param1.toString(), param2.toString());
         Assertions.assertEquals(param1.getSupervisorToken(), param2.getSupervisorToken());
         Assertions.assertEquals(param1.getWorker(), param2.getWorker());
         Assertions.assertEquals(param1.getJobHandler(), param2.getJobHandler());

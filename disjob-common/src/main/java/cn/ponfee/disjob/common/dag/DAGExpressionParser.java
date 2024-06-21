@@ -137,12 +137,16 @@ public class DAGExpressionParser {
      */
     private final Map<String, List<Tuple2<String, Integer>>> incrementer = new HashMap<>();
 
-    public DAGExpressionParser(String text) {
+    public static Graph<DAGNode> parse(String text) {
+        return new DAGExpressionParser(text).parse();
+    }
+
+    private DAGExpressionParser(String text) {
         Assert.hasText(text, "Expression cannot be blank.");
         this.expression = text.trim();
     }
 
-    public Graph<DAGNode> parse() {
+    private Graph<DAGNode> parse() {
         ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
 
         List<DAGEdge> edges;
@@ -338,7 +342,7 @@ public class DAGExpressionParser {
         return Tuple2.of(head, null);
     }
 
-    static TreeNode<TreeNodeId, Object> buildTree(List<Tuple2<Integer, Integer>> groups) {
+    private static TreeNode<TreeNodeId, Object> buildTree(List<Tuple2<Integer, Integer>> groups) {
         List<BaseNode<TreeNodeId, Object>> nodes = new ArrayList<>(groups.size() + 1);
         buildTree(groups, TreeNodeId.ROOT_ID, 1, 0, nodes);
 
@@ -393,7 +397,7 @@ public class DAGExpressionParser {
      * @param text the text string
      * @return {@code true} if valid
      */
-    static boolean checkParenthesis(String text) {
+    private static boolean checkParenthesis(String text) {
         int openCount = 0;
         for (int i = 0, n = text.length(); i < n; i++) {
             char c = text.charAt(i);
@@ -416,7 +420,7 @@ public class DAGExpressionParser {
      * @param text the text string
      * @return wrapped text string
      */
-    static String completeParenthesis(String text) {
+    private static String completeParenthesis(String text) {
         List<String> list = new ArrayList<>();
         int mark = 0, position = 0;
         for (int len = text.length() - 1; position <= len; ) {
@@ -462,7 +466,7 @@ public class DAGExpressionParser {
      * @param expr the expression
      * @return groups of "()"
      */
-    static List<Tuple2<Integer, Integer>> group(String expr) {
+    private static List<Tuple2<Integer, Integer>> group(String expr) {
         Assert.isTrue(checkParenthesis(expr), () -> "Invalid expression parenthesis: " + expr);
         int depth = 0;
         // Tuple2<position, level>
@@ -491,8 +495,7 @@ public class DAGExpressionParser {
 
     @Getter
     @Setter
-    private static final class GraphEdge implements Serializable {
-        private static final long serialVersionUID = 7881441757444058390L;
+    private static final class GraphEdge {
         private static final TypeReference<List<GraphEdge>> LIST_TYPE = new TypeReference<List<GraphEdge>>() {};
 
         private String source;
@@ -515,7 +518,7 @@ public class DAGExpressionParser {
         }
     }
 
-    static final class TreeNodeId implements Serializable, Comparable<TreeNodeId> {
+    private static final class TreeNodeId implements Serializable, Comparable<TreeNodeId> {
         private static final long serialVersionUID = -468548698179536500L;
         private static final TreeNodeId ROOT_ID = new TreeNodeId(-1, -1);
 
@@ -545,9 +548,9 @@ public class DAGExpressionParser {
             if (!(obj instanceof TreeNodeId)) {
                 return false;
             }
-            TreeNodeId other = (TreeNodeId) obj;
-            return this.open == other.open
-                && this.close == other.close;
+            TreeNodeId that = (TreeNodeId) obj;
+            return this.open  == that.open
+                && this.close == that.close;
         }
 
         @Override
@@ -586,11 +589,11 @@ public class DAGExpressionParser {
             if (!(obj instanceof PartitionIdentityKey)) {
                 return false;
             }
-            PartitionIdentityKey other = (PartitionIdentityKey) obj;
+            PartitionIdentityKey that = (PartitionIdentityKey) obj;
             // 比较对象地址
-            return this.expr == other.expr
-                && this.open == other.open
-                && this.close == other.close;
+            return this.expr  == that.expr
+                && this.open  == that.open
+                && this.close == that.close;
         }
 
         @Override

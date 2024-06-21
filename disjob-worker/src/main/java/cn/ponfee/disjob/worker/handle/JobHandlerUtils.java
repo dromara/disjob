@@ -57,8 +57,7 @@ public class JobHandlerUtils {
         Assert.hasText(param.getJobHandler(), "Job handler cannot be blank.");
         Set<String> jobHandlers;
         if (param.getJobType() == JobType.WORKFLOW) {
-            jobHandlers = new DAGExpressionParser(param.getJobHandler())
-                .parse()
+            jobHandlers = DAGExpressionParser.parse(param.getJobHandler())
                 .nodes()
                 .stream()
                 .filter(Predicates.not(DAGNode::isStartOrEnd))

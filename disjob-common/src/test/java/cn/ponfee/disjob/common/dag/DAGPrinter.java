@@ -77,7 +77,7 @@ public class DAGPrinter {
         graph.graphAttrs().add(GraphAttr.splines(CURVED));
         graph.graphAttrs().add(GraphAttr.splines(CURVED));
 
-        for (EndpointPair<DAGNode> edge : new DAGExpressionParser(expr).parse().edges()) {
+        for (EndpointPair<DAGNode> edge : DAGExpressionParser.parse(expr).edges()) {
             DAGNode s = edge.source(), t = edge.target();
             Node source = Factory.node(s.toString()).with(s.isStart() ? Shape.M_DIAMOND : Shape.RECTANGLE, Label.of(s.getName()));
             Node target = Factory.node(t.toString()).with(t.isEnd()   ? Shape.M_SQUARE  : Shape.RECTANGLE, Label.of(t.getName()));

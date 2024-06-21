@@ -45,7 +45,7 @@ public class CommandJobHandlerTest {
 
         CommandJobHandler commandJobHandler = new CommandJobHandler();
 
-        ExecuteResult result = commandJobHandler.execute(task, Savepoint.DISCARD);
+        ExecuteResult result = commandJobHandler.execute(task, Savepoint.NOOP);
 
         String expect = "{\"code\":0,\"msg\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
         Assertions.assertEquals(expect, Jsons.toJson(result));

@@ -59,8 +59,7 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
         leadInstance.setWnstanceId(wnstanceId);
 
         MutableInt sequence = new MutableInt(1);
-        List<SchedWorkflow> workflows = new DAGExpressionParser(job.getJobHandler())
-            .parse()
+        List<SchedWorkflow> workflows = DAGExpressionParser.parse(job.getJobHandler())
             .edges()
             .stream()
             .map(e -> new SchedWorkflow(wnstanceId, e.target().toString(), e.source().toString(), sequence.getAndIncrement()))
