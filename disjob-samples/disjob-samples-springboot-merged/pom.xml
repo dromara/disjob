@@ -21,6 +21,16 @@
     </dependency>
     <dependency>
       <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-samples-conf-supervisor</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-samples-conf-worker</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
       <artifactId>disjob-id</artifactId>
     </dependency>
     <dependency>
@@ -41,34 +51,6 @@
 
   <build>
     <finalName>${project.artifactId}</finalName>
-
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-      </resource>
-      <resource>
-        <directory>../conf-common</directory>
-        <includes>
-          <include>**</include>
-        </includes>
-        <filtering>false</filtering>
-      </resource>
-      <resource>
-        <directory>../conf-supervisor</directory>
-        <includes>
-          <include>**</include>
-        </includes>
-        <filtering>false</filtering>
-      </resource>
-      <resource>
-        <directory>../conf-worker</directory>
-        <includes>
-          <include>**</include>
-        </includes>
-        <filtering>false</filtering>
-      </resource>
-    </resources>
 
     <plugins>
       <plugin>

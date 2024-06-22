@@ -14,6 +14,9 @@
   <description>Disjob范例</description>
 
   <modules>
+    <module>disjob-samples-conf-common</module>
+    <module>disjob-samples-conf-supervisor</module>
+    <module>disjob-samples-conf-worker</module>
     <module>disjob-samples-frameless-worker</module>
     <module>disjob-samples-springboot-common</module>
     <module>disjob-samples-springboot-merged</module>
@@ -26,7 +29,7 @@
     <disjob.version>2.1.1-SNAPSHOT</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
-    <java.version>1.8</java.version>
+    <java.version>8</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>

@@ -64,13 +64,15 @@
     <revision>2.1.1-SNAPSHOT</revision>
 
     <file.encoding>UTF-8</file.encoding>
-    <java.version>1.8</java.version>
+    <java.version>8</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
     <argLine>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m</argLine>
+    <!--<java17ArgLine>&#45;&#45;add-exports=java.base/sun.reflect.annotation=ALL-UNNAMED</java17ArgLine>-->
+    <java17ArgLine></java17ArgLine>
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
@@ -252,35 +254,6 @@
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
 
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-      </resource>
-      <resource>
-        <!-- mybatis xml -->
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**/*.xml</include>
-        </includes>
-        <filtering>false</filtering>
-      </resource>
-    </resources>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>false</filtering>
-      </testResource>
-      <testResource>
-        <!-- mybatis xml -->
-        <directory>src/test/java</directory>
-        <includes>
-          <include>**/*.xml</include>
-        </includes>
-        <filtering>false</filtering>
-      </testResource>
-    </testResources>
-
     <pluginManagement>
       <plugins>
         <plugin>
@@ -373,9 +346,12 @@
           <target>${java.version}</target>
           <compilerVersion>${java.version}</compilerVersion>
           <encoding>${file.encoding}</encoding>
-          <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
+          <compilerArgs>
+            <arg>${java17ArgLine}</arg>
+            <arg>-Xlint:unchecked,deprecation</arg>
+          </compilerArgs>
           <!--
-           <annotationProcessorPaths>
+          <annotationProcessorPaths>
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
@@ -403,7 +379,7 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <forkCount>1</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>${argLine} ${jacocoArgLine}</argLine>
+          <argLine>${java17ArgLine} ${argLine} ${jacocoArgLine}</argLine>
         </configuration>
       </plugin>
       <plugin>

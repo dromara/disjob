@@ -14,6 +14,12 @@
   <name>${project.artifactId}</name>
 
   <dependencies>
+    <dependency>
+      <groupId>cn.ponfee</groupId>
+      <artifactId>disjob-samples-conf-common</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
     <!-- spring boot web -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
