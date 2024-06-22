@@ -61,7 +61,7 @@
   </modules>
 
   <properties>
-    <revision>2.1.1</revision>
+    <revision>2.1.2-SNAPSHOT</revision>
 
     <file.encoding>UTF-8</file.encoding>
     <java.version>8</java.version>

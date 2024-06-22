@@ -24,7 +24,7 @@
 
   <properties>
     <revision>1.0.0-SNAPSHOT</revision>
-    <disjob.version>2.1.1</disjob.version>
+    <disjob.version>2.1.2-SNAPSHOT</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
     <java.version>8</java.version>
