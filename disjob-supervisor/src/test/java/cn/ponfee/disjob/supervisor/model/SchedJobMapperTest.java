@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Date;
@@ -52,8 +53,16 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     @Resource(name = SupervisorDataSourceConfig.SPRING_BEAN_NAME_JDBC_TEMPLATE)
     private JdbcTemplate jdbcTemplate;
 
+    @Resource(name = "disjobDataSource")
+    private DataSource disjobDataSource;
+
+    @Resource(name = "disjob-adminDataSource")
+    private DataSource adminDataSource;
+
     @Test
     public void testInsert12() {
+        System.out.println(disjobDataSource);
+        System.out.println(adminDataSource);
         System.out.println(jdbcTemplate.queryForList("Select distinct job_id from sched_job limit 2"));
     }
 

@@ -31,6 +31,8 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -109,6 +111,7 @@ public @interface MybatisDataSourceConfigurer {
     // ----------------------------------------------------------------------------------------class defined
 
     class MybatisDataSourceRegistrar implements /*EnvironmentAware,*/ ImportBeanDefinitionRegistrar {
+        private static final Logger LOG = LoggerFactory.getLogger(MybatisDataSourceRegistrar.class);
 
         private final Environment environment;
 
@@ -132,12 +135,14 @@ public @interface MybatisDataSourceConfigurer {
             }
             Assert.hasText(dataSourceName, "DataSource name cannot be empty.");
 
-            String dataSourceConfigPrefixKey = dataSourceName + ".datasource";
+            String dataSourceConfigPrefixKey = "datasource." + dataSourceName;
             String jdbcUrl = environment.getProperty(dataSourceConfigPrefixKey + ".jdbc-url");
             if (StringUtils.isBlank(jdbcUrl)) {
+                LOG.warn("Datasource '{}' not configured jdbc-url value.", dataSourceName);
                 return;
             }
 
+            SpringUtils.addPropertyIfAbsent(environment, dataSourceConfigPrefixKey + ".pool-name", dataSourceName);
             boolean primary = config.primary();
 
             // MapperScannerConfigurer bean definition
@@ -198,6 +203,7 @@ public @interface MybatisDataSourceConfigurer {
             transactionTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
             transactionTemplateBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + TX_TEMPLATE_NAME_SUFFIX, transactionTemplateBdb.getBeanDefinition());
+            LOG.info("Datasource '{}' registered bean definition.", dataSourceName);
         }
 
         public static void checkPackageDatasourceName(Class<?> basePackageClass, String expectDsName) {

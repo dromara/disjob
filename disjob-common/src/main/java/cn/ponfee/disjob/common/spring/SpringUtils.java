@@ -17,9 +17,13 @@
 package cn.ponfee.disjob.common.spring;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -33,6 +37,7 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Spring utils
@@ -86,6 +91,15 @@ public final class SpringUtils {
 
     public static <T extends Annotation> T parseAnnotation(Class<T> type, Map<String, Object> attributes) {
         return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
+    }
+
+    public static void addPropertyIfAbsent(Environment environment, String key, String value) {
+        if (environment instanceof ConfigurableEnvironment && StringUtils.isEmpty(environment.getProperty(key))) {
+            Properties properties = new Properties();
+            properties.setProperty(key, value);
+            PropertiesPropertySource propertySource = new PropertiesPropertySource(key, properties);
+            ((ConfigurableEnvironment) environment).getPropertySources().addFirst(propertySource);
+        }
     }
 
 }

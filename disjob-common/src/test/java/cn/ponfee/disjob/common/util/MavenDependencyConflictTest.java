@@ -48,15 +48,15 @@ public class MavenDependencyConflictTest {
         String dependencyTree = dependencyTree();
         stopWatch.stop();
 
-        String line = "───────────────────────────────────────────────────────────────────────────────────────────────────";
+        String line = "───────────────────────────────────────────────────────────────────────────────";
 
         System.out.println("\n\n");
-        System.out.println(line);
         System.out.println(dependencyTree);
+        System.out.println("\n\n");
         System.out.println(line);
-        System.out.println("\n\n");
-
-        System.out.println("\n\n");
+        System.out.println("Total time: " + stopWatch);
+        System.out.println(line);
+        System.out.println("Conflict jar version");
         System.out.println(line);
         String result = parseConflictedVersionJar(dependencyTree);
         if (StringUtils.isBlank(result)) {
@@ -65,9 +65,6 @@ public class MavenDependencyConflictTest {
             System.out.println(result);
         }
         System.out.println(line);
-        System.out.println("\n\n");
-
-        System.out.println("Execute maven install & dependency tree cost time: " + stopWatch);
     }
 
     private static String dependencyTree() {

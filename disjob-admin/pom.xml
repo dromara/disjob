@@ -27,7 +27,7 @@
     <disjob.version>2.1.2-SNAPSHOT</disjob.version>
 
     <file.encoding>UTF-8</file.encoding>
-    <java.version>8</java.version>
+    <java.version>1.8</java.version>
     <project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
     <project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>

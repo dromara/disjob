@@ -16,20 +16,12 @@
 
 package cn.ponfee.disjob.common.dag;
 
-import cn.ponfee.disjob.common.tree.TreeNode;
-import cn.ponfee.disjob.common.tree.print.MultiwayTreePrinter;
-import cn.ponfee.disjob.common.tuple.Tuple2;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Set;
-
-import static java.util.Arrays.asList;
-import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
 
 /**
  * DAGParserTest
