@@ -11,7 +11,6 @@ datasource:
     minimum-idle: 2
     maximum-pool-size: 20
     connection-timeout: 2000
-    pool-name: disjob
   disjob-admin:
     driver-class-name: com.mysql.cj.jdbc.Driver
     jdbc-url: jdbc:mysql://localhost:23306/disjob_admin?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
@@ -20,7 +19,6 @@ datasource:
     minimum-idle: 2
     maximum-pool-size: 20
     connection-timeout: 2000
-    pool-name: disjob-admin
 
 # redis configuration
 spring.redis:

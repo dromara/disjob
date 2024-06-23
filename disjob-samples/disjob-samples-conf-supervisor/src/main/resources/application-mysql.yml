@@ -7,5 +7,4 @@ datasource.disjob:
   minimum-idle: 2
   maximum-pool-size: 20
   connection-timeout: 2000
-  pool-name: disjob
   #connection-test-query: SELECT 1    # jdbc4不建议配置connectionTestQuery

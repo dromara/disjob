@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Configuration;
  *    minimum-idle: 10
  *    maximum-pool-size: 100
  *    connection-timeout: 2000
- *    pool-name: disjob
  * </pre>
  *
  * @author Ponfee

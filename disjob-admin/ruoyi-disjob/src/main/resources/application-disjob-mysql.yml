@@ -7,4 +7,4 @@ datasource.disjob:
   minimum-idle: 2
   maximum-pool-size: 20
   connection-timeout: 2000
-  pool-name: disjob_admin
+  pool-name: disjob
