@@ -17,10 +17,7 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.tuple.Tuple4;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -107,11 +104,9 @@ public class MavenDependencyConflictTest {
 
     private static String execute(String command) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PumpStreamHandler streamHandler = new PumpStreamHandler(out);
-        ExecuteWatchdog watchdog = new ExecuteWatchdog(120000L);
-        DefaultExecutor executor = new DefaultExecutor();
-        executor.setStreamHandler(streamHandler);
-        executor.setWatchdog(watchdog);
+        Executor executor = new DefaultExecutor();
+        executor.setStreamHandler(new PumpStreamHandler(out));
+        executor.setWatchdog(new ExecuteWatchdog(120000L));
         executor.execute(CommandLine.parse(command));
         return out.toString(StandardCharsets.UTF_8.name());
     }

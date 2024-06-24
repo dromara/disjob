@@ -60,7 +60,7 @@
 </plugin>
 ```
 
-### release
+### maven-release-plugin
 ```xml
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>

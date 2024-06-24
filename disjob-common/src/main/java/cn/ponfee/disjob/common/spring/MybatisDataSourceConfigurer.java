@@ -219,7 +219,7 @@ public @interface MybatisDataSourceConfigurer {
             String packageLastName = Strings.substringAfterLast(packageName, ".");
             // Spring boot的配置属性名只能包含{"a-z", "0-9", "-"}，它们必须为小写字母，且必须以字母或数字开头。"-"仅用于格式化，即"foo-bar"和"foobar"被认为是等效的。
             // org.springframework.boot.context.properties.source.ConfigurationPropertyName.ElementsParser#isValidChar
-            // java包名不能包含"-"，所以在包名命名时使用"_"来代替"-"。到了读取spring配置属性名时，需要把包名中的"_"转为spring boot配置中合法的属性名"-"。
+            // "_" -> "-"：java包名不能包含"-"，所以在包名命名时使用"_"来代替"-"。到了读取spring配置属性名时，需要把包名中的"_"转为spring boot配置中合法的属性名"-"。
             return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, packageLastName);
         }
 

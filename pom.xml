@@ -70,8 +70,8 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
-    <argLine>-Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true</argLine>
-    <module.exports.argLine> </module.exports.argLine>
+    <basicArgLine>-Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true</basicArgLine>
+    <moduleExportsArgLine />
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
@@ -152,9 +152,9 @@
     </dependency>
     <!--
      | 谨慎使用`spring-context-indexer`(经常会出现启动时报错的问题)：对于多模块项目，包含@Component的模块都需要在其pom中增加该依赖，否则启动会报错
-     | org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider#findCandidateComponents()
+     | org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider#findCandidateComponents(String)
      | org.springframework.context.index.CandidateComponentsIndexLoader#doLoadIndex(ClassLoader) -> "META-INF/spring.components"
-     | 忽略indexer的配置：spring.index.ignore=true
+     | 在resources/spring.properties文件中配置忽略indexer：spring.index.ignore=true
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-indexer</artifactId>
@@ -194,7 +194,7 @@
         <jdk>[9,)</jdk>
       </activation>
       <properties>
-        <module.exports.argLine>--add-exports=java.base/sun.reflect.annotation=ALL-UNNAMED</module.exports.argLine>
+        <moduleExportsArgLine>--add-exports=java.base/sun.reflect.annotation=ALL-UNNAMED</moduleExportsArgLine>
       </properties>
     </profile>
     <profile>
@@ -305,22 +305,9 @@
           <compilerVersion>${java.version}</compilerVersion>
           <encoding>${file.encoding}</encoding>
           <compilerArgs>
-            <arg>${module.exports.argLine}</arg>
+            <arg>${moduleExportsArgLine}</arg>
             <arg>-Xlint:unchecked,deprecation</arg>
           </compilerArgs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <!-- 若jacoco覆盖率显示为0，则可能是surefire版本问题 -->
-        <version>${maven-surefire-plugin.version}</version>
-        <configuration>
-          <printSummary>true</printSummary>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <forkCount>1</forkCount>
-          <reuseForks>true</reuseForks>
-          <argLine>${module.exports.argLine} ${argLine} ${jacocoArgLine}</argLine>
         </configuration>
       </plugin>
       <plugin>
@@ -344,6 +331,19 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- 若jacoco覆盖率显示为0，则可能是surefire版本问题 -->
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <printSummary>true</printSummary>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <forkCount>1</forkCount>
+          <reuseForks>true</reuseForks>
+          <argLine>${moduleExportsArgLine} ${basicArgLine} ${jacocoArgLine}</argLine>
+        </configuration>
       </plugin>
     </plugins>
 
