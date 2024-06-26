@@ -18,7 +18,6 @@ package cn.ponfee.disjob.dispatch.http;
 
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
-import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
  *
  * @author Ponfee
  */
-@Hidden
 @RequestMapping(WorkerRpcService.PREFIX_PATH)
 interface Controller {
 

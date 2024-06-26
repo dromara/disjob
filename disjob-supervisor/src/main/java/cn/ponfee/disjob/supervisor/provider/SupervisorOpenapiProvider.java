@@ -30,7 +30,6 @@ import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,7 +42,6 @@ import static cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer.requestU
  *
  * @author Ponfee
  */
-@Tag(name = "Supervisor openapi provider")
 @RestController
 @RequestMapping("/supervisor/openapi")
 @SupervisorAuthentication(SupervisorAuthentication.Subject.USER)

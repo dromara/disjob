@@ -16,14 +16,6 @@ management:
     env:
       enabled: true
 
-# springdoc “swagger-ui” and “api-docs” endpoint custom path, StandaloneLayout/BaseLayout
-springdoc:
-  swagger-ui:
-    path: /apidocs.html
-    layout: StandaloneLayout
-  api-docs:
-    path: /apidocs
-
 # tomcat server configuration
 server.tomcat:
   threads:
