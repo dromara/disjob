@@ -16,6 +16,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
     </dependency>
@@ -28,18 +34,21 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
+      <version>${shiro-core.version}</version>
     </dependency>
 
     <!-- Shiro使用EhCache缓存框架 -->
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-ehcache</artifactId>
+      <version>${shiro-core.version}</version>
     </dependency>
 
     <!-- pagehelper 分页插件 -->
     <dependency>
       <groupId>com.github.pagehelper</groupId>
       <artifactId>pagehelper-spring-boot-starter</artifactId>
+      <version>${pagehelper-spring-boot-starter.version}</version>
     </dependency>
 
     <!-- 自定义验证注解 -->
@@ -64,35 +73,33 @@
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
+      <version>${fastjson.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-ui</artifactId>
+      <version>${springdoc-openapi-ui.version}</version>
     </dependency>
 
     <!-- io常用工具类 -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
     </dependency>
 
     <!-- excel工具 -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
+      <version>${poi-ooxml.version}</version>
     </dependency>
 
     <!-- yml解析器 -->
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>jakarta.servlet</groupId>
-      <artifactId>jakarta.servlet-api</artifactId>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 

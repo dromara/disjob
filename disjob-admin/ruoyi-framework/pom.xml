@@ -39,6 +39,7 @@
     <dependency>
       <groupId>pro.fessional</groupId>
       <artifactId>kaptcha</artifactId>
+      <version>${kaptcha.version}</version>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
@@ -51,24 +52,28 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-spring</artifactId>
+      <version>${shiro-core.version}</version>
     </dependency>
 
     <!-- thymeleaf模板引擎和shiro框架的整合 -->
     <dependency>
       <groupId>com.github.theborakompanioni</groupId>
       <artifactId>thymeleaf-extras-shiro</artifactId>
+      <version>${thymeleaf-extras-shiro.version}</version>
     </dependency>
 
     <!-- 解析客户端操作系统、浏览器等 -->
     <dependency>
       <groupId>eu.bitwalker</groupId>
       <artifactId>UserAgentUtils</artifactId>
+      <version>${UserAgentUtils.version}</version>
     </dependency>
 
     <!-- 获取系统信息 -->
     <dependency>
       <groupId>com.github.oshi</groupId>
       <artifactId>oshi-core</artifactId>
+      <version>${oshi-core.version}</version>
     </dependency>
   </dependencies>
 

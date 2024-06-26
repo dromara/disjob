@@ -30,6 +30,7 @@
     <dependency>
       <groupId>org.apache.velocity</groupId>
       <artifactId>velocity-engine-core</artifactId>
+      <version>${velocity-engine-core.version}</version>
     </dependency>
 
     <!-- 阿里数据库连接池 -->
