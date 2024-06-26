@@ -93,11 +93,11 @@ public class DistributedJobQuerier {
     }
 
     public List<SchedInstance> findExpireWaitingInstance(Date expireTime, int size) {
-        return instanceMapper.findExpireState(RunState.WAITING.value(), expireTime.getTime(), expireTime, size);
+        return instanceMapper.findExpireState(RunState.WAITING.value(), expireTime, size);
     }
 
     public List<SchedInstance> findExpireRunningInstance(Date expireTime, int size) {
-        return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime.getTime(), expireTime, size);
+        return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime, size);
     }
 
     public List<SchedInstance> findUnterminatedRetryInstance(long rnstanceId) {

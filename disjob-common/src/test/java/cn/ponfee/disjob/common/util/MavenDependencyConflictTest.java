@@ -41,8 +41,14 @@ public class MavenDependencyConflictTest {
     @Disabled
     @Test
     public void testConflictedVersion() {
+        checkConflictedVersion("pom.xml");
+        //checkConflictedVersion("disjob-admin/pom.xml");
+        //checkConflictedVersion("disjob-samples/pom.xml");
+    }
+
+    private void checkConflictedVersion(String pomFile) {
         StopWatch stopWatch = StopWatch.createStarted();
-        String dependencyTree = dependencyTree();
+        String dependencyTree = dependencyTree(pomFile);
         stopWatch.stop();
 
         String line = "───────────────────────────────────────────────────────────────────────────────";
@@ -64,14 +70,14 @@ public class MavenDependencyConflictTest {
         System.out.println(line);
     }
 
-    private static String dependencyTree() {
-        String path = new File(MavenProjects.getProjectBaseDir()).getParentFile().getAbsolutePath() + "/";
-        String installCmd = "bash " + path + "mvnw clean install -DskipTests -U -f " + path + "pom.xml";
+    private static String dependencyTree(String pomFile) {
+        String rootPath = new File(MavenProjects.getProjectBaseDir()).getParentFile().getAbsolutePath() + "/";
+        String installCmd = "bash " + rootPath + "mvnw clean install -DskipTests -U -f " + rootPath + pomFile;
 
-        // String treeCmd = "mvn dependency:tree -f " + path + "pom.xml";
+        // String treeCmd = "mvn dependency:tree -f " + rootPath + pomFile;
         // -B: Run in non-interactive (batch) mode (disables output color)
         // -q: 安静模式，只输出ERROR
-        String treeCmd = "bash " + path + "mvnw -B dependency:tree -f " + path + "pom.xml";
+        String treeCmd = "bash " + rootPath + "mvnw -B dependency:tree -f " + rootPath + pomFile;
         try {
             execute(installCmd);
             return execute(treeCmd);

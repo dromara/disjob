@@ -64,22 +64,22 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
      */
     @ConditionalOnMissingBean(name = REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER)
     @Bean(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER)
-    public JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties config) {
-        DatabaseRegistryProperties.DataSourceProperties props = config.getDatasource();
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setDriverClassName(props.getDriverClassName());
-        hikariConfig.setJdbcUrl(props.getJdbcUrl());
-        hikariConfig.setUsername(props.getUsername());
-        hikariConfig.setPassword(props.getPassword());
-        hikariConfig.setAutoCommit(props.isAutoCommit());
-        hikariConfig.setMinimumIdle(props.getMinimumIdle());
-        hikariConfig.setIdleTimeout(props.getIdleTimeout());
-        hikariConfig.setMaximumPoolSize(props.getMaximumPoolSize());
-        hikariConfig.setMaxLifetime(props.getMaxLifetime());
-        hikariConfig.setConnectionTimeout(props.getConnectionTimeout());
-        hikariConfig.setConnectionTestQuery(props.getConnectionTestQuery());
-        hikariConfig.setPoolName(props.getPoolName());
-        DataSource dataSource = new HikariDataSource(hikariConfig);
+    public JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties props) {
+        DatabaseRegistryProperties.DataSourceProperties p = props.getDatasource();
+        HikariConfig cfg = new HikariConfig();
+        cfg.setDriverClassName(p.getDriverClassName());
+        cfg.setJdbcUrl(p.getJdbcUrl());
+        cfg.setUsername(p.getUsername());
+        cfg.setPassword(p.getPassword());
+        cfg.setAutoCommit(p.isAutoCommit());
+        cfg.setMinimumIdle(p.getMinimumIdle());
+        cfg.setIdleTimeout(p.getIdleTimeout());
+        cfg.setMaximumPoolSize(p.getMaximumPoolSize());
+        cfg.setMaxLifetime(p.getMaxLifetime());
+        cfg.setConnectionTimeout(p.getConnectionTimeout());
+        cfg.setConnectionTestQuery(p.getConnectionTestQuery());
+        cfg.setPoolName(p.getPoolName());
+        DataSource dataSource = new HikariDataSource(cfg);
         return JdbcTemplateWrapper.of(new JdbcTemplate(dataSource));
     }
 

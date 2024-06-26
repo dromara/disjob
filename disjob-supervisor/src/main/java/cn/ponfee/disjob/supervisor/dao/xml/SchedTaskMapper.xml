@@ -137,6 +137,7 @@
       AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM <include refid="Table_Name" /> WHERE instance_id = #{instanceId,jdbcType=BIGINT} AND execute_state &lt; 40) t)=0
   </delete>
 
+  <!-- 使用其它的批量方式需要添加jdbc参数：allowMultiQueries=true&rewriteBatchedStatements=true -->
   <update id="batchUpdateWorker" parameterType="list">
     UPDATE <include refid="Table_Name" />
     SET version = version+1,

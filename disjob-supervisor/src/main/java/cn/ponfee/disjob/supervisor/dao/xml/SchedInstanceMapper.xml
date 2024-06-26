@@ -117,8 +117,8 @@
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE run_state = #{runState,jdbcType=TINYINT}
-      AND trigger_time &lt; #{expireTime,jdbcType=BIGINT}
-      AND updated_at   &lt; #{updateTime,jdbcType=TIMESTAMP}
+      AND trigger_time &lt; #{expireTime.time,jdbcType=BIGINT}
+      AND updated_at   &lt; #{expireTime,jdbcType=TIMESTAMP}
       AND (wnstance_id IS NULL OR instance_id != wnstance_id)
     ORDER BY trigger_time
     LIMIT #{size}

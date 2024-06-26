@@ -10,7 +10,7 @@
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
-  <description>A distributed job scheduling framework</description>
+  <description>A distributed task scheduling and distributed computing framework</description>
   <url>https://github.com/dromara/disjob</url>
   <licenses>
     <license>

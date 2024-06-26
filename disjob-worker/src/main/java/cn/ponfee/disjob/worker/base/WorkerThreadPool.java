@@ -578,25 +578,19 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private synchronized void toStopPool() {
-            pool.forEach((taskId, workerThread) -> {
-                workerThread.toStop();
-                WorkerTask task = workerThread.currentTask();
-                if (task != null) {
-                    task.stop();
-                }
-            });
+            pool.values().forEach(wt -> ThrowingRunnable.doCaught(wt::toStop));
         }
 
         private synchronized void doStopPool() {
-            pool.values().parallelStream().forEach(workerThread -> {
-                WorkerTask task = workerThread.currentTask();
+            pool.values().parallelStream().forEach(wt -> {
+                WorkerTask task = wt.currentTask();
                 Operation ops = Operation.PAUSE;
 
                 // 1、first change the execution task operation
                 boolean success = (task != null) && task.updateOperation(Operation.TRIGGER, ops);
 
                 // 2、then stop the work thread
-                ThrowingRunnable.doCaught(() -> stopWorkerThread(workerThread, true), () -> "Stop worker thread error: " + task + ", " + workerThread);
+                ThrowingRunnable.doCaught(() -> stopWorkerThread(wt, true), () -> "Stop worker thread error: " + task + ", " + wt);
 
                 // 3、finally update the sched task state
                 if (success) {
@@ -605,7 +599,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
                 }
 
-                workerThread.updateCurrentTask(task, null);
+                wt.updateCurrentTask(task, null);
             });
 
             pool.clear();

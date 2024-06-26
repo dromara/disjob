@@ -8,6 +8,7 @@
     <groupId>cn.ponfee</groupId>
     <artifactId>disjob-samples</artifactId>
     <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>disjob-samples-conf-worker</artifactId>

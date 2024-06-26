@@ -67,8 +67,7 @@ public interface SchedInstanceMapper {
                     @Param("toState") int toState);
 
     List<SchedInstance> findExpireState(@Param("runState") int runState,
-                                        @Param("expireTime") long expireTime,
-                                        @Param("updateTime") Date updateTime,
+                                        @Param("expireTime") Date expireTime,
                                         @Param("size") int size);
 
     List<SchedInstance> findUnterminatedRetry(long rnstanceId);
