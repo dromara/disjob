@@ -94,6 +94,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private static final List<Integer> EXECUTE_STATE_WAITING = Collections.singletonList(ExecuteState.WAITING.value());
     private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
 
+    private final long shutdownTaskDelayRestartMs;
     private final int taskDispatchFailedCountThreshold;
     private final TransactionTemplate transactionTemplate;
     private final SchedInstanceMapper instanceMapper;
@@ -113,6 +114,7 @@ public class DistributedJobManager extends AbstractJobManager {
                                  DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient,
                                  @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
         super(supervisorProperties, jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
+        this.shutdownTaskDelayRestartMs = supervisorProperties.getShutdownTaskDelayRestartMs();
         this.taskDispatchFailedCountThreshold = supervisorProperties.getTaskDispatchFailedCountThreshold();
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;
@@ -316,7 +318,7 @@ public class DistributedJobManager extends AbstractJobManager {
         Assert.hasText(param.getWorker(), "Terminate task worker cannot be blank.");
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
-        Assert.isTrue(!ExecuteState.Const.PAUSABLE_LIST.contains(toState), () -> "Stop executing invalid to state " + toState);
+        Assert.isTrue(toState != ExecuteState.EXECUTING, () -> "Terminate task invalid to state " + toState);
         log.info("Task trace [{}] terminating: {}, {}, {}", param.getTaskId(), param.getOperation(), param.getToState(), param.getWorker());
         return doInSynchronizedTransaction(instanceId, param.getWnstanceId(), instance -> {
             Assert.notNull(instance, () -> "Terminate executing task failed, instance not found: " + instanceId);
@@ -332,6 +334,15 @@ public class DistributedJobManager extends AbstractJobManager {
                 // usual is worker invoke http timeout, then retry
                 log.warn("Conflict terminate executing task: {}, {}", param.getTaskId(), toState);
                 return false;
+            }
+
+            if (toState == ExecuteState.WAITING) {
+                Assert.isTrue(param.getOperation() == Operation.RESTART, () -> "Operation expect RESTART, but actual " + param.getOperation());
+                if (!renewInstanceUpdateTime(instance, new Date(System.currentTimeMillis() + shutdownTaskDelayRestartMs))) {
+                    // cannot happen
+                    throw new IllegalStateException("Restart task renew instance update time failed: " + param.getTaskId());
+                }
+                return true;
             }
 
             Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));

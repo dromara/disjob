@@ -50,6 +50,11 @@ public enum Operation {
      */
     MANUAL_CANCEL(EXECUTING, MANUAL_CANCELED),
 
+    /**
+     * Restart from EXECUTING to WAITING
+     */
+    RESTART(EXECUTING, WAITING),
+
     ;
 
     private final ExecuteState fromState;

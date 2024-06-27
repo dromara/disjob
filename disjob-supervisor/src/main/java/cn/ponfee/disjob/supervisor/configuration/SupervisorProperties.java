@@ -63,6 +63,11 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private long scanRunningInstancePeriodMs = 30000;
 
     /**
+     * Shutdown task delay restart milliseconds
+     */
+    private long shutdownTaskDelayRestartMs = 300000;
+
+    /**
      * Maximum process job thread pool size, default 5
      */
     private int maximumProcessJobPoolSize = 5;
@@ -86,8 +91,9 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
         Assert.isTrue(maximumSplitTaskSize > 0, "Maximum split task size must be greater than 0.");
         Assert.isTrue(maximumJobDependsDepth > 0, "Maximum job depends depth must be greater than 0.");
         Assert.isTrue(scanTriggeringJobPeriodMs > 0, "Scan triggering job period ms must be greater than 0.");
-        Assert.isTrue(scanWaitingInstancePeriodMs > 0, "Scan waiting instance period ms must be greater than 0.");
-        Assert.isTrue(scanRunningInstancePeriodMs > 0, "Scan running instance period ms must be greater than 0.");
+        Assert.isTrue(scanWaitingInstancePeriodMs >= 15000, "Scan waiting instance period ms cannot less than 15000.");
+        Assert.isTrue(scanRunningInstancePeriodMs >= 30000, "Scan running instance period ms cannot less than 30000.");
+        Assert.isTrue(shutdownTaskDelayRestartMs >= 60000, "Shutdown task delay restart ms cannot less than 60000.");
         Assert.isTrue(maximumProcessJobPoolSize > 0, "Maximum process job pool size must be greater than 0.");
         Assert.isTrue(groupRefreshPeriodSeconds >= 30, "group refresh period seconds cannot less than 30s.");
         Assert.isTrue(jobScanFailedCountThreshold >= 0, "Job scan failed count threshold cannot less than 0.");

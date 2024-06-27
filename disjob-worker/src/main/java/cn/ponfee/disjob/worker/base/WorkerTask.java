@@ -85,6 +85,9 @@ class WorkerTask {
     }
 
     boolean updateOperation(Operation expect, Operation update) {
+        if (Objects.equals(expect, update)) {
+            return false;
+        }
         return operation.compareAndSet(expect, update);
     }
 

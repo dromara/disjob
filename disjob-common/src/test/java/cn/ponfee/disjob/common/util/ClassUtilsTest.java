@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * ClassUtils test
@@ -35,6 +36,15 @@ public class ClassUtilsTest {
         Assertions.assertTrue(int.class.getClass() == Object.class.getClass());
         Assertions.assertTrue(int.class.getClass() == Object.class.getClass().getClass());
         Assertions.assertTrue(Objects.equals(null, null));
+    }
+
+    @Test
+    public void testAtomic() {
+        AtomicReference<Class<?>> atomicReference = new AtomicReference<>();
+        Assertions.assertTrue(atomicReference.compareAndSet(null, null));
+        atomicReference.set(ClassUtilsTest.class);
+        Assertions.assertTrue(atomicReference.compareAndSet(ClassUtilsTest.class, ClassUtilsTest.class));
+        Assertions.assertFalse(atomicReference.compareAndSet(null, ClassUtilsTest.class));
     }
 
 }

@@ -56,7 +56,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         this.doInLocked = doInLocked;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
-        // heartbeat period duration: 30s * 8 = 240s
+        // heartbeat period duration: 20s * 8 = 160s
         this.beforeMilliseconds = (heartbeatPeriodMs << 3);
     }
 
@@ -72,22 +72,21 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
     }
 
     private boolean process() {
-        Date now = new Date();
-        Date expireTime = new Date(now.getTime() - beforeMilliseconds);
+        Date expireTime = new Date(System.currentTimeMillis() - beforeMilliseconds);
         List<SchedInstance> instances = jobQuerier.findExpireRunningInstance(expireTime, PROCESS_BATCH_SIZE);
         if (CollectionUtils.isEmpty(instances)) {
             return true;
         }
 
         for (SchedInstance instance : instances) {
-            processEach(instance, now);
+            processEach(instance);
         }
 
         return instances.size() < PROCESS_BATCH_SIZE;
     }
 
-    private void processEach(SchedInstance instance, Date now) {
-        if (!jobManager.renewInstanceUpdateTime(instance, now)) {
+    private void processEach(SchedInstance instance) {
+        if (!jobManager.renewInstanceUpdateTime(instance, new Date())) {
             return;
         }
 

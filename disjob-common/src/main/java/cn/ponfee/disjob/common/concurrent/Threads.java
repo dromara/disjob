@@ -138,7 +138,7 @@ public final class Threads {
 
     private static void stopThread0(Thread thread, long joinMillis) {
         if (thread == Thread.currentThread()) {
-            LOG.warn("Stop self thread [{}]\n{}", thread.getName(), Threads.getStackTrace());
+            LOG.info("Stop self thread [{}]\n{}", thread.getName(), getStackTrace());
             return;
         }
         if (isStopped(thread)) {
