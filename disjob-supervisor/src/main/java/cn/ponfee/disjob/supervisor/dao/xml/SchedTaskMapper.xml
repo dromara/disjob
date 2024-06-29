@@ -54,6 +54,13 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
+  <select id="findBaseByInstanceIdAndStates" resultType="cn.ponfee.disjob.core.model.SchedTask">
+    SELECT <include refid="Base_Column_List" />
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+  </select>
+
   <select id="findLargeByInstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
     FROM <include refid="Table_Name" />

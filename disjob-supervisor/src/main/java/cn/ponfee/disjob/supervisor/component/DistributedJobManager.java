@@ -150,6 +150,11 @@ public class DistributedJobManager extends AbstractJobManager {
         return isOneAffectedRow(taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED.value(), ExecuteState.WAITING.value(), null, null));
     }
 
+    @Override
+    protected List<SchedTask> listExecutingTask(long instanceId) {
+        return taskMapper.findBaseByInstanceIdAndStates(instanceId, Collections.singletonList(ExecuteState.EXECUTING.value()));
+    }
+
     public boolean savepoint(long taskId, String executeSnapshot) {
         return isOneAffectedRow(taskMapper.savepoint(taskId, executeSnapshot));
     }
@@ -926,7 +931,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 .stream()
                 .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
                 // broadcast task cannot support partial retry
-                .filter(e -> !RouteStrategy.BROADCAST.equalsValue(schedJob.getRouteStrategy()) || super.isAliveWorker(e.getWorker()))
+                .filter(e -> RouteStrategy.of(schedJob.getRouteStrategy()).isNotBroadcast() || super.isAliveWorker(e.getWorker()))
                 .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstanceId, e.getTaskNo(), e.getTaskCount(), now, e.getWorker()))
                 .collect(Collectors.toList());
         } else {

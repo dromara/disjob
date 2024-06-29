@@ -160,10 +160,10 @@ public class DistributedJobQuerier {
         Map<Long, Integer> map = instanceMapper.queryChildCount(instanceIds)
             .stream()
             .collect(Collectors.toMap(e -> MapUtils.getLongValue(e, "pnstanceId"), e -> MapUtils.getIntValue(e, "count")));
-        list.forEach(e -> {
+        for (SchedInstanceResponse e : list) {
             Integer count = map.get(e.getInstanceId());
             e.setIsTreeLeaf(Numbers.isNullOrZero(count) ? 0 : 1);
-        });
+        }
     }
 
 }

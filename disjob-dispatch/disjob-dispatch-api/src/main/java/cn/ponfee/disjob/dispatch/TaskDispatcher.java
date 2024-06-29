@@ -22,7 +22,6 @@ import cn.ponfee.disjob.common.concurrent.AsyncDelayedExecutor;
 import cn.ponfee.disjob.common.concurrent.DelayedData;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.dispatch.route.ExecutionRouterRegistrar;
 import cn.ponfee.disjob.registry.Discovery;
@@ -89,15 +88,12 @@ public abstract class TaskDispatcher implements Startable {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }
-        List<DispatchTaskParam> params = tasks.stream()
-            .peek(e -> {
-                Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
-                Assert.isTrue(e.getOperation().isNotTrigger(), () -> "Specific dispatch task operation cannot be trigger: " + e);
-                Assert.notNull(e.getWorker(), () -> "Specific dispatch task worker cannot be null: " + e);
-            })
-            .map(e -> new DispatchTaskParam(e, null))
-            .collect(Collectors.toList());
-        return dispatch0(params);
+        for (ExecuteTaskParam e : tasks) {
+            Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
+            Assert.isTrue(e.getOperation().isNotTrigger(), () -> "Specific dispatch task operation cannot be trigger: " + e);
+            Assert.notNull(e.getWorker(), () -> "Specific dispatch task worker cannot be null: " + e);
+        }
+        return dispatch0(Collects.convert(tasks, e -> new DispatchTaskParam(e, null)));
     }
 
     /**
@@ -111,17 +107,14 @@ public abstract class TaskDispatcher implements Startable {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }
-        List<DispatchTaskParam> params = tasks.stream()
-            .peek(e -> {
-                Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
-                Assert.isTrue(e.getOperation().isTrigger(), () -> "Assign dispatch task operation must be trigger: " + e);
-                if (e.getRouteStrategy() == RouteStrategy.BROADCAST) {
-                    Assert.notNull(e.getWorker(), () -> "Broadcast dispatch task worker cannot be null: " + e);
-                }
-            })
-            .map(e -> new DispatchTaskParam(e, group))
-            .collect(Collectors.toList());
-        return dispatch0(params);
+        for (ExecuteTaskParam e : tasks) {
+            Assert.notNull(e.getOperation(), () -> "Dispatch task operation cannot be null: " + e);
+            Assert.isTrue(e.getOperation().isTrigger(), () -> "Assign dispatch task operation must be trigger: " + e);
+            if (e.getRouteStrategy().isBroadcast()) {
+                Assert.notNull(e.getWorker(), () -> "Broadcast dispatch task worker cannot be null: " + e);
+            }
+        }
+        return dispatch0(Collects.convert(tasks, e -> new DispatchTaskParam(e, group)));
     }
 
     /**
@@ -144,31 +137,24 @@ public abstract class TaskDispatcher implements Startable {
 
     private boolean dispatch0(List<DispatchTaskParam> params) {
         params.stream()
-            .filter(e -> e.task().getOperation().isTrigger())
-            .filter(e -> e.task().getRouteStrategy() != RouteStrategy.BROADCAST)
-            // setWorker(null): reset worker
-            .peek(e -> e.task().setWorker(null))
+            .filter(e -> e.task().getWorker() == null)
             .collect(Collectors.groupingBy(e -> e.task().getInstanceId()))
             .forEach((instanceId, list) -> assignWorker(list));
 
         boolean result = true;
         for (DispatchTaskParam param : params) {
             ExecuteTaskParam task = param.task();
-            if (task.getWorker() == null) {
-                log.warn("Task not assigned worker: {}, {}", task.getTaskId(), task.getOperation());
-                // if not found worker(assign worker failed), delay retry
-                retry(param);
-                result = false;
-                continue;
-            }
-
             log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), param.retried(), task.getOperation(), task.getWorker());
             try {
                 doDispatch0(task);
                 log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
             } catch (Throwable t) {
                 // dispatch failed, delay retry
-                log.error("Dispatch task error: " + param, t);
+                if (t instanceof TaskDispatchException) {
+                    log.error("Dispatch task failed: {}, {}", t.getMessage(), param);
+                } else {
+                    log.error("Dispatch task error: " + param, t);
+                }
                 retry(param);
                 result = false;
             }
@@ -190,6 +176,10 @@ public abstract class TaskDispatcher implements Startable {
     }
 
     private void doDispatch0(ExecuteTaskParam task) throws Exception {
+        if (task.getWorker() == null) {
+            throw new TaskDispatchException("unassigned");
+        }
+
         boolean result;
         if (taskReceiver != null && task.getWorker().equals(Worker.current())) {
             // if current Supervisor also is a Worker role, then dispatch to this local worker
@@ -200,18 +190,22 @@ public abstract class TaskDispatcher implements Startable {
             result = doDispatch(task);
         }
         if (!result) {
-            throw new TaskDispatchException("Dispatch task failed: " + task);
+            throw new TaskDispatchException("false");
         }
     }
 
     private void retry(DispatchTaskParam param) {
+        ExecuteTaskParam task = param.task();
         if (param.retried() < retryMaxCount) {
-            log.info("Delay retrying dispatch task [{}]: {}", param.retried(), param.task());
+            log.info("Delay retrying dispatch task [{}]: {}", param.retried(), task);
             int count = param.retrying();
+            if (task.getRouteStrategy().isNotBroadcast() && task.getOperation().isTrigger()) {
+                // clear assigned worker
+                task.setWorker(null);
+            }
             asyncDelayedExecutor.put(DelayedData.of(param, retryBackoffPeriod * IntMath.pow(count, 2)));
         } else {
             // discard
-            ExecuteTaskParam task = param.task();
             log.error("Dispatched task retried max count still failed: {}", task);
             eventPublisher.publishEvent(new TaskDispatchFailedEvent(task.getJobId(), task.getInstanceId(), task.getTaskId()));
         }

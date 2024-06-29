@@ -28,7 +28,6 @@ import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
-import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
@@ -116,7 +115,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
         for (List<ExecuteTaskParam> subs : Lists.partition(tasks, PROCESS_BATCH_SIZE)) {
             List<UpdateTaskWorkerParam> list = subs.stream()
                 // 广播任务分派的worker不可修改，需要排除
-                .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
+                .filter(e -> e.getRouteStrategy().isNotBroadcast())
                 .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), e.getWorker()))
                 .collect(Collectors.toList());
             // 更新task的worker信息

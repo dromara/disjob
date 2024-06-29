@@ -80,6 +80,22 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
         return desc;
     }
 
+    public boolean isBroadcast() {
+        return this == BROADCAST;
+    }
+
+    public boolean isNotBroadcast() {
+        return !isBroadcast();
+    }
+
+    public boolean isRoundRobin() {
+        return this == ROUND_ROBIN;
+    }
+
+    public boolean isNotRoundRobin() {
+        return !isRoundRobin();
+    }
+
     public static RouteStrategy of(Integer value) {
         return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid route strategy value: " + value);
     }

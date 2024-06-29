@@ -32,7 +32,6 @@ import cn.ponfee.disjob.core.dto.supervisor.TerminateTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
@@ -170,7 +169,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         for (Iterator<WorkerThread> iter = idlePool.iterator(); iter.hasNext(); ) {
             WorkerThread wt = iter.next();
             iter.remove();
-            ThrowingRunnable.doCaught(wt::stop0);
+            ThrowingRunnable.doCaught(wt::doStop);
         }
 
         // 3、clear task execution task queue
@@ -228,7 +227,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         List<UpdateTaskWorkerParam> list = tasks.stream()
             // 广播任务分派的worker不可修改，需要排除
-            .filter(e -> e.getRouteStrategy() != RouteStrategy.BROADCAST)
+            .filter(e -> e.getRouteStrategy().isNotBroadcast())
             // 清除分派worker数据
             .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), null))
             .collect(Collectors.toList());
@@ -281,7 +280,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         LOG.info("Stop task: {}, {}, {}", taskId, ops, workerThread.getName());
         try {
             // stop the work thread
-            workerThread.stop0();
+            workerThread.doStop();
         } finally {
             terminateTask(task, ops, null);
         }
@@ -296,7 +295,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             // re-execute this execution task
             taskQueue.putFirst(task);
             // destroy this worker thread
-            workerThread.stop0();
+            workerThread.doStop();
             return;
         }
 
@@ -304,14 +303,14 @@ public class WorkerThreadPool extends Thread implements Closeable {
             activePool.doExecute(workerThread, task);
         } catch (InterruptedException e) {
             // destroy this worker thread
-            workerThread.stop0();
+            workerThread.doStop();
             throw e;
         } catch (BrokenThreadException e) {
             LOG.error(e.getMessage());
             // re-execute this execution task
             taskQueue.putFirst(task);
             // destroy this worker thread
-            workerThread.stop0();
+            workerThread.doStop();
         } catch (IllegalTaskException e) {
             LOG.error(e.getMessage());
             // return this worker thread
@@ -529,7 +528,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 boolean success = (task != null) && task.updateOperation(Operation.TRIGGER, ops);
 
                 // 2、then stop the work thread
-                ThrowingRunnable.doCaught(wt::stop0, () -> "Stop worker thread error: " + task + ", " + wt);
+                ThrowingRunnable.doCaught(wt::doStop, () -> "Stop worker thread error: " + task + ", " + wt);
 
                 // 3、finally update the sched task state
                 if (success) {
@@ -638,7 +637,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
         }
 
-        private void stop0() {
+        private void toStop() {
             if (workerThreadState.stop()) {
                 workerThreadCounter.decrementAndGet();
                 WorkerTask task = currentTask();
@@ -646,6 +645,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     task.stop();
                 }
             }
+        }
+
+        private void doStop() {
+            toStop();
             Threads.stopThread(this, 5000);
         }
 
@@ -668,7 +671,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 return true;
             } catch (InterruptedException e) {
                 LOG.error("Return thread to idle pool interrupted.", e);
-                stop0();
                 Thread.currentThread().interrupt();
                 return false;
             }
@@ -678,7 +680,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
          * Remove the worker thread from active pool and destroy it.
          */
         private void removePool() {
-            stop0();
+            toStop();
             if (activePool.removeThread(this) == null && !idlePool.remove(this)) {
                 LOG.warn("Not found removable thread: {}", super.getName());
             }
@@ -763,7 +765,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 executeTask = ExecuteTask.of(startTaskResult);
             } catch (Throwable t) {
                 LOG.warn("Start task error: " + task, t);
-                if (task.getRouteStrategy() != RouteStrategy.BROADCAST) {
+                if (task.getRouteStrategy().isNotBroadcast()) {
                     // reset task worker
                     List<UpdateTaskWorkerParam> list = Collections.singletonList(new UpdateTaskWorkerParam(task.getTaskId(), null));
                     ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(list), () -> "Reset task worker occur error: " + task);

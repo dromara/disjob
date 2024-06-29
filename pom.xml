@@ -82,6 +82,7 @@
     <jna-platform.version>5.14.0</jna-platform.version>
     <curator-recipes.version>5.7.0</curator-recipes.version>
 
+    <!-- Use for test -->
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
     <embedded-redis.version>1.4</embedded-redis.version>
     <graphviz-java.version>0.18.1</graphviz-java.version>

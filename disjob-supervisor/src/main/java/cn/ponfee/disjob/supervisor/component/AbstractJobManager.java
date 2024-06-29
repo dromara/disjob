@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.date.Dates;
+import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
@@ -68,6 +69,8 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  * @author Ponfee
  */
 public abstract class AbstractJobManager {
+
+    private static final Comparator<Tuple2<Worker, Long>> WORKLOAD_COMPARATOR = Comparator.comparingLong(e -> e.b);
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -189,7 +192,7 @@ public abstract class AbstractJobManager {
     }
 
     public List<SchedTask> splitJob(SplitJobParam param, long instanceId, Date date) throws JobException {
-        if (RouteStrategy.BROADCAST == param.getRouteStrategy()) {
+        if (param.getRouteStrategy().isBroadcast()) {
             List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getGroup());
             if (discoveredServers.isEmpty()) {
                 throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
@@ -273,24 +276,34 @@ public abstract class AbstractJobManager {
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
-        List<ExecuteTaskParam> list;
-        if (RouteStrategy.BROADCAST.equalsValue(job.getRouteStrategy())) {
-            list = new ArrayList<>(tasks.size());
+        RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
+        List<ExecuteTaskParam> params = new ArrayList<>(tasks.size());
+        List<Tuple2<Worker, Long>> workload;
+
+        if (routeStrategy.isBroadcast()) {
             for (SchedTask task : tasks) {
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (isDeadWorker(worker)) {
                     cancelWaitingTask(task.getTaskId());
                 } else {
-                    list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
+                    params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
             }
+        } else if (routeStrategy.isNotRoundRobin() || (workload = calculateWorkload(job, instance)) == null) {
+            for (SchedTask task : tasks) {
+                params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
+            }
         } else {
-            list = tasks.stream()
-                .map(e -> builder.build(Operation.TRIGGER, e.getTaskId(), instance.getTriggerTime(), null))
-                .collect(Collectors.toList());
+            // 轮询算法：选择分配到task最少的worker
+            for (SchedTask task : tasks) {
+                workload.sort(WORKLOAD_COMPARATOR);
+                Tuple2<Worker, Long> first = workload.get(0);
+                params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), first.a));
+                first.b += 1;
+            }
         }
 
-        return taskDispatcher.dispatch(job.getGroup(), list);
+        return taskDispatcher.dispatch(job.getGroup(), params);
     }
 
     public boolean dispatch(List<ExecuteTaskParam> params) {
@@ -315,6 +328,14 @@ public abstract class AbstractJobManager {
      * @return {@code true} if cancel successful
      */
     protected abstract boolean cancelWaitingTask(long taskId);
+
+    /**
+     * Lists the executing task
+     *
+     * @param instanceId the instance id
+     * @return List<SchedTask>
+     */
+    protected abstract List<SchedTask> listExecutingTask(long instanceId);
 
     // ------------------------------------------------------------------private methods
 
@@ -396,6 +417,19 @@ public abstract class AbstractJobManager {
             }
             parentJobIds = map.keySet();
         }
+    }
+
+    private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
+        List<Worker> workers = workerDiscover.getDiscoveredServers(job.getGroup());
+        if (CollectionUtils.isEmpty(workers)) {
+            return null;
+        }
+        List<SchedTask> executingTasks = listExecutingTask(instance.getInstanceId());
+        if (CollectionUtils.isEmpty(executingTasks)) {
+            return null;
+        }
+        Map<String, Long> map = executingTasks.stream().collect(Collectors.groupingBy(SchedTask::getWorker, Collectors.counting()));
+        return workers.stream().map(e -> Tuple2.of(e, map.getOrDefault(e.serialize(), 0L))).collect(Collectors.toList());
     }
 
 }

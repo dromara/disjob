@@ -27,7 +27,6 @@ import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.JobType;
-import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -70,7 +69,7 @@ public class JobHandlerUtils {
 
         try {
             for (String jobHandler : jobHandlers) {
-                if (param.getRouteStrategy() == RouteStrategy.BROADCAST) {
+                if (param.getRouteStrategy().isBroadcast()) {
                     JobHandler handler = load(jobHandler);
                     Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
                 } else {

@@ -36,6 +36,9 @@ public interface SchedTaskMapper {
 
     List<SchedTask> findBaseByInstanceId(long instanceId);
 
+    List<SchedTask> findBaseByInstanceIdAndStates(@Param("instanceId") long instanceId,
+                                                  @Param("states") List<Integer> states);
+
     List<SchedTask> findLargeByInstanceId(long instanceId);
 
     int incrementDispatchFailedCount(@Param("taskId") long taskId,

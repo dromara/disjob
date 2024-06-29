@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.tuple.Tuple2;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,7 @@ import org.mockito.internal.util.collections.Sets;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +60,52 @@ public class CollectsTest {
         Object[] array2 = list.stream().flatMap(List::stream).toArray(length -> Collects.newArray(Object[].class, length));
         System.out.println(Arrays.toString(array2));
         assertThat(array2).hasSize(9);
+    }
+
+    @Test
+    public void testSort() {
+        List<Tuple2<String, Long>> list = new ArrayList<>();
+        list.add(Tuple2.of("A", 3L));
+        list.add(Tuple2.of("B", 2L));
+        list.add(Tuple2.of("C", 1L));
+        list.add(Tuple2.of("D", 4L));
+        Comparator<Tuple2<String, Long>> comparator = Comparator.comparingLong(e -> e.b);
+
+        list.sort(comparator);
+        System.out.println(list);
+        Tuple2<String, Long> first = list.get(0);
+        assertThat(first.a).isEqualTo("C");
+        first.b += 1L;
+
+        list.sort(comparator);
+        System.out.println(list);
+        first = list.get(0);
+        assertThat(first.a).isEqualTo("C");
+        first.b += 1L;
+
+        list.sort(comparator);
+        System.out.println(list);
+        first = list.get(0);
+        assertThat(first.a).isEqualTo("B");
+        first.b += 1L;
+
+        list.sort(comparator);
+        System.out.println(list);
+        first = list.get(0);
+        assertThat(first.a).isEqualTo("B");
+        first.b += 1L;
+
+        list.sort(comparator);
+        System.out.println(list);
+        first = list.get(0);
+        assertThat(first.a).isEqualTo("C");
+        first.b += 1L;
+
+        list.sort(comparator);
+        System.out.println(list);
+        first = list.get(0);
+        assertThat(first.a).isEqualTo("A");
+        first.b += 1L;
     }
 
     @Test
