@@ -522,17 +522,23 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private synchronized void shutdown() {
             pool.values().parallelStream().forEach(wt -> {
                 WorkerTask task = wt.currentTask();
-                Operation ops = Operation.RESTART;
-
-                // 1、first change the execution task operation
-                boolean success = (task != null) && task.updateOperation(Operation.TRIGGER, ops);
+                Operation ops = null;
+                boolean success = false;
+                if (task != null) {
+                    ops = task.getRedeployStrategy().operation();
+                    success = task.updateOperation(Operation.TRIGGER, ops);
+                }
 
                 // 2、then stop the work thread
                 ThrowingRunnable.doCaught(wt::doStop, () -> "Stop worker thread error: " + task + ", " + wt);
 
                 // 3、finally update the sched task state
                 if (success) {
-                    ThrowingRunnable.doCaught(() -> terminateTask(task, ops, "Worker shutdown."), () -> "Terminate task error: " + task);
+                    try {
+                        terminateTask(task, ops, "Worker shutdown.");
+                    } catch (Throwable t) {
+                        LOG.error("Terminate task error: " + task, t);
+                    }
                 } else {
                     LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
                 }

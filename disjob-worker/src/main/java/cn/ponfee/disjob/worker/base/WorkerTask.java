@@ -20,6 +20,7 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
+import cn.ponfee.disjob.core.enums.RedeployStrategy;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.worker.handle.TaskExecutor;
@@ -50,6 +51,7 @@ class WorkerTask {
     private final long jobId;
     private final JobType jobType;
     private final RouteStrategy routeStrategy;
+    private final RedeployStrategy redeployStrategy;
     private final int executeTimeout;
     private final String jobHandler;
     private final Worker worker;
@@ -69,6 +71,7 @@ class WorkerTask {
         this.jobId = param.getJobId();
         this.jobType = param.getJobType();
         this.routeStrategy = param.getRouteStrategy();
+        this.redeployStrategy = param.getRedeployStrategy();
         this.executeTimeout = param.getExecuteTimeout();
         this.jobHandler = param.getJobHandler();
         this.worker = param.getWorker();

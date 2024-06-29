@@ -58,9 +58,10 @@
     const operateFlag = [[${@permission.hasPermi('disjob:job:operate')}]];
     const prefix = ctx + "disjob/job";
 
-    const jobTypes        = [[${@disjobService.enums('JobType')}]];
-    const triggerTypes    = [[${@disjobService.enums('TriggerType')}]];
-    const routeStrategies = [[${@disjobService.enums('RouteStrategy')}]];
+    const jobTypes           = [[${@disjobService.enums('JobType')}]];
+    const triggerTypes       = [[${@disjobService.enums('TriggerType')}]];
+    const routeStrategies    = [[${@disjobService.enums('RouteStrategy')}]];
+    const redeployStrategies = [[${@disjobService.enums('RedeployStrategy')}]];
 
     $(function () {
       const options = {
@@ -127,6 +128,13 @@
           title: '路由策略',
           formatter: function (value, row, index) {
             return $.table.selectData(routeStrategies, value, 'value', 'desc');
+          }
+        },
+        {
+          field: 'redeployStrategy',
+          title: '重新发布的执行策略',
+          formatter: function (value, row, index) {
+            return $.table.selectData(redeployStrategies, value, 'value', 'desc');
           }
         },
         {

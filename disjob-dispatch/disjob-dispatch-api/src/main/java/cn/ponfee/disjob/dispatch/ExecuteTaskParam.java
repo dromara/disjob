@@ -25,6 +25,7 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
+import cn.ponfee.disjob.core.enums.RedeployStrategy;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.model.InstanceAttach;
 import cn.ponfee.disjob.core.model.SchedInstance;
@@ -57,6 +58,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     private long jobId;
     private JobType jobType;
     private RouteStrategy routeStrategy;
+    private RedeployStrategy redeployStrategy;
     private int executeTimeout;
     private String jobHandler;
     private Worker worker;
@@ -78,18 +80,19 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         byte[] jobHandlerBytes = jobHandler.getBytes(UTF_8);
 
         int supervisorTokenBytesLength = supervisorTokenBytes == null ? -1 : supervisorTokenBytes.length;
-        int length = 55 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobHandlerBytes.length;
+        int length = 56 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobHandlerBytes.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(length)
-            .put((byte) operation.ordinal())       // 1: operation
-            .putLong(taskId)                       // 8: taskId
-            .putLong(instanceId)                   // 8: instanceId
-            .putLong(nullZero(wnstanceId))         // 8: wnstanceId
-            .putLong(triggerTime)                  // 8: triggerTime
-            .putLong(jobId)                        // 8: jobId
-            .put((byte) jobType.ordinal())         // 1: jobType
-            .put((byte) routeStrategy.ordinal())   // 1: routeStrategy
-            .putInt(executeTimeout);               // 4: executeTimeout
+            .put((byte) operation.ordinal())        // 1: operation
+            .putLong(taskId)                        // 8: taskId
+            .putLong(instanceId)                    // 8: instanceId
+            .putLong(nullZero(wnstanceId))          // 8: wnstanceId
+            .putLong(triggerTime)                   // 8: triggerTime
+            .putLong(jobId)                         // 8: jobId
+            .put((byte) jobType.ordinal())          // 1: jobType
+            .put((byte) routeStrategy.ordinal())    // 1: routeStrategy
+            .put((byte) redeployStrategy.ordinal()) // 1: redeployStrategy
+            .putInt(executeTimeout);                // 4: executeTimeout
 
         buffer.putInt(supervisorTokenBytesLength); // 4: supervisorToken byte array length
         Bytes.put(buffer, supervisorTokenBytes);   // x: byte array of supervisorToken data
@@ -119,6 +122,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         param.setJobId(buf.getLong());                                             //   8: jobId
         param.setJobType(JobType.values()[buf.get()]);                             //   1: jobType
         param.setRouteStrategy(RouteStrategy.values()[buf.get()]);                 //   1: routeStrategy
+        param.setRedeployStrategy(RedeployStrategy.values()[buf.get()]);           //   1: redeployStrategy
         param.setExecuteTimeout(buf.getInt());                                     //   4: executeTimeout
 
         param.setSupervisorToken(Strings.of(Bytes.get(buf, buf.getInt()), UTF_8)); // 4+x: supervisorToken
@@ -157,6 +161,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             param.setJobId(job.getJobId());
             param.setJobType(JobType.of(job.getJobType()));
             param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
+            param.setRedeployStrategy(RedeployStrategy.of(job.getRedeployStrategy()));
             param.setExecuteTimeout(job.getExecuteTimeout());
             param.setSupervisorToken(supervisorToken);
             param.setWorker(worker);

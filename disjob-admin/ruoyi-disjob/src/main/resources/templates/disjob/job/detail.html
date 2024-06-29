@@ -104,6 +104,12 @@
         </div>
       </div>
       <div class="form-group">
+        <label class="col-sm-3 control-label is-required">重新发布的执行策略：</label>
+        <div class="col-sm-9">
+          <p class="form-control-static">[( ${@disjobService.desc('RedeployStrategy', job.redeployStrategy)} )]</p>
+        </div>
+      </div>
+      <div class="form-group">
         <label class="col-sm-3 control-label">备注：</label>
         <div class="col-sm-9">
           <p class="form-control-static">[(*{remark})]</p>

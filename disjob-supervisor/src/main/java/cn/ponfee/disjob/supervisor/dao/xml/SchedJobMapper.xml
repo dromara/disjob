@@ -7,8 +7,8 @@
   <sql id="Base_Column_List">
     job_id, `group`, job_name, job_handler, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value,
-    execute_timeout, collided_strategy, misfire_strategy, route_strategy, remark,
-    last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
+    execute_timeout, collided_strategy, misfire_strategy, route_strategy, redeploy_strategy,
+    remark, last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
     version, updated_by, created_by, updated_at, created_at
   </sql>
 
@@ -39,6 +39,7 @@
       collided_strategy,
       misfire_strategy,
       route_strategy,
+      redeploy_strategy,
       remark,
       next_trigger_time,
       updated_by,
@@ -62,6 +63,7 @@
       #{collidedStrategy,jdbcType=TINYINT},
       #{misfireStrategy,jdbcType=TINYINT},
       #{routeStrategy,jdbcType=TINYINT},
+      #{redeployStrategy,jdbcType=TINYINT},
       #{remark,jdbcType=VARCHAR},
       #{nextTriggerTime,jdbcType=BIGINT},
       #{updatedBy,jdbcType=VARCHAR},
@@ -92,6 +94,7 @@
         collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
+        redeploy_strategy = #{redeployStrategy,jdbcType=TINYINT},
         <if test="remark != null and remark != ''">
           remark = #{remark,jdbcType=VARCHAR},
         </if>

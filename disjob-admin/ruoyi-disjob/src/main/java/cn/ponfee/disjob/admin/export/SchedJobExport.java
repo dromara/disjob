@@ -140,6 +140,12 @@ public class SchedJobExport {
     @Excel(name = "路由策略")
     private Integer routeStrategy;
 
+    /**
+     * 重新发布的执行策略(当worker重新发布时task的执行策略)：1-恢复执行；2-暂停执行；3-取消执行；
+     */
+    @Excel(name = "重新发布的执行策略")
+    private Integer redeployStrategy;
+
 
     public static SchedJobExport ofSchedJobResponse(SchedJobResponse schedJobResponse) {
         SchedJobExport schedJobExport = new SchedJobExport();
@@ -289,5 +295,13 @@ public class SchedJobExport {
 
     public void setRouteStrategy(Integer routeStrategy) {
         this.routeStrategy = routeStrategy;
+    }
+
+    public Integer getRedeployStrategy() {
+        return redeployStrategy;
+    }
+
+    public void setRedeployStrategy(Integer redeployStrategy) {
+        this.redeployStrategy = redeployStrategy;
     }
 }

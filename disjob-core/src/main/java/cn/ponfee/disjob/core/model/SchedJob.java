@@ -146,6 +146,13 @@ public class SchedJob extends BaseEntity {
     private Integer routeStrategy;
 
     /**
+     * 重新发布的执行策略(当worker重新发布时task的执行策略)：1-恢复执行；2-暂停执行；3-取消执行；
+     *
+     * @see RedeployStrategy
+     */
+    private Integer redeployStrategy;
+
+    /**
      * 最近一次的触发时间(毫秒时间戳)
      */
     private Long lastTriggerTime;
@@ -295,6 +302,9 @@ public class SchedJob extends BaseEntity {
         if (routeStrategy == null) {
             this.routeStrategy = RouteStrategy.ROUND_ROBIN.value();
         }
+        if (redeployStrategy == null) {
+            this.redeployStrategy = RedeployStrategy.RESTART.value();
+        }
 
         // verify
         JobState.of(jobState);
@@ -303,6 +313,7 @@ public class SchedJob extends BaseEntity {
         CollidedStrategy.of(collidedStrategy);
         MisfireStrategy.of(misfireStrategy);
         RouteStrategy.of(routeStrategy);
+        RedeployStrategy.of(redeployStrategy);
         if (startTime != null && endTime != null && startTime.after(endTime)) {
             throw new IllegalArgumentException("Invalid time range: [" + format(startTime) + " ~ " + format(endTime) + "]");
         }
