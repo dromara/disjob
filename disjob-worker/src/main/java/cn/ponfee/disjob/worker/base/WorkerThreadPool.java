@@ -315,13 +315,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.error(e.getMessage());
             // return this worker thread
             idlePool.putFirst(workerThread);
-        } catch (DuplicateTaskException e) {
-            LOG.error(e.getMessage());
-            // cancel this execution task
-            terminateTask(task, Operation.TRIGGER, VERIFY_FAILED, toErrorMsg(e));
-
-            // return this worker thread
-            idlePool.putFirst(workerThread);
         }
     }
 
@@ -449,15 +442,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
 
             WorkerThread exists = pool.get(task.getTaskId());
-            if (exists != null) {
-                WorkerTask t = exists.currentTask();
-                if (task.equals(t)) {
-                    // 同一个task re-dispatch，导致重复
-                    throw new IllegalTaskException("Repeat execute task: " + task);
-                } else {
-                    // 如果task分表时，不同task分表的task-id会有重复的可能性(task不做分片表时不会存在该问题)
-                    throw new DuplicateTaskException("Duplicate task id: " + task + ", " + t);
-                }
+            if (exists != null && task.equals(exists.currentTask())) {
+                // 同一个task re-dispatch，导致重复
+                throw new IllegalTaskException("Repeat execute task: " + task);
             }
 
             if (!workerThread.updateCurrentTask(null, task)) {
@@ -528,11 +515,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     ops = task.getRedeployStrategy().operation();
                     success = task.updateOperation(Operation.TRIGGER, ops);
                 }
-
-                // 2、then stop the work thread
                 ThrowingRunnable.doCaught(wt::doStop, () -> "Stop worker thread error: " + task + ", " + wt);
-
-                // 3、finally update the sched task state
                 if (success) {
                     try {
                         terminateTask(task, ops, "Worker shutdown.");
@@ -542,7 +525,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 } else {
                     LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
                 }
-
                 wt.updateCurrentTask(task, null);
             });
 
@@ -562,14 +544,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private static final long serialVersionUID = -1273937229826200274L;
 
         private IllegalTaskException(String message) {
-            super(message);
-        }
-    }
-
-    private static class DuplicateTaskException extends RuntimeException {
-        private static final long serialVersionUID = -5210570253941551115L;
-
-        private DuplicateTaskException(String message) {
             super(message);
         }
     }

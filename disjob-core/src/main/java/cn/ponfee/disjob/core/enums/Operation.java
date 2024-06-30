@@ -36,6 +36,11 @@ public enum Operation {
     PAUSE(EXECUTING, PAUSED),
 
     /**
+     * Restart from EXECUTING to WAITING
+     */
+    RESTART(EXECUTING, WAITING),
+
+    /**
      * Exception cancel from EXECUTING to EXECUTE_EXCEPTION
      */
     EXCEPTION_CANCEL(EXECUTING, EXECUTE_EXCEPTION),
@@ -51,9 +56,9 @@ public enum Operation {
     MANUAL_CANCEL(EXECUTING, MANUAL_CANCELED),
 
     /**
-     * Restart from EXECUTING to WAITING
+     * Shutdown cancel from EXECUTING to SHUTDOWN_CANCELED
      */
-    RESTART(EXECUTING, WAITING),
+    SHUTDOWN_CANCEL(EXECUTING, SHUTDOWN_CANCELED),
 
     ;
 

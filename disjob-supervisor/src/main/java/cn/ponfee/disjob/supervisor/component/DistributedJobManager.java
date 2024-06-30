@@ -146,7 +146,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     @Override
-    protected boolean cancelWaitingTask(long taskId) {
+    protected boolean abortBroadcastWaitingTask(long taskId) {
         return isOneAffectedRow(taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED.value(), ExecuteState.WAITING.value(), null, null));
     }
 
@@ -351,7 +351,6 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
-
             if (tuple == null) {
                 // If the instance has (WAITING or EXECUTING) task
                 return true;
@@ -373,7 +372,9 @@ public class DistributedJobManager extends AbstractJobManager {
                     instance.markTerminated(tuple.a, tuple.b);
                     afterTerminateTask(instance);
                 } else if (instance.isWorkflowNode()) {
+                    Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Workflow non-trigger run state not CANCELED: " + tuple.a);
                     updateWorkflowEdgeState(instance, tuple.a.value(), RUN_STATE_TERMINABLE);
+                    workflowMapper.update(instance.getWnstanceId(), null, RunState.CANCELED.value(), null, RUN_STATE_RUNNABLE, null);
                     updateWorkflowLeadState(instanceMapper.get(param.getWnstanceId()));
                 }
             }
@@ -482,11 +483,11 @@ public class DistributedJobManager extends AbstractJobManager {
 
             if (instance.isWorkflow()) {
                 Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot cancel workflow node instance: " + instanceId);
-                workflowMapper.update(instanceId, null, RunState.CANCELED.value(), null, RUN_STATE_WAITING, null);
                 instanceMapper.findWorkflowNode(instanceId)
                     .stream()
                     .filter(e -> !RunState.of(e.getRunState()).isTerminal())
                     .forEach(e -> cancelInstance(e, ops));
+                workflowMapper.update(instanceId, null, RunState.CANCELED.value(), null, RUN_STATE_RUNNABLE, null);
                 updateWorkflowLeadState(instance);
             } else {
                 cancelInstance(instance, ops);
@@ -616,13 +617,13 @@ public class DistributedJobManager extends AbstractJobManager {
     private void pauseInstance(long instanceId, SchedInstance instance) {
         if (instance.isWorkflow()) {
             Assert.isTrue(instance.isWorkflowLead(), () -> "Cannot pause workflow node instance: " + instanceId);
-            // update sched_workflow waiting node to paused state
-            workflowMapper.update(instanceId, null, RunState.PAUSED.value(), null, RUN_STATE_WAITING, null);
             // pause sched_workflow running node
             instanceMapper.findWorkflowNode(instanceId)
                 .stream()
                 .filter(e -> RUN_STATE_PAUSABLE.contains(e.getRunState()))
                 .forEach(this::pauseInstance);
+            // update sched_workflow waiting node to paused state
+            workflowMapper.update(instanceId, null, RunState.PAUSED.value(), null, RUN_STATE_WAITING, null);
             // update sched_workflow running lead
             updateWorkflowLeadState(instance);
         } else {

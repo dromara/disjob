@@ -43,7 +43,7 @@ public enum RedeployStrategy implements IntValueEnum<RedeployStrategy> {
     /**
      * 取消执行
      */
-    CANCEL(3, Operation.MANUAL_CANCEL, "取消执行"),
+    CANCEL(3, Operation.SHUTDOWN_CANCEL, "取消执行"),
 
     ;
 

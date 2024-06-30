@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.RpcControllerUtils;
 import cn.ponfee.disjob.common.util.Jsons;
+import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
@@ -42,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static cn.ponfee.disjob.core.base.WorkerRpcService.PREFIX_PATH;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 /**
@@ -55,12 +55,14 @@ public class VertxWebServer extends AbstractVerticle {
     private static final Logger LOG = LoggerFactory.getLogger(VertxWebServer.class);
 
     private final int port;
-    private final TaskReceiver httpTaskReceiver;
+    private final String prefixPath;
+    private final TaskReceiver taskReceiver;
     private final WorkerRpcService workerRpcService;
 
-    public VertxWebServer(int port, TaskReceiver httpTaskReceiver, WorkerRpcService workerRpcService) {
+    public VertxWebServer(int port, String contextPath, TaskReceiver taskReceiver, WorkerRpcService workerRpcService) {
         this.port = port;
-        this.httpTaskReceiver = httpTaskReceiver;
+        this.prefixPath = Strings.concatPath(Strings.trimPath(contextPath), WorkerRpcService.PREFIX_PATH);
+        this.taskReceiver = taskReceiver;
         this.workerRpcService = workerRpcService;
     }
 
@@ -103,37 +105,37 @@ public class VertxWebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         //String[] args = ctx.body().asPojo(String[].class);
-        router.post(PREFIX_PATH + "/job/verify").handler(ctx -> handle(() -> {
+        router.post(prefixPath + "/job/verify").handler(ctx -> handle(() -> {
             VerifyJobParam param = parseBodyArg(ctx, VerifyJobParam.class);
             workerRpcService.verify(param);
         }, ctx, BAD_REQUEST));
 
-        router.post(PREFIX_PATH + "/job/split").handler(ctx -> handle(() -> {
+        router.post(prefixPath + "/job/split").handler(ctx -> handle(() -> {
             SplitJobParam param = parseBodyArg(ctx, SplitJobParam.class);
             JobHandlerParser.parse(param, "jobHandler");
             return workerRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.get(PREFIX_PATH + "/task/exists").handler(ctx -> handle(() -> {
+        router.get(prefixPath + "/task/exists").handler(ctx -> handle(() -> {
             ExistsTaskParam param = parseParamArg(ctx, ExistsTaskParam.class);
             return workerRpcService.existsTask(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.get(PREFIX_PATH + "/metrics").handler(ctx -> handle(() -> {
+        router.get(prefixPath + "/metrics").handler(ctx -> handle(() -> {
             GetMetricsParam param = parseParamArg(ctx, GetMetricsParam.class);
             return workerRpcService.metrics(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.post(PREFIX_PATH + "/worker/configure").handler(ctx -> handle(() -> {
+        router.post(prefixPath + "/worker/configure").handler(ctx -> handle(() -> {
             ConfigureWorkerParam param = parseBodyArg(ctx, ConfigureWorkerParam.class);
             workerRpcService.configureWorker(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        if (httpTaskReceiver != null) {
-            router.post(PREFIX_PATH + "/task/receive").handler(ctx -> handle(() -> {
+        if (taskReceiver != null) {
+            router.post(prefixPath + "/task/receive").handler(ctx -> handle(() -> {
                 ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
                 JobHandlerParser.parse(param, "jobHandler");
-                return httpTaskReceiver.receive(param);
+                return taskReceiver.receive(param);
             }, ctx, INTERNAL_SERVER_ERROR));
         }
 

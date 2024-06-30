@@ -126,7 +126,8 @@ public class WorkerFramelessMain {
 
 
         // `verify/split/metrics/configure` 接口还是要走http
-        VertxWebServer vertxWebServer = new VertxWebServer(currentWorker.getPort(), paramTaskReceiver, new WorkerRpcProvider(currentWorker, workerRegistry));
+        String workerContextPath = config.getString(SpringUtils.SPRING_BOOT_CONTEXT_PATH);
+        VertxWebServer vertxWebServer = new VertxWebServer(currentWorker.getPort(), workerContextPath, paramTaskReceiver, new WorkerRpcProvider(currentWorker, workerRegistry));
         WorkerStartup workerStartup = WorkerStartup.builder()
             .currentWorker(currentWorker)
             .workerProperties(workerProps)

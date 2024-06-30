@@ -57,8 +57,16 @@ public class StringsTest {
         Assertions.assertEquals("/test/abc", Strings.trimPath("test/abc///"));
         Assertions.assertEquals("/test/abc", Strings.trimPath(" /test/abc/// "));
         Assertions.assertEquals("/", Strings.trimPath(" / // /// "));
+        Assertions.assertEquals("/", Strings.trimPath("/"));
+        Assertions.assertEquals("/", Strings.trimPath(""));
         Assertions.assertEquals("/test/abc", Strings.trimPath(" /test/abc/ / / "));
         Assertions.assertEquals("  abc/a / b/ c", "  abc/a / b/ c / /// /".replaceAll("[/\\s]+$", ""));
+        Assertions.assertEquals("/abc", Strings.concatPath("/", "/abc"));
+        Assertions.assertEquals("/abc/123", Strings.concatPath(Strings.trimPath(""), "/abc/123"));
+        Assertions.assertEquals("/abc/123", Strings.concatPath(Strings.trimPath("/"), "/abc/123"));
+        Assertions.assertEquals("/abc/123", Strings.concatPath(Strings.trimPath(""), "/abc/123"));
+        Assertions.assertEquals("/abc/123", Strings.concatPath(Strings.trimPath(null), "/abc/123"));
+        Assertions.assertEquals("/test/abc/123", Strings.concatPath(Strings.trimPath("/test"), "/abc/123"));
     }
 
     @Test

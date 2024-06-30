@@ -284,7 +284,7 @@ public abstract class AbstractJobManager {
             for (SchedTask task : tasks) {
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (isDeadWorker(worker)) {
-                    cancelWaitingTask(task.getTaskId());
+                    abortBroadcastWaitingTask(task.getTaskId());
                 } else {
                     params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
@@ -327,7 +327,7 @@ public abstract class AbstractJobManager {
      * @param taskId the task id
      * @return {@code true} if cancel successful
      */
-    protected abstract boolean cancelWaitingTask(long taskId);
+    protected abstract boolean abortBroadcastWaitingTask(long taskId);
 
     /**
      * Lists the executing task

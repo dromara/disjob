@@ -1,4 +1,5 @@
 server.port: 8084
+# server.servlet.context-path: app-test
 
 # Disjob worker configuration
 disjob:
