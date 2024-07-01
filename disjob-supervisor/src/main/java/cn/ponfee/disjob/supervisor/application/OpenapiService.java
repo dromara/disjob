@@ -59,8 +59,7 @@ public class OpenapiService extends SingletonClassConstraint {
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
 
-    public OpenapiService(DistributedJobManager jobManager,
-                          DistributedJobQuerier jobQuerier) {
+    public OpenapiService(DistributedJobManager jobManager, DistributedJobQuerier jobQuerier) {
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
     }

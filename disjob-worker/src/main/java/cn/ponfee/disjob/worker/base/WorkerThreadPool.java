@@ -17,10 +17,7 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.concurrent.TripState;
+import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -37,6 +34,7 @@ import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
 import cn.ponfee.disjob.worker.handle.*;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -507,7 +505,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private synchronized void shutdown() {
-            pool.values().parallelStream().forEach(wt -> {
+            LOG.info("Shutdown active thread pool starting...");
+            StopWatch stopWatch = StopWatch.createStarted();
+
+            ExecutorService threadPool = Executors.newCachedThreadPool();
+            MultithreadExecutors.run(pool.values(), wt -> {
+                LOG.info("Shutdown active thread pool stop worker thread: {}, {}", Thread.currentThread().getName(), wt.getName());
                 WorkerTask task = wt.currentTask();
                 Operation ops = null;
                 boolean success = false;
@@ -526,9 +529,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.warn("Change execution task ops failed on thread pool close: {}, {}", task, ops);
                 }
                 wt.updateCurrentTask(task, null);
-            });
-
+            }, threadPool);
             pool.clear();
+            threadPool.shutdown();
+
+            stopWatch.stop();
+            LOG.info("Shutdown active thread pool end, total time {}", stopWatch);
         }
 
         private int size() {
@@ -820,7 +826,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 stopInstance(task, Operation.EXCEPTION_CANCEL, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
-                    // 调用`Thread#stop()`时会抛出该异常，如果捕获到`ThreadDeath`异常，建议重新抛出以使线程中止
+                    // 调用`Thread#stop()`时可能会抛出该异常
                     LOG.warn("Task execute thread death: {}, {}", task, t.getMessage());
                 } else if (t instanceof InterruptedException) {
                     LOG.warn("Task executed interrupted: {}, {}", task, t.getMessage());

@@ -33,12 +33,12 @@ public enum RedeployStrategy implements IntValueEnum<RedeployStrategy> {
     /**
      * 恢复执行
      */
-    RESTART(1, Operation.RESTART, "恢复执行"),
+    RESTART(1, Operation.SHUTDOWN_RESTART, "恢复执行"),
 
     /**
      * 暂停执行
      */
-    PAUSE(2, Operation.PAUSE, "暂停执行"),
+    PAUSE(2, Operation.SHUTDOWN_PAUSE, "暂停执行"),
 
     /**
      * 取消执行

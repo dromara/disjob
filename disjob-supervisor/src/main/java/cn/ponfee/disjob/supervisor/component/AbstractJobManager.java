@@ -306,7 +306,7 @@ public abstract class AbstractJobManager {
         return taskDispatcher.dispatch(job.getGroup(), params);
     }
 
-    public boolean dispatch(List<ExecuteTaskParam> params) {
+    protected boolean dispatch(List<ExecuteTaskParam> params) {
         return taskDispatcher.dispatch(params);
     }
 
@@ -325,9 +325,8 @@ public abstract class AbstractJobManager {
      * if the worker was dead, should cancel the task.
      *
      * @param taskId the task id
-     * @return {@code true} if cancel successful
      */
-    protected abstract boolean abortBroadcastWaitingTask(long taskId);
+    protected abstract void abortBroadcastWaitingTask(long taskId);
 
     /**
      * Lists the executing task
@@ -422,6 +421,7 @@ public abstract class AbstractJobManager {
     private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
         List<Worker> workers = workerDiscover.getDiscoveredServers(job.getGroup());
         if (CollectionUtils.isEmpty(workers)) {
+            log.error("Not found available [{}] worker for calculate Workload.", job.getGroup());
             return null;
         }
         List<SchedTask> executingTasks = listExecutingTask(instance.getInstanceId());

@@ -71,11 +71,11 @@ disjob                                        # 主项目①
 - 提供任务分片的能力，重写拆分方法[JobHandler#split](disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(Savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
-- 任务在执行时若抛出[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，会暂停对应任务实例下的全部任务(包括分布在不同worker机器中的任务)
+- 任务在执行时若抛出[PauseTaskException](disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java)，会暂停对应实例下的全部任务(包括分派到其它worker机器的任务)
 - 支持广播任务，广播任务会派发给group下的所有worker执行
 - 支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行
 - 支持DAG工作流，可把`jobHandler`配置为复杂的DAG表达式，如：A->B,C,(D->E)->D,F->G
-- 支持执行中的Task在Worker发布完成后自动恢复继续执行
+- 支持执行中的Task在Worker(服务)发布完成后自动恢复继续执行
 - 提供Web管理后台，通过界面进行作业配置，任务监控等
 
 ## Comparison
@@ -237,7 +237,7 @@ Worker接收到子任务后，会提交到框架自定义的线程池中执行�
 
 6. **服务发布**
 
-我们的Task正在执行中，假如此时需要重新发布Worker(服务)该怎么办？Don't worry！在Worker发布的过程中无需人工干预，等服务发布完成一段时间后Task会自动恢复继续执行。
+这些Task正在执行中，假如此时需要重新发布Worker(服务)该怎么办？Don't worry！在Worker发布的过程中无需人工干预，等服务发布完成一段时间后Task会自动恢复继续执行。
 
 7. **暂停与恢复**
 

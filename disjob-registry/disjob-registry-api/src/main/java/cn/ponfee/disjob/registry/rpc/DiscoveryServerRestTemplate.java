@@ -91,7 +91,7 @@ final class DiscoveryServerRestTemplate<D extends Server> {
             authenticationHeaders = Worker.current().createWorkerAuthenticationHeaders();
         } else {
             // Supervisor 远程调用 Worker
-            serverContextPath = Supervisor.current().getWorkerContextPath(((Worker) servers.get(0)).getGroup());
+            serverContextPath = Supervisor.current().getWorkerContextPath(group);
         }
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
 

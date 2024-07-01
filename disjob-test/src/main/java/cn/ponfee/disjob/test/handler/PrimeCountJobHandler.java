@@ -121,7 +121,7 @@ public class PrimeCountJobHandler extends JobHandler {
             }
 
             long count = Prime.MillerRabin.countPrimes(next, Math.min(next + delta, n));
-            Thread.sleep(66 + ThreadLocalRandom.current().nextLong(67));
+            Thread.sleep(97 + ThreadLocalRandom.current().nextLong(197));
             execution.increment(count);
 
             next += step;

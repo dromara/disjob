@@ -110,12 +110,8 @@ public class WorkerFramelessMain {
                     return super.receive(param);
                 }
             };
-            paramTaskReceiver = new TaskReceiver(currentWorker, timingWheel) {
-                @Override
-                public boolean receive(ExecuteTaskParam task) {
-                    throw new UnsupportedOperationException("Redis task receiver unsupported http receive.");
-                }
-            };
+            // Redis task receiver cannot support http
+            paramTaskReceiver = null;
             */
 
             // 2）http receiver
