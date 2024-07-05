@@ -38,8 +38,8 @@ public interface SupervisorRpcService {
     @PostMapping("/task/worker/update")
     void updateTaskWorker(List<UpdateTaskWorkerParam> list) throws Exception;
 
-    @PostMapping("/task/terminate")
-    boolean terminateTask(TerminateTaskParam param) throws Exception;
+    @PostMapping("/task/stop")
+    boolean stopTask(StopTaskParam param) throws Exception;
 
     @PostMapping("/instance/pause")
     boolean pauseInstance(long instanceId) throws Exception;

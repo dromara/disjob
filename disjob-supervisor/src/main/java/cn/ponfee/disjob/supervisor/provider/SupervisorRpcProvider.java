@@ -53,8 +53,8 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
     }
 
     @Override
-    public boolean terminateTask(TerminateTaskParam param) {
-        return jobManager.terminateTask(param);
+    public boolean stopTask(StopTaskParam param) {
+        return jobManager.stopTask(param);
     }
 
     @Override

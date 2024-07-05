@@ -132,7 +132,7 @@ public class GlobalExceptionHandler {
     private static boolean isResponseJson(HandlerMethod handlerMethod, HttpServletRequest request) {
         if (handlerMethod == null ||
             handlerMethod.getBeanType() == BasicErrorController.class ||
-            RpcController.class.isAssignableFrom(handlerMethod.getBeanType())) {
+            handlerMethod.getBeanType().isAnnotationPresent(RpcController.class)) {
             return false;
         }
 

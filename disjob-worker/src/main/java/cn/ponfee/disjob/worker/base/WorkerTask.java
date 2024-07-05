@@ -18,10 +18,8 @@ package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
-import cn.ponfee.disjob.core.enums.JobType;
-import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.enums.RedeployStrategy;
-import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
+import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.worker.handle.TaskExecutor;
 import lombok.AccessLevel;
@@ -81,6 +79,10 @@ class WorkerTask {
 
     StartTaskParam toStartTaskParam() {
         return new StartTaskParam(wnstanceId, instanceId, taskId, jobType, worker);
+    }
+
+    StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {
+        return new StopTaskParam(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
     }
 
     Long getLockedKey() {

@@ -32,7 +32,7 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
-import cn.ponfee.disjob.core.dto.supervisor.TerminateTaskParam;
+import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.*;
@@ -310,20 +310,20 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     /**
-     * Terminate task
+     * Stop task
      *
-     * @param param the terminal task param
-     * @return {@code true} if terminated task successful
+     * @param param the stop task param
+     * @return {@code true} if stopped task successful
      */
-    public boolean terminateTask(TerminateTaskParam param) {
-        Assert.hasText(param.getWorker(), "Terminate task worker cannot be blank.");
+    public boolean stopTask(StopTaskParam param) {
+        Assert.hasText(param.getWorker(), "Stop task worker cannot be blank.");
         ExecuteState toState = param.getToState();
         long instanceId = param.getInstanceId();
-        Assert.isTrue(toState != ExecuteState.EXECUTING, () -> "Terminate task invalid to state " + toState);
-        log.info("Task trace [{}] terminating: {}, {}, {}", param.getTaskId(), param.getOperation(), param.getToState(), param.getWorker());
+        Assert.isTrue(toState != ExecuteState.EXECUTING, () -> "Stop task invalid to state " + toState);
+        log.info("Task trace [{}] stopping: {}, {}, {}", param.getTaskId(), param.getOperation(), param.getToState(), param.getWorker());
 
         return doInSynchronizedTransaction(instanceId, param.getWnstanceId(), instance -> {
-            Assert.isTrue(!instance.isWorkflowLead(), () -> "Terminate task instance cannot be workflow lead: " + instance);
+            Assert.isTrue(!instance.isWorkflowLead(), () -> "Stop task instance cannot be workflow lead: " + instance);
             if (RunState.of(instance.getRunState()).isTerminal()) {
                 // already terminated
                 return false;
@@ -333,7 +333,7 @@ public class DistributedJobManager extends AbstractJobManager {
             int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
             if (isNotAffectedRow(row)) {
                 // usual is worker invoke http timeout, then retry
-                log.warn("Conflict terminate executing task: {}, {}", param.getTaskId(), toState);
+                log.warn("Conflict stop executing task: {}, {}", param.getTaskId(), toState);
                 return false;
             }
 
@@ -481,14 +481,6 @@ public class DistributedJobManager extends AbstractJobManager {
         return wnstanceId;
     }
 
-    private <T> T doInSynchronizedTransaction0(long instanceId, Long wnstanceId, LongFunction<T> action) {
-        // Long.toString(lockKey).intern()
-        Long lockedKey = wnstanceId != null ? wnstanceId : (Long) instanceId;
-        synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedKey)) {
-            return transactionTemplate.execute(status -> action.apply(lockedKey));
-        }
-    }
-
     private void doInSynchronizedTransaction(long instanceId, Long wnstanceId, Consumer<SchedInstance> action) {
         doInSynchronizedTransaction(instanceId, wnstanceId, convert(action, true));
     }
@@ -512,6 +504,14 @@ public class DistributedJobManager extends AbstractJobManager {
             }
             return action.test(instance);
         });
+    }
+
+    private <T> T doInSynchronizedTransaction0(long instanceId, Long wnstanceId, LongFunction<T> action) {
+        // Long.toString(lockKey).intern()
+        Long lockedKey = wnstanceId != null ? wnstanceId : (Long) instanceId;
+        synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedKey)) {
+            return transactionTemplate.execute(status -> action.apply(lockedKey));
+        }
     }
 
     private boolean shouldTerminateDispatchFailedTask(long taskId) {

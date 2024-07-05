@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -54,7 +53,7 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
     @Test
     public void testUpdateTaskWorkerNonDeadlock() throws Throwable {
         long instanceId = idGenerator.generateId();
-        int count = 109;
+        int count = 197;
         List<SchedTask> tasks = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             SchedTask task = new SchedTask();
@@ -69,27 +68,23 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
         }
         taskMapper.batchInsert(tasks);
 
-        AtomicReference<Throwable> exception = new AtomicReference<>();
         Runnable runnable = () -> {
-            for (int i = 0; i < 3; i++) {
-                try {
-                    Thread.sleep(5 + ThreadLocalRandom.current().nextInt(10));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                List<UpdateTaskWorkerParam> list = tasks.stream()
-                    .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80)))
-                    .collect(Collectors.toList());
+            List<UpdateTaskWorkerParam> list = tasks.stream()
+                .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80)))
+                .collect(Collectors.toList());
+            for (int i = 0; i < 5; i++) {
                 Collections.shuffle(list);
-                distributedJobManager.updateTaskWorker(list);
+                List<UpdateTaskWorkerParam> subList = new ArrayList<>(list.subList(0, list.size() / 2));
+                Collections.shuffle(subList);
+                distributedJobManager.updateTaskWorker(subList);
             }
         };
 
+        AtomicReference<Throwable> exceptionHolder = new AtomicReference<>();
         List<Thread> threads = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread thread = new Thread(runnable);
-            thread.setUncaughtExceptionHandler((t, e) -> exception.compareAndSet(null, e));
+            thread.setUncaughtExceptionHandler((t, e) -> exceptionHolder.compareAndSet(null, e));
             threads.add(thread);
         }
 
@@ -98,7 +93,7 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
             thread.join();
         }
 
-        Throwable throwable = exception.get();
+        Throwable throwable = exceptionHolder.get();
         if (throwable != null) {
             throw throwable;
         }

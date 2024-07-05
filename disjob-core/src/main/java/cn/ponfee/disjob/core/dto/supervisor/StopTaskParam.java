@@ -28,33 +28,33 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Terminate task parameter.
+ * Stop task parameter.
  *
  * @author Ponfee
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class TerminateTaskParam extends ToJsonString implements Serializable {
+public class StopTaskParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7700836087189718161L;
 
-    private long instanceId;
     private Long wnstanceId;
+    private long instanceId;
     private long taskId;
     private Operation operation;
     private ExecuteState toState;
     private String errorMsg;
     private String worker;
 
-    public TerminateTaskParam(long instanceId, Long wnstanceId, long taskId, String worker,
-                              Operation operation, ExecuteState toState, String errorMsg) {
-        Assert.hasText(worker, "Terminate task worker param cannot be blank.");
-        this.instanceId = instanceId;
+    public StopTaskParam(Long wnstanceId, long instanceId, long taskId, String worker,
+                         Operation operation, ExecuteState toState, String errorMsg) {
+        Assert.hasText(worker, "Stop task worker param cannot be blank.");
         this.wnstanceId = wnstanceId;
+        this.instanceId = instanceId;
         this.taskId = taskId;
         this.worker = worker;
-        this.operation = Objects.requireNonNull(operation, "Terminate task operation param cannot be null.");
-        this.toState = Objects.requireNonNull(toState, "Terminate task target state param cannot be null.");
+        this.operation = Objects.requireNonNull(operation, "Stop task operation param cannot be null.");
+        this.toState = Objects.requireNonNull(toState, "Stop task target state param cannot be null.");
         this.errorMsg = errorMsg;
     }
 

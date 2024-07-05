@@ -119,7 +119,7 @@ public abstract class AbstractJobManager {
         return isOneAffectedRow(jobMapper.updateNextScanTime(schedJob));
     }
 
-    // ------------------------------------------------------------------database operation within spring transactional
+    // ------------------------------------------------------------------database operation within spring @transactional
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public boolean changeJobState(long jobId, JobState to) {
@@ -390,10 +390,10 @@ public abstract class AbstractJobManager {
             }
 
             if (nextTriggerTime == null) {
-                throw new IllegalArgumentException("Not next trigger time: " + job.getTriggerType() + ", " + job.getTriggerValue());
+                throw new IllegalArgumentException("Invalid " + triggerType + " value: " + job.getTriggerValue());
             }
             if (job.getEndTime() != null && nextTriggerTime.after(job.getEndTime())) {
-                throw new IllegalArgumentException("Expire next trigger time: " + job.getTriggerType() + ", " + job.getTriggerValue());
+                throw new IllegalArgumentException("Expire " + triggerType + " value: " + job.getTriggerValue());
             }
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }

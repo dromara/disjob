@@ -152,10 +152,11 @@ public final class DiscoveryServerRestProxy {
         }
 
         public <R, E extends Throwable> R call(String group, ThrowingFunction<T, R, E> function) throws E {
+            Objects.requireNonNull(group);
             if (localServiceProvider != null && serverGroupMatcher.test(group)) {
                 return function.apply(localServiceProvider);
             } else {
-                GROUP_THREAD_LOCAL.set(Objects.requireNonNull(group));
+                GROUP_THREAD_LOCAL.set(group);
                 try {
                     return function.apply(remoteServiceClient);
                 } finally {
