@@ -118,7 +118,7 @@ public class CommonTest {
             ThreadLocalRandom.current().nextLong(),
             JobType.GENERAL,
             RouteStrategy.ROUND_ROBIN,
-            RedeployStrategy.RESTART,
+            RedeployStrategy.RESUME,
             1,
             "JobHandler测试中文乱码。",
             new Worker("default", "workerId", "host", 1)

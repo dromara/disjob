@@ -41,12 +41,12 @@ public class LocalDateTimeFormat {
 
     static final DateTimeFormatter PATTERN_01 = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    public static final DateTimeFormatter PATTERN_11 = DateTimeFormatter.ofPattern(Dates.DATETIME_PATTERN);
+    static final DateTimeFormatter PATTERN_11 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     static final DateTimeFormatter PATTERN_12 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     static final DateTimeFormatter PATTERN_13 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     static final DateTimeFormatter PATTERN_14 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss");
 
-    static final DateTimeFormatter PATTERN_21 = DateTimeFormatter.ofPattern(Dates.DATEFULL_PATTERN);
+    static final DateTimeFormatter PATTERN_21 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     static final DateTimeFormatter PATTERN_22 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
     static final DateTimeFormatter PATTERN_23 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     static final DateTimeFormatter PATTERN_24 = DateTimeFormatter.ofPattern("yyyy/MM/dd'T'HH:mm:ss.SSS");
@@ -54,7 +54,7 @@ public class LocalDateTimeFormat {
     /**
      * The default date format with yyyy-MM-dd HH:mm:ss
      */
-    public static final LocalDateTimeFormat DEFAULT = new LocalDateTimeFormat(Dates.DATETIME_PATTERN);
+    public static final LocalDateTimeFormat DEFAULT = new LocalDateTimeFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 兜底解析器

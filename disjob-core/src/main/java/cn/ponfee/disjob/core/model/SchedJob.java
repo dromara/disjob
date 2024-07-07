@@ -303,7 +303,7 @@ public class SchedJob extends BaseEntity {
             this.routeStrategy = RouteStrategy.ROUND_ROBIN.value();
         }
         if (redeployStrategy == null) {
-            this.redeployStrategy = RedeployStrategy.RESTART.value();
+            this.redeployStrategy = RedeployStrategy.RESUME.value();
         }
 
         // verify

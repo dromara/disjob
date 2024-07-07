@@ -79,7 +79,7 @@ public abstract class TaskDispatcher implements Startable {
 
     /**
      * Dispatch the task to specified worker, which the worker is executing this task
-     * <p>this method is used to terminate(pause or cancel) the executing task
+     * <p>this method is used to stop(pause or cancel) the executing task
      *
      * @param tasks the list of execution task param
      * @return {@code true} if the first dispatch successful

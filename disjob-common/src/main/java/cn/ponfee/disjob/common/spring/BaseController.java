@@ -18,7 +18,6 @@ package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.TypedKeyValue;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
-import cn.ponfee.disjob.common.date.LocalDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateTimeFormat;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -66,7 +65,8 @@ public abstract class BaseController implements TypedKeyValue<String, String> {
         binder.registerCustomEditor(LocalDate.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) {
-                super.setValue(LocalDateFormat.DEFAULT.parse(text));
+                LocalDateTime dateTime = LocalDateTimeFormat.DEFAULT.parse(text);
+                super.setValue(dateTime == null ? null : dateTime.toLocalDate());
             }
         });
 

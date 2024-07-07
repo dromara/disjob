@@ -5,10 +5,9 @@
   <sql id="Table_Name">sched_instance</sql>
 
   <sql id="Base_Column_List">
-    instance_id, rnstance_id, pnstance_id, wnstance_id,
-    job_id, trigger_time, run_type, run_state, run_start_time,
-    run_end_time, run_duration, retried_count,
-    attach, version, updated_at, created_at
+    instance_id, rnstance_id, pnstance_id, wnstance_id, job_id,
+    trigger_time, run_type, run_state, run_start_time, run_end_time,
+    run_duration, retried_count, attach, version, updated_at, created_at
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedInstance" useGeneratedKeys="true">

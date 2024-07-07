@@ -10,7 +10,8 @@
   </sql>
 
   <sql id="Large_Column_List">
-    <include refid="Base_Column_List" />, version, updated_by, created_by, updated_at, created_at
+    <include refid="Base_Column_List" />,
+    version, updated_by, created_by, updated_at, created_at
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedGroup" useGeneratedKeys="true">

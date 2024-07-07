@@ -133,7 +133,6 @@
           formatter: function (value, row, index) {
             const actions = [];
             actions.push("<a class='btn btn-danger btn-rounded btn-xs' href='javascript:void(0)' onclick='operate(&quot;REMOVE_WORKER&quot;, &quot;摘除该Worker&quot;, &quot;" + row.workerId + "&quot;, &quot;" + row.host + "&quot;, " + row.port + ")'><i class='fa fa-remove'></i> 摘除Worker</a> ");
-            // actions.push("<a class='btn btn-danger btn-rounded btn-xs' href='javascript:void(0)' onclick='operate(&quot;REMOVE_WORKER_AND_CLEAR_TASK_QUEUE&quot;, &quot;摘除该Worker并清空任务队列&quot;, &quot;" + row.workerId + "&quot;, &quot;" + row.host + "&quot;, " + row.port + ")'><i class='fa fa-remove' ></i> 摘除Worker并清空任务队列</a> ");
             return '<a tabindex="0" class="btn btn-info btn-rounded btn-xs" role="button" data-container="body" data-placement="left" data-toggle="popover" data-html="true" data-trigger="hover" data-content="' + actions.join('') + '"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
           }
         }]

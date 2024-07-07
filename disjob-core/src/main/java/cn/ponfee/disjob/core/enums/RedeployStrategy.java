@@ -33,7 +33,7 @@ public enum RedeployStrategy implements IntValueEnum<RedeployStrategy> {
     /**
      * 恢复执行
      */
-    RESTART(1, Operation.SHUTDOWN_RESTART, "恢复执行"),
+    RESUME(1, Operation.SHUTDOWN_RESUME, "恢复执行"),
 
     /**
      * 暂停执行

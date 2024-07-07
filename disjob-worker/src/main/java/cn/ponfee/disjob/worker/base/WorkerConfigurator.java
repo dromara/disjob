@@ -57,10 +57,6 @@ public class WorkerConfigurator {
         workerThreadPool.modifyMaximumPoolSize(maximumPoolSize);
     }
 
-    public static void clearTaskQueue() {
-        workerThreadPool.clearTaskQueue();
-    }
-
     public static boolean existsTask(long taskId) {
         return workerThreadPool.existsTask(taskId);
     }

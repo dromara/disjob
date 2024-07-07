@@ -244,7 +244,7 @@ public class TriggerTimeUtilsTest {
 
     @Test
     public void testTaskParam() {
-        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operation.TRIGGER, 0, 0, 1L, 0, 0, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, RedeployStrategy.RESTART, 5, "jobHandler",new Worker("default", "workerId", "host", 1));
+        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operation.TRIGGER, 0, 0, 1L, 0, 0, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, RedeployStrategy.RESUME, 5, "jobHandler",new Worker("default", "workerId", "host", 1));
         Assertions.assertSame(param.getOperation(), Operation.TRIGGER);
     }
 

@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
@@ -33,7 +32,6 @@ import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
 import cn.ponfee.disjob.worker.handle.*;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -47,9 +45,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.disjob.core.enums.ExecuteState.*;
 
 /**
@@ -219,23 +215,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         this.maximumPoolSize = value;
     }
 
-    synchronized void clearTaskQueue() {
-        List<WorkerTask> tasks = new LinkedList<>();
-        taskQueue.drainTo(tasks);
-
-        List<UpdateTaskWorkerParam> list = tasks.stream()
-            // 广播任务分派的worker不可修改，需要排除
-            .filter(e -> e.getRouteStrategy().isNotBroadcast())
-            // 清除分派worker数据
-            .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), null))
-            .collect(Collectors.toList());
-
-        for (List<UpdateTaskWorkerParam> sub : Lists.partition(list, PROCESS_BATCH_SIZE)) {
-            // 更新task的worker信息
-            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(sub), () -> "Update task worker error: " + Jsons.toJson(list));
-        }
-    }
-
     boolean existsTask(long taskId) {
         if (activePool.existsTask(taskId)) {
             return true;
@@ -371,7 +350,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         Assert.notNull(ops, "Stop task operation cannot be null.");
         Assert.notNull(task.getWorker(), "Execute task param worker cannot be null.");
         if (!task.updateOperation(ops, null)) {
-            // already terminated
+            // already stopped
             LOG.warn("Stop task conflict: {}, {}, {}", task.getTaskId(), ops, toState);
             return;
         }

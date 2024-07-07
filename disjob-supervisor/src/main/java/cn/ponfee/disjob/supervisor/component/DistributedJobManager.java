@@ -95,7 +95,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private static final List<Integer> EXECUTE_STATE_WAITING = Collections.singletonList(ExecuteState.WAITING.value());
     private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
 
-    private final long shutdownTaskDelayRestartMs;
+    private final long shutdownTaskDelayResumeMs;
     private final int taskDispatchFailedCountThreshold;
     private final TransactionTemplate transactionTemplate;
     private final SchedInstanceMapper instanceMapper;
@@ -115,7 +115,7 @@ public class DistributedJobManager extends AbstractJobManager {
                                  DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient,
                                  @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
         super(supervisorProperties, jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
-        this.shutdownTaskDelayRestartMs = supervisorProperties.getShutdownTaskDelayRestartMs();
+        this.shutdownTaskDelayResumeMs = supervisorProperties.getShutdownTaskDelayResumeMs();
         this.taskDispatchFailedCountThreshold = supervisorProperties.getTaskDispatchFailedCountThreshold();
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;
@@ -338,10 +338,10 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             if (toState == ExecuteState.WAITING) {
-                Assert.isTrue(param.getOperation() == Operation.SHUTDOWN_RESTART, () -> "Operation expect RESTART, but actual " + param.getOperation());
-                if (!renewInstanceUpdateTime(instance, new Date(System.currentTimeMillis() + shutdownTaskDelayRestartMs))) {
+                Assert.isTrue(param.getOperation() == Operation.SHUTDOWN_RESUME, () -> "Operation expect RESUME, but actual " + param.getOperation());
+                if (!renewInstanceUpdateTime(instance, new Date(System.currentTimeMillis() + shutdownTaskDelayResumeMs))) {
                     // cannot happen
-                    throw new IllegalStateException("Restart task renew instance update time failed: " + param.getTaskId());
+                    throw new IllegalStateException("Resume task renew instance update time failed: " + param.getTaskId());
                 }
                 return true;
             }
@@ -591,7 +591,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (executingTasks.isEmpty()) {
             // has non executing task, update sched instance state
             Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
-            // must be paused or terminate
+            // must be paused or terminated
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
             int row = instanceMapper.terminate(instanceId, tuple.a.value(), RUN_STATE_PAUSABLE, tuple.b);
             assertOneAffectedRow(row, () -> "Pause instance failed: " + instance + ", " + tuple.a);

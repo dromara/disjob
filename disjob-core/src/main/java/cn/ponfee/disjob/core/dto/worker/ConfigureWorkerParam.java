@@ -57,16 +57,6 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         },
 
         /**
-         * Remove(deregister) worker and clear worker thread pool task queue
-         */
-        REMOVE_WORKER_AND_CLEAR_TASK_QUEUE {
-            @Override
-            public <T> T parse(String data) {
-                throw new UnsupportedOperationException();
-            }
-        },
-
-        /**
          * Remove(deregister) worker
          */
         REMOVE_WORKER {

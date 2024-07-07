@@ -51,9 +51,9 @@ public enum Operation {
     MANUAL_CANCEL(EXECUTING, MANUAL_CANCELED),
 
     /**
-     * Shutdown restart from EXECUTING to WAITING
+     * Shutdown resume from EXECUTING to WAITING
      */
-    SHUTDOWN_RESTART(EXECUTING, WAITING),
+    SHUTDOWN_RESUME(EXECUTING, WAITING),
 
     /**
      * Shutdown pause from EXECUTING to PAUSED

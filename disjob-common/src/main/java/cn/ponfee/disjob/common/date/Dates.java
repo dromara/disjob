@@ -83,7 +83,7 @@ public class Dates {
     /**
      * Fast date format for datetime pattern
      */
-    public static final FastDateFormat DATETIME_FORMAT = FastDateFormat.getInstance(Dates.DATETIME_PATTERN);
+    public static final FastDateFormat DATETIME_FORMAT = FastDateFormat.getInstance(DATETIME_PATTERN);
 
     /**
      * 简单的日期格式校验

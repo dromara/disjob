@@ -88,10 +88,6 @@ public class WorkerRpcProvider implements WorkerRpcService {
         } else if (action == Action.REMOVE_WORKER) {
             workerRegistry.deregister(currentWork);
 
-        } else if (action == Action.REMOVE_WORKER_AND_CLEAR_TASK_QUEUE) {
-            workerRegistry.deregister(currentWork);
-            WorkerConfigurator.clearTaskQueue();
-
         } else if (action == Action.ADD_WORKER) {
             String cGroup = currentWork.getGroup();
             String dGroup = action.parse(param.getData());
