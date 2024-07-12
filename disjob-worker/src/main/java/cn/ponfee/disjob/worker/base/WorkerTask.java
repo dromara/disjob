@@ -133,4 +133,9 @@ class WorkerTask {
         return Objects.hash(operation.get(), taskId, instanceId, triggerTime, jobId, wnstanceId);
     }
 
+    @Override
+    public String toString() {
+        return taskId + "-" + operation;
+    }
+
 }

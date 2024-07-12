@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.zookeeper;
 
-import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.RegistryException;
@@ -44,7 +43,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     private final String zkRegistryRootPath;
 
     protected ZookeeperServerRegistry(ZookeeperRegistryProperties config) {
-        super(config.getNamespace(), Char.SLASH);
+        super(config.getNamespace(), '/');
         // zookeeper parent path must start with "/"
         this.zkRegistryRootPath = separator + registryRootPath;
         String zkDiscoveryRootPath = separator + discoveryRootPath;

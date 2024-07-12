@@ -29,11 +29,11 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
- * Distributed lock based jdbc database.
+ * Lock template based database.
  *
  * @author Ponfee
  */
-public final class DoInDatabaseLocked implements DoInLocked {
+public final class DatabaseLockTemplate implements LockTemplate {
 
     private static final String TABLE_NAME = "sched_lock";
 
@@ -61,7 +61,7 @@ public final class DoInDatabaseLocked implements DoInLocked {
      */
     private final String lockName;
 
-    public DoInDatabaseLocked(JdbcTemplate jdbcTemplate, String lockName) {
+    public DatabaseLockTemplate(JdbcTemplate jdbcTemplate, String lockName) {
         this.jdbcTemplateWrapper = JdbcTemplateWrapper.of(jdbcTemplate);
         this.lockName = lockName;
 
@@ -78,7 +78,7 @@ public final class DoInDatabaseLocked implements DoInLocked {
     }
 
     @Override
-    public <T> T action(Callable<T> caller) {
+    public <T> T execute(Callable<T> action) {
         return jdbcTemplateWrapper.executeInTransaction(psCreator -> {
             PreparedStatement preparedStatement = psCreator.apply(LOCK_SQL);
             preparedStatement.setString(1, lockName);
@@ -87,7 +87,7 @@ public final class DoInDatabaseLocked implements DoInLocked {
             // 关闭一个Statement对象同时也会使得该对象创建的所有ResultSet对象被关闭，即：可以不显示关闭ResultSet
             // ResultSet所持有的资源不会立刻被释放，直到GC执行，因此明确地关闭ResultSet是一个更好的做法
             JdbcUtils.closeResultSet(rs);
-            return caller.call();
+            return action.call();
         });
     }
 

@@ -19,18 +19,18 @@ package cn.ponfee.disjob.common.lock;
 import java.util.concurrent.Callable;
 
 /**
- * Do something in locked context.
+ * Lock template.
  *
  * @author Ponfee
  */
-@FunctionalInterface
-public interface DoInLocked {
+public interface LockTemplate {
 
     /**
-     * Run with in locked.
+     * Execute the action in locked.
      *
-     * @param caller the callback
-     * @return exec callback result
+     * @param action the action
+     * @return executed action result
      */
-    <T> T action(Callable<T> caller);
+    <T> T execute(Callable<T> action);
+
 }

@@ -19,6 +19,7 @@ package cn.ponfee.disjob.supervisor.application.request;
 import cn.ponfee.disjob.core.base.Worker;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Configure one worker request
@@ -35,7 +36,7 @@ public class ConfigureOneWorkerRequest extends ConfigureAllWorkerRequest {
     private int port;
 
     public Worker toWorker() {
-        return new Worker(super.getGroup(), workerId, host, port);
+        return new Worker(super.getGroup(), StringUtils.isEmpty(workerId) ? "configure" : workerId, host, port);
     }
 
 }

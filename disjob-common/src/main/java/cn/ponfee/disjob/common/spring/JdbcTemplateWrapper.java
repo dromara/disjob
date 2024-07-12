@@ -19,6 +19,7 @@ package cn.ponfee.disjob.common.spring;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingConsumer;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingFunction;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -107,11 +108,12 @@ public final class JdbcTemplateWrapper {
 
     public <T> T executeInTransaction(ThrowingFunction<ThrowingFunction<String, PreparedStatement, ?>, T, ?> action) {
         return jdbcTemplate.execute((ConnectionCallback<T>) con -> {
-            Boolean previousAutoCommit = null;
             PreparedStatementCreator psCreator = null;
+            boolean originalAutoCommit = con.getAutoCommit();
             try {
-                previousAutoCommit = con.getAutoCommit();
-                con.setAutoCommit(false);
+                if (originalAutoCommit) {
+                    con.setAutoCommit(false);
+                }
                 psCreator = new PreparedStatementCreator(con);
                 T result = action.apply(psCreator);
                 con.commit();
@@ -120,18 +122,12 @@ public final class JdbcTemplateWrapper {
                 con.rollback();
                 return ExceptionUtils.rethrow(t);
             } finally {
+                if (originalAutoCommit) {
+                    // isClosed: connection is proxy by CloseSuppressingInvocationHandler, always false
+                    ThrowingRunnable.doCaught(() -> con.setAutoCommit(true), "Restore auto-commit value error.");
+                }
                 if (psCreator != null) {
                     psCreator.close();
-                }
-
-                // isClosed: connection is proxy by CloseSuppressingInvocationHandler, always false
-                if (previousAutoCommit != null) {
-                    try {
-                        // restore the auto-commit config
-                        con.setAutoCommit(previousAutoCommit);
-                    } catch (Throwable t) {
-                        LOG.error("Restore connection auto-commit occur error.", t);
-                    }
                 }
             }
         });
@@ -168,7 +164,7 @@ public final class JdbcTemplateWrapper {
 
     // -----------------------------------------------------------------private methods
 
-    private static class PreparedStatementCreator implements ThrowingFunction<String, PreparedStatement, Throwable>, AutoCloseable {
+    private static class PreparedStatementCreator implements ThrowingFunction<String, PreparedStatement, Throwable> {
         private final Connection con;
         private final List<PreparedStatement> psList = new LinkedList<>();
 
@@ -183,7 +179,6 @@ public final class JdbcTemplateWrapper {
             return ps;
         }
 
-        @Override
         public void close() {
             Lists.reverse(psList).forEach(JdbcUtils::closeStatement);
         }

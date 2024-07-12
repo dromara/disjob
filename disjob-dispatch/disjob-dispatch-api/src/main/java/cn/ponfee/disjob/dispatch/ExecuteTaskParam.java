@@ -94,11 +94,11 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             .put((byte) redeployStrategy.ordinal()) // 1: redeployStrategy
             .putInt(executeTimeout);                // 4: executeTimeout
 
-        buffer.putInt(supervisorTokenBytesLength); // 4: supervisorToken byte array length
-        Bytes.put(buffer, supervisorTokenBytes);   // x: byte array of supervisorToken data
-        buffer.putInt(workerBytes.length);         // 4: worker byte array length int value
-        buffer.put(workerBytes);                   // x: byte array of worker data
-        buffer.put(jobHandlerBytes);               // x: byte array of jobHandler data
+        buffer.putInt(supervisorTokenBytesLength);  // 4: supervisorToken byte array length
+        Bytes.put(buffer, supervisorTokenBytes);    // x: byte array of supervisorToken data
+        buffer.putInt(workerBytes.length);          // 4: worker byte array length int value
+        buffer.put(workerBytes);                    // x: byte array of worker data
+        buffer.put(jobHandlerBytes);                // x: byte array of jobHandler data
 
         // buffer.flip(): unnecessary do flip
         return buffer.array();

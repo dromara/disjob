@@ -22,27 +22,27 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Callable;
 
 /**
- * Do in redis locked.
+ * Lock template based redis.
  *
  * @author Ponfee
  */
-public class DoInRedisLocked implements DoInLocked {
+public class RedisLockTemplate implements LockTemplate {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DoInRedisLocked.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RedisLockTemplate.class);
 
     private final RedisLock redisLock;
 
-    public DoInRedisLocked(RedisLock redisLock) {
+    public RedisLockTemplate(RedisLock redisLock) {
         this.redisLock = redisLock;
     }
 
     @Override
-    public <T> T action(Callable<T> caller) {
+    public <T> T execute(Callable<T> action) {
         if (redisLock.tryLock()) {
             try {
-                return caller.call();
+                return action.call();
             } catch (Throwable t) {
-                LOG.error("Do in redis lock occur error.", t);
+                LOG.error("Executed in redis lock occur error.", t);
                 return null;
             } finally {
                 redisLock.unlock();

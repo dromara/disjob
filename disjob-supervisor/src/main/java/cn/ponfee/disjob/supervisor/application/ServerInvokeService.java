@@ -100,7 +100,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
             String[] array = worker.trim().split(":");
             String host = array[0].trim();
             int port = Numbers.toInt(array[1].trim(), -1);
-            WorkerMetricsResponse metrics = getWorkerMetrics(new Worker(group, "", host, port));
+            WorkerMetricsResponse metrics = getWorkerMetrics(new Worker(group, "metrics", host, port));
             return StringUtils.isBlank(metrics.getWorkerId()) ? Collections.emptyList() : Collections.singletonList(metrics);
         } else {
             List<Worker> list = supervisorRegistry.getDiscoveredServers(group);

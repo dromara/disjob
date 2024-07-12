@@ -22,7 +22,7 @@ import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.lock.DoInLocked;
+import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
@@ -58,7 +58,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private static final int SCAN_COLLIDED_INTERVAL_SECONDS = 60;
     private static final int REMARK_MAX_LENGTH = 255;
 
-    private final DoInLocked doInLocked;
+    private final LockTemplate lockTemplate;
     private final int jobScanFailedCountThreshold;
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
@@ -66,14 +66,14 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private final ExecutorService processJobExecutor;
 
     public TriggeringJobScanner(SupervisorProperties supervisorProperties,
-                                DoInLocked doInLocked,
+                                LockTemplate lockTemplate,
                                 DistributedJobManager jobManager,
                                 DistributedJobQuerier jobQuerier) {
         super(supervisorProperties.getScanTriggeringJobPeriodMs());
         SingletonClassConstraint.constrain(this);
 
         this.jobScanFailedCountThreshold = supervisorProperties.getJobScanFailedCountThreshold();
-        this.doInLocked = doInLocked;
+        this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
         // heartbeat period duration: 3s * 3 = 9s
@@ -94,7 +94,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             log.warn("Not discovered worker.");
             return true;
         }
-        Boolean result = doInLocked.action(() -> {
+        Boolean result = lockTemplate.execute(() -> {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterMilliseconds;
             List<SchedJob> jobs = jobQuerier.findBeTriggeringJob(maxNextTriggerTime, PROCESS_BATCH_SIZE);

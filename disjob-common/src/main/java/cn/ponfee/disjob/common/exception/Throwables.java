@@ -105,6 +105,10 @@ public final class Throwables {
             doCaught(runnable, EMPTY_MESSAGE);
         }
 
+        static void doCaught(ThrowingRunnable<?> runnable, String message) {
+            doCaught(runnable, () -> message);
+        }
+
         static void doCaught(ThrowingRunnable<?> runnable, Supplier<String> message) {
             try {
                 runnable.run();

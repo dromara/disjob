@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor.thread;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
-import cn.ponfee.disjob.common.lock.DoInLocked;
+import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.SchedInstance;
@@ -41,19 +41,19 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  */
 public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
-    private final DoInLocked doInLocked;
+    private final LockTemplate lockTemplate;
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
     private final long beforeMilliseconds;
 
     public RunningInstanceScanner(long heartbeatPeriodMilliseconds,
-                                  DoInLocked doInLocked,
+                                  LockTemplate lockTemplate,
                                   DistributedJobManager jobManager,
                                   DistributedJobQuerier jobQuerier) {
         super(heartbeatPeriodMilliseconds);
         SingletonClassConstraint.constrain(this);
 
-        this.doInLocked = doInLocked;
+        this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
         // heartbeat period duration: 20s * 8 = 160s
@@ -67,7 +67,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             return true;
         }
 
-        Boolean result = doInLocked.action(this::process);
+        Boolean result = lockTemplate.execute(this::process);
         return result != null && result;
     }
 

@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.configuration;
 
 import cn.ponfee.disjob.common.concurrent.TripState;
-import cn.ponfee.disjob.common.lock.DoInLocked;
+import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -52,9 +52,9 @@ public class SupervisorLifecycle implements SmartLifecycle {
                                SupervisorRegistry supervisorRegistry,
                                DistributedJobManager distributedJobManager,
                                DistributedJobQuerier distributedJobQuerier,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) DoInLocked scanTriggeringJobLocker,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) DoInLocked scanWaitingInstanceLocker,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) DoInLocked scanRunningInstanceLocker,
+                               @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker,
+                               @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) LockTemplate scanWaitingInstanceLocker,
+                               @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
                                TaskDispatcher taskDispatcher) {
         this.supervisorStartup = SupervisorStartup.builder()
             .currentSupervisor(currentSupervisor)

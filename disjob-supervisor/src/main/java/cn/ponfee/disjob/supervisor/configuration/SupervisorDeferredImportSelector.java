@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
-import cn.ponfee.disjob.common.lock.DoInDatabaseLocked;
-import cn.ponfee.disjob.common.lock.DoInLocked;
+import cn.ponfee.disjob.common.lock.DatabaseLockTemplate;
+import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.supervisor.base.SupervisorConstants;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -44,20 +44,20 @@ class SupervisorDeferredImportSelector implements DeferredImportSelector {
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER)
-        public DoInLocked scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
+        public LockTemplate scanTriggeringJobLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
+            return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_TRIGGERING_JOB);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER)
-        public DoInLocked scanWaitingInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_WAITING_INSTANCE);
+        public LockTemplate scanWaitingInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
+            return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_WAITING_INSTANCE);
         }
 
         @ConditionalOnMissingBean(name = SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
         @Bean(SupervisorConstants.SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER)
-        public DoInLocked scanRunningInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
-            return new DoInDatabaseLocked(jdbcTemplate, SupervisorConstants.LOCK_SCAN_RUNNING_INSTANCE);
+        public LockTemplate scanRunningInstanceLocker(@Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE) JdbcTemplate jdbcTemplate) {
+            return new DatabaseLockTemplate(jdbcTemplate, SupervisorConstants.LOCK_SCAN_RUNNING_INSTANCE);
         }
     }
 

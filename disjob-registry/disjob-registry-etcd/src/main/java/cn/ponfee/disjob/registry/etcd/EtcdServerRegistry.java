@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.registry.etcd;
 
-import cn.ponfee.disjob.common.base.Symbol.Char;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.Server;
@@ -74,7 +73,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     protected EtcdServerRegistry(EtcdRegistryProperties config) {
         // etcd separator must be '/'
-        super(config.getNamespace(), Char.SLASH);
+        super(config.getNamespace(), '/');
         this.ttl = config.getSessionTimeoutMs() / 2000;
 
         CountDownLatch latch = new CountDownLatch(1);

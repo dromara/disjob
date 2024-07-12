@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.lock.DoInLocked;
+import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -57,9 +57,9 @@ public class SupervisorStartup implements Startable {
                               SupervisorRegistry supervisorRegistry,
                               DistributedJobManager distributedJobManager,
                               DistributedJobQuerier distributedJobQuerier,
-                              DoInLocked scanTriggeringJobLocker,
-                              DoInLocked scanWaitingInstanceLocker,
-                              DoInLocked scanRunningInstanceLocker,
+                              LockTemplate scanTriggeringJobLocker,
+                              LockTemplate scanWaitingInstanceLocker,
+                              LockTemplate scanRunningInstanceLocker,
                               TaskDispatcher taskDispatcher) {
         Objects.requireNonNull(currentSupervisor, "Current supervisor cannot null.");
         Objects.requireNonNull(supervisorProperties, "Supervisor properties cannot null.").check();
@@ -133,9 +133,9 @@ public class SupervisorStartup implements Startable {
         private SupervisorRegistry supervisorRegistry;
         private DistributedJobManager distributedJobManager;
         private DistributedJobQuerier distributedJobQuerier;
-        private DoInLocked scanTriggeringJobLocker;
-        private DoInLocked scanWaitingInstanceLocker;
-        private DoInLocked scanRunningInstanceLocker;
+        private LockTemplate scanTriggeringJobLocker;
+        private LockTemplate scanWaitingInstanceLocker;
+        private LockTemplate scanRunningInstanceLocker;
         private TaskDispatcher taskDispatcher;
 
         private Builder() {
@@ -166,17 +166,17 @@ public class SupervisorStartup implements Startable {
             return this;
         }
 
-        public Builder scanTriggeringJobLocker(DoInLocked scanTriggeringJobLocker) {
+        public Builder scanTriggeringJobLocker(LockTemplate scanTriggeringJobLocker) {
             this.scanTriggeringJobLocker = scanTriggeringJobLocker;
             return this;
         }
 
-        public Builder scanWaitingInstanceLocker(DoInLocked scanWaitingInstanceLocker) {
+        public Builder scanWaitingInstanceLocker(LockTemplate scanWaitingInstanceLocker) {
             this.scanWaitingInstanceLocker = scanWaitingInstanceLocker;
             return this;
         }
 
-        public Builder scanRunningInstanceLocker(DoInLocked scanRunningInstanceLocker) {
+        public Builder scanRunningInstanceLocker(LockTemplate scanRunningInstanceLocker) {
             this.scanRunningInstanceLocker = scanRunningInstanceLocker;
             return this;
         }

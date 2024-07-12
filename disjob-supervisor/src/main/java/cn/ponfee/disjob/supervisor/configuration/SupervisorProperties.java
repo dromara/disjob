@@ -68,9 +68,9 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private long shutdownTaskDelayResumeMs = 300000;
 
     /**
-     * Maximum process job thread pool size, default 5
+     * Maximum process job thread pool size, default 10
      */
-    private int maximumProcessJobPoolSize = 5;
+    private int maximumProcessJobPoolSize = 10;
 
     /**
      * Group data refresh period seconds.

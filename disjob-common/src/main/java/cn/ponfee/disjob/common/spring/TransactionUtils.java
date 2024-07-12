@@ -23,7 +23,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.Assert;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -95,13 +94,14 @@ public class TransactionUtils {
      */
     public static void doAfterTransactionCommit(final Runnable action) {
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
-            TransactionSynchronization ts = new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    action.run();
+            TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        action.run();
+                    }
                 }
-            };
-            TransactionSynchronizationManager.registerSynchronization(ts);
+            );
         } else {
             action.run();
         }
@@ -138,11 +138,11 @@ public class TransactionUtils {
     public static <R> R doInNestedTransaction(PlatformTransactionManager txManager,
                                               ThrowingSupplier<R, Throwable> action,
                                               Consumer<Throwable> log) {
-        Assert.isTrue(
-            TransactionSynchronizationManager.isActualTransactionActive(),
-            "Do nested transaction must be in parent transaction."
-        );
-        return doInPropagationTransaction(txManager, action, log, TransactionDefinition.PROPAGATION_NESTED);
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            return doInPropagationTransaction(txManager, action, log, TransactionDefinition.PROPAGATION_NESTED);
+        } else {
+            throw new IllegalStateException("Do nested transaction must be in parent transaction.");
+        }
     }
 
     // ----------------------------------------------------------------------private methods
