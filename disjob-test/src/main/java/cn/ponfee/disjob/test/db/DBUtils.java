@@ -24,6 +24,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
 
 import java.nio.charset.StandardCharsets;
@@ -64,35 +65,37 @@ public class DBUtils {
         Connection conn = DriverManager.getConnection(url, username, password);
 
         System.out.println("Testing Database, URL=" + url);
-        Statement stat = conn.createStatement();
-        stat.execute("DROP TABLE IF EXISTS test");
-        stat.execute("CREATE TABLE IF NOT EXISTS test(id INT, `name` VARCHAR(30))");
+        Statement ddlStatement = conn.createStatement();
+        ddlStatement.execute("DROP TABLE IF EXISTS test");
+        ddlStatement.execute("CREATE TABLE IF NOT EXISTS test(id INT, `name` VARCHAR(30))");
 
         // insert
         List<String> data = new ArrayList<>();
-        PreparedStatement insertSql = conn.prepareStatement("INSERT INTO test VALUES(?, ?)");
+        PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO test VALUES(?, ?)");
         for (int i = 0; i < 100; i++) {
             String str = RandomStringUtils.randomAlphanumeric(4);
             data.add(str);
-            insertSql.setInt(1, i);
-            insertSql.setString(2, str);
+            insertStatement.setInt(1, i);
+            insertStatement.setString(2, str);
             // autocommit is on by default, so this commits as well
-            insertSql.execute();
+            insertStatement.execute();
         }
+        JdbcUtils.closeStatement(insertStatement);
 
         // query
         List<String> result = new ArrayList<>();
-        ResultSet resultSet = conn.prepareStatement("SELECT `name` FROM test ORDER BY id ASC").executeQuery();
+        PreparedStatement queryStatement = conn.prepareStatement("SELECT `name` FROM test ORDER BY id ASC");
+        ResultSet resultSet = queryStatement.executeQuery();
         while (resultSet.next()) {
             result.add(resultSet.getString(1));
         }
+        JdbcUtils.closeResultSet(resultSet);
+        JdbcUtils.closeStatement(queryStatement);
 
-        Assert.isTrue(
-            CollectionUtils.isEqualCollection(data, result),
-            () -> Jsons.toJson(data) + " != " + Jsons.toJson(result)
-        );
+        Assert.isTrue(CollectionUtils.isEqualCollection(data, result), () -> Jsons.toJson(data) + " != " + Jsons.toJson(result));
+        ddlStatement.execute("DROP TABLE IF EXISTS test");
+        JdbcUtils.closeStatement(ddlStatement);
 
-        stat.execute("DROP TABLE IF EXISTS test");
         conn.close();
     }
 

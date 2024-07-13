@@ -19,6 +19,9 @@ package cn.ponfee.disjob.common.lock;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
@@ -34,6 +37,8 @@ import java.util.concurrent.Callable;
  * @author Ponfee
  */
 public final class DatabaseLockTemplate implements LockTemplate {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DatabaseLockTemplate.class);
 
     private static final String TABLE_NAME = "sched_lock";
 
@@ -95,7 +100,11 @@ public final class DatabaseLockTemplate implements LockTemplate {
         if (getLockId() != null) {
             return;
         }
-        jdbcTemplateWrapper.insert(INSERT_SQL, lockName);
+        try {
+            jdbcTemplateWrapper.insert(INSERT_SQL, lockName);
+        } catch (DuplicateKeyException e) {
+            LOG.info("Lock name '{}' already exists: {}", lockName, e.getMessage());
+        }
         Objects.requireNonNull(getLockId());
     }
 

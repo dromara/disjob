@@ -538,8 +538,8 @@ public class DAGExpressionParser {
         }
 
         private static TreeNodeId of(int open, int close) {
-            Assert.isTrue(open > -1, "Tree node id open must be greater than -1: " + open);
-            Assert.isTrue(close > 0, "Tree node id close must be greater than 0: " + close);
+            Assert.isTrue(open > -1, () -> "Tree node id open must be greater than -1: " + open);
+            Assert.isTrue(close > 0, () -> "Tree node id close must be greater than 0: " + close);
             return new TreeNodeId(open, close);
         }
 

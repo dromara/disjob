@@ -1009,7 +1009,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParam(long instanceId, int expectTaskSize) {
         SchedInstance instance = instanceMapper.get(instanceId);
         SchedJob job = jobMapper.get(instance.getJobId());
-        Assert.notNull(job, "Not found job: " + instance.getJobId());
+        Assert.notNull(job, () -> "Not found job: " + instance.getJobId());
         List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceId(instanceId)
             .stream()
             .filter(e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()))

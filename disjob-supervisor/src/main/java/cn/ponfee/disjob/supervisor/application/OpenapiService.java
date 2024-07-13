@@ -69,7 +69,7 @@ public class OpenapiService extends SingletonClassConstraint {
     public Long addJob(SchedJobAddRequest req) throws JobException {
         String user = req.getCreatedBy(), group = req.getGroup();
         Set<String> groups = SchedGroupService.myGroups(user);
-        Assert.isTrue(groups.contains(group), "User '" + user + "' not has group '" + group + "' permission.");
+        Assert.isTrue(groups.contains(group), () -> "User '" + user + "' not has group '" + group + "' permission.");
         return jobManager.addJob(req.tosSchedJob());
     }
 

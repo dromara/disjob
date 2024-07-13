@@ -176,7 +176,7 @@ public abstract class AbstractJobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void deleteJob(long jobId) {
         SchedJob job = jobMapper.get(jobId);
-        Assert.notNull(job, "Job id not found: " + jobId);
+        Assert.notNull(job, () -> "Job id not found: " + jobId);
         if (JobState.ENABLE.equalsValue(job.getJobState())) {
             throw new IllegalStateException("Please disable job before delete this job.");
         }

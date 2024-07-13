@@ -141,10 +141,9 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         private final String supervisorToken;
 
         private Builder(SchedInstance instance, SchedJob job, String supervisorToken) {
-            Assert.isTrue(
-                instance.getJobId().equals(job.getJobId()),
-                () -> "Invalid instance job id: " + instance.getJobId() + "!=" + job.getJobId()
-            );
+            if (!instance.getJobId().equals(job.getJobId())) {
+                throw new IllegalArgumentException("Inconsistent job id: " + instance.getJobId() + "!=" + job.getJobId());
+            }
             this.instance = instance;
             this.job = job;
             this.supervisorToken = supervisorToken;

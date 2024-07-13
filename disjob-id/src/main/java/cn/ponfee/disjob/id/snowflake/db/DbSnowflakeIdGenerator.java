@@ -96,7 +96,7 @@ public @interface DbSnowflakeIdGenerator {
          */
         private static String serializeSupervisor(Object supervisor) {
             Class<?> clazz = supervisor.getClass();
-            Assert.isTrue(CURRENT_SUPERVISOR_CLASS_NAME.equals(clazz.getName()), "Not Supervisor$Current$1 instance: " + clazz);
+            Assert.isTrue(CURRENT_SUPERVISOR_CLASS_NAME.equals(clazz.getName()), () -> "Not Supervisor$Current$1 instance: " + clazz);
             return (String) ReflectionUtils.invokeMethod(ReflectionUtils.findMethod(clazz, "serialize"), supervisor);
         }
     }

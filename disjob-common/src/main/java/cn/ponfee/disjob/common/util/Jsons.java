@@ -262,10 +262,9 @@ public final class Jsons {
             // [["a", "b"]]   -> method(Object[] arg)                 -> arg =["a", "b"]
             // [["a"], ["b"]] -> method(Object[] arg1, Object[] arg2) -> arg1=["a"], arg2=["b"]
             // ["a", "b"]     -> method(Object[] arg1, Object[] arg2) -> arg1=["a"], arg2=["b"]  # ACCEPT_SINGLE_VALUE_AS_ARRAY作用：将字符串“a”转为数组arg1[]
-            Assert.isTrue(
-                argumentCount == arrayNode.size(),
-                () -> "Method arguments size: " + argumentCount + ", but actual size: " + arrayNode.size()
-            );
+            if (argumentCount != arrayNode.size()) {
+                throw new IllegalArgumentException("Inconsistent method arguments size: " + argumentCount + " != " + arrayNode.size());
+            }
 
             Object[] methodArguments = new Object[argumentCount];
             for (int i = 0; i < argumentCount; i++) {

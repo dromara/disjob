@@ -103,9 +103,9 @@ public class DisjobJobController extends BaseController {
     @GetMapping("/detail/{jobId}")
     public String detail(@PathVariable("jobId") long jobId, ModelMap mmap) {
         SchedJobResponse job = openapiService.getJob(jobId);
+        Assert.notNull(job, () -> "Job id not found: " + jobId);
         AuthorizeGroupService.authorizeGroup(getLoginName(), job.getGroup());
 
-        Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
         return PREFIX + "/detail";
     }
@@ -178,9 +178,9 @@ public class DisjobJobController extends BaseController {
     @GetMapping("/edit/{jobId}")
     public String edit(@PathVariable("jobId") long jobId, ModelMap mmap) {
         SchedJobResponse job = openapiService.getJob(jobId);
+        Assert.notNull(job, () -> "Job id not found: " + jobId);
         AuthorizeGroupService.authorizeGroup(getLoginName(), job.getGroup());
 
-        Assert.notNull(job, () -> "Job id not found: " + jobId);
         mmap.put("job", job);
         return PREFIX + "/edit";
     }
