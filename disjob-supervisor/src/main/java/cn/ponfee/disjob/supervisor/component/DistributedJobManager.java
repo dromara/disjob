@@ -998,8 +998,10 @@ public class DistributedJobManager extends AbstractJobManager {
                 int toState = ExecuteState.EXECUTE_TIMEOUT.value();
                 int fromState = ExecuteState.EXECUTING.value();
                 int row = taskMapper.terminate(task.getTaskId(), task.getWorker(), toState, fromState, executeEndTime, null);
-                if (isNotAffectedRow(row)) {
-                    log.error("Terminate loaded executing dead worker task failed: {}", task);
+                if (isOneAffectedRow(row)) {
+                    log.info("Terminate dead worker executing task success: {}", task);
+                } else {
+                    log.error("Terminate dead worker executing task failed: {}", task);
                 }
             }
         }

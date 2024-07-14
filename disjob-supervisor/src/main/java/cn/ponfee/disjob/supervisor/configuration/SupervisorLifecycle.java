@@ -80,9 +80,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
             LOG.error("Disjob supervisor lifecycle already stated!");
         }
 
-        LOG.info("Disjob supervisor launch begin...");
         supervisorStartup.start();
-        LOG.info("Disjob supervisor launch end.");
     }
 
     @Override
@@ -91,10 +89,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
             LOG.error("Disjob supervisor lifecycle already stopped!");
         }
 
-        LOG.info("Disjob supervisor stop begin...");
         supervisorStartup.stop();
-        LOG.info("Disjob supervisor stop end.");
-
         callback.run();
     }
 

@@ -79,7 +79,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                     isBusyLoop = heartbeat();
                 } catch (Throwable t) {
                     isBusyLoop = true;
-                    log.error("Heartbeat occur error, state=" + state, t);
+                    log.error("Heartbeat occur error: state=" + state, t);
                 }
 
                 long end = System.currentTimeMillis();
@@ -100,7 +100,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("Sleep occur error in loop, state={}, error={}", state, e.getMessage());
+            log.warn("Sleep occur error in loop: state={}, error={}", state, e.getMessage());
             Thread.currentThread().interrupt();
         }
 

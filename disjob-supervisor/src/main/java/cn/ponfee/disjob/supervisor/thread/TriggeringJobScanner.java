@@ -76,8 +76,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
-        // heartbeat period duration: 3s * 3 = 9s
-        this.afterMilliseconds = (heartbeatPeriodMs * 3);
+        // heartbeat period duration: 3s * 5 = 15s
+        this.afterMilliseconds = (heartbeatPeriodMs * 5);
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
             .maximumPoolSize(Math.max(1, supervisorProperties.getMaximumProcessJobPoolSize()))

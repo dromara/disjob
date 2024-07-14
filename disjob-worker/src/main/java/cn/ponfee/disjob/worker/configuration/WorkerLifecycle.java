@@ -75,9 +75,7 @@ public class WorkerLifecycle implements SmartLifecycle {
             LOG.error("Disjob worker lifecycle already stated!");
         }
 
-        LOG.info("Disjob worker launch begin...");
         workerStartup.start();
-        LOG.info("Disjob worker launch end.");
     }
 
     @Override
@@ -86,10 +84,7 @@ public class WorkerLifecycle implements SmartLifecycle {
             LOG.error("Disjob worker lifecycle already stopped!");
         }
 
-        LOG.info("Disjob worker stop begin...");
         workerStartup.stop();
-        LOG.info("Disjob worker stop end.");
-
         callback.run();
     }
 

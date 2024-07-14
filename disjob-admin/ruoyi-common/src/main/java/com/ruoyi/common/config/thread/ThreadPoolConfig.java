@@ -20,7 +20,7 @@ public class ThreadPoolConfig {
     /**
      * 核心线程数
      */
-    private final int corePoolSize = 10;
+    private final int corePoolSize = 5;
 
     public static final String SPRING_BEAN_NAME_SCHEDULED_EXECUTOR_SERVICE = "ruoyi.scheduledExecutorService";
 

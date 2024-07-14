@@ -17,10 +17,10 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.tuple.Tuple4;
+import com.google.common.base.Stopwatch;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -47,9 +47,9 @@ public class MavenDependencyConflictTest {
     }
 
     private void checkConflictedVersion(String pomFile) {
-        StopWatch stopWatch = StopWatch.createStarted();
+        Stopwatch stopwatch = Stopwatch.createStarted();
         String dependencyTree = dependencyTree(pomFile);
-        stopWatch.stop();
+        stopwatch.stop();
 
         String line = "───────────────────────────────────────────────────────────────────────────────";
 
@@ -57,7 +57,7 @@ public class MavenDependencyConflictTest {
         System.out.println(dependencyTree);
         System.out.println("\n\n");
         System.out.println(line);
-        System.out.println("Total time: " + stopWatch);
+        System.out.println("Total time: " + stopwatch);
         System.out.println(line);
         System.out.println("Conflict jar version");
         System.out.println(line);

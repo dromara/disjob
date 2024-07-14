@@ -50,7 +50,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     /**
      * Scan triggering job period milliseconds
      */
-    private long scanTriggeringJobPeriodMs = 3000;
+    private long scanTriggeringJobPeriodMs = 4500;
 
     /**
      * Scan waiting instance period milliseconds
@@ -90,7 +90,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     public void check() {
         Assert.isTrue(maximumSplitTaskSize > 0, "Maximum split task size must be greater than 0.");
         Assert.isTrue(maximumJobDependsDepth > 0, "Maximum job depends depth must be greater than 0.");
-        Assert.isTrue(scanTriggeringJobPeriodMs > 0, "Scan triggering job period ms must be greater than 0.");
+        Assert.isTrue(scanTriggeringJobPeriodMs >= 1000, "Scan triggering job period ms cannot less than 1000.");
         Assert.isTrue(scanWaitingInstancePeriodMs >= 15000, "Scan waiting instance period ms cannot less than 15000.");
         Assert.isTrue(scanRunningInstancePeriodMs >= 30000, "Scan running instance period ms cannot less than 30000.");
         Assert.isTrue(shutdownTaskDelayResumeMs >= 60000, "Shutdown task delay resume ms cannot less than 60000.");

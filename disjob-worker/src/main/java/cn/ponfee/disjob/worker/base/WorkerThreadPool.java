@@ -32,7 +32,7 @@ import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
 import cn.ponfee.disjob.worker.handle.*;
-import org.apache.commons.lang3.time.StopWatch;
+import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,10 +191,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     @Override
     public String toString() {
-        return String.format(
-            "maximum-pool-size=%d, current-pool-size=%d, active-pool-size=%d, idle-pool-size=%d, queue-task-count=%d, completed-task-count=%d",
-            maximumPoolSize, workerThreadCounter.get(), activePool.size(), idlePool.size(), taskQueue.size(), completedTaskCounter.get()
-        );
+        String format = "maximum-pool-size=%d, current-pool-size=%d, active-pool-size=%d, idle-pool-size=%d, queue-task-count=%d, completed-task-count=%d";
+        return String.format(format, maximumPoolSize, workerThreadCounter.get(), activePool.size(), idlePool.size(), taskQueue.size(), completedTaskCounter.get());
     }
 
     WorkerMetrics.ThreadPoolMetrics metrics() {
@@ -272,7 +270,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.info("Worker thread already stopped.");
             // re-execute this execution task
             taskQueue.putFirst(task);
-            // destroy this worker thread
             workerThread.doStop();
             return;
         }
@@ -280,18 +277,16 @@ public class WorkerThreadPool extends Thread implements Closeable {
         try {
             activePool.doExecute(workerThread, task);
         } catch (InterruptedException e) {
-            // destroy this worker thread
             workerThread.doStop();
             throw e;
         } catch (BrokenThreadException e) {
             LOG.error(e.getMessage());
             // re-execute this execution task
             taskQueue.putFirst(task);
-            // destroy this worker thread
             workerThread.doStop();
         } catch (IllegalTaskException e) {
             LOG.error(e.getMessage());
-            // return this worker thread
+            // return the worker thread to idle pool
             idlePool.putFirst(workerThread);
         }
     }
@@ -361,9 +356,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         Long lockedInstanceId = task.getLockedKey();
         try {
             synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedInstanceId)) {
-                if (!supervisorRpcClient.stopTask(stopTaskParam)) {
-                    LOG.warn("Stop task failed: {}, {}, {}", task.getTaskId(), ops, toState);
-                }
+                boolean result = supervisorRpcClient.stopTask(stopTaskParam);
+                LOG.info("Task trace [{}] stopped: {}, {}, {}", task.getTaskId(), result, ops, toState);
             }
         } catch (Throwable t) {
             LOG.error("Stop task occur error: {}, {}, {}", task.getTaskId(), ops, toState);
@@ -377,9 +371,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return;
         }
 
-        LOG.info("Stop instance task: {}, {}", task.getTaskId(), ops);
         stopTask(task, ops, errorMsg);
 
+        LOG.info("Stop instance task: {}, {}, {}", task.getInstanceId(), task.getTaskId(), ops);
         boolean res = true;
         Long lockedInstanceId = task.getLockedKey();
         try {
@@ -481,16 +475,15 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private synchronized void close() {
-            LOG.info("Close active thread pool starting...");
-            StopWatch stopWatch = StopWatch.createStarted();
+            LOG.info("Close active thread pool start: size={}", pool.size());
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
             ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
             MultithreadExecutors.run(pool.values(), WorkerThread::close, cachedThreadPool);
             cachedThreadPool.shutdown();
 
             pool.clear();
-            stopWatch.stop();
-            LOG.info("Close active thread pool end, total time {}", stopWatch);
+            LOG.info("Close active thread pool end: time={}", stopwatch.stop());
         }
 
         private int size() {
@@ -603,7 +596,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private boolean returnPool() {
             if (activePool.removeThread(this) == null) {
                 // maybe already removed by other operation
-                LOG.error("Return thread failed, because not found: {}", super.getName());
+                LOG.error("Worker thread not in active pool: {}", super.getName());
                 return false;
             }
 
@@ -624,12 +617,13 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private void removePool() {
             toStop();
             if (activePool.removeThread(this) == null && !idlePool.remove(this)) {
-                LOG.warn("Not found removable thread: {}", super.getName());
+                LOG.warn("Worker thread not in thread pool: {}", super.getName());
             }
         }
 
         private boolean updateCurrentTask(WorkerTask expect, WorkerTask update) {
-            return currentTask.compareAndSet(expect, update);
+            return !Objects.equals(expect, update)
+                && currentTask.compareAndSet(expect, update);
         }
 
         private WorkerTask currentTask() {
@@ -642,24 +636,18 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void close() {
             WorkerTask task = currentTask();
-            Long taskId = (task != null) ? task.getTaskId() : null;
+            LOG.info("Close worker thread staring: {}, {}", task, super.getName());
+
             Operation ops = (task != null) ? task.getRedeployStrategy().operation() : null;
-            LOG.info("Close worker thread staring: {}, {}, {}", taskId, Thread.currentThread().getName(), super.getName());
-
-            ThrowingRunnable.doCaught(this::doStop, () -> "Close worker thread error: " + task + ", " + this);
-
-            if (task != null && task.updateOperation(Operation.TRIGGER, ops)) {
-                try {
-                    stopTask(task, ops, "Worker shutdown.");
-                } catch (Throwable t) {
-                    LOG.error("Stop task error: " + task, t);
-                }
-            } else {
-                LOG.warn("Update task operation failed: {}, {}", task, ops);
+            boolean updated = (task != null) && task.updateOperation(Operation.TRIGGER, ops);
+            LOG.info("Close worker thread update task operation: {}, {}, {}", updated, task, ops);
+            ThrowingRunnable.doCaught(this::doStop, () -> "Close worker thread error: " + task + ", " + super.getName());
+            if (updated) {
+                ThrowingRunnable.doCaught(() -> stopTask(task, ops, "Worker shutdown"), () -> "Stop task error: " + task);
             }
-
             updateCurrentTask(task, null);
-            LOG.info("Close worker thread end: {}, {}, {}", taskId, Thread.currentThread().getName(), super.getName());
+
+            LOG.info("Close worker thread end: {}, {}", task, super.getName());
         }
 
         @Override

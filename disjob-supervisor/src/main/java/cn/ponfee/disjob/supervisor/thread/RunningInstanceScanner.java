@@ -56,8 +56,8 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
-        // heartbeat period duration: 20s * 8 = 160s
-        this.beforeMilliseconds = (heartbeatPeriodMs << 3);
+        // heartbeat period duration: 20s * 12 = 240s
+        this.beforeMilliseconds = (heartbeatPeriodMs * 12);
     }
 
     @Override

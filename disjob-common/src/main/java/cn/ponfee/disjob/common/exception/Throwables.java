@@ -106,7 +106,12 @@ public final class Throwables {
         }
 
         static void doCaught(ThrowingRunnable<?> runnable, String message) {
-            doCaught(runnable, () -> message);
+            try {
+                runnable.run();
+            } catch (Throwable t) {
+                LOG.error(message, t.getMessage());
+                Threads.interruptIfNecessary(t);
+            }
         }
 
         static void doCaught(ThrowingRunnable<?> runnable, Supplier<String> message) {
