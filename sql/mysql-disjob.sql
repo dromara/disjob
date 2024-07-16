@@ -95,6 +95,7 @@ CREATE TABLE `sched_instance` (
   `run_end_time`        DATETIME(3)                        DEFAULT NULL                 COMMENT '运行结束时间',
   `run_duration`        BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '运行时长(毫秒)',
   `retried_count`       TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '已重试的次数(the maximum value is sched_job.retry_count)',
+  `next_scan_time`      DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '下一次的扫描时间',
   `attach`              VARCHAR(1024)                      DEFAULT NULL                 COMMENT '附加信息',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),

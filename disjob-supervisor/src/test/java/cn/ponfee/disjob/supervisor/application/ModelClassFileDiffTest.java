@@ -55,7 +55,7 @@ public class ModelClassFileDiffTest {
         assertSame(ClassUtils.fieldDiff(SchedJob.class, SchedJobResponse.class), "id", "nextScanTime", "scanFailedCount");
 
         // SchedInstance ⇋ SchedInstanceResponse
-        assertSame(ClassUtils.fieldDiff(SchedInstance.class, SchedInstanceResponse.class), "version", "createdAt", "id", "updatedAt", "isTreeLeaf", "tasks");
+        assertSame(ClassUtils.fieldDiff(SchedInstance.class, SchedInstanceResponse.class), "version", "createdAt", "id", "updatedAt", "isTreeLeaf", "tasks", "nextScanTime");
 
         // SchedTask ⇋ SchedTaskResponse
         assertSame(ClassUtils.fieldDiff(SchedTask.class, SchedTaskResponse.class), "version", "createdAt", "id", "updatedAt", "dispatchFailedCount");

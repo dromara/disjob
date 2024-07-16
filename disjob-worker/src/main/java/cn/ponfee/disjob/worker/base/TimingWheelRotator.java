@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
+import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -30,6 +31,7 @@ import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +59,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private final WorkerThreadPool workerThreadPool;
     private final LoopThread heartbeatThread;
     private final ExecutorService processExecutor;
-
-    private volatile long nextLogTimeMillis = 0;
+    private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> LOG.warn("Not found available supervisor."));
 
     public TimingWheelRotator(SupervisorRpcService supervisorRpcClient,
                               Discovery<Supervisor> discoverySupervisor,
@@ -97,15 +98,12 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private void process() {
         // check has available supervisors
         if (!discoverySupervisor.hasDiscoveredServers()) {
-            if (System.currentTimeMillis() > nextLogTimeMillis) {
-                this.nextLogTimeMillis = System.currentTimeMillis() + 5000L;
-                LOG.warn("Not found available supervisor.");
-            }
+            logPrinter.execute();
             return;
         }
 
         final List<ExecuteTaskParam> tasks = timingWheel.poll();
-        if (!tasks.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(tasks)) {
             processExecutor.execute(() -> process(tasks));
         }
     }

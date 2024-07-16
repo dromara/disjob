@@ -94,14 +94,13 @@ public class TransactionUtils {
      */
     public static void doAfterTransactionCommit(final Runnable action) {
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
-            TransactionSynchronizationManager.registerSynchronization(
-                new TransactionSynchronization() {
-                    @Override
-                    public void afterCommit() {
-                        action.run();
-                    }
+            TransactionSynchronization ts = new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    action.run();
                 }
-            );
+            };
+            TransactionSynchronizationManager.registerSynchronization(ts);
         } else {
             action.run();
         }

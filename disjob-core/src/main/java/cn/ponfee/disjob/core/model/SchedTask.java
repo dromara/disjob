@@ -129,8 +129,6 @@ public class SchedTask extends BaseEntity {
         task.setTaskCount(taskCount);
         task.setWorker(worker);
         task.setExecuteState(ExecuteState.WAITING.value());
-        task.setUpdatedAt(createTime);
-        task.setCreatedAt(createTime);
         return task;
     }
 }

@@ -63,9 +63,6 @@ public interface SchedInstanceMapper {
                     @Param("toState") int toState,
                     @Param("fromState") int fromState);
 
-    int changeState(@Param("instanceId") long instanceId,
-                    @Param("toState") int toState);
-
     List<SchedInstance> findExpireState(@Param("runState") int runState,
                                         @Param("expireTime") Date expireTime,
                                         @Param("size") int size);
@@ -74,9 +71,9 @@ public interface SchedInstanceMapper {
 
     List<SchedInstance> findWorkflowNode(long wnstanceId);
 
-    int renewUpdateTime(@Param("instanceId") long instanceId,
-                        @Param("updateTime") Date updateTime,
-                        @Param("version") int version);
+    int updateNextScanTime(@Param("instanceId") long instanceId,
+                           @Param("nextScanTime") Date nextScanTime,
+                           @Param("version") int version);
 
     SchedInstance lock(long instanceId);
 

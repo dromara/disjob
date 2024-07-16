@@ -60,7 +60,7 @@ public interface SchedTaskMapper {
                                 @Param("fromStateList") List<Integer> fromStateList,
                                 @Param("executeEndTime") Date executeEndTime);
 
-    int changeState(@Param("instanceId") long instanceId, @Param("toState") int toState);
+    int forceChangeState(@Param("instanceId") long instanceId, @Param("toState") int toState);
 
     int savepoint(@Param("taskId") long taskId, @Param("executeSnapshot") String executeSnapshot);
 

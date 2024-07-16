@@ -7,7 +7,7 @@
   <sql id="Base_Column_List">
     instance_id, rnstance_id, pnstance_id, wnstance_id, job_id,
     trigger_time, run_type, run_state, run_start_time, run_end_time,
-    run_duration, retried_count, attach, version, updated_at, created_at
+    run_duration, retried_count, next_scan_time, attach, version
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedInstance" useGeneratedKeys="true">
@@ -22,9 +22,8 @@
       run_state,
       run_start_time,
       retried_count,
-      attach,
-      updated_at,
-      created_at
+      next_scan_time,
+      attach
     ) VALUES (
       #{instanceId,jdbcType=BIGINT},
       #{rnstanceId,jdbcType=BIGINT},
@@ -36,9 +35,8 @@
       #{runState,jdbcType=TINYINT},
       #{runStartTime,jdbcType=TIMESTAMP},
       #{retriedCount,jdbcType=TINYINT},
-      #{attach,jdbcType=VARCHAR},
-      #{updatedAt,jdbcType=TIMESTAMP},
-      #{createdAt,jdbcType=TIMESTAMP}
+      #{nextScanTime,jdbcType=TIMESTAMP},
+      #{attach,jdbcType=VARCHAR}
     )
   </insert>
 
@@ -102,22 +100,12 @@
       AND run_state = #{fromState,jdbcType=TINYINT}
   </update>
 
-  <update id="changeState">
-    UPDATE <include refid="Table_Name" />
-    SET run_state = #{toState,jdbcType=TINYINT},
-        version = version+1
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-      AND run_state != #{toState,jdbcType=TINYINT}
-      AND run_state != 20
-      AND #{toState,jdbcType=TINYINT} != 20
-  </update>
-
   <select id="findExpireState" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE run_state = #{runState,jdbcType=TINYINT}
       AND trigger_time &lt; #{expireTime.time,jdbcType=BIGINT}
-      AND updated_at   &lt; #{expireTime,jdbcType=TIMESTAMP}
+      AND next_scan_time &lt; #{expireTime,jdbcType=TIMESTAMP}
       AND (wnstance_id IS NULL OR instance_id != wnstance_id)
     ORDER BY trigger_time
     LIMIT #{size}
@@ -138,9 +126,9 @@
       AND wnstance_id != instance_id
   </select>
 
-  <update id="renewUpdateTime">
+  <update id="updateNextScanTime">
     UPDATE <include refid="Table_Name" />
-    SET updated_at = #{updateTime,jdbcType=TIMESTAMP},
+    SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}

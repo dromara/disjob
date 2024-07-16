@@ -117,18 +117,14 @@ class WorkerTask {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        WorkerTask other = (WorkerTask) o;
-        return this.operation.get() == other.operation.get()
-            && this.taskId          == other.taskId
-            && this.instanceId      == other.instanceId
-            && this.triggerTime     == other.triggerTime
-            && this.jobId           == other.jobId
-            && Objects.equals(this.wnstanceId, other.wnstanceId);
+        WorkerTask that = (WorkerTask) o;
+        return this.taskId == that.taskId
+            && this.operation.get() == that.operation.get();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(operation.get(), taskId, instanceId, triggerTime, jobId, wnstanceId);
+        return Long.hashCode(taskId) + operation.get().ordinal() * 31;
     }
 
     @Override

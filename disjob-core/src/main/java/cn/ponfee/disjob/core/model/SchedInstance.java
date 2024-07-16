@@ -112,6 +112,11 @@ public class SchedInstance extends BaseEntity {
     private String attach;
 
     /**
+     * 下一次的扫描时间
+     */
+    private Date nextScanTime;
+
+    /**
      * 行记录版本号
      */
     private Integer version;
@@ -135,8 +140,7 @@ public class SchedInstance extends BaseEntity {
         instance.setRunType(runType.value());
         instance.setTriggerTime(triggerTime);
         instance.setRetriedCount(retriedCount);
-        instance.setUpdatedAt(date);
-        instance.setCreatedAt(date);
+        instance.setNextScanTime(date);
         instance.setRunState(RunState.WAITING.value());
         return instance;
     }

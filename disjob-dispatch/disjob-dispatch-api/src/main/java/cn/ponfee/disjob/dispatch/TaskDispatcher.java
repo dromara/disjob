@@ -69,15 +69,6 @@ public abstract class TaskDispatcher implements Startable {
     }
 
     /**
-     * Dispatch the tasks to remote worker
-     *
-     * @param task the execution task param
-     * @return {@code true} if dispatched successful
-     * @throws Exception if dispatch occur error
-     */
-    protected abstract boolean doDispatch(ExecuteTaskParam task) throws Exception;
-
-    /**
      * Dispatch the task to specified worker, which the worker is executing this task
      * <p>this method is used to stop(pause or cancel) the executing task
      *
@@ -118,6 +109,15 @@ public abstract class TaskDispatcher implements Startable {
     }
 
     /**
+     * Dispatch the tasks to remote worker
+     *
+     * @param task the execution task param
+     * @return {@code true} if dispatched successful
+     * @throws Exception if dispatch occur error
+     */
+    protected abstract boolean doDispatch(ExecuteTaskParam task) throws Exception;
+
+    /**
      * Start do receive
      */
     @Override
@@ -144,7 +144,7 @@ public abstract class TaskDispatcher implements Startable {
         boolean result = true;
         for (DispatchTaskParam param : params) {
             ExecuteTaskParam task = param.task();
-            log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), param.retried(), task.getOperation(), task.getWorker());
+            log.info("Task trace [{}] dispatching: {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker(), param.retried());
             try {
                 doDispatch0(task);
                 log.info("Task trace [{}] dispatched: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());

@@ -19,6 +19,7 @@ package cn.ponfee.disjob.supervisor.thread;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
+import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.RunState;
@@ -45,6 +46,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
     private final long beforeMilliseconds;
+    private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
     public RunningInstanceScanner(long heartbeatPeriodMilliseconds,
                                   LockTemplate lockTemplate,
@@ -63,7 +65,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
     @Override
     protected boolean heartbeat() {
         if (jobManager.hasNotDiscoveredWorkers()) {
-            log.warn("Not discovered worker.");
+            logPrinter.execute();
             return true;
         }
 
@@ -86,7 +88,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
     }
 
     private void processEach(SchedInstance instance) {
-        if (!jobManager.renewInstanceUpdateTime(instance, new Date())) {
+        if (!jobManager.updateInstanceNextScanTime(instance, new Date())) {
             return;
         }
 

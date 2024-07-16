@@ -17,10 +17,7 @@
 package cn.ponfee.disjob.supervisor.thread;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
-import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.*;
@@ -64,6 +61,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private final DistributedJobQuerier jobQuerier;
     private final long afterMilliseconds;
     private final ExecutorService processJobExecutor;
+    private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
     public TriggeringJobScanner(SupervisorProperties supervisorProperties,
                                 LockTemplate lockTemplate,
@@ -91,9 +89,10 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     @Override
     protected boolean heartbeat() {
         if (jobManager.hasNotDiscoveredWorkers()) {
-            log.warn("Not discovered worker.");
+            logPrinter.execute();
             return true;
         }
+
         Boolean result = lockTemplate.execute(() -> {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterMilliseconds;

@@ -99,8 +99,7 @@
           remark = #{remark,jdbcType=VARCHAR},
         </if>
         version = version+1,
-        updated_by = #{updatedBy,jdbcType=VARCHAR},
-        updated_at = #{updatedAt,jdbcType=TIMESTAMP}
+        updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND version = #{version,jdbcType=INTEGER}
       AND is_deleted = 0

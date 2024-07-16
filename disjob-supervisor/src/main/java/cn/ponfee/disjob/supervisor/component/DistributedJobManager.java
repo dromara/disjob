@@ -142,8 +142,9 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
-    public boolean renewInstanceUpdateTime(SchedInstance instance, Date updateTime) {
-        return isOneAffectedRow(instanceMapper.renewUpdateTime(instance.getInstanceId(), updateTime, instance.getVersion()));
+    public boolean updateInstanceNextScanTime(SchedInstance instance, Date nextScanTime) {
+        Assert.notNull(nextScanTime, "Instance next scan time cannot be null.");
+        return isOneAffectedRow(instanceMapper.updateNextScanTime(instance.getInstanceId(), nextScanTime, instance.getVersion()));
     }
 
     @Override
@@ -257,13 +258,18 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param toExecuteState the target execute state
      */
     public void changeInstanceState(long instanceId, ExecuteState toExecuteState) {
-        Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, () -> "Force change state invalid: " + toExecuteState);
+        Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, () -> "Force change state invalid target: " + toExecuteState);
         Assert.isNull(instanceMapper.getWnstanceId(instanceId), () -> "Force change state unsupported workflow: " + instanceId);
         doInSynchronizedTransaction(instanceId, null, instance -> {
-            int instRow = instanceMapper.changeState(instanceId, toExecuteState.runState().value());
-            int taskRow = taskMapper.changeState(instanceId, toExecuteState.value());
+            RunState fromRunState = RunState.of(instance.getRunState());
+            RunState toRunState = toExecuteState.runState();
+            Assert.isTrue(fromRunState != RunState.RUNNING, "Force change state current cannot be RUNNING.");
+            Assert.isTrue(fromRunState != toRunState, () -> "Force change state current cannot equals target " + toRunState);
+
+            int instRow = instanceMapper.updateState(instanceId, toRunState.value(), fromRunState.value());
+            int taskRow = taskMapper.forceChangeState(instanceId, toExecuteState.value());
             if (instRow == 0 && taskRow == 0) {
-                throw new IllegalStateException("Force update instance state failed: " + instanceId);
+                throw new IllegalStateException("Force change state failed: " + instanceId);
             }
 
             if (toExecuteState == ExecuteState.WAITING) {
@@ -339,7 +345,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             if (toState == ExecuteState.WAITING) {
                 Assert.isTrue(param.getOperation() == Operation.SHUTDOWN_RESUME, () -> "Operation expect RESUME, but actual " + param.getOperation());
-                if (!renewInstanceUpdateTime(instance, new Date(System.currentTimeMillis() + shutdownTaskDelayResumeMs))) {
+                if (!updateInstanceNextScanTime(instance, new Date(System.currentTimeMillis() + shutdownTaskDelayResumeMs))) {
                     // cannot happen
                     throw new IllegalStateException("Resume task renew instance update time failed: " + param.getTaskId());
                 }

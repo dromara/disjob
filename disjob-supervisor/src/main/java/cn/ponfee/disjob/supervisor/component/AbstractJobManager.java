@@ -169,7 +169,6 @@ public abstract class AbstractJobManager {
             parseTriggerConfig(job);
         }
 
-        job.setUpdatedAt(new Date());
         assertOneAffectedRow(jobMapper.update(job), "Update sched job fail or conflict.");
     }
 

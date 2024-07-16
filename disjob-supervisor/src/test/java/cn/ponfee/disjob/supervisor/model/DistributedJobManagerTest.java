@@ -52,27 +52,16 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
 
     @Test
     public void testUpdateTaskWorkerNonDeadlock() throws Throwable {
-        long instanceId = idGenerator.generateId();
         int count = 197;
-        List<SchedTask> tasks = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            SchedTask task = new SchedTask();
-            task.setTaskId(idGenerator.generateId());
-            task.setInstanceId(instanceId);
-            task.setTaskNo(i);
-            task.setTaskCount(count);
-            task.setExecuteState(ExecuteState.WAITING.value());
-            task.setCreatedAt(new Date());
-            task.setUpdatedAt(new Date());
-            tasks.add(task);
-        }
-        taskMapper.batchInsert(tasks);
+        long instanceId = idGenerator.generateId();
+        taskMapper.batchInsert(createTasks(count, instanceId));
 
         Runnable runnable = () -> {
-            List<UpdateTaskWorkerParam> list = tasks.stream()
-                .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80)))
-                .collect(Collectors.toList());
+            final List<SchedTask> tasks = createTasks(count, instanceId);
             for (int i = 0; i < 5; i++) {
+                List<UpdateTaskWorkerParam> list = tasks.stream()
+                    .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80)))
+                    .collect(Collectors.toList());
                 Collections.shuffle(list);
                 List<UpdateTaskWorkerParam> subList = new ArrayList<>(list.subList(0, list.size() / 2));
                 Collections.shuffle(subList);
@@ -97,6 +86,22 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
         if (throwable != null) {
             throw throwable;
         }
+    }
+
+    private List<SchedTask> createTasks(int count, long instanceId) {
+        List<SchedTask> tasks = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            SchedTask task = new SchedTask();
+            task.setTaskId((long)i);
+            task.setInstanceId(instanceId);
+            task.setTaskNo(i);
+            task.setTaskCount(count);
+            task.setExecuteState(ExecuteState.WAITING.value());
+            task.setCreatedAt(new Date());
+            task.setUpdatedAt(new Date());
+            tasks.add(task);
+        }
+        return tasks;
     }
 
 }
