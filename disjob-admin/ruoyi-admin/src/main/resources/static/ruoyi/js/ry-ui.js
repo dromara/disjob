@@ -11,12 +11,12 @@ var table = {
     // 设置实例配置
     set: function(id) {
         if ($.common.getLength(table.config) > 1 && $.common.isNotEmpty(event)) {
-            var tableId = id
+            let tableId = id
               || $(event.currentTarget).parents(".bootstrap-table").find("table.table").attr("id")
               || $(event.currentTarget).parents(".bootstrap-tree-table").find("table.table").attr("id");
             if (!tableId) {
-                var popoverId = $(event.currentTarget).parents("div.popover").attr("id");
-                var targetA = $("a[aria-describedby='" + popoverId + "']");
+                const popoverId = $(event.currentTarget).parents("div.popover").attr("id");
+                const targetA = $("a[aria-describedby='" + popoverId + "']");
                 tableId = targetA.parents(".bootstrap-table").find("table.table").attr("id")
                   || targetA.parents(".bootstrap-tree-table").find("table.table").attr("id");
             }

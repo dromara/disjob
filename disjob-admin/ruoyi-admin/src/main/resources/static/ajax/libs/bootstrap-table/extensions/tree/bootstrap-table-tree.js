@@ -210,19 +210,23 @@
             $('[data-toggle="collapse"]').collapse();
         }
         // 加载完数据后渲染表格
-        var renderTable = function(data) {
-            var list, totalPage = 0, currPage = 0;
+        const renderTable = function(data) {
+            let list, totalPage = 0, currPage = 0;
             if (options.pagination) {
-            	list = data.rows;  // 数据
+                list = data.rows; // 数据
                 currPage = options.pageNumber; // 当前页
-                totalPage = ~~((data.total - 1) / options.pageSize) + 1 // 总页数
+                totalPage = ~~((data.total - 1) / options.pageSize) + 1; // 总页数
+                if (currPage > totalPage) {
+                    currPage = totalPage;
+                    options.pageNumber = currPage;
+                }
                 target.totalPages  = totalPage;
                 target.totalRows = data.total; // 总记录数
             } else {
-            	list = data;
+                list = data;
             }
             data = list;
-            var $tbody = target.find("tbody");
+            const $tbody = target.find("tbody");
             // 先清空
             $tbody.html("");
             if (!data || data.length <= 0) {
