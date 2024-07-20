@@ -66,6 +66,15 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
+  <select id="getPnstanceId" resultType="long">
+    SELECT pnstance_id
+    FROM <include refid="Table_Name" />
+    WHERE instance_id = #{instanceId}
+        <if test="runType != null">
+          AND run_type = #{runType}
+        </if>
+  </select>
+
   <!-- use `IFNULL` function reason: possibly paused task re-execute -->
   <update id="start">
     UPDATE <include refid="Table_Name" />

@@ -95,28 +95,24 @@ public class DistributedJobManager extends AbstractJobManager {
     private static final List<Integer> EXECUTE_STATE_WAITING = Collections.singletonList(ExecuteState.WAITING.value());
     private static final List<Integer> EXECUTE_STATE_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
 
-    private final long shutdownTaskDelayResumeMs;
-    private final int taskDispatchFailedCountThreshold;
     private final TransactionTemplate transactionTemplate;
     private final SchedInstanceMapper instanceMapper;
     private final SchedTaskMapper taskMapper;
     private final SchedWorkflowMapper workflowMapper;
 
-    public DistributedJobManager(SchedJobMapper jobMapper,
+    public DistributedJobManager(SupervisorProperties conf,
+                                 SchedJobMapper jobMapper,
                                  SchedDependMapper dependMapper,
                                  SchedInstanceMapper instanceMapper,
                                  SchedTaskMapper taskMapper,
                                  SchedWorkflowMapper workflowMapper,
-                                 SupervisorProperties supervisorProperties,
                                  IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
                                  GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient,
                                  DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient,
                                  @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
-        super(supervisorProperties, jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
-        this.shutdownTaskDelayResumeMs = supervisorProperties.getShutdownTaskDelayResumeMs();
-        this.taskDispatchFailedCountThreshold = supervisorProperties.getTaskDispatchFailedCountThreshold();
+        super(conf, jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
         this.transactionTemplate = transactionTemplate;
         this.instanceMapper = instanceMapper;
         this.taskMapper = taskMapper;
@@ -153,8 +149,8 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     @Override
-    protected List<SchedTask> listExecutingTask(long instanceId) {
-        return taskMapper.findBaseByInstanceIdAndStates(instanceId, Collections.singletonList(ExecuteState.EXECUTING.value()));
+    protected List<SchedTask> listPausableTasks(long instanceId) {
+        return taskMapper.findBaseByInstanceIdAndStates(instanceId, EXECUTE_STATE_PAUSABLE);
     }
 
     public boolean savepoint(long taskId, String executeSnapshot) {
@@ -345,7 +341,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
             if (toState == ExecuteState.WAITING) {
                 Assert.isTrue(param.getOperation() == Operation.SHUTDOWN_RESUME, () -> "Operation expect RESUME, but actual " + param.getOperation());
-                if (!updateInstanceNextScanTime(instance, new Date(System.currentTimeMillis() + shutdownTaskDelayResumeMs))) {
+                if (!updateInstanceNextScanTime(instance, new Date(System.currentTimeMillis() + conf.getShutdownTaskDelayResumeMs()))) {
                     // cannot happen
                     throw new IllegalStateException("Resume task renew instance update time failed: " + param.getTaskId());
                 }
@@ -526,13 +522,13 @@ public class DistributedJobManager extends AbstractJobManager {
             return false;
         }
         int currentDispatchFailedCount = task.getDispatchFailedCount();
-        if (currentDispatchFailedCount >= taskDispatchFailedCountThreshold) {
+        if (currentDispatchFailedCount >= conf.getTaskDispatchFailedCountThreshold()) {
             return true;
         }
         if (isNotAffectedRow(taskMapper.incrementDispatchFailedCount(taskId, currentDispatchFailedCount))) {
             return false;
         }
-        return (currentDispatchFailedCount + 1) == taskDispatchFailedCountThreshold;
+        return (currentDispatchFailedCount + 1) == conf.getTaskDispatchFailedCountThreshold();
     }
 
     private Tuple2<RunState, Date> obtainRunState(List<SchedTask> tasks) {
@@ -740,13 +736,13 @@ public class DistributedJobManager extends AbstractJobManager {
                 continue;
             }
 
-            Map<DAGEdge, SchedWorkflow> predecessors = graph.predecessors(target);
-            if (predecessors.values().stream().anyMatch(e -> !RunState.of(e.getRunState()).isTerminal())) {
+            Collection<SchedWorkflow> predecessors = graph.predecessors(target).values();
+            if (predecessors.stream().anyMatch(e -> !RunState.of(e.getRunState()).isTerminal())) {
                 // 前置节点还未结束，则跳过
                 continue;
             }
 
-            if (predecessors.values().stream().anyMatch(e -> RunState.of(e.getRunState()).isFailure())) {
+            if (predecessors.stream().anyMatch(e -> RunState.of(e.getRunState()).isFailure())) {
                 RunState state = RunState.CANCELED;
                 int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), state.value(), null, RUN_STATE_TERMINABLE, null);
                 Assert.isTrue(row > 0, () -> "Update workflow cur node state failed: " + workflow + ", " + state);
@@ -757,9 +753,10 @@ public class DistributedJobManager extends AbstractJobManager {
                 long nextInstanceId = generateId();
                 List<SchedTask> tasks = splitJob(SplitJobParam.from(job, target.getName()), nextInstanceId, new Date());
                 long triggerTime = leadInstance.getTriggerTime() + workflow.getSequence();
-                SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), RunType.of(leadInstance.getRunType()), triggerTime, 0, now);
+                RunType runType = RunType.of(leadInstance.getRunType());
+                SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), runType, triggerTime, 0, now);
                 nextInstance.setRnstanceId(wnstanceId);
-                nextInstance.setPnstanceId(predecessors.isEmpty() ? null : Collects.getFirst(predecessors.values()).getInstanceId());
+                nextInstance.setPnstanceId(predecessors.isEmpty() ? null : Collects.getFirst(predecessors).getInstanceId());
                 nextInstance.setWnstanceId(wnstanceId);
                 nextInstance.setAttach(Jsons.toJson(new InstanceAttach(workflow.getCurNode())));
 
@@ -771,8 +768,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
             } catch (Throwable t) {
-                Boolean result = failHandler.test(t);
-                if (Boolean.FALSE.equals(result)) {
+                if (!failHandler.test(t)) {
                     // if false then break
                     return;
                 }
@@ -787,6 +783,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (runState == RunState.CANCELED) {
             retryJob(instance, lazyJob);
         } else if (runState == RunState.FINISHED) {
+            updateRetryInstanceStateIfNecessary(instance);
             if (instance.isWorkflowNode()) {
                 processWorkflow(instance);
             } else {
@@ -852,16 +849,12 @@ public class DistributedJobManager extends AbstractJobManager {
             return;
         }
 
-        createWorkflowNode(
-            instanceMapper.get(wnstanceId),
-            graph,
-            graph.successors(DAGNode.fromString(nodeInstance.parseAttach().getCurNode())),
-            throwable -> {
-                log.error("Split workflow job task error: " + nodeInstance, throwable);
-                onCreateWorkflowNodeFailed(nodeInstance.getWnstanceId());
-                return false;
-            }
-        );
+        Map<DAGEdge, SchedWorkflow> map = graph.successors(DAGNode.fromString(nodeInstance.parseAttach().getCurNode()));
+        createWorkflowNode(instanceMapper.get(wnstanceId), graph, map, throwable -> {
+            log.error("Split workflow job task error: " + nodeInstance, throwable);
+            onCreateWorkflowNodeFailed(nodeInstance.getWnstanceId());
+            return false;
+        });
     }
 
     private void onCreateWorkflowNodeFailed(Long wnstanceId) {
@@ -877,7 +870,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private void retryJob(SchedInstance prev, LazyLoader<SchedJob> lazyJob) {
         SchedJob schedJob = lazyJob.orElseGet(() -> {
-            log.error("Sched job not found {}", prev.getJobId());
+            log.error("Sched job not found: {}", prev.getJobId());
             return null;
         });
         int retriedCount = prev.obtainRetriedCount();
@@ -1049,6 +1042,24 @@ public class DistributedJobManager extends AbstractJobManager {
             })
             .sorted(Comparator.comparing(PredecessorInstance::getSequence))
             .collect(Collectors.toList());
+    }
+
+    private void updateRetryInstanceStateIfNecessary(SchedInstance instance) {
+        if (!RunType.RETRY.equalsValue(instance.getRunType())) {
+            return;
+        }
+
+        int counter = 1;
+        long pnstanceId = instance.getPnstanceId();
+        for (Long id = pnstanceId; (id = instanceMapper.getPnstanceId(id, RunType.RETRY.value())) != null; ) {
+            if (++counter > conf.getMaximumJobRetryCount()) {
+                String format = "Retried instance [%d] exceed maximum retry count value: %d > %d";
+                throw new IllegalStateException(String.format(format, instance.getInstanceId(), counter, conf.getMaximumJobRetryCount()));
+            }
+            pnstanceId = id;
+        }
+        boolean updated = isOneAffectedRow(instanceMapper.updateState(pnstanceId, RunState.FINISHED.value(), RunState.CANCELED.value()));
+        log.info("Updated retry instance state to finished: {}, {}, {}", pnstanceId, instance.getInstanceId(), updated);
     }
 
 }

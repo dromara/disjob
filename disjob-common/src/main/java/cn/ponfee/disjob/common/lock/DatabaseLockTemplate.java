@@ -89,10 +89,11 @@ public final class DatabaseLockTemplate implements LockTemplate {
             preparedStatement.setString(1, lockName);
             ResultSet rs = preparedStatement.executeQuery();
             Assert.state(rs.next() && rs.getInt(1) == 1, () -> "Lock Not found '" + lockName + "'.");
+            T result = action.call();
             // 关闭一个Statement对象同时也会使得该对象创建的所有ResultSet对象被关闭，即：可以不显示关闭ResultSet
             // ResultSet所持有的资源不会立刻被释放，直到GC执行，因此明确地关闭ResultSet是一个更好的做法
             JdbcUtils.closeResultSet(rs);
-            return action.call();
+            return result;
         });
     }
 

@@ -74,10 +74,9 @@ public abstract class AbstractJobManager {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected final int maximumSplitTaskSize;
-    protected final int maximumJobDependsDepth;
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
+    protected final SupervisorProperties conf;
 
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
@@ -85,7 +84,7 @@ public abstract class AbstractJobManager {
     private final GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient;
     private final DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient;
 
-    protected AbstractJobManager(SupervisorProperties supervisorProperties,
+    protected AbstractJobManager(SupervisorProperties conf,
                                  SchedJobMapper jobMapper,
                                  SchedDependMapper dependMapper,
                                  IdGenerator idGenerator,
@@ -93,9 +92,8 @@ public abstract class AbstractJobManager {
                                  TaskDispatcher taskDispatcher,
                                  GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient,
                                  DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient) {
-        supervisorProperties.check();
-        this.maximumSplitTaskSize = supervisorProperties.getMaximumSplitTaskSize();
-        this.maximumJobDependsDepth = supervisorProperties.getMaximumJobDependsDepth();
+        conf.check();
+        this.conf = conf;
         this.jobMapper = jobMapper;
         this.dependMapper = dependMapper;
         this.idGenerator = idGenerator;
@@ -123,12 +121,12 @@ public abstract class AbstractJobManager {
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public boolean changeJobState(long jobId, JobState to) {
-        boolean flag = isOneAffectedRow(jobMapper.updateState(jobId, to.value(), 1 ^ to.value()));
-        if (flag && to == JobState.ENABLE) {
+        boolean updated = isOneAffectedRow(jobMapper.updateState(jobId, to.value(), 1 ^ to.value()));
+        if (updated && to == JobState.ENABLE) {
             SchedJob job = jobMapper.get(jobId);
             updateFixedDelayNextTriggerTime(job, Dates.ofTimeMillis(job.getLastTriggerTime()));
         }
-        return flag;
+        return updated;
     }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
@@ -205,7 +203,9 @@ public abstract class AbstractJobManager {
             List<String> taskParams = splitJob(param).getTaskParams();
             Assert.notEmpty(taskParams, () -> "Not split any task: " + param);
             int count = taskParams.size();
-            Assert.isTrue(count <= maximumSplitTaskSize, () -> "Split task size must less than " + maximumSplitTaskSize + ", job=" + param);
+            if (count > conf.getMaximumSplitTaskSize()) {
+                throw new IllegalStateException("Split task size must less than " + conf.getMaximumSplitTaskSize() + ": " + param);
+            }
             return IntStream.range(0, count)
                 .mapToObj(i -> SchedTask.create(taskParams.get(i), generateId(), instanceId, i + 1, count, date, null))
                 .collect(Collectors.toList());
@@ -251,7 +251,6 @@ public abstract class AbstractJobManager {
             // not dispatched to a worker successfully
             return true;
         }
-
         Worker worker = Worker.deserialize(task.getWorker());
         if (isDeadWorker(worker)) {
             // dispatched worker are dead
@@ -273,6 +272,10 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
+        return dispatch(false, job, instance, tasks);
+    }
+
+    public boolean dispatch(boolean redispatch, SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
         RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
@@ -288,7 +291,7 @@ public abstract class AbstractJobManager {
                     params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
             }
-        } else if (routeStrategy.isNotRoundRobin() || (workload = calculateWorkload(job, instance)) == null) {
+        } else if (!redispatch || routeStrategy.isNotRoundRobin() || (workload = calculateWorkload(job, instance)) == null) {
             for (SchedTask task : tasks) {
                 params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
             }
@@ -328,16 +331,19 @@ public abstract class AbstractJobManager {
     protected abstract void abortBroadcastWaitingTask(long taskId);
 
     /**
-     * Lists the executing task
+     * Lists the pausable tasks
      *
      * @param instanceId the instance id
      * @return List<SchedTask>
      */
-    protected abstract List<SchedTask> listExecutingTask(long instanceId);
+    protected abstract List<SchedTask> listPausableTasks(long instanceId);
 
     // ------------------------------------------------------------------private methods
 
     private void verifyJob(SchedJob job) throws JobException {
+        if (job.getRetryCount() != null && job.getRetryCount() > conf.getMaximumJobRetryCount()) {
+            throw new IllegalArgumentException("Retry cannot greater than " + conf.getMaximumJobRetryCount());
+        }
         VerifyJobParam param = VerifyJobParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verify(param));
@@ -375,7 +381,6 @@ public abstract class AbstractJobManager {
             for (int i = 0; i < parentJobIds.size(); i++) {
                 list.add(new SchedDepend(parentJobIds.get(i), jobId, i + 1));
             }
-
             Collects.batchProcess(list, dependMapper::batchInsert, JobConstants.PROCESS_BATCH_SIZE);
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
@@ -387,7 +392,6 @@ public abstract class AbstractJobManager {
                 Date baseTime = Dates.max(new Date(), job.getStartTime());
                 nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), baseTime);
             }
-
             if (nextTriggerTime == null) {
                 throw new IllegalArgumentException("Invalid " + triggerType + " value: " + job.getTriggerValue());
             }
@@ -410,7 +414,7 @@ public abstract class AbstractJobManager {
             if (map.containsKey(jobId)) {
                 throw new IllegalArgumentException("Circular depends job: " + map.get(jobId));
             }
-            if (i >= maximumJobDependsDepth) {
+            if (i >= conf.getMaximumJobDependsDepth()) {
                 throw new IllegalArgumentException("Exceed depends depth: " + outerDepends);
             }
             parentJobIds = map.keySet();
@@ -423,11 +427,13 @@ public abstract class AbstractJobManager {
             log.error("Not found available [{}] worker for calculate Workload.", job.getGroup());
             return null;
         }
-        List<SchedTask> executingTasks = listExecutingTask(instance.getInstanceId());
-        if (CollectionUtils.isEmpty(executingTasks)) {
+        List<SchedTask> pausableTasks = listPausableTasks(instance.getInstanceId());
+        if (CollectionUtils.isEmpty(pausableTasks)) {
             return null;
         }
-        Map<String, Long> map = executingTasks.stream().collect(Collectors.groupingBy(SchedTask::getWorker, Collectors.counting()));
+        Map<String, Long> map = pausableTasks.stream()
+            .filter(e -> StringUtils.isNotBlank(e.getWorker()))
+            .collect(Collectors.groupingBy(SchedTask::getWorker, Collectors.counting()));
         return workers.stream().map(e -> Tuple2.of(e, map.getOrDefault(e.serialize(), 0L))).collect(Collectors.toList());
     }
 

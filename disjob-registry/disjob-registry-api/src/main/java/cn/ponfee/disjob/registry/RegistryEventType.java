@@ -21,7 +21,8 @@ package cn.ponfee.disjob.registry;
  *
  * @author Ponfee
  */
-public enum EventType {
+public enum RegistryEventType {
+
     /**
      * Register
      */
@@ -31,4 +32,5 @@ public enum EventType {
      * Deregister
      */
     DEREGISTER
+
 }

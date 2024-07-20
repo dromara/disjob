@@ -58,49 +58,44 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     DISPATCH_FAILED(50, RunState.CANCELED, "派发失败"),
 
     /**
-     * 实例化失败取消
+     * 初始化失败取消
      */
-    INSTANCE_FAILED(51, RunState.CANCELED, "实例化异常"),
-
-    /**
-     * 初始化异常取消
-     */
-    INIT_EXCEPTION(52, RunState.CANCELED, "初始化异常"),
+    INITIALIZE_FAILED(51, RunState.CANCELED, "初始化失败"),
 
     /**
      * 执行失败取消
      */
-    EXECUTE_FAILED(53, RunState.CANCELED, "执行失败"),
+    EXECUTE_FAILED(52, RunState.CANCELED, "执行失败"),
 
     /**
      * 执行异常取消
      */
-    EXECUTE_EXCEPTION(54, RunState.CANCELED, "执行异常"),
+    EXECUTE_EXCEPTION(53, RunState.CANCELED, "执行异常"),
 
     /**
      * 执行超时取消
      */
-    EXECUTE_TIMEOUT(55, RunState.CANCELED, "执行超时"),
+    EXECUTE_TIMEOUT(54, RunState.CANCELED, "执行超时"),
 
     /**
      * 执行冲突取消(sched_job.collided_strategy=3)
      */
-    EXECUTE_COLLIDED(56, RunState.CANCELED, "执行冲突"),
+    EXECUTE_COLLIDED(55, RunState.CANCELED, "执行冲突"),
 
     /**
      * 广播任务中止(分派的worker已下线)
      */
-    BROADCAST_ABORTED(57, RunState.CANCELED, "广播任务中止"),
+    BROADCAST_ABORTED(56, RunState.CANCELED, "广播任务中止"),
 
     /**
      * 手动取消
      */
-    MANUAL_CANCELED(58, RunState.CANCELED, "手动取消"),
+    MANUAL_CANCELED(57, RunState.CANCELED, "手动取消"),
 
     /**
      * Worker关闭取消
      */
-    SHUTDOWN_CANCELED(59, RunState.CANCELED, "Worker关闭取消"),
+    SHUTDOWN_CANCELED(58, RunState.CANCELED, "Worker关闭取消"),
     ;
 
     private final int value;

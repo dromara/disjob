@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,16 @@ import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -88,6 +95,32 @@ public class RedisTemplateUtils {
                 }
             }
         });
+    }
+
+    public static RedisMessageListenerContainer createRedisMessageListenerContainer(StringRedisTemplate redisTemplate,
+                                                                                    String channelTopicName,
+                                                                                    Executor taskExecutor,
+                                                                                    Object delegateObject,
+                                                                                    String listenerMethodName) {
+        // Check “void listenerMethod(String message, String channel)” method is valid
+        ThrowingSupplier.doChecked(() -> delegateObject.getClass().getMethod(listenerMethodName, String.class, String.class));
+        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(delegateObject, listenerMethodName);
+        listenerAdapter.afterPropertiesSet();
+
+        return createRedisMessageListenerContainer(redisTemplate, channelTopicName, taskExecutor, listenerAdapter);
+    }
+
+    public static RedisMessageListenerContainer createRedisMessageListenerContainer(StringRedisTemplate redisTemplate,
+                                                                                    String channelTopicName,
+                                                                                    Executor taskExecutor,
+                                                                                    MessageListenerAdapter listenerAdapter) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(Objects.requireNonNull(redisTemplate.getConnectionFactory()));
+        container.setTaskExecutor(taskExecutor);
+        container.addMessageListener(listenerAdapter, new ChannelTopic(channelTopicName));
+        container.afterPropertiesSet();
+        container.start();
+        return container;
     }
 
     private static boolean exceptionContainsNoScriptError(Throwable e) {

@@ -51,6 +51,9 @@ public interface SchedInstanceMapper {
 
     Long getWnstanceId(long instanceId);
 
+    Long getPnstanceId(@Param("instanceId") long instanceId,
+                       @Param("runType") Integer runType);
+
     int start(@Param("instanceId") long instanceId,
               @Param("runStartTime") Date runStartTime);
 

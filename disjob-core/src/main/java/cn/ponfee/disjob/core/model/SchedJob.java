@@ -283,11 +283,11 @@ public class SchedJob extends BaseEntity {
             if (retryInterval == null) {
                 this.retryInterval = 0;
             }
-            Assert.isTrue(retryCount == 0, "Retry count cannot set if none retry.");
-            Assert.isTrue(retryInterval == 0, "Retry interval cannot set if none retry.");
+            Assert.isTrue(retryCount == 0, "Retry count cannot set value.");
+            Assert.isTrue(retryInterval == 0, "Retry interval cannot set value.");
         } else {
-            Assert.isTrue(retryCount != null && retryCount > 0, "Retry count must set if retry.");
-            Assert.isTrue(retryInterval != null && retryInterval > 0, "Retry interval must set if retry.");
+            Assert.isTrue(retryCount != null && retryCount > 0, "Retry count must greater than 0.");
+            Assert.isTrue(retryInterval != null && retryInterval > 0, "Retry interval must greater than 0.");
         }
 
         if (executeTimeout == null) {

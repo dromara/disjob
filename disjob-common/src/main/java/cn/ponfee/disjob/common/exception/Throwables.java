@@ -43,26 +43,26 @@ public final class Throwables {
     /**
      * Gets the root cause throwable stack trace
      *
-     * @param throwable the throwable
+     * @param t the throwable
      * @return a string of throwable stack trace information
      */
-    public static String getRootCauseStackTrace(Throwable throwable) {
-        if (throwable == null) {
+    public static String getRootCauseStackTrace(Throwable t) {
+        if (t == null) {
             return null;
         }
 
-        while (throwable.getCause() != null) {
-            throwable = throwable.getCause();
+        while (t.getCause() != null) {
+            t = t.getCause();
         }
-        return ExceptionUtils.getStackTrace(throwable);
+        return ExceptionUtils.getStackTrace(t);
     }
 
-    public static String getRootCauseMessage(Throwable throwable) {
-        if (throwable == null) {
+    public static String getRootCauseMessage(Throwable t) {
+        if (t == null) {
             return null;
         }
 
-        List<Throwable> list = ExceptionUtils.getThrowableList(throwable);
+        List<Throwable> list = ExceptionUtils.getThrowableList(t);
         for (int i = list.size() - 1; i >= 0; i--) {
             String message = list.get(i).getMessage();
             if (StringUtils.isNotBlank(message)) {
@@ -70,7 +70,7 @@ public final class Throwables {
             }
         }
 
-        return "error@" + ClassUtils.getName(throwable.getClass());
+        return "error@" + ClassUtils.getName(t.getClass());
     }
 
     // -------------------------------------------------------------------------------interface definitions

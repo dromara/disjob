@@ -76,7 +76,7 @@ public class SchedTask extends BaseEntity {
     private Long executeDuration;
 
     /**
-     * 执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-派发失败；51-实例化异常；52-初始化异常；53-执行失败；54-执行异常；55-执行超时；56-执行冲突(sched_job.collided_strategy=3)；57-广播任务中止；58-手动取消；59-Worker关闭取消；
+     * 执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-派发失败；51-初始化失败；52-执行失败；53-执行异常；54-执行超时；55-执行冲突(sched_job.collided_strategy=3)；56-广播任务中止；57-手动取消；58-Worker关闭取消；
      *
      * @see ExecuteState
      */

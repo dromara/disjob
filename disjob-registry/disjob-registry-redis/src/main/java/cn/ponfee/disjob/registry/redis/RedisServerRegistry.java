@@ -24,22 +24,20 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
+import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
 import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.registry.EventType;
+import cn.ponfee.disjob.registry.RegistryEventType;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 
 import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -85,6 +83,11 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     private final String registryChannel;
 
     /**
+     * Registry subscribe redis message channel
+     */
+    private final String discoveryChannel;
+
+    /**
      * Spring string redis template
      */
     private final StringRedisTemplate stringRedisTemplate;
@@ -120,6 +123,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
                                   RedisRegistryProperties config) {
         super(config.getNamespace(), ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
+        this.discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
         this.periodMs = config.getSessionTimeoutMs() / 3;
@@ -144,17 +148,8 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             .build();
 
         // redis pub/sub
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(Objects.requireNonNull(stringRedisTemplate.getConnectionFactory()));
-        container.setTaskExecutor(redisSubscribeExecutor);
-        // validate “handleMessage” method is valid
-        String listenerMethod = ThrowingSupplier.doChecked(() -> RedisServerRegistry.class.getMethod("handleMessage", String.class, String.class).getName());
-        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(this, listenerMethod);
-        listenerAdapter.afterPropertiesSet();
-        container.addMessageListener(listenerAdapter, new ChannelTopic(discoveryRootPath + separator + CHANNEL));
-        container.afterPropertiesSet();
-        container.start();
-        this.redisMessageListenerContainer = container;
+        this.redisMessageListenerContainer = RedisTemplateUtils.createRedisMessageListenerContainer(
+            stringRedisTemplate, discoveryChannel, redisSubscribeExecutor, this, "handleMessage");
 
         try {
             doDiscoverServers();
@@ -181,7 +176,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         doRegisterServers(Collections.singleton(server));
         registered.add(server);
-        ThrowingRunnable.doCaught(() -> publish(server, EventType.REGISTER));
+        ThrowingRunnable.doCaught(() -> publishRegistryEvent(RegistryEventType.REGISTER, server));
         log.info("Server registered: {}, {}", registryRole, server);
     }
 
@@ -189,7 +184,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public final void deregister(R server) {
         registered.remove(server);
         ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        ThrowingRunnable.doCaught(() -> publish(server, EventType.DEREGISTER));
+        ThrowingRunnable.doCaught(() -> publishRegistryEvent(RegistryEventType.DEREGISTER, server));
         log.info("Server deregister: {}, {}", registryRole, server);
     }
 
@@ -226,29 +221,29 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      * For redis message subscribe invoke.
      *
      * @param message the message
-     * @param pattern the pattern
+     * @param channel the channel
      */
-    public void handleMessage(String message, String pattern) {
+    public void handleMessage(String message, String channel) {
         try {
             TextTokenizer tokenizer = new TextTokenizer(message, COLON);
             String type = tokenizer.next();
-            String serv = tokenizer.tail();
+            String server = tokenizer.tail();
 
-            log.info("Subscribed message: {}, {}", pattern, message);
-            subscribe(EventType.valueOf(type), discoveryRole.deserialize(serv));
+            log.info("Subscribed message: {}, {}", message, channel);
+            subscribeDiscoveryEvent(RegistryEventType.valueOf(type), discoveryRole.deserialize(server));
         } catch (Throwable t) {
-            log.error("Parse subscribed message error: " + message + ", " + pattern, t);
+            log.error("Parse subscribed message error: " + message + ", " + channel, t);
         }
     }
 
     // ------------------------------------------------------------------private methods
 
-    private void publish(R server, EventType eventType) {
-        String publish = eventType.name() + COLON + server.serialize();
-        stringRedisTemplate.convertAndSend(registryChannel, publish);
+    private void publishRegistryEvent(RegistryEventType eventType, R server) {
+        String message = eventType.name() + COLON + server.serialize();
+        stringRedisTemplate.convertAndSend(registryChannel, message);
     }
 
-    private void subscribe(EventType eventType, D server) {
+    private void subscribeDiscoveryEvent(RegistryEventType eventType, D server) {
         tryDiscoverServers();
     }
 

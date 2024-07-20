@@ -149,13 +149,13 @@ public final class Threads {
         long halfJoinMillis = joinMillis / 2;
 
         // wait joined
-        if (isStoppedAfterJoin(thread, halfJoinMillis)) {
+        if (join(thread, halfJoinMillis)) {
             return;
         }
 
         // again wait joined with interrupt
         thread.interrupt();
-        if (isStoppedAfterJoin(thread, halfJoinMillis)) {
+        if (join(thread, halfJoinMillis)) {
             return;
         }
 
@@ -170,7 +170,7 @@ public final class Threads {
         }
     }
 
-    private static boolean isStoppedAfterJoin(Thread thread, long joinTimeoutMills) {
+    private static boolean join(Thread thread, long joinTimeoutMills) {
         if (joinTimeoutMills > 0) {
             try {
                 thread.join(joinTimeoutMills);

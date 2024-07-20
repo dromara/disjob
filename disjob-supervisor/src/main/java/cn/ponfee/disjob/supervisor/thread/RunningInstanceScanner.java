@@ -96,52 +96,55 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()));
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            // 1、has waiting state task
-
-            // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
-            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, jobManager::shouldRedispatch);
-            if (CollectionUtils.isEmpty(redispatchingTasks)) {
-                return;
-            }
-            SchedJob schedJob = jobQuerier.getJob(instance.getJobId());
-            if (schedJob == null) {
-                log.error("Scanned running state instance not found job: {}", instance.getJobId());
-                return;
-            }
-            // check is whether not discovered worker
-            if (jobManager.hasNotDiscoveredWorkers(schedJob.getGroup())) {
-                log.error("Scanned running state instance not discovered worker: {}, {}", instance.getInstanceId(), schedJob.getGroup());
-                return;
-            }
-            log.info("Scanned running state instance re-dispatch task: {}", instance.getInstanceId());
-            jobManager.dispatch(schedJob, instance, redispatchingTasks);
-
+            processHasWaitingTask(instance, waitingTasks);
         } else if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
-            // 2、all task was terminated
-
-            // double check instance run state
-            SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
-            if (reloadInstance == null) {
-                log.error("Scanned running state instance not exists: {}", instance.getInstanceId());
-                return;
-            }
-            if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
-                return;
-            }
-            log.info("Scanned running state instance task all terminated: {}", instance.getInstanceId());
-            jobManager.purgeInstance(instance);
-
+            processAllTerminatedTask(instance);
         } else {
-            // 3、has executing state task
-
-            // check has alive executing state task
-            if (jobManager.hasAliveExecuting(tasks)) {
-                return;
-            }
-            log.info("Scanned running state instance was dead: {}", instance.getInstanceId());
-            jobManager.purgeInstance(instance);
-
+            processHasExecutingTask(instance, tasks);
         }
+    }
+
+    private void processHasWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
+        // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
+        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, jobManager::shouldRedispatch);
+        if (CollectionUtils.isEmpty(redispatchingTasks)) {
+            return;
+        }
+        SchedJob schedJob = jobQuerier.getJob(instance.getJobId());
+        if (schedJob == null) {
+            log.error("Scanned running state instance not found job: {}", instance.getJobId());
+            return;
+        }
+        // check is whether not discovered worker
+        if (jobManager.hasNotDiscoveredWorkers(schedJob.getGroup())) {
+            log.error("Scanned running state instance not discovered worker: {}, {}", instance.getInstanceId(), schedJob.getGroup());
+            return;
+        }
+        log.info("Scanned running state instance re-dispatch task: {}", instance.getInstanceId());
+        jobManager.dispatch(true, schedJob, instance, redispatchingTasks);
+    }
+
+    private void processAllTerminatedTask(SchedInstance instance) {
+        // double check instance run state
+        SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
+        if (reloadInstance == null) {
+            log.error("Scanned running state instance not exists: {}", instance.getInstanceId());
+            return;
+        }
+        if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
+            return;
+        }
+        log.info("Scanned running state instance task all terminated: {}", instance.getInstanceId());
+        jobManager.purgeInstance(instance);
+    }
+
+    private void processHasExecutingTask(SchedInstance instance, List<SchedTask> tasks) {
+        // check has alive executing state task
+        if (jobManager.hasAliveExecuting(tasks)) {
+            return;
+        }
+        log.info("Scanned running state instance was dead: {}", instance.getInstanceId());
+        jobManager.purgeInstance(instance);
     }
 
 }

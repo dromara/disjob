@@ -60,7 +60,7 @@ public class DisjobInstanceController extends BaseController {
     static final String PREFIX = "disjob/instance";
     private static final String PERMISSION_CODE = "disjob:instance:operate";
 
-    private static final int WAIT_SLEEP_ROUND = 9;
+    private static final int WAIT_SLEEP_ROUND = 20;
     private static final long[] WAIT_SLEEP_MILLIS = {2500, 500};
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^[1-9]\\d*$");
 

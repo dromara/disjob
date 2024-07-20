@@ -95,46 +95,47 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
         List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(instance.getInstanceId());
         List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()));
-
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
-            // 1、has waiting state task
-
-            // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
-            List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, jobManager::shouldRedispatch);
-            if (CollectionUtils.isEmpty(redispatchingTasks)) {
-                return;
-            }
-            SchedJob schedJob = jobQuerier.getJob(instance.getJobId());
-            if (schedJob == null) {
-                log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
-                return;
-            }
-            // check is whether not discovered worker
-            if (jobManager.hasNotDiscoveredWorkers(schedJob.getGroup())) {
-                log.error("Scanned waiting state instance not discovered worker: {}, {}", instance.getInstanceId(), schedJob.getGroup());
-                return;
-            }
-            log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
-            jobManager.dispatch(schedJob, instance, redispatchingTasks);
-
+            processHasWaitingTask(instance, waitingTasks);
         } else {
-            // 2、waiting state instance unsupported other state task
-
-            if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
-                // double check instance run state
-                SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
-                if (reloadInstance == null) {
-                    log.error("Scanned waiting state instance not exists: {}", instance.getInstanceId());
-                    return;
-                }
-                if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
-                    return;
-                }
-            }
-            log.info("Scanned waiting state instance was dead: {}", instance.getInstanceId());
-            jobManager.purgeInstance(instance);
-
+            processNoWaitingTask(instance, tasks);
         }
+    }
+
+    private void processHasWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
+        // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
+        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, jobManager::shouldRedispatch);
+        if (CollectionUtils.isEmpty(redispatchingTasks)) {
+            return;
+        }
+        SchedJob schedJob = jobQuerier.getJob(instance.getJobId());
+        if (schedJob == null) {
+            log.error("Scanned waiting state instance not found job: {}", instance.getJobId());
+            return;
+        }
+        // check is whether not discovered worker
+        if (jobManager.hasNotDiscoveredWorkers(schedJob.getGroup())) {
+            log.error("Scanned waiting state instance not discovered worker: {}, {}", instance.getInstanceId(), schedJob.getGroup());
+            return;
+        }
+        log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
+        jobManager.dispatch(true, schedJob, instance, redispatchingTasks);
+    }
+
+    private void processNoWaitingTask(SchedInstance instance, List<SchedTask> tasks) {
+        if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
+            // double check instance run state
+            SchedInstance reloadInstance = jobQuerier.getInstance(instance.getInstanceId());
+            if (reloadInstance == null) {
+                log.error("Scanned waiting state instance not exists: {}", instance.getInstanceId());
+                return;
+            }
+            if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
+                return;
+            }
+        }
+        log.info("Scanned waiting state instance was dead: {}", instance.getInstanceId());
+        jobManager.purgeInstance(instance);
     }
 
 }
