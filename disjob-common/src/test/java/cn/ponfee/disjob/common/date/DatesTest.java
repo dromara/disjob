@@ -49,6 +49,7 @@ public class DatesTest {
 
     @Test
     public void test() throws ParseException {
+        System.out.println(FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS").format(System.currentTimeMillis()));
         String str = "2023-01-03 15:23:45.321";
         Date date = toDate(str, DATEFULL_PATTERN);
         Assertions.assertNotNull(JavaUtilDateFormat.DEFAULT.parse(str));

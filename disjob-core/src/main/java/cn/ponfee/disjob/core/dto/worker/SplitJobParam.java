@@ -18,6 +18,7 @@ package cn.ponfee.disjob.core.dto.worker;
 
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,8 +50,14 @@ public class SplitJobParam extends AuthenticationParam {
         this.routeStrategy = routeStrategy;
     }
 
-    public static SplitJobParam from(SchedJob job) {
-        return from(job, job.getJobHandler());
+    public static SplitJobParam from(SchedJob job, SchedInstance instance) {
+        if (instance.isWorkflowLead()) {
+            throw new IllegalArgumentException("Split job cannot workflow lead instance: " + instance.getInstanceId());
+        }
+        String jobHandler = instance.isWorkflowNode() ?
+            instance.parseAttach().parseCurrentNode().getName() :
+            job.getJobHandler();
+        return from(job, jobHandler);
     }
 
     public static SplitJobParam from(SchedJob job, String jobHandler) {

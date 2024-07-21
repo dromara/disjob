@@ -21,10 +21,10 @@ import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
+import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.common.spring.TransactionUtils;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
@@ -33,7 +33,6 @@ import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
-import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -52,6 +51,7 @@ import cn.ponfee.disjob.supervisor.instance.GeneralInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -143,6 +143,10 @@ public class DistributedJobManager extends AbstractJobManager {
         return isOneAffectedRow(instanceMapper.updateNextScanTime(instance.getInstanceId(), nextScanTime, instance.getVersion()));
     }
 
+    public boolean savepoint(long taskId, String worker, String executeSnapshot) {
+        return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executeSnapshot));
+    }
+
     @Override
     protected void abortBroadcastWaitingTask(long taskId) {
         taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED.value(), ExecuteState.WAITING.value(), null, null);
@@ -151,10 +155,6 @@ public class DistributedJobManager extends AbstractJobManager {
     @Override
     protected List<SchedTask> listPausableTasks(long instanceId) {
         return taskMapper.findBaseByInstanceIdAndStates(instanceId, EXECUTE_STATE_PAUSABLE);
-    }
-
-    public boolean savepoint(long taskId, String executeSnapshot) {
-        return isOneAffectedRow(taskMapper.savepoint(taskId, executeSnapshot));
     }
 
     // ------------------------------------------------------------------database operation within spring @Transactional
@@ -191,21 +191,25 @@ public class DistributedJobManager extends AbstractJobManager {
     /**
      * Set or clear task worker
      *
-     * @param list the update task worker list
+     * <pre>
+     * 当worker不相同时，可使用`CASE WHEN`语法：
+     * UPDATE sched_task SET worker =
+     *   CASE
+     *     WHEN task_id = 1 THEN 'a'
+     *     WHEN task_id = 2 THEN 'b'
+     *   END
+     * WHERE id IN (1, 2)
+     * </pre>
+     *
+     * @param worker  the worker
+     * @param taskIds the task id list
      */
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public void updateTaskWorker(List<UpdateTaskWorkerParam> list) {
-        if (CollectionUtils.isNotEmpty(list)) {
+    public void updateTaskWorker(String worker, List<Long> taskIds) {
+        if (CollectionUtils.isNotEmpty(taskIds)) {
             // Sort for prevent sql deadlock: Deadlock found when trying to get lock; try restarting transaction
-            // 其实`CASE WHEN`这种sql语法不排序也不会死锁：
-            // UPDATE sched_task SET worker =
-            //   CASE
-            //     WHEN task_id = 1 THEN 'a'
-            //     WHEN task_id = 2 THEN 'b'
-            //   END
-            // WHERE id IN (1, 2)
-            list.sort(Comparator.comparingLong(UpdateTaskWorkerParam::getTaskId));
-            Collects.batchProcess(list, taskMapper::batchUpdateWorker, 20);
+            Collections.sort(taskIds);
+            Lists.partition(taskIds, PROCESS_BATCH_SIZE).forEach(ids -> taskMapper.batchUpdateWorker(worker, ids));
         }
     }
 
@@ -235,8 +239,8 @@ public class DistributedJobManager extends AbstractJobManager {
             // start task
             if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), now))) {
                 // if instanceAffectedRow > 0, then throw exception for rollback transaction
-                Assert.state(instanceAffectedRow == 0, () -> "Start task failed: " + param);
-                return StartTaskResult.failure("Task stat failed");
+                Assert.state(instanceAffectedRow == 0, () -> "Start instance cannot affected: " + param);
+                return StartTaskResult.failure("Start task failure.");
             }
             SchedTask task = taskMapper.get(param.getTaskId());
             List<PredecessorInstance> predecessorInstances = null;
@@ -332,7 +336,8 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             Date executeEndTime = toState.isTerminal() ? new Date() : null;
-            int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), ExecuteState.EXECUTING.value(), executeEndTime, param.getErrorMsg());
+            int fromState = ExecuteState.EXECUTING.value();
+            int row = taskMapper.terminate(param.getTaskId(), param.getWorker(), toState.value(), fromState, executeEndTime, param.getErrorMsg());
             if (isNotAffectedRow(row)) {
                 // usual is worker invoke http timeout, then retry
                 log.warn("Conflict stop executing task: {}, {}", param.getTaskId(), toState);
@@ -726,7 +731,6 @@ public class DistributedJobManager extends AbstractJobManager {
                                     Map<DAGEdge, SchedWorkflow> map, Predicate<Throwable> failHandler) {
         SchedJob job = LazyLoader.of(SchedJob.class, jobMapper::get, leadInstance.getJobId());
         long wnstanceId = leadInstance.getWnstanceId();
-        Date now = new Date();
         Set<DAGNode> duplicates = new HashSet<>();
         for (Map.Entry<DAGEdge, SchedWorkflow> entry : map.entrySet()) {
             DAGNode target = entry.getKey().getTarget();
@@ -751,14 +755,15 @@ public class DistributedJobManager extends AbstractJobManager {
 
             try {
                 long nextInstanceId = generateId();
-                List<SchedTask> tasks = splitJob(SplitJobParam.from(job, target.getName()), nextInstanceId, new Date());
+                List<SchedTask> tasks = splitJob(SplitJobParam.from(job, target.getName()), nextInstanceId);
                 long triggerTime = leadInstance.getTriggerTime() + workflow.getSequence();
                 RunType runType = RunType.of(leadInstance.getRunType());
-                SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), runType, triggerTime, 0, now);
+                SchedWorkflow predecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
+                SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), runType, triggerTime, 0);
                 nextInstance.setRnstanceId(wnstanceId);
-                nextInstance.setPnstanceId(predecessors.isEmpty() ? null : Collects.getFirst(predecessors).getInstanceId());
+                nextInstance.setPnstanceId(predecessor == null ? null : getRetryOriginalInstanceId(instanceMapper.get(predecessor.getInstanceId())));
                 nextInstance.setWnstanceId(wnstanceId);
-                nextInstance.setAttach(Jsons.toJson(new InstanceAttach(workflow.getCurNode())));
+                nextInstance.setAttach(new InstanceAttach(workflow.getCurNode()).toJson());
 
                 int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), RunState.RUNNING.value(), nextInstanceId, RUN_STATE_WAITING, null);
                 Assert.isTrue(row > 0, () -> "Start workflow node failed: " + workflow);
@@ -783,12 +788,9 @@ public class DistributedJobManager extends AbstractJobManager {
         if (runState == RunState.CANCELED) {
             retryJob(instance, lazyJob);
         } else if (runState == RunState.FINISHED) {
-            updateRetryInstanceStateIfNecessary(instance);
-            if (instance.isWorkflowNode()) {
-                processWorkflow(instance);
-            } else {
-                dependJob(instance);
-            }
+            finishRetryOriginalInstanceState(instance);
+            processWorkflow(instance);
+            dependJob(instance);
         } else {
             throw new IllegalStateException("Unknown terminate run state " + runState);
         }
@@ -849,7 +851,7 @@ public class DistributedJobManager extends AbstractJobManager {
             return;
         }
 
-        Map<DAGEdge, SchedWorkflow> map = graph.successors(DAGNode.fromString(nodeInstance.parseAttach().getCurNode()));
+        Map<DAGEdge, SchedWorkflow> map = graph.successors(nodeInstance.parseAttach().parseCurrentNode());
         createWorkflowNode(instanceMapper.get(wnstanceId), graph, map, throwable -> {
             log.error("Split workflow job task error: " + nodeInstance, throwable);
             onCreateWorkflowNodeFailed(nodeInstance.getWnstanceId());
@@ -869,6 +871,10 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void retryJob(SchedInstance prev, LazyLoader<SchedJob> lazyJob) {
+        if (prev.isWorkflowLead()) {
+            return;
+        }
+
         SchedJob schedJob = lazyJob.orElseGet(() -> {
             log.error("Sched job not found: {}", prev.getJobId());
             return null;
@@ -889,11 +895,11 @@ public class DistributedJobManager extends AbstractJobManager {
 
         // 1、build sched instance
         retriedCount++;
-        Date now = new Date();
-        long triggerTime = schedJob.computeRetryTriggerTime(retriedCount, now);
-        SchedInstance retryInstance = SchedInstance.create(retryInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount, now);
+        // DAG任务可能会有triggerTime冲突问题，worker端会重试：Duplicate entry '1003164910267351006-1721480078288-3' for key 'uk_jobid_triggertime_runtype'
+        long triggerTime = schedJob.computeRetryTriggerTime(retriedCount);
+        SchedInstance retryInstance = SchedInstance.create(retryInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount);
         retryInstance.setRnstanceId(prev.obtainRnstanceId());
-        retryInstance.setPnstanceId(prev.getInstanceId());
+        retryInstance.setPnstanceId(getRetryOriginalInstanceId(prev));
         retryInstance.setWnstanceId(prev.getWnstanceId());
         retryInstance.setAttach(prev.getAttach());
 
@@ -903,7 +909,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (retryType == RetryType.ALL) {
             try {
                 // re-split tasks
-                tasks = splitJob(SplitJobParam.from(schedJob), retryInstance.getInstanceId(), now);
+                tasks = splitJob(SplitJobParam.from(schedJob, prev), retryInstance.getInstanceId());
             } catch (Throwable t) {
                 log.error("Split retry job error: " + schedJob + ", " + prev, t);
                 processWorkflow(prev);
@@ -915,7 +921,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
                 // broadcast task cannot support partial retry
                 .filter(e -> RouteStrategy.of(schedJob.getRouteStrategy()).isNotBroadcast() || super.isAliveWorker(e.getWorker()))
-                .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstanceId, e.getTaskNo(), e.getTaskCount(), now, e.getWorker()))
+                .map(e -> SchedTask.create(e.getTaskParam(), generateId(), retryInstanceId, e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
         } else {
             // cannot happen
@@ -936,6 +942,9 @@ public class DistributedJobManager extends AbstractJobManager {
      * @param parentInstance the parent instance
      */
     private void dependJob(SchedInstance parentInstance) {
+        if (parentInstance.isWorkflowNode()) {
+            return;
+        }
         List<SchedDepend> schedDepends = dependMapper.findByParentJobId(parentInstance.getJobId());
         if (CollectionUtils.isEmpty(schedDepends)) {
             return;
@@ -1044,11 +1053,19 @@ public class DistributedJobManager extends AbstractJobManager {
             .collect(Collectors.toList());
     }
 
-    private void updateRetryInstanceStateIfNecessary(SchedInstance instance) {
+    private void finishRetryOriginalInstanceState(SchedInstance instance) {
         if (!RunType.RETRY.equalsValue(instance.getRunType())) {
             return;
         }
+        long pnstanceId = getRetryOriginalInstanceId(instance);
+        boolean updated = isOneAffectedRow(instanceMapper.updateState(pnstanceId, RunState.FINISHED.value(), RunState.CANCELED.value()));
+        log.info("Updated retry instance state to finished: {}, {}, {}", pnstanceId, instance.getInstanceId(), updated);
+    }
 
+    private long getRetryOriginalInstanceId(SchedInstance instance) {
+        if (!RunType.RETRY.equalsValue(instance.getRunType())) {
+            return instance.getInstanceId();
+        }
         int counter = 1;
         long pnstanceId = instance.getPnstanceId();
         for (Long id = pnstanceId; (id = instanceMapper.getPnstanceId(id, RunType.RETRY.value())) != null; ) {
@@ -1058,8 +1075,7 @@ public class DistributedJobManager extends AbstractJobManager {
             }
             pnstanceId = id;
         }
-        boolean updated = isOneAffectedRow(instanceMapper.updateState(pnstanceId, RunState.FINISHED.value(), RunState.CANCELED.value()));
-        log.info("Updated retry instance state to finished: {}, {}, {}", pnstanceId, instance.getInstanceId(), updated);
+        return pnstanceId;
     }
 
 }

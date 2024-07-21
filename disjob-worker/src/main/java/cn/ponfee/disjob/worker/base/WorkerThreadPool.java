@@ -25,14 +25,12 @@ import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
-import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
 import cn.ponfee.disjob.worker.handle.*;
-import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,23 +151,21 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         LOG.info("Close worker thread pool start...\n{}", Threads.getStackTrace());
 
-        // 1、stop this boss thread
+        // stop this boss thread
         if (Thread.currentThread() != this) {
             ThrowingRunnable.doCaught(super::interrupt);
             ThrowingRunnable.doCaught(() -> Threads.stopThread(this, 5000));
         }
 
-        // 2、stop idle pool thread
-        for (Iterator<WorkerThread> iter = idlePool.iterator(); iter.hasNext(); ) {
-            WorkerThread wt = iter.next();
-            iter.remove();
-            ThrowingRunnable.doCaught(wt::doStop);
-        }
+        // stop idle pool thread
+        idlePool.forEach(e -> ThrowingRunnable.doCaught(e::interrupt));
+        idlePool.forEach(e -> ThrowingRunnable.doCaught(e::doStop));
+        idlePool.clear();
 
-        // 3、clear task execution task queue
+        // clear task queue
         ThrowingRunnable.doCaught(taskQueue::clear);
 
-        // 4、stop active pool thread
+        // stop active pool thread
         ThrowingRunnable.doCaught(activePool::close);
 
         LOG.info("Close worker thread pool end.");
@@ -340,7 +336,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private void stopTask(WorkerTask task, Operation ops, ExecuteState toState, String errorMsg) {
         Assert.notNull(ops, "Stop task operation cannot be null.");
-        Assert.notNull(task.getWorker(), "Execute task param worker cannot be null.");
         if (!task.updateOperation(ops, null)) {
             // already stopped
             LOG.warn("Stop task conflict: {}, {}, {}", task.getTaskId(), ops, toState);
@@ -471,15 +466,14 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private synchronized void close() {
-            LOG.info("Close active thread pool start: size={}", pool.size());
-            Stopwatch stopwatch = Stopwatch.createStarted();
+            LOG.info("Close active thread pool start: {}", pool.size());
 
             ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
             MultithreadExecutors.run(pool.values(), WorkerThread::close, cachedThreadPool);
             cachedThreadPool.shutdown();
 
             pool.clear();
-            LOG.info("Close active thread pool end: time={}", stopwatch.stop());
+            LOG.info("Close active thread pool end.");
         }
 
         private int size() {
@@ -509,9 +503,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private class TaskSavepoint implements Savepoint {
         private final long taskId;
+        private final String worker;
 
-        private TaskSavepoint(long taskId) {
+        private TaskSavepoint(long taskId, String worker) {
             this.taskId = taskId;
+            this.worker = worker;
         }
 
         @Override
@@ -519,7 +515,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (executeSnapshot != null && executeSnapshot.length() > SNAPSHOT_MAX_LENGTH) {
                 throw new SavepointFailedException("Execution snapshot length to large " + executeSnapshot.length());
             }
-            if (!supervisorRpcClient.savepoint(taskId, executeSnapshot)) {
+            if (!supervisorRpcClient.savepoint(taskId, worker, executeSnapshot)) {
                 throw new SavepointFailedException("Save execution snapshot data occur error.");
             }
         }
@@ -705,8 +701,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.warn("Start task error: " + workerTask, t);
                 if (workerTask.getRouteStrategy().isNotBroadcast()) {
                     // reset task worker
-                    List<UpdateTaskWorkerParam> list = Collections.singletonList(new UpdateTaskWorkerParam(workerTask.getTaskId(), null));
-                    ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(list), () -> "Reset task worker error: " + workerTask);
+                    List<Long> list = Collections.singletonList(workerTask.getTaskId());
+                    ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(null, list), () -> "Reset task worker error: " + workerTask);
                 }
                 Threads.interruptIfNecessary(t);
                 // discard task
@@ -760,7 +756,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void execute(WorkerTask workerTask, ExecuteTask executeTask, TaskExecutor taskExecutor) throws Exception {
             ExecuteResult result;
-            Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId());
+            Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId(), workerTask.getWorker().serialize());
             if (workerTask.getExecuteTimeout() > 0) {
                 FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executeTask, savepoint));
                 String threadName = "WorkerThread#FutureTaskThread-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();

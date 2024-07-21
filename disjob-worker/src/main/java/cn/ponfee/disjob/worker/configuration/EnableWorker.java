@@ -31,7 +31,6 @@ import cn.ponfee.disjob.worker.provider.WorkerRpcProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -55,12 +54,6 @@ public @interface EnableWorker {
     @EnableConfigurationProperties(WorkerProperties.class)
     class EnableWorkerConfiguration {
 
-        @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
-        public TaskTimingWheel timingWheel(WorkerProperties config) {
-            return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
-        }
-
-        @DependsOn(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
         @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
         public Worker.Current currentWorker(WebServerApplicationContext webServerApplicationContext,
                                             WorkerProperties config) {
@@ -81,9 +74,14 @@ public @interface EnableWorker {
             }
         }
 
+        @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
+        public TaskTimingWheel timingWheel(Worker.Current currentWorker, WorkerProperties config) {
+            return new TaskTimingWheel(currentWorker, config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
+        }
+
         @Bean
-        public WorkerRpcService workerRpcService(Worker.Current currentWork, WorkerRegistry workerRegistry) {
-            return new WorkerRpcProvider(currentWork, workerRegistry);
+        public WorkerRpcService workerRpcService(Worker.Current currentWorker, WorkerRegistry workerRegistry) {
+            return new WorkerRpcProvider(currentWorker, workerRegistry);
         }
     }
 

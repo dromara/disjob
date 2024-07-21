@@ -25,7 +25,6 @@ import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import lombok.Getter;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,10 +40,9 @@ public class GeneralInstanceCreator extends TriggerInstanceCreator<GeneralInstan
 
     @Override
     public GeneralInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
-        Date now = new Date();
         long instanceId = jobManager.generateId();
-        SchedInstance instance = SchedInstance.create(instanceId, job.getJobId(), runType, triggerTime, 0, now);
-        List<SchedTask> tasks = jobManager.splitJob(SplitJobParam.from(job), instanceId, now);
+        SchedInstance instance = SchedInstance.create(instanceId, job.getJobId(), runType, triggerTime, 0);
+        List<SchedTask> tasks = jobManager.splitJob(SplitJobParam.from(job, job.getJobHandler()), instanceId);
         return new GeneralInstance(instance, tasks);
     }
 

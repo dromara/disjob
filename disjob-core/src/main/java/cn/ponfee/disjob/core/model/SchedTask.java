@@ -115,12 +115,11 @@ public class SchedTask extends BaseEntity {
      * @param instanceId the instance id
      * @param taskNo     the task no
      * @param taskCount  the task count
-     * @param createTime the created time
      * @param worker     the worker
      * @return SchedTask
      */
     public static SchedTask create(String taskParam, long taskId, long instanceId,
-                                   int taskNo, int taskCount, Date createTime, String worker) {
+                                   int taskNo, int taskCount, String worker) {
         SchedTask task = new SchedTask();
         task.setTaskParam(taskParam == null ? "" : taskParam);
         task.setTaskId(taskId);

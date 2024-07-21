@@ -60,7 +60,7 @@ public class Supervisor extends Server {
     }
 
     @Override
-    public String serialize() {
+    public final String serialize() {
         return serializedValue;
     }
 

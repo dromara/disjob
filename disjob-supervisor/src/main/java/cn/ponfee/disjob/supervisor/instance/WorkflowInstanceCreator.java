@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.dag.DAGExpressionParser;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tuple.Tuple2;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
@@ -51,11 +50,10 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
 
     @Override
     public WorkflowInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
-        Date now = new Date();
         long wnstanceId = jobManager.generateId();
-        SchedInstance leadInstance = SchedInstance.create(wnstanceId, job.getJobId(), runType, triggerTime, 0, now);
+        SchedInstance leadInstance = SchedInstance.create(wnstanceId, job.getJobId(), runType, triggerTime, 0);
         leadInstance.setRunState(RunState.RUNNING.value());
-        leadInstance.setRunStartTime(Dates.max(now, new Date(triggerTime)));
+        leadInstance.setRunStartTime(Dates.max(new Date(), new Date(triggerTime)));
         leadInstance.setWnstanceId(wnstanceId);
 
         MutableInt sequence = new MutableInt(1);
@@ -78,14 +76,14 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
             workflow.setRunState(RunState.RUNNING.value());
 
             // 工作流的子任务实例的【root、parent、workflow】instance_id只与工作流相关联
-            SchedInstance nodeInstance = SchedInstance.create(nodeInstanceId, job.getJobId(), runType, nodeTriggerTime, 0, now);
+            SchedInstance nodeInstance = SchedInstance.create(nodeInstanceId, job.getJobId(), runType, nodeTriggerTime, 0);
             nodeInstance.setRnstanceId(wnstanceId);
             nodeInstance.setPnstanceId(wnstanceId);
             nodeInstance.setWnstanceId(wnstanceId);
-            nodeInstance.setAttach(Jsons.toJson(InstanceAttach.of(node)));
+            nodeInstance.setAttach(new InstanceAttach(node.toString()).toJson());
 
             SplitJobParam param = SplitJobParam.from(job, node.getName());
-            List<SchedTask> tasks = jobManager.splitJob(param, nodeInstance.getInstanceId(), now);
+            List<SchedTask> tasks = jobManager.splitJob(param, nodeInstance.getInstanceId());
             nodeInstances.add(Tuple2.of(nodeInstance, tasks));
         }
 

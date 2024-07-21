@@ -21,6 +21,7 @@ import cn.ponfee.disjob.common.dag.DAGNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 
@@ -44,8 +45,11 @@ public class InstanceAttach extends ToJsonString implements Serializable {
         this.curNode = curNode;
     }
 
-    public static InstanceAttach of(DAGNode curNode) {
-        return new InstanceAttach(curNode.toString());
+    public DAGNode parseCurrentNode() {
+        if (StringUtils.isBlank(curNode)) {
+            return null;
+        }
+        return DAGNode.fromString(curNode);
     }
 
 }

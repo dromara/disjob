@@ -95,7 +95,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     public void check() {
         Assert.isTrue(maximumSplitTaskSize > 0, "Maximum split task size must be greater than 0.");
         Assert.isTrue(maximumJobDependsDepth > 0, "Maximum job depends depth must be greater than 0.");
-        Assert.isTrue(maximumJobRetryCount > 0 && maximumJobRetryCount < 10, "Maximum job retry count must be range [1, 9].");
+        Assert.isTrue(0 < maximumJobRetryCount && maximumJobRetryCount < 10, "Maximum job retry count must be range [1, 9].");
         Assert.isTrue(scanTriggeringJobPeriodMs >= 1000, "Scan triggering job period ms cannot less than 1000.");
         Assert.isTrue(scanWaitingInstancePeriodMs >= 15000, "Scan waiting instance period ms cannot less than 15000.");
         Assert.isTrue(scanRunningInstancePeriodMs >= 30000, "Scan running instance period ms cannot less than 30000.");

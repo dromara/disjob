@@ -16,7 +16,10 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.core.dto.supervisor.*;
+import cn.ponfee.disjob.core.dto.supervisor.EventParam;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
+import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,7 +39,7 @@ public interface SupervisorRpcService {
     StartTaskResult startTask(StartTaskParam param) throws Exception;
 
     @PostMapping("/task/worker/update")
-    void updateTaskWorker(List<UpdateTaskWorkerParam> list) throws Exception;
+    void updateTaskWorker(String worker, List<Long> taskIds) throws Exception;
 
     @PostMapping("/task/stop")
     boolean stopTask(StopTaskParam param) throws Exception;
@@ -57,11 +60,12 @@ public interface SupervisorRpcService {
      * Savepoint the task execution snapshot data
      *
      * @param taskId          the taskId
+     * @param worker          the worker
      * @param executeSnapshot the execution snapshot data
      * @return {@code true} if saved successful
      * @throws Exception if occur exception
      */
     @PostMapping("/task/savepoint")
-    boolean savepoint(long taskId, String executeSnapshot) throws Exception;
+    boolean savepoint(long taskId, String worker, String executeSnapshot) throws Exception;
 
 }

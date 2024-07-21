@@ -188,7 +188,7 @@ public abstract class AbstractJobManager {
         return idGenerator.generateId();
     }
 
-    public List<SchedTask> splitJob(SplitJobParam param, long instanceId, Date date) throws JobException {
+    public List<SchedTask> splitJob(SplitJobParam param, long instanceId) throws JobException {
         if (param.getRouteStrategy().isBroadcast()) {
             List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getGroup());
             if (discoveredServers.isEmpty()) {
@@ -197,7 +197,7 @@ public abstract class AbstractJobManager {
             String taskParam = param.getJobParam();
             int count = discoveredServers.size();
             return IntStream.range(0, count)
-                .mapToObj(i -> SchedTask.create(taskParam, generateId(), instanceId, i + 1, count, date, discoveredServers.get(i).serialize()))
+                .mapToObj(i -> SchedTask.create(taskParam, generateId(), instanceId, i + 1, count, discoveredServers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
             List<String> taskParams = splitJob(param).getTaskParams();
@@ -207,7 +207,7 @@ public abstract class AbstractJobManager {
                 throw new IllegalStateException("Split task size must less than " + conf.getMaximumSplitTaskSize() + ": " + param);
             }
             return IntStream.range(0, count)
-                .mapToObj(i -> SchedTask.create(taskParams.get(i), generateId(), instanceId, i + 1, count, date, null))
+                .mapToObj(i -> SchedTask.create(taskParams.get(i), generateId(), instanceId, i + 1, count, null))
                 .collect(Collectors.toList());
         }
     }
@@ -307,6 +307,8 @@ public abstract class AbstractJobManager {
 
         return taskDispatcher.dispatch(job.getGroup(), params);
     }
+
+    // ------------------------------------------------------------------protected methods
 
     protected boolean dispatch(List<ExecuteTaskParam> params) {
         return taskDispatcher.dispatch(params);

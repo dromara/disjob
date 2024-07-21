@@ -133,7 +133,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         public boolean validate0(String triggerValue) {
             try {
                 PeriodTriggerValue conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
-                return conf != null && conf.isValid();
+                return conf != null && conf.verify();
             } catch (Exception ignored) {
                 return false;
             }
@@ -157,7 +157,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid period config: " + triggerValue, e);
             }
-            Assert.isTrue(conf != null && conf.isValid(), () -> "Invalid period config: " + triggerValue);
+            Assert.isTrue(conf != null && conf.verify(), () -> "Invalid period config: " + triggerValue);
 
             DatePeriods period = conf.getPeriod();
             Date start = conf.getStart(), next;

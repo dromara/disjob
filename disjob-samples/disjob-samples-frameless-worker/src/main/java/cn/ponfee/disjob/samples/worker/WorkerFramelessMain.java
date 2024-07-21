@@ -80,9 +80,9 @@ public class WorkerFramelessMain {
         httpProps.check();
         WorkerProperties workerProps = config.extract(WorkerProperties.class, WorkerProperties.KEY_PREFIX);
         workerProps.check();
-        TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(workerProps.getTimingWheelTickMs(), workerProps.getTimingWheelRingSize());
         LazyLoader<StringRedisTemplate> srtLoader = LazyLoader.of(() -> AbstractRedisTemplateCreator.create(DISJOB_KEY_PREFIX + ".redis", config).getStringRedisTemplate());
         Worker.Current currentWorker = createCurrentWorker(config, workerProps);
+        TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(currentWorker, workerProps.getTimingWheelTickMs(), workerProps.getTimingWheelRingSize());
 
 
 

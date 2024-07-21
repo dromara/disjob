@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_workflow</sql>
 
   <sql id="Base_Column_List">
-    wnstance_id, cur_node, pre_node, sequence, run_state, instance_id
+    wnstance_id, cur_node, pre_node, sequence, run_state, instance_id, updated_at
   </sql>
 
   <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">

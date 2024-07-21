@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class BaseController
 {
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {

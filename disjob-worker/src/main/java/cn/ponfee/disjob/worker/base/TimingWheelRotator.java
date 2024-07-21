@@ -19,15 +19,14 @@ package cn.ponfee.disjob.worker.base;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.base.TimingWheel;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
-import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.registry.Discovery;
 import com.google.common.collect.Lists;
@@ -109,20 +108,27 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     }
 
     private void process(List<ExecuteTaskParam> tasks) {
-        for (List<ExecuteTaskParam> subs : Lists.partition(tasks, PROCESS_BATCH_SIZE)) {
-            List<UpdateTaskWorkerParam> list = subs.stream()
-                // 广播任务分派的worker不可修改，需要排除
-                .filter(e -> e.getRouteStrategy().isNotBroadcast())
-                .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), e.getWorker()))
-                .collect(Collectors.toList());
-            // 更新task的worker信息
-            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(list), () -> "Update task worker error: " + Jsons.toJson(list));
+        updateTaskWorker(tasks);
+        for (ExecuteTaskParam e : tasks) {
+            String triggerTime = DATE_FORMAT.format(e.getTriggerTime());
+            LOG.info("Task trace [{}] triggered: {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), triggerTime);
+            workerThreadPool.submit(new WorkerTask(e));
+        }
+    }
 
-            // 触发执行
-            subs.forEach(e -> {
-                LOG.info("Task trace [{}] triggered: {}, {}, {}", e.getTaskId(), e.getOperation(), e.getWorker(), DATE_FORMAT.format(e.getTriggerTime()));
-                workerThreadPool.submit(new WorkerTask(e));
-            });
+    private void updateTaskWorker(List<ExecuteTaskParam> list) {
+        List<Long> taskIds = list.stream()
+            // 广播任务分派的worker不可修改，需要剔除
+            .filter(e -> e.getRouteStrategy().isNotBroadcast())
+            .map(ExecuteTaskParam::getTaskId)
+            .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(taskIds)) {
+            return;
+        }
+
+        String worker = Collects.getFirst(list).getWorker().serialize();
+        for (List<Long> ids : Lists.partition(taskIds, PROCESS_BATCH_SIZE)) {
+            ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(worker, ids), () -> "Update task worker error: " + ids);
         }
     }
 

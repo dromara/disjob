@@ -131,6 +131,7 @@
         version = version+1
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = 20
+      AND worker = #{worker,jdbcType=VARCHAR}
   </update>
 
   <delete id="deleteByInstanceId" parameterType="_long">
@@ -140,16 +141,12 @@
   </delete>
 
   <!-- 使用其它的批量方式需要添加jdbc参数：allowMultiQueries=true&rewriteBatchedStatements=true -->
-  <update id="batchUpdateWorker" parameterType="list">
+  <update id="batchUpdateWorker">
     UPDATE <include refid="Table_Name" />
-    SET version = version+1,
-        worker =
-          CASE
-            <foreach collection="list" item="item" separator=" ">
-              WHEN task_id = #{item.taskId,jdbcType=BIGINT} THEN #{item.worker,jdbcType=VARCHAR}
-            </foreach>
-          END
-    WHERE task_id IN (<foreach collection="list" separator="," item="item">#{item.taskId,jdbcType=BIGINT}</foreach>)
+    SET worker = #{worker,jdbcType=VARCHAR},
+        version = version+1
+    WHERE task_id IN (<foreach collection="taskIds" separator="," item="taskId">#{taskId,jdbcType=BIGINT}</foreach>)
+      AND execute_state = 10
   </update>
 
 </mapper>

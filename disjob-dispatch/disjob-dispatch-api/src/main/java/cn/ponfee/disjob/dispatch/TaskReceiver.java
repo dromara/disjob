@@ -64,7 +64,7 @@ public abstract class TaskReceiver implements Startable {
 
         Worker assignedWorker = param.getWorker();
         if (!currentWorker.sameWorker(assignedWorker)) {
-            log.error("Received unmatched worker: {}, {}, {}", param.getTaskId(), currentWorker, assignedWorker);
+            log.error("Received unmatched worker task: {}, {}, {}", param.getTaskId(), currentWorker, assignedWorker);
             return false;
         }
         if (!currentWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {

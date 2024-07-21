@@ -29,7 +29,6 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.thread.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.thread.TriggeringJobScanner;
 import cn.ponfee.disjob.supervisor.thread.WaitingInstanceScanner;
-import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,13 +100,12 @@ public class SupervisorStartup implements Startable {
             return;
         }
 
-        Stopwatch stopwatch = Stopwatch.createStarted();
         LOG.info("Supervisor start begin: {}", currentSupervisor);
         waitingInstanceScanner.start();
         runningInstanceScanner.start();
         triggeringJobScanner.start();
         supervisorRegistry.register(currentSupervisor);
-        LOG.info("Supervisor start end: {}, {}", currentSupervisor, stopwatch.stop());
+        LOG.info("Supervisor start end: {}", currentSupervisor);
     }
 
     @Override
@@ -117,7 +115,6 @@ public class SupervisorStartup implements Startable {
             return;
         }
 
-        Stopwatch stopwatch = Stopwatch.createStarted();
         LOG.info("Supervisor stop begin: {}", currentSupervisor);
         ThrowingRunnable.doCaught(supervisorRegistry::close);
         ThrowingRunnable.doCaught(triggeringJobScanner::toStop);
@@ -127,7 +124,7 @@ public class SupervisorStartup implements Startable {
         ThrowingRunnable.doCaught(triggeringJobScanner::close);
         ThrowingRunnable.doCaught(runningInstanceScanner::close);
         ThrowingRunnable.doCaught(waitingInstanceScanner::close);
-        LOG.info("Supervisor stop end: {}, {}", currentSupervisor, stopwatch.stop());
+        LOG.info("Supervisor stop end: {}", currentSupervisor);
     }
 
     // ----------------------------------------------------------------------------------------builder

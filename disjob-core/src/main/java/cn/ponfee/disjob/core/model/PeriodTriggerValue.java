@@ -22,7 +22,6 @@ import cn.ponfee.disjob.core.enums.TriggerType;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -53,8 +52,7 @@ public class PeriodTriggerValue extends ToJsonString implements Serializable {
      */
     private int step = 1;
 
-    @Transient
-    public boolean isValid() {
+    public boolean verify() {
         return period != null && start != null && step > 0;
     }
 

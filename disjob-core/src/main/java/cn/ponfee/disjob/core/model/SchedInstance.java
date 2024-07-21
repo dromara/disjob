@@ -129,18 +129,16 @@ public class SchedInstance extends BaseEntity {
      * @param runType      the run type
      * @param triggerTime  the trigger time
      * @param retriedCount the retried count
-     * @param date         the creates date
      * @return SchedInstance
      */
     public static SchedInstance create(long instanceId, long jobId, RunType runType,
-                                       long triggerTime, int retriedCount, Date date) {
+                                       long triggerTime, int retriedCount) {
         SchedInstance instance = new SchedInstance();
         instance.setInstanceId(instanceId);
         instance.setJobId(jobId);
         instance.setRunType(runType.value());
         instance.setTriggerTime(triggerTime);
         instance.setRetriedCount(retriedCount);
-        instance.setNextScanTime(date);
         instance.setRunState(RunState.WAITING.value());
         return instance;
     }

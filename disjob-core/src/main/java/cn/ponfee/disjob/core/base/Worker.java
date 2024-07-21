@@ -107,7 +107,7 @@ public class Worker extends Server {
     }
 
     @Override
-    public String serialize() {
+    public final String serialize() {
         return serializedValue;
     }
 

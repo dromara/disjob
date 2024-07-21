@@ -37,48 +37,48 @@ import java.util.List;
 @RpcController
 public class WorkerRpcProvider implements WorkerRpcService {
 
-    private final Worker.Current currentWork;
+    private final Worker.Current currentWorker;
     private final WorkerRegistry workerRegistry;
 
-    public WorkerRpcProvider(Worker.Current currentWork, WorkerRegistry workerRegistry) {
-        this.currentWork = currentWork;
+    public WorkerRpcProvider(Worker.Current currentWorker, WorkerRegistry workerRegistry) {
+        this.currentWorker = currentWorker;
         this.workerRegistry = workerRegistry;
     }
 
     @Override
     public void verify(VerifyJobParam param) throws JobException {
-        currentWork.verifySupervisorAuthenticationToken(param);
+        currentWorker.verifySupervisorAuthenticationToken(param);
         JobHandlerUtils.verify(param);
     }
 
     @Override
     public SplitJobResult split(SplitJobParam param) throws JobException {
-        currentWork.verifySupervisorAuthenticationToken(param);
+        currentWorker.verifySupervisorAuthenticationToken(param);
         List<String> taskParams = JobHandlerUtils.split(param.getJobHandler(), param.getJobParam());
         return new SplitJobResult(taskParams);
     }
 
     @Override
     public boolean existsTask(ExistsTaskParam param) {
-        currentWork.verifySupervisorAuthenticationToken(param);
+        currentWorker.verifySupervisorAuthenticationToken(param);
         return WorkerConfigurator.existsTask(param.getTaskId());
     }
 
     @Override
     public WorkerMetrics metrics(GetMetricsParam param) {
-        String wGroup = currentWork.getGroup();
+        String wGroup = currentWorker.getGroup();
         String pGroup = param.getGroup();
         if (!wGroup.equals(pGroup)) {
             throw new IllegalArgumentException("Inconsistent get metrics group: " + wGroup + " != " + pGroup);
         }
-        currentWork.verifySupervisorAuthenticationToken(param);
+        currentWorker.verifySupervisorAuthenticationToken(param);
 
         return WorkerConfigurator.metrics();
     }
 
     @Override
     public void configureWorker(ConfigureWorkerParam param) {
-        currentWork.verifySupervisorAuthenticationToken(param);
+        currentWorker.verifySupervisorAuthenticationToken(param);
 
         Action action = param.getAction();
         if (action == Action.MODIFY_MAXIMUM_POOL_SIZE) {
@@ -86,15 +86,15 @@ public class WorkerRpcProvider implements WorkerRpcService {
             WorkerConfigurator.modifyMaximumPoolSize(maximumPoolSize);
 
         } else if (action == Action.REMOVE_WORKER) {
-            workerRegistry.deregister(currentWork);
+            workerRegistry.deregister(currentWorker);
 
         } else if (action == Action.ADD_WORKER) {
-            String cGroup = currentWork.getGroup();
+            String cGroup = currentWorker.getGroup();
             String dGroup = action.parse(param.getData());
             if (!cGroup.equals(dGroup)) {
                 throw new UnsupportedOperationException("Inconsistent add worker group: " + cGroup + "!=" + dGroup);
             }
-            workerRegistry.register(currentWork);
+            workerRegistry.register(currentWorker);
 
         } else {
             throw new UnsupportedOperationException("Unsupported configure worker action: " + action);

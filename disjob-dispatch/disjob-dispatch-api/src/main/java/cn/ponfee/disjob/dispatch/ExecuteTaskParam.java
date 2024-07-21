@@ -17,9 +17,7 @@
 package cn.ponfee.disjob.dispatch;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.util.Bytes;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
@@ -27,7 +25,6 @@ import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RedeployStrategy;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.model.InstanceAttach;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
@@ -169,13 +166,12 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         }
 
         private String obtainJobHandler() {
-            if (instance.getWnstanceId() == null) {
+            if (!instance.isWorkflow()) {
                 Assert.hasText(job.getJobHandler(), () -> "General job handler cannot be null: " + job.getJobId());
                 return job.getJobHandler();
             }
 
-            InstanceAttach attach = Jsons.fromJson(instance.getAttach(), InstanceAttach.class);
-            String currJobHandler = DAGNode.fromString(attach.getCurNode()).getName();
+            String currJobHandler = instance.parseAttach().parseCurrentNode().getName();
             Assert.hasText(currJobHandler, () -> "Curr node job handler cannot be empty: " + instance.getInstanceId());
             return currJobHandler;
         }

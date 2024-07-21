@@ -19,7 +19,6 @@ package cn.ponfee.disjob.supervisor.model;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
@@ -29,12 +28,11 @@ import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  * @author Ponfee
@@ -55,17 +53,21 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
         int count = 197;
         long instanceId = idGenerator.generateId();
         taskMapper.batchInsert(createTasks(count, instanceId));
+        List<Worker> workers = Arrays.asList(
+            new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80),
+            new Worker("g", UuidUtils.uuid32(), "127.0.0.2", 80),
+            new Worker("g", UuidUtils.uuid32(), "127.0.0.3", 80),
+            new Worker("g", UuidUtils.uuid32(), "127.0.0.4", 80)
+        );
 
         Runnable runnable = () -> {
-            final List<SchedTask> tasks = createTasks(count, instanceId);
+            final List<Long> taskIds = LongStream.range(0, count).boxed().collect(Collectors.toList());
             for (int i = 0; i < 5; i++) {
-                List<UpdateTaskWorkerParam> list = tasks.stream()
-                    .map(e -> new UpdateTaskWorkerParam(e.getTaskId(), new Worker("g", UuidUtils.uuid32(), "127.0.0.1", 80)))
-                    .collect(Collectors.toList());
-                Collections.shuffle(list);
-                List<UpdateTaskWorkerParam> subList = new ArrayList<>(list.subList(0, list.size() / 2));
+                Collections.shuffle(taskIds);
+                List<Long> subList = new ArrayList<>(taskIds.subList(0, taskIds.size() / 2));
                 Collections.shuffle(subList);
-                distributedJobManager.updateTaskWorker(subList);
+                Worker worker = workers.get(ThreadLocalRandom.current().nextInt(workers.size()));
+                distributedJobManager.updateTaskWorker(worker.serialize(), subList);
             }
         };
 
@@ -92,7 +94,7 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
         List<SchedTask> tasks = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             SchedTask task = new SchedTask();
-            task.setTaskId((long)i);
+            task.setTaskId((long) i);
             task.setInstanceId(instanceId);
             task.setTaskNo(i);
             task.setTaskCount(count);

@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
-import cn.ponfee.disjob.core.dto.supervisor.UpdateTaskWorkerParam;
 import cn.ponfee.disjob.core.model.SchedTask;
 import org.apache.ibatis.annotations.Param;
 
@@ -62,7 +61,9 @@ public interface SchedTaskMapper {
 
     int forceChangeState(@Param("instanceId") long instanceId, @Param("toState") int toState);
 
-    int savepoint(@Param("taskId") long taskId, @Param("executeSnapshot") String executeSnapshot);
+    int savepoint(@Param("taskId") long taskId,
+                  @Param("worker") String worker,
+                  @Param("executeSnapshot") String executeSnapshot);
 
     /**
      * Delete the sched task.
@@ -75,9 +76,10 @@ public interface SchedTaskMapper {
     /**
      * Update or clear the task worker
      *
-     * @param list the update task worker param list
+     * @param worker  the worker
+     * @param taskIds the task id list
      * @return update sql affected rows
      */
-    int batchUpdateWorker(List<UpdateTaskWorkerParam> list);
+    int batchUpdateWorker(@Param("worker") String worker, @Param("taskIds") List<Long> taskIds);
 
 }

@@ -22,7 +22,6 @@
       run_state,
       run_start_time,
       retried_count,
-      next_scan_time,
       attach
     ) VALUES (
       #{instanceId,jdbcType=BIGINT},
@@ -35,7 +34,6 @@
       #{runState,jdbcType=TINYINT},
       #{runStartTime,jdbcType=TIMESTAMP},
       #{retriedCount,jdbcType=TINYINT},
-      #{nextScanTime,jdbcType=TIMESTAMP},
       #{attach,jdbcType=VARCHAR}
     )
   </insert>

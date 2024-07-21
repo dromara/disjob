@@ -19,7 +19,10 @@ package cn.ponfee.disjob.supervisor.provider;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.*;
-import cn.ponfee.disjob.core.dto.supervisor.*;
+import cn.ponfee.disjob.core.dto.supervisor.EventParam;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
+import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
@@ -48,8 +51,8 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
     }
 
     @Override
-    public void updateTaskWorker(List<UpdateTaskWorkerParam> list) {
-        jobManager.updateTaskWorker(list);
+    public void updateTaskWorker(String worker, List<Long> taskIds) {
+        jobManager.updateTaskWorker(worker, taskIds);
     }
 
     @Override
@@ -84,8 +87,8 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
     }
 
     @Override
-    public boolean savepoint(long taskId, String executeSnapshot) {
-        return jobManager.savepoint(taskId, executeSnapshot);
+    public boolean savepoint(long taskId, String worker, String executeSnapshot) {
+        return jobManager.savepoint(taskId, worker, executeSnapshot);
     }
 
 }

@@ -28,7 +28,6 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
 import cn.ponfee.disjob.worker.base.WorkerThreadPool;
 import cn.ponfee.disjob.worker.configuration.WorkerProperties;
-import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
@@ -94,13 +93,12 @@ public class WorkerStartup implements Startable {
             return;
         }
 
-        Stopwatch stopwatch = Stopwatch.createStarted();
         LOG.info("Worker start begin: {}", currentWorker);
         workerThreadPool.start();
         timingWheelRotator.start();
         taskReceiver.start();
         workerRegistry.register(currentWorker);
-        LOG.info("Worker start end: {}, {}", currentWorker, stopwatch.stop());
+        LOG.info("Worker start end: {}", currentWorker);
     }
 
     @Override
@@ -110,13 +108,12 @@ public class WorkerStartup implements Startable {
             return;
         }
 
-        Stopwatch stopwatch = Stopwatch.createStarted();
         LOG.info("Worker stop begin: {}", currentWorker);
         ThrowingRunnable.doCaught(workerRegistry::close);
         ThrowingRunnable.doCaught(taskReceiver::close);
         ThrowingRunnable.doCaught(timingWheelRotator::close);
         ThrowingRunnable.doCaught(workerThreadPool::close);
-        LOG.info("Worker stop end: {}, {}", currentWorker, stopwatch.stop());
+        LOG.info("Worker stop end: {}", currentWorker);
     }
 
     // ----------------------------------------------------------------------------------------builder

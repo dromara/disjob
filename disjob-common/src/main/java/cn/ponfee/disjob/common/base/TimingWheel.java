@@ -98,10 +98,11 @@ import java.util.PriorityQueue;
  * @author Ponfee
  */
 public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements java.io.Serializable {
-    private static final long serialVersionUID = 4500377208898808026L;
-    private static final Logger LOG = LoggerFactory.getLogger(TimingWheel.class);
 
+    private static final long serialVersionUID = 4500377208898808026L;
     private static final int PROCESS_SLOTS_SIZE = 2;
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * Tick duration milliseconds
@@ -173,9 +174,9 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
 
         boolean res = wheel[ringIndex].offer(timing);
         if (res) {
-            LOG.info("Timing wheel task success {}", timing);
+            log.info("Timing wheel task success {}", timing);
         } else {
-            LOG.error("Timing wheel task failed {}", timing);
+            log.error("Timing wheel task failed {}", timing);
         }
         return res;
     }
@@ -206,7 +207,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
                     break;
                 }
                 if (first.timing() > maximumTiming) {
-                    LOG.info("Re offer first element because timing exceed maximum value: {}, {}", first, maximumTiming);
+                    log.info("Re offer first element because timing exceed maximum value: {}, {}", first, maximumTiming);
                     ringTick.offer(first);
                     break;
                 }
