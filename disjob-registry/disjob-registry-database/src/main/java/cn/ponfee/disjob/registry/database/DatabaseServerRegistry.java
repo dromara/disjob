@@ -92,7 +92,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private final LoopThread discoverHeartbeatThread;
 
     protected DatabaseServerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper wrapper) {
-        super(config.getNamespace(), ':');
+        super(config, ':');
         this.namespace = config.getNamespace().trim();
         this.jdbcTemplateWrapper = wrapper;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();

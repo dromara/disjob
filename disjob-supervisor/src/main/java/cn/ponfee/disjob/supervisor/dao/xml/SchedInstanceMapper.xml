@@ -19,6 +19,7 @@
       job_id,
       trigger_time,
       run_type,
+      unique_flag,
       run_state,
       run_start_time,
       retried_count,
@@ -31,6 +32,7 @@
       #{jobId,jdbcType=BIGINT},
       #{triggerTime,jdbcType=BIGINT},
       #{runType,jdbcType=TINYINT},
+      #{uniqueFlag,jdbcType=BIGINT},
       #{runState,jdbcType=TINYINT},
       #{runStartTime,jdbcType=TIMESTAMP},
       #{retriedCount,jdbcType=TINYINT},
@@ -50,12 +52,13 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="getByJobIdAndTriggerTimeAndRunType" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="getByUniqueKey" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND trigger_time = #{triggerTime,jdbcType=BIGINT}
       AND run_type = #{runType,jdbcType=TINYINT}
+      AND unique_flag = #{uniqueFlag,jdbcType=BIGINT}
   </select>
 
   <select id="getWnstanceId" parameterType="_long" resultType="long">

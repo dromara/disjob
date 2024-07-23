@@ -90,9 +90,10 @@ public interface SchedInstanceMapper {
 
     int deleteByWnstanceId(long wnstanceId);
 
-    SchedInstance getByJobIdAndTriggerTimeAndRunType(@Param("jobId") long jobId,
-                                                     @Param("triggerTime") long triggerTime,
-                                                     @Param("runType") int runType);
+    SchedInstance getByUniqueKey(@Param("jobId") long jobId,
+                                 @Param("triggerTime") long triggerTime,
+                                 @Param("runType") int runType,
+                                 @Param("uniqueFlag") long uniqueFlag);
 
     // -------------------------------------------------query for page
 

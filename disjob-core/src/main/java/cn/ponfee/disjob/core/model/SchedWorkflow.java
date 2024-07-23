@@ -52,11 +52,6 @@ public class SchedWorkflow extends BaseEntity {
     private String preNode;
 
     /**
-     * 序号(从1开始)
-     */
-    private Integer sequence;
-
-    /**
      * 运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；
      *
      * @see RunState
@@ -68,11 +63,10 @@ public class SchedWorkflow extends BaseEntity {
      */
     private Long instanceId;
 
-    public SchedWorkflow(Long wnstanceId, String curNode, String preNode, int sequence) {
+    public SchedWorkflow(Long wnstanceId, String curNode, String preNode) {
         this.wnstanceId = wnstanceId;
         this.curNode = curNode;
         this.preNode = preNode;
-        this.sequence = sequence;
         this.runState = RunState.WAITING.value();
     }
 

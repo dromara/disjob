@@ -58,7 +58,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
     private final EventListener eventListener;
 
     protected NacosServerRegistry(NacosRegistryProperties config) {
-        super(config.getNamespace(), ':');
+        super(config, ':');
         this.groupName = StringUtils.isBlank(config.getNamespace()) ? Constants.DEFAULT_GROUP : config.getNamespace().trim();
 
         CountDownLatch latch = new CountDownLatch(1);

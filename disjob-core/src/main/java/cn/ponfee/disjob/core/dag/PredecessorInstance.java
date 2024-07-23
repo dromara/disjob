@@ -39,7 +39,6 @@ public class PredecessorInstance extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 422243686633743869L;
 
     private long instanceId;
-    private int sequence;
     private String curNode;
     private RunState runState;
     private List<PredecessorTask> tasks;
@@ -47,7 +46,6 @@ public class PredecessorInstance extends ToJsonString implements Serializable {
     public static PredecessorInstance of(SchedWorkflow workflow, List<SchedTask> tasks) {
         PredecessorInstance instance = new PredecessorInstance();
         instance.setInstanceId(workflow.getInstanceId());
-        instance.setSequence(workflow.getSequence());
         instance.setCurNode(workflow.getCurNode());
         instance.setRunState(RunState.of(workflow.getRunState()));
         instance.setTasks(Collects.convert(tasks, PredecessorInstance::convert));

@@ -73,7 +73,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     protected EtcdServerRegistry(EtcdRegistryProperties config) {
         // etcd separator must be '/'
-        super(config.getNamespace(), '/');
+        super(config, '/');
         this.ttl = config.getSessionTimeoutMs() / 2000;
 
         CountDownLatch latch = new CountDownLatch(1);

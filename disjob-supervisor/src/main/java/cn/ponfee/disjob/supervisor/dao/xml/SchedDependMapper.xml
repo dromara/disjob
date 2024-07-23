@@ -5,20 +5,18 @@
   <sql id="Table_Name">sched_depend</sql>
 
   <sql id="Base_Column_List">
-    parent_job_id, child_job_id, `sequence`
+    parent_job_id, child_job_id
   </sql>
 
   <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       parent_job_id,
-      child_job_id,
-      `sequence`
+      child_job_id
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
       #{item.parentJobId,jdbcType=BIGINT},
-      #{item.childJobId,jdbcType=BIGINT},
-      #{item.sequence,jdbcType=INTEGER}
+      #{item.childJobId,jdbcType=BIGINT}
     )
     </foreach>
   </insert>

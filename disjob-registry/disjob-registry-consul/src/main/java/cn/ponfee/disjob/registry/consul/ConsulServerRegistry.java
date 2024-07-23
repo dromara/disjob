@@ -69,7 +69,7 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     private final ConsulSubscriberThread consulSubscriberThread;
 
     protected ConsulServerRegistry(ConsulRegistryProperties config) {
-        super(config.getNamespace(), ':');
+        super(config, ':');
 
         this.client = new ConsulClient(config.getHost(), config.getPort());
         this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();

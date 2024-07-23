@@ -222,7 +222,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         }
 
-        SchedInstance lastInstance = jobQuerier.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value());
+        SchedInstance lastInstance = jobQuerier.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE.value(), RunType.UNIQUE_FLAG);
         if (lastInstance == null) {
             return false;
         }

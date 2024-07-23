@@ -77,8 +77,8 @@ public class DistributedJobQuerier {
         return instanceMapper.getJobId(instanceId);
     }
 
-    public SchedInstance getInstance(long jobId, long triggerTime, int runType) {
-        return instanceMapper.getByJobIdAndTriggerTimeAndRunType(jobId, triggerTime, runType);
+    public SchedInstance getInstance(long jobId, long triggerTime, int runType, long uniqueFlag) {
+        return instanceMapper.getByUniqueKey(jobId, triggerTime, runType, uniqueFlag);
     }
 
     /**

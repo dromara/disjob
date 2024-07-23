@@ -121,7 +121,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     protected RedisServerRegistry(StringRedisTemplate stringRedisTemplate,
                                   RedisRegistryProperties config) {
-        super(config.getNamespace(), ':');
+        super(config, ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;

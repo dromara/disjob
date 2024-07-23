@@ -43,7 +43,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     private final String zkRegistryRootPath;
 
     protected ZookeeperServerRegistry(ZookeeperRegistryProperties config) {
-        super(config.getNamespace(), '/');
+        super(config, '/');
         // zookeeper parent path must start with "/"
         this.zkRegistryRootPath = separator + registryRootPath;
         String zkDiscoveryRootPath = separator + discoveryRootPath;

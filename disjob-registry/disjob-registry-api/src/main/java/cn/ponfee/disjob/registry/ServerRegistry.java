@@ -59,10 +59,10 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      */
     protected final TripState state = TripState.createStarted();
 
-    protected ServerRegistry(String namespace, char separator) {
+    protected ServerRegistry(AbstractRegistryProperties config, char separator) {
         this.separator = separator;
 
-        String prefix = prune(namespace, separator);
+        String prefix = prune(config.getNamespace(), separator);
 
         this.registryRole = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 0));
         this.registryRootPath = prefix + registryRole.key();

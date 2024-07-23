@@ -550,7 +550,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void createInstance(TriggerInstance tInstance) {
-        instanceMapper.insert(tInstance.getInstance());
+        instanceMapper.insert(tInstance.getInstance().fillUniqueFlag());
 
         if (tInstance instanceof GeneralInstanceCreator.GeneralInstance) {
             GeneralInstanceCreator.GeneralInstance creator = (GeneralInstanceCreator.GeneralInstance) tInstance;
@@ -559,7 +559,7 @@ public class DistributedJobManager extends AbstractJobManager {
             WorkflowInstanceCreator.WorkflowInstance creator = (WorkflowInstanceCreator.WorkflowInstance) tInstance;
             Collects.batchProcess(creator.getWorkflows(), workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
             for (Tuple2<SchedInstance, List<SchedTask>> sub : creator.getNodeInstances()) {
-                instanceMapper.insert(sub.a);
+                instanceMapper.insert(sub.a.fillUniqueFlag());
                 Collects.batchProcess(sub.b, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
             }
         } else {
@@ -756,10 +756,9 @@ public class DistributedJobManager extends AbstractJobManager {
             try {
                 long nextInstanceId = generateId();
                 List<SchedTask> tasks = splitJob(SplitJobParam.from(job, target.getName()), nextInstanceId);
-                long triggerTime = leadInstance.getTriggerTime() + workflow.getSequence();
                 RunType runType = RunType.of(leadInstance.getRunType());
                 SchedWorkflow predecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
-                SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), runType, triggerTime, 0);
+                SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
                 nextInstance.setRnstanceId(wnstanceId);
                 nextInstance.setPnstanceId(predecessor == null ? null : getRetryOriginalInstanceId(instanceMapper.get(predecessor.getInstanceId())));
                 nextInstance.setWnstanceId(wnstanceId);
@@ -769,7 +768,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 Assert.isTrue(row > 0, () -> "Start workflow node failed: " + workflow);
 
                 // save to db
-                instanceMapper.insert(nextInstance);
+                instanceMapper.insert(nextInstance.fillUniqueFlag());
                 Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
                 TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
             } catch (Throwable t) {
@@ -895,7 +894,6 @@ public class DistributedJobManager extends AbstractJobManager {
 
         // 1、build sched instance
         retriedCount++;
-        // DAG任务可能会有triggerTime冲突问题，worker端会重试：Duplicate entry '1003164910267351006-1721480078288-3' for key 'uk_jobid_triggertime_runtype'
         long triggerTime = schedJob.computeRetryTriggerTime(retriedCount);
         SchedInstance retryInstance = SchedInstance.create(retryInstanceId, schedJob.getJobId(), RunType.RETRY, triggerTime, retriedCount);
         retryInstance.setRnstanceId(prev.obtainRnstanceId());
@@ -930,7 +928,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
         // 3、save to db
         Assert.notEmpty(tasks, "Insert list of task cannot be empty.");
-        instanceMapper.insert(retryInstance);
+        instanceMapper.insert(retryInstance.fillUniqueFlag());
         Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
 
         TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(schedJob, retryInstance, tasks));
@@ -965,15 +963,9 @@ public class DistributedJobManager extends AbstractJobManager {
                 Objects.requireNonNull(transactionTemplate.getTransactionManager()),
                 () -> {
                     TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
-                    // ### Cause: java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '1003164910267351007-1683124620000-2' for key 'uk_jobid_triggertime_runtype'
-                    // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
-                    //
-                    // 极端情况还是会存在唯一索引值冲突：比如依赖的任务多于1000个，但这种情况可以限制所依赖父任务的个数来解决，暂不考虑
-                    // parent1(trigger_time=1000, sequence=1001)，parent2(trigger_time=2000, sequence=1)
-                    long triggerTime = (parentInstance.getTriggerTime() / 1000) * 1000 + depend.getSequence();
-                    TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, triggerTime);
+                    TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, System.currentTimeMillis());
                     tInstance.getInstance().setRnstanceId(parentInstance.obtainRnstanceId());
-                    tInstance.getInstance().setPnstanceId(parentInstance.getInstanceId());
+                    tInstance.getInstance().setPnstanceId(getRetryOriginalInstanceId(parentInstance));
                     createInstance(tInstance);
                     return () -> creator.dispatch(childJob, tInstance);
                 },
@@ -1049,7 +1041,6 @@ public class DistributedJobManager extends AbstractJobManager {
                 tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
                 return PredecessorInstance.of(e, tasks);
             })
-            .sorted(Comparator.comparing(PredecessorInstance::getSequence))
             .collect(Collectors.toList());
     }
 

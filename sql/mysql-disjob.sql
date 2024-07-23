@@ -56,7 +56,7 @@ CREATE TABLE `sched_job` (
   `scan_failed_count`   TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '连续失败的扫描次数，连续失败次数达到阈值后自动禁用(set job_state=0)',
   `remark`              VARCHAR(255)                       DEFAULT NULL                 COMMENT '备注',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
-  `is_deleted`          TINYINT        UNSIGNED            DEFAULT '0'                  COMMENT '是否已删除：0-否；NULL-是(用NULL来解决因软删引起的唯一索引冲突问题)；',
+  `is_deleted`          BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '是否已删除：0-否；{id}-是(用id来解决因软删引起的唯一索引冲突问题)；',
   `updated_by`          VARCHAR(60)                        DEFAULT NULL                 COMMENT '更新人',
   `created_by`          VARCHAR(60)                        DEFAULT NULL                 COMMENT '创建人',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
@@ -73,11 +73,10 @@ CREATE TABLE `sched_depend` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
   `parent_job_id`       BIGINT         UNSIGNED  NOT NULL                               COMMENT '父job_id',
   `child_job_id`        BIGINT         UNSIGNED  NOT NULL                               COMMENT '子job_id',
-  `sequence`            INT            UNSIGNED  NOT NULL                               COMMENT '序号(从1开始)',
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_parentjobid_childjobid` (`parent_job_id`, `child_job_id`),
-  UNIQUE KEY `uk_childjobid_sequence` (`child_job_id`, `sequence`),
+  KEY `ix_childjobid` (`child_job_id`),
   KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度依赖表';
 
@@ -90,6 +89,7 @@ CREATE TABLE `sched_instance` (
   `job_id`              BIGINT         UNSIGNED  NOT NULL                               COMMENT 'sched_job.job_id',
   `trigger_time`        BIGINT         UNSIGNED  NOT NULL                               COMMENT '触发时间(毫秒时间戳)',
   `run_type`            TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '运行类型：1-SCHEDULE；2-DEPEND；3-RETRY；4-MANUAL(手动触发)；',
+  `unique_flag`         BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '唯一标识(保证trigger_time唯一)：0-SCHEDULE/MANUAL；{instance_id}-其它场景；',
   `run_state`           TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
   `run_start_time`      DATETIME(3)                        DEFAULT NULL                 COMMENT '运行开始时间',
   `run_end_time`        DATETIME(3)                        DEFAULT NULL                 COMMENT '运行结束时间',
@@ -102,7 +102,7 @@ CREATE TABLE `sched_instance` (
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_instanceid` (`instance_id`),
-  UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`),
+  UNIQUE KEY `uk_jobid_triggertime_runtype_uniqueflag` (`job_id`, `trigger_time`, `run_type`, `unique_flag`),
   KEY `ix_runstate_triggertime` (`run_state`, `trigger_time`) COMMENT '用于扫表',
   KEY `ix_triggertime` (`trigger_time`),
   KEY `ix_rnstanceid` (`rnstance_id`),
@@ -142,14 +142,12 @@ CREATE TABLE `sched_workflow` (
   `wnstance_id`         BIGINT         UNSIGNED  NOT NULL                               COMMENT 'sched_instance.wnstance_id',
   `pre_node`            VARCHAR(255)             NOT NULL                               COMMENT '前置任务节点(section:ordinal:name)',
   `cur_node`            VARCHAR(255)             NOT NULL                               COMMENT '当前任务节点(section:ordinal:name)',
-  `sequence`            INT            UNSIGNED  NOT NULL                               COMMENT '序号(从1开始)',
   `run_state`           TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
   `instance_id`         BIGINT         UNSIGNED            DEFAULT NULL                 COMMENT '当前执行的sched_instance.instance_id(失败重试时会更新为重试的instance_id)',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_wnstanceid_curnode_prenode` (`wnstance_id`, `cur_node`, `pre_node`),
-  UNIQUE KEY `uk_wnstanceid_sequence` (`wnstance_id`, `sequence`),
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度工作流表';
@@ -166,13 +164,13 @@ CREATE TABLE `sched_group` (
   `worker_context_path` VARCHAR(100)             NOT NULL  DEFAULT '/'                  COMMENT '该组下的Worker服务的context-path',
   `web_hook`            VARCHAR(255)                       DEFAULT NULL                 COMMENT '告警web hook地址',
   `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
-  `is_deleted`          TINYINT        UNSIGNED            DEFAULT '0'                  COMMENT '是否已删除：0-否；NULL-是(用NULL来解决因软删引起的唯一索引冲突问题)；',
+  `is_deleted`          BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '是否已删除：0-否；{id}-是(用id来解决因软删引起的唯一索引冲突问题)；',
   `updated_by`          VARCHAR(60)                        DEFAULT NULL                 COMMENT '更新人',
   `created_by`          VARCHAR(60)                        DEFAULT NULL                 COMMENT '创建人',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_group` (`group`, `is_deleted`),
+  UNIQUE KEY `uk_group_isdeleted` (`group`, `is_deleted`),
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='分组表';
@@ -227,8 +225,8 @@ INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_stat
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351009, 'app-test', 'prime-count-dag', 'cn.ponfee.disjob.test.handler.PrimeCountJobHandler -> cn.ponfee.disjob.test.handler.PrimeAccumulateJobHandler', 1, 2, 1, '{\"m\":1,\"n\":500000000,\"blockSize\":3000000,\"parallel\":3}', 2, '2023-09-02 18:00:00', unix_timestamp()*1000);
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_handler`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351010, 'app-test', 'groovy-job', 'cn.ponfee.disjob.worker.handle.impl.GroovyJobHandler', 1, 1, 4, 'import java.util.*; savepoint.save(new Date().toString() + ": " + UUID.randomUUID().toString()); return "execute at: " + new Date() + jobHandler.toString()', 1, '0/50 * * * * ?', unix_timestamp()*1000);
 
-INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (1003164910267351007, 1003164910267351000, 1);
-INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`, `sequence`) VALUES (1003164910267351007, 1003164910267351001, 2);
+INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`) VALUES (1003164910267351007, 1003164910267351000);
+INSERT INTO `sched_depend` (`child_job_id`, `parent_job_id`) VALUES (1003164910267351007, 1003164910267351001);
 
 
 

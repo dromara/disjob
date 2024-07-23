@@ -33,30 +33,34 @@ public enum RunType implements IntValueEnum<RunType> {
     /**
      * 调度计划
      */
-    SCHEDULE(1, "调度计划"),
+    SCHEDULE(1, true, "调度计划"),
 
     /**
      * 任务依赖
      */
-    DEPEND(2, "任务依赖"),
+    DEPEND(2, false, "任务依赖"),
 
     /**
      * 失败重试
      */
-    RETRY(3, "失败重试"),
+    RETRY(3, false, "失败重试"),
 
     /**
      * 手动触发
      */
-    MANUAL(4, "手动触发"),
+    MANUAL(4, true, "手动触发"),
 
     ;
 
+    public static final long UNIQUE_FLAG = 0L;
+
     private final int value;
+    private final boolean uniqueFlag;
     private final String desc;
 
-    RunType(int value, String desc) {
+    RunType(int value, boolean uniqueFlag, String desc) {
         this.value = value;
+        this.uniqueFlag = uniqueFlag;
         this.desc = desc;
     }
 
@@ -68,6 +72,10 @@ public enum RunType implements IntValueEnum<RunType> {
     @Override
     public String desc() {
         return desc;
+    }
+
+    public boolean isUniqueFlag() {
+        return uniqueFlag;
     }
 
     public static RunType of(Integer value) {

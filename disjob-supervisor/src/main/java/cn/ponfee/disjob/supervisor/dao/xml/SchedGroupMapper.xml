@@ -62,7 +62,7 @@
 
   <update id="softDelete" parameterType="string">
     UPDATE <include refid="Table_Name" />
-    SET is_deleted = NULL,
+    SET is_deleted = id,
         updated_by = #{updatedBy,jdbcType=VARCHAR},
         version = version+1
     WHERE `group` = #{group,jdbcType=VARCHAR}

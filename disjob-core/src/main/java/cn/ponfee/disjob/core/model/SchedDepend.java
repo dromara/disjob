@@ -48,15 +48,9 @@ public class SchedDepend extends BaseEntity {
      */
     private Long childJobId;
 
-    /**
-     * 序号(从1开始)
-     */
-    private Integer sequence;
-
-    public SchedDepend(Long parentJobId, Long childJobId, Integer sequence) {
+    public SchedDepend(Long parentJobId, Long childJobId) {
         this.parentJobId = parentJobId;
         this.childJobId = childJobId;
-        this.sequence = sequence;
     }
 
     public static List<Long> parseTriggerValue(String triggerValue) {

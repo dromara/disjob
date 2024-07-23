@@ -56,11 +56,10 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
         leadInstance.setRunStartTime(Dates.max(new Date(), new Date(triggerTime)));
         leadInstance.setWnstanceId(wnstanceId);
 
-        MutableInt sequence = new MutableInt(1);
         List<SchedWorkflow> workflows = DAGExpressionParser.parse(job.getJobHandler())
             .edges()
             .stream()
-            .map(e -> new SchedWorkflow(wnstanceId, e.target().toString(), e.source().toString(), sequence.getAndIncrement()))
+            .map(e -> new SchedWorkflow(wnstanceId, e.target().toString(), e.source().toString()))
             .collect(Collectors.toList());
 
         List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances = new ArrayList<>();
@@ -68,15 +67,12 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
             DAGNode node = firstTriggers.getKey().getTarget();
             SchedWorkflow workflow = firstTriggers.getValue();
 
-            // 加sequence解决唯一索引问题：UNIQUE KEY `uk_jobid_triggertime_runtype` (`job_id`, `trigger_time`, `run_type`)
             long nodeInstanceId = jobManager.generateId();
-            long nodeTriggerTime = triggerTime + workflow.getSequence();
-
             workflow.setInstanceId(nodeInstanceId);
             workflow.setRunState(RunState.RUNNING.value());
 
             // 工作流的子任务实例的【root、parent、workflow】instance_id只与工作流相关联
-            SchedInstance nodeInstance = SchedInstance.create(nodeInstanceId, job.getJobId(), runType, nodeTriggerTime, 0);
+            SchedInstance nodeInstance = SchedInstance.create(nodeInstanceId, job.getJobId(), runType, triggerTime, 0);
             nodeInstance.setRnstanceId(wnstanceId);
             nodeInstance.setPnstanceId(wnstanceId);
             nodeInstance.setWnstanceId(wnstanceId);

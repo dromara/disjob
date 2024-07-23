@@ -197,7 +197,7 @@
 
   <update id="softDelete" parameterType="_long">
     UPDATE <include refid="Table_Name" />
-    SET is_deleted = NULL,
+    SET is_deleted = id,
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND job_state = 0

@@ -379,10 +379,7 @@ public abstract class AbstractJobManager {
             // 校验是否有循环依赖 以及 依赖层级是否太深
             checkCircularDepends(jobId, new HashSet<>(parentJobIds));
 
-            List<SchedDepend> list = new ArrayList<>(parentJobIds.size());
-            for (int i = 0; i < parentJobIds.size(); i++) {
-                list.add(new SchedDepend(parentJobIds.get(i), jobId, i + 1));
-            }
+            List<SchedDepend> list = Collects.convert(parentJobIds, pid -> new SchedDepend(pid, jobId));
             Collects.batchProcess(list, dependMapper::batchInsert, JobConstants.PROCESS_BATCH_SIZE);
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);

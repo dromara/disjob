@@ -78,6 +78,11 @@ public class SchedInstance extends BaseEntity {
     private Integer runType;
 
     /**
+     * 唯一标识(保证trigger_time唯一)：0-SCHEDULE/MANUAL；{instance_id}-其它场景；
+     */
+    private Long  uniqueFlag;
+
+    /**
      * 运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；
      *
      * @see RunState
@@ -182,6 +187,11 @@ public class SchedInstance extends BaseEntity {
             return null;
         }
         return Jsons.fromJson(attach, InstanceAttach.class);
+    }
+
+    public SchedInstance fillUniqueFlag() {
+        this.uniqueFlag = (RunType.of(runType).isUniqueFlag() && !isWorkflowNode()) ? RunType.UNIQUE_FLAG : instanceId;
+        return this;
     }
 
     public void markTerminated(RunState runState, Date runEndTime) {
