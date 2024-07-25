@@ -159,33 +159,16 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------database operation within spring @Transactional
 
-    /**
-     * Manual trigger the sched job
-     *
-     * @param jobId the job id
-     * @throws JobException if occur error
-     */
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public void triggerJob(long jobId) throws JobException {
-        SchedJob job = jobMapper.get(jobId);
-        Assert.notNull(job, () -> "Sched job not found: " + jobId);
-
-        TriggerInstanceCreator creator = TriggerInstanceCreator.of(job.getJobType(), this);
-        TriggerInstance tInstance = creator.create(job, RunType.MANUAL, System.currentTimeMillis());
-        createInstance(tInstance);
-        TransactionUtils.doAfterTransactionCommit(() -> creator.dispatch(job, tInstance));
-    }
-
-    /**
-     * Update sched job, save sched instance and tasks.
-     *
-     * @param job             the job
-     * @param triggerInstance the trigger instance
-     * @return {@code true} if operated success
-     */
-    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public boolean createInstance(SchedJob job, TriggerInstance triggerInstance) {
-        return doIfTrue(isOneAffectedRow(jobMapper.updateNextTriggerTime(job)), () -> createInstance(triggerInstance));
+    public void createInstanceAndDispatch(SchedJob job, RunType runType, long triggerTime) throws JobException {
+        Assert.isTrue(runType.isUniqueFlag(), () -> "Job run type must be unique flag mode: " + job);
+        TriggerInstanceCreator<TriggerInstance> creator = TriggerInstanceCreator.of(job.getJobType(), this);
+        TriggerInstance tInstance = creator.create(job, runType, triggerTime);
+        // If SCHEDULE, must be update job next trigger time
+        if (runType != RunType.SCHEDULE || hasAffectedRow(jobMapper.updateNextTriggerTime(job))) {
+            createInstance(tInstance);
+            TransactionUtils.doAfterTransactionCommit(() -> creator.dispatch(job, tInstance));
+        }
     }
 
     /**
@@ -962,7 +945,7 @@ public class DistributedJobManager extends AbstractJobManager {
             Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
                 Objects.requireNonNull(transactionTemplate.getTransactionManager()),
                 () -> {
-                    TriggerInstanceCreator creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
+                    TriggerInstanceCreator<TriggerInstance> creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
                     TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, System.currentTimeMillis());
                     tInstance.getInstance().setRnstanceId(parentInstance.obtainRnstanceId());
                     tInstance.getInstance().setPnstanceId(getRetryOriginalInstanceId(parentInstance));

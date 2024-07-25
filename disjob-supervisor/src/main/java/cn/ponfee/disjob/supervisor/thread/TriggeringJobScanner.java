@@ -27,7 +27,6 @@ import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
-import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
@@ -126,10 +125,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // 重新再计算一次nextTriggerTime
             job.setNextTriggerTime(reComputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
-                String reason = "Recompute has not next trigger time";
-                job.setRemark(reason);
-                log.info("{}, {}", reason, job);
-                jobManager.disableJob(job);
+                disableJob(job, "Recompute disable, not next trigger time");
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
                 // 更新next_trigger_time，等待下次扫描
@@ -144,10 +140,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
             long triggerTime = job.getNextTriggerTime();
             refreshNextTriggerTime(job, triggerTime, now);
-
-            TriggerInstanceCreator<?> creator = TriggerInstanceCreator.of(job.getJobType(), jobManager);
-            creator.createWithSaveAndDispatch(job, RunType.SCHEDULE, triggerTime);
-
+            jobManager.createInstanceAndDispatch(job, RunType.SCHEDULE, triggerTime);
         } catch (DuplicateKeyException e) {
             if (jobManager.updateJobNextTriggerTime(job)) {
                 log.info("Conflict trigger time: {}, {}", job, e.getMessage());
@@ -156,20 +149,22 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             }
         } catch (IllegalArgumentException e) {
             log.error("Scan trigger job failed: " + job, e);
-            job.setRemark(StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
-            job.setNextTriggerTime(null);
-            jobManager.disableJob(job);
+            disableJob(job, StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
         } catch (Throwable t) {
             log.error("Scan trigger job error: " + job, t);
             if (job.getScanFailedCount() >= jobScanFailedCountThreshold) {
-                job.setRemark(StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
-                job.setNextTriggerTime(null);
-                jobManager.disableJob(job);
+                disableJob(job, StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
             } else {
                 int scanFailedCount = job.incrementAndGetScanFailedCount();
                 updateNextScanTime(job, now, IntMath.pow(scanFailedCount, 2) * 5);
             }
         }
+    }
+
+    private void disableJob(SchedJob job, String reason) {
+        job.setRemark(reason);
+        job.setNextTriggerTime(null);
+        jobManager.disableJob(job);
     }
 
     /**
@@ -275,7 +270,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 }
                 if (job.getNextTriggerTime() == null) {
                     // It has not next triggered time, then stop the job
-                    job.setRemark("Disable collided reason: has not next trigger time.");
+                    job.setRemark("Collided disable, not next trigger time.");
                     job.setJobState(JobState.DISABLE.value());
                 }
                 jobManager.updateJobNextTriggerTime(job);
@@ -310,7 +305,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
         if (job.getNextTriggerTime() == null) {
             // It has not next triggered time, then stop the job
-            job.setRemark("Disable refresh reason: has not next trigger time");
+            job.setRemark("Refresh disable, not next trigger time");
             job.setJobState(JobState.DISABLE.value());
         }
     }

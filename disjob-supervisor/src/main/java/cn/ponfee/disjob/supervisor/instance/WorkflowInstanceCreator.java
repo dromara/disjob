@@ -29,7 +29,6 @@ import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import lombok.Getter;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,7 +58,7 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
         List<SchedWorkflow> workflows = DAGExpressionParser.parse(job.getJobHandler())
             .edges()
             .stream()
-            .map(e -> new SchedWorkflow(wnstanceId, e.target().toString(), e.source().toString()))
+            .map(e -> new SchedWorkflow(wnstanceId, e.source().toString(), e.target().toString()))
             .collect(Collectors.toList());
 
         List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances = new ArrayList<>();

@@ -35,13 +35,6 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
         this.jobManager = jobManager;
     }
 
-    public final void createWithSaveAndDispatch(SchedJob job, RunType runType, long triggerTime) throws JobException {
-        T triggerInstance = create(job, runType, triggerTime);
-        if (jobManager.createInstance(job, triggerInstance)) {
-            dispatch(job, triggerInstance);
-        }
-    }
-
     /**
      * Creates instance and tasks
      *
@@ -61,12 +54,13 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
      */
     public abstract void dispatch(SchedJob job, T instance);
 
-    public static TriggerInstanceCreator<?> of(Integer jobType, DistributedJobManager jobManager) {
+    @SuppressWarnings("unchecked")
+    public static <T extends TriggerInstance> TriggerInstanceCreator<T> of(Integer jobType, DistributedJobManager jobManager) {
         switch (JobType.of(jobType)) {
             case GENERAL:
-                return new GeneralInstanceCreator(jobManager);
+                return (TriggerInstanceCreator<T>) new GeneralInstanceCreator(jobManager);
             case WORKFLOW:
-                return new WorkflowInstanceCreator(jobManager);
+                return (TriggerInstanceCreator<T>) new WorkflowInstanceCreator(jobManager);
             default:
                 throw new UnsupportedOperationException("Unknown job type: " + jobType);
         }

@@ -22,6 +22,7 @@ import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.JobState;
 import cn.ponfee.disjob.core.enums.Operation;
+import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
 import cn.ponfee.disjob.core.model.SchedInstance;
@@ -88,9 +89,11 @@ public class OpenapiService extends SingletonClassConstraint {
         return jobManager.changeJobState(jobId, JobState.of(jobState));
     }
 
-    public void triggerJob(long jobId) throws JobException {
+    public void manualTriggerJob(long jobId) throws JobException {
         LOG.info("Do manual trigger the sched job {}", jobId);
-        jobManager.triggerJob(jobId);
+        SchedJob job = jobQuerier.getJob(jobId);
+        Assert.notNull(job, () -> "Sched job not found: " + jobId);
+        jobManager.createInstanceAndDispatch(job, RunType.MANUAL, System.currentTimeMillis());
     }
 
     public SchedJobResponse getJob(long jobId) {

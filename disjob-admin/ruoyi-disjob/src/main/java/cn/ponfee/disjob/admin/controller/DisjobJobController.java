@@ -241,10 +241,10 @@ public class DisjobJobController extends BaseController {
     @Log(title = "触发执行", businessType = BusinessType.OTHER)
     @PostMapping("/trigger")
     @ResponseBody
-    public AjaxResult trigger(@RequestParam("jobId") long jobId) throws JobException {
+    public AjaxResult manualTriggerJob(@RequestParam("jobId") long jobId) throws JobException {
         authorizeGroupService.authorizeJob(getLoginName(), jobId);
 
-        openapiService.triggerJob(jobId);
+        openapiService.manualTriggerJob(jobId);
         return success();
     }
 

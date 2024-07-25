@@ -42,14 +42,14 @@ public class SchedWorkflow extends BaseEntity {
     private Long wnstanceId;
 
     /**
-     * 当前任务节点(section:ordinal:name)
-     */
-    private String curNode;
-
-    /**
      * 前置任务节点(section:ordinal:name)
      */
     private String preNode;
+
+    /**
+     * 当前任务节点(section:ordinal:name)
+     */
+    private String curNode;
 
     /**
      * 运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；
@@ -63,10 +63,10 @@ public class SchedWorkflow extends BaseEntity {
      */
     private Long instanceId;
 
-    public SchedWorkflow(Long wnstanceId, String curNode, String preNode) {
+    public SchedWorkflow(Long wnstanceId, String preNode, String curNode) {
         this.wnstanceId = wnstanceId;
-        this.curNode = curNode;
         this.preNode = preNode;
+        this.curNode = curNode;
         this.runState = RunState.WAITING.value();
     }
 

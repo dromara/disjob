@@ -5,22 +5,22 @@
   <sql id="Table_Name">sched_workflow</sql>
 
   <sql id="Base_Column_List">
-    wnstance_id, cur_node, pre_node, run_state, instance_id, updated_at
+    wnstance_id, pre_node, cur_node, run_state, instance_id, updated_at
   </sql>
 
   <insert id="batchInsert" parameterType="collection" keyColumn="id" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       wnstance_id,
-      cur_node,
       pre_node,
+      cur_node,
       run_state,
       instance_id
     ) VALUES
     <foreach collection="collection" item="item" separator=",">
     (
       #{item.wnstanceId,jdbcType=BIGINT},
-      #{item.curNode,jdbcType=VARCHAR},
       #{item.preNode,jdbcType=VARCHAR},
+      #{item.curNode,jdbcType=VARCHAR},
       #{item.runState,jdbcType=TINYINT},
       #{item.instanceId,jdbcType=BIGINT}
     )

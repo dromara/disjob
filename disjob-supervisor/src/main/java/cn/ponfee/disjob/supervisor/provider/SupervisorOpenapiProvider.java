@@ -90,10 +90,10 @@ public class SupervisorOpenapiProvider extends BaseController {
     }
 
     @PostMapping("/job/trigger")
-    public Result<Void> triggerJob(@RequestParam("jobId") long jobId) throws JobException {
+    public Result<Void> manualTriggerJob(@RequestParam("jobId") long jobId) throws JobException {
         authorizeGroupService.authorizeJob(requestUser(), requestGroup(), jobId);
 
-        openapiService.triggerJob(jobId);
+        openapiService.manualTriggerJob(jobId);
         return Result.success();
     }
 

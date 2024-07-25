@@ -147,7 +147,7 @@ CREATE TABLE `sched_workflow` (
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_wnstanceid_curnode_prenode` (`wnstance_id`, `cur_node`, `pre_node`),
+  UNIQUE KEY `uk_wnstanceid_prenode_curnode` (`wnstance_id`, `pre_node`, `cur_node`),
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度工作流表';
