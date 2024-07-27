@@ -140,7 +140,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
             long triggerTime = job.getNextTriggerTime();
             refreshNextTriggerTime(job, triggerTime, now);
-            jobManager.createInstanceAndDispatch(job, RunType.SCHEDULE, triggerTime);
+            jobManager.triggerJob(job, RunType.SCHEDULE, triggerTime);
         } catch (DuplicateKeyException e) {
             if (jobManager.updateJobNextTriggerTime(job)) {
                 log.info("Conflict trigger time: {}, {}", job, e.getMessage());

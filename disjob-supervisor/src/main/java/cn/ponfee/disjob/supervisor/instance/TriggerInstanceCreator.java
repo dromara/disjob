@@ -20,7 +20,7 @@ import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.component.AbstractJobManager;
 
 /**
  * Trigger instance creator
@@ -29,9 +29,9 @@ import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
  */
 public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
 
-    protected final DistributedJobManager jobManager;
+    protected final AbstractJobManager jobManager;
 
-    protected TriggerInstanceCreator(DistributedJobManager jobManager) {
+    protected TriggerInstanceCreator(AbstractJobManager jobManager) {
         this.jobManager = jobManager;
     }
 
@@ -55,7 +55,7 @@ public abstract class TriggerInstanceCreator<T extends TriggerInstance> {
     public abstract void dispatch(SchedJob job, T instance);
 
     @SuppressWarnings("unchecked")
-    public static <T extends TriggerInstance> TriggerInstanceCreator<T> of(Integer jobType, DistributedJobManager jobManager) {
+    public static <T extends TriggerInstance> TriggerInstanceCreator<T> of(Integer jobType, AbstractJobManager jobManager) {
         switch (JobType.of(jobType)) {
             case GENERAL:
                 return (TriggerInstanceCreator<T>) new GeneralInstanceCreator(jobManager);

@@ -22,7 +22,7 @@ import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.component.AbstractJobManager;
 import lombok.Getter;
 
 import java.util.List;
@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class GeneralInstanceCreator extends TriggerInstanceCreator<GeneralInstanceCreator.GeneralInstance> {
 
-    public GeneralInstanceCreator(DistributedJobManager jobManager) {
+    public GeneralInstanceCreator(AbstractJobManager jobManager) {
         super(jobManager);
     }
 

@@ -134,8 +134,8 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
             return;
         }
-        log.info("Scanned running state instance task all terminated: {}", instance.getInstanceId());
-        jobManager.purgeInstance(instance);
+        boolean purged = jobManager.purgeInstance(instance);
+        log.info("Purge scanned running instance task all terminated: {}, {}", instance.getInstanceId(), purged);
     }
 
     private void processHasExecutingTask(SchedInstance instance, List<SchedTask> tasks) {
@@ -143,8 +143,8 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         if (jobManager.hasAliveExecuting(tasks)) {
             return;
         }
-        log.info("Scanned running state instance was dead: {}", instance.getInstanceId());
-        jobManager.purgeInstance(instance);
+        boolean purged = jobManager.purgeInstance(instance);
+        log.info("Purge scanned running instance was dead: {}, {}", instance.getInstanceId(), purged);
     }
 
 }

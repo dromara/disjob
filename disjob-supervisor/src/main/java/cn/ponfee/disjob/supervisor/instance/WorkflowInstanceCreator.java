@@ -26,7 +26,7 @@ import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.component.AbstractJobManager;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import lombok.Getter;
 
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  */
 public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInstanceCreator.WorkflowInstance> {
 
-    public WorkflowInstanceCreator(DistributedJobManager jobManager) {
+    public WorkflowInstanceCreator(AbstractJobManager jobManager) {
         super(jobManager);
     }
 

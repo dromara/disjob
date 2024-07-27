@@ -93,7 +93,7 @@ public class OpenapiService extends SingletonClassConstraint {
         LOG.info("Do manual trigger the sched job {}", jobId);
         SchedJob job = jobQuerier.getJob(jobId);
         Assert.notNull(job, () -> "Sched job not found: " + jobId);
-        jobManager.createInstanceAndDispatch(job, RunType.MANUAL, System.currentTimeMillis());
+        jobManager.triggerJob(job, RunType.MANUAL, System.currentTimeMillis());
     }
 
     public SchedJobResponse getJob(long jobId) {

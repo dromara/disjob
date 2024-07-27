@@ -65,6 +65,10 @@ public class LazyLoader<T> implements Supplier<T> {
         return holder().orElse(defaultValue);
     }
 
+    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+        return holder().orElseThrow(exceptionSupplier);
+    }
+
     public T orElseGet(Supplier<? extends T> other) {
         return holder().orElseGet(other);
     }

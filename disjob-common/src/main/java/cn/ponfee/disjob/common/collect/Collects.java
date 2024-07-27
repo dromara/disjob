@@ -238,7 +238,7 @@ public class Collects {
         return coll.stream().filter(predicate).findAny().orElse(null);
     }
 
-    public static <S, T> List<T> convert(List<S> source, Function<S, T> mapper) {
+    public static <S, T> List<T> convert(Collection<S> source, Function<S, T> mapper) {
         if (source == null) {
             return null;
         }

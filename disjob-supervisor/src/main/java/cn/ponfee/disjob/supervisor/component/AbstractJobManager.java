@@ -73,10 +73,9 @@ public abstract class AbstractJobManager {
     private static final Comparator<Tuple2<Worker, Long>> WORKLOAD_COMPARATOR = Comparator.comparingLong(e -> e.b);
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
+    protected final SupervisorProperties conf;
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
-    protected final SupervisorProperties conf;
 
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
@@ -231,10 +230,6 @@ public abstract class AbstractJobManager {
         return worker != null && workerDiscover.isDiscoveredServer(worker);
     }
 
-    public boolean isDeadWorker(Worker worker) {
-        return !isAliveWorker(worker);
-    }
-
     public boolean hasNotDiscoveredWorkers(String group) {
         return CollectionUtils.isEmpty(workerDiscover.getDiscoveredServers(group));
     }
@@ -252,7 +247,7 @@ public abstract class AbstractJobManager {
             return true;
         }
         Worker worker = Worker.deserialize(task.getWorker());
-        if (isDeadWorker(worker)) {
+        if (!isAliveWorker(worker)) {
             // dispatched worker are dead
             return true;
         }
@@ -285,7 +280,7 @@ public abstract class AbstractJobManager {
         if (routeStrategy.isBroadcast()) {
             for (SchedTask task : tasks) {
                 Worker worker = Worker.deserialize(task.getWorker());
-                if (isDeadWorker(worker)) {
+                if (!isAliveWorker(worker)) {
                     abortBroadcastWaitingTask(task.getTaskId());
                 } else {
                     params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
@@ -315,11 +310,11 @@ public abstract class AbstractJobManager {
     }
 
     protected boolean updateFixedDelayNextTriggerTime(SchedJob job, Date baseTime) {
-        TriggerType fixedDelay = TriggerType.FIXED_DELAY;
-        if (!fixedDelay.equalsValue(job.getTriggerType())) {
+        TriggerType triggerType = TriggerType.of(job.getTriggerType());
+        if (triggerType != TriggerType.FIXED_DELAY) {
             return false;
         }
-        Date date = baseTime == null ? null : fixedDelay.computeNextTriggerTime(job.getTriggerValue(), baseTime);
+        Date date = baseTime == null ? null : triggerType.computeNextTriggerTime(job.getTriggerValue(), baseTime);
         Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
         return isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime()));
     }
