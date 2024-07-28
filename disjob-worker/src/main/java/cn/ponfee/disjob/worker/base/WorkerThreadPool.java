@@ -727,12 +727,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
             } catch (TimeoutException e) {
                 LOG.error("Execute task timeout: " + workerTask, e);
                 stopTask(workerTask, Operation.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
-            } catch (PauseTaskException e) {
-                LOG.error("Pause task exception: {}, {}", workerTask, e.getMessage());
-                stopInstance(workerTask, Operation.PAUSE, toErrorMsg(e));
-            } catch (CancelTaskException e) {
-                LOG.error("Cancel task exception:  {}, {}", workerTask, e.getMessage());
-                stopInstance(workerTask, Operation.EXCEPTION_CANCEL, toErrorMsg(e));
+            } catch (PauseTaskException | CancelTaskException e) {
+                Operation ops = (e instanceof PauseTaskException) ? Operation.PAUSE : Operation.EXCEPTION_CANCEL;
+                LOG.error("{} task exception: {}, {}", ops, workerTask, e.getMessage());
+                stopInstance(workerTask, ops, toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     // 调用`Thread#stop()`时可能会抛出该异常

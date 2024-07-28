@@ -130,4 +130,5 @@ public class SchedTask extends BaseEntity {
         task.setExecuteState(ExecuteState.WAITING.value());
         return task;
     }
+
 }

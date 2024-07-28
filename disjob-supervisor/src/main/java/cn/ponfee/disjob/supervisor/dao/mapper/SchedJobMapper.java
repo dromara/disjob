@@ -73,7 +73,7 @@ public interface SchedJobMapper {
     List<SchedJob> findBeTriggering(@Param("maxNextTriggerTime") long maxNextTriggerTime,
                                     @Param("size") int size);
 
-    int updateNextScanTime(SchedJob schedJob);
+    int updateNextScanTime(SchedJob job);
 
     /**
      * Disable the job.

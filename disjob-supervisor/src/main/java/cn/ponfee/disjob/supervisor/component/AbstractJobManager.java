@@ -112,16 +112,16 @@ public abstract class AbstractJobManager {
         return isOneAffectedRow(jobMapper.updateNextTriggerTime(job));
     }
 
-    public boolean updateJobNextScanTime(SchedJob schedJob) {
-        return isOneAffectedRow(jobMapper.updateNextScanTime(schedJob));
+    public boolean updateJobNextScanTime(SchedJob job) {
+        return isOneAffectedRow(jobMapper.updateNextScanTime(job));
     }
 
     // ------------------------------------------------------------------database operation within spring @transactional
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public boolean changeJobState(long jobId, JobState to) {
-        boolean updated = isOneAffectedRow(jobMapper.updateState(jobId, to.value(), 1 ^ to.value()));
-        if (updated && to == JobState.ENABLE) {
+    public boolean changeJobState(long jobId, JobState toState) {
+        boolean updated = isOneAffectedRow(jobMapper.updateState(jobId, toState.value(), 1 ^ toState.value()));
+        if (updated && toState == JobState.ENABLE) {
             SchedJob job = jobMapper.get(jobId);
             updateFixedDelayNextTriggerTime(job, Dates.ofTimeMillis(job.getLastTriggerTime()));
         }
@@ -131,7 +131,7 @@ public abstract class AbstractJobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
         if (jobMapper.exists(job.getGroup(), job.getJobName())) {
-            throw new KeyExistsException("[" + job.getGroup() + "] already exists job name: " + job.getJobName());
+            throw new KeyExistsException("Exists job name: " + job.getJobName());
         }
         job.setUpdatedBy(job.getCreatedBy());
         job.verifyForAdd();
@@ -221,9 +221,9 @@ public abstract class AbstractJobManager {
             .anyMatch(this::isAliveWorker);
     }
 
-    public boolean isAliveWorker(String text) {
-        return StringUtils.isNotBlank(text)
-            && isAliveWorker(Worker.deserialize(text));
+    public boolean isAliveWorker(String worker) {
+        return StringUtils.isNotBlank(worker)
+            && isAliveWorker(Worker.deserialize(worker));
     }
 
     public boolean isAliveWorker(Worker worker) {
@@ -274,7 +274,7 @@ public abstract class AbstractJobManager {
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
         ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
         RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
-        List<ExecuteTaskParam> params = new ArrayList<>(tasks.size());
+        List<ExecuteTaskParam> list = new ArrayList<>(tasks.size());
         List<Tuple2<Worker, Long>> workload;
 
         if (routeStrategy.isBroadcast()) {
@@ -283,30 +283,30 @@ public abstract class AbstractJobManager {
                 if (!isAliveWorker(worker)) {
                     abortBroadcastWaitingTask(task.getTaskId());
                 } else {
-                    params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
+                    list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
             }
         } else if (!redispatch || routeStrategy.isNotRoundRobin() || (workload = calculateWorkload(job, instance)) == null) {
             for (SchedTask task : tasks) {
-                params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
+                list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
             }
         } else {
             // 轮询算法：选择分配到task最少的worker
             for (SchedTask task : tasks) {
                 workload.sort(WORKLOAD_COMPARATOR);
                 Tuple2<Worker, Long> first = workload.get(0);
-                params.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), first.a));
+                list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), first.a));
                 first.b += 1;
             }
         }
 
-        return taskDispatcher.dispatch(job.getGroup(), params);
+        return taskDispatcher.dispatch(job.getGroup(), list);
     }
 
     // ------------------------------------------------------------------protected methods
 
-    protected boolean dispatch(List<ExecuteTaskParam> params) {
-        return taskDispatcher.dispatch(params);
+    protected boolean dispatch(List<ExecuteTaskParam> tasks) {
+        return taskDispatcher.dispatch(tasks);
     }
 
     protected boolean updateFixedDelayNextTriggerTime(SchedJob job, Date baseTime) {
@@ -314,7 +314,7 @@ public abstract class AbstractJobManager {
         if (triggerType != TriggerType.FIXED_DELAY) {
             return false;
         }
-        Date date = baseTime == null ? null : triggerType.computeNextTriggerTime(job.getTriggerValue(), baseTime);
+        Date date = (baseTime == null) ? null : triggerType.computeNextTriggerTime(job.getTriggerValue(), baseTime);
         Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
         return isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime()));
     }
@@ -339,7 +339,7 @@ public abstract class AbstractJobManager {
 
     private void verifyJob(SchedJob job) throws JobException {
         if (job.getRetryCount() != null && job.getRetryCount() > conf.getMaximumJobRetryCount()) {
-            throw new IllegalArgumentException("Retry cannot greater than " + conf.getMaximumJobRetryCount());
+            throw new IllegalArgumentException("Retry count cannot greater than " + conf.getMaximumJobRetryCount());
         }
         VerifyJobParam param = VerifyJobParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
@@ -367,7 +367,7 @@ public abstract class AbstractJobManager {
                 SchedJob parentJob = parentJobMap.get(parentJobId);
                 Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
                 if (!job.getGroup().equals(parentJob.getGroup())) {
-                    throw new IllegalArgumentException("Invalid group: parent=" + parentJob.getGroup() + ", child=" + job.getGroup());
+                    throw new IllegalArgumentException("Inconsistent depend group: " + parentJob.getGroup() + ", " + job.getGroup());
                 }
             }
 
@@ -401,7 +401,7 @@ public abstract class AbstractJobManager {
         for (int i = 1; ; i++) {
             Map<Long, SchedDepend> map = dependMapper.findByChildJobIds(parentJobIds)
                 .stream()
-                .collect(Collectors.toMap(SchedDepend::getParentJobId, Function.identity(), (v1, v2) -> v1));
+                .collect(Collectors.toMap(SchedDepend::getParentJobId, Function.identity()));
             if (MapUtils.isEmpty(map)) {
                 return;
             }
@@ -418,7 +418,7 @@ public abstract class AbstractJobManager {
     private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
         List<Worker> workers = workerDiscover.getDiscoveredServers(job.getGroup());
         if (CollectionUtils.isEmpty(workers)) {
-            log.error("Not found available [{}] worker for calculate Workload.", job.getGroup());
+            log.error("Not found available worker for calculate workload: {}", job.getGroup());
             return null;
         }
         List<SchedTask> pausableTasks = listPausableTasks(instance.getInstanceId());

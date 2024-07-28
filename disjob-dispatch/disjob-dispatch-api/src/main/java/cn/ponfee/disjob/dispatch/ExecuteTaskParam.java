@@ -128,8 +128,8 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         return param;
     }
 
-    public static Builder builder(SchedInstance instance, SchedJob schedJob, String supervisorToken) {
-        return new Builder(instance, schedJob, supervisorToken);
+    public static Builder builder(SchedInstance instance, SchedJob job, String supervisorToken) {
+        return new Builder(instance, job, supervisorToken);
     }
 
     public static class Builder {

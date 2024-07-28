@@ -439,11 +439,8 @@ public final class ClassUtils {
     // -------------------------------------------------------------------------------------------private methods
 
     private static void checkSameLength(Object[] a, Object[] b) {
-        if (ArrayUtils.isEmpty(a) && ArrayUtils.isEmpty(b)) {
-            return;
-        }
-        if (a.length != b.length) {
-            throw new IllegalArgumentException("Two array are different length: " + a.length + ", " + b.length);
+        if (!ArrayUtils.isSameLength(a, b)) {
+            throw new IllegalArgumentException("Different array length: " + Arrays.toString(a) + ", " + Arrays.toString(b));
         }
     }
 

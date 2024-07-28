@@ -253,7 +253,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
 
     public String transDictName(SysDictType dictType)
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("(" + dictType.getDictName() + ")");
         sb.append("&nbsp;&nbsp;&nbsp;" + dictType.getDictType());
         return sb.toString();

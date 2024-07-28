@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 菜单 业务层处理
@@ -234,7 +235,7 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     public String transMenuName(SysMenu menu, boolean permsFlag)
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(menu.getMenuName());
         if (permsFlag)
         {
@@ -381,17 +382,9 @@ public class SysMenuServiceImpl implements ISysMenuService
      */
     private List<SysMenu> getChildList(List<SysMenu> list, SysMenu t)
     {
-        List<SysMenu> tlist = new ArrayList<>();
-        Iterator<SysMenu> it = list.iterator();
-        while (it.hasNext())
-        {
-            SysMenu n = it.next();
-            if (n.getParentId().longValue() == t.getMenuId().longValue())
-            {
-                tlist.add(n);
-            }
-        }
-        return tlist;
+        return list.stream()
+            .filter(e -> e.getParentId().equals(t.getMenuId()))
+            .collect(Collectors.toList());
     }
 
     /**

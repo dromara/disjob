@@ -31,7 +31,6 @@ public class NamedThreadFactory implements ThreadFactory {
     private static final AtomicInteger POOL_SEQ = new AtomicInteger(1);
 
     private final AtomicInteger threadNo = new AtomicInteger(1);
-    private final ThreadGroup group;
     private final String prefix;
     private final Boolean daemon;
     private final Integer priority;
@@ -41,8 +40,6 @@ public class NamedThreadFactory implements ThreadFactory {
                                Boolean daemon,
                                Integer priority,
                                Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-        SecurityManager s = System.getSecurityManager();
-        this.group = s != null ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         this.prefix = (prefix == null ? "pool-" + POOL_SEQ.getAndIncrement() : prefix) + "-thread-";
         this.daemon = daemon;
         this.priority = priority;
@@ -51,7 +48,7 @@ public class NamedThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(@Nonnull Runnable runnable) {
-        Thread thread = new Thread(group, runnable, prefix + threadNo.getAndIncrement());
+        Thread thread = new Thread(runnable, prefix + threadNo.getAndIncrement());
         thread.setDaemon(daemon != null ? daemon : Thread.currentThread().isDaemon());
         if (priority != null) {
             thread.setPriority(priority);
@@ -60,10 +57,6 @@ public class NamedThreadFactory implements ThreadFactory {
             thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
         }
         return thread;
-    }
-
-    public ThreadGroup getThreadGroup() {
-        return group;
     }
 
     public static Builder builder() {

@@ -21,8 +21,6 @@ import cn.ponfee.disjob.common.tuple.Tuple2;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Chars;
 import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
@@ -54,7 +52,6 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
  */
 public final class Numbers {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Numbers.class);
     private static final Pattern ALL_ZERO_PATTERN = Pattern.compile("^0+$");
 
     public static final int     ZERO_INT     = 0;

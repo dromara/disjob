@@ -989,7 +989,7 @@ public class ExcelUtil<T>
      */
     public void setDataValidation(Excel attr, Row row, int column)
     {
-        if (attr.name().indexOf("注：") >= 0)
+        if (attr.name().contains("注："))
         {
             sheet.setColumnWidth(column, 6000);
         }
@@ -1751,7 +1751,7 @@ public class ExcelUtil<T>
      */
     public Method getSubMethod(String name, Class<?> pojoClass)
     {
-        StringBuffer getMethodName = new StringBuffer("get");
+        StringBuilder getMethodName = new StringBuilder("get");
         getMethodName.append(name.substring(0, 1).toUpperCase());
         getMethodName.append(name.substring(1));
         Method method = null;

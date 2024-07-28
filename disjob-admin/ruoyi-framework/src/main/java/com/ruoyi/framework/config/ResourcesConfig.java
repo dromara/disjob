@@ -37,10 +37,10 @@ public class ResourcesConfig implements WebMvcConfigurer
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry)
     {
-        /** 本地文件上传路径 */
+        /* 本地文件上传路径 */
         registry.addResourceHandler(Constants.RESOURCE_PREFIX + "/**").addResourceLocations("file:" + RuoYiConfig.getProfile() + "/");
 
-        /** swagger配置：“/META-INF/resources/webjars/swagger-ui/{swagger.version}/” */
+        /* swagger配置：“/META-INF/resources/webjars/swagger-ui/{swagger.version}/” */
         //registry.addResourceHandler("/swagger-ui/**").addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/4.18.2");
     }
 

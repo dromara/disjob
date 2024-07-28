@@ -37,7 +37,7 @@ public class InstanceAttach extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -7365475674760089839L;
 
     /**
-     * current node id
+     * Current node name
      */
     private String curNode;
 

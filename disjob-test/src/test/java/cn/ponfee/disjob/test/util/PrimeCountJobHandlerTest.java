@@ -40,12 +40,12 @@ public class PrimeCountJobHandlerTest {
         String json = Jsons.toJson(jobParam);
         System.out.println("jobParam: " + json);
 
-        SchedJob schedJob = new SchedJob();
-        schedJob.setJobParam(json);
+        SchedJob job = new SchedJob();
+        job.setJobParam(json);
         System.out.println(json);
 
         PrimeCountJobHandler jobHandler = new PrimeCountJobHandler();
-        List<String> taskParams = jobHandler.split(schedJob.getJobParam());
+        List<String> taskParams = jobHandler.split(job.getJobParam());
         System.out.println(Jsons.toJson(taskParams));
 
         for (String taskParam : taskParams) {

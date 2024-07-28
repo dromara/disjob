@@ -97,8 +97,8 @@ public class OpenapiService extends SingletonClassConstraint {
     }
 
     public SchedJobResponse getJob(long jobId) {
-        SchedJob schedJob = jobQuerier.getJob(jobId);
-        return SchedJobConverter.INSTANCE.convert(schedJob);
+        SchedJob job = jobQuerier.getJob(jobId);
+        return SchedJobConverter.INSTANCE.convert(job);
     }
 
     public PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest) {
