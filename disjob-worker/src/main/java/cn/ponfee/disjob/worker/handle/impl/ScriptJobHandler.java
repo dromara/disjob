@@ -76,7 +76,7 @@ public class ScriptJobHandler extends JobHandler {
     @Override
     public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
         ScriptParam scriptParam = Jsons.JSON5.readValue(task.getTaskParam(), ScriptParam.class);
-        Assert.notNull(scriptParam, () -> "Invalid script param: " + scriptParam);
+        Assert.notNull(scriptParam, "Script param cannot null.");
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
         scriptParam.type.check();
         this.charset = Files.charset(scriptParam.charset);

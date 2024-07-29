@@ -28,8 +28,7 @@ import java.util.Date;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.date.Dates.format;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.length;
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 /**
  * The schedule job entity, mapped database table sched_job
@@ -199,24 +198,19 @@ public class SchedJob extends BaseEntity {
         return nextTriggerTime > endTime.getTime() ? null : nextTriggerTime;
     }
 
-    public boolean equalsTrigger(Integer triggerType0, String triggerValue0) {
-        return Objects.equals(triggerType, triggerType0)
-            && Objects.equals(triggerValue, triggerValue0);
+    public boolean equalsTrigger(Integer type, String value) {
+        return Objects.equals(triggerType, type)
+            && Objects.equals(triggerValue, value);
     }
 
-    public void verifyForAdd() {
-        verify();
-        Assert.isTrue(isNotBlank(group), "Group cannot be blank.");
-        this.group = group.trim();
-        Assert.isTrue(length(group) <= 60, "Group length cannot exceed 60.");
-        verifyAndDefaultSetting();
+    public void verifyForAdd(int maximumJobRetryCount) {
+        verifyAndDefaultSetting(maximumJobRetryCount);
     }
 
-    public void verifyForUpdate() {
-        verify();
+    public void verifyForUpdate(int maximumJobRetryCount) {
         Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
         Assert.isTrue(version != null && version > 0, () -> "Invalid version: " + version);
-        verifyAndDefaultSetting();
+        verifyAndDefaultSetting(maximumJobRetryCount);
     }
 
     public int incrementAndGetScanFailedCount() {
@@ -247,77 +241,45 @@ public class SchedJob extends BaseEntity {
 
     // ----------------------------------------------------------------private methods
 
-    private void verify() {
-        TriggerType type = TriggerType.of(triggerType);
-        Assert.isTrue(type.validate(triggerValue), () -> "Invalid trigger value: " + triggerType + ", " + triggerValue);
-        this.triggerValue = triggerValue.trim();
-        Assert.isTrue(length(triggerValue) <= 255, "triggerValue length cannot exceed 255.");
+    private void verifyAndDefaultSetting(int maximumJobRetryCount) {
+        Assert.hasText(group, "Group cannot be blank.");
+        this.group = group.trim();
+        Assert.isTrue(group.length() <= 60, "Group length cannot exceed 60.");
 
-        Assert.isTrue(isNotBlank(jobName), "jobName cannot be blank.");
+        Assert.hasText(jobName, "jobName cannot be blank.");
         this.jobName = jobName.trim();
-        Assert.isTrue(length(jobName) <= 60, "jobName length cannot exceed 60.");
-
-        Assert.hasText(jobHandler, "Job handler cannot be empty.");
-        this.jobHandler = jobHandler.trim();
+        Assert.isTrue(jobName.length() <= 60, "jobName length cannot exceed 60.");
 
         this.remark = StringUtils.trim(remark);
-        Assert.isTrue(length(remark) <= 255, "remark length cannot exceed 255.");
-    }
+        Assert.isTrue(StringUtils.length(remark) <= 255, "remark length cannot exceed 255.");
 
-    private void verifyAndDefaultSetting() {
-        if (jobState == null) {
-            this.jobState = JobState.DISABLE.value();
-        }
-        if (jobType == null) {
-            this.jobType = JobType.GENERAL.value();
-        }
-
-        if (retryType == null) {
-            this.retryType = RetryType.NONE.value();
-        }
-        if (RetryType.of(retryType) == RetryType.NONE) {
-            if (retryCount == null) {
-                this.retryCount = 0;
-            }
-            if (retryInterval == null) {
-                this.retryInterval = 0;
-            }
-            Assert.isTrue(retryCount == 0, "Retry count cannot set value.");
-            Assert.isTrue(retryInterval == 0, "Retry interval cannot set value.");
-        } else {
-            Assert.isTrue(retryCount != null && retryCount > 0, "Retry count must greater than 0.");
-            Assert.isTrue(retryInterval != null && retryInterval > 0, "Retry interval must greater than 0.");
-        }
-
-        if (executeTimeout == null) {
-            this.executeTimeout = 0;
-        }
-        if (collidedStrategy == null) {
-            this.collidedStrategy = CollidedStrategy.CONCURRENT.value();
-        }
-        if (misfireStrategy == null) {
-            this.misfireStrategy = MisfireStrategy.LAST.value();
-        }
-        if (routeStrategy == null) {
-            this.routeStrategy = RouteStrategy.ROUND_ROBIN.value();
-        }
-        if (redeployStrategy == null) {
-            this.redeployStrategy = RedeployStrategy.RESUME.value();
-        }
+        // set default
+        this.jobState = defaultIfNull(jobState, JobState.DISABLE.value());
+        this.retryType = defaultIfNull(retryType, RetryType.NONE.value());
+        this.executeTimeout = defaultIfNull(executeTimeout, 0);
+        this.collidedStrategy = defaultIfNull(collidedStrategy, CollidedStrategy.CONCURRENT.value());
+        this.misfireStrategy = defaultIfNull(misfireStrategy, MisfireStrategy.LAST.value());
+        this.redeployStrategy = defaultIfNull(redeployStrategy, RedeployStrategy.RESUME.value());
+        this.triggerValue = StringUtils.trim(triggerValue);
 
         // verify
         JobState.of(jobState);
-        JobType.of(jobType);
         Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
         CollidedStrategy.of(collidedStrategy);
         MisfireStrategy.of(misfireStrategy);
-        RouteStrategy.of(routeStrategy);
         RedeployStrategy.of(redeployStrategy);
+        if (RetryType.of(retryType) == RetryType.NONE) {
+            this.retryCount = defaultIfNull(retryCount, 0);
+            this.retryInterval = defaultIfNull(retryInterval, 0);
+            Assert.isTrue(retryCount == 0, "Retry count cannot set value.");
+            Assert.isTrue(retryInterval == 0, "Retry interval cannot set value.");
+        } else {
+            boolean verify = (retryCount != null && 0 < retryCount && retryCount <= maximumJobRetryCount);
+            Assert.isTrue(verify, () -> "Retry count must be range [1, " + maximumJobRetryCount + "]");
+            Assert.isTrue(retryInterval != null && retryInterval > 0, "Retry interval must greater than 0.");
+        }
         if (startTime != null && endTime != null && startTime.after(endTime)) {
             throw new IllegalArgumentException("Invalid time range: [" + format(startTime) + " ~ " + format(endTime) + "]");
-        }
-        if (jobParam == null) {
-            this.jobParam = "";
         }
     }
 

@@ -77,9 +77,10 @@
         <if test="jobHandler != null and jobHandler != ''">
           job_handler = #{jobHandler,jdbcType=LONGVARCHAR},
           job_param = #{jobParam,jdbcType=LONGVARCHAR},
+          job_type = #{jobType,jdbcType=TINYINT},
+          route_strategy = #{routeStrategy,jdbcType=TINYINT},
         </if>
         job_state = #{jobState,jdbcType=TINYINT},
-        job_type = #{jobType,jdbcType=TINYINT},
         retry_type = #{retryType,jdbcType=TINYINT},
         retry_count = #{retryCount,jdbcType=TINYINT},
         retry_interval = #{retryInterval,jdbcType=INTEGER},
@@ -88,12 +89,11 @@
         <if test="triggerType != null">
           trigger_type = #{triggerType,jdbcType=TINYINT},
           trigger_value = #{triggerValue,jdbcType=VARCHAR},
+          next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
         </if>
-        next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
         execute_timeout = #{executeTimeout,jdbcType=INTEGER},
         collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
-        route_strategy = #{routeStrategy,jdbcType=TINYINT},
         redeploy_strategy = #{redeployStrategy,jdbcType=TINYINT},
         <if test="remark != null and remark != ''">
           remark = #{remark,jdbcType=VARCHAR},
@@ -112,14 +112,12 @@
       AND is_deleted = 0
   </select>
 
-  <select id="exists" resultType="_boolean">
-    SELECT EXISTS (
-      SELECT 1
-      FROM <include refid="Table_Name" />
-      WHERE `group` = #{group,jdbcType=VARCHAR}
-        AND job_name = #{jobName,jdbcType=VARCHAR}
-        AND is_deleted = 0
-    )
+  <select id="getJobId" resultType="long">
+    SELECT job_id
+    FROM <include refid="Table_Name" />
+    WHERE `group` = #{group,jdbcType=VARCHAR}
+      AND job_name = #{jobName,jdbcType=VARCHAR}
+      AND is_deleted = 0
   </select>
 
   <select id="getGroup" parameterType="_long" resultType="string">

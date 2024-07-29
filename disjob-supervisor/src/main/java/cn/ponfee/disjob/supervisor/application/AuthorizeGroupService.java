@@ -89,7 +89,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
 
     public static void authorizeGroup(String user, String authGroup, String dataGroup) {
         if (!authGroup.equals(dataGroup)) {
-            throw new AuthenticationException("Unmatched group: " + authGroup + " != " + dataGroup);
+            throw new AuthenticationException("User group and job group not equals: " + authGroup + " != " + dataGroup);
         }
         authorizeGroup(user, dataGroup);
     }

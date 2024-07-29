@@ -484,7 +484,7 @@ public class DistributedJobManager extends AbstractJobManager {
             SchedInstance lockedInstance = instanceMapper.lock(lockedKey);
             Assert.notNull(lockedInstance, () -> "Locked instance not found: " + lockedKey);
             SchedInstance instance = (instanceId == lockedKey) ? lockedInstance : instanceMapper.get(instanceId);
-            Assert.notNull(instance, () -> "Instance not found: " + instance);
+            Assert.notNull(instance, () -> "Instance not found: " + instanceId);
             if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
                 throw new IllegalStateException("Inconsistent workflow instance id: " + wnstanceId + ", " + instance);
             }

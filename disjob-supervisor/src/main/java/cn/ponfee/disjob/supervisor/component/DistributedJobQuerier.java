@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.enums.RunState;
+import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -35,6 +36,7 @@ import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
@@ -77,8 +79,9 @@ public class DistributedJobQuerier {
         return instanceMapper.getJobId(instanceId);
     }
 
-    public SchedInstance getInstance(long jobId, long triggerTime, int runType, long uniqueFlag) {
-        return instanceMapper.getByUniqueKey(jobId, triggerTime, runType, uniqueFlag);
+    public SchedInstance getInstance(long jobId, long triggerTime, RunType runType) {
+        Assert.isTrue(runType.isUniqueFlag(), () -> "Run type unsupported unique flag: " + runType);
+        return instanceMapper.getByUniqueKey(jobId, triggerTime, runType.value(), runType.getUniqueFlag());
     }
 
     /**

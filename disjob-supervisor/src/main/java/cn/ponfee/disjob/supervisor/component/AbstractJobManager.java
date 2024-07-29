@@ -130,12 +130,12 @@ public abstract class AbstractJobManager {
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
-        if (jobMapper.exists(job.getGroup(), job.getJobName())) {
+        job.setUpdatedBy(job.getCreatedBy());
+        job.verifyForAdd(conf.getMaximumJobRetryCount());
+        if (jobMapper.getJobId(job.getGroup(), job.getJobName()) != null) {
             throw new KeyExistsException("Exists job name: " + job.getJobName());
         }
-        job.setUpdatedBy(job.getCreatedBy());
-        job.verifyForAdd();
-        verifyJob(job);
+        verifyJobHandler(job);
         job.setJobId(generateId());
         parseTriggerConfig(job);
 
@@ -145,23 +145,30 @@ public abstract class AbstractJobManager {
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
-        job.verifyForUpdate();
-        if (StringUtils.isEmpty(job.getJobHandler())) {
-            Assert.hasText(job.getJobParam(), "Job param must be null if not set job handler.");
+        job.verifyForUpdate(conf.getMaximumJobRetryCount());
+        Long jobId0 = jobMapper.getJobId(job.getGroup(), job.getJobName());
+        if (jobId0 != null && !jobId0.equals(job.getJobId())) {
+            throw new IllegalArgumentException("Exists job name: " + job.getJobName());
+        }
+        if (job.getJobHandler() == null) {
+            Assert.isNull(job.getJobParam(), "Job param must be null when not set job handler.");
+            Assert.isNull(job.getJobType(), "Job type must be null when not set job handler.");
+            Assert.isNull(job.getRouteStrategy(), "Route strategy must be null when not set job handler.");
         } else {
-            verifyJob(job);
+            verifyJobHandler(job);
         }
 
         SchedJob dbJob = jobMapper.get(job.getJobId());
         Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
-        Assert.isTrue(dbJob.getGroup().equals(job.getGroup()), "Cannot modify job group.");
-        job.setNextTriggerTime(dbJob.getNextTriggerTime());
+        Assert.isTrue(dbJob.getGroup().equals(job.getGroup()), "Job group cannot be modify.");
 
         if (job.getTriggerType() == null) {
-            Assert.isNull(job.getTriggerValue(), "Trigger value must be null if not set trigger type.");
-        } else if (!dbJob.equalsTrigger(job.getTriggerType(), job.getTriggerValue())) {
-            Assert.notNull(job.getTriggerValue(), "Trigger value cannot be null if has set trigger type.");
-            // update last trigger time or depends parent job id
+            Assert.isNull(job.getTriggerValue(), "Trigger value must be null when not set trigger type.");
+        } else if (dbJob.equalsTrigger(job.getTriggerType(), job.getTriggerValue())) {
+            // needless update
+            job.setTriggerType(null);
+            job.setTriggerValue(null);
+        } else {
             dependMapper.deleteByChildJobId(job.getJobId());
             parseTriggerConfig(job);
         }
@@ -337,10 +344,13 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private void verifyJob(SchedJob job) throws JobException {
-        if (job.getRetryCount() != null && job.getRetryCount() > conf.getMaximumJobRetryCount()) {
-            throw new IllegalArgumentException("Retry count cannot greater than " + conf.getMaximumJobRetryCount());
-        }
+    private void verifyJobHandler(SchedJob job) throws JobException {
+        Assert.hasText(job.getJobHandler(), () -> "Job handler cannot be blank.");
+        Assert.isTrue(job.getJobHandler().length() <= 65535, "Job handler length cannot exceed 65535.");
+        Assert.isTrue(StringUtils.length(job.getJobParam()) <= 65535, "Job param length cannot exceed 65535.");
+        JobType.of(job.getJobType());
+        RouteStrategy.of(job.getRouteStrategy());
+
         VerifyJobParam param = VerifyJobParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verify(param));
@@ -353,11 +363,14 @@ public abstract class AbstractJobManager {
 
     private void parseTriggerConfig(SchedJob job) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
-        Long jobId = job.getJobId();
+        String triggerValue = job.getTriggerValue();
+        Assert.hasText(triggerValue, "Trigger value cannot be blank.");
+        Assert.isTrue(triggerValue.length() <= 255, "Trigger value length cannot exceed 255.");
 
+        Long jobId = job.getJobId();
         if (triggerType == TriggerType.DEPEND) {
-            List<Long> parentJobIds = SchedDepend.parseTriggerValue(job.getTriggerValue());
-            Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + job.getTriggerValue());
+            List<Long> parentJobIds = SchedDepend.parseTriggerValue(triggerValue);
+            Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + triggerValue);
             Assert.isTrue(!parentJobIds.contains(jobId), () -> "Cannot depends self: " + jobId + ", " + parentJobIds);
 
             Map<Long, SchedJob> parentJobMap = jobMapper.findByJobIds(parentJobIds)
@@ -384,13 +397,13 @@ public abstract class AbstractJobManager {
                 nextTriggerTime = Dates.max(new Date(), job.getStartTime());
             } else {
                 Date baseTime = Dates.max(new Date(), job.getStartTime());
-                nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), baseTime);
+                nextTriggerTime = triggerType.computeNextTriggerTime(triggerValue, baseTime);
             }
             if (nextTriggerTime == null) {
-                throw new IllegalArgumentException("Invalid " + triggerType + " value: " + job.getTriggerValue());
+                throw new IllegalArgumentException("Invalid " + triggerType + " value: " + triggerValue);
             }
             if (job.getEndTime() != null && nextTriggerTime.after(job.getEndTime())) {
-                throw new IllegalArgumentException("Expire " + triggerType + " value: " + job.getTriggerValue());
+                throw new IllegalArgumentException("Expire " + triggerType + " value: " + triggerValue);
             }
             job.setNextTriggerTime(nextTriggerTime.getTime());
         }

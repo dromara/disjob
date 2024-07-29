@@ -190,7 +190,9 @@ public class SchedInstance extends BaseEntity {
     }
 
     public SchedInstance fillUniqueFlag() {
-        this.uniqueFlag = (RunType.of(runType).isUniqueFlag() && !isWorkflowNode()) ? RunType.UNIQUE_FLAG : instanceId;
+        RunType type = RunType.of(runType);
+        // Workflow node trigger time is not unique
+        this.uniqueFlag = (type.isUniqueFlag() && !isWorkflowNode()) ? type.getUniqueFlag() : instanceId;
         return this;
     }
 
