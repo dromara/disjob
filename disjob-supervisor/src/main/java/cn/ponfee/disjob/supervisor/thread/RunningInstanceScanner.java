@@ -22,7 +22,6 @@ import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -131,7 +130,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             log.error("Scanned running state instance not exists: {}", instance.getInstanceId());
             return;
         }
-        if (RunState.of(reloadInstance.getRunState()).isTerminal()) {
+        if (reloadInstance.isTerminal()) {
             return;
         }
         boolean purged = jobManager.purgeInstance(instance);

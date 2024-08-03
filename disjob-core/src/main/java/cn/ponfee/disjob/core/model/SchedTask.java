@@ -103,11 +103,6 @@ public class SchedTask extends BaseEntity {
     private String errorMsg;
 
     /**
-     * 行记录版本号
-     */
-    private Integer version;
-
-    /**
      * Creates sched tasks
      *
      * @param taskParam  the task param

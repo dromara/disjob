@@ -31,12 +31,12 @@ public enum JobState implements IntValueEnum<JobState> {
     /**
      * 启用
      */
-    ENABLE(1, "启用"),
+    ENABLED(1, "启用"),
 
     /**
      * 禁用
      */
-    DISABLE(0, "禁用"),
+    DISABLED(0, "禁用"),
 
     ;
 

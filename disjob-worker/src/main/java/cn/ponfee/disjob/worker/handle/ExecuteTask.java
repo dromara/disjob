@@ -81,7 +81,7 @@ public class ExecuteTask extends ToJsonString implements Serializable {
      */
     private List<PredecessorInstance> predecessorInstances;
 
-    public static ExecuteTask of(StartTaskResult source) {
+    public static ExecuteTask of(StartTaskResult source, long jobId, long instanceId, Long wnstanceId) {
         if (source == null) {
             return null;
         }
@@ -91,12 +91,12 @@ public class ExecuteTask extends ToJsonString implements Serializable {
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());
         target.setExecuteSnapshot(source.getExecuteSnapshot());
-
-        target.setJobId(source.getJobId());
-        target.setInstanceId(source.getInstanceId());
-        target.setWnstanceId(source.getWnstanceId());
         target.setTaskParam(source.getTaskParam());
         target.setPredecessorInstances(source.getPredecessorInstances());
+
+        target.setJobId(jobId);
+        target.setInstanceId(instanceId);
+        target.setWnstanceId(wnstanceId);
         return target;
     }
 

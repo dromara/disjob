@@ -33,12 +33,9 @@ public interface SchedTaskMapper {
 
     SchedTask get(long taskId);
 
-    List<SchedTask> findBaseByInstanceId(long instanceId);
+    List<SchedTask> findBaseByInstanceId(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
 
-    List<SchedTask> findBaseByInstanceIdAndStates(@Param("instanceId") long instanceId,
-                                                  @Param("states") List<Integer> states);
-
-    List<SchedTask> findLargeByInstanceId(long instanceId);
+    List<SchedTask> findLargeByInstanceId(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
 
     int incrementDispatchFailedCount(@Param("taskId") long taskId,
                                      @Param("currentDispatchFailedCount") int currentDispatchFailedCount);

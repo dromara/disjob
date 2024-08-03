@@ -84,4 +84,19 @@ public class SchedWorkflow extends BaseEntity {
         return RunState.of(runState).isFailure();
     }
 
+    @Transient
+    public boolean isRunning() {
+        return RunState.RUNNING.equalsValue(runState);
+    }
+
+    @Transient
+    public boolean isWaiting() {
+        return RunState.WAITING.equalsValue(runState);
+    }
+
+    @Transient
+    public boolean isPaused() {
+        return RunState.PAUSED.equalsValue(runState);
+    }
+
 }

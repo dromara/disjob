@@ -47,22 +47,6 @@ public class StartTaskResult extends ToJsonString implements Serializable {
     private String message;
 
     /**
-     * sched_job.job_id
-     */
-    private long jobId;
-
-    /**
-     * sched_instance.instance_id
-     */
-    private long instanceId;
-
-    /**
-     * sched_instance.wnstance_id
-     * <p>非工作流任务时值为null
-     */
-    private Long wnstanceId;
-
-    /**
      * 任务ID
      */
     private long taskId;
@@ -99,8 +83,7 @@ public class StartTaskResult extends ToJsonString implements Serializable {
         return result;
     }
 
-    public static StartTaskResult success(long jobId, Long wnstanceId, SchedTask task,
-                                          List<PredecessorInstance> predecessorInstances) {
+    public static StartTaskResult success(SchedTask task, List<PredecessorInstance> predecessorInstances) {
         StartTaskResult result = new StartTaskResult();
         result.setSuccess(true);
         result.setTaskId(task.getTaskId());
@@ -108,9 +91,6 @@ public class StartTaskResult extends ToJsonString implements Serializable {
         result.setTaskCount(task.getTaskCount());
         result.setExecuteSnapshot(task.getExecuteSnapshot());
 
-        result.setJobId(jobId);
-        result.setInstanceId(task.getInstanceId());
-        result.setWnstanceId(wnstanceId);
         result.setTaskParam(task.getTaskParam());
         result.setPredecessorInstances(predecessorInstances);
         return result;

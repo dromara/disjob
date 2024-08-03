@@ -182,6 +182,26 @@ public class SchedInstance extends BaseEntity {
         return isWorkflow() && wnstanceId.equals(instanceId);
     }
 
+    @Transient
+    public boolean isRunning() {
+        return RunState.RUNNING.equalsValue(runState);
+    }
+
+    @Transient
+    public boolean isPaused() {
+        return RunState.PAUSED.equalsValue(runState);
+    }
+
+    @Transient
+    public boolean isFinished() {
+        return RunState.FINISHED.equalsValue(runState);
+    }
+
+    @Transient
+    public boolean isTerminal() {
+        return RunState.of(runState).isTerminal();
+    }
+
     public InstanceAttach parseAttach() {
         if (StringUtils.isBlank(attach)) {
             return null;

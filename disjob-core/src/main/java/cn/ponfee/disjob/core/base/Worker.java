@@ -137,7 +137,7 @@ public class Worker extends Server {
      * @return {@code true} if same worker
      */
     public boolean sameWorker(Worker other) {
-        return super.sameServer(other)
+        return super.equals(other)
             && this.equalsGroup(other.group);
     }
 

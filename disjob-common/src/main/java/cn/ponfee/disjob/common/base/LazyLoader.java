@@ -34,7 +34,7 @@ public class LazyLoader<T> implements Supplier<T> {
 
     private final Supplier<T> loader;
 
-    private Optional<T> holder = null;
+    private Optional<T> holder;
 
     private LazyLoader(Supplier<T> loader) {
         this.loader = Objects.requireNonNull(loader);

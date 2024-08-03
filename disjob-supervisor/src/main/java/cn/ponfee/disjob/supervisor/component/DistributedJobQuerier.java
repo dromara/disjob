@@ -108,11 +108,11 @@ public class DistributedJobQuerier {
     }
 
     public List<SchedTask> findBaseInstanceTasks(long instanceId) {
-        return taskMapper.findBaseByInstanceId(instanceId);
+        return taskMapper.findBaseByInstanceId(instanceId, null);
     }
 
     public List<SchedTask> findLargeInstanceTasks(long instanceId) {
-        return taskMapper.findLargeByInstanceId(instanceId);
+        return taskMapper.findLargeByInstanceId(instanceId, null);
     }
 
     public PageResponse<SchedJobResponse> queryJobForPage(SchedJobPageRequest pageRequest) {

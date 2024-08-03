@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_task</sql>
 
   <sql id="Base_Column_List">
-    task_id, instance_id, task_no, task_count, execute_state, worker, version
+    task_id, instance_id, task_no, task_count, execute_state, worker
   </sql>
 
   <sql id="Large_Column_List">
@@ -43,29 +43,27 @@
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
-  <select id="findBaseByInstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
+  <select id="findBaseByInstanceId" resultType="cn.ponfee.disjob.core.model.SchedTask">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
-  </select>
-
-  <select id="findBaseByInstanceIdAndStates" resultType="cn.ponfee.disjob.core.model.SchedTask">
-    SELECT <include refid="Base_Column_List" />
-    FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+    <if test="states != null and states.size() != 0">
       AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+    </if>
   </select>
 
-  <select id="findLargeByInstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedTask">
+  <select id="findLargeByInstanceId" resultType="cn.ponfee.disjob.core.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+    <if test="states != null and states.size() != 0">
+      AND execute_state IN (<foreach collection="states" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
+    </if>
   </select>
 
   <update id="incrementDispatchFailedCount">
     UPDATE <include refid="Table_Name" />
-    SET dispatch_failed_count = (#{currentDispatchFailedCount,jdbcType=TINYINT} + 1),
-        version = version + 1
+    SET dispatch_failed_count = (#{currentDispatchFailedCount,jdbcType=TINYINT} + 1)
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND dispatch_failed_count = #{currentDispatchFailedCount,jdbcType=TINYINT}
       AND execute_state = 10
@@ -76,23 +74,21 @@
     UPDATE <include refid="Table_Name" />
     SET execute_state = 20,
         execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
-        worker = #{worker,jdbcType=VARCHAR},
-        version = version+1
+        worker = #{worker,jdbcType=VARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = 10
   </update>
 
   <update id="terminate">
     UPDATE <include refid="Table_Name" />
-    SET execute_state    = #{toState,jdbcType=TINYINT},
-      <if test="executeEndTime != null">
-        execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
-        execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
-      </if>
-      <if test="errorMsg!=null and errorMsg.length()>0">
-        error_msg = #{errorMsg,jdbcType=VARCHAR},
-      </if>
-        version = version + 1
+    SET <if test="executeEndTime != null">
+          execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
+          execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
+        </if>
+        <if test="errorMsg!=null and errorMsg.length()>0">
+          error_msg = #{errorMsg,jdbcType=VARCHAR},
+        </if>
+        execute_state = #{toState,jdbcType=TINYINT}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       <if test="worker != null and worker != ''">
         AND worker = #{worker,jdbcType=VARCHAR}
@@ -104,12 +100,11 @@
 
   <update id="updateStateByInstanceId">
     UPDATE <include refid="Table_Name" />
-    SET execute_state = #{toState,jdbcType=TINYINT},
-        <if test="executeEndTime != null">
+    SET <if test="executeEndTime != null">
           execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
           execute_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, execute_start_time, #{executeEndTime,jdbcType=TIMESTAMP}) / 1000),
         </if>
-        version = version+1
+        execute_state = #{toState,jdbcType=TINYINT}
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND execute_state != #{toState,jdbcType=TINYINT}
       AND execute_state IN (<foreach collection="fromStateList" separator="," item="state">#{state,jdbcType=TINYINT}</foreach>)
@@ -117,8 +112,7 @@
 
   <update id="forceChangeState">
     UPDATE <include refid="Table_Name" />
-    SET execute_state = #{toState,jdbcType=TINYINT},
-        version = version+1
+    SET execute_state = #{toState,jdbcType=TINYINT}
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
       AND execute_state != #{toState,jdbcType=TINYINT}
       AND execute_state != 20
@@ -127,8 +121,7 @@
 
   <update id="savepoint">
     UPDATE <include refid="Table_Name" />
-    SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR},
-        version = version+1
+    SET execute_snapshot = #{executeSnapshot,jdbcType=LONGVARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = 20
       AND worker = #{worker,jdbcType=VARCHAR}
@@ -143,8 +136,7 @@
   <!-- 使用其它的批量方式需要添加jdbc参数：allowMultiQueries=true&rewriteBatchedStatements=true -->
   <update id="batchUpdateWorker">
     UPDATE <include refid="Table_Name" />
-    SET worker = #{worker,jdbcType=VARCHAR},
-        version = version+1
+    SET worker = #{worker,jdbcType=VARCHAR}
     WHERE task_id IN (<foreach collection="taskIds" separator="," item="taskId">#{taskId,jdbcType=BIGINT}</foreach>)
       AND execute_state = 10
   </update>

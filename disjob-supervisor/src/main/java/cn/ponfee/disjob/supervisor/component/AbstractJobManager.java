@@ -45,6 +45,7 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
+import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.base.Joiner;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -121,9 +122,8 @@ public abstract class AbstractJobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public boolean changeJobState(long jobId, JobState toState) {
         boolean updated = isOneAffectedRow(jobMapper.updateState(jobId, toState.value(), 1 ^ toState.value()));
-        if (updated && toState == JobState.ENABLE) {
-            SchedJob job = jobMapper.get(jobId);
-            updateFixedDelayNextTriggerTime(job, Dates.ofTimeMillis(job.getLastTriggerTime()));
+        if (updated && toState == JobState.ENABLED) {
+            updateNextTriggerTime(jobMapper.get(jobId));
         }
         return updated;
     }
@@ -180,7 +180,7 @@ public abstract class AbstractJobManager {
     public void deleteJob(long jobId) {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
-        if (JobState.ENABLE.equalsValue(job.getJobState())) {
+        if (JobState.ENABLED.equalsValue(job.getJobState())) {
             throw new IllegalStateException("Please disable job before delete this job.");
         }
         assertOneAffectedRow(jobMapper.softDelete(jobId), "Delete sched job fail or conflict.");
@@ -278,8 +278,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(boolean redispatch, SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
-        ExecuteTaskParam.Builder builder = ExecuteTaskParam.builder(instance, job, supervisorToken);
+        ExecuteTaskParam.Builder builder = newExecuteTaskParamBuilder(job, instance);
         RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
         List<ExecuteTaskParam> list = new ArrayList<>(tasks.size());
         List<Tuple2<Worker, Long>> workload;
@@ -312,18 +311,17 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------protected methods
 
-    protected boolean dispatch(List<ExecuteTaskParam> tasks) {
-        return taskDispatcher.dispatch(tasks);
+    protected ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedInstance instance) {
+        return newExecuteTaskParamBuilder(jobMapper.get(instance.getJobId()), instance);
     }
 
-    protected boolean updateFixedDelayNextTriggerTime(SchedJob job, Date baseTime) {
-        TriggerType triggerType = TriggerType.of(job.getTriggerType());
-        if (triggerType != TriggerType.FIXED_DELAY) {
-            return false;
-        }
-        Date date = (baseTime == null) ? null : triggerType.computeNextTriggerTime(job.getTriggerValue(), baseTime);
-        Date nextTriggerTime = Dates.max(new Date(), job.getStartTime(), date);
-        return isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime.getTime()));
+    protected ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
+        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
+        return ExecuteTaskParam.builder(instance, job, supervisorToken);
+    }
+
+    protected boolean dispatch(List<ExecuteTaskParam> tasks) {
+        return taskDispatcher.dispatch(tasks);
     }
 
     /**
@@ -343,6 +341,19 @@ public abstract class AbstractJobManager {
     protected abstract List<SchedTask> listPausableTasks(long instanceId);
 
     // ------------------------------------------------------------------private methods
+
+    private void updateNextTriggerTime(SchedJob job) {
+        TriggerType triggerType = TriggerType.of(job.getTriggerType());
+        if (triggerType == TriggerType.FIXED_DELAY && Objects.equals(job.getNextTriggerTime(), Long.MAX_VALUE)) {
+            job.setNextTriggerTime(null);
+        }
+        if (triggerType == TriggerType.DEPEND || job.getNextTriggerTime() != null) {
+            return;
+        }
+        Long nextTriggerTime = TriggerTimeUtils.computeNextTriggerTime(job, new Date());
+        job.setNextTriggerTime(nextTriggerTime);
+        assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
+    }
 
     private void verifyJobHandler(SchedJob job) throws JobException {
         Assert.hasText(job.getJobHandler(), () -> "Job handler cannot be blank.");

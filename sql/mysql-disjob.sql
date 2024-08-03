@@ -127,7 +127,6 @@ CREATE TABLE `sched_task` (
   `worker`              VARCHAR(255)                       DEFAULT NULL                 COMMENT '工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)',
   dispatch_failed_count TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '任务派发失败的次数(失败次数达到阈值后需要终止)',
   `error_msg`           VARCHAR(2048)                      DEFAULT NULL                 COMMENT '执行错误信息',
-  `version`             INT            UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '行记录版本号',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),
   `created_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   PRIMARY KEY (`id`),

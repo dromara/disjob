@@ -696,7 +696,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.warn("Start task failed: {}, {}", workerTask, startTaskResult.getMessage());
                     return;
                 }
-                executeTask = ExecuteTask.of(startTaskResult);
+                executeTask = ExecuteTask.of(startTaskResult, workerTask.getJobId(), workerTask.getInstanceId(), workerTask.getWnstanceId());
             } catch (Throwable t) {
                 LOG.warn("Start task error: " + workerTask, t);
                 if (workerTask.getRouteStrategy().isNotBroadcast()) {
@@ -784,7 +784,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 stopTask(workerTask, Operation.TRIGGER, EXECUTE_FAILED, msg);
             }
         }
-
     } // end of worker thread class definition
 
 }

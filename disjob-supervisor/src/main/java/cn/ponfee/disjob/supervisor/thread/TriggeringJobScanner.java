@@ -125,7 +125,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // 重新再计算一次nextTriggerTime
             job.setNextTriggerTime(reComputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
-                disableJob(job, "Recompute disable, not next trigger time");
+                disableJob(job, "Recompute disabled, not next trigger time");
                 return;
             } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
                 // 更新next_trigger_time，等待下次扫描
@@ -270,8 +270,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 }
                 if (job.getNextTriggerTime() == null) {
                     // It has not next triggered time, then stop the job
-                    job.setRemark("Collided disable, not next trigger time.");
-                    job.setJobState(JobState.DISABLE.value());
+                    job.setRemark("Collide disabled, not next trigger time.");
+                    job.setJobState(JobState.DISABLED.value());
                 }
                 jobManager.updateJobNextTriggerTime(job);
                 return true;
@@ -305,8 +305,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
         if (job.getNextTriggerTime() == null) {
             // It has not next triggered time, then stop the job
-            job.setRemark("Refresh disable, not next trigger time");
-            job.setJobState(JobState.DISABLE.value());
+            job.setRemark("Refresh disabled, not next trigger time");
+            job.setJobState(JobState.DISABLED.value());
         }
     }
 

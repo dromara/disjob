@@ -254,7 +254,7 @@ public class SchedJob extends BaseEntity {
         Assert.isTrue(StringUtils.length(remark) <= 255, "remark length cannot exceed 255.");
 
         // set default
-        this.jobState = defaultIfNull(jobState, JobState.DISABLE.value());
+        this.jobState = defaultIfNull(jobState, JobState.DISABLED.value());
         this.retryType = defaultIfNull(retryType, RetryType.NONE.value());
         this.executeTimeout = defaultIfNull(executeTimeout, 0);
         this.collidedStrategy = defaultIfNull(collidedStrategy, CollidedStrategy.CONCURRENT.value());

@@ -142,7 +142,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         try {
             List<Supervisor> supervisors = supervisorRegistry.getRegisteredServers()
                 .stream()
-                .filter(e -> !currentSupervisor.sameSupervisor(e))
+                .filter(e -> !currentSupervisor.equals(e))
                 .collect(Collectors.toList());
             MultithreadExecutors.run(
                 supervisors,
