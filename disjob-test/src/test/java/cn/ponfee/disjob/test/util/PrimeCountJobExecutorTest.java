@@ -18,9 +18,9 @@ package cn.ponfee.disjob.test.util;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.test.handler.PrimeCountJobHandler;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.test.executor.PrimeCountJobExecutor;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -28,11 +28,11 @@ import java.util.List;
 /**
  * @author Ponfee
  */
-public class PrimeCountJobHandlerTest {
+public class PrimeCountJobExecutorTest {
 
     @Test
     public void test() throws Exception {
-        PrimeCountJobHandler.JobParam jobParam = new PrimeCountJobHandler.JobParam();
+        PrimeCountJobExecutor.JobParam jobParam = new PrimeCountJobExecutor.JobParam();
         jobParam.setM(3);
         jobParam.setN(9321);
         jobParam.setBlockSize(5613L);
@@ -44,15 +44,15 @@ public class PrimeCountJobHandlerTest {
         job.setJobParam(json);
         System.out.println(json);
 
-        PrimeCountJobHandler jobHandler = new PrimeCountJobHandler();
-        List<String> taskParams = jobHandler.split(job.getJobParam());
+        PrimeCountJobExecutor jobExecutor = new PrimeCountJobExecutor();
+        List<String> taskParams = jobExecutor.split(job.getJobParam());
         System.out.println(Jsons.toJson(taskParams));
 
         for (String taskParam : taskParams) {
-            ExecuteTask task = new ExecuteTask();
+            ExecutionTask task = new ExecutionTask();
             task.setTaskId(System.nanoTime());
             task.setTaskParam(taskParam);
-            jobHandler.execute(task, Savepoint.NOOP);
+            jobExecutor.execute(task, Savepoint.NOOP);
             System.out.println("-------------------");
         }
     }

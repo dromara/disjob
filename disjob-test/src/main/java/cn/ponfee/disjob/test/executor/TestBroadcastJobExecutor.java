@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.test.handler;
+package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.worker.handle.BroadcastJobHandler;
-import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.worker.executor.BroadcastJobExecutor;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,25 +28,25 @@ import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Test broadcast job handler
+ * Test broadcast job executor
  *
  * @author Ponfee
  */
-public class TestBroadcastJobHandler extends BroadcastJobHandler {
+public class TestBroadcastJobExecutor extends BroadcastJobExecutor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TestBroadcastJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TestBroadcastJobExecutor.class);
 
     @Override
-    public void init(ExecuteTask task) {
+    public void init(ExecutionTask task) {
         LOG.debug("Broadcast job init.");
     }
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         Thread.sleep(5000 + ThreadLocalRandom.current().nextLong(10000));
         LOG.info("Broadcast job execute done: {}", task.getTaskId());
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
-        return ExecuteResult.success();
+        return ExecutionResult.success();
     }
 
 }

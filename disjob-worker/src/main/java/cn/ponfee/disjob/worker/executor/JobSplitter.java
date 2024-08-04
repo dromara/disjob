@@ -14,20 +14,30 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
+import cn.ponfee.disjob.core.exception.JobException;
+
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Broadcast job handler
+ * Split schedule job to one instance and many tasks.
  *
  * @author Ponfee
  */
-public abstract class BroadcastJobHandler extends JobHandler {
+public interface JobSplitter {
 
-    @Override
-    public final List<String> split(String jobParam) {
-        throw new UnsupportedOperationException("Broadcast job handler unsupported split operation.");
+    /**
+     * Provides default split single task.
+     * <p>Subclass can override this method to customize implementation.
+     *
+     * @param jobParam the job param
+     * @return list of task param
+     * @throws JobException if split failed
+     */
+    default List<String> split(String jobParam) throws JobException {
+        return Collections.singletonList(jobParam);
     }
 
 }

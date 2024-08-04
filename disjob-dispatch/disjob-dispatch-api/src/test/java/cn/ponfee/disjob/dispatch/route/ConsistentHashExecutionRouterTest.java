@@ -133,7 +133,7 @@ public class ConsistentHashExecutionRouterTest {
                                                           JobType jobType,
                                                           RouteStrategy routeStrategy,
                                                           int executeTimeout,
-                                                          String jobHandler) {
+                                                          String jobExecutor) {
         ExecuteTaskParam param = new ExecuteTaskParam();
         param.setOperation(operation);
         param.setTaskId(taskId);
@@ -144,7 +144,7 @@ public class ConsistentHashExecutionRouterTest {
         param.setJobType(jobType);
         param.setRouteStrategy(routeStrategy);
         param.setExecuteTimeout(executeTimeout);
-        param.setJobHandler(jobHandler);
+        param.setJobExecutor(jobExecutor);
         return param;
     }
 }

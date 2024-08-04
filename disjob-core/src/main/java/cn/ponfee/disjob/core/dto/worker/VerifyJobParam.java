@@ -35,28 +35,28 @@ public class VerifyJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
     private String group;
-    private String jobHandler;
+    private String jobExecutor;
     private String jobParam;
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
-    public VerifyJobParam(String group, String jobHandler, String jobParam,
+    public VerifyJobParam(String group, String jobExecutor, String jobParam,
                           JobType jobType, RouteStrategy routeStrategy) {
         this.group = group;
-        this.jobHandler = jobHandler;
+        this.jobExecutor = jobExecutor;
         this.jobParam = jobParam;
         this.jobType = jobType;
         this.routeStrategy = routeStrategy;
     }
 
     public static VerifyJobParam from(SchedJob job) {
-        return from(job, job.getJobHandler());
+        return from(job, job.getJobExecutor());
     }
 
-    public static VerifyJobParam from(SchedJob job, String jobHandler) {
+    public static VerifyJobParam from(SchedJob job, String jobExecutor) {
         return new VerifyJobParam(
             job.getGroup(),
-            jobHandler,
+            jobExecutor,
             job.getJobParam(),
             JobType.of(job.getJobType()),
             RouteStrategy.of(job.getRouteStrategy())

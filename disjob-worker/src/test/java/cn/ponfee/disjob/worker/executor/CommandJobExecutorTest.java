@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.worker.handle.impl.CommandJobHandler;
+import cn.ponfee.disjob.worker.executor.impl.CommandJobExecutor;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import java.util.Date;
 /**
  * @author Ponfee
  */
-public class CommandJobHandlerTest {
+public class CommandJobExecutorTest {
 
     @Test
     public void testCommand() throws Exception {
@@ -36,16 +36,16 @@ public class CommandJobHandlerTest {
             return;
         }
 
-        ExecuteTask task = new ExecuteTask();
+        ExecutionTask task = new ExecutionTask();
         task.setTaskId(1L);
 
-        CommandJobHandler.CommandParam commandParam = new CommandJobHandler.CommandParam();
+        CommandJobExecutor.CommandParam commandParam = new CommandJobExecutor.CommandParam();
         commandParam.setCmdarray(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
         task.setTaskParam(Jsons.toJson(commandParam));
 
-        CommandJobHandler commandJobHandler = new CommandJobHandler();
+        CommandJobExecutor commandJobExecutor = new CommandJobExecutor();
 
-        ExecuteResult result = commandJobHandler.execute(task, Savepoint.NOOP);
+        ExecutionResult result = commandJobExecutor.execute(task, Savepoint.NOOP);
 
         String expect = "{\"code\":0,\"msg\":\"" + Dates.format(new Date(), "yyyy/MM/dd") + "\\n\"}";
         Assertions.assertEquals(expect, Jsons.toJson(result));

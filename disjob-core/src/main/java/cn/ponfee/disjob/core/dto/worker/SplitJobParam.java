@@ -36,15 +36,15 @@ public class SplitJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
     private String group;
-    private String jobHandler;
+    private String jobExecutor;
     private String jobParam;
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
-    public SplitJobParam(String group, String jobHandler, String jobParam,
+    public SplitJobParam(String group, String jobExecutor, String jobParam,
                          JobType jobType, RouteStrategy routeStrategy) {
         this.group = group;
-        this.jobHandler = jobHandler;
+        this.jobExecutor = jobExecutor;
         this.jobParam = jobParam;
         this.jobType = jobType;
         this.routeStrategy = routeStrategy;
@@ -54,16 +54,16 @@ public class SplitJobParam extends AuthenticationParam {
         if (instance.isWorkflowLead()) {
             throw new IllegalArgumentException("Split job cannot workflow lead instance: " + instance.getInstanceId());
         }
-        String jobHandler = instance.isWorkflowNode() ?
+        String jobExecutor = instance.isWorkflowNode() ?
             instance.parseAttach().parseCurrentNode().getName() :
-            job.getJobHandler();
-        return from(job, jobHandler);
+            job.getJobExecutor();
+        return from(job, jobExecutor);
     }
 
-    public static SplitJobParam from(SchedJob job, String jobHandler) {
+    public static SplitJobParam from(SchedJob job, String jobExecutor) {
         return new SplitJobParam(
             job.getGroup(),
-            jobHandler,
+            jobExecutor,
             job.getJobParam(),
             JobType.of(job.getJobType()),
             RouteStrategy.of(job.getRouteStrategy())

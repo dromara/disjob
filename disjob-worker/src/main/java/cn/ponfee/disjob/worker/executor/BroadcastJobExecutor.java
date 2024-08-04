@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
+
+import java.util.List;
 
 /**
- * Save task execution snapshot
+ * Broadcast job executor
  *
  * @author Ponfee
  */
-@FunctionalInterface
-public interface Savepoint {
+public abstract class BroadcastJobExecutor extends JobExecutor {
 
-    /**
-     * Save the task execution snapshot
-     *
-     * @param executeSnapshot the task execution snapshot data
-     * @throws Exception if saved occur exception
-     */
-    void save(String executeSnapshot) throws Exception;
+    @Override
+    public final List<String> split(String jobParam) {
+        throw new UnsupportedOperationException("Broadcast job executor unsupported split operation.");
+    }
 
-    Savepoint NOOP = executeSnapshot -> {};
 }

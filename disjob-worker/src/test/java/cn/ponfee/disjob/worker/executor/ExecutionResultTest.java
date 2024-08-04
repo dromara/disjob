@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.model.Result;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * @author Ponfee
  */
-public class ExecuteResultTest {
+public class ExecutionResultTest {
 
     @Test
     public void test() {
@@ -42,7 +42,7 @@ public class ExecuteResultTest {
         assertThat(result.getData()).isNull();
 
         assertThatThrownBy(() -> Jsons.fromJson(json, Result.ImmutableResult.class)).hasMessageStartingWith("Cannot construct instance of");
-        assertThatThrownBy(() -> Jsons.fromJson(json, ExecuteResult.class)).hasMessageStartingWith("Cannot construct instance of");
+        assertThatThrownBy(() -> Jsons.fromJson(json, ExecutionResult.class)).hasMessageStartingWith("Cannot construct instance of");
     }
 
 }

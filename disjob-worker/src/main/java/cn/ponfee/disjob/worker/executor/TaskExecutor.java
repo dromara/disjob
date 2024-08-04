@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 /**
  * Task executor
@@ -55,7 +55,7 @@ public abstract class TaskExecutor {
      * @param task the execution task
      * @throws Exception if init failed
      */
-    public void init(ExecuteTask task) throws Exception { }
+    public void init(ExecutionTask task) throws Exception { }
 
     /**
      * Executes task
@@ -65,7 +65,7 @@ public abstract class TaskExecutor {
      * @return execute result
      * @throws Exception if execute failed
      */
-    public abstract ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception;
+    public abstract ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception;
 
     /**
      * Destroy this task executor

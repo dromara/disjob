@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
@@ -32,7 +32,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class ExecuteTask extends ToJsonString implements Serializable {
+public class ExecutionTask extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 8910065837652403459L;
 
     /**
@@ -67,7 +67,7 @@ public class ExecuteTask extends ToJsonString implements Serializable {
     private int taskCount;
 
     /**
-     * job_handler执行task的参数
+     * job_executor执行task的参数
      */
     private String taskParam;
 
@@ -81,12 +81,12 @@ public class ExecuteTask extends ToJsonString implements Serializable {
      */
     private List<PredecessorInstance> predecessorInstances;
 
-    public static ExecuteTask of(StartTaskResult source, long jobId, long instanceId, Long wnstanceId) {
+    public static ExecutionTask of(StartTaskResult source, long jobId, long instanceId, Long wnstanceId) {
         if (source == null) {
             return null;
         }
 
-        ExecuteTask target = new ExecuteTask();
+        ExecutionTask target = new ExecutionTask();
         target.setTaskId(source.getTaskId());
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());

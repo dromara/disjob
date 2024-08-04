@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.test.handler;
+package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.test.util.Constants;
-import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.JobHandler;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
@@ -35,29 +31,35 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Workflow
+ * No operation job executor, use in test job executor.
  *
  * @author Ponfee
  */
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-@Service("DJobHandler")
-public class DJobHandler extends JobHandler {
+public class NoopJobExecutor extends JobExecutor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NoopJobExecutor.class);
+    public static volatile long major = 9997;
+    public static volatile long minor = 19997;
 
     @Override
     public List<String> split(String jobParamString) {
-        return IntStream.range(0, Constants.TASK_COUNT)
+        return IntStream.range(0, 1 + ThreadLocalRandom.current().nextInt(5))
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
             .collect(Collectors.toList());
     }
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
-        Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000L);
-        LOG.info("Execution finished.");
+    public void init(ExecutionTask task) {
+        LOG.debug("Noop job init.");
+    }
+
+    @Override
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
+        LOG.info("task execute start: {}", task.getTaskId());
+        Thread.sleep(major + ThreadLocalRandom.current().nextLong(minor));
+        LOG.info("task execute done: {}", task.getTaskId());
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
-        return ExecuteResult.success();
+        return ExecutionResult.success();
     }
 
 }

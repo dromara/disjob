@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.test.handler;
+package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.test.util.Prime;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
-import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.JobHandler;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +39,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author Ponfee
  */
-public class PrimeCountJobHandler extends JobHandler {
+public class PrimeCountJobExecutor extends JobExecutor {
 
     /**
      * 默认以每块1亿分批统计
@@ -90,7 +90,7 @@ public class PrimeCountJobHandler extends JobHandler {
      * @throws Exception if execute occur error
      */
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         TaskParam taskParam = Jsons.fromJson(task.getTaskParam(), TaskParam.class);
         long start = taskParam.getStart();
         long blockSize = taskParam.getBlockSize();
@@ -108,7 +108,7 @@ public class PrimeCountJobHandler extends JobHandler {
             execution = Jsons.fromJson(task.getExecuteSnapshot(), ExecuteSnapshot.class);
             if (execution.getNext() == null || execution.isFinished()) {
                 Assert.isTrue(execution.isFinished() && execution.getNext() == null, "Invalid execute snapshot data.");
-                return ExecuteResult.success();
+                return ExecutionResult.success();
             }
         }
 
@@ -137,7 +137,7 @@ public class PrimeCountJobHandler extends JobHandler {
                 nextSavepointTimeMillis = System.currentTimeMillis() + SAVEPOINT_INTERVAL_MS;
             }
         }
-        return ExecuteResult.success();
+        return ExecutionResult.success();
     }
 
     @Setter

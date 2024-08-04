@@ -135,7 +135,7 @@ public abstract class AbstractJobManager {
         if (jobMapper.getJobId(job.getGroup(), job.getJobName()) != null) {
             throw new KeyExistsException("Exists job name: " + job.getJobName());
         }
-        verifyJobHandler(job);
+        verifyJobExecutor(job);
         job.setJobId(generateId());
         parseTriggerConfig(job);
 
@@ -150,12 +150,12 @@ public abstract class AbstractJobManager {
         if (jobId0 != null && !jobId0.equals(job.getJobId())) {
             throw new IllegalArgumentException("Exists job name: " + job.getJobName());
         }
-        if (job.getJobHandler() == null) {
-            Assert.isNull(job.getJobParam(), "Job param must be null when not set job handler.");
-            Assert.isNull(job.getJobType(), "Job type must be null when not set job handler.");
-            Assert.isNull(job.getRouteStrategy(), "Route strategy must be null when not set job handler.");
+        if (job.getJobExecutor() == null) {
+            Assert.isNull(job.getJobParam(), "Job param must be null when not set job executor.");
+            Assert.isNull(job.getJobType(), "Job type must be null when not set job executor.");
+            Assert.isNull(job.getRouteStrategy(), "Route strategy must be null when not set job executor.");
         } else {
-            verifyJobHandler(job);
+            verifyJobExecutor(job);
         }
 
         SchedJob dbJob = jobMapper.get(job.getJobId());
@@ -315,11 +315,6 @@ public abstract class AbstractJobManager {
         return newExecuteTaskParamBuilder(jobMapper.get(instance.getJobId()), instance);
     }
 
-    protected ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
-        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
-        return ExecuteTaskParam.builder(instance, job, supervisorToken);
-    }
-
     protected boolean dispatch(List<ExecuteTaskParam> tasks) {
         return taskDispatcher.dispatch(tasks);
     }
@@ -342,6 +337,11 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
+    private ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
+        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
+        return ExecuteTaskParam.builder(instance, job, supervisorToken);
+    }
+
     private void updateNextTriggerTime(SchedJob job) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
         if (triggerType == TriggerType.FIXED_DELAY && Objects.equals(job.getNextTriggerTime(), Long.MAX_VALUE)) {
@@ -351,13 +351,14 @@ public abstract class AbstractJobManager {
             return;
         }
         Long nextTriggerTime = TriggerTimeUtils.computeNextTriggerTime(job, new Date());
+        Assert.notNull(nextTriggerTime, () -> "Enable failed, job not has next trigger time.");
         job.setNextTriggerTime(nextTriggerTime);
         assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
     }
 
-    private void verifyJobHandler(SchedJob job) throws JobException {
-        Assert.hasText(job.getJobHandler(), () -> "Job handler cannot be blank.");
-        Assert.isTrue(job.getJobHandler().length() <= 65535, "Job handler length cannot exceed 65535.");
+    private void verifyJobExecutor(SchedJob job) throws JobException {
+        Assert.hasText(job.getJobExecutor(), () -> "Job executor cannot be blank.");
+        Assert.isTrue(job.getJobExecutor().length() <= 65535, "Job executor length cannot exceed 65535.");
         Assert.isTrue(StringUtils.length(job.getJobParam()) <= 65535, "Job param length cannot exceed 65535.");
         JobType.of(job.getJobType());
         RouteStrategy.of(job.getRouteStrategy());

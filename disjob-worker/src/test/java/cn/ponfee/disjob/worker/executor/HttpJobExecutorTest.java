@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.worker.handle.impl.HttpJobHandler;
+import cn.ponfee.disjob.worker.executor.impl.HttpJobExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -26,19 +26,19 @@ import org.junit.jupiter.api.Test;
  * @author Ponfee
  */
 @Disabled
-public class HttpJobHandlerTest {
+public class HttpJobExecutorTest {
 
     @Test
-    public void testHttpJobHandler() {
-        ExecuteTask task = new ExecuteTask();
+    public void testHttpJobExecutor() {
+        ExecutionTask task = new ExecutionTask();
         task.setTaskId(1L);
-        HttpJobHandler.HttpJobRequest req = new HttpJobHandler.HttpJobRequest();
+        HttpJobExecutor.HttpJobRequest req = new HttpJobExecutor.HttpJobRequest();
         req.setMethod("GET");
         req.setUrl("https://www.baidu.com");
         task.setTaskParam(Jsons.toJson(req));
-        HttpJobHandler httpJobHandler = new HttpJobHandler();
+        HttpJobExecutor httpJobExecutor = new HttpJobExecutor();
 
-        ExecuteResult result = httpJobHandler.execute(task, Savepoint.NOOP);
+        ExecutionResult result = httpJobExecutor.execute(task, Savepoint.NOOP);
         System.out.println(Jsons.toJson(result));
         Assertions.assertTrue(result.isSuccess());
     }

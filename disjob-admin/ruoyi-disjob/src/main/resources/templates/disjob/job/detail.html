@@ -33,9 +33,9 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-sm-3 control-label is-required">Job处理器：</label>
+        <label class="col-sm-3 control-label is-required">Job执行器：</label>
         <div class="col-sm-9">
-          <pre id="jobHandler"></pre>
+          <pre id="jobExecutor"></pre>
         </div>
       </div>
       <div class="form-group">
@@ -124,7 +124,7 @@
   <script th:inline="javascript">
     $(function () {
       view("jobParam",   [[${job.jobParam}]]   );
-      view("jobHandler", [[${job.jobHandler}]] );
+      view("jobExecutor", [[${job.jobExecutor}]] );
     });
 
     function view(id, text) {

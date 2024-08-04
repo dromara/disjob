@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.dag.DAGExpressionParser;
@@ -42,131 +42,128 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.disjob.core.base.JobCodeMsg.INVALID_JOB_HANDLER;
-import static cn.ponfee.disjob.core.base.JobCodeMsg.SPLIT_JOB_FAILED;
-
 /**
- * Job handler utility
+ * Job executor utility
  *
  * @author Ponfee
  */
-public class JobHandlerUtils {
+public class JobExecutorUtils {
 
     public static void verify(VerifyJobParam param) throws JobException {
-        Assert.hasText(param.getJobHandler(), "Job handler cannot be blank.");
-        Set<String> jobHandlers;
+        Assert.hasText(param.getJobExecutor(), "Job executor cannot be blank.");
+        Set<String> jobExecutors;
         if (param.getJobType() == JobType.WORKFLOW) {
-            jobHandlers = DAGExpressionParser.parse(param.getJobHandler())
+            jobExecutors = DAGExpressionParser.parse(param.getJobExecutor())
                 .nodes()
                 .stream()
                 .filter(Predicates.not(DAGNode::isStartOrEnd))
                 .map(DAGNode::getName)
                 .collect(Collectors.toSet());
-            Assert.notEmpty(jobHandlers, () -> "Invalid workflow job handler: " + param.getJobHandler());
+            Assert.notEmpty(jobExecutors, () -> "Invalid workflow job executor: " + param.getJobExecutor());
         } else {
-            jobHandlers = Collections.singleton(param.getJobHandler());
+            jobExecutors = Collections.singleton(param.getJobExecutor());
         }
 
         try {
-            for (String jobHandler : jobHandlers) {
+            for (String jobExecutor : jobExecutors) {
                 if (param.getRouteStrategy().isBroadcast()) {
-                    JobHandler handler = load(jobHandler);
-                    Assert.isTrue(handler instanceof BroadcastJobHandler, () -> "Not a broadcast job handler: " + jobHandler);
+                    JobExecutor executor = load(jobExecutor);
+                    Assert.isTrue(executor instanceof BroadcastJobExecutor, () -> "Not broadcast job executor: " + jobExecutor);
                 } else {
-                    param.setJobHandler(jobHandler);
-                    split(param.getJobHandler(), param.getJobParam());
+                    param.setJobExecutor(jobExecutor);
+                    split(param.getJobExecutor(), param.getJobParam());
                 }
             }
         } catch (JobException | JobRuntimeException e) {
             throw e;
         } catch (Throwable e) {
-            throw new JobException(INVALID_JOB_HANDLER, e.getMessage());
+            throw new JobException(JobCodeMsg.INVALID_JOB_EXECUTOR, e.getMessage());
         }
     }
 
     /**
      * Splits job to many sched task.
      *
-     * @param jobHandler the job handler
-     * @param jobParam   the job param
+     * @param jobExecutor the job executor
+     * @param jobParam    the job param
      * @return list of task param
      * @throws JobException if split failed
      */
-    public static List<String> split(String jobHandler, String jobParam) throws JobException {
+    public static List<String> split(String jobExecutor, String jobParam) throws JobException {
         try {
-            JobSplitter jobSplitter = load(jobHandler);
+            JobSplitter jobSplitter = load(jobExecutor);
             List<String> taskParams = jobSplitter.split(jobParam);
             if (CollectionUtils.isEmpty(taskParams)) {
-                throw new JobException(SPLIT_JOB_FAILED, "Job split none tasks.");
+                throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Job split none tasks.");
             }
             return taskParams;
         } catch (JobException | JobRuntimeException e) {
             throw e;
         } catch (Throwable t) {
-            throw new JobException(SPLIT_JOB_FAILED, "Split job occur error", t);
+            throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Split job occur error", t);
         }
     }
 
     /**
-     * Load jobHandler instance, String parameter can be spring bean name or qualified class name or source code
+     * Load JobExecutor instance, String parameter can be spring bean name or qualified class name or source code
      *
      * @param text spring bean name or qualified class name or source code
-     * @return JobHandler instance object
+     * @return JobExecutor instance object
      * @throws JobException if new instance failed
      */
-    public static JobHandler load(String text) throws JobException {
+    public static JobExecutor load(String text) throws JobException {
         if (SpringContextHolder.isNotNull()) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
             // get by spring bean name
-            JobHandler handler = SpringContextHolder.getPrototypeBean(text, JobHandler.class);
-            if (handler != null) {
-                return handler;
+            JobExecutor executor = SpringContextHolder.getPrototypeBean(text, JobExecutor.class);
+            if (executor != null) {
+                return executor;
             }
 
-            Class<? extends JobHandler> jobHandlerClass = getJobHandlerClass(text);
-            handler = SpringContextHolder.getPrototypeBean(jobHandlerClass);
-            if (handler != null) {
-                return handler;
+            Class<? extends JobExecutor> jobExecutorClass = getJobExecutorClass(text);
+            executor = SpringContextHolder.getPrototypeBean(jobExecutorClass);
+            if (executor != null) {
+                return executor;
             }
 
-            handler = ClassUtils.newInstance(jobHandlerClass);
-            SpringContextHolder.autowireBean(handler);
-            return handler;
+            executor = ClassUtils.newInstance(jobExecutorClass);
+            SpringContextHolder.autowireBean(executor);
+            return executor;
         } else {
-            Class<? extends JobHandler> jobHandlerClass = getJobHandlerClass(text);
-            return ClassUtils.newInstance(jobHandlerClass);
+            Class<? extends JobExecutor> jobExecutorClass = getJobExecutorClass(text);
+            return ClassUtils.newInstance(jobExecutorClass);
         }
     }
 
-    public static ExecuteResult completeProcess(Process process, Charset charset, ExecuteTask task, Logger log) {
+    public static ExecutionResult completeProcess(Process process, Charset charset, ExecutionTask task, Logger log) {
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
             // 一次性获取全部执行结果信息：不是在控制台实时展示执行信息，所以此处不用通过异步线程去获取命令的实时执行信息
             String verbose = IOUtils.toString(is, charset);
             String error = IOUtils.toString(es, charset);
             int code = process.waitFor();
             if (code == ProcessUtils.SUCCESS_CODE) {
-                return ExecuteResult.success(verbose);
+                return ExecutionResult.success(verbose);
             } else {
-                return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
+                return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), code + ": " + error);
             }
         } catch (Throwable t) {
             log.error("Process execute error: " + task, t);
             Threads.interruptIfNecessary(t);
-            return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
+            return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         } finally {
             ProcessUtils.destroy(process);
         }
     }
 
-    private static Class<? extends JobHandler> getJobHandlerClass(String text) throws JobException {
-        Class<? extends JobHandler> type = ClassUtils.getClass(text);
+    private static Class<? extends JobExecutor> getJobExecutorClass(String text) throws JobException {
+        Class<? extends JobExecutor> type = ClassUtils.getClass(text);
         if (type == null) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Illegal job handler class: " + text);
+            throw new JobException(JobCodeMsg.LOAD_JOB_EXECUTOR_ERROR, "Illegal job executor class: " + text);
         }
 
         // interface type: Modifier.isAbstract(type.getModifiers()) -> true
-        if (!JobHandler.class.isAssignableFrom(type) || Modifier.isAbstract(type.getModifiers())) {
-            throw new JobException(JobCodeMsg.LOAD_HANDLER_ERROR, "Invalid job handler '" + type + "': " + text);
+        if (!JobExecutor.class.isAssignableFrom(type) || Modifier.isAbstract(type.getModifiers())) {
+            throw new JobException(JobCodeMsg.LOAD_JOB_EXECUTOR_ERROR, "Invalid job executor '" + type + "': " + text);
         }
         return type;
     }

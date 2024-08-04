@@ -14,30 +14,23 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
-
-import cn.ponfee.disjob.core.exception.JobException;
-
-import java.util.Collections;
-import java.util.List;
+package cn.ponfee.disjob.worker.executor;
 
 /**
- * Split schedule job to one instance and many tasks.
+ * Save task execution snapshot
  *
  * @author Ponfee
  */
-public interface JobSplitter {
+@FunctionalInterface
+public interface Savepoint {
 
     /**
-     * Provides default split single task.
-     * <p>Subclass can override this method to customize implementation.
+     * Save the task execution snapshot
      *
-     * @param jobParam the job param
-     * @return list of task param
-     * @throws JobException if split failed
+     * @param executeSnapshot the task execution snapshot data
+     * @throws Exception if saved occur exception
      */
-    default List<String> split(String jobParam) throws JobException {
-        return Collections.singletonList(jobParam);
-    }
+    void save(String executeSnapshot) throws Exception;
 
+    Savepoint NOOP = executeSnapshot -> {};
 }

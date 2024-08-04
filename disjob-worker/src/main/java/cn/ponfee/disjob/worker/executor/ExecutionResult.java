@@ -14,50 +14,50 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.model.CodeMsg;
 import cn.ponfee.disjob.common.model.Result;
 
 /**
- * Job handler execute result
+ * Job execution result
  *
  * @author Ponfee
  */
-public class ExecuteResult extends Result.ImmutableResult<Void> {
+public class ExecutionResult extends Result.ImmutableResult<Void> {
     private static final long serialVersionUID = -6336359114514174838L;
-    private static final ExecuteResult SUCCESS = new ExecuteResult(Result.success().getCode(), Result.success().getMsg());
+    private static final ExecutionResult SUCCESS = new ExecutionResult(Result.success().getCode(), Result.success().getMsg());
 
-    private ExecuteResult(int code, String msg) {
+    private ExecutionResult(int code, String msg) {
         super(code, msg, null);
     }
 
     // -----------------------------------------------static success methods
 
-    public static ExecuteResult success() {
+    public static ExecutionResult success() {
         return SUCCESS;
     }
 
-    public static ExecuteResult success(String msg) {
-        return new ExecuteResult(SUCCESS.getCode(), msg);
+    public static ExecutionResult success(String msg) {
+        return new ExecutionResult(SUCCESS.getCode(), msg);
     }
 
     // -----------------------------------------------static failure methods
 
-    public static ExecuteResult failure(CodeMsg cm) {
+    public static ExecutionResult failure(CodeMsg cm) {
         return failure(cm.getCode(), cm.getMsg());
     }
 
-    public static ExecuteResult failure(int code, String msg) {
+    public static ExecutionResult failure(int code, String msg) {
         if (code == SUCCESS.getCode()) {
-            throw new IllegalStateException("Execute result failure code '" + code + "' cannot be '" + SUCCESS.getCode() + "'.");
+            throw new IllegalStateException("Execution result failure code '" + code + "' cannot be '" + SUCCESS.getCode() + "'.");
         }
-        return new ExecuteResult(code, msg);
+        return new ExecutionResult(code, msg);
     }
 
     @Override
     public Void getData() {
-        throw new UnsupportedOperationException("Execute result unsupported data.");
+        throw new UnsupportedOperationException("Execution result unsupported data.");
     }
 
 }

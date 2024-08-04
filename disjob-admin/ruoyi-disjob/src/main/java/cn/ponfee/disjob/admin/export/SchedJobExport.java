@@ -61,10 +61,10 @@ public class SchedJobExport {
     private Integer jobState;
 
     /**
-     * Job处理器(支持：处理器类的全限定名、Spring bean name、DAG表达式、处理器源码等)
+     * Job执行器(支持：执行器类的全限定名、Spring bean name、DAG表达式、执行器源码等)
      */
-    @Excel(name = "Job处理器")
-    private String jobHandler;
+    @Excel(name = "Job执行器")
+    private String jobExecutor;
 
     /**
      * Job参数
@@ -193,12 +193,12 @@ public class SchedJobExport {
         this.jobState = jobState;
     }
 
-    public String getJobHandler() {
-        return jobHandler;
+    public String getJobExecutor() {
+        return jobExecutor;
     }
 
-    public void setJobHandler(String jobHandler) {
-        this.jobHandler = jobHandler;
+    public void setJobExecutor(String jobExecutor) {
+        this.jobExecutor = jobExecutor;
     }
 
     public String getJobParam() {

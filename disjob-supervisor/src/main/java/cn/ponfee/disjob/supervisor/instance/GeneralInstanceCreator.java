@@ -42,7 +42,7 @@ public class GeneralInstanceCreator extends TriggerInstanceCreator<GeneralInstan
     public GeneralInstance create(SchedJob job, RunType runType, long triggerTime) throws JobException {
         long instanceId = jobManager.generateId();
         SchedInstance instance = SchedInstance.create(instanceId, job.getJobId(), runType, triggerTime, 0);
-        List<SchedTask> tasks = jobManager.splitJob(SplitJobParam.from(job, job.getJobHandler()), instanceId);
+        List<SchedTask> tasks = jobManager.splitJob(SplitJobParam.from(job, job.getJobExecutor()), instanceId);
         return new GeneralInstance(instance, tasks);
     }
 

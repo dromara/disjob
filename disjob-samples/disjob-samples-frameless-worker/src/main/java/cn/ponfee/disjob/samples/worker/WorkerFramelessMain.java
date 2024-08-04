@@ -37,7 +37,7 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.redis.RedisWorkerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import cn.ponfee.disjob.samples.worker.redis.AbstractRedisTemplateCreator;
-import cn.ponfee.disjob.samples.worker.util.JobHandlerParser;
+import cn.ponfee.disjob.samples.worker.util.JobExecutorParser;
 import cn.ponfee.disjob.samples.worker.vertx.VertxWebServer;
 import cn.ponfee.disjob.worker.WorkerStartup;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
@@ -69,7 +69,7 @@ public class WorkerFramelessMain {
         // for log4j2 log file name
         System.setProperty("app.name", "frameless-worker");
         printBanner();
-        JobHandlerParser.init();
+        JobExecutorParser.init();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerFramelessMain.class);
@@ -106,7 +106,7 @@ public class WorkerFramelessMain {
             actualTaskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, srtLoader.get()) {
                 @Override
                 public boolean receive(ExecuteTaskParam param) {
-                    JobHandlerParser.parse(param, "jobHandler");
+                    JobExecutorParser.parse(param, "jobExecutor");
                     return super.receive(param);
                 }
             };

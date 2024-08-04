@@ -57,7 +57,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     private RouteStrategy routeStrategy;
     private RedeployStrategy redeployStrategy;
     private int executeTimeout;
-    private String jobHandler;
+    private String jobExecutor;
     private Worker worker;
 
     @Override
@@ -74,10 +74,10 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         String supervisorToken = super.getSupervisorToken();
         byte[] supervisorTokenBytes = (supervisorToken != null) ? supervisorToken.getBytes(UTF_8) : null;
         byte[] workerBytes = worker.serialize().getBytes(UTF_8);
-        byte[] jobHandlerBytes = jobHandler.getBytes(UTF_8);
+        byte[] jobExecutorBytes = jobExecutor.getBytes(UTF_8);
 
         int supervisorTokenBytesLength = supervisorTokenBytes == null ? -1 : supervisorTokenBytes.length;
-        int length = 56 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobHandlerBytes.length;
+        int length = 56 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobExecutorBytes.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(length)
             .put((byte) operation.ordinal())        // 1: operation
@@ -95,7 +95,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         Bytes.put(buffer, supervisorTokenBytes);    // x: byte array of supervisorToken data
         buffer.putInt(workerBytes.length);          // 4: worker byte array length int value
         buffer.put(workerBytes);                    // x: byte array of worker data
-        buffer.put(jobHandlerBytes);                // x: byte array of jobHandler data
+        buffer.put(jobExecutorBytes);               // x: byte array of jobExecutor data
 
         // buffer.flip(): unnecessary do flip
         return buffer.array();
@@ -124,7 +124,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
 
         param.setSupervisorToken(Strings.of(Bytes.get(buf, buf.getInt()), UTF_8)); // 4+x: supervisorToken
         param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));  // 4+x: worker
-        param.setJobHandler(Strings.of(Bytes.remained(buf), UTF_8));               //   x: jobHandlerBytes
+        param.setJobExecutor(Strings.of(Bytes.remained(buf), UTF_8));              //   x: jobExecutorBytes
         return param;
     }
 
@@ -161,19 +161,19 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             param.setExecuteTimeout(job.getExecuteTimeout());
             param.setSupervisorToken(supervisorToken);
             param.setWorker(worker);
-            param.setJobHandler(obtainJobHandler());
+            param.setJobExecutor(obtainJobExecutor());
             return param;
         }
 
-        private String obtainJobHandler() {
+        private String obtainJobExecutor() {
             if (!instance.isWorkflow()) {
-                Assert.hasText(job.getJobHandler(), () -> "General job handler cannot be null: " + job.getJobId());
-                return job.getJobHandler();
+                Assert.hasText(job.getJobExecutor(), () -> "General job executor cannot be null: " + job.getJobId());
+                return job.getJobExecutor();
             }
 
-            String currJobHandler = instance.parseAttach().parseCurrentNode().getName();
-            Assert.hasText(currJobHandler, () -> "Curr node job handler cannot be empty: " + instance.getInstanceId());
-            return currJobHandler;
+            String curJobExecutor = instance.parseAttach().parseCurrentNode().getName();
+            Assert.hasText(curJobExecutor, () -> "Curr node job executor cannot be empty: " + instance.getInstanceId());
+            return curJobExecutor;
         }
     }
 

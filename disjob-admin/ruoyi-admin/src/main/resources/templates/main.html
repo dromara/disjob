@@ -178,13 +178,13 @@
             <li>Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd</li>
             <li>Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http</li>
             <li>需要指定Job的分组(group)，Job的任务只会派发给指定组的Worker执行</li>
-            <li>提供任务分片的能力，重写拆分方法<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/handle/JobSplitter.java">JobHandler#split</a>即可拆分为多个任务，实现分布式任务及并行执行</li>
+            <li>提供任务分片的能力，重写拆分方法<a href="https://github.com/dromara/disjob/blob/master/disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java">JobExecutor#split</a>即可拆分为多个任务，实现分布式任务及并行执行</li>
             <li>支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试</li>
             <li>支持任务保存(Savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行</li>
-            <li>任务在执行时若抛出<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java">PauseTaskException</a>，会暂停对应任务实例下的全部任务(包括分布在不同worker机器中的任务)</li>
+            <li>任务在执行时若抛出<a href="https://github.com/dromara/disjob/blob/master/disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/PauseTaskException.java">PauseTaskException</a>，会暂停对应任务实例下的全部任务(包括分布在不同worker机器中的任务)</li>
             <li>支持广播任务，广播任务会派发给group下的所有worker执行</li>
             <li>支持Job间的依赖，多个Job配置好依赖关系后便会按既定的依赖顺序依次执行</li>
-            <li>支持DAG工作流，可把<code>jobHandler</code>配置为复杂的DAG表达式，如：A-&gt;B,C,(D-&gt;E)-&gt;D,F-&gt;G</li>
+            <li>支持DAG工作流，可把<code>jobExecutor</code>配置为复杂的DAG表达式，如：A-&gt;B,C,(D-&gt;E)-&gt;D,F-&gt;G</li>
             <li>提供Web管理后台，通过界面进行作业配置，任务监控等</li>
           </ul>
           <h2 tabindex="-1" dir="auto"><a id="user-content-comparison" class="anchor" aria-hidden="true" tabindex="-1" href="#comparison"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a>Comparison</h2>
@@ -349,9 +349,9 @@
             <li>Samples项目配置文件</li>
           </ol>
           <ul dir="auto">
-            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/conf-supervisor/application-mysql.yml">Supervisor角色Mysql配置</a></li>
-            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/conf-supervisor/application-supervisor.yml">Supervisor角色核心配置</a></li>
-            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/conf-worker/application-worker.yml">Worker角色核心配置</a>（Spring-boot应用）</li>
+            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-mysql.yml">Supervisor角色Mysql配置</a></li>
+            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf-supervisor/src/main/resources/application-supervisor.yml">Supervisor角色核心配置</a></li>
+            <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-conf-worker/src/main/resources/application-worker.yml">Worker角色核心配置</a>（Spring-boot应用）</li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-springboot-common/src/main/resources/application-redis.yml">Redis配置</a>（Worker与Supervisor共用，使用Redis做注册中心或任务派发时需要配置）</li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-springboot-common/src/main/resources/application-web.yml">Spring-boot Web相关配置</a>（Worker与Supervisor共用）</li>
             <li><a href="https://github.com/dromara/disjob/blob/master/disjob-samples/disjob-samples-frameless-worker/src/main/resources/worker-conf.yml">Worker角色普通Java-main应用配置</a></li>
@@ -441,18 +441,18 @@
           <ol start="7" dir="auto">
             <li><strong>异常中断</strong></li>
           </ol>
-          <p dir="auto">子任务在执行过程中若抛出框架的<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/exception/PauseTaskException.java">PauseTaskException</a>，则会<code>暂停</code>对应任务实例下全部的10个子任务(包括派发在不同机器中的任务)。同样如果抛出<a href="https://github.com/dromara/disjob/blob/master/disjob-core/src/main/java/cn/ponfee/disjob/core/exception/CancelTaskException.java">CancelTaskException</a>则会<code>取消</code>对应任务实例下全部的10个子任务。如果抛出其它类型的异常时，只会<code>取消</code>当前子任务，对应任务实例下其它的子任务不受影响。</p>
+          <p dir="auto">子任务在执行过程中若抛出框架的<a href="https://github.com/dromara/disjob/blob/master/disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/PauseTaskException.java">PauseTaskException</a>，则会<code>暂停</code>对应任务实例下全部的10个子任务(包括派发在不同机器中的任务)。同样如果抛出<a href="https://github.com/dromara/disjob/blob/master/disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/CancelTaskException.java">CancelTaskException</a>则会<code>取消</code>对应任务实例下全部的10个子任务。如果抛出其它类型的异常时，只会<code>取消</code>当前子任务，对应任务实例下其它的子任务不受影响。</p>
           <ol start="8" dir="auto">
             <li><strong>任务编排</strong></li>
           </ol>
           <p dir="auto">现在这个质数统计的总任务已经执行完了，共10个子任务，每个子任务都统计出了它的那部分结果。Disjob能自动帮我汇总结果吗？Yes！框架提供了非常强大且方便的表达式来编排任务，如：<code>A-&gt;B,C,(D-&gt;E)-&gt;D,F-&gt;G</code>，现在我们就可以创建一个汇总任务，然后再把这两个任务编排在一起。</p>
-          <p dir="auto">以下是本例质数统计中的job数据，只列了一些主要字段，其中<code>jobHandler</code>编排了这两个任务处理器(见项目源码)</p>
+          <p dir="auto">以下是本例质数统计中的job数据，只列了一些主要字段，其中<code>jobExecutor</code>编排了这两个任务执行器(见项目源码)</p>
           <div class="highlight highlight-source-js notranslate position-relative overflow-auto" dir="auto" data-snippet-clipboard-copy-content="{
   &quot;group&quot;: &quot;app-test&quot;,
   &quot;jobName&quot;: &quot;prime-count-dag&quot;,
   &quot;jobState&quot;: 1, // job状态：0-禁用；1-启用；
   &quot;jobType&quot;: 2,  // job类型：1-常规；2-工作流(DAG)；
-  &quot;jobHandler&quot;: &quot;cn.ponfee.disjob.test.handler.PrimeCountJobHandler -&gt; cn.ponfee.disjob.test.handler.PrimeAccumulateJobHandler&quot;,
+  &quot;jobExecutor&quot;: &quot;cn.ponfee.disjob.test.executor.PrimeCountJobExecutor -&gt; cn.ponfee.disjob.test.handler.PrimeAccumulateJobExecutor&quot;,
   &quot;jobParam&quot;: &quot;{\&quot;m\&quot;:1,\&quot;n\&quot;:10000000000,\&quot;blockSize\&quot;:100000000,\&quot;parallel\&quot;:10}&quot;,
   &quot;triggerType&quot;: 2,
   &quot;triggerValue&quot;: &quot;2023-09-02 18:00:00&quot;
@@ -461,7 +461,7 @@
   <span class="pl-s">"jobName"</span>: <span class="pl-s">"prime-count-dag"</span><span class="pl-kos">,</span>
   <span class="pl-s">"jobState"</span>: <span class="pl-c1">1</span><span class="pl-kos">,</span> <span class="pl-c">// job状态：0-禁用；1-启用；</span>
   <span class="pl-s">"jobType"</span>: <span class="pl-c1">2</span><span class="pl-kos">,</span>  <span class="pl-c">// job类型：1-常规；2-工作流(DAG)；</span>
-  <span class="pl-s">"jobHandler"</span>: <span class="pl-s">"cn.ponfee.disjob.test.handler.PrimeCountJobHandler -&gt; cn.ponfee.disjob.test.handler.PrimeAccumulateJobHandler"</span><span class="pl-kos">,</span>
+  <span class="pl-s">"jobExecutor"</span>: <span class="pl-s">"cn.ponfee.disjob.test.executor.PrimeCountJobExecutor -&gt; cn.ponfee.disjob.test.handler.PrimeAccumulateJobExecutor"</span><span class="pl-kos">,</span>
   <span class="pl-s">"jobParam"</span>: <span class="pl-s">"{\"m\":1,\"n\":10000000000,\"blockSize\":100000000,\"parallel\":10}"</span><span class="pl-kos">,</span>
   <span class="pl-s">"triggerType"</span>: <span class="pl-c1">2</span><span class="pl-kos">,</span>
   <span class="pl-s">"triggerValue"</span>: <span class="pl-s">"2023-09-02 18:00:00"</span>

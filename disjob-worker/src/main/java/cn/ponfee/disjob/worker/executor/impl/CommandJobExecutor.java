@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle.impl;
+package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ProcessUtils;
-import cn.ponfee.disjob.worker.handle.*;
+import cn.ponfee.disjob.worker.executor.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ import java.nio.charset.Charset;
 
 /**
  * <pre>
- *  The job handler for executes system operation command.
+ *  The job executor for executes system operation command.
  *
  *  /bin/bash -c "echo $(date +%Y/%m/%d)"
  *  Runtime.exec(new String[]{"/bin/sh", "-c", "echo $(date +%Y/%m/%d)"});
@@ -52,8 +52,8 @@ import java.nio.charset.Charset;
  *
  * @author Ponfee
  */
-public class CommandJobHandler extends JobHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(CommandJobHandler.class);
+public class CommandJobExecutor extends JobExecutor {
+    private static final Logger LOG = LoggerFactory.getLogger(CommandJobExecutor.class);
 
     private Charset charset;
     private Long pid;
@@ -67,7 +67,7 @@ public class CommandJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         String taskParam = task.getTaskParam();
         Assert.hasText(taskParam, "Command param cannot be empty.");
         CommandParam commandParam = Jsons.JSON5.readValue(taskParam, CommandParam.class);
@@ -77,7 +77,7 @@ public class CommandJobHandler extends JobHandler {
         Process process = Runtime.getRuntime().exec(commandParam.cmdarray, commandParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
         LOG.info("Command process id: {}, {}", task.getTaskId(), pid);
-        return JobHandlerUtils.completeProcess(process, charset, task, LOG);
+        return JobExecutorUtils.completeProcess(process, charset, task, LOG);
     }
 
     @Getter

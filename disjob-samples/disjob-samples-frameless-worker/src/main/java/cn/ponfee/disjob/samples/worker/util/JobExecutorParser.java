@@ -19,8 +19,8 @@ package cn.ponfee.disjob.samples.worker.util;
 import cn.ponfee.disjob.common.spring.ResourceScanner;
 import cn.ponfee.disjob.common.util.Fields;
 import cn.ponfee.disjob.common.util.Files;
-import cn.ponfee.disjob.worker.handle.JobHandler;
-import cn.ponfee.disjob.worker.handle.JobHandlerUtils;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -37,22 +37,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Job handler parser
+ * Job executor parser
  *
  * @author Ponfee
  */
-public class JobHandlerParser {
-    private static final Logger LOG = LoggerFactory.getLogger(JobHandlerParser.class);
-    private static final Map<String, Class<? extends JobHandler>> JOB_HANDLER_MAP;
+public class JobExecutorParser {
+    private static final Logger LOG = LoggerFactory.getLogger(JobExecutorParser.class);
+    private static final Map<String, Class<? extends JobExecutor>> JOB_EXECUTOR_MAP;
 
     static {
-        Map<String, Class<? extends JobHandler>> map = new HashMap<>();
-        for (Class<?> clazz : new ResourceScanner("cn/ponfee/disjob/**/*.class").scan4class(new Class<?>[]{JobHandler.class}, null)) {
+        Map<String, Class<? extends JobExecutor>> map = new HashMap<>();
+        for (Class<?> clazz : new ResourceScanner("cn/ponfee/disjob/**/*.class").scan4class(new Class<?>[]{JobExecutor.class}, null)) {
             if (Modifier.isAbstract(clazz.getModifiers())) {
                 continue;
             }
 
-            Class<? extends JobHandler> type = (Class<? extends JobHandler>) clazz;
+            Class<? extends JobExecutor> type = (Class<? extends JobExecutor>) clazz;
             map.put(type.getName(), type);
             Component component = AnnotatedElementUtils.findMergedAnnotation(clazz, Component.class);
             if (component == null) {
@@ -66,19 +66,19 @@ public class JobHandlerParser {
             }
             map.put(beanName, type);
         }
-        JOB_HANDLER_MAP = map;
+        JOB_EXECUTOR_MAP = map;
     }
 
     public static void init() {
         String newLine = Files.SYSTEM_LINE_SEPARATOR;
-        int lMaxLen = JOB_HANDLER_MAP.keySet().stream().mapToInt(String::length).max().getAsInt();
-        int rMaxLen = JOB_HANDLER_MAP.values().stream().mapToInt(e -> e.getName().length()).max().getAsInt();
+        int lMaxLen = JOB_EXECUTOR_MAP.keySet().stream().mapToInt(String::length).max().getAsInt();
+        int rMaxLen = JOB_EXECUTOR_MAP.values().stream().mapToInt(e -> e.getName().length()).max().getAsInt();
         int contentLen = lMaxLen + rMaxLen + 9;
 
         StringBuilder builder = new StringBuilder(newLine);
         builder.append(StringUtils.rightPad("/", contentLen, "-")).append("\\").append(newLine);
-        builder.append(StringUtils.rightPad("| Job handler mapping:", contentLen, " ")).append("|").append(newLine);
-        JOB_HANDLER_MAP.entrySet()
+        builder.append(StringUtils.rightPad("| Job executor mapping:", contentLen, " ")).append("|").append(newLine);
+        JOB_EXECUTOR_MAP.entrySet()
             .stream()
             .map(e -> Pair.of(e.getKey(), e.getValue().getName()))
             .sorted(Comparator.<Entry<String, String>>nullsLast(Entry.comparingByValue()).thenComparing(Entry.comparingByKey()))
@@ -100,17 +100,17 @@ public class JobHandlerParser {
      * @param fieldName field name
      */
     public static void parse(Object param, String fieldName) {
-        String jobHandler = (String) Fields.get(param, fieldName);
+        String jobExecutor = (String) Fields.get(param, fieldName);
         try {
-            JobHandlerUtils.load(jobHandler);
+            JobExecutorUtils.load(jobExecutor);
         } catch (Exception ex) {
-            Class<? extends JobHandler> handlerClass = JOB_HANDLER_MAP.get(jobHandler);
-            if (handlerClass != null) {
+            Class<? extends JobExecutor> executorClass = JOB_EXECUTOR_MAP.get(jobExecutor);
+            if (executorClass != null) {
                 // maybe spring bean name
-                Fields.put(param, fieldName, handlerClass.getName());
-                LOG.info("Parse jobHandler: [{}] -> [{}]", jobHandler, handlerClass.getName());
+                Fields.put(param, fieldName, executorClass.getName());
+                LOG.info("Parse jobExecutor: [{}] -> [{}]", jobExecutor, executorClass.getName());
             } else {
-                LOG.error("Parse jobHandler error: {}, {}", param, fieldName);
+                LOG.error("Parse jobExecutor error: {}, {}", param, fieldName);
             }
         }
     }

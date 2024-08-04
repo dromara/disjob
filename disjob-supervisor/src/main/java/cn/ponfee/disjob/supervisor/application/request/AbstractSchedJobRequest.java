@@ -35,7 +35,7 @@ public abstract class AbstractSchedJobRequest extends ToJsonString implements Se
 
     private String group;
     private String jobName;
-    private String jobHandler;
+    private String jobExecutor;
     private Integer jobState;
     private Integer jobType;
     private String jobParam;

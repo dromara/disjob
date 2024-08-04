@@ -5,7 +5,7 @@
   <sql id="Table_Name">sched_job</sql>
 
   <sql id="Base_Column_List">
-    job_id, `group`, job_name, job_handler, job_state, job_type, job_param, retry_type,
+    job_id, `group`, job_name, job_executor, job_state, job_type, job_param, retry_type,
     retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value,
     execute_timeout, collided_strategy, misfire_strategy, route_strategy, redeploy_strategy,
     remark, last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
@@ -24,7 +24,7 @@
       job_id,
       `group`,
       job_name,
-      job_handler,
+      job_executor,
       job_state,
       job_type,
       job_param,
@@ -48,7 +48,7 @@
       #{jobId,jdbcType=BIGINT},
       #{group,jdbcType=VARCHAR},
       #{jobName,jdbcType=VARCHAR},
-      #{jobHandler,jdbcType=LONGVARCHAR},
+      #{jobExecutor,jdbcType=LONGVARCHAR},
       #{jobState,jdbcType=TINYINT},
       #{jobType,jdbcType=TINYINT},
       #{jobParam,jdbcType=LONGVARCHAR},
@@ -74,8 +74,8 @@
   <update id="update" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_name = #{jobName,jdbcType=VARCHAR},
-        <if test="jobHandler != null and jobHandler != ''">
-          job_handler = #{jobHandler,jdbcType=LONGVARCHAR},
+        <if test="jobExecutor != null and jobExecutor != ''">
+          job_executor = #{jobExecutor,jdbcType=LONGVARCHAR},
           job_param = #{jobParam,jdbcType=LONGVARCHAR},
           job_type = #{jobType,jdbcType=TINYINT},
           route_strategy = #{routeStrategy,jdbcType=TINYINT},

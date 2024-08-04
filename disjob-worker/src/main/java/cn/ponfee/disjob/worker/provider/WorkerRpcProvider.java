@@ -25,7 +25,7 @@ import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
-import cn.ponfee.disjob.worker.handle.JobHandlerUtils;
+import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
 
 import java.util.List;
 
@@ -48,13 +48,13 @@ public class WorkerRpcProvider implements WorkerRpcService {
     @Override
     public void verify(VerifyJobParam param) throws JobException {
         currentWorker.verifySupervisorAuthenticationToken(param);
-        JobHandlerUtils.verify(param);
+        JobExecutorUtils.verify(param);
     }
 
     @Override
     public SplitJobResult split(SplitJobParam param) throws JobException {
         currentWorker.verifySupervisorAuthenticationToken(param);
-        List<String> taskParams = JobHandlerUtils.split(param.getJobHandler(), param.getJobParam());
+        List<String> taskParams = JobExecutorUtils.split(param.getJobExecutor(), param.getJobParam());
         return new SplitJobResult(taskParams);
     }
 

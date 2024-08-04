@@ -27,7 +27,7 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
-import cn.ponfee.disjob.samples.worker.util.JobHandlerParser;
+import cn.ponfee.disjob.samples.worker.util.JobExecutorParser;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -112,7 +112,7 @@ public class VertxWebServer extends AbstractVerticle {
 
         router.post(prefixPath + "/job/split").handler(ctx -> handle(() -> {
             SplitJobParam param = parseBodyArg(ctx, SplitJobParam.class);
-            JobHandlerParser.parse(param, "jobHandler");
+            JobExecutorParser.parse(param, "jobExecutor");
             return workerRpcService.split(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
@@ -134,7 +134,7 @@ public class VertxWebServer extends AbstractVerticle {
         if (taskReceiver != null) {
             router.post(prefixPath + "/task/receive").handler(ctx -> handle(() -> {
                 ExecuteTaskParam param = parseBodyArg(ctx, ExecuteTaskParam.class);
-                JobHandlerParser.parse(param, "jobHandler");
+                JobExecutorParser.parse(param, "jobExecutor");
                 return taskReceiver.receive(param);
             }, ctx, INTERNAL_SERVER_ERROR));
         }

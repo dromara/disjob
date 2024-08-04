@@ -120,7 +120,7 @@ public class CommonTest {
             RouteStrategy.ROUND_ROBIN,
             RedeployStrategy.RESUME,
             1,
-            "JobHandler测试中文乱码。",
+            "JobExecutor测试中文乱码。",
             new Worker("default", "workerId", "host", 1)
         );
         System.out.println(param1);
@@ -129,7 +129,7 @@ public class CommonTest {
         Assertions.assertEquals(param1.toString(), param2.toString());
         Assertions.assertEquals(param1.getSupervisorToken(), param2.getSupervisorToken());
         Assertions.assertEquals(param1.getWorker(), param2.getWorker());
-        Assertions.assertEquals(param1.getJobHandler(), param2.getJobHandler());
+        Assertions.assertEquals(param1.getJobExecutor(), param2.getJobExecutor());
     }
 
     @Test
@@ -221,7 +221,7 @@ public class CommonTest {
                                                           RouteStrategy routeStrategy,
                                                           RedeployStrategy redeployStrategy,
                                                           int executeTimeout,
-                                                          String jobHandler,
+                                                          String jobExecutor,
                                                           Worker worker) {
         ExecuteTaskParam param = new ExecuteTaskParam();
         param.setOperation(operation);
@@ -236,7 +236,7 @@ public class CommonTest {
         param.setExecuteTimeout(executeTimeout);
         param.setSupervisorToken("supervisor token");
         param.setWorker(worker);
-        param.setJobHandler(jobHandler);
+        param.setJobExecutor(jobExecutor);
         return param;
     }
 

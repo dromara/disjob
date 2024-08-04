@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 /**
- * Schedule job handler base class.
+ * Schedule job executor base class.
  *
  * <p>Note: if in spring context and a stateful bean, must be annotated with @Scope("prototype")
  *
@@ -25,6 +25,6 @@ package cn.ponfee.disjob.worker.handle;
  * @see org.springframework.context.annotation.Scope
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#SCOPE_PROTOTYPE
  */
-public abstract class JobHandler extends TaskExecutor implements JobSplitter {
+public abstract class JobExecutor extends TaskExecutor implements JobSplitter {
 
 }

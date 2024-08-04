@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.test.handler;
+package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.test.util.Constants;
-import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.JobHandler;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -40,10 +40,10 @@ import java.util.stream.IntStream;
  * @author Ponfee
  */
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-@Service("EJobHandler")
-public class EJobHandler extends JobHandler {
+@Service("DJobExecutor")
+public class DJobExecutor extends JobExecutor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EJobHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DJobExecutor.class);
 
     @Override
     public List<String> split(String jobParamString) {
@@ -53,11 +53,11 @@ public class EJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         Thread.sleep(ThreadLocalRandom.current().nextInt(5000) + 1000L);
         LOG.info("Execution finished.");
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
-        return ExecuteResult.success();
+        return ExecutionResult.success();
     }
 
 }

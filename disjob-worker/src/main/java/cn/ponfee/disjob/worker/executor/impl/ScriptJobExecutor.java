@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle.impl;
+package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.util.Files;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
-import cn.ponfee.disjob.worker.handle.*;
+import cn.ponfee.disjob.worker.executor.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.FileUtils;
@@ -41,7 +41,7 @@ import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.commons.lang3.SystemUtils.OS_NAME;
 
 /**
- * Script job handler.
+ * Script job executor.
  * <p>
  *
  * <pre>job_param example: {@code
@@ -56,8 +56,8 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  *
  * @author Ponfee
  */
-public class ScriptJobHandler extends JobHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptJobHandler.class);
+public class ScriptJobExecutor extends JobExecutor {
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptJobExecutor.class);
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http://", "https://", "ftp://"};
     private static final String WORKER_SCRIPT_DIR = SystemUtils.USER_HOME + "/disjob/worker/scripts/";
@@ -74,7 +74,7 @@ public class ScriptJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         ScriptParam scriptParam = Jsons.JSON5.readValue(task.getTaskParam(), ScriptParam.class);
         Assert.notNull(scriptParam, "Script param cannot null.");
         Assert.notNull(scriptParam.type, () -> "Script type cannot be null: " + scriptParam);
@@ -87,7 +87,7 @@ public class ScriptJobHandler extends JobHandler {
         Process process = scriptParam.type.exec(scriptPath, scriptParam.envp);
         this.pid = ProcessUtils.getProcessId(process);
         LOG.info("Script process id: {}, {}", task.getTaskId(), pid);
-        return JobHandlerUtils.completeProcess(process, charset, task, LOG);
+        return JobExecutorUtils.completeProcess(process, charset, task, LOG);
     }
 
     public enum ScriptType {

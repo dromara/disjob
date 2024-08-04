@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.test.handler;
+package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.dag.PredecessorTask;
 import cn.ponfee.disjob.core.enums.RunState;
-import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.JobHandler;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import org.springframework.util.Assert;
 
 import java.util.Collections;
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class PrimeAccumulateJobHandler extends JobHandler {
+public class PrimeAccumulateJobExecutor extends JobExecutor {
 
     @Override
     public List<String> split(String jobParamString) {
@@ -41,18 +41,18 @@ public class PrimeAccumulateJobHandler extends JobHandler {
     }
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         long sum = task.getPredecessorInstances()
             .stream()
             .peek(e -> Assert.state(RunState.FINISHED == e.getRunState(), "Previous instance unfinished: " + e.getInstanceId()))
             .flatMap(e -> e.getTasks().stream())
             .map(PredecessorTask::getExecuteSnapshot)
-            .map(e -> Jsons.fromJson(e, PrimeCountJobHandler.ExecuteSnapshot.class))
-            .mapToLong(PrimeCountJobHandler.ExecuteSnapshot::getCount)
+            .map(e -> Jsons.fromJson(e, PrimeCountJobExecutor.ExecuteSnapshot.class))
+            .mapToLong(PrimeCountJobExecutor.ExecuteSnapshot::getCount)
             .sum();
         savepoint.save(Long.toString(sum));
 
-        return ExecuteResult.success();
+        return ExecutionResult.success();
     }
 
 }

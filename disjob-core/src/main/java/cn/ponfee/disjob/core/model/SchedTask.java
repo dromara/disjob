@@ -56,7 +56,7 @@ public class SchedTask extends BaseEntity {
     private Integer taskCount;
 
     /**
-     * job_handler执行task的参数(参考sched_job.job_param)
+     * job_executor执行task的参数(参考sched_job.job_param)
      */
     private String taskParam;
 

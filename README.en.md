@@ -21,7 +21,7 @@
 
 A distributed task scheduling and distributed computing framework, in addition to having regular task scheduling functions, also provides: pausing/cancelling running tasks, resuming paused tasks, task splitting, failure retries, broadcast tasks, task dependencies, workflow tasks (DAG), separate deployment of managers and executors, Web management backend, and other capabilities.
 
-Lightweight, easy to use, especially suitable for long task execution. It has good scalability, extensibility, and stability, and has been tested in production.
+Lightweight and easy to use, it is particularly suitable for the execution of long tasks. Powerful and reliable, it has been tested in production environments.
 
 ## Architecture
 
@@ -68,13 +68,13 @@ disjob                                        # Main project①
 - Supervisor and Worker discover each other through the registry center, supported: Database, Redis, Consul, Nacos, Zookeeper, Etcd
 - Supervisor is responsible for generating tasks and dispatching them to Worker for execution, supported: Redis, Http
 - Need to specify the group, Job tasks will only be dispatched to the specified group of Workers for execution
-- Provides the ability to split tasks, override the method [JobHandler#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/handle/JobSplitter.java) to split many tasks, then distributed and parallel execution
+- Provides the ability to split tasks, override the method [JobExecutor#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java) to split many tasks, then distributed and parallel execution
 - Supports pausing and cancelling running tasks, paused tasks can be resumed for execution, failed tasks support retry
 - Supports savepoint task execution snapshot, so that manually or abnormally paused tasks can be resumed from the savepoint
 - If a task throw [PauseTaskException](disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/PauseTaskException.java) at executing, then will pause all instance tasks (even if dispatched other worker machine tasks)
 - Supports broadcast tasks, broadcast tasks will be dispatched to all workers under the group for execution
 - Supports dependencies jobs, multiple Jobs configured with dependencies will be executed in the established dependency order
-- Supports DAG workflows, can configure jobHandler as a complex DAG expression, such as: A->B,C,(D->E)->D,F->G
+- Supports DAG workflows, can configure jobExecutor as a complex DAG expression, such as: A->B,C,(D->E)->D,F->G
 - Provides a Web management backend, job configuration, task monitoring, etc.
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)

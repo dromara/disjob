@@ -55,7 +55,7 @@ public class WorkflowInstanceCreator extends TriggerInstanceCreator<WorkflowInst
         leadInstance.setRunStartTime(Dates.max(new Date(), new Date(triggerTime)));
         leadInstance.setWnstanceId(wnstanceId);
 
-        List<SchedWorkflow> workflows = DAGExpressionParser.parse(job.getJobHandler())
+        List<SchedWorkflow> workflows = DAGExpressionParser.parse(job.getJobExecutor())
             .edges()
             .stream()
             .map(e -> new SchedWorkflow(wnstanceId, e.source().toString(), e.target().toString()))

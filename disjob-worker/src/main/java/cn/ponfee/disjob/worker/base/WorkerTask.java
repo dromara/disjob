@@ -21,7 +21,7 @@ import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
-import cn.ponfee.disjob.worker.handle.TaskExecutor;
+import cn.ponfee.disjob.worker.executor.TaskExecutor;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -51,11 +51,11 @@ class WorkerTask {
     private final RouteStrategy routeStrategy;
     private final RedeployStrategy redeployStrategy;
     private final int executeTimeout;
-    private final String jobHandler;
+    private final String jobExecutor;
     private final Worker worker;
 
     /**
-     * 任务执行处理器
+     * 任务执行执行器
      */
     @Getter(AccessLevel.NONE)
     private final AtomicReference<TaskExecutor> taskExecutor = new AtomicReference<>();
@@ -71,7 +71,7 @@ class WorkerTask {
         this.routeStrategy = param.getRouteStrategy();
         this.redeployStrategy = param.getRedeployStrategy();
         this.executeTimeout = param.getExecuteTimeout();
-        this.jobHandler = param.getJobHandler();
+        this.jobExecutor = param.getJobExecutor();
         this.worker = param.getWorker();
     }
 

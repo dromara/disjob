@@ -30,7 +30,7 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
-import cn.ponfee.disjob.worker.handle.*;
+import cn.ponfee.disjob.worker.executor.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -338,7 +338,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         Assert.notNull(ops, "Stop task operation cannot be null.");
         if (!task.updateOperation(ops, null)) {
             // already stopped
-            LOG.warn("Stop task conflict: {}, {}, {}", task.getTaskId(), ops, toState);
+            LOG.info("Stop task conflict: {}, {}, {}", task.getTaskId(), ops, toState);
             return;
         }
 
@@ -580,7 +580,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private boolean returnPool() {
             if (activePool.removeThread(this) == null) {
                 // maybe already removed by other operation
-                LOG.error("Worker thread not in active pool: {}", super.getName());
                 return false;
             }
             try {
@@ -600,7 +599,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private void removePool() {
             toStop();
             if (activePool.removeThread(this) == null && !idlePool.remove(this)) {
-                LOG.warn("Worker thread not in thread pool: {}", super.getName());
+                LOG.info("Worker thread not in thread pool: {}", super.getName());
             }
         }
 
@@ -687,7 +686,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         private void run(WorkerTask workerTask) {
-            ExecuteTask executeTask;
+            ExecutionTask executionTask;
             try {
                 // update database records start state(sched_instance, sched_task)
                 // 存在调用超时但实际task启动成功的问题：计划增加start_id参数写入sched_task表，接口返回启动成功的start_id，若超时重试成功时可判断返回的start_id是否与本次的相等
@@ -696,7 +695,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.warn("Start task failed: {}, {}", workerTask, startTaskResult.getMessage());
                     return;
                 }
-                executeTask = ExecuteTask.of(startTaskResult, workerTask.getJobId(), workerTask.getInstanceId(), workerTask.getWnstanceId());
+                executionTask = ExecutionTask.of(startTaskResult, workerTask.getJobId(), workerTask.getInstanceId(), workerTask.getWnstanceId());
             } catch (Throwable t) {
                 LOG.warn("Start task error: " + workerTask, t);
                 if (workerTask.getRouteStrategy().isNotBroadcast()) {
@@ -711,9 +710,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
             TaskExecutor taskExecutor;
             try {
-                taskExecutor = JobHandlerUtils.load(workerTask.getJobHandler());
+                taskExecutor = JobExecutorUtils.load(workerTask.getJobExecutor());
                 workerTask.bindTaskExecutor(taskExecutor);
-                taskExecutor.init(executeTask);
+                taskExecutor.init(executionTask);
                 LOG.info("Initialized task executor: {}", workerTask.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Initialize task executor error: " + workerTask, t);
@@ -723,7 +722,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
 
             try {
-                execute(workerTask, executeTask, taskExecutor);
+                execute(workerTask, executionTask, taskExecutor);
             } catch (TimeoutException e) {
                 LOG.error("Execute task timeout: " + workerTask, e);
                 stopTask(workerTask, Operation.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
@@ -752,11 +751,11 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
         }
 
-        private void execute(WorkerTask workerTask, ExecuteTask executeTask, TaskExecutor taskExecutor) throws Exception {
-            ExecuteResult result;
+        private void execute(WorkerTask workerTask, ExecutionTask executionTask, TaskExecutor taskExecutor) throws Exception {
+            ExecutionResult result;
             Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId(), workerTask.getWorker().serialize());
             if (workerTask.getExecuteTimeout() > 0) {
-                FutureTask<ExecuteResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executeTask, savepoint));
+                FutureTask<ExecutionResult> futureTask = new FutureTask<>(() -> taskExecutor.execute(executionTask, savepoint));
                 String threadName = "WorkerThread#FutureTaskThread-" + FUTURE_TASK_NAMED_SEQ.getAndIncrement();
                 Thread futureTaskThread = Threads.newThread(threadName, true, Thread.NORM_PRIORITY, futureTask, LOG);
                 futureTaskThread.start();
@@ -766,7 +765,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     Threads.stopThread(futureTaskThread, 0);
                 }
             } else {
-                result = taskExecutor.execute(executeTask, savepoint);
+                result = taskExecutor.execute(executionTask, savepoint);
             }
 
             if (result != null && result.isSuccess()) {

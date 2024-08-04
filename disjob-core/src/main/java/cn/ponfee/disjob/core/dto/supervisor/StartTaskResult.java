@@ -62,7 +62,7 @@ public class StartTaskResult extends ToJsonString implements Serializable {
     private int taskCount;
 
     /**
-     * job_handler执行task的参数
+     * job_executor执行task的参数
      */
     private String taskParam;
 

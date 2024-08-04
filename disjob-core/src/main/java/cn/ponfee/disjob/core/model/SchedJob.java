@@ -70,9 +70,9 @@ public class SchedJob extends BaseEntity {
     private Integer jobState;
 
     /**
-     * Job处理器(支持：处理器类的全限定名、Spring bean name、DAG表达式、处理器源码等)
+     * Job执行器(支持：执行器类的全限定名、Spring bean name、DAG表达式、执行器源码等)
      */
-    private String jobHandler;
+    private String jobExecutor;
 
     /**
      * Job参数

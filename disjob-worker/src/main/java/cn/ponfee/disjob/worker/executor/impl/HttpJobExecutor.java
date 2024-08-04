@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle.impl;
+package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.JobHandler;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
@@ -45,7 +45,7 @@ import java.net.URI;
 import java.util.Map;
 
 /**
- * The job handler for execute http request.
+ * The job executor for execute http request.
  * <p>
  *
  * <pre>job_param example: {@code
@@ -57,8 +57,8 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public class HttpJobHandler extends JobHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpJobHandler.class);
+public class HttpJobExecutor extends JobExecutor {
+    private static final Logger LOG = LoggerFactory.getLogger(HttpJobExecutor.class);
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
     private static final int DEFAULT_READ_TIMEOUT = 5000;
@@ -66,7 +66,7 @@ public class HttpJobHandler extends JobHandler {
     private static final RestTemplate REST_TEMPLATE = RestTemplateUtils.create(DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT, null);
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) {
         HttpJobRequest req = Jsons.fromJson(task.getTaskParam(), HttpJobRequest.class);
 
         Assert.hasText(req.method, "Http method cannot be empty.");
@@ -111,7 +111,7 @@ public class HttpJobHandler extends JobHandler {
             }
 
             if (responseEntity != null && responseEntity.getStatusCode().is2xxSuccessful()) {
-                return ExecuteResult.success(responseEntity.getBody());
+                return ExecutionResult.success(responseEntity.getBody());
             } else {
                 HttpStatus status = null;
                 String body = null;
@@ -119,11 +119,11 @@ public class HttpJobHandler extends JobHandler {
                     status = responseEntity.getStatusCode();
                     body = responseEntity.getBody();
                 }
-                return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
+                return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_FAILED.getCode(), status + ": " + body);
             }
         } catch (Throwable t) {
             LOG.error("Http request error: " + task, t);
-            return ExecuteResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
+            return ExecutionResult.failure(JobCodeMsg.JOB_EXECUTE_ERROR.getCode(), Throwables.getRootCauseMessage(t));
         }
     }
 

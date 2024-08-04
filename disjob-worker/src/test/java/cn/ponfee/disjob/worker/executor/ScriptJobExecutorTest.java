@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle;
+package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.worker.handle.impl.ScriptJobHandler;
+import cn.ponfee.disjob.worker.executor.impl.ScriptJobExecutor;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * @author Ponfee
  */
-public class ScriptJobHandlerTest {
+public class ScriptJobExecutorTest {
 
     @Test
     public void testShell() throws Exception {
@@ -38,34 +38,34 @@ public class ScriptJobHandlerTest {
             return;
         }
 
-        ScriptJobHandler.ScriptParam scriptParam = new ScriptJobHandler.ScriptParam();
-        scriptParam.setType(ScriptJobHandler.ScriptType.SHELL);
+        ScriptJobExecutor.ScriptParam scriptParam = new ScriptJobExecutor.ScriptParam();
+        scriptParam.setType(ScriptJobExecutor.ScriptType.SHELL);
         scriptParam.setScript("#!/bin/sh\necho \"hello, shell!\"\n");
 
-        ExecuteTask task = new ExecuteTask();
+        ExecutionTask task = new ExecutionTask();
         task.setTaskId(1L);
         task.setTaskParam(Jsons.toJson(scriptParam));
 
-        ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
+        ScriptJobExecutor scriptJobExecutor = new ScriptJobExecutor();
 
-        ExecuteResult execute = scriptJobHandler.execute(task, Savepoint.NOOP);
+        ExecutionResult execute = scriptJobExecutor.execute(task, Savepoint.NOOP);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"hello, shell!\\n\"}", Jsons.toJson(execute));
     }
 
     @Disabled
     @Test
     public void testPython() throws Exception {
-        ScriptJobHandler.ScriptParam scriptParam = new ScriptJobHandler.ScriptParam();
-        scriptParam.setType(ScriptJobHandler.ScriptType.PYTHON);
+        ScriptJobExecutor.ScriptParam scriptParam = new ScriptJobExecutor.ScriptParam();
+        scriptParam.setType(ScriptJobExecutor.ScriptType.PYTHON);
         scriptParam.setScript("print('hello, python!')\n");
 
-        ExecuteTask task = new ExecuteTask();
+        ExecutionTask task = new ExecutionTask();
         task.setTaskId(1L);
         task.setTaskParam(Jsons.toJson(scriptParam));
 
-        ScriptJobHandler scriptJobHandler = new ScriptJobHandler();
+        ScriptJobExecutor scriptJobExecutor = new ScriptJobExecutor();
 
-        ExecuteResult execute = scriptJobHandler.execute(task, Savepoint.NOOP);
+        ExecutionResult execute = scriptJobExecutor.execute(task, Savepoint.NOOP);
         Assertions.assertEquals("{\"code\":0,\"msg\":\"OK\",\"data\":\"hello, python!\\n\"}", Jsons.toJson(execute));
     }
 

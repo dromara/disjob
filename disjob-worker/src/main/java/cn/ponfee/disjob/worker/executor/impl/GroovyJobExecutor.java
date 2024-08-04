@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.handle.impl;
+package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.util.GroovyUtils;
-import cn.ponfee.disjob.worker.handle.ExecuteResult;
-import cn.ponfee.disjob.worker.handle.ExecuteTask;
-import cn.ponfee.disjob.worker.handle.JobHandler;
-import cn.ponfee.disjob.worker.handle.Savepoint;
+import cn.ponfee.disjob.worker.executor.ExecutionResult;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
+import cn.ponfee.disjob.worker.executor.Savepoint;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
@@ -28,38 +28,38 @@ import java.util.Objects;
 
 /**
  *
- * The job handler for executes groovy script.
+ * The job executor for executes groovy script.
  * <p>
  *
  * <pre>job_param example: {@code
  *  import java.util.*
  *  def uuid = UUID.randomUUID().toString()
  *  savepoint.save(new Date().toString() + ": " + uuid)
- *  return "taskId: " + executeTask.getTaskId() + ", execute at: " + new Date() + ", " + jobHandler.toString()
+ *  return "taskId: " + executeTask.getTaskId() + ", execute at: " + new Date() + ", " + jobExecutor.toString()
  * }</pre>
  *
  * @author Ponfee
  */
-public class GroovyJobHandler extends JobHandler {
+public class GroovyJobExecutor extends JobExecutor {
 
-    public static final String JOB_HANDLER = "jobHandler";
+    public static final String JOB_EXECUTOR = "jobExecutor";
     public static final String EXECUTING_TASK = "executeTask";
     public static final String SAVEPOINT = "savepoint";
 
     @Override
-    public ExecuteResult execute(ExecuteTask task, Savepoint savepoint) throws Exception {
+    public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         String scriptText = task.getTaskParam();
         Map<String, Object> params = ImmutableMap.of(
-            JOB_HANDLER, this,
+            JOB_EXECUTOR, this,
             EXECUTING_TASK, task,
             SAVEPOINT, savepoint
         );
 
         Object result = GroovyUtils.Evaluator.SCRIPT.eval(scriptText, params);
-        if (result instanceof ExecuteResult) {
-            return (ExecuteResult) result;
+        if (result instanceof ExecutionResult) {
+            return (ExecutionResult) result;
         } else {
-            return ExecuteResult.success(Objects.toString(result, null));
+            return ExecutionResult.success(Objects.toString(result, null));
         }
     }
 

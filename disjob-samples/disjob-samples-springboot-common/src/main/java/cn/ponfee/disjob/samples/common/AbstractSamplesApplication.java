@@ -31,7 +31,7 @@ import org.springframework.context.annotation.ComponentScan;
  * @author Ponfee
  */
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-@ComponentScan({"cn.ponfee.disjob.samples.common", "cn.ponfee.disjob.test.handler"})
+@ComponentScan({"cn.ponfee.disjob.samples.common", "cn.ponfee.disjob.test.executor"})
 @JacksonDateConfigurer // 解决日期反序列化报错的问题
 public abstract class AbstractSamplesApplication {
 
