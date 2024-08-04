@@ -5,8 +5,8 @@
   <sql id="Table_Name">sched_job</sql>
 
   <sql id="Base_Column_List">
-    job_id, `group`, job_name, job_executor, job_state, job_type, job_param, retry_type,
-    retry_count, retry_interval, start_time, end_time, trigger_type, trigger_value,
+    job_id, `group`, job_name, job_type, job_state, job_executor, job_param,
+    retry_type, retry_count, retry_interval, trigger_type, trigger_value, start_time, end_time,
     execute_timeout, collided_strategy, misfire_strategy, route_strategy, redeploy_strategy,
     remark, last_trigger_time, next_trigger_time, next_scan_time, scan_failed_count,
     version, updated_by, created_by, updated_at, created_at
@@ -24,17 +24,17 @@
       job_id,
       `group`,
       job_name,
-      job_executor,
-      job_state,
       job_type,
+      job_state,
+      job_executor,
       job_param,
       retry_type,
       retry_count,
       retry_interval,
-      start_time,
-      end_time,
       trigger_type,
       trigger_value,
+      start_time,
+      end_time,
       execute_timeout,
       collided_strategy,
       misfire_strategy,
@@ -48,17 +48,17 @@
       #{jobId,jdbcType=BIGINT},
       #{group,jdbcType=VARCHAR},
       #{jobName,jdbcType=VARCHAR},
-      #{jobExecutor,jdbcType=LONGVARCHAR},
-      #{jobState,jdbcType=TINYINT},
       #{jobType,jdbcType=TINYINT},
+      #{jobState,jdbcType=TINYINT},
+      #{jobExecutor,jdbcType=LONGVARCHAR},
       #{jobParam,jdbcType=LONGVARCHAR},
       #{retryType,jdbcType=TINYINT},
       #{retryCount,jdbcType=TINYINT},
       #{retryInterval,jdbcType=INTEGER},
-      #{startTime,jdbcType=TIMESTAMP},
-      #{endTime,jdbcType=TIMESTAMP},
       #{triggerType,jdbcType=TINYINT},
       #{triggerValue,jdbcType=VARCHAR},
+      #{startTime,jdbcType=TIMESTAMP},
+      #{endTime,jdbcType=TIMESTAMP},
       #{executeTimeout,jdbcType=INTEGER},
       #{collidedStrategy,jdbcType=TINYINT},
       #{misfireStrategy,jdbcType=TINYINT},
@@ -74,30 +74,30 @@
   <update id="update" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_name = #{jobName,jdbcType=VARCHAR},
-        <if test="jobExecutor != null and jobExecutor != ''">
-          job_executor = #{jobExecutor,jdbcType=LONGVARCHAR},
-          job_param = #{jobParam,jdbcType=LONGVARCHAR},
-          job_type = #{jobType,jdbcType=TINYINT},
-          route_strategy = #{routeStrategy,jdbcType=TINYINT},
-        </if>
+      <if test="jobExecutor != null and jobExecutor != ''">
+        job_executor = #{jobExecutor,jdbcType=LONGVARCHAR},
+        job_param = #{jobParam,jdbcType=LONGVARCHAR},
+        job_type = #{jobType,jdbcType=TINYINT},
+        route_strategy = #{routeStrategy,jdbcType=TINYINT},
+      </if>
         job_state = #{jobState,jdbcType=TINYINT},
         retry_type = #{retryType,jdbcType=TINYINT},
         retry_count = #{retryCount,jdbcType=TINYINT},
         retry_interval = #{retryInterval,jdbcType=INTEGER},
         start_time = #{startTime,jdbcType=TIMESTAMP},
         end_time = #{endTime,jdbcType=TIMESTAMP},
-        <if test="triggerType != null">
-          trigger_type = #{triggerType,jdbcType=TINYINT},
-          trigger_value = #{triggerValue,jdbcType=VARCHAR},
-          next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
-        </if>
+      <if test="triggerType != null">
+        trigger_type = #{triggerType,jdbcType=TINYINT},
+        trigger_value = #{triggerValue,jdbcType=VARCHAR},
+        next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+      </if>
         execute_timeout = #{executeTimeout,jdbcType=INTEGER},
         collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         redeploy_strategy = #{redeployStrategy,jdbcType=TINYINT},
-        <if test="remark != null and remark != ''">
-          remark = #{remark,jdbcType=VARCHAR},
-        </if>
+      <if test="remark != null and remark != ''">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
         version = version+1,
         updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}

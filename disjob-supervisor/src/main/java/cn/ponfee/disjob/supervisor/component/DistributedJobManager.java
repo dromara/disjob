@@ -657,7 +657,7 @@ public class DistributedJobManager extends AbstractJobManager {
             throw new IllegalStateException("Unknown terminate run state " + runState);
         }
 
-        if (!retried && !instance.isWorkflow()) {
+        if (!retried && !instance.isWorkflowNode()) {
             renewFixedDelayNextTriggerTime(instance, lazyJob);
         }
     }

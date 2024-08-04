@@ -28,14 +28,14 @@ import java.util.Objects;
 
 /**
  *
- * The job executor for executes groovy script.
+ * The job executor for execute groovy script.
  * <p>
  *
  * <pre>job_param example: {@code
  *  import java.util.*
  *  def uuid = UUID.randomUUID().toString()
  *  savepoint.save(new Date().toString() + ": " + uuid)
- *  return "taskId: " + executeTask.getTaskId() + ", execute at: " + new Date() + ", " + jobExecutor.toString()
+ *  return "taskId=" + executionTask.getTaskId() + ", executeAt=" + new Date() + ", jobExecutor=" + jobExecutor.toString();
  * }</pre>
  *
  * @author Ponfee
@@ -43,7 +43,7 @@ import java.util.Objects;
 public class GroovyJobExecutor extends JobExecutor {
 
     public static final String JOB_EXECUTOR = "jobExecutor";
-    public static final String EXECUTING_TASK = "executeTask";
+    public static final String EXECUTION_TASK = "executionTask";
     public static final String SAVEPOINT = "savepoint";
 
     @Override
@@ -51,7 +51,7 @@ public class GroovyJobExecutor extends JobExecutor {
         String scriptText = task.getTaskParam();
         Map<String, Object> params = ImmutableMap.of(
             JOB_EXECUTOR, this,
-            EXECUTING_TASK, task,
+            EXECUTION_TASK, task,
             SAVEPOINT, savepoint
         );
 
