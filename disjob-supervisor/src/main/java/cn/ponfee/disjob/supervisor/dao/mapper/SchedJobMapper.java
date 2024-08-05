@@ -94,10 +94,12 @@ public interface SchedJobMapper {
      * Updates job state
      *
      * @param jobId           the job id
+     * @param lastTriggerTime the last trigger time
      * @param nextTriggerTime the next trigger time
      * @return update sql affected rows
      */
     int updateFixedDelayNextTriggerTime(@Param("jobId") long jobId,
+                                        @Param("lastTriggerTime") long lastTriggerTime,
                                         @Param("nextTriggerTime") long nextTriggerTime);
 
     /**

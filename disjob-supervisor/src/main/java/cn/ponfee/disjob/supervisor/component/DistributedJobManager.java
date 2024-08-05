@@ -137,9 +137,9 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
-    public boolean updateInstanceNextScanTime(SchedInstance instance, Date nextScanTime) {
+    public boolean updateInstanceNextScanTime(SchedInstance inst, Date nextScanTime) {
         Assert.notNull(nextScanTime, "Instance next scan time cannot be null.");
-        return isOneAffectedRow(instanceMapper.updateNextScanTime(instance.getInstanceId(), nextScanTime, instance.getVersion()));
+        return isOneAffectedRow(instanceMapper.updateNextScanTime(inst.getInstanceId(), nextScanTime, inst.getVersion()));
     }
 
     public boolean savepoint(long taskId, String worker, String executeSnapshot) {
@@ -364,7 +364,7 @@ public class DistributedJobManager extends AbstractJobManager {
             }
             // task execute state must not be Waiting
             List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId, null);
-            if (tasks.stream().anyMatch(e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()))) {
+            if (tasks.stream().anyMatch(SchedTask::isWaiting)) {
                 log.warn("Purge instance failed, has waiting task: {}", tasks);
                 return false;
             }
@@ -380,12 +380,12 @@ public class DistributedJobManager extends AbstractJobManager {
             } else {
                 Assert.isTrue(tuple.a.isTerminal(), () -> "Purge instance state must be terminal state: " + instance);
             }
+
             if (isNotAffectedRow(instanceMapper.terminate(instanceId, tuple.a.value(), RS_TERMINABLE, tuple.b))) {
                 return false;
             }
-
             tasks.stream().filter(e -> ES_PAUSABLE.contains(e.getExecuteState())).forEach(e -> {
-                String worker = ExecuteState.EXECUTING.equalsValue(e.getExecuteState()) ? Strings.requireNonBlank(e.getWorker()) : null;
+                String worker = e.isExecuting() ? Strings.requireNonBlank(e.getWorker()) : null;
                 taskMapper.terminate(e.getTaskId(), worker, ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null);
             });
             instance.markTerminated(tuple.a, tuple.b);
@@ -481,7 +481,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private boolean shouldTerminateDispatchFailedTask(long taskId) {
         SchedTask task = taskMapper.get(taskId);
-        if (!ExecuteState.WAITING.equalsValue(task.getExecuteState())) {
+        if (!task.isWaiting()) {
             return false;
         }
         int currentDispatchFailedCount = task.getDispatchFailedCount();
@@ -509,7 +509,6 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private void saveInstanceAndTasks(TriggerInstance tInstance) {
         instanceMapper.insert(tInstance.getInstance().fillUniqueFlag());
-
         if (tInstance instanceof GeneralInstanceCreator.GeneralInstance) {
             GeneralInstanceCreator.GeneralInstance creator = (GeneralInstanceCreator.GeneralInstance) tInstance;
             Collects.batchProcess(creator.getTasks(), taskMapper::batchInsert, PROCESS_BATCH_SIZE);
@@ -559,6 +558,9 @@ public class DistributedJobManager extends AbstractJobManager {
             assertOneAffectedRow(row, () -> "Pause instance failed: " + instance + ", " + tuple.a);
             if (instance.isWorkflowNode()) {
                 updateWorkflowCurNodeState(instance, tuple.a, RS_PAUSABLE);
+            } else if (tuple.a.isTerminal()) {
+                instance.markTerminated(tuple.a, tuple.b);
+                renewFixedDelayNextTriggerTime(instance, LazyLoader.of(jobMapper::get, instance.getJobId()));
             }
         } else {
             // has alive executing tasks: dispatch and pause executing tasks
@@ -849,7 +851,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (retryType == RetryType.FAILED) {
             return taskMapper.findLargeByInstanceId(prev.getInstanceId(), null)
                 .stream()
-                .filter(e -> ExecuteState.of(e.getExecuteState()).isFailure())
+                .filter(SchedTask::isFailure)
                 // Broadcast task must be retried with the same worker
                 .filter(e -> RouteStrategy.of(job.getRouteStrategy()).isNotBroadcast() || super.isAliveWorker(e.getWorker()))
                 .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, e.getTaskNo(), e.getTaskCount(), e.getWorker()))
@@ -972,7 +974,8 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private void renewFixedDelayNextTriggerTime(SchedInstance instance, LazyLoader<SchedJob> lazyJob) {
-        Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed delay next trigger time cannot be workflow node: " + instance);
+        Assert.isTrue(instance.isTerminal(), () -> "Renew fixed delay instance must be terminal state: " + instance);
+        Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed delay instance cannot be workflow node: " + instance);
         // 必须是SCHEDULE方式运行的实例：不会存在`A -> ... -> A`问题，因为在添加Job时做了不能循环依赖的校验
         long rnstanceId = instance.obtainRnstanceId();
         SchedInstance root = (rnstanceId == instance.getInstanceId()) ? instance : instanceMapper.get(rnstanceId);
@@ -984,9 +987,10 @@ public class DistributedJobManager extends AbstractJobManager {
         if (job == null || (triggerType = TriggerType.of(job.getTriggerType())) != TriggerType.FIXED_DELAY) {
             return;
         }
+        long lastTriggerTime = instance.getTriggerTime();
         long nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), instance.getRunEndTime()).getTime();
-        boolean updated = isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), nextTriggerTime));
-        log.info("Renew fixed delay next trigger time: {}, {}, {}", job.getJobId(), nextTriggerTime, updated);
+        boolean updated = isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
+        log.info("Renew fixed delay next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
     }
 
 }

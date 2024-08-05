@@ -151,7 +151,7 @@
   <update id="disable" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_state = 0,
-        next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
+        next_trigger_time = null,
         remark = #{remark,jdbcType=VARCHAR},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
@@ -193,6 +193,7 @@
       AND is_deleted = 0
       AND job_state = 1
       AND trigger_type = 5
+      AND last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT}
       AND next_trigger_time = 9223372036854775807
   </update>
 

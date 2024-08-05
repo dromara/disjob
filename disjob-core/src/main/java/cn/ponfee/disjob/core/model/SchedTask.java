@@ -21,6 +21,7 @@ import cn.ponfee.disjob.core.enums.ExecuteState;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.beans.Transient;
 import java.util.Date;
 
 /**
@@ -124,6 +125,26 @@ public class SchedTask extends BaseEntity {
         task.setWorker(worker);
         task.setExecuteState(ExecuteState.WAITING.value());
         return task;
+    }
+
+    @Transient
+    public boolean isWaiting() {
+        return ExecuteState.WAITING.equalsValue(executeState);
+    }
+
+    @Transient
+    public boolean isExecuting() {
+        return ExecuteState.EXECUTING.equalsValue(executeState);
+    }
+
+    @Transient
+    public boolean isTerminal() {
+        return ExecuteState.of(executeState).isTerminal();
+    }
+
+    @Transient
+    public boolean isFailure() {
+        return ExecuteState.of(executeState).isFailure();
     }
 
 }

@@ -34,7 +34,7 @@ public final class DAGNode implements Serializable {
     private static final long serialVersionUID = 7413110685194391605L;
 
     public static final DAGNode START = new DAGNode(0, 0, "Start");
-    public static final DAGNode END = new DAGNode(0, 0, "End");
+    public static final DAGNode END   = new DAGNode(0, 0, "End");
 
     /**
      * <pre>

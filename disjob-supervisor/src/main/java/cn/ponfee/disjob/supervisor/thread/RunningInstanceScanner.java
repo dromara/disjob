@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
-import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
@@ -92,11 +91,11 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         }
 
         List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(instance.getInstanceId());
-        List<SchedTask> waitingTasks = Collects.filter(tasks, e -> ExecuteState.WAITING.equalsValue(e.getExecuteState()));
+        List<SchedTask> waitingTasks = Collects.filter(tasks, SchedTask::isWaiting);
 
         if (CollectionUtils.isNotEmpty(waitingTasks)) {
             processHasWaitingTask(instance, waitingTasks);
-        } else if (tasks.stream().allMatch(e -> ExecuteState.of(e.getExecuteState()).isTerminal())) {
+        } else if (tasks.stream().allMatch(SchedTask::isTerminal)) {
             processAllTerminatedTask(instance);
         } else {
             processHasExecutingTask(instance, tasks);

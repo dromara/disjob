@@ -163,7 +163,6 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private void disableJob(SchedJob job, String reason) {
         job.setRemark(reason);
-        job.setNextTriggerTime(null);
         jobManager.disableJob(job);
     }
 

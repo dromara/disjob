@@ -18,6 +18,7 @@ package cn.ponfee.disjob.worker.executor;
 
 /**
  * Schedule job executor base class.
+ * <p>JobSplitter + TaskExecutor  =>  JobExecutor
  *
  * <p>Note: if in spring context and a stateful bean, must be annotated with @Scope("prototype")
  *

@@ -222,10 +222,7 @@ public abstract class AbstractJobManager {
         if (CollectionUtils.isEmpty(tasks)) {
             return false;
         }
-        return tasks.stream()
-            .filter(e -> ExecuteState.EXECUTING.equalsValue(e.getExecuteState()))
-            .map(SchedTask::getWorker)
-            .anyMatch(this::isAliveWorker);
+        return tasks.stream().filter(SchedTask::isExecuting).anyMatch(e -> isAliveWorker(e.getWorker()));
     }
 
     public boolean isAliveWorker(String worker) {
@@ -246,7 +243,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean shouldRedispatch(SchedTask task) {
-        if (!ExecuteState.WAITING.equalsValue(task.getExecuteState())) {
+        if (!task.isWaiting()) {
             return false;
         }
         if (StringUtils.isBlank(task.getWorker())) {
@@ -404,13 +401,8 @@ public abstract class AbstractJobManager {
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
-            Date nextTriggerTime;
-            if (TriggerType.Const.FIXED_TYPES.contains(triggerType)) {
-                nextTriggerTime = Dates.max(new Date(), job.getStartTime());
-            } else {
-                Date baseTime = Dates.max(new Date(), job.getStartTime());
-                nextTriggerTime = triggerType.computeNextTriggerTime(triggerValue, baseTime);
-            }
+            Date baseTime = Dates.max(new Date(), job.getStartTime());
+            Date nextTriggerTime = triggerType.computeNextTriggerTime(triggerValue, baseTime);
             if (nextTriggerTime == null) {
                 throw new IllegalArgumentException("Invalid " + triggerType + " value: " + triggerValue);
             }

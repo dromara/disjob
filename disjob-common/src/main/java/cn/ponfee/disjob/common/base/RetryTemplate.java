@@ -26,6 +26,13 @@ import org.springframework.util.Assert;
 
 /**
  * Retry template(template method pattern)
+ * <pre>
+ *  Others retry framework:
+ *    org.springframework.retry:spring-retry:2.0.7
+ *    com.github.rholder:guava-retrying:2.0.0
+ *    dev.failsafe:failsafe:3.3.2
+ *    io.github.resilience4j:resilience4j-retry:2.2.0
+ * </pre>
  *
  * @author Ponfee
  */

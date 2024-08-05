@@ -24,7 +24,6 @@ import cn.ponfee.disjob.worker.executor.Savepoint;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  *
@@ -59,7 +58,7 @@ public class GroovyJobExecutor extends JobExecutor {
         if (result instanceof ExecutionResult) {
             return (ExecutionResult) result;
         } else {
-            return ExecutionResult.success(Objects.toString(result, null));
+            return ExecutionResult.success(result == null ? null : result.toString());
         }
     }
 
