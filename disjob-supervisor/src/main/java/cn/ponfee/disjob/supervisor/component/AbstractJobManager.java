@@ -103,6 +103,10 @@ public abstract class AbstractJobManager {
         this.destinationWorkerRpcClient = destinationWorkerRpcClient;
     }
 
+    public SchedJob getRequireJob(long jobId) {
+        return Objects.requireNonNull(jobMapper.get(jobId), () -> "Not found job: " + jobId);
+    }
+
     // ------------------------------------------------------------------database single operation without spring transactional
 
     public boolean disableJob(SchedJob job) {
@@ -362,12 +366,12 @@ public abstract class AbstractJobManager {
 
         VerifyJobParam param = VerifyJobParam.from(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
-        groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verify(param));
+        groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verifyJob(param));
     }
 
     private SplitJobResult splitJob(SplitJobParam param) throws JobException {
         SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
-        return groupedWorkerRpcClient.call(param.getGroup(), client -> client.split(param));
+        return groupedWorkerRpcClient.call(param.getGroup(), client -> client.splitJob(param));
     }
 
     private void parseTriggerConfig(SchedJob job) {

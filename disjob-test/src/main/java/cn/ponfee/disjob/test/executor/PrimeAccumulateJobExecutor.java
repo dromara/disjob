@@ -44,7 +44,7 @@ public class PrimeAccumulateJobExecutor extends JobExecutor {
     public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         long sum = task.getPredecessorInstances()
             .stream()
-            .peek(e -> Assert.state(RunState.FINISHED == e.getRunState(), "Previous instance unfinished: " + e.getInstanceId()))
+            .peek(e -> Assert.state(RunState.COMPLETED == e.getRunState(), "Previous instance uncompleted: " + e.getInstanceId()))
             .flatMap(e -> e.getTasks().stream())
             .map(PredecessorTask::getExecuteSnapshot)
             .map(e -> Jsons.fromJson(e, PrimeCountJobExecutor.ExecuteSnapshot.class))

@@ -67,10 +67,10 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="getPnstanceId" resultType="long">
-    SELECT pnstance_id
+  <select id="findChildren" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+    SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE instance_id = #{instanceId}
+    WHERE pnstance_id = #{pnstanceId}
         <if test="runType != null">
           AND run_type = #{runType}
         </if>

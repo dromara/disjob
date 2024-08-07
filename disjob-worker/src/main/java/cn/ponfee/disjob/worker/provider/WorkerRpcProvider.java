@@ -46,13 +46,13 @@ public class WorkerRpcProvider implements WorkerRpcService {
     }
 
     @Override
-    public void verify(VerifyJobParam param) throws JobException {
+    public void verifyJob(VerifyJobParam param) throws JobException {
         currentWorker.verifySupervisorAuthenticationToken(param);
         JobExecutorUtils.verify(param);
     }
 
     @Override
-    public SplitJobResult split(SplitJobParam param) throws JobException {
+    public SplitJobResult splitJob(SplitJobParam param) throws JobException {
         currentWorker.verifySupervisorAuthenticationToken(param);
         List<String> taskParams = JobExecutorUtils.split(param.getJobExecutor(), param.getJobParam());
         return new SplitJobResult(taskParams);
@@ -65,7 +65,7 @@ public class WorkerRpcProvider implements WorkerRpcService {
     }
 
     @Override
-    public WorkerMetrics metrics(GetMetricsParam param) {
+    public WorkerMetrics getMetrics(GetMetricsParam param) {
         String wGroup = currentWorker.getGroup();
         String pGroup = param.getGroup();
         if (!wGroup.equals(pGroup)) {

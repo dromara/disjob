@@ -33,16 +33,16 @@ public interface WorkerRpcService {
     String PREFIX_PATH = "/worker/rpc";
 
     @PostMapping("/job/verify")
-    void verify(VerifyJobParam param) throws JobException;
+    void verifyJob(VerifyJobParam param) throws JobException;
 
     @PostMapping("/job/split")
-    SplitJobResult split(SplitJobParam param) throws JobException;
+    SplitJobResult splitJob(SplitJobParam param) throws JobException;
 
     @GetMapping("/task/exists")
     boolean existsTask(ExistsTaskParam param);
 
-    @GetMapping("/metrics")
-    WorkerMetrics metrics(GetMetricsParam param);
+    @GetMapping("/metrics/get")
+    WorkerMetrics getMetrics(GetMetricsParam param);
 
     @PostMapping("/worker/configure")
     void configureWorker(ConfigureWorkerParam param);

@@ -50,7 +50,7 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     /**
      * 执行完成
      */
-    FINISHED(40, RunState.FINISHED, "执行完成"),
+    COMPLETED(40, RunState.COMPLETED, "执行完成"),
 
     /**
      * 派发失败取消

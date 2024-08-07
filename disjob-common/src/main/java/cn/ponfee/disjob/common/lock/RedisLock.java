@@ -39,8 +39,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * 可重入锁的一般场景：当前线程多次调用含有锁操作的函数、当前线程含有锁操作的函数自身调用
  * 待完善:
  *   1、获取锁成功的线程 A 定时续期锁：WatchDog
- *   2、获取锁失败的线程 B 阻塞等待并监听(订阅)队列：subscribe
- *   3、线程 A 释放锁时发送消息通知等待锁的线程B：publish
+ *   2、获取锁失败的线程 B 阻塞等待并监听(订阅)事件：subscribe
+ *   3、线程 A 释放锁时发送消息事件通知等待锁的线程B：publish
  *
  * {@code
  * RedisLockFactory factory = new RedisLockFactory(redisTemplate);

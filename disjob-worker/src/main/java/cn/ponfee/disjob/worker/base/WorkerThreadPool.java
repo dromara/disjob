@@ -572,7 +572,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         /**
-         * Task executed finished, then return the worker thread to idle pool.
+         * Task execute finished, then return the worker thread to idle pool.
          * <p>Called this method current thread is WorkerThread
          *
          * @return {@code true} if return to idle pool successfully
@@ -776,7 +776,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     boolean updated = workerTask.updateOperation(ops, Operation.TRIGGER);
                     LOG.info("Execute task revert to trigger: {}, {}, {}", workerTask.getTaskId(), ops, updated);
                 }
-                stopTask(workerTask, Operation.TRIGGER, FINISHED, null);
+                stopTask(workerTask, Operation.TRIGGER, COMPLETED, null);
             } else {
                 LOG.error("Execute task failed: {}, {}", workerTask, result);
                 String msg = (result == null) ? "null result" : result.getMsg();

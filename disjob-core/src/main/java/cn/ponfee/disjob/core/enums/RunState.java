@@ -50,7 +50,7 @@ public enum RunState implements IntValueEnum<RunState> {
     /**
      * 已完成
      */
-    FINISHED(40, true, false, "已完成"),
+    COMPLETED(40, true, false, "已完成"),
 
     /**
      * 已取消

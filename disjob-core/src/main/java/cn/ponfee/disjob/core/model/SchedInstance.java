@@ -167,6 +167,10 @@ public class SchedInstance extends BaseEntity {
         return instanceId;
     }
 
+    public long obtainRetryOriginalInstanceId() {
+        return isRunRetry() ? pnstanceId : instanceId;
+    }
+
     @Transient
     public boolean isWorkflow() {
         return wnstanceId != null;
@@ -193,13 +197,18 @@ public class SchedInstance extends BaseEntity {
     }
 
     @Transient
-    public boolean isFinished() {
-        return RunState.FINISHED.equalsValue(runState);
+    public boolean isCompleted() {
+        return RunState.COMPLETED.equalsValue(runState);
     }
 
     @Transient
     public boolean isTerminal() {
         return RunState.of(runState).isTerminal();
+    }
+
+    @Transient
+    public boolean isRunRetry() {
+        return RunType.RETRY.equalsValue(runType);
     }
 
     public InstanceAttach parseAttach() {

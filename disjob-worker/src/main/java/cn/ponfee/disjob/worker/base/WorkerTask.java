@@ -78,7 +78,7 @@ class WorkerTask {
     // --------------------------------------------------------other methods
 
     StartTaskParam toStartTaskParam() {
-        return new StartTaskParam(wnstanceId, instanceId, taskId, jobType, worker);
+        return new StartTaskParam(jobId, wnstanceId, instanceId, taskId, jobType, worker);
     }
 
     StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {

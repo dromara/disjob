@@ -224,7 +224,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         long instanceId = lastInstance.getInstanceId();
         RunState runState = RunState.of(lastInstance.getRunState());
         switch (runState) {
-            case FINISHED:
+            case COMPLETED:
                 return false;
             case WAITING:
             case PAUSED:

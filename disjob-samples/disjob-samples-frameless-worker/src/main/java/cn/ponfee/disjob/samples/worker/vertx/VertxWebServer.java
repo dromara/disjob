@@ -107,13 +107,13 @@ public class VertxWebServer extends AbstractVerticle {
         //String[] args = ctx.body().asPojo(String[].class);
         router.post(prefixPath + "/job/verify").handler(ctx -> handle(() -> {
             VerifyJobParam param = parseBodyArg(ctx, VerifyJobParam.class);
-            workerRpcService.verify(param);
+            workerRpcService.verifyJob(param);
         }, ctx, BAD_REQUEST));
 
         router.post(prefixPath + "/job/split").handler(ctx -> handle(() -> {
             SplitJobParam param = parseBodyArg(ctx, SplitJobParam.class);
             JobExecutorParser.parse(param, "jobExecutor");
-            return workerRpcService.split(param);
+            return workerRpcService.splitJob(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         router.get(prefixPath + "/task/exists").handler(ctx -> handle(() -> {
@@ -121,9 +121,9 @@ public class VertxWebServer extends AbstractVerticle {
             return workerRpcService.existsTask(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
-        router.get(prefixPath + "/metrics").handler(ctx -> handle(() -> {
+        router.get(prefixPath + "/metrics/get").handler(ctx -> handle(() -> {
             GetMetricsParam param = parseParamArg(ctx, GetMetricsParam.class);
-            return workerRpcService.metrics(param);
+            return workerRpcService.getMetrics(param);
         }, ctx, INTERNAL_SERVER_ERROR));
 
         router.post(prefixPath + "/worker/configure").handler(ctx -> handle(() -> {

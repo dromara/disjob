@@ -38,7 +38,7 @@ public interface SupervisorRpcService {
     @PostMapping("/task/start")
     StartTaskResult startTask(StartTaskParam param) throws Exception;
 
-    @PostMapping("/task/worker/update")
+    @PostMapping("/task_worker/update")
     void updateTaskWorker(String worker, List<Long> taskIds) throws Exception;
 
     @PostMapping("/task/stop")
@@ -50,11 +50,11 @@ public interface SupervisorRpcService {
     @PostMapping("/instance/cancel")
     boolean cancelInstance(long instanceId, Operation operation) throws Exception;
 
-    @GetMapping("/metrics")
-    SupervisorMetrics metrics();
+    @GetMapping("/metrics/get")
+    SupervisorMetrics getMetrics();
 
-    @PostMapping("/publish")
-    void publish(EventParam param);
+    @PostMapping("event/publish")
+    void publishEvent(EventParam param);
 
     /**
      * Savepoint the task execution snapshot data

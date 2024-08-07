@@ -37,14 +37,16 @@ import java.util.Objects;
 public class StartTaskParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7700836087189718161L;
 
+    private long jobId;
     private Long wnstanceId;
     private long instanceId;
     private long taskId;
     private String worker;
     private JobType jobType;
 
-    public StartTaskParam(Long wnstanceId, long instanceId, long taskId, JobType jobType, Worker worker) {
+    public StartTaskParam(long jobId, Long wnstanceId, long instanceId, long taskId, JobType jobType, Worker worker) {
         Objects.requireNonNull(worker, "Start task worker param cannot be null.");
+        this.jobId = jobId;
         this.wnstanceId = wnstanceId;
         this.instanceId = instanceId;
         this.taskId = taskId;

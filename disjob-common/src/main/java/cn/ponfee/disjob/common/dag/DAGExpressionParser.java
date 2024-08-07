@@ -115,7 +115,7 @@ public class DAGExpressionParser {
     private static final Pattern JSON_ARRAY_PATTERN = Pattern.compile("(?s)^\\s*\\[\\s*\\{.+}\\s*]\\s*$");
 
     private static final String SEP_STAGE = "->";
-    private static final String SEP_UNION = Str.COMMA;
+    private static final String SEP_UNION = ",";
     private static final List<String> SEP_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION);
     private static final List<String> ALL_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.CLOSE, Str.OPEN);
     private static final char[] SINGLE_SYMBOLS = {Char.OPEN, Char.CLOSE, Char.COMMA};

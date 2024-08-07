@@ -72,7 +72,7 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
 
     @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
     @Override
-    public SupervisorMetrics metrics() {
+    public SupervisorMetrics getMetrics() {
         SupervisorMetrics metrics = new SupervisorMetrics();
         metrics.setVersion(JobConstants.VERSION);
         metrics.setStartupAt(Dates.toDate(Supervisor.current().getStartupAt()));
@@ -82,7 +82,7 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
 
     @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
     @Override
-    public void publish(EventParam param) {
+    public void publishEvent(EventParam param) {
         EventSubscribeService.subscribe(param);
     }
 
