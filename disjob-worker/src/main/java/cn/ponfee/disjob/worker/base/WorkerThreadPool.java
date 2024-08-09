@@ -320,14 +320,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     private static String toErrorMsg(Throwable t) {
-        if (t == null) {
-            return null;
-        }
-        String errorMsg = Throwables.getRootCauseStackTrace(t);
-        if (errorMsg.length() > ERROR_MSG_MAX_LENGTH) {
-            errorMsg = errorMsg.substring(0, ERROR_MSG_MAX_LENGTH);
-        }
-        return errorMsg;
+        return Throwables.getRootCauseStackTrace(t, ERROR_MSG_MAX_LENGTH);
     }
 
     private void stopTask(WorkerTask task, Operation ops, String errorMsg) {

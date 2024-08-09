@@ -23,14 +23,16 @@ import org.springframework.context.annotation.Configuration;
  * Supervisor datasource configuration
  *
  * <pre>
- *  datasource.disjob:
- *    driver-class-name: com.mysql.cj.jdbc.Driver
- *    jdbc-url: jdbc:mysql://localhost:3306/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
- *    username: disjob
- *    password:
- *    minimum-idle: 10
- *    maximum-pool-size: 100
- *    connection-timeout: 2000
+ *  # 前面的`disjob.datasource`为固定前缀，后面的`disjob`为数据源名
+ *  disjob.datasource:
+ *    disjob:
+ *      driver-class-name: com.mysql.cj.jdbc.Driver
+ *      jdbc-url: jdbc:mysql://localhost:3306/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false
+ *      username: disjob
+ *      password:
+ *      minimum-idle: 10
+ *      maximum-pool-size: 100
+ *      connection-timeout: 2000
  * </pre>
  *
  * @author Ponfee

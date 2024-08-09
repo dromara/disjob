@@ -34,9 +34,9 @@ public class ServerTest {
         Worker worker2 = new Worker("group-a", "workerId2", "localhost", 80);
         Worker worker3 = new Worker("group-b", "workerId2", "localhost", 80);
         assertThat(worker0.equals(worker1)).isTrue();
-        assertThat(worker1.sameWorker(worker2)).isTrue();
+        assertThat(worker1.matches(worker2)).isTrue();
         assertThat(worker1.equals(worker2)).isFalse();
-        assertThat(worker3.sameWorker(worker2)).isFalse();
+        assertThat(worker3.matches(worker2)).isFalse();
     }
 
 }

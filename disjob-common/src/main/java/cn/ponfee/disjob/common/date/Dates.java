@@ -474,7 +474,7 @@ public class Dates {
     // ----------------------------------------------------------------day of
 
     /**
-     * 获取指定时间所在周的周n，1<=day<=7
+     * 获取指定时间所在周的周n：[1, 7]
      *
      * @param date      相对日期
      * @param dayOfWeek 1-星期一；2-星期二；...
@@ -487,7 +487,7 @@ public class Dates {
     }
 
     /**
-     * 获取指定时间所在月的n号，1<=day<=31
+     * 获取指定时间所在月的n号：[1, 31]
      *
      * @param date       the date
      * @param dayOfMonth the day of month

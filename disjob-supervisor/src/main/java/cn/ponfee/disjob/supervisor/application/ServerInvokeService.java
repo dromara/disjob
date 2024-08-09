@@ -113,7 +113,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         Worker worker = req.toWorker();
         if (req.getAction() == Action.ADD_WORKER) {
             List<Worker> workers = supervisorRegistry.getDiscoveredServers(req.getGroup());
-            if (workers != null && workers.stream().anyMatch(worker::sameWorker)) {
+            if (workers != null && workers.stream().anyMatch(worker::matches)) {
                 throw new KeyExistsException("Worker already registered: " + worker);
             }
             verifyWorkerSignature(worker);

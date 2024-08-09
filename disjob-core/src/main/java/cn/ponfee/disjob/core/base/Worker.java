@@ -101,6 +101,28 @@ public class Worker extends Server {
             && this.workerId.equals(other.workerId);
     }
 
+    /**
+     * 判断是否同一台机器：其它属性相同，worker-id可以不同
+     * Worker机器宕机重启后，Supervisor一段时间内仍缓存着旧的Worker，导致http通过ip:port派发的任务参数中Worker是旧的，但是新Worker接收该任务
+     *
+     * @param other the other worker
+     * @return {@code true} if same worker
+     */
+    public boolean matches(Worker other) {
+        return super.equals(other)
+            && this.equalsGroup(other.group);
+    }
+
+    /**
+     * 判断当前Worker的group是否等于任务分派的Worker的group
+     *
+     * @param group the group
+     * @return {@code true} if matched
+     */
+    public boolean equalsGroup(String group) {
+        return this.group.equals(group);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(group, workerId, host, port);
@@ -117,28 +139,6 @@ public class Worker extends Server {
 
     public String getWorkerId() {
         return workerId;
-    }
-
-    /**
-     * 判断当前Worker的group是否等于任务分派的Worker的group
-     *
-     * @param group the group
-     * @return {@code true} if matched
-     */
-    public boolean equalsGroup(String group) {
-        return this.group.equals(group);
-    }
-
-    /**
-     * 判断是否同一台机器：其它属性相同但worker-id不同
-     * Worker机器宕机重启后，Supervisor一段时间内仍缓存着旧的Worker，导致http通过ip:port派发的任务参数中Worker是旧的，但是新Worker接收该任务
-     *
-     * @param other the other worker
-     * @return {@code true} if same worker
-     */
-    public boolean sameWorker(Worker other) {
-        return super.equals(other)
-            && this.equalsGroup(other.group);
     }
 
     // --------------------------------------------------------static method
@@ -203,8 +203,8 @@ public class Worker extends Server {
 
     // -------------------------------------------------------------------------------current Worker
 
+    @SuppressWarnings("serial")
     public abstract static class Current extends Worker {
-        private static final long serialVersionUID = -480329874106279202L;
         private static volatile Current instance = null;
 
         private final LocalDateTime startupAt;
@@ -258,8 +258,6 @@ public class Worker extends Server {
             }
 
             instance = new Current(group, workerId, host, port) {
-                private static final long serialVersionUID = 7553139562459109482L;
-
                 private final String workerToken     = StringUtils.trim(wToken);
                 private final String supervisorToken = StringUtils.trim(sToken);
 

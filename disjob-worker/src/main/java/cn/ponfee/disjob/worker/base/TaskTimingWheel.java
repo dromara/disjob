@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 
 import java.util.Objects;
@@ -30,25 +29,14 @@ import java.util.Objects;
 public class TaskTimingWheel extends TimingWheel<ExecuteTaskParam> {
     private static final long serialVersionUID = 5234431161365689615L;
 
-    private final Worker.Current currentWorker;
-
-    public TaskTimingWheel(Worker.Current currentWorker, long tickMs, int ringSize) {
+    public TaskTimingWheel(long tickMs, int ringSize) {
         super(tickMs, ringSize);
-        this.currentWorker = currentWorker;
     }
 
     @Override
     protected boolean verify(ExecuteTaskParam param) {
         Objects.requireNonNull(param, "Execute task param cannot be null.");
         Objects.requireNonNull(param.getWorker(), "Execute task worker cannot be null.");
-        if (!currentWorker.sameWorker(param.getWorker())) {
-            log.error("Take unmatched worker task: {}, {}, {}", param.getTaskId(), Worker.current(), param.getWorker());
-            return false;
-        }
-        if (!currentWorker.getWorkerId().equals(param.getWorker().getWorkerId())) {
-            log.warn("Take former worker task: {}, {}, {}", param.getTaskId(), currentWorker, param.getWorker());
-            param.setWorker(currentWorker);
-        }
         return true;
     }
 

@@ -112,6 +112,7 @@ public @interface MybatisDataSourceConfigurer {
 
     class MybatisDataSourceRegistrar implements /*EnvironmentAware,*/ ImportBeanDefinitionRegistrar {
         private static final Logger LOG = LoggerFactory.getLogger(MybatisDataSourceRegistrar.class);
+        private static final String KEY_PREFIX = "disjob.datasource.";
 
         private final Environment environment;
 
@@ -119,6 +120,7 @@ public @interface MybatisDataSourceConfigurer {
             this.environment = environment;
         }
 
+        @SuppressWarnings("NullableProblems")
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
             MybatisDataSourceConfigurer config = SpringUtils.parseAnnotation(MybatisDataSourceConfigurer.class, importingClassMetadata);
@@ -135,7 +137,7 @@ public @interface MybatisDataSourceConfigurer {
             }
             Assert.hasText(dataSourceName, "DataSource name cannot be empty.");
 
-            String dataSourceConfigPrefixKey = "datasource." + dataSourceName;
+            String dataSourceConfigPrefixKey = KEY_PREFIX + dataSourceName;
             String jdbcUrl = environment.getProperty(dataSourceConfigPrefixKey + ".jdbc-url");
             if (StringUtils.isBlank(jdbcUrl)) {
                 LOG.warn("Datasource '{}' not configured jdbc-url value.", dataSourceName);
@@ -146,17 +148,14 @@ public @interface MybatisDataSourceConfigurer {
             boolean primary = config.primary();
 
             // MapperScannerConfigurer bean definition
-            BeanDefinitionBuilder mapperScannerConfigurerBdb = BeanDefinitionBuilder.genericBeanDefinition(MapperScannerConfigurer.class);
+            BeanDefinitionBuilder mapperScannerConfigurerBdb = newBeanDefinitionBuilder(MapperScannerConfigurer.class, primary);
             mapperScannerConfigurerBdb.addPropertyValue("processPropertyPlaceHolders", true);
             mapperScannerConfigurerBdb.addPropertyValue("basePackage", String.join(",", basePackages));
             mapperScannerConfigurerBdb.addPropertyValue("sqlSessionTemplateBeanName", dataSourceName + SQL_SESSION_TEMPLATE_NAME_SUFFIX);
-            mapperScannerConfigurerBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            mapperScannerConfigurerBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + MAPPER_SCANNER_CONFIGURER_NAME_SUFFIX, mapperScannerConfigurerBdb.getBeanDefinition());
 
             // DataSource bean definition
-            BeanDefinitionBuilder dataSourceBdb = BeanDefinitionBuilder.genericBeanDefinition(DataSource.class);
-            dataSourceBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            BeanDefinitionBuilder dataSourceBdb = newBeanDefinitionBuilder(DataSource.class, primary);
             AbstractBeanDefinition dataSourceBd = dataSourceBdb.getBeanDefinition();
             dataSourceBd.setInstanceSupplier(() -> {
                 Binder binder = Binder.get(environment);
@@ -164,44 +163,33 @@ public @interface MybatisDataSourceConfigurer {
                 binder.bind(dataSourceConfigPrefixKey, Bindable.ofInstance(dataSource));
                 return dataSource;
             });
-            dataSourceBd.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + DATA_SOURCE_NAME_SUFFIX, dataSourceBd);
 
             // SqlSessionFactoryBean bean definition
-            BeanDefinitionBuilder sqlSessionFactoryBeanBdb = BeanDefinitionBuilder.genericBeanDefinition(SqlSessionFactoryBean.class);
+            BeanDefinitionBuilder sqlSessionFactoryBeanBdb = newBeanDefinitionBuilder(SqlSessionFactoryBean.class, primary);
             sqlSessionFactoryBeanBdb.addPropertyReference("dataSource", dataSourceName + DATA_SOURCE_NAME_SUFFIX);
             sqlSessionFactoryBeanBdb.addPropertyValue("configuration", createMybatisConfiguration(config));
             sqlSessionFactoryBeanBdb.addPropertyValue("mapperLocations", resolveMapperLocations(config, basePackages));
-            sqlSessionFactoryBeanBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            sqlSessionFactoryBeanBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + SQL_SESSION_FACTORY_NAME_SUFFIX, sqlSessionFactoryBeanBdb.getBeanDefinition());
 
             // SqlSessionTemplate bean definition
-            BeanDefinitionBuilder sqlSessionTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(SqlSessionTemplate.class);
+            BeanDefinitionBuilder sqlSessionTemplateBdb = newBeanDefinitionBuilder(SqlSessionTemplate.class, primary);
             sqlSessionTemplateBdb.addConstructorArgReference(dataSourceName + SQL_SESSION_FACTORY_NAME_SUFFIX);
-            sqlSessionTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            sqlSessionTemplateBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + SQL_SESSION_TEMPLATE_NAME_SUFFIX, sqlSessionTemplateBdb.getBeanDefinition());
 
             // JdbcTemplate bean definition
-            BeanDefinitionBuilder jdbcTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(JdbcTemplate.class);
+            BeanDefinitionBuilder jdbcTemplateBdb = newBeanDefinitionBuilder(JdbcTemplate.class, primary);
             jdbcTemplateBdb.addConstructorArgReference(dataSourceName + DATA_SOURCE_NAME_SUFFIX);
-            jdbcTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            jdbcTemplateBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + JDBC_TEMPLATE_NAME_SUFFIX, jdbcTemplateBdb.getBeanDefinition());
 
             // DataSourceTransactionManager bean definition
-            BeanDefinitionBuilder dataSourceTransactionManagerBdb = BeanDefinitionBuilder.genericBeanDefinition(DataSourceTransactionManager.class);
+            BeanDefinitionBuilder dataSourceTransactionManagerBdb = newBeanDefinitionBuilder(DataSourceTransactionManager.class, primary);
             dataSourceTransactionManagerBdb.addConstructorArgReference(dataSourceName + DATA_SOURCE_NAME_SUFFIX);
-            dataSourceTransactionManagerBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            dataSourceTransactionManagerBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + TX_MANAGER_NAME_SUFFIX, dataSourceTransactionManagerBdb.getBeanDefinition());
 
             // TransactionTemplate bean definition
-            BeanDefinitionBuilder transactionTemplateBdb = BeanDefinitionBuilder.genericBeanDefinition(TransactionTemplate.class);
+            BeanDefinitionBuilder transactionTemplateBdb = newBeanDefinitionBuilder(TransactionTemplate.class, primary);
             transactionTemplateBdb.addConstructorArgReference(dataSourceName + TX_MANAGER_NAME_SUFFIX);
-            transactionTemplateBdb.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-            transactionTemplateBdb.setPrimary(primary);
             registry.registerBeanDefinition(dataSourceName + TX_TEMPLATE_NAME_SUFFIX, transactionTemplateBdb.getBeanDefinition());
             LOG.info("Datasource '{}' registered bean definition.", dataSourceName);
         }
@@ -214,6 +202,13 @@ public @interface MybatisDataSourceConfigurer {
         }
 
         // ----------------------------------------------------------------------------------------private methods
+
+        private BeanDefinitionBuilder newBeanDefinitionBuilder(Class<?> beanType, boolean primary) {
+            BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(beanType);
+            builder.setPrimary(primary);
+            builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            return builder;
+        }
 
         private static String resolvePackageDatasourceName(String packageName) {
             String packageLastName = Strings.substringAfterLast(packageName, ".");

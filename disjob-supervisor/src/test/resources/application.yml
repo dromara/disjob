@@ -1,8 +1,8 @@
 # -1: 单元测试时关闭HTTP端点；0: 自动寻找一个空闲的端口；${random.int[1,65535]}: 随机端口但可能会有端口冲突；
 server.port: 0
 
-# database configuration
-datasource:
+# database configuration：前面的`disjob.datasource`为固定前缀，后面的`disjob`为数据源名
+disjob.datasource:
   disjob:
     driver-class-name: com.mysql.cj.jdbc.Driver
     jdbc-url: jdbc:mysql://localhost:23306/disjob?useUnicode=true&characterEncoding=UTF-8&useSSL=false&autoReconnect=true&connectTimeout=2000&socketTimeout=5000&serverTimezone=Asia/Shanghai&failOverReadOnly=false

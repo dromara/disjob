@@ -45,7 +45,6 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
-import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.base.Joiner;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -312,8 +311,9 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------protected methods
 
-    protected ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedInstance instance) {
-        return newExecuteTaskParamBuilder(jobMapper.get(instance.getJobId()), instance);
+    protected ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
+        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
+        return ExecuteTaskParam.builder(instance, job, supervisorToken);
     }
 
     protected boolean dispatch(List<ExecuteTaskParam> tasks) {
@@ -338,23 +338,16 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
-        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
-        return ExecuteTaskParam.builder(instance, job, supervisorToken);
-    }
-
     private void updateNextTriggerTime(SchedJob job) {
         TriggerType triggerType = TriggerType.of(job.getTriggerType());
-        if (triggerType == TriggerType.FIXED_DELAY && Objects.equals(job.getNextTriggerTime(), Long.MAX_VALUE)) {
-            job.setNextTriggerTime(null);
-        }
-        if (triggerType == TriggerType.DEPEND || job.getNextTriggerTime() != null) {
+        if (triggerType == TriggerType.DEPEND) {
             return;
         }
-        Long nextTriggerTime = TriggerTimeUtils.computeNextTriggerTime(job, new Date());
-        Assert.notNull(nextTriggerTime, () -> "Enable failed, job not has next trigger time.");
-        job.setNextTriggerTime(nextTriggerTime);
-        assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
+        Long nextTriggerTime = computeNextTriggerTime(job, triggerType);
+        if (!nextTriggerTime.equals(job.getNextTriggerTime())) {
+            job.setNextTriggerTime(nextTriggerTime);
+            assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
+        }
     }
 
     private void verifyJobExecutor(SchedJob job) throws JobException {
@@ -405,16 +398,19 @@ public abstract class AbstractJobManager {
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
-            Date baseTime = Dates.max(new Date(), job.getStartTime());
-            Date nextTriggerTime = triggerType.computeNextTriggerTime(triggerValue, baseTime);
-            if (nextTriggerTime == null) {
-                throw new IllegalArgumentException("Invalid " + triggerType + " value: " + triggerValue);
-            }
-            if (job.getEndTime() != null && nextTriggerTime.after(job.getEndTime())) {
-                throw new IllegalArgumentException("Expire " + triggerType + " value: " + triggerValue);
-            }
-            job.setNextTriggerTime(nextTriggerTime.getTime());
+            job.setNextTriggerTime(computeNextTriggerTime(job, triggerType));
         }
+    }
+
+    private Long computeNextTriggerTime(SchedJob job, TriggerType triggerType) {
+        String triggerValue = job.getTriggerValue();
+        Date baseTime = Dates.max(new Date(), job.getStartTime());
+        Date nextTriggerTime = triggerType.computeNextTriggerTime(triggerValue, baseTime);
+        Assert.notNull(nextTriggerTime, () -> "Invalid " + triggerType + " value: " + triggerValue);
+        if (job.getEndTime() != null && nextTriggerTime.after(job.getEndTime())) {
+            throw new IllegalArgumentException("Expire " + triggerType + " value: " + triggerValue);
+        }
+        return nextTriggerTime.getTime();
     }
 
     private void checkCircularDepends(Long jobId, Set<Long> parentJobIds) {

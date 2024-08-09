@@ -63,7 +63,7 @@ public abstract class TaskReceiver implements Startable {
         currentWorker.verifySupervisorAuthenticationToken(param);
 
         Worker assignedWorker = param.getWorker();
-        if (!currentWorker.sameWorker(assignedWorker)) {
+        if (!currentWorker.matches(assignedWorker)) {
             log.error("Received unmatched worker task: {}, {}, {}", param.getTaskId(), currentWorker, assignedWorker);
             return false;
         }
@@ -71,6 +71,7 @@ public abstract class TaskReceiver implements Startable {
             // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却Http方式派发给新的workerId(同机器同端口)
             // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍(注册中心还存有旧workerId)；
             log.warn("Received former worker task: {}, {}, {}", param.getTaskId(), currentWorker, assignedWorker);
+            param.setWorker(currentWorker);
         }
 
         boolean res = timingWheel.offer(param);

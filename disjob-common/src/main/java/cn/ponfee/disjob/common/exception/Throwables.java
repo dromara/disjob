@@ -57,6 +57,10 @@ public final class Throwables {
         return ExceptionUtils.getStackTrace(t);
     }
 
+    public static String getRootCauseStackTrace(Throwable t, int maxLength) {
+        return StringUtils.truncate(getRootCauseStackTrace(t), maxLength);
+    }
+
     public static String getRootCauseMessage(Throwable t) {
         if (t == null) {
             return null;

@@ -28,24 +28,25 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Disjob core DeferredImportSelector
+ * Basic DeferredImportSelector
  *
  * @author Ponfee
  */
-public class DisjobCoreDeferredImportSelector implements DeferredImportSelector {
+public class BasicDeferredImportSelector implements DeferredImportSelector {
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-        return new String[]{DisjobCoreDeferredConfiguration.class.getName()};
+        return new String[]{BasicDeferredConfiguration.class.getName()};
     }
 
     /**
-     * 推迟实例化，让用户可自定义自己的RestTemplate
+     * 推迟实例化，以支持用户使用自定义的Bean替代
      */
-    private static class DisjobCoreDeferredConfiguration {
+    private static class BasicDeferredConfiguration {
 
         /**
-         * 如果@ConditionalOnMissingBean注解没有参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
+         * 如果@ConditionalOnMissingBean注解没有指定参数，则默认以方法的返回类型判断，即容器中不存在类型为`SpringContextHolder`的实例才创建
          *
          * @return SpringContextHolder
          */

@@ -127,8 +127,8 @@ public class Supervisor extends Server {
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
+    @SuppressWarnings("serial")
     public abstract static class Current extends Supervisor {
-        private static final long serialVersionUID = -239845054171219365L;
         private static volatile Current instance = null;
 
         private final LocalDateTime startupAt;
@@ -158,8 +158,6 @@ public class Supervisor extends Server {
             }
 
             instance = new Current(host, port) {
-                private static final long serialVersionUID = 3856221643026735022L;
-
                 @Override
                 public String getWorkerContextPath(String group) {
                     return workerContextPath.apply(group);

@@ -182,7 +182,7 @@ public abstract class TaskDispatcher implements Startable {
         }
 
         boolean result;
-        if (taskReceiver != null && task.getWorker().equals(Worker.current())) {
+        if (taskReceiver != null && task.getWorker().matches(Worker.current())) {
             // if current Supervisor also is a Worker role, then dispatch to this local worker
             log.info("Dispatching task to local worker {}, {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
             result = taskReceiver.receive(task);

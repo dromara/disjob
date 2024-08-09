@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.component;
 
 import cn.ponfee.disjob.common.base.IdGenerator;
-import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
@@ -208,14 +207,15 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return StartTaskResult, if not null start successfully
      */
     public StartTaskResult startTask(StartTaskParam param) {
-        return doInSynchronizedTransaction0(param.getInstanceId(), param.getWnstanceId(), lockedKey -> {
+        long instanceId = param.getInstanceId();
+        return doInSynchronizedTransaction0(instanceId, param.getWnstanceId(), lockedKey -> {
             log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
             Date now = new Date();
             if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), now))) {
                 return StartTaskResult.failure("Start task failure.");
             }
-            if (isNotAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
-                SchedInstance instance = instanceMapper.get(param.getInstanceId());
+            if (isNotAffectedRow(instanceMapper.start(instanceId, now))) {
+                SchedInstance instance = instanceMapper.get(instanceId);
                 if (instance == null || !instance.isRunning()) {
                     throw new IllegalStateException("Start instance failure: " + instance);
                 }
@@ -224,7 +224,7 @@ public class DistributedJobManager extends AbstractJobManager {
             SchedTask task = taskMapper.get(param.getTaskId());
             List<PredecessorInstance> predecessorInstances = null;
             if (param.getJobType() == JobType.WORKFLOW) {
-                predecessorInstances = findPredecessorInstances(param.getJobId(), param.getWnstanceId(), param.getInstanceId());
+                predecessorInstances = findPredecessorInstances(param.getJobId(), param.getWnstanceId(), instanceId);
             }
             return StartTaskResult.success(task, predecessorInstances);
         });
@@ -312,7 +312,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 return true;
             }
 
-            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(param.getInstanceId(), null));
+            Tuple2<RunState, Date> tuple = obtainRunState(param.getInstanceId());
             if (tuple == null) {
                 // If the instance has (WAITING or EXECUTING) task
                 return true;
@@ -360,25 +360,17 @@ public class DistributedJobManager extends AbstractJobManager {
             if (!RS_PAUSABLE.contains(instance.getRunState())) {
                 return false;
             }
-            // task execute state must not be Waiting
             List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId, null);
-            if (tasks.stream().anyMatch(SchedTask::isWaiting)) {
-                log.warn("Purge instance failed, has waiting task: {}", tasks);
-                return false;
-            }
-            // if task execute state is Executing, cannot is alive
-            if (hasAliveExecuting(tasks)) {
-                log.warn("Purge instance failed, has alive executing task: {}", tasks);
+            if (tasks.stream().anyMatch(SchedTask::isWaiting) || hasAliveExecuting(tasks)) {
+                log.warn("Purge instance failed, has waiting or alive executing task: {}", tasks);
                 return false;
             }
 
             Tuple2<RunState, Date> tuple = obtainRunState(tasks);
             if (tuple == null) {
                 tuple = Tuple2.of(RunState.CANCELED, new Date());
-            } else {
-                Assert.isTrue(tuple.a.isTerminal(), () -> "Purge instance state must be terminal state: " + instance);
             }
-
+            Assert.isTrue(tuple.a.isTerminal(), () -> "Purge instance state must be terminal state: " + instance);
             if (isNotAffectedRow(instanceMapper.terminate(instanceId, tuple.a.value(), RS_TERMINABLE, tuple.b))) {
                 return false;
             }
@@ -492,6 +484,10 @@ public class DistributedJobManager extends AbstractJobManager {
         return (currentDispatchFailedCount + 1) == conf.getTaskDispatchFailedCountThreshold();
     }
 
+    private Tuple2<RunState, Date> obtainRunState(long instanceId) {
+        return obtainRunState(taskMapper.findBaseByInstanceId(instanceId, null));
+    }
+
     private Tuple2<RunState, Date> obtainRunState(List<SchedTask> tasks) {
         List<ExecuteState> states = tasks.stream().map(SchedTask::getExecuteState).map(ExecuteState::of).collect(Collectors.toList());
         if (states.stream().allMatch(ExecuteState::isTerminal)) {
@@ -549,7 +545,7 @@ public class DistributedJobManager extends AbstractJobManager {
         List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
         if (executingTasks.isEmpty()) {
             // has non executing task, update sched instance state
-            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId, null));
+            Tuple2<RunState, Date> tuple = obtainRunState(instanceId);
             // must be paused or terminated
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
             int row = instanceMapper.terminate(instanceId, tuple.a.value(), RS_PAUSABLE, tuple.b);
@@ -570,10 +566,7 @@ public class DistributedJobManager extends AbstractJobManager {
         if (instance.isWorkflow()) {
             long instanceId = instance.getInstanceId();
             Assert.isTrue(instance.isWorkflowLead(), () -> "Cancel instance must be workflow lead: " + instanceId);
-            instanceMapper.findWorkflowNode(instanceId)
-                .stream()
-                .filter(e -> !e.isTerminal())
-                .forEach(e -> cancelInstance0(e, ops));
+            instanceMapper.findWorkflowNode(instanceId).stream().filter(e -> !e.isTerminal()).forEach(e -> cancelInstance0(e, ops));
             updateWorkflowFreeNodeState(instance, RunState.CANCELED, RS_RUNNABLE);
         } else {
             cancelInstance0(instance, ops);
@@ -589,7 +582,7 @@ public class DistributedJobManager extends AbstractJobManager {
         List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
         if (executingTasks.isEmpty()) {
             // has non executing execute_state
-            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId, null));
+            Tuple2<RunState, Date> tuple = obtainRunState(instanceId);
             Assert.notNull(tuple, () -> "Cancel instance obtain run state failed: " + instanceId);
             // if all task paused, should update to canceled state
             if (tuple.a == RunState.PAUSED) {
@@ -713,8 +706,8 @@ public class DistributedJobManager extends AbstractJobManager {
         if (map.isEmpty()) {
             return;
         }
-        Set<DAGNode> duplicates = new HashSet<>();
         SchedJob job = getRequireJob(lead.getJobId());
+        Set<DAGNode> duplicates = new HashSet<>();
         for (Map.Entry<DAGEdge, SchedWorkflow> edge : map.entrySet()) {
             processWorkflowNode0(job, lead, graph, duplicates, edge);
         }
@@ -844,7 +837,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private List<SchedTask> splitRetryTask(SchedJob job, SchedInstance prev, long instanceId) throws JobException {
         RetryType retryType = RetryType.of(job.getRetryType());
         if (retryType == RetryType.ALL) {
-            // re-split tasks
+            // re-split job
             return splitJob(SplitJobParam.from(job, prev), instanceId);
         }
         if (retryType == RetryType.FAILED) {
@@ -859,11 +852,6 @@ public class DistributedJobManager extends AbstractJobManager {
         throw new IllegalArgumentException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);
     }
 
-    /**
-     * Crates dependency job instance and task.
-     *
-     * @param parent the parent instance
-     */
     private void dependJob(SchedInstance parent) {
         if (parent.isWorkflowNode() || !parent.isCompleted()) {
             return;
@@ -899,12 +887,15 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operation ops) {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
-        LazyLoader<ExecuteTaskParam.Builder> lazyBuilder = LazyLoader.of(() -> newExecuteTaskParamBuilder(instance));
+        ExecuteTaskParam.Builder executeTaskParamBuilder = null;
         long triggerTime = System.currentTimeMillis();
         for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId(), ES_EXECUTING)) {
             Worker worker = Worker.deserialize(task.getWorker());
             if (super.isAliveWorker(worker)) {
-                executingTasks.add(lazyBuilder.get().build(ops, task.getTaskId(), triggerTime, worker));
+                if (executeTaskParamBuilder == null) {
+                    executeTaskParamBuilder = newExecuteTaskParamBuilder(getRequireJob(instance.getJobId()), instance);
+                }
+                executingTasks.add(executeTaskParamBuilder.build(ops, task.getTaskId(), triggerTime, worker));
             } else {
                 // update dead task
                 Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
@@ -968,7 +959,6 @@ public class DistributedJobManager extends AbstractJobManager {
     private void renewFixedDelayNextTriggerTime(SchedInstance instance) {
         Assert.isTrue(instance.isTerminal(), () -> "Renew fixed delay instance must be terminal state: " + instance);
         Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed delay instance cannot be workflow node: " + instance);
-        // 必须是SCHEDULE方式运行的实例：不会存在`A -> ... -> A`问题，因为在添加Job时做了不能循环依赖的校验
         long rnstanceId = instance.obtainRnstanceId();
         SchedInstance root = (rnstanceId == instance.getInstanceId()) ? instance : instanceMapper.get(rnstanceId);
         if (!root.getJobId().equals(instance.getJobId()) || !RunType.SCHEDULE.equalsValue(root.getRunType())) {

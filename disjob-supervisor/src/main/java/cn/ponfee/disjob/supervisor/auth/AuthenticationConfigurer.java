@@ -50,6 +50,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
     private static class AuthenticationInterceptor implements HandlerInterceptor {
         private static final String ERR_MSG = "Authenticate failed.";
 
+        @SuppressWarnings({"NullableProblems"})
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
             if (!(handler instanceof HandlerMethod)) {
@@ -107,6 +108,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         return getRequest().getHeader(JobConstants.AUTHENTICATE_HEADER_TOKEN);
     }
 
+    @SuppressWarnings({"null", "ConstantConditions"})
     private static HttpServletRequest getRequest() {
         return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
     }

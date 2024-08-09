@@ -19,7 +19,7 @@ package cn.ponfee.disjob.worker.configuration;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.DisjobCoreDeferredImportSelector;
+import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
@@ -46,7 +46,7 @@ import java.lang.annotation.*;
 @Documented
 @Import({
     EnableWorkerConfiguration.class,
-    DisjobCoreDeferredImportSelector.class,
+    BasicDeferredImportSelector.class,
     WorkerLifecycle.class,
 })
 public @interface EnableWorker {
@@ -75,8 +75,8 @@ public @interface EnableWorker {
         }
 
         @Bean(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL)
-        public TaskTimingWheel timingWheel(Worker.Current currentWorker, WorkerProperties config) {
-            return new TaskTimingWheel(currentWorker, config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
+        public TaskTimingWheel timingWheel(WorkerProperties config) {
+            return new TaskTimingWheel(config.getTimingWheelTickMs(), config.getTimingWheelRingSize());
         }
 
         @Bean

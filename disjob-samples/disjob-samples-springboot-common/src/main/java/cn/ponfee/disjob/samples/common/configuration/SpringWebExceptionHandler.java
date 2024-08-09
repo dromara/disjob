@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-@ControllerAdvice(/*assignableTypes = cn.ponfee.disjob.common.spring.RpcController.class*/)
+@ControllerAdvice(/*annotations = cn.ponfee.disjob.common.spring.RpcController.class*/)
 public class SpringWebExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpringWebExceptionHandler.class);

@@ -72,7 +72,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_REST_TEMP
 @Documented
 @Import({
     EnableSupervisorConfiguration.class,
-    DisjobCoreDeferredImportSelector.class,
+    BasicDeferredImportSelector.class,
     SupervisorDeferredImportSelector.class,
     SupervisorLifecycle.class
 })
