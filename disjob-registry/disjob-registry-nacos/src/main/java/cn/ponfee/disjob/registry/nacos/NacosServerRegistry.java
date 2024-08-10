@@ -16,17 +16,12 @@
 
 package cn.ponfee.disjob.registry.nacos;
 
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
-import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.EventListener;
-import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +30,6 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 /**
@@ -45,37 +39,19 @@ import java.util.stream.Collectors;
  */
 public abstract class NacosServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
-    private final String groupName;
-
     /**
-     * Nacos naming service
+     * Nacos client
      */
-    private final NamingService namingService;
-
-    /**
-     * Nacos event listener
-     */
-    private final EventListener eventListener;
+    private final NacosClient client;
 
     protected NacosServerRegistry(NacosRegistryProperties config) {
         super(config, ':');
-        this.groupName = StringUtils.isBlank(config.getNamespace()) ? Constants.DEFAULT_GROUP : config.getNamespace().trim();
-
-        CountDownLatch latch = new CountDownLatch(1);
+        String groupName = StringUtils.isBlank(config.getNamespace()) ? Constants.DEFAULT_GROUP : config.getNamespace().trim();
         try {
-            this.namingService = NacosFactory.createNamingService(config.toProperties());
-            this.eventListener = event -> {
-                ThrowingRunnable.doCaught(latch::await);
-                if (event instanceof NamingEvent) {
-                    doRefreshDiscoveryServers(((NamingEvent) event).getInstances());
-                }
-            };
-            namingService.subscribe(discoveryRootPath, groupName, eventListener);
-            doRefreshDiscoveryServers(namingService.selectInstances(discoveryRootPath, groupName, true));
+            this.client = new NacosClient(config.toProperties(), groupName);
+            client.watch(discoveryRootPath, this::doRefreshDiscoveryServers);
         } catch (NacosException e) {
             throw new RegistryException("Nacos registry init error: " + config, e);
-        } finally {
-            latch.countDown();
         }
     }
 
@@ -83,7 +59,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public final boolean isConnected() {
-        return "UP".equals(namingService.getServerStatus());
+        return "UP".equals(client.getServerStatus());
     }
 
     @Override
@@ -94,7 +70,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
         Instance instance = createInstance(server);
         try {
-            namingService.registerInstance(registryRootPath, groupName, instance);
+            client.registerInstance(registryRootPath, instance);
             registered.add(server);
             log.info("Nacos server registered: {}, {}", registryRole, server);
         } catch (Throwable e) {
@@ -107,7 +83,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         Instance instance = createInstance(server);
         try {
             registered.remove(server);
-            namingService.deregisterInstance(registryRootPath, groupName, instance);
+            client.deregisterInstance(registryRootPath, instance);
             log.info("Nacos server deregister: {}, {}", registryRole, server);
         } catch (Throwable t) {
             log.error("Nacos server deregister error.", t);
@@ -116,7 +92,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public List<R> getRegisteredServers() throws Exception {
-        List<Instance> list = namingService.getAllInstances(registryRootPath, groupName);
+        List<Instance> list = client.getAllInstances(registryRootPath);
         return deserializeRegistryServers(list, Instance::getInstanceId);
     }
 
@@ -131,8 +107,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
 
         registered.forEach(this::deregister);
         registered.clear();
-        ThrowingRunnable.doCaught(() -> namingService.unsubscribe(discoveryRootPath, groupName, eventListener));
-        ThrowingRunnable.doCaught(namingService::shutDown);
+        client.close();
         super.close();
     }
 

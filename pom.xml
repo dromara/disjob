@@ -86,7 +86,7 @@
     <mariaDB4j.version>2.5.3</mariaDB4j.version>
     <embedded-redis.version>1.4</embedded-redis.version>
     <graphviz-java.version>0.18.1</graphviz-java.version>
-    <testcontainers.version>1.19.8</testcontainers.version>
+    <testcontainers.version>1.20.1</testcontainers.version>
 
     <!-- spring-boot-dependencies [type=pom, scope=import]方式，无法自动引入plugin依赖版本 -->
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>

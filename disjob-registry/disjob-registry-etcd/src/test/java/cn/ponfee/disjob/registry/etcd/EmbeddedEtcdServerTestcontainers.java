@@ -25,9 +25,13 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
+ * <pre>
  * Embedded etcd server base testcontainers and docker.
  *
  * io.etcd:jetcd-launcher:0.7.7
+ *
+ * docker pull gcr.io/etcd-development/etcd:v3.5.15
+ * </pre>
  *
  * <a href="https://github.com/etcd-io/etcd/releases">github官网查看版本</a>
  *
@@ -35,7 +39,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedEtcdServerTestcontainers {
 
-    private static final String ETCD_DOCKER_IMAGE_NAME = "gcr.io/etcd-development/etcd:v3.5.12";
+    private static final String ETCD_DOCKER_IMAGE_NAME = "gcr.io/etcd-development/etcd:v3.5.15";
     private static final List<String> PORT_BINDINGS = Arrays.asList("2379:2379/tcp", "2380:2380/tcp", "8080:8080/tcp");
 
     public static void main(String[] args) throws Exception {
@@ -54,6 +58,8 @@ public final class EmbeddedEtcdServerTestcontainers {
             System.out.println("Embedded docker etcd server starting...");
             etcd.start();
             Assertions.assertThat(etcd.containers()).hasSize(1);
+            Assertions.assertThat(etcd.containers().get(0).isCreated()).isTrue();
+            Assertions.assertThat(etcd.containers().get(0).isRunning()).isTrue();
             Assertions.assertThat(etcd.containers().get(0).getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
             System.out.println("Embedded docker etcd server started!");
 

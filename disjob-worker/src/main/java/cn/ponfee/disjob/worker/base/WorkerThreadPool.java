@@ -344,7 +344,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.info("Task trace [{}] stopped: {}, {}, {}", task.getTaskId(), result, ops, toState);
             }
         } catch (Throwable t) {
-            LOG.error("Stop task occur error: {}, {}, {}", task.getTaskId(), ops, toState);
+            LOG.error("Stop task occur error: " + task.getTaskId() + ", " + ops + ", " + toState, t);
             Threads.interruptIfNecessary(t);
         }
     }

@@ -32,7 +32,6 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 /**
@@ -76,7 +75,6 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         super(config, '/');
         this.ttl = config.getSessionTimeoutMs() / 2000;
 
-        CountDownLatch latch = new CountDownLatch(1);
         EtcdClient client0 = null;
         try {
             client0 = new EtcdClient(config);
@@ -84,7 +82,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
             createLeaseIdAndKeepAlive();
-            client.watchChildChanged(discoveryRootPath, latch, this::doRefreshDiscoveryServers);
+            client.watch(discoveryRootPath, this::doRefreshDiscoveryServers);
 
             long periodMs = Math.max(ttl / 4, 1) * 1000;
             this.keepAliveCheckThread = LoopThread.createStarted("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
@@ -99,8 +97,6 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
                 client0.close();
             }
             throw new RegistryException("Etcd registry init error: " + config, e);
-        } finally {
-            latch.countDown();
         }
     }
 

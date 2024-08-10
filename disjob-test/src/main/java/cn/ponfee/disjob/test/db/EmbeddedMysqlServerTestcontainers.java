@@ -18,6 +18,7 @@ package cn.ponfee.disjob.test.db;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.Assert;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.ext.ScriptUtils;
@@ -34,9 +35,9 @@ import static cn.ponfee.disjob.test.db.DBUtils.*;
  * <pre>
  * Docker mysql for testcontainers
  *
- * docker pull mysql:8.0.36
+ * docker pull mysql:8.0.39
  *
- * SELECT VERSION()  ->  8.0.36
+ * SELECT VERSION()  ->  8.0.39
  *
  * dependency maven junit:junit
  *
@@ -52,7 +53,7 @@ public class EmbeddedMysqlServerTestcontainers {
     private static final List<String> PORT_BINDINGS = Collections.singletonList("3306:3306");
 
     public static void main(String[] args) throws Exception {
-        DockerImageName dockerImage = DockerImageName.parse("mysql:8.0.36").asCompatibleSubstituteFor("mysql");
+        DockerImageName dockerImage = DockerImageName.parse("mysql:8.0.39").asCompatibleSubstituteFor("mysql");
         try (MySQLContainer<?> mySqlContainer = new MySQLContainer<>(dockerImage)
             //.withConfigurationOverride("mysql_conf_override") // resource file: “resources/mysql_conf_override/my.cnf”
             .withPrivilegedMode(true)
@@ -70,6 +71,8 @@ public class EmbeddedMysqlServerTestcontainers {
 
             mySqlContainer.start();
             //mySQLContainer.execInContainer("mysqld --skip-grant-tables");
+            Assert.isTrue(mySqlContainer.isCreated(), "Created error.");
+            Assert.isTrue(mySqlContainer.isRunning(), "Running error.");
 
             // scriptPath只用于打印日志，此处直接设置为空字符串
             String scriptPath = "";

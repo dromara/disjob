@@ -61,6 +61,8 @@ public final class EmbeddedConsulServerTestcontainers {
             Runtime.getRuntime().addShutdownHook(new Thread(consulContainer::close));
             System.out.println("Embedded docker consul server starting...");
             consulContainer.start();
+            Assertions.assertThat(consulContainer.isCreated()).isTrue();
+            Assertions.assertThat(consulContainer.isRunning()).isTrue();
             Assertions.assertThat(consulContainer.getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
             Assertions.assertThat(consulContainer.getExposedPorts()).hasSameElementsAs(Arrays.asList(8500, 8502));
             Assertions.assertThat(consulContainer.execInContainer("consul", "kv", "get", key).getStdout().trim()).isEqualTo(val);

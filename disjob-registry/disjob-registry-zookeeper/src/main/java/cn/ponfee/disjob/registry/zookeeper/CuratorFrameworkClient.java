@@ -52,7 +52,7 @@ import java.util.function.Consumer;
 public class CuratorFrameworkClient implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(CuratorFrameworkClient.class);
 
-    private final Map<String, ChildChangedWatcher> childWatchers = new ConcurrentHashMap<>();
+    private final Map<String, ChildChangedWatcher> watchers = new ConcurrentHashMap<>();
     private final CuratorFramework curatorFramework;
     private final ReconnectCallback reconnectCallback;
 
@@ -148,24 +148,26 @@ public class CuratorFrameworkClient implements Closeable {
         }
     }
 
-    public synchronized void watchChildChanged(String path, CountDownLatch latch, Consumer<List<String>> processor) throws Exception {
-        if (childWatchers.containsKey(path)) {
+    public synchronized void watch(String path, Consumer<List<String>> listener) throws Exception {
+        if (watchers.containsKey(path)) {
             throw new IllegalStateException("Path already watched: " + path);
         }
 
-        ChildChangedWatcher watcher = new ChildChangedWatcher(path, latch, processor);
-        List<String> servers = curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
-        childWatchers.put(path, watcher);
-        processor.accept(servers);
+        CountDownLatch latch = new CountDownLatch(1);
+        try {
+            ChildChangedWatcher watcher = new ChildChangedWatcher(path, latch, listener);
+            listener.accept(curatorFramework.getChildren().usingWatcher(watcher).forPath(path));
+            watchers.put(path, watcher);
+        } finally {
+            latch.countDown();
+        }
     }
 
-    public synchronized boolean unwatchChildChanged(String path) {
-        ChildChangedWatcher watcher = childWatchers.remove(path);
+    public synchronized void unwatch(String path) {
+        ChildChangedWatcher watcher = watchers.remove(path);
         if (watcher != null) {
-            watcher.unwatch();
-            return true;
-        } else {
-            return false;
+            ThrowingRunnable.doCaught(() -> curatorFramework.watchers().remove(watcher));
+            ThrowingRunnable.doCaught(watcher::close);
         }
     }
 
@@ -210,7 +212,7 @@ public class CuratorFrameworkClient implements Closeable {
 
     @Override
     public synchronized void close() {
-        new ArrayList<>(childWatchers.keySet()).forEach(this::unwatchChildChanged);
+        new ArrayList<>(watchers.keySet()).forEach(this::unwatch);
         curatorFramework.close();
     }
 
@@ -231,16 +233,16 @@ public class CuratorFrameworkClient implements Closeable {
     private class ChildChangedWatcher implements CuratorWatcher {
         private final String path;
         private final CountDownLatch latch;
-        private volatile Consumer<List<String>> processor;
+        private volatile Consumer<List<String>> listener;
 
-        public ChildChangedWatcher(String path, CountDownLatch latch, Consumer<List<String>> processor) {
+        ChildChangedWatcher(String path, CountDownLatch latch, Consumer<List<String>> listener) {
             this.path = path;
             this.latch = latch;
-            this.processor = processor;
+            this.listener = listener;
         }
 
-        public void unwatch() {
-            this.processor = null;
+        void close() {
+            this.listener = null;
         }
 
         @Override
@@ -248,12 +250,11 @@ public class CuratorFrameworkClient implements Closeable {
             ThrowingRunnable.doCaught(latch::await);
             LOG.info("Watched event type: {}", event.getType());
 
-            final Consumer<List<String>> action = processor;
+            final Consumer<List<String>> action = listener;
             if (action == null || event.getType() == Watcher.Event.EventType.None) {
                 return;
             }
-            List<String> children = curatorFramework.getChildren().usingWatcher(this).forPath(path);
-            action.accept(children);
+            action.accept(curatorFramework.getChildren().usingWatcher(this).forPath(path));
         }
     }
 

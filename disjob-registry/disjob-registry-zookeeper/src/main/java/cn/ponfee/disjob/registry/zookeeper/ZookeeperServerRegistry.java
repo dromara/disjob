@@ -27,7 +27,6 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +47,6 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         this.zkRegistryRootPath = separator + registryRootPath;
         String zkDiscoveryRootPath = separator + discoveryRootPath;
 
-        CountDownLatch latch = new CountDownLatch(1);
         try {
             this.client = new CuratorFrameworkClient(config, client0 -> {
                 if (state.isStopped()) {
@@ -65,11 +63,9 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             client.createPersistent(zkRegistryRootPath);
             client.createPersistent(zkDiscoveryRootPath);
             //client.listenChildChanged(zkDiscoveryRootPath);
-            client.watchChildChanged(zkDiscoveryRootPath, latch, this::doRefreshDiscoveryServers);
+            client.watch(zkDiscoveryRootPath, this::doRefreshDiscoveryServers);
         } catch (Exception e) {
             throw new RegistryException("Zookeeper registry init error: " + config, e);
-        } finally {
-            latch.countDown();
         }
     }
 

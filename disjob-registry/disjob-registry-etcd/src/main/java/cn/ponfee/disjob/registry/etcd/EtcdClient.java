@@ -90,7 +90,7 @@ public class EtcdClient implements Closeable {
      */
     private final LoopThread healthCheckThread;
 
-    private final Map<String, Pair<Watch.Watcher, ChildChangedListener>> childWatchers = new ConcurrentHashMap<>();
+    private final Map<String, Pair<Watch.Watcher, EventListener>> watchers = new ConcurrentHashMap<>();
 
     private final Set<ConnectionStateListener<EtcdClient>> connectionStateListeners = ConcurrentHashMap.newKeySet();
 
@@ -219,26 +219,27 @@ public class EtcdClient implements Closeable {
 
     // ----------------------------------------------------------------watch
 
-    public synchronized void watchChildChanged(String parentKey, CountDownLatch latch, Consumer<List<String>> listener) {
-        if (childWatchers.containsKey(parentKey)) {
+    public synchronized void watch(String parentKey, Consumer<List<String>> listener) throws Exception {
+        if (watchers.containsKey(parentKey)) {
             throw new IllegalStateException("Parent key already watched: " + parentKey);
         }
 
-        childWatchers.computeIfAbsent(parentKey, key -> {
-            ChildChangedListener innerListener = new ChildChangedListener(key, latch, listener);
-            Watch.Watcher watcher = client.getWatchClient().watch(utf8(key), WATCH_PREFIX_OPTION, innerListener);
-            return Pair.of(watcher, innerListener);
-        });
+        CountDownLatch latch = new CountDownLatch(1);
+        try {
+            EventListener eventListener = new EventListener(parentKey, latch, listener);
+            Watch.Watcher watcher = client.getWatchClient().watch(utf8(parentKey), WATCH_PREFIX_OPTION, eventListener);
+            listener.accept(getKeyChildren(parentKey));
+            watchers.put(parentKey, Pair.of(watcher, eventListener));
+        } finally {
+            latch.countDown();
+        }
     }
 
-    public synchronized boolean unwatchChildChanged(String parentKey) {
-        Pair<Watch.Watcher, ChildChangedListener> pair = childWatchers.remove(parentKey);
+    public synchronized void unwatch(String parentKey) {
+        Pair<Watch.Watcher, EventListener> pair = watchers.remove(parentKey);
         if (pair != null) {
-            pair.getLeft().close();
-            pair.getRight().close();
-            return true;
-        } else {
-            return false;
+            ThrowingRunnable.doCaught(() -> pair.getLeft().close());
+            ThrowingRunnable.doCaught(() -> pair.getRight().close());
         }
     }
 
@@ -258,9 +259,10 @@ public class EtcdClient implements Closeable {
 
     @Override
     public synchronized void close() {
-        new ArrayList<>(childWatchers.keySet()).forEach(this::unwatchChildChanged);
+        new ArrayList<>(watchers.keySet()).forEach(this::unwatch);
+        ThrowingRunnable.doCaught(() -> client.getWatchClient().close());
         healthCheckThread.terminate();
-        client.close();
+        ThrowingRunnable.doCaught(client::close);
     }
 
     // ----------------------------------------------------------------private static classes & methods
@@ -269,10 +271,10 @@ public class EtcdClient implements Closeable {
         return ByteSequence.from(key, UTF_8);
     }
 
-    private class ChildChangedListener implements Consumer<WatchResponse>, Closeable {
+    private class EventListener implements Consumer<WatchResponse> {
         private final String parentKey;
         private final CountDownLatch latch;
-        private final Consumer<List<String>> processor;
+        private final Consumer<List<String>> listener;
 
         private final ThreadPoolExecutor asyncExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
@@ -282,15 +284,14 @@ public class EtcdClient implements Closeable {
             .rejectedHandler(ThreadPoolExecutors.DISCARD)
             .build();
 
-        public ChildChangedListener(String parentKey, CountDownLatch latch, Consumer<List<String>> processor) {
+        EventListener(String parentKey, CountDownLatch latch, Consumer<List<String>> listener) {
             this.parentKey = parentKey;
             this.latch = latch;
-            this.processor = processor;
+            this.listener = listener;
         }
 
         @PreDestroy
-        @Override
-        public void close() {
+        void close() {
             ThreadPoolExecutors.shutdown(asyncExecutor, 1);
         }
 
@@ -303,13 +304,14 @@ public class EtcdClient implements Closeable {
                 return;
             }
             if (events.stream().allMatch(e -> parentKey.equals(e.getKeyValue().getKey().toString(UTF_8)))) {
+                // 如果只有父节点的事件变化则跳过
                 return;
             }
 
             asyncExecutor.submit(() -> {
                 try {
                     List<String> children = getKeyChildren(parentKey);
-                    processor.accept(children);
+                    listener.accept(children);
                 } catch (Throwable t) {
                     LOG.error("Get key '" + parentKey + "' children occur error.", t);
                 }

@@ -32,12 +32,12 @@ import java.util.concurrent.CountDownLatch;
  * Embedded redis server.
  *
  * <pre>
- *   docker pull redis:7.2.4
+ *   docker pull redis:7.4.0
  *
  *   docker run --name test_redis \
  *     --privileged=true \
  *     -p 6379:6379 \
- *     -d redis:7.2.4
+ *     -d redis:7.4.0
  *
  * username: 无需用户名
  * password: 123456
@@ -49,7 +49,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class EmbeddedRedisServerTestcontainers {
 
-    private static final String NACOS_DOCKER_IMAGE_NAME = "redis:7.2.4";
+    private static final String NACOS_DOCKER_IMAGE_NAME = "redis:7.4.0";
     private static final List<String> PORT_BINDINGS = Collections.singletonList("6379:6379/tcp");
 
     public static void main(String[] args) {
@@ -77,6 +77,8 @@ public final class EmbeddedRedisServerTestcontainers {
                 CollectionUtils.isEqualCollection(PORT_BINDINGS, dockerRedisContainer.getPortBindings()),
                 () -> Jsons.toJson(PORT_BINDINGS) + "!=" + Jsons.toJson(dockerRedisContainer.getPortBindings())
             );
+            Assert.isTrue(dockerRedisContainer.isCreated(), "Created error.");
+            Assert.isTrue(dockerRedisContainer.isRunning(), "Running error.");
             // Assertions.assertThat(dockerRedisContainer.getPortBindings()).hasSameElementsAs(PORT_BINDINGS);
             System.out.println("Embedded docker redis server started!");
 
