@@ -77,8 +77,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
         EtcdClient client0 = null;
         try {
-            client0 = new EtcdClient(config);
-            this.client = client0;
+            this.client = client0 = new EtcdClient(config);
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
             createLeaseIdAndKeepAlive();
@@ -92,11 +91,11 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             );
 
             doRefreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
-        } catch (Exception e) {
+        } catch (Throwable t) {
             if (client0 != null) {
                 client0.close();
             }
-            throw new RegistryException("Etcd registry init error: " + config, e);
+            throw new RegistryException("Etcd registry init error: " + config, t);
         }
     }
 

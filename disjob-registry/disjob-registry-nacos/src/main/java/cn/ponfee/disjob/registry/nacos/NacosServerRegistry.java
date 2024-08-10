@@ -21,7 +21,6 @@ import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
 import com.alibaba.nacos.api.common.Constants;
-import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,11 +46,15 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
     protected NacosServerRegistry(NacosRegistryProperties config) {
         super(config, ':');
         String groupName = StringUtils.isBlank(config.getNamespace()) ? Constants.DEFAULT_GROUP : config.getNamespace().trim();
+        NacosClient client0 = null;
         try {
-            this.client = new NacosClient(config.toProperties(), groupName);
+            this.client = client0 = new NacosClient(config.toProperties(), groupName);
             client.watch(discoveryRootPath, this::doRefreshDiscoveryServers);
-        } catch (NacosException e) {
-            throw new RegistryException("Nacos registry init error: " + config, e);
+        } catch (Throwable t) {
+            if (client0 != null) {
+                client0.close();
+            }
+            throw new RegistryException("Nacos registry init error: " + config, t);
         }
     }
 

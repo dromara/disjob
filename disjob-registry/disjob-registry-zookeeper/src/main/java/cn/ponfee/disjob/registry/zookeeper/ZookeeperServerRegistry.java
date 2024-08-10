@@ -47,14 +47,15 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
         this.zkRegistryRootPath = separator + registryRootPath;
         String zkDiscoveryRootPath = separator + discoveryRootPath;
 
+        CuratorFrameworkClient client0 = null;
         try {
-            this.client = new CuratorFrameworkClient(config, client0 -> {
+            this.client = client0 = new CuratorFrameworkClient(config, c -> {
                 if (state.isStopped()) {
                     return;
                 }
                 for (R server : registered) {
                     try {
-                        client0.createEphemeral(buildRegistryPath(server), CREATE_EPHEMERAL_FAIL_RETRIES);
+                        c.createEphemeral(buildRegistryPath(server), CREATE_EPHEMERAL_FAIL_RETRIES);
                     } catch (Throwable t) {
                         log.error("Re-registry server to zookeeper occur error: " + server, t);
                     }
@@ -64,8 +65,11 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             client.createPersistent(zkDiscoveryRootPath);
             //client.listenChildChanged(zkDiscoveryRootPath);
             client.watch(zkDiscoveryRootPath, this::doRefreshDiscoveryServers);
-        } catch (Exception e) {
-            throw new RegistryException("Zookeeper registry init error: " + config, e);
+        } catch (Throwable t) {
+            if (client0 != null) {
+                client0.close();
+            }
+            throw new RegistryException("Zookeeper registry init error: " + config, t);
         }
     }
 
