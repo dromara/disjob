@@ -138,7 +138,6 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
      */
     public void doStop(long joinMillis) {
         toStop();
-
         Threads.stopThread(this, joinMillis);
     }
 

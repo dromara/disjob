@@ -18,9 +18,11 @@ package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
+import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.TaskExecutor;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -130,6 +132,27 @@ class WorkerTask {
     @Override
     public String toString() {
         return taskId + "-" + operation;
+    }
+
+    public ExecutionTask toExecutionTask(StartTaskResult source) {
+        if (source == null) {
+            return null;
+        }
+
+        ExecutionTask target = new ExecutionTask();
+
+        target.setJobId(jobId);
+        target.setWnstanceId(wnstanceId);
+        target.setInstanceId(instanceId);
+
+        target.setTaskId(source.getTaskId());
+        target.setTaskNo(source.getTaskNo());
+        target.setTaskCount(source.getTaskCount());
+        target.setExecuteSnapshot(source.getExecuteSnapshot());
+        target.setTaskParam(source.getTaskParam());
+        target.setPredecessorInstances(source.getPredecessorInstances());
+
+        return target;
     }
 
 }

@@ -17,47 +17,71 @@
 package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.model.CodeMsg;
-import cn.ponfee.disjob.common.model.Result;
+import lombok.Getter;
+
+import java.beans.Transient;
+import java.io.Serializable;
 
 /**
  * Job execution result
  *
  * @author Ponfee
  */
-public class ExecutionResult extends Result.ImmutableResult<Void> {
+@Getter
+public class ExecutionResult implements Serializable {
+
     private static final long serialVersionUID = -6336359114514174838L;
-    private static final ExecutionResult SUCCESS = new ExecutionResult(Result.success().getCode(), Result.success().getMsg());
+    private static final ExecutionResult SUCCESS = new ExecutionResult(0, "OK");
+
+    /**
+     * The code
+     */
+    private final int code;
+
+    /**
+     * The message
+     */
+    private final String msg;
 
     private ExecutionResult(int code, String msg) {
-        super(code, msg, null);
+        this.code = code;
+        this.msg = msg;
     }
 
-    // -----------------------------------------------static success methods
+    @Transient
+    public boolean isSuccess() {
+        return this.code == SUCCESS.code;
+    }
+
+    @Transient
+    public boolean isFailure() {
+        return !isSuccess();
+    }
+
+    // -----------------------------------------------static methods
 
     public static ExecutionResult success() {
         return SUCCESS;
     }
 
     public static ExecutionResult success(String msg) {
-        return new ExecutionResult(SUCCESS.getCode(), msg);
+        return new ExecutionResult(SUCCESS.code, msg);
     }
-
-    // -----------------------------------------------static failure methods
 
     public static ExecutionResult failure(CodeMsg cm) {
         return failure(cm.getCode(), cm.getMsg());
     }
 
     public static ExecutionResult failure(int code, String msg) {
-        if (code == SUCCESS.getCode()) {
-            throw new IllegalStateException("Execution result failure code '" + code + "' cannot be '" + SUCCESS.getCode() + "'.");
+        if (code == SUCCESS.code) {
+            throw new IllegalStateException("Invalid execution result failure code: " + code);
         }
         return new ExecutionResult(code, msg);
     }
 
     @Override
-    public Void getData() {
-        throw new UnsupportedOperationException("Execution result unsupported data.");
+    public String toString() {
+        return code + ": " + msg;
     }
 
 }

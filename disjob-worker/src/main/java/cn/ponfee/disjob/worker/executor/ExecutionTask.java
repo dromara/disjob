@@ -18,7 +18,6 @@ package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
-import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,15 +40,15 @@ public class ExecutionTask extends ToJsonString implements Serializable {
     private long jobId;
 
     /**
-     * sched_instance.instance_id
-     */
-    private long instanceId;
-
-    /**
      * sched_instance.wnstance_id
      * <p>非工作流任务时值为null
      */
     private Long wnstanceId;
+
+    /**
+     * sched_instance.instance_id
+     */
+    private long instanceId;
 
     /**
      * 任务ID
@@ -80,24 +79,5 @@ public class ExecutionTask extends ToJsonString implements Serializable {
      * 工作流(DAG)任务的前驱节点实例列表
      */
     private List<PredecessorInstance> predecessorInstances;
-
-    public static ExecutionTask of(StartTaskResult source, long jobId, long instanceId, Long wnstanceId) {
-        if (source == null) {
-            return null;
-        }
-
-        ExecutionTask target = new ExecutionTask();
-        target.setTaskId(source.getTaskId());
-        target.setTaskNo(source.getTaskNo());
-        target.setTaskCount(source.getTaskCount());
-        target.setExecuteSnapshot(source.getExecuteSnapshot());
-        target.setTaskParam(source.getTaskParam());
-        target.setPredecessorInstances(source.getPredecessorInstances());
-
-        target.setJobId(jobId);
-        target.setInstanceId(instanceId);
-        target.setWnstanceId(wnstanceId);
-        return target;
-    }
 
 }

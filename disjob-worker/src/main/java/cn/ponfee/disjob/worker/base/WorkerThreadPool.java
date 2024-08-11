@@ -131,7 +131,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (threadPoolState.isStopped()) {
             return false;
         }
-
         LOG.info("Task trace [{}] submitted: {}, {}", task.getTaskId(), task.getOperation(), task.getWorker());
         if (task.getOperation().isTrigger()) {
             return taskQueue.offerLast(task);
@@ -148,13 +147,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.warn("Close worker thread pool repeat.\n{}", Threads.getStackTrace());
             return;
         }
-
         LOG.info("Close worker thread pool start...\n{}", Threads.getStackTrace());
 
         // stop this boss thread
         if (Thread.currentThread() != this) {
             ThrowingRunnable.doCaught(super::interrupt);
-            ThrowingRunnable.doCaught(() -> Threads.stopThread(this, 5000));
+            ThrowingRunnable.doCaught(() -> Threads.stopThread(this, 6000L));
         }
 
         // stop idle pool thread
@@ -420,11 +418,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (thread == null || (task = thread.currentTask()) == null) {
                 return null;
             }
-
             if (!task.updateOperation(Operation.TRIGGER, ops)) {
                 return null;
             }
-
             if (!thread.updateCurrentTask(task, null)) {
                 // cannot happen
                 LOG.error("Stop task clear current task failed: {}", task);
@@ -440,21 +436,17 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (task == null) {
                 return null;
             }
-
             if (!workerThread.updateCurrentTask(task, null)) {
                 // cannot happen
                 LOG.error("Remove thread clear current task failed: {}", task);
                 return null;
             }
-
             WorkerThread removed = pool.remove(task.getTaskId());
-
             if (workerThread != removed) {
                 // cannot happen
                 LOG.error("Inconsistent removed worker thread: {}, {}, {}", task.getTaskId(), workerThread.getName(), removed.getName());
                 return null;
             }
-
             return task;
         }
 
@@ -514,9 +506,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
     }
 
-    /**
-     * Worker thread
-     */
     private class WorkerThread extends Thread {
         /**
          * Worker task queue
@@ -544,7 +533,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (isStopped()) {
                 throw new BrokenThreadException("Worker thread already stopped: " + super.getName());
             }
-            if (!queue.offer(task, 3000L, TimeUnit.MILLISECONDS)) {
+            if (!queue.offer(task, 5000L, TimeUnit.MILLISECONDS)) {
                 throw new BrokenThreadException("Put to worker thread queue timeout: " + super.getName());
             }
         }
@@ -561,7 +550,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         private void doStop() {
             toStop();
-            Threads.stopThread(this, 6000);
+            Threads.stopThread(this, 10000L);
         }
 
         /**
@@ -641,21 +630,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     Thread.currentThread().interrupt();
                     break;
                 }
-
-                WorkerTask current = currentTask();
                 if (task == null) {
-                    if (current == null) {
-                        LOG.info("Worker thread exit, idle wait timeout: {}", super.getName());
-                        break;
-                    }
-                    if ((task = queue.poll()) == null) {
-                        // cannot happen
-                        LOG.error("Not poll task, but has current task: {}", current);
-                        break;
-                    }
+                    LOG.info("Worker thread exit, idle wait timeout: {}", super.getName());
+                    break;
                 }
-                if (current != task) {
-                    // cannot happen
+                WorkerTask current = currentTask();
+                if (task != current) {
                     LOG.error("Inconsistent poll task and current task: {}, {}", current, task);
                     break;
                 }
@@ -665,8 +645,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     run(task);
                 } catch (Throwable t) {
                     LOG.error("Worker thread execute failed: " + task, t);
-                    final WorkerTask task0 = task;
-                    ThrowingRunnable.doCaught(() -> stopTask(task0, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t)));
+                    ThrowingRunnable.doCaught(() -> stopTask(task, Operation.TRIGGER, EXECUTE_EXCEPTION, toErrorMsg(t)));
                 }
 
                 // return this to idle thread pool
@@ -688,7 +667,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     LOG.warn("Start task failed: {}, {}", workerTask, startTaskResult.getMessage());
                     return;
                 }
-                executionTask = ExecutionTask.of(startTaskResult, workerTask.getJobId(), workerTask.getInstanceId(), workerTask.getWnstanceId());
+                executionTask = workerTask.toExecutionTask(startTaskResult);
             } catch (Throwable t) {
                 LOG.warn("Start task error: " + workerTask, t);
                 if (workerTask.getRouteStrategy().isNotBroadcast()) {
@@ -772,8 +751,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 stopTask(workerTask, Operation.TRIGGER, COMPLETED, null);
             } else {
                 LOG.error("Execute task failed: {}, {}", workerTask, result);
-                String msg = (result == null) ? "null result" : result.getMsg();
-                stopTask(workerTask, Operation.TRIGGER, EXECUTE_FAILED, msg);
+                stopTask(workerTask, Operation.TRIGGER, EXECUTE_FAILED, Objects.toString(result, "null"));
             }
         }
     } // end of worker thread class definition

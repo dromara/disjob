@@ -83,6 +83,7 @@ public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<
         return query(queryCount, queryRecord, null);
     }
 
+    @SuppressWarnings("unchecked")
     public <P extends PageRequest, A, B> PageResponse<B> query(ToLongFunction<P> queryCount,
                                                                Function<P, List<A>> queryRecords,
                                                                Function<A, B> mapper) {
