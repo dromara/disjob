@@ -17,16 +17,17 @@
 package cn.ponfee.disjob.worker.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operation;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
@@ -156,9 +157,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
         }
 
         // stop idle pool thread
-        idlePool.forEach(e -> ThrowingRunnable.doCaught(e::interrupt));
-        idlePool.forEach(e -> ThrowingRunnable.doCaught(e::doStop));
-        idlePool.clear();
+        List<WorkerThread> idleWorkerThreads = Collects.drainAll(idlePool);
+        idleWorkerThreads.forEach(e -> ThrowingRunnable.doCaught(e::interrupt));
+        idleWorkerThreads.forEach(e -> ThrowingRunnable.doCaught(e::doStop));
 
         // clear task queue
         ThrowingRunnable.doCaught(taskQueue::clear);
@@ -282,12 +283,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     private WorkerThread takeWorkerThread() throws InterruptedException {
-        // take a worker
         WorkerThread workerThread = idlePool.pollFirst();
         if (workerThread != null) {
             return workerThread;
         }
-
         for (; ; ) {
             if (threadPoolState.isStopped() || super.isInterrupted()) {
                 throw new IllegalStateException("Take worker thread interrupted.");
@@ -333,18 +332,15 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return;
         }
 
-        StopTaskParam stopTaskParam = task.toStopTaskParam(ops, toState, errorMsg);
         completedTaskCounter.incrementAndGet();
-        Long lockedInstanceId = task.getLockedKey();
-        try {
-            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedInstanceId)) {
-                boolean result = supervisorRpcClient.stopTask(stopTaskParam);
-                LOG.info("Task trace [{}] stopped: {}, {}, {}", task.getTaskId(), result, ops, toState);
-            }
-        } catch (Throwable t) {
-            LOG.error("Stop task occur error: " + task.getTaskId() + ", " + ops + ", " + toState, t);
-            Threads.interruptIfNecessary(t);
-        }
+
+        StopTaskParam param = task.toStopTaskParam(ops, toState, errorMsg);
+        LOG.info("Stop task trace: {}, {}, {}", task.getTaskId(), ops, toState);
+        DisjobUtils.doInSynchronized(
+            task.getLockInstanceId(),
+            () -> supervisorRpcClient.stopTask(param),
+            () -> "Stop task error: " + task.getTaskId() + ", " + ops + ", " + toState
+        );
     }
 
     private void stopInstance(WorkerTask task, Operation ops, String errorMsg) {
@@ -355,25 +351,26 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         stopTask(task, ops, errorMsg);
 
-        LOG.info("Stop instance task: {}, {}, {}", task.getInstanceId(), task.getTaskId(), ops);
+        Long lockInstanceId = task.getLockInstanceId();
+        LOG.info("Stop instance trace: {}, {}, {}", lockInstanceId, task.getTaskId(), ops);
+        DisjobUtils.doInSynchronized(
+            lockInstanceId,
+            () -> stopInstance(lockInstanceId, task.getTaskId(), ops),
+            () -> "Stop instance error: " + lockInstanceId + ", " + task.getTaskId() + ", " + ops
+        );
+    }
+
+    private void stopInstance(long lockInstanceId, long taskId, Operation ops) throws Exception {
         boolean res = true;
-        Long lockedInstanceId = task.getLockedKey();
-        try {
-            synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedInstanceId)) {
-                if (ops == Operation.PAUSE) {
-                    res = supervisorRpcClient.pauseInstance(lockedInstanceId);
-                } else if (ops == Operation.EXCEPTION_CANCEL) {
-                    res = supervisorRpcClient.cancelInstance(lockedInstanceId, ops);
-                } else {
-                    LOG.error("Stop instance unsupported operation: {}, {}", task.getTaskId(), ops);
-                }
-            }
-            if (!res) {
-                LOG.info("Stop instance conflict: {}, {}, {}", task.getInstanceId(), task.getTaskId(), ops);
-            }
-        } catch (Throwable t) {
-            LOG.error("Stop instance error: " + task.getTaskId() + ", " + ops, t);
-            Threads.interruptIfNecessary(t);
+        if (ops == Operation.PAUSE) {
+            res = supervisorRpcClient.pauseInstance(lockInstanceId);
+        } else if (ops == Operation.EXCEPTION_CANCEL) {
+            res = supervisorRpcClient.cancelInstance(lockInstanceId, ops);
+        } else {
+            LOG.error("Stop instance unknown: {}, {}, {}", lockInstanceId, taskId, ops);
+        }
+        if (!res) {
+            LOG.info("Stop instance conflict: {}, {}, {}", lockInstanceId, taskId, ops);
         }
     }
 
@@ -381,35 +378,27 @@ public class WorkerThreadPool extends Thread implements Closeable {
      * Active thread pool
      */
     private class ActiveThreadPool {
-        //final BiMap<Long, WorkerThread> pool = Maps.synchronizedBiMap(HashBiMap.create());
         final Map<Long, WorkerThread> pool = new HashMap<>();
 
-        private synchronized void doExecute(WorkerThread workerThread, WorkerTask task) throws InterruptedException {
-            Operation operation = (task == null) ? null : task.getOperation();
-            if (operation == null || operation.isNotTrigger()) {
-                // cannot happen
+        private synchronized void doExecute(WorkerThread wt, WorkerTask task) throws InterruptedException {
+            if (task.getOperation().isNotTrigger()) {
                 throw new IllegalTaskException("Not a executable task operation: " + task);
             }
-
             WorkerThread exists = pool.get(task.getTaskId());
             if (exists != null && task.equals(exists.currentTask())) {
                 // 同一个task re-dispatch，导致重复
                 throw new IllegalTaskException("Repeat execute task: " + task);
             }
-
-            if (!workerThread.updateCurrentTask(null, task)) {
-                WorkerTask t = workerThread.currentTask();
-                throw new BrokenThreadException("Execute worker task conflict " + workerThread.getName() + ": " + task + ", " + t);
+            if (!wt.updateCurrentTask(null, task)) {
+                throw new BrokenThreadException("Conflict execute task " + wt.getName() + ": " + task + ", " + wt.currentTask());
             }
-
             try {
-                workerThread.execute(task);
+                wt.execute(task);
             } catch (Throwable t) {
-                workerThread.updateCurrentTask(task, null);
+                wt.updateCurrentTask(task, null);
                 throw t;
             }
-
-            pool.put(task.getTaskId(), workerThread);
+            pool.put(task.getTaskId(), wt);
         }
 
         private synchronized Pair<WorkerThread, WorkerTask> takeThread(long taskId, Operation ops) {
@@ -422,7 +411,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 return null;
             }
             if (!thread.updateCurrentTask(task, null)) {
-                // cannot happen
                 LOG.error("Stop task clear current task failed: {}", task);
                 return null;
             }
@@ -431,30 +419,28 @@ public class WorkerThreadPool extends Thread implements Closeable {
             return Pair.of(thread, task);
         }
 
-        private synchronized WorkerTask removeThread(WorkerThread workerThread) {
-            WorkerTask task = workerThread.currentTask();
+        private synchronized boolean removeThread(WorkerThread wt) {
+            WorkerTask task = wt.currentTask();
             if (task == null) {
-                return null;
+                return false;
             }
-            if (!workerThread.updateCurrentTask(task, null)) {
-                // cannot happen
-                LOG.error("Remove thread clear current task failed: {}", task);
-                return null;
+            WorkerThread t = pool.get(task.getTaskId());
+            if (t != wt) {
+                LOG.error("Inconsistent worker thread: {}, {}, {}", task.getTaskId(), wt.getName(), Threads.getName(t));
+                return false;
             }
-            WorkerThread removed = pool.remove(task.getTaskId());
-            if (workerThread != removed) {
-                // cannot happen
-                LOG.error("Inconsistent removed worker thread: {}, {}, {}", task.getTaskId(), workerThread.getName(), removed.getName());
-                return null;
+            if (!wt.updateCurrentTask(task, null)) {
+                LOG.error("Clean current task failed: {}", task);
+                return false;
             }
-            return task;
+            return pool.remove(task.getTaskId()) == wt;
         }
 
         private synchronized void close() {
             LOG.info("Close active thread pool start: {}", pool.size());
 
             ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
-            MultithreadExecutors.run(pool.values(), WorkerThread::close, cachedThreadPool);
+            MultithreadExecutors.run(new ArrayList<>(pool.values()), WorkerThread::close, cachedThreadPool);
             cachedThreadPool.shutdown();
 
             pool.clear();
@@ -560,7 +546,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
          * @return {@code true} if return to idle pool successfully
          */
         private boolean returnPool() {
-            if (activePool.removeThread(this) == null) {
+            if (!activePool.removeThread(this) || isStopped() || super.isInterrupted()) {
                 // maybe already removed by other operation
                 return false;
             }
@@ -580,7 +566,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
          */
         private void removePool() {
             toStop();
-            if (activePool.removeThread(this) == null && !idlePool.remove(this)) {
+            if (!activePool.removeThread(this) && !idlePool.remove(this)) {
                 LOG.info("Worker thread not in thread pool: {}", super.getName());
             }
         }
@@ -607,7 +593,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             LOG.info("Close worker thread update task operation: {}, {}, {}", updated, task, ops);
             ThrowingRunnable.doCaught(this::doStop, () -> "Close worker thread error: " + task + ", " + super.getName());
             if (updated) {
-                ThrowingRunnable.doCaught(() -> stopTask(task, ops, "Worker shutdown"), () -> "Stop task error: " + task);
+                ThrowingRunnable.doCaught(() -> stopTask(task, ops, "Worker shutdown"), () -> "Stop task fail: " + task);
             }
             updateCurrentTask(task, null);
 
@@ -676,7 +662,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
                     ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(null, list), () -> "Reset task worker error: " + workerTask);
                 }
                 Threads.interruptIfNecessary(t);
-                // discard task
                 return;
             }
 

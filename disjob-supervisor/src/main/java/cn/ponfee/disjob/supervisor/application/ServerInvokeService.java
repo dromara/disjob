@@ -150,7 +150,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
                 ThreadPoolExecutors.commonThreadPool()
             );
         } catch (Exception e) {
-            LOG.error("Publish all supervisor error.", e);
+            LOG.error("Publish other supervisor error.", e);
         }
     }
 

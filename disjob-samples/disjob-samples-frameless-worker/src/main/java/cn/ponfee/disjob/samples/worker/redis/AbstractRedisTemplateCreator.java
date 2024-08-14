@@ -129,19 +129,19 @@ public abstract class AbstractRedisTemplateCreator {
         prefix = Strings.withSuffix(prefix, ".");
 
         AbstractRedisTemplateCreatorBuilder<?, ?> builder;
-        if (props.hasKey(prefix + "host")) {
+        if (props.containsKey(prefix + "host")) {
             // Creates standalone redis template
             builder = StandaloneRedisTemplateCreator.builder()
                 .host(props.getRequiredString(prefix + "host"))
                 .port(props.getRequiredInt(prefix + "port"));
-        } else if (props.hasKey(prefix + "sentinel.master")) {
+        } else if (props.containsKey(prefix + "sentinel.master")) {
             // Creates sentinel redis template
             builder = SentinelRedisTemplateCreator.builder()
                 .sentinelMaster(props.getRequiredString(prefix + "sentinel.master"))
                 .sentinelNodes(props.getRequiredString(prefix + "sentinel.nodes"))
                 .sentinelUsername(props.getString(prefix + "sentinel.username"))
                 .sentinelPassword(props.getString(prefix + "sentinel.password"));
-        } else if (props.hasKey(prefix + "cluster.nodes")) {
+        } else if (props.containsKey(prefix + "cluster.nodes")) {
             // Creates cluster redis template
             builder = ClusterRedisTemplateCreator.builder()
                 .clusterNodes(props.getRequiredString(prefix + "cluster.nodes"))

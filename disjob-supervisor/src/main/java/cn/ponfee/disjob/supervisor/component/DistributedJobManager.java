@@ -27,7 +27,6 @@ import cn.ponfee.disjob.common.spring.TransactionUtils;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Strings;
-import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
@@ -38,6 +37,7 @@ import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.*;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
@@ -200,7 +200,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * Starts the task
      * <pre>
      * 1）如果先`get`查一次然后`start`，最后再`get`查的话数据可能会被缓存，返回`runState=10`
-     * 2）若先`instanceMapper.lock(lockedKey)`，不会出现以上问题
+     * 2）若先`instanceMapper.lock(lockInstanceId)`，不会出现以上问题
      * </pre>
      *
      * @param param the start task param
@@ -208,7 +208,7 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     public StartTaskResult startTask(StartTaskParam param) {
         long instanceId = param.getInstanceId();
-        return doInSynchronizedTransaction0(instanceId, param.getWnstanceId(), lockedKey -> {
+        return doInSynchronizedTransaction0(instanceId, param.getWnstanceId(), lockInstanceId -> {
             log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
             Date now = new Date();
             if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), now))) {
@@ -449,10 +449,10 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return boolean value of action result
      */
     private boolean doInSynchronizedTransaction(long instanceId, Long wnstanceId, Predicate<SchedInstance> action) {
-        return doInSynchronizedTransaction0(instanceId, wnstanceId, lockedKey -> {
-            SchedInstance lockedInstance = instanceMapper.lock(lockedKey);
-            Assert.notNull(lockedInstance, () -> "Locked instance not found: " + lockedKey);
-            SchedInstance instance = (instanceId == lockedKey) ? lockedInstance : instanceMapper.get(instanceId);
+        return doInSynchronizedTransaction0(instanceId, wnstanceId, lockInstanceId -> {
+            SchedInstance lockedInstance = instanceMapper.lock(lockInstanceId);
+            Assert.notNull(lockedInstance, () -> "Locked instance not found: " + lockInstanceId);
+            SchedInstance instance = (instanceId == lockInstanceId) ? lockedInstance : instanceMapper.get(instanceId);
             Assert.notNull(instance, () -> "Instance not found: " + instanceId);
             if (!Objects.equals(instance.getWnstanceId(), wnstanceId)) {
                 throw new IllegalStateException("Inconsistent workflow instance id: " + wnstanceId + ", " + instance);
@@ -462,10 +462,9 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     private <T> T doInSynchronizedTransaction0(long instanceId, Long wnstanceId, LongFunction<T> action) {
-        // Long.toString(lockKey).intern()
-        Long lockedKey = wnstanceId != null ? wnstanceId : (Long) instanceId;
-        synchronized (JobConstants.INSTANCE_LOCK_POOL.intern(lockedKey)) {
-            return transactionTemplate.execute(status -> action.apply(lockedKey));
+        Long lockInstanceId = wnstanceId != null ? wnstanceId : (Long) instanceId;
+        synchronized (DisjobUtils.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
+            return transactionTemplate.execute(status -> action.apply(lockInstanceId));
         }
     }
 
@@ -689,7 +688,7 @@ public class DistributedJobManager extends AbstractJobManager {
         // process next workflow node
         Map<DAGEdge, SchedWorkflow> map = graph.successors(node.parseAttach().parseCurrentNode());
         SchedInstance lead = instanceMapper.get(wnstanceId);
-        // 使用嵌套事务：当出现异常时，可以回滚`processWorkflowNode`方法内的数据操作
+        // 使用嵌套事务：保证`processWorkflowNode`方法内部数据操作的原子性，异常则回滚而不影响外层事务
         TransactionUtils.doInNestedTransaction(
             transactionTemplate.getTransactionManager(),
             () -> processWorkflowNode(lead, graph, map),
@@ -813,7 +812,7 @@ public class DistributedJobManager extends AbstractJobManager {
         // build retry tasks
         List<SchedTask> tasks = splitRetryTask(job, prev, retryInstanceId);
         Assert.notEmpty(tasks, "Retry instance, split retry task cannot be empty.");
-        // 使用嵌套事务：保证`workflow & instance & tasks`操作的原子性
+        // 使用嵌套事务：保证`workflow & instance & tasks`操作的原子性，异常则回滚而不影响外层事务
         Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
             transactionTemplate.getTransactionManager(),
             () -> {
@@ -873,7 +872,7 @@ public class DistributedJobManager extends AbstractJobManager {
         tInstance.getInstance().setRnstanceId(parent.obtainRnstanceId());
         tInstance.getInstance().setPnstanceId(parent.obtainRetryOriginalInstanceId());
 
-        // 使用嵌套事务：保证`saveInstanceAndTasks`方法内部数据操作的原子性
+        // 使用嵌套事务：保证`saveInstanceAndTasks`方法内部数据操作的原子性，异常则回滚而不影响外层事务
         Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
             transactionTemplate.getTransactionManager(),
             () -> {

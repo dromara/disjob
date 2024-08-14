@@ -16,8 +16,6 @@
 
 package cn.ponfee.disjob.core.base;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import org.springframework.http.MediaType;
 
 /**
@@ -86,11 +84,6 @@ public final class JobConstants {
      * Authenticate header token
      */
     public static final String AUTHENTICATE_HEADER_TOKEN = "X-Disjob-Token";
-
-    /**
-     * Instance lock pool
-     */
-    public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
 
     /**
      * UTF-8 charset

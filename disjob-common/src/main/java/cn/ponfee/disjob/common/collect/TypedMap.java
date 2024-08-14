@@ -19,17 +19,21 @@ package cn.ponfee.disjob.common.collect;
 import java.util.Map;
 
 /**
- * Get the value with typed for {@link Map}
- * 
- * @author Ponfee
+ * Typed map key-value for {@link Map}
+ *
  * @param <K> the key type
  * @param <V> the value type
+ * @author Ponfee
  */
-public interface TypedMap<K, V> extends Map<K, V>, TypedKeyValue<K, V> {
+public interface TypedMap<K, V> extends Map<K, V>, TypedDictionary<K, V> {
 
     @Override
-    default V getValue(K key) {
-        return this.get(key);
-    }
+    V put(K key, V value);
+
+    @Override
+    V remove(Object key);
+
+    @Override
+    boolean containsKey(Object key);
 
 }

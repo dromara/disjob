@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -303,6 +304,12 @@ public class Collects {
         if (array != null && array.length > 0) {
             Collections.addAll(list, array);
         }
+        return list;
+    }
+
+    public static <T> List<T> drainAll(BlockingQueue<T> queue) {
+        List<T> list = new ArrayList<>(queue.size());
+        queue.drainTo(list);
         return list;
     }
 

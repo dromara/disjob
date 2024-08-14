@@ -16,11 +16,17 @@
 
 package cn.ponfee.disjob.core.util;
 
+import cn.ponfee.disjob.common.concurrent.Threads;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Supplier;
 
 import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
 
@@ -32,6 +38,11 @@ import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
 public class DisjobUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(DisjobUtils.class);
+
+    /**
+     * Instance lock pool
+     */
+    public static final Interner<Long> INSTANCE_LOCK_POOL = Interners.newWeakInterner();
 
     public static String getLocalHost() {
         return getLocalHost(SpringContextHolder.getProperty(DISJOB_BOUND_SERVER_HOST));
@@ -73,6 +84,43 @@ public class DisjobUtils {
             LOG.warn("Unreachable server host configured {}: {}", from, host);
         }
         return true;
+    }
+
+    public static void doInSynchronized(Long lock, ThrowingRunnable<?> action, Supplier<String> message) {
+        Throwable t = null;
+        try {
+            doInSynchronized(lock, action);
+        } catch (Throwable e) {
+            t = e;
+            LOG.error(message.get(), t);
+        } finally {
+            if (isCurrentThreadInterrupted(t)) {
+                try {
+                    doInSynchronized(lock, action);
+                } catch (Throwable e) {
+                    LOG.error("Retry error, " + message.get(), e);
+                }
+            }
+            Threads.interruptIfNecessary(t);
+        }
+    }
+
+    private static void doInSynchronized(Long lock, ThrowingRunnable<?> action) throws Throwable {
+        // Long.toString(lock).intern()
+        synchronized (INSTANCE_LOCK_POOL.intern(lock)) {
+            action.run();
+        }
+    }
+
+    private static boolean isCurrentThreadInterrupted(Throwable t) {
+        if (t == null) {
+            return false;
+        }
+        if (t instanceof ThreadDeath || t instanceof InterruptedException) {
+            return true;
+        }
+        Thread curThread = Thread.currentThread();
+        return curThread.isInterrupted() || Threads.isStopped(curThread);
     }
 
 }

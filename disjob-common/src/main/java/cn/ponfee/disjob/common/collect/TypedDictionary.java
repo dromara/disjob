@@ -22,18 +22,26 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Get the value with typed for dictionary key-value
+ * Typed dictionary key-value
  *
  * @param <K> the key type
  * @param <V> the value type
  * @author Ponfee
  */
-public interface TypedKeyValue<K, V> {
+public interface TypedDictionary<K, V> {
 
-    V getValue(K key);
+    V get(K key);
 
-    default boolean hasKey(K key) {
-        return getValue(key) != null;
+    default V put(K key, V value) {
+        throw new UnsupportedOperationException("Cannot suppoerted put key value operation.");
+    }
+
+    default V remove(K key) {
+        throw new UnsupportedOperationException("Cannot suppoerted remove key operation.");
+    }
+
+    default boolean containsKey(K key) {
+        return get(key) != null;
     }
 
     // --------------------------------------------------------object
@@ -43,7 +51,7 @@ public interface TypedKeyValue<K, V> {
     }
 
     default V get(K key, V defaultVal) {
-        V value = getValue(key);
+        V value = get(key);
         return value == null ? defaultVal : value;
     }
 
@@ -58,13 +66,21 @@ public interface TypedKeyValue<K, V> {
     }
 
     default String getString(K key, String defaultVal) {
-        return Objects.toString(getValue(key), defaultVal);
+        return Objects.toString(get(key), defaultVal);
+    }
+
+    default String removeString(K key) {
+        return removeString(key, null);
+    }
+
+    default String removeString(K key, String defaultVal) {
+        return Objects.toString(remove(key), defaultVal);
     }
 
     // --------------------------------------------------------boolean
 
     default boolean getRequiredBoolean(K key) {
-        Object value = getValue(key);
+        Object value = get(key);
         if (value instanceof Boolean) {
             return (boolean) value;
         }
@@ -72,18 +88,33 @@ public interface TypedKeyValue<K, V> {
             throw new IllegalArgumentException("Not presented value of '" + key + "'");
         }
         switch (value.toString()) {
-            case "TRUE" : case "True" : case "true" : return true;
-            case "FALSE": case "False": case "false": return false;
-            default: throw new IllegalArgumentException("Invalid boolean value: " + value);
+            case "TRUE":
+            case "True":
+            case "true":
+                return true;
+            case "FALSE":
+            case "False":
+            case "false":
+                return false;
+            default:
+                throw new IllegalArgumentException("Invalid boolean value: " + value);
         }
     }
 
     default boolean getBoolean(K key, boolean defaultValue) {
-        return Numbers.toBoolean(getValue(key), defaultValue);
+        return Numbers.toBoolean(get(key), defaultValue);
     }
 
     default Boolean getBoolean(K key) {
-        return Numbers.toWrapBoolean(getValue(key));
+        return Numbers.toWrapBoolean(get(key));
+    }
+
+    default boolean removeBoolean(K key, boolean defaultValue) {
+        return Numbers.toBoolean(remove(key), defaultValue);
+    }
+
+    default Boolean removeBoolean(K key) {
+        return Numbers.toWrapBoolean(remove(key));
     }
 
     // --------------------------------------------------------------int
@@ -93,11 +124,19 @@ public interface TypedKeyValue<K, V> {
     }
 
     default int getInt(K key, int defaultValue) {
-        return Numbers.toInt(getValue(key), defaultValue);
+        return Numbers.toInt(get(key), defaultValue);
     }
 
     default Integer getInt(K key) {
-        return Numbers.toWrapInt(getValue(key));
+        return Numbers.toWrapInt(get(key));
+    }
+
+    default int removeInt(K key, int defaultValue) {
+        return Numbers.toInt(remove(key), defaultValue);
+    }
+
+    default Integer removeInt(K key) {
+        return Numbers.toWrapInt(remove(key));
     }
 
     // --------------------------------------------------------------long
@@ -107,11 +146,19 @@ public interface TypedKeyValue<K, V> {
     }
 
     default long getLong(K key, long defaultValue) {
-        return Numbers.toLong(getValue(key), defaultValue);
+        return Numbers.toLong(get(key), defaultValue);
     }
 
     default Long getLong(K key) {
-        return Numbers.toWrapLong(getValue(key));
+        return Numbers.toWrapLong(get(key));
+    }
+
+    default long removeLong(K key, long defaultValue) {
+        return Numbers.toLong(remove(key), defaultValue);
+    }
+
+    default Long removeLong(K key) {
+        return Numbers.toWrapLong(remove(key));
     }
 
     // --------------------------------------------------------------float
@@ -121,11 +168,19 @@ public interface TypedKeyValue<K, V> {
     }
 
     default float getFloat(K key, float defaultValue) {
-        return Numbers.toFloat(getValue(key), defaultValue);
+        return Numbers.toFloat(get(key), defaultValue);
     }
 
     default Float getFloat(K key) {
-        return Numbers.toWrapFloat(getValue(key));
+        return Numbers.toWrapFloat(get(key));
+    }
+
+    default float removeFloat(K key, float defaultValue) {
+        return Numbers.toFloat(remove(key), defaultValue);
+    }
+
+    default Float removeFloat(K key) {
+        return Numbers.toWrapFloat(remove(key));
     }
 
     // --------------------------------------------------------------double
@@ -135,18 +190,26 @@ public interface TypedKeyValue<K, V> {
     }
 
     default double getDouble(K key, double defaultValue) {
-        return Numbers.toDouble(getValue(key), defaultValue);
+        return Numbers.toDouble(get(key), defaultValue);
 
     }
 
     default Double getDouble(K key) {
-        return Numbers.toWrapDouble(getValue(key));
+        return Numbers.toWrapDouble(get(key));
+    }
+
+    default double removeDouble(K key, double defaultValue) {
+        return Numbers.toDouble(remove(key), defaultValue);
+    }
+
+    default Double removeDouble(K key) {
+        return Numbers.toWrapDouble(remove(key));
     }
 
     // ----------------------------------------------------other methods
 
     default <R> R getRequired(K key, Function<V, R> mapper) {
-        V value = getValue(key);
+        V value = get(key);
         if (value == null) {
             throw new IllegalArgumentException("Not presented value of '" + key + "'");
         }

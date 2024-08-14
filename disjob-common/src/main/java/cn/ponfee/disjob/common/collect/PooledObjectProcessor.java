@@ -21,10 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -59,6 +56,7 @@ public class PooledObjectProcessor<K, V> {
     private class SubPool {
         final K key;
         final BlockingQueue<V> queue;
+        // 剩余可创建的数量
         final AtomicInteger counter;
 
         SubPool(K key) {
@@ -73,23 +71,25 @@ public class PooledObjectProcessor<K, V> {
                 return value;
             }
 
-            if (!requiredCreate()) {
-                LOG.debug("Blocking until object.");
-                return queue.take();
-            }
-
-            try {
-                value = creator.apply(key);
-                if (value == null) {
-                    counter.incrementAndGet();
-                    throw new NullPointerException("Created null object: " + key);
-                } else {
-                    LOG.debug("Created new object.");
+            for (; ; ) {
+                if (requiredCreate()) {
+                    try {
+                        value = creator.apply(key);
+                    } catch (Throwable e) {
+                        counter.incrementAndGet();
+                        return ExceptionUtils.rethrow(e);
+                    }
+                    if (value != null) {
+                        LOG.debug("Created new object.");
+                        return value;
+                    } else {
+                        counter.incrementAndGet();
+                        throw new NullPointerException("Created null object: " + key);
+                    }
+                }
+                if ((value = queue.poll(1000L, TimeUnit.MILLISECONDS)) != null) {
                     return value;
                 }
-            } catch (Throwable e) {
-                counter.incrementAndGet();
-                return ExceptionUtils.rethrow(e);
             }
         }
 

@@ -59,7 +59,7 @@ public class WorkerProperties extends ToJsonString implements Serializable {
     private int maximumPoolSize = 100;
 
     /**
-     * Worker maximum pool size, default 300 seconds.
+     * Worker thread keep alive time seconds, default 300.
      */
     private int keepAliveTimeSeconds = 300;
 

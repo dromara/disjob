@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.common.spring;
 
-import cn.ponfee.disjob.common.collect.TypedKeyValue;
+import cn.ponfee.disjob.common.collect.TypedDictionary;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.date.LocalDateTimeFormat;
 import org.springframework.web.bind.WebDataBinder;
@@ -40,7 +40,7 @@ import java.util.Date;
  *
  * @author Ponfee
  */
-public abstract class BaseController implements TypedKeyValue<String, String> {
+public abstract class BaseController implements TypedDictionary<String, String> {
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -97,7 +97,7 @@ public abstract class BaseController implements TypedKeyValue<String, String> {
     }
 
     @Override
-    public String getValue(String key) {
+    public String get(String key) {
         return getRequest().getParameter(key);
     }
 

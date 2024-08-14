@@ -87,7 +87,7 @@ class WorkerTask {
         return new StopTaskParam(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
     }
 
-    Long getLockedKey() {
+    Long getLockInstanceId() {
         return wnstanceId != null ? wnstanceId : instanceId;
     }
 

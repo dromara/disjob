@@ -31,6 +31,10 @@ public final class Threads {
 
     private static final Logger LOG = LoggerFactory.getLogger(Threads.class);
 
+    public static String getName(Thread thread) {
+        return thread == null ? null : thread.getName();
+    }
+
     /**
      * New thread
      *

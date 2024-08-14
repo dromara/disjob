@@ -49,24 +49,24 @@ public class RetryTemplate {
         Assert.isTrue(retryBackoffPeriod > 0, "Retry backoff period must be greater than 0.");
         int i = 0;
         Throwable ex;
-        String traceId = null;
+        String retryId = null;
         do {
             try {
                 return action.get();
             } catch (InterruptedException e) {
-                LOG.error("Thread interrupted, skip retry.");
+                LOG.error("Thread interrupted, abort retry.");
                 throw e;
             } catch (Throwable e) {
                 ex = e;
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop
-                    if (traceId == null) {
-                        traceId = UuidUtils.uuid32();
+                    if (retryId == null) {
+                        retryId = UuidUtils.uuid32();
                     }
-                    LOG.error("Execute failed, will retrying: " + (i + 1) + ", " + traceId, e);
+                    LOG.error("Execute failed, will retrying: " + (i + 1) + ", " + retryId, e);
                     Thread.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    LOG.error("Execute failed, retried max count: " + traceId, e);
+                    LOG.error("Execute failed, retried max count: " + retryId, e);
                 }
             }
         } while (++i <= retryMaxCount);

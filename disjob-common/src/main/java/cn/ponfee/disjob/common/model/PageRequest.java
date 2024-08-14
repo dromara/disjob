@@ -18,7 +18,7 @@ package cn.ponfee.disjob.common.model;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.collect.RemovableTypedKeyValue;
+import cn.ponfee.disjob.common.collect.TypedDictionary;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,7 +36,7 @@ import java.util.function.ToLongFunction;
  */
 @Getter
 @Setter
-public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<String, Object>, Serializable {
+public class PageRequest extends ToJsonString implements TypedDictionary<String, Object>, Serializable {
     private static final long serialVersionUID = 2032344850017264330L;
 
     /**
@@ -65,12 +65,12 @@ public class PageRequest extends ToJsonString implements RemovableTypedKeyValue<
     private Map<String, Object> params = Collections.emptyMap();
 
     @Override
-    public Object getValue(String key) {
+    public Object get(String key) {
         return params.get(key);
     }
 
     @Override
-    public Object removeKey(String key) {
+    public Object remove(String key) {
         return params.remove(key);
     }
 
