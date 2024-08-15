@@ -54,9 +54,8 @@ public @interface EnableWorker {
     @EnableConfigurationProperties(WorkerProperties.class)
     class EnableWorkerConfiguration {
 
-        @Bean(JobConstants.SPRING_BEAN_NAME_CURRENT_WORKER)
-        public Worker.Current currentWorker(WebServerApplicationContext webServerApplicationContext,
-                                            WorkerProperties config) {
+        @Bean(JobConstants.SPRING_BEAN_NAME_LOCAL_WORKER)
+        public Worker.Local localWorker(WebServerApplicationContext webServerApplicationContext, WorkerProperties config) {
             config.check();
             String host = DisjobUtils.getLocalHost();
             String workerToken = config.getWorkerToken();
@@ -66,11 +65,11 @@ public @interface EnableWorker {
 
             Object[] args = {config.getGroup(), UuidUtils.uuid32(), host, port, workerToken, supervisorToken, supervisorContextPath};
             try {
-                // inject current worker: Worker.class.getDeclaredClasses()[0]
-                return ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", args);
+                // inject local worker: Worker.class.getDeclaredClasses()[0]
+                return ClassUtils.invoke(Class.forName(Worker.Local.class.getName()), "create", args);
             } catch (Exception e) {
                 // cannot happen
-                throw new Error("Creates Worker.Current instance occur error.", e);
+                throw new Error("Creates Worker.Local instance occur error.", e);
             }
         }
 
@@ -80,8 +79,8 @@ public @interface EnableWorker {
         }
 
         @Bean
-        public WorkerRpcService workerRpcService(Worker.Current currentWorker, WorkerRegistry workerRegistry) {
-            return new WorkerRpcProvider(currentWorker, workerRegistry);
+        public WorkerRpcService workerRpcService(Worker.Local localWorker, WorkerRegistry workerRegistry) {
+            return new WorkerRpcProvider(localWorker, workerRegistry);
         }
     }
 

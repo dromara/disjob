@@ -384,19 +384,19 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (task.getOperation().isNotTrigger()) {
                 throw new IllegalTaskException("Not a executable task operation: " + task);
             }
-            WorkerThread exists = pool.get(task.getTaskId());
-            if (exists != null && task.equals(exists.currentTask())) {
-                // 同一个task re-dispatch，导致重复
-                throw new IllegalTaskException("Repeat execute task: " + task);
+            WorkerThread t = pool.get(task.getTaskId());
+            if (t != null) {
+                // discard re-dispatched task
+                throw new IllegalTaskException("Repeat execute task: " + task + ", " + t.currentTask());
             }
             if (!wt.updateCurrentTask(null, task)) {
                 throw new BrokenThreadException("Conflict execute task " + wt.getName() + ": " + task + ", " + wt.currentTask());
             }
             try {
                 wt.execute(task);
-            } catch (Throwable t) {
+            } catch (Throwable e) {
                 wt.updateCurrentTask(task, null);
-                throw t;
+                throw e;
             }
             pool.put(task.getTaskId(), wt);
         }
@@ -433,7 +433,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.error("Clean current task failed: {}", task);
                 return false;
             }
-            return pool.remove(task.getTaskId()) == wt;
+            t = pool.remove(task.getTaskId());
+            if (t != wt) {
+                LOG.error("Remove worker thread failed: {}, {}, {}", task.getTaskId(), wt.getName(), Threads.getName(t));
+                return false;
+            }
+            return true;
         }
 
         private synchronized void close() {

@@ -43,7 +43,7 @@ public class SupervisorStartup implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
-    private final Supervisor.Current currentSupervisor;
+    private final Supervisor.Local localSupervisor;
     private final TriggeringJobScanner triggeringJobScanner;
     private final WaitingInstanceScanner waitingInstanceScanner;
     private final RunningInstanceScanner runningInstanceScanner;
@@ -52,7 +52,7 @@ public class SupervisorStartup implements Startable {
 
     private final TripState state = TripState.create();
 
-    private SupervisorStartup(Supervisor.Current currentSupervisor,
+    private SupervisorStartup(Supervisor.Local localSupervisor,
                               SupervisorProperties supervisorProperties,
                               SupervisorRegistry supervisorRegistry,
                               DistributedJobManager distributedJobManager,
@@ -61,7 +61,7 @@ public class SupervisorStartup implements Startable {
                               LockTemplate scanWaitingInstanceLocker,
                               LockTemplate scanRunningInstanceLocker,
                               TaskDispatcher taskDispatcher) {
-        Objects.requireNonNull(currentSupervisor, "Current supervisor cannot null.");
+        Objects.requireNonNull(localSupervisor, "Local supervisor cannot null.");
         Objects.requireNonNull(supervisorProperties, "Supervisor properties cannot null.").check();
         Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
         Objects.requireNonNull(distributedJobManager, "Distributed job manager cannot null.");
@@ -70,7 +70,7 @@ public class SupervisorStartup implements Startable {
         Objects.requireNonNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
         Objects.requireNonNull(taskDispatcher, "Task dispatcher cannot null.");
 
-        this.currentSupervisor = currentSupervisor;
+        this.localSupervisor = localSupervisor;
         this.supervisorRegistry = supervisorRegistry;
         this.triggeringJobScanner = new TriggeringJobScanner(
             supervisorProperties,
@@ -100,12 +100,12 @@ public class SupervisorStartup implements Startable {
             return;
         }
 
-        LOG.info("Supervisor start begin: {}", currentSupervisor);
+        LOG.info("Supervisor start begin: {}", localSupervisor);
         waitingInstanceScanner.start();
         runningInstanceScanner.start();
         triggeringJobScanner.start();
-        supervisorRegistry.register(currentSupervisor);
-        LOG.info("Supervisor start end: {}", currentSupervisor);
+        supervisorRegistry.register(localSupervisor);
+        LOG.info("Supervisor start end: {}", localSupervisor);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class SupervisorStartup implements Startable {
             return;
         }
 
-        LOG.info("Supervisor stop begin: {}", currentSupervisor);
+        LOG.info("Supervisor stop begin: {}", localSupervisor);
         ThrowingRunnable.doCaught(supervisorRegistry::close);
         ThrowingRunnable.doCaught(triggeringJobScanner::toStop);
         ThrowingRunnable.doCaught(runningInstanceScanner::toStop);
@@ -124,7 +124,7 @@ public class SupervisorStartup implements Startable {
         ThrowingRunnable.doCaught(triggeringJobScanner::close);
         ThrowingRunnable.doCaught(runningInstanceScanner::close);
         ThrowingRunnable.doCaught(waitingInstanceScanner::close);
-        LOG.info("Supervisor stop end: {}", currentSupervisor);
+        LOG.info("Supervisor stop end: {}", localSupervisor);
     }
 
     // ----------------------------------------------------------------------------------------builder
@@ -134,7 +134,7 @@ public class SupervisorStartup implements Startable {
     }
 
     public static class Builder {
-        private Supervisor.Current currentSupervisor;
+        private Supervisor.Local localSupervisor;
         private SupervisorProperties supervisorProperties;
         private SupervisorRegistry supervisorRegistry;
         private DistributedJobManager distributedJobManager;
@@ -147,8 +147,8 @@ public class SupervisorStartup implements Startable {
         private Builder() {
         }
 
-        public Builder currentSupervisor(Supervisor.Current currentSupervisor) {
-            this.currentSupervisor = currentSupervisor;
+        public Builder localSupervisor(Supervisor.Local localSupervisor) {
+            this.localSupervisor = localSupervisor;
             return this;
         }
 
@@ -194,7 +194,7 @@ public class SupervisorStartup implements Startable {
 
         public SupervisorStartup build() {
             return new SupervisorStartup(
-                currentSupervisor,
+                localSupervisor,
                 supervisorProperties,
                 supervisorRegistry,
                 distributedJobManager,

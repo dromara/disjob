@@ -81,13 +81,13 @@ public class RedisTaskReceiver extends TaskReceiver {
     private final TripState state = TripState.create();
     private final ReceiveHeartbeatThread receiveHeartbeatThread;
 
-    public RedisTaskReceiver(Worker.Current currentWorker,
+    public RedisTaskReceiver(Worker.Local localWorker,
                              TimingWheel<ExecuteTaskParam> timingWheel,
                              RedisTemplate<String, String> redisTemplate) {
-        super(currentWorker, timingWheel);
+        super(localWorker, timingWheel);
 
         SingletonClassConstraint.constrain(this);
-        this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000, redisTemplate, currentWorker, this);
+        this.receiveHeartbeatThread = new ReceiveHeartbeatThread(1000, redisTemplate, localWorker, this);
     }
 
     @Override
@@ -120,11 +120,11 @@ public class RedisTaskReceiver extends TaskReceiver {
 
         private ReceiveHeartbeatThread(long heartbeatPeriodMs,
                                        RedisTemplate<String, String> redisTemplate,
-                                       Worker currentWorker,
+                                       Worker localWorker,
                                        RedisTaskReceiver redisTaskReceiver) {
             super(heartbeatPeriodMs);
             this.redisTemplate = redisTemplate;
-            this.gropedWorker = new GroupedWorker(currentWorker, redisTemplate);
+            this.gropedWorker = new GroupedWorker(localWorker, redisTemplate);
             this.redisTaskReceiver = redisTaskReceiver;
         }
 

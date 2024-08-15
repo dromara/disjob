@@ -69,9 +69,9 @@ public class ObjectUtilsTest {
 
     @Test
     public void testStaticField() throws ClassNotFoundException {
-        Class<?> aClass = Class.forName(Supervisor.Current.class.getName());
-        Fields.put(aClass, ClassUtils.getStaticField(aClass, "instance"), Supervisor.current());
-        Assertions.assertEquals(Supervisor.current(), Supervisor.current());
+        Class<?> aClass = Class.forName(Supervisor.Local.class.getName());
+        Fields.put(aClass, ClassUtils.getStaticField(aClass, "instance"), Supervisor.local());
+        Assertions.assertEquals(Supervisor.local(), Supervisor.local());
     }
 
     @Test

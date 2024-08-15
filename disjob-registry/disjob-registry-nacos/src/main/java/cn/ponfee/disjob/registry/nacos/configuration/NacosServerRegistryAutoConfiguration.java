@@ -38,7 +38,7 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     /**
      * Configuration nacos supervisor registry.
      */
-    @ConditionalOnBean(Supervisor.Current.class)
+    @ConditionalOnBean(Supervisor.Local.class)
     @Bean
     public SupervisorRegistry supervisorRegistry(NacosRegistryProperties config) {
         return new NacosSupervisorRegistry(config);
@@ -47,7 +47,7 @@ public class NacosServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     /**
      * Configuration nacos worker registry.
      */
-    @ConditionalOnBean(Worker.Current.class)
+    @ConditionalOnBean(Worker.Local.class)
     @Bean
     public WorkerRegistry workerRegistry(NacosRegistryProperties config) {
         return new NacosWorkerRegistry(config);

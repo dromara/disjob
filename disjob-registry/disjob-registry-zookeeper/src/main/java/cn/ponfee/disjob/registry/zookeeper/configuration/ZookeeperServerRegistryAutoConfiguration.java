@@ -38,7 +38,7 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
     /**
      * Configuration zookeeper supervisor registry.
      */
-    @ConditionalOnBean(Supervisor.Current.class)
+    @ConditionalOnBean(Supervisor.Local.class)
     @Bean
     public SupervisorRegistry supervisorRegistry(ZookeeperRegistryProperties config) {
         return new ZookeeperSupervisorRegistry(config);
@@ -47,7 +47,7 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
     /**
      * Configuration zookeeper worker registry.
      */
-    @ConditionalOnBean(Worker.Current.class)
+    @ConditionalOnBean(Worker.Local.class)
     @Bean
     public WorkerRegistry workerRegistry(ZookeeperRegistryProperties config) {
         return new ZookeeperWorkerRegistry(config);

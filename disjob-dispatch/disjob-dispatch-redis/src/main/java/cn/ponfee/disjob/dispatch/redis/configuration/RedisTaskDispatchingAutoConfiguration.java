@@ -45,18 +45,18 @@ public class RedisTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAu
     /**
      * Configuration redis task receiver.
      */
-    @ConditionalOnBean(Worker.Current.class)
+    @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public TaskReceiver taskReceiver(Worker.Current currentWorker,
+    public TaskReceiver taskReceiver(Worker.Local localWorker,
                                      @Qualifier(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL) TimingWheel<ExecuteTaskParam> timingWheel,
                                      StringRedisTemplate stringRedisTemplate) {
-        return new RedisTaskReceiver(currentWorker, timingWheel, stringRedisTemplate);
+        return new RedisTaskReceiver(localWorker, timingWheel, stringRedisTemplate);
     }
 
     /**
      * Configuration redis task dispatcher.
      */
-    @ConditionalOnBean(Supervisor.Current.class)
+    @ConditionalOnBean(Supervisor.Local.class)
     @Bean
     public TaskDispatcher taskDispatcher(ApplicationEventPublisher eventPublisher,
                                          SupervisorRegistry discoveryWorker,

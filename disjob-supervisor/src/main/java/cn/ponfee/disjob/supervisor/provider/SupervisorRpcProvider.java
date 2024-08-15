@@ -75,8 +75,8 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
     public SupervisorMetrics getMetrics() {
         SupervisorMetrics metrics = new SupervisorMetrics();
         metrics.setVersion(JobConstants.VERSION);
-        metrics.setStartupAt(Dates.toDate(Supervisor.current().getStartupAt()));
-        metrics.setAlsoWorker(Worker.current() != null);
+        metrics.setStartupTime(Dates.toDate(Supervisor.local().getStartupTime()));
+        metrics.setAlsoWorker(Worker.local() != null);
         return metrics;
     }
 

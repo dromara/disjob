@@ -63,23 +63,23 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
     private final SupervisorRegistry supervisorRegistry;
-    private final Supervisor.Current currentSupervisor;
+    private final Supervisor.Local localSupervisor;
     private final DestinationServerInvoker<SupervisorRpcService, Supervisor> supervisorRpcClient;
     private final DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient;
 
     public ServerInvokeService(SupervisorRegistry supervisorRegistry,
-                               Supervisor.Current currentSupervisor,
+                               Supervisor.Local localSupervisor,
                                ServerProperties serverProperties,
                                SupervisorRpcService localSupervisorRpcProvider,
                                @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient) {
         this.supervisorRegistry = supervisorRegistry;
-        this.currentSupervisor = currentSupervisor;
+        this.localSupervisor = localSupervisor;
         String supervisorContextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
         this.supervisorRpcClient = DestinationServerRestProxy.create(
             SupervisorRpcService.class,
             localSupervisorRpcProvider,
-            currentSupervisor,
+            localSupervisor,
             supervisor -> supervisorContextPath,
             restTemplate,
             RetryProperties.of(0, 0)
@@ -91,7 +91,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     public List<SupervisorMetricsResponse> supervisors() throws Exception {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
-        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(currentSupervisor) ? 0 : 1));
+        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(localSupervisor) ? 0 : 1));
         return MultithreadExecutors.call(list, this::getSupervisorMetrics, ThreadPoolExecutors.commonThreadPool());
     }
 
@@ -104,7 +104,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
             return StringUtils.isBlank(metrics.getWorkerId()) ? Collections.emptyList() : Collections.singletonList(metrics);
         } else {
             List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
-            list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.current()) ? 0 : 1));
+            list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.local()) ? 0 : 1));
             return MultithreadExecutors.call(list, this::getWorkerMetrics, ThreadPoolExecutors.commonThreadPool());
         }
     }
@@ -142,7 +142,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         try {
             List<Supervisor> supervisors = supervisorRegistry.getRegisteredServers()
                 .stream()
-                .filter(e -> !currentSupervisor.equals(e))
+                .filter(e -> !localSupervisor.equals(e))
                 .collect(Collectors.toList());
             MultithreadExecutors.run(
                 supervisors,

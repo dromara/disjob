@@ -81,7 +81,7 @@ public class WorkerFramelessMain {
         WorkerProperties workerProps = config.extract(WorkerProperties.class, WorkerProperties.KEY_PREFIX);
         workerProps.check();
         LazyLoader<StringRedisTemplate> srtLoader = LazyLoader.of(() -> AbstractRedisTemplateCreator.create(DISJOB_KEY_PREFIX + ".redis", config).getStringRedisTemplate());
-        Worker.Current currentWorker = createCurrentWorker(config, workerProps);
+        Worker.Local localWorker = createLocalWorker(config, workerProps);
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(workerProps.getTimingWheelTickMs(), workerProps.getTimingWheelRingSize());
 
 
@@ -103,7 +103,7 @@ public class WorkerFramelessMain {
         {
             // 1）redis receiver
             /*
-            actualTaskReceiver = new RedisTaskReceiver(currentWorker, timingWheel, srtLoader.get()) {
+            actualTaskReceiver = new RedisTaskReceiver(localWorker, timingWheel, srtLoader.get()) {
                 @Override
                 public boolean receive(ExecuteTaskParam param) {
                     JobExecutorParser.parse(param, "jobExecutor");
@@ -115,7 +115,7 @@ public class WorkerFramelessMain {
             */
 
             // 2）http receiver
-            paramTaskReceiver = actualTaskReceiver = new HttpTaskReceiver(currentWorker, timingWheel);
+            paramTaskReceiver = actualTaskReceiver = new HttpTaskReceiver(localWorker, timingWheel);
         }
         // --------------------- create receiver(select redis or http) --------------------- //
 
@@ -123,9 +123,9 @@ public class WorkerFramelessMain {
 
         // `verify/split/metrics/configure` 接口还是要走http
         String workerContextPath = config.getString(SpringUtils.SPRING_BOOT_CONTEXT_PATH);
-        VertxWebServer vertxWebServer = new VertxWebServer(currentWorker.getPort(), workerContextPath, paramTaskReceiver, new WorkerRpcProvider(currentWorker, workerRegistry));
+        VertxWebServer vertxWebServer = new VertxWebServer(localWorker.getPort(), workerContextPath, paramTaskReceiver, new WorkerRpcProvider(localWorker, workerRegistry));
         WorkerStartup workerStartup = WorkerStartup.builder()
-            .currentWorker(currentWorker)
+            .localWorker(localWorker)
             .workerProperties(workerProps)
             .retryProperties(config.extract(RetryProperties.class, RetryProperties.KEY_PREFIX))
             .taskReceiver(actualTaskReceiver)
@@ -164,7 +164,7 @@ public class WorkerFramelessMain {
         }
     }
 
-    private static Worker.Current createCurrentWorker(YamlProperties config, WorkerProperties workerProps) throws Exception {
+    private static Worker.Local createLocalWorker(YamlProperties config, WorkerProperties workerProps) throws Exception {
         Object[] args = {
             workerProps.getGroup(),
             UuidUtils.uuid32(),
@@ -174,7 +174,7 @@ public class WorkerFramelessMain {
             workerProps.getSupervisorToken(),
             workerProps.getSupervisorContextPath()
         };
-        return ClassUtils.invoke(Class.forName(Worker.Current.class.getName()), "create", args);
+        return ClassUtils.invoke(Class.forName(Worker.Local.class.getName()), "create", args);
     }
 
 }

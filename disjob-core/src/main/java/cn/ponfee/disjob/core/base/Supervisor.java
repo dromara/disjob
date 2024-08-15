@@ -84,8 +84,8 @@ public class Supervisor extends Server {
         return new Supervisor(host, port);
     }
 
-    public static Supervisor.Current current() {
-        return Current.instance;
+    public static Local local() {
+        return Local.instance;
     }
 
     @Override
@@ -122,25 +122,25 @@ public class Supervisor extends Server {
         }
     }
 
-    // -------------------------------------------------------------------------------current Supervisor
+    // -------------------------------------------------------------------------------local Supervisor
 
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
     @SuppressWarnings("serial")
-    public abstract static class Current extends Supervisor {
-        private static volatile Current instance = null;
+    public abstract static class Local extends Supervisor {
+        private static volatile Local instance = null;
 
-        private final LocalDateTime startupAt;
+        private final LocalDateTime startupTime;
 
-        private Current(String host, int port) {
+        private Local(String host, int port) {
             super(host, port);
-            SingletonClassConstraint.constrain(Current.class);
-            this.startupAt = LocalDateTime.now();
+            SingletonClassConstraint.constrain(Local.class);
+            this.startupTime = LocalDateTime.now();
         }
 
-        public final LocalDateTime getStartupAt() {
-            return startupAt;
+        public final LocalDateTime getStartupTime() {
+            return startupTime;
         }
 
         /**
@@ -151,13 +151,13 @@ public class Supervisor extends Server {
          */
         public abstract String getWorkerContextPath(String group);
 
-        private static synchronized Current create(final String host, final int port,
-                                                   final UnaryOperator<String> workerContextPath) {
+        private static synchronized Local create(final String host, final int port,
+                                                 final UnaryOperator<String> workerContextPath) {
             if (instance != null) {
-                throw new Error("Current supervisor already created.");
+                throw new Error("Local supervisor already created.");
             }
 
-            instance = new Current(host, port) {
+            instance = new Local(host, port) {
                 @Override
                 public String getWorkerContextPath(String group) {
                     return workerContextPath.apply(group);

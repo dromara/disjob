@@ -43,7 +43,7 @@ public class WorkerStartup implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartup.class);
 
-    private final Worker.Current currentWorker;
+    private final Worker.Local localWorker;
     private final WorkerThreadPool workerThreadPool;
     private final TimingWheelRotator timingWheelRotator;
     private final TaskReceiver taskReceiver;
@@ -51,14 +51,14 @@ public class WorkerStartup implements Startable {
 
     private final TripState state = TripState.create();
 
-    private WorkerStartup(Worker.Current currentWorker,
+    private WorkerStartup(Worker.Local localWorker,
                           WorkerProperties workerProperties,
                           RetryProperties retryProperties,
                           WorkerRegistry workerRegistry,
                           TaskReceiver taskReceiver,
                           SupervisorRpcService supervisorRpcService,
                           RestTemplate restTemplate) {
-        Objects.requireNonNull(currentWorker, "Current worker cannot null.");
+        Objects.requireNonNull(localWorker, "Local worker cannot null.");
         Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         Objects.requireNonNull(workerRegistry, "Server registry cannot null.");
@@ -69,7 +69,7 @@ public class WorkerStartup implements Startable {
             SupervisorRpcService.class, supervisorRpcService, workerRegistry, restTemplate, retryProperties
         );
 
-        this.currentWorker = currentWorker;
+        this.localWorker = localWorker;
         this.workerThreadPool = new WorkerThreadPool(
             workerProperties.getMaximumPoolSize(),
             workerProperties.getKeepAliveTimeSeconds(),
@@ -93,12 +93,12 @@ public class WorkerStartup implements Startable {
             return;
         }
 
-        LOG.info("Worker start begin: {}", currentWorker);
+        LOG.info("Worker start begin: {}", localWorker);
         workerThreadPool.start();
         timingWheelRotator.start();
         taskReceiver.start();
-        workerRegistry.register(currentWorker);
-        LOG.info("Worker start end: {}", currentWorker);
+        workerRegistry.register(localWorker);
+        LOG.info("Worker start end: {}", localWorker);
     }
 
     @Override
@@ -108,12 +108,12 @@ public class WorkerStartup implements Startable {
             return;
         }
 
-        LOG.info("Worker stop begin: {}", currentWorker);
+        LOG.info("Worker stop begin: {}", localWorker);
         ThrowingRunnable.doCaught(workerRegistry::close);
         ThrowingRunnable.doCaught(taskReceiver::close);
         ThrowingRunnable.doCaught(timingWheelRotator::close);
         ThrowingRunnable.doCaught(workerThreadPool::close);
-        LOG.info("Worker stop end: {}", currentWorker);
+        LOG.info("Worker stop end: {}", localWorker);
     }
 
     // ----------------------------------------------------------------------------------------builder
@@ -123,7 +123,7 @@ public class WorkerStartup implements Startable {
     }
 
     public static class Builder {
-        private Worker.Current currentWorker;
+        private Worker.Local localWorker;
         private WorkerProperties workerProperties;
         private RetryProperties retryProperties;
         private WorkerRegistry workerRegistry;
@@ -134,8 +134,8 @@ public class WorkerStartup implements Startable {
         private Builder() {
         }
 
-        public Builder currentWorker(Worker.Current currentWorker) {
-            this.currentWorker = currentWorker;
+        public Builder localWorker(Worker.Local localWorker) {
+            this.localWorker = localWorker;
             return this;
         }
 
@@ -171,7 +171,7 @@ public class WorkerStartup implements Startable {
 
         public WorkerStartup build() {
             return new WorkerStartup(
-                currentWorker,
+                localWorker,
                 workerProperties,
                 retryProperties,
                 workerRegistry,

@@ -44,7 +44,7 @@ public final class DestinationServerRestProxy {
 
     public static <T, S extends Server> DestinationServerInvoker<T, S> create(Class<T> interfaceCls,
                                                                               @Nullable T localServiceProvider,
-                                                                              @Nullable S currentServer,
+                                                                              @Nullable S localServer,
                                                                               Function<S, String> serverContextPath,
                                                                               RestTemplate restTemplate,
                                                                               RetryProperties retry) {
@@ -52,23 +52,23 @@ public final class DestinationServerRestProxy {
         String prefixPath = DiscoveryServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
         InvocationHandler invocationHandler = new ServerInvocationHandler<>(template, serverContextPath, prefixPath);
         T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceCls);
-        return new DestinationServerInvoker<>(remoteServiceClient, localServiceProvider, currentServer);
+        return new DestinationServerInvoker<>(remoteServiceClient, localServiceProvider, localServer);
     }
 
     public static final class DestinationServerInvoker<T, S extends Server> {
         private final T remoteServiceClient;
         private final T localServiceProvider;
-        private final S currentServer;
+        private final S localServer;
 
-        private DestinationServerInvoker(T remoteServiceClient, T localServiceProvider, S currentServer) {
+        private DestinationServerInvoker(T remoteServiceClient, T localServiceProvider, S localServer) {
             this.remoteServiceClient = remoteServiceClient;
             this.localServiceProvider = localServiceProvider;
-            this.currentServer = currentServer;
+            this.localServer = localServer;
         }
 
         public <R, E extends Throwable> R call(S destinationServer, ThrowingFunction<T, R, E> function) throws E {
             Objects.requireNonNull(destinationServer);
-            if (localServiceProvider != null && destinationServer.equals(currentServer)) {
+            if (localServiceProvider != null && destinationServer.equals(localServer)) {
                 return function.apply(localServiceProvider);
             } else {
                 SERVER_THREAD_LOCAL.set(destinationServer);

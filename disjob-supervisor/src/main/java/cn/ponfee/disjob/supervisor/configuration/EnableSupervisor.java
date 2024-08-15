@@ -43,7 +43,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_CURRENT_SUPERVISOR;
+import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_LOCAL_SUPERVISOR;
 import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE;
 
 /**
@@ -82,43 +82,43 @@ public @interface EnableSupervisor {
     @ComponentScan(basePackageClasses = SupervisorStartup.class)
     class EnableSupervisorConfiguration {
 
-        @Bean(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
-        public Supervisor.Current currentSupervisor(WebServerApplicationContext webServerApplicationContext) {
+        @Bean(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
+        public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext) {
             UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
             String host = DisjobUtils.getLocalHost();
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
             Object[] args = {host, port, workerCtxPath};
             try {
-                // inject current supervisor: Supervisor.class.getDeclaredClasses()[0]
-                return ClassUtils.invoke(Class.forName(Supervisor.Current.class.getName()), "create", args);
+                // inject local supervisor: Supervisor.class.getDeclaredClasses()[0]
+                return ClassUtils.invoke(Class.forName(Supervisor.Local.class.getName()), "create", args);
             } catch (Exception e) {
                 // cannot happen
-                throw new Error("Creates Supervisor.Current instance occur error.", e);
+                throw new Error("Creates Supervisor.Local instance occur error.", e);
             }
         }
 
-        @DependsOn(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @DependsOn(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
         @Bean
         public GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient(RetryProperties retry,
                                                                              SupervisorRegistry discoveryWorker,
                                                                              @Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                                                              @Nullable WorkerRpcService workerRpcProvider,
-                                                                             @Nullable Worker.Current currentWorker) {
+                                                                             @Nullable Worker.Local localWorker) {
             retry.check();
-            Predicate<String> serverGroupMatcher = currentWorker != null ? currentWorker::equalsGroup : g -> false;
+            Predicate<String> serverGroupMatcher = localWorker != null ? localWorker::equalsGroup : g -> false;
             return DiscoveryServerRestProxy.create(
                 WorkerRpcService.class, workerRpcProvider, serverGroupMatcher, discoveryWorker, restTemplate, retry
             );
         }
 
-        @DependsOn(SPRING_BEAN_NAME_CURRENT_SUPERVISOR)
+        @DependsOn(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
         @Bean
         public DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient(@Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                                                                              @Nullable WorkerRpcService workerRpcProvider) {
             RetryProperties retry = RetryProperties.of(0, 0);
-            Function<Worker, String> workerContextPath = worker -> Supervisor.current().getWorkerContextPath(worker.getGroup());
+            Function<Worker, String> workerContextPath = worker -> Supervisor.local().getWorkerContextPath(worker.getGroup());
             return DestinationServerRestProxy.create(
-                WorkerRpcService.class, workerRpcProvider, Worker.current(), workerContextPath, restTemplate, retry
+                WorkerRpcService.class, workerRpcProvider, Worker.local(), workerContextPath, restTemplate, retry
             );
         }
     }

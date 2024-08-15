@@ -51,7 +51,7 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
      * @return SupervisorRegistry
      * @see org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
      */
-    @ConditionalOnBean(Supervisor.Current.class)
+    @ConditionalOnBean(Supervisor.Local.class)
     @Bean
     public SupervisorRegistry supervisorRegistry(StringRedisTemplate stringRedisTemplate,
                                                  RedisRegistryProperties config) {
@@ -61,7 +61,7 @@ public class RedisServerRegistryAutoConfiguration extends BaseServerRegistryAuto
     /**
      * Configuration redis worker registry.
      */
-    @ConditionalOnBean(Worker.Current.class)
+    @ConditionalOnBean(Worker.Local.class)
     @Bean
     public WorkerRegistry workerRegistry(StringRedisTemplate stringRedisTemplate,
                                          RedisRegistryProperties config) {

@@ -47,7 +47,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
     private final TripState state = TripState.create();
     private final SupervisorStartup supervisorStartup;
 
-    public SupervisorLifecycle(Supervisor.Current currentSupervisor,
+    public SupervisorLifecycle(Supervisor.Local localSupervisor,
                                SupervisorProperties supervisorProperties,
                                SupervisorRegistry supervisorRegistry,
                                DistributedJobManager distributedJobManager,
@@ -57,7 +57,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
                                @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
                                TaskDispatcher taskDispatcher) {
         this.supervisorStartup = SupervisorStartup.builder()
-            .currentSupervisor(currentSupervisor)
+            .localSupervisor(localSupervisor)
             .supervisorProperties(supervisorProperties)
             .supervisorRegistry(supervisorRegistry)
             .distributedJobManager(distributedJobManager)

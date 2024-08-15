@@ -78,25 +78,25 @@ public @interface DbSnowflakeIdGenerator {
             super(jdbcTemplate, bizTag, serializeSupervisor(supervisor), sequenceBitLength, workerIdBitLength);
         }
 
-        private static final String CURRENT_SUPERVISOR_CLASS_NAME = "cn.ponfee.disjob.core.base.Supervisor$Current$1";
+        private static final String LOCAL_SUPERVISOR_CLASS_NAME = "cn.ponfee.disjob.core.base.Supervisor$Local$1";
 
         /**
-         * Current supervisor spring bean name
+         * Local supervisor spring bean name
          *
-         * @see cn.ponfee.disjob.core.base.JobConstants#SPRING_BEAN_NAME_CURRENT_SUPERVISOR
+         * @see cn.ponfee.disjob.core.base.JobConstants#SPRING_BEAN_NAME_LOCAL_SUPERVISOR
          */
-        protected static final String SPRING_BEAN_NAME_CURRENT_SUPERVISOR = "disjob.bean.current-supervisor";
+        protected static final String SPRING_BEAN_NAME_LOCAL_SUPERVISOR = "disjob.bean.local-supervisor";
 
         /**
-         * String of Supervisor.Current serialization
+         * String of Supervisor.Local serialization
          *
-         * @param supervisor the current supervisor
+         * @param supervisor the local supervisor
          * @return serialization string
-         * @see cn.ponfee.disjob.core.base.Supervisor.Current#serialize()
+         * @see cn.ponfee.disjob.core.base.Supervisor.Local#serialize()
          */
         private static String serializeSupervisor(Object supervisor) {
             Class<?> clazz = supervisor.getClass();
-            Assert.isTrue(CURRENT_SUPERVISOR_CLASS_NAME.equals(clazz.getName()), () -> "Not Supervisor$Current$1 instance: " + clazz);
+            Assert.isTrue(LOCAL_SUPERVISOR_CLASS_NAME.equals(clazz.getName()), () -> "Not Supervisor$Local$1 instance: " + clazz);
             return (String) ReflectionUtils.invokeMethod(ReflectionUtils.findMethod(clazz, "serialize"), supervisor);
         }
     }
@@ -107,7 +107,7 @@ public @interface DbSnowflakeIdGenerator {
     class AnnotatedDbSnowflake extends BasicDbdSnowflake {
 
         AnnotatedDbSnowflake(@Autowired JdbcTemplate jdbcTemplate, // use @Primary JdbcTemplate bean
-                             @Autowired @Qualifier(SPRING_BEAN_NAME_CURRENT_SUPERVISOR) Object supervisor,
+                             @Autowired @Qualifier(SPRING_BEAN_NAME_LOCAL_SUPERVISOR) Object supervisor,
                              String bizTag,
                              int sequenceBitLength,
                              int workerIdBitLength) {
@@ -132,7 +132,7 @@ public @interface DbSnowflakeIdGenerator {
                 bd = new GenericBeanDefinition();
                 bd.setBeanClass(BasicDbdSnowflake.class);
                 bd.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(jdbcTemplateRef));
-                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbdSnowflake.SPRING_BEAN_NAME_CURRENT_SUPERVISOR));
+                bd.getConstructorArgumentValues().addIndexedArgumentValue(1, new RuntimeBeanReference(BasicDbdSnowflake.SPRING_BEAN_NAME_LOCAL_SUPERVISOR));
             }
 
             bd.getConstructorArgumentValues().addIndexedArgumentValue(2, config.bizTag());

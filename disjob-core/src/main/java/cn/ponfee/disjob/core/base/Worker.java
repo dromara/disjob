@@ -171,8 +171,8 @@ public class Worker extends Server {
         return new Worker(group, workerId, host, port);
     }
 
-    public static Worker.Current current() {
-        return Current.instance;
+    public static Local local() {
+        return Local.instance;
     }
 
     // --------------------------------------------------------custom jackson serialize & deserialize
@@ -201,22 +201,22 @@ public class Worker extends Server {
         }
     }
 
-    // -------------------------------------------------------------------------------current Worker
+    // -------------------------------------------------------------------------------local Worker
 
     @SuppressWarnings("serial")
-    public abstract static class Current extends Worker {
-        private static volatile Current instance = null;
+    public abstract static class Local extends Worker {
+        private static volatile Local instance = null;
 
-        private final LocalDateTime startupAt;
+        private final LocalDateTime startupTime;
 
-        private Current(String group, String workerId, String host, int port) {
+        private Local(String group, String workerId, String host, int port) {
             super(group, workerId, host, port);
-            SingletonClassConstraint.constrain(Current.class);
-            this.startupAt = LocalDateTime.now();
+            SingletonClassConstraint.constrain(Local.class);
+            this.startupTime = LocalDateTime.now();
         }
 
-        public final LocalDateTime getStartupAt() {
-            return startupAt;
+        public final LocalDateTime getStartupTime() {
+            return startupTime;
         }
 
         /**
@@ -249,15 +249,15 @@ public class Worker extends Server {
 
         // need do reflection call
         // use synchronized modify for help multiple thread read reference(write to main memory)
-        private static synchronized Current create(final String group, final String workerId,
-                                                   final String host, final int port,
-                                                   final String wToken, final String sToken,
-                                                   final String supervisorContextPath) {
+        private static synchronized Local create(final String group, final String workerId,
+                                                 final String host, final int port,
+                                                 final String wToken, final String sToken,
+                                                 final String supervisorContextPath) {
             if (instance != null) {
-                throw new Error("Current worker already created.");
+                throw new Error("Local worker already created.");
             }
 
-            instance = new Current(group, workerId, host, port) {
+            instance = new Local(group, workerId, host, port) {
                 private final String workerToken     = StringUtils.trim(wToken);
                 private final String supervisorToken = StringUtils.trim(sToken);
 

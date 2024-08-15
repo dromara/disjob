@@ -45,16 +45,16 @@ public class WorkerLifecycle implements SmartLifecycle {
     private final TripState state = TripState.create();
     private final WorkerStartup workerStartup;
 
-    public WorkerLifecycle(Worker.Current currentWorker,
+    public WorkerLifecycle(Worker.Local localWorker,
                            WorkerProperties workerProperties,
                            RetryProperties retryProperties,
                            WorkerRegistry workerRegistry,
                            TaskReceiver taskReceiver,
                            @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                           // if the current server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider
+                           // if the local server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider
                            @Nullable SupervisorRpcService supervisorRpcService) {
         this.workerStartup = WorkerStartup.builder()
-            .currentWorker(currentWorker)
+            .localWorker(localWorker)
             .workerProperties(workerProperties)
             .retryProperties(retryProperties)
             .workerRegistry(workerRegistry)

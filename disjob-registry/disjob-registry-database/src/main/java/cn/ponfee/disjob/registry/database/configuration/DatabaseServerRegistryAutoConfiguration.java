@@ -86,7 +86,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Configuration database supervisor registry.
      */
-    @ConditionalOnBean(Supervisor.Current.class)
+    @ConditionalOnBean(Supervisor.Local.class)
     @Bean
     public SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
                                                  @Qualifier(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
@@ -96,7 +96,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Configuration database worker registry.
      */
-    @ConditionalOnBean(Worker.Current.class)
+    @ConditionalOnBean(Worker.Local.class)
     @Bean
     public WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
                                          @Qualifier(REGISTRY_DATABASE_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {

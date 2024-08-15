@@ -30,8 +30,8 @@ import cn.ponfee.disjob.dispatch.TaskReceiver;
 @RpcController
 public class HttpTaskReceiver extends TaskReceiver implements Controller {
 
-    public HttpTaskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
-        super(currentWorker, timingWheel);
+    public HttpTaskReceiver(Worker.Local localWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+        super(localWorker, timingWheel);
     }
 
     @Override

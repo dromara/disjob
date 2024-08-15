@@ -45,17 +45,17 @@ public class HttpTaskDispatchingAutoConfiguration extends BaseTaskDispatchingAut
     /**
      * Configuration http task receiver.
      */
-    @ConditionalOnBean(Worker.Current.class)
+    @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public TaskReceiver taskReceiver(Worker.Current currentWorker,
+    public TaskReceiver taskReceiver(Worker.Local localWorker,
                                      @Qualifier(JobConstants.SPRING_BEAN_NAME_TIMING_WHEEL) TimingWheel<ExecuteTaskParam> timingWheel) {
-        return new HttpTaskReceiver(currentWorker, timingWheel);
+        return new HttpTaskReceiver(localWorker, timingWheel);
     }
 
     /**
      * Configuration http task dispatcher.
      */
-    @ConditionalOnBean(Supervisor.Current.class)
+    @ConditionalOnBean(Supervisor.Local.class)
     @Bean
     public TaskDispatcher taskDispatcher(ApplicationEventPublisher eventPublisher,
                                          RetryProperties retry,

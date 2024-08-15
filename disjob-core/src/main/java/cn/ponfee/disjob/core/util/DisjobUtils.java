@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.core.util;
 
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
@@ -72,6 +73,29 @@ public class DisjobUtils {
         throw new Error("Not found available server host.");
     }
 
+    public static void doInSynchronized(Long lock, ThrowingRunnable<?> action, Supplier<String> message) {
+        Throwable t = null;
+        try {
+            doInSynchronized(lock, action);
+        } catch (Throwable e) {
+            t = e;
+            LOG.error(message.get(), t);
+        } finally {
+            if (isCurrentThreadInterrupted(t)) {
+                ThreadPoolExecutors.commonThreadPool().execute(()-> {
+                    try {
+                        doInSynchronized(lock, action);
+                    } catch (Throwable e) {
+                        LOG.error("Retry error, " + message.get(), e);
+                    }
+                });
+            }
+            Threads.interruptIfNecessary(t);
+        }
+    }
+
+    // ----------------------------------------------------------------------private methods
+
     private static boolean isValidHost(String host, String from) {
         if (StringUtils.isBlank(host)) {
             return false;
@@ -84,25 +108,6 @@ public class DisjobUtils {
             LOG.warn("Unreachable server host configured {}: {}", from, host);
         }
         return true;
-    }
-
-    public static void doInSynchronized(Long lock, ThrowingRunnable<?> action, Supplier<String> message) {
-        Throwable t = null;
-        try {
-            doInSynchronized(lock, action);
-        } catch (Throwable e) {
-            t = e;
-            LOG.error(message.get(), t);
-        } finally {
-            if (isCurrentThreadInterrupted(t)) {
-                try {
-                    doInSynchronized(lock, action);
-                } catch (Throwable e) {
-                    LOG.error("Retry error, " + message.get(), e);
-                }
-            }
-            Threads.interruptIfNecessary(t);
-        }
     }
 
     private static void doInSynchronized(Long lock, ThrowingRunnable<?> action) throws Throwable {

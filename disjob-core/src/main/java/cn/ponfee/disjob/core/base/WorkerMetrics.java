@@ -46,7 +46,7 @@ public class WorkerMetrics extends ToJsonString implements Serializable {
     /**
      * 启动时间
      */
-    private Date startupAt;
+    private Date startupTime;
 
     /**
      * 是否也是Supervisor角色

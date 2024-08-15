@@ -32,12 +32,12 @@ import java.util.Objects;
 public abstract class TaskReceiver implements Startable {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final Worker.Current currentWorker;
+    private final Worker.Local localWorker;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
 
-    protected TaskReceiver(Worker.Current currentWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
+    protected TaskReceiver(Worker.Local localWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
         this.timingWheel = Objects.requireNonNull(timingWheel, "Timing wheel cannot be null.");
-        this.currentWorker = Objects.requireNonNull(currentWorker, "Current worker cannot be null.");
+        this.localWorker = Objects.requireNonNull(localWorker, "Local worker cannot be null.");
     }
 
     /**
@@ -60,18 +60,18 @@ public abstract class TaskReceiver implements Startable {
             return false;
         }
 
-        currentWorker.verifySupervisorAuthenticationToken(param);
+        localWorker.verifySupervisorAuthenticationToken(param);
 
         Worker assignedWorker = param.getWorker();
-        if (!currentWorker.matches(assignedWorker)) {
-            log.error("Received unmatched worker task: {}, {}, {}", param.getTaskId(), currentWorker, assignedWorker);
+        if (!localWorker.matches(assignedWorker)) {
+            log.error("Received unmatched worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
             return false;
         }
-        if (!currentWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
+        if (!localWorker.getWorkerId().equals(assignedWorker.getWorkerId())) {
             // 当Worker宕机后又快速启动(重启)的情况，Supervisor从本地缓存(或注册中心)拿到的仍是旧的workerId，但任务却Http方式派发给新的workerId(同机器同端口)
             // 这种情况：1、可以剔除掉，等待Supervisor重新派发即可；2、也可以不剔除掉，短暂时间内该Worker的压力会是正常情况的2倍(注册中心还存有旧workerId)；
-            log.warn("Received former worker task: {}, {}, {}", param.getTaskId(), currentWorker, assignedWorker);
-            param.setWorker(currentWorker);
+            log.warn("Received former worker task: {}, {}, {}", param.getTaskId(), localWorker, assignedWorker);
+            param.setWorker(localWorker);
         }
 
         boolean res = timingWheel.offer(param);

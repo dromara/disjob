@@ -87,11 +87,11 @@ final class DiscoveryServerRestTemplate<D extends Server> {
         String serverContextPath;
         if (discoveryServerRole == ServerRole.SUPERVISOR) {
             // Worker 远程调用 Supervisor
-            serverContextPath = Worker.current().getSupervisorContextPath();
-            authenticationHeaders = Worker.current().createWorkerAuthenticationHeaders();
+            serverContextPath = Worker.local().getSupervisorContextPath();
+            authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
         } else {
             // Supervisor 远程调用 Worker
-            serverContextPath = Supervisor.current().getWorkerContextPath(group);
+            serverContextPath = Supervisor.local().getWorkerContextPath(group);
         }
         int start = ThreadLocalRandom.current().nextInt(serverNumber);
 
