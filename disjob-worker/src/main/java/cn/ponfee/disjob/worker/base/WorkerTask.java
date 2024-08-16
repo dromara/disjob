@@ -79,25 +79,17 @@ class WorkerTask {
 
     // --------------------------------------------------------other methods
 
-    StartTaskParam toStartTaskParam() {
-        return new StartTaskParam(jobId, wnstanceId, instanceId, taskId, jobType, worker);
-    }
-
-    StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {
-        return new StopTaskParam(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
-    }
-
     Long getLockInstanceId() {
         return wnstanceId != null ? wnstanceId : instanceId;
+    }
+
+    Operation getOperation() {
+        return operation.get();
     }
 
     boolean updateOperation(Operation expect, Operation update) {
         return !Objects.equals(expect, update)
             && operation.compareAndSet(expect, update);
-    }
-
-    Operation getOperation() {
-        return operation.get();
     }
 
     void bindTaskExecutor(TaskExecutor executor) {
@@ -132,6 +124,14 @@ class WorkerTask {
     @Override
     public String toString() {
         return taskId + "-" + operation;
+    }
+
+    StartTaskParam toStartTaskParam() {
+        return new StartTaskParam(jobId, wnstanceId, instanceId, taskId, jobType, worker);
+    }
+
+    StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {
+        return new StopTaskParam(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
     }
 
     public ExecutionTask toExecutionTask(StartTaskResult source) {

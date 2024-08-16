@@ -32,10 +32,10 @@ public final class TreeNodeBuilder<T extends Serializable & Comparable<T>, A> {
     private final T nid;
 
     private Comparator<? super TreeNode<T, A>> siblingNodesComparator = Comparator.comparing(TreeNode::getNid);
-    private T       pid       = null;
+    private T pid             = null;
     private boolean enabled   = true;
     private boolean available = true;
-    private A       attach    = null;
+    private A attach          = null;
     private boolean buildPath = true;
 
     TreeNodeBuilder(T nid) {

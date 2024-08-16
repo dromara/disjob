@@ -31,6 +31,7 @@ import java.util.function.UnaryOperator;
  * @param <E> the element type
  * @author Ponfee
  */
+@SuppressWarnings({"NullableProblems", "unchecked"})
 public class ImmutableArrayList<E> extends ToJsonString
     implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
 

@@ -88,6 +88,26 @@ public class Maths {
     }
 
     /**
+     * <pe>
+     * Reverses int number bits
+     * 1711380007              = 01100110000000011001011000100111
+     * reverseBits(1711380007) = 11100100011010011000000001100110
+     * </pe>
+     *
+     * @param n the number
+     * @return reversed number
+     */
+    public static int reverseBits(int n) {
+        int r = 0;
+        for (int i = 0; i < Integer.SIZE; i++) {
+            r <<= 1;
+            r |= (n & 1);
+            n >>= 1;
+        }
+        return r;
+    }
+
+    /**
      * Returns a long value for {@code base}<sup>{@code exponent}</sup>.
      *
      * @param base      the base

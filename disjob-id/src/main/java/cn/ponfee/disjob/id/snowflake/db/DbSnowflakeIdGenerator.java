@@ -97,6 +97,7 @@ public @interface DbSnowflakeIdGenerator {
         private static String serializeSupervisor(Object supervisor) {
             Class<?> clazz = supervisor.getClass();
             Assert.isTrue(LOCAL_SUPERVISOR_CLASS_NAME.equals(clazz.getName()), () -> "Not Supervisor$Local$1 instance: " + clazz);
+            // noinspection ConstantConditions
             return (String) ReflectionUtils.invokeMethod(ReflectionUtils.findMethod(clazz, "serialize"), supervisor);
         }
     }
@@ -117,6 +118,7 @@ public @interface DbSnowflakeIdGenerator {
 
     class DbSnowFlakeWorkerRegistrar implements ImportBeanDefinitionRegistrar {
 
+        @SuppressWarnings("NullableProblems")
         @Override
         public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
             DbSnowflakeIdGenerator config = SpringUtils.parseAnnotation(DbSnowflakeIdGenerator.class, importingClassMetadata);

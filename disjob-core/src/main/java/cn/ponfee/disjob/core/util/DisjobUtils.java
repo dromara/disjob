@@ -82,6 +82,7 @@ public class DisjobUtils {
             LOG.error(message.get(), t);
         } finally {
             if (isCurrentThreadInterrupted(t)) {
+                LOG.info("Retry interrupted, {}", message.get());
                 ThreadPoolExecutors.commonThreadPool().execute(()-> {
                     try {
                         doInSynchronized(lock, action);

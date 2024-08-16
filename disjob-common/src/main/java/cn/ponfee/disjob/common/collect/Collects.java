@@ -273,12 +273,14 @@ public class Collects {
         return result;
     }
 
+    @SafeVarargs
     public static <K, V> Map<K, V> concat(Map<K, V>... maps) {
         return Arrays.stream(maps)
             .flatMap(e -> e.entrySet().stream())
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     }
 
+    @SafeVarargs
     public static <T> T[] concat(T[] a1, T... a2) {
         if (a1 == null || a1.length == 0) {
             return a2;
@@ -287,6 +289,7 @@ public class Collects {
             return a1;
         }
 
+        // noinspection unchecked
         T[] result = newArray((Class<? extends T[]>) a1.getClass(), a1.length + a2.length);
         System.arraycopy(a1, 0, result, 0, a1.length);
         try {
@@ -299,6 +302,7 @@ public class Collects {
         return result;
     }
 
+    @SafeVarargs
     public static <T> ArrayList<T> asArrayList(T... array) {
         ArrayList<T> list = new ArrayList<>();
         if (array != null && array.length > 0) {
@@ -314,6 +318,7 @@ public class Collects {
     }
 
     public static <T> T[] newArray(Class<? extends T[]> arrayType, int length) {
+        // noinspection unchecked
         return arrayType.equals(Object[].class)
             ? (T[]) new Object[length]
             : (T[]) Array.newInstance(arrayType.getComponentType(), length);

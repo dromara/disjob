@@ -53,6 +53,7 @@ public final class NodePath<T extends Serializable & Comparable<T>>
     }
 
     public NodePath(T[] parent, T child) {
+        // noinspection unchecked
         super(ArrayUtils.addAll(Objects.requireNonNull(parent), child));
     }
 

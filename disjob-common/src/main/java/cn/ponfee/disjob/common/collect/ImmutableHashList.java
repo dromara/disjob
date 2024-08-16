@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
  * @param <V> the val type
  * @author Ponfee
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ImmutableHashList<K extends Comparable<K>, V> {
     private static final ImmutableHashList EMPTY = new ImmutableHashList<>();
 

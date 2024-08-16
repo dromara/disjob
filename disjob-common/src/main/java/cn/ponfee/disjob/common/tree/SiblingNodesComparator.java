@@ -65,6 +65,7 @@ public class SiblingNodesComparator<T extends Serializable & Comparable<T>, A> {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public Comparator get() {
         return comparator;
     }

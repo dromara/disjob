@@ -150,8 +150,8 @@ public final class Snowflake implements IdGenerator {
                 super.wait(offset << 1);
                 timestamp = timeGen();
                 if (timestamp < lastTimestamp) {
-                    String msg = String.format("Clock moved backwards %d ms, wait still backwards %d ms.", offset, (lastTimestamp - timestamp));
-                    throw new ClockMovedBackwardsException(msg);
+                    String format = "Clock moved backwards %d ms, wait still backwards %d ms.";
+                    throw new ClockMovedBackwardsException(String.format(format, offset, (lastTimestamp - timestamp)));
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
