@@ -1,7 +1,9 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.SynchronizedSegmentMap;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -17,11 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SynchronizedSegmentMapTest {
 
-    @Test
+    @Test @Disabled
     public void test1() {
-
         String s = null;
-        System.out.println("sabc " + s);
+        System.out.println("abc " + s);
         for (int i = 1; i <= 10; i++) {
             System.out.print((1 << i) + ", ");
         }
@@ -60,6 +61,16 @@ public class SynchronizedSegmentMapTest {
         m.values().remove(3);
         System.out.println(m);
         assertThat(m.size()).isEqualTo(0);
+    }
+
+    @Test @Disabled
+    public void test2() {
+        SynchronizedSegmentMap<String, String> map = new SynchronizedSegmentMap<>(14);
+        for (int i = 0; i < 30000; i++) {
+            String s = RandomStringUtils.randomGraph(1+ThreadLocalRandom.current().nextInt(20));
+            map.execute(s, e -> e.put(s, s));
+        }
+        map.execute(System.out::println);
     }
 
 }

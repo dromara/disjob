@@ -52,6 +52,7 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         MODIFY_MAXIMUM_POOL_SIZE {
             @Override
             public <T> T parse(String data) {
+                // noinspection unchecked
                 return (T) new Integer(data);
             }
         },
@@ -72,6 +73,7 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         ADD_WORKER {
             @Override
             public <T> T parse(String data) {
+                // noinspection unchecked
                 return (T) data;
             }
         },

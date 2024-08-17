@@ -66,6 +66,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         Void.class
     );
 
+    @SuppressWarnings("rawtypes")
     private static final RedisScript<List> QUERY_SCRIPT = RedisScript.of(
         "redis.call('zremrangebyscore', KEYS[1], '-inf', ARGV[1]);          \n" +
         "local ret = redis.call('zrangebyscore', KEYS[1], ARGV[1], '+inf'); \n" +
@@ -81,11 +82,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      * Registry publish redis message channel
      */
     private final String registryChannel;
-
-    /**
-     * Registry subscribe redis message channel
-     */
-    private final String discoveryChannel;
 
     /**
      * Spring string redis template
@@ -123,7 +119,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
                                   RedisRegistryProperties config) {
         super(config, ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
-        this.discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
         this.periodMs = config.getSessionTimeoutMs() / 3;
@@ -148,14 +143,15 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             .build();
 
         // redis pub/sub
+        String discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.redisMessageListenerContainer = RedisTemplateUtils.createRedisMessageListenerContainer(
             stringRedisTemplate, discoveryChannel, redisSubscribeExecutor, this, "handleMessage");
 
         try {
             doDiscoverServers();
         } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
             close();
+            Threads.interruptIfNecessary(e);
             throw new Error("Redis init discover error.", e);
         }
     }
@@ -190,6 +186,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     @Override
     public List<R> getRegisteredServers() {
+        @SuppressWarnings("unchecked")
         List<String> registryServers = stringRedisTemplate.execute(
             QUERY_SCRIPT, registryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
         );
@@ -211,7 +208,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         ThrowingRunnable.doCaught(redisMessageListenerContainer::stop);
         discoverHeartbeatThread.terminate();
         ThreadPoolExecutors.shutdown(redisSubscribeExecutor, 2);
-        registered.clear();
         super.close();
     }
 
@@ -301,6 +297,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private void doDiscoverServers() throws Throwable {
         RetryTemplate.execute(() -> {
+            @SuppressWarnings("unchecked")
             List<String> discovered = stringRedisTemplate.execute(
                 QUERY_SCRIPT, discoveryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
             );

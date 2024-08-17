@@ -109,7 +109,6 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         }
 
         registered.forEach(this::deregister);
-        registered.clear();
         client.close();
         super.close();
     }

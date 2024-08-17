@@ -148,14 +148,13 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
         keepAliveCheckThread.terminate();
         registered.forEach(this::deregister);
-        registered.clear();
         final CloseableClient keepAlive0 = this.keepAlive;
         if (keepAlive0 != null) {
             ThrowingRunnable.doCaught(keepAlive0::close);
         }
         ThrowingRunnable.doCaught(() -> client.revokeLease(leaseId));
         ThrowingRunnable.doCaught(client::close);
-        ThrowingRunnable.doCaught(super::close);
+        super.close();
     }
 
     // ------------------------------------------------------------------private method

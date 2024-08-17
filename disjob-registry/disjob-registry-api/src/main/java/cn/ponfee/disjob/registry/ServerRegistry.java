@@ -110,7 +110,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      */
     @Override
     public void close() {
-        // No-op
+        registered.clear();
     }
 
     @Override

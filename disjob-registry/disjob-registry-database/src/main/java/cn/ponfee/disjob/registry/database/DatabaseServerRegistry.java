@@ -116,14 +116,14 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         this.discoveryRoleName = discoveryRole.name().toLowerCase();
 
         // heartbeat discover servers
-        this.discoverHeartbeatThread = LoopThread.createStarted("database_discover_heartbeat", periodMs, periodMs, this::discoverServers);
+        this.discoverHeartbeatThread = LoopThread.createStarted("database_discover_heartbeat", periodMs, periodMs, this::doDiscoverServers);
 
         // initialize discover server
         try {
-            discoverServers();
+            doDiscoverServers();
         } catch (Throwable e) {
-            Threads.interruptIfNecessary(e);
             close();
+            Threads.interruptIfNecessary(e);
             throw new Error("Database init discover error.", e);
         }
     }
@@ -203,7 +203,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
         registerHeartbeatThread.terminate();
         registered.forEach(this::deregister);
-        registered.clear();
         discoverHeartbeatThread.terminate();
         super.close();
     }
@@ -231,7 +230,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         }
     }
 
-    private void discoverServers() throws Throwable {
+    private void doDiscoverServers() throws Throwable {
         RetryTemplate.execute(() -> {
             Object[] args = {namespace, discoveryRoleName, System.currentTimeMillis() - sessionTimeoutMs};
             List<String> discovered = jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
