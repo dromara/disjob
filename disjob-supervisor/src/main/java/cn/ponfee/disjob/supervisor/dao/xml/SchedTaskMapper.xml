@@ -74,10 +74,22 @@
     UPDATE <include refid="Table_Name" />
     SET execute_state = 20,
         execute_start_time = IFNULL(execute_start_time, #{executeStartTime,jdbcType=TIMESTAMP}),
-        worker = #{worker,jdbcType=VARCHAR}
+        worker = #{worker,jdbcType=VARCHAR},
+        start_request_id = #{startRequestId,jdbcType=VARCHAR}
     WHERE task_id = #{taskId,jdbcType=BIGINT}
       AND execute_state = 10
   </update>
+
+  <select id="checkStartIdempotent" resultType="_boolean">
+    SELECT EXISTS (
+      SELECT 1
+      FROM <include refid="Table_Name" />
+      WHERE task_id = #{taskId,jdbcType=BIGINT}
+        AND execute_state = 20
+        AND worker = #{worker,jdbcType=VARCHAR}
+        AND start_request_id = #{startRequestId,jdbcType=VARCHAR}
+    )
+  </select>
 
   <update id="terminate">
     UPDATE <include refid="Table_Name" />

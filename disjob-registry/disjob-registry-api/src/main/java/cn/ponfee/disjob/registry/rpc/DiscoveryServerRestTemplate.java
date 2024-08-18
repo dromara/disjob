@@ -82,9 +82,8 @@ final class DiscoveryServerRestTemplate<D extends Server> {
             throw new IllegalStateException("Not found available" + errMsg + discoveryServerRole);
         }
 
-        int serverNumber = servers.size();
-        Map<String, String> authenticationHeaders = null;
         String serverContextPath;
+        Map<String, String> authenticationHeaders = null;
         if (discoveryServerRole == ServerRole.SUPERVISOR) {
             // Worker 远程调用 Supervisor
             serverContextPath = Worker.local().getSupervisorContextPath();
@@ -93,9 +92,10 @@ final class DiscoveryServerRestTemplate<D extends Server> {
             // Supervisor 远程调用 Worker
             serverContextPath = Supervisor.local().getWorkerContextPath(group);
         }
-        int start = ThreadLocalRandom.current().nextInt(serverNumber);
 
         Throwable ex = null;
+        int serverNumber = servers.size();
+        int start = ThreadLocalRandom.current().nextInt(serverNumber);
         for (int i = 0, n = Math.min(serverNumber, retryMaxCount); i <= n; i++) {
             Server server = servers.get((start + i) % serverNumber);
             String url = server.buildHttpUrlPrefix() + Strings.concatPath(serverContextPath, path);

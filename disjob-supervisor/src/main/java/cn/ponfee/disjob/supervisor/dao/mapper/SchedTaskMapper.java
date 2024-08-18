@@ -42,7 +42,12 @@ public interface SchedTaskMapper {
 
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
+              @Param("startRequestId") String startRequestId,
               @Param("executeStartTime") Date executeStartTime);
+
+    boolean checkStartIdempotent(@Param("taskId") long taskId,
+                                 @Param("worker") String worker,
+                                 @Param("startRequestId") String startRequestId);
 
     int terminate(@Param("taskId") long taskId,
                   @Param("worker") String worker,

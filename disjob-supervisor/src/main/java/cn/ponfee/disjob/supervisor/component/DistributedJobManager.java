@@ -207,12 +207,17 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return StartTaskResult, if not null start successfully
      */
     public StartTaskResult startTask(StartTaskParam param) {
+        param.check();
         long instanceId = param.getInstanceId();
         return doInSynchronizedTransaction0(instanceId, param.getWnstanceId(), lockInstanceId -> {
-            log.info("Task trace [{}] starting: {}", param.getTaskId(), param.getWorker());
+            String startRequestId = param.getStartRequestId();
+            log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             Date now = new Date();
-            if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), now))) {
-                return StartTaskResult.failure("Start task failure.");
+            if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startRequestId, now))) {
+                if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startRequestId)) {
+                    return StartTaskResult.failure("Start task failure.");
+                }
+                log.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             }
             if (isNotAffectedRow(instanceMapper.start(instanceId, now))) {
                 SchedInstance instance = instanceMapper.get(instanceId);

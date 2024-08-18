@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.worker.base;
 
+import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
@@ -127,7 +128,7 @@ class WorkerTask {
     }
 
     StartTaskParam toStartTaskParam() {
-        return new StartTaskParam(jobId, wnstanceId, instanceId, taskId, jobType, worker);
+        return new StartTaskParam(jobId, wnstanceId, instanceId, taskId, jobType, worker, UuidUtils.uuid32());
     }
 
     StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {

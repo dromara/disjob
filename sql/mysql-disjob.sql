@@ -125,6 +125,7 @@ CREATE TABLE `sched_task` (
   `execute_state`       TINYINT        UNSIGNED  NOT NULL                               COMMENT '执行状态：10-等待执行；20-正在执行；30-暂停执行；40-执行完成；50-派发失败；51-初始化失败；52-执行失败；53-执行异常；54-执行超时；55-执行冲突(sched_job.collided_strategy=3)；56-广播任务中止；57-手动取消；58-Worker关闭取消；',
   `execute_snapshot`    TEXT                               DEFAULT NULL                 COMMENT '保存的执行快照数据',
   `worker`              VARCHAR(255)                       DEFAULT NULL                 COMMENT '工作进程(JVM进程，GROUP:WORKER-ID:HOST:PORT)',
+  `start_request_id`    VARCHAR(32)                        DEFAULT NULL                 COMMENT 'Start task时的请求ID，用于start请求超时重试幂等',
   dispatch_failed_count TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '任务派发失败的次数(失败次数达到阈值后需要终止)',
   `error_msg`           VARCHAR(2048)                      DEFAULT NULL                 COMMENT '执行错误信息',
   `updated_at`          DATETIME(3)              NOT NULL  DEFAULT CURRENT_TIMESTAMP(3) COMMENT '更新时间' ON UPDATE CURRENT_TIMESTAMP(3),

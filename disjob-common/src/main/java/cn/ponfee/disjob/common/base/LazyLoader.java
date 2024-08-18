@@ -34,6 +34,7 @@ public class LazyLoader<T> implements Supplier<T> {
 
     private final Supplier<T> loader;
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<T> holder;
 
     private LazyLoader(Supplier<T> loader) {
@@ -80,6 +81,7 @@ public class LazyLoader<T> implements Supplier<T> {
     // ------------------------------------------------------------------------private methods
 
     private Optional<T> holder() {
+        // noinspection OptionalAssignedToNull
         if (holder == null) {
             holder = Optional.ofNullable(loader.get());
         }
@@ -103,6 +105,7 @@ public class LazyLoader<T> implements Supplier<T> {
         //enhancer.setCallback(org.springframework.cglib.proxy.Proxy.getInvocationHandler(proxy)); // occur error
         //enhancer.setCallback((org.springframework.cglib.proxy.MethodInterceptor) (beanProxy, method, args, methodProxy) -> method.invoke(lazyLoader.get(), args));
         enhancer.setCallback((InvocationHandler) (beanProxy, method, args) -> method.invoke(lazyLoader.get(), args));
+        // noinspection unchecked
         return (R) enhancer.create();
     }
 

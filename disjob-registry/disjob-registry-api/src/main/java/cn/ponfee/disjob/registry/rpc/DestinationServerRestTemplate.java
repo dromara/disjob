@@ -87,11 +87,10 @@ final class DestinationServerRestTemplate {
      */
     <T> T invoke(Server destinationServer, String path, HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
         Map<String, String> authenticationHeaders = null;
-        Worker.Local localWorker = Worker.local();
-        if (destinationServer instanceof Supervisor && localWorker != null) {
+        if (destinationServer instanceof Supervisor && Worker.local() != null) {
             // 这里可能存在Supervisor-A同时也为Worker-A角色，当Supervisor-A远程调用另一个Supervisor-B，
             // 此时会用Worker-A的身份认证信息去调用Supervisor-B，接收方Supervisor-B也会认为是Worker-A调用过来的，与实际情况不大相符
-            authenticationHeaders = localWorker.createWorkerAuthenticationHeaders();
+            authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
         }
 
         String url = destinationServer.buildHttpUrlPrefix() + path;

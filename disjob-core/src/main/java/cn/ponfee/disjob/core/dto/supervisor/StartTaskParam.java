@@ -22,9 +22,9 @@ import cn.ponfee.disjob.core.enums.JobType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * Start task parameter.
@@ -42,16 +42,24 @@ public class StartTaskParam extends ToJsonString implements Serializable {
     private long instanceId;
     private long taskId;
     private String worker;
+    private String startRequestId;
     private JobType jobType;
 
-    public StartTaskParam(long jobId, Long wnstanceId, long instanceId, long taskId, JobType jobType, Worker worker) {
-        Objects.requireNonNull(worker, "Start task worker param cannot be null.");
+    public StartTaskParam(long jobId, Long wnstanceId, long instanceId, long taskId,
+                          JobType jobType, Worker worker, String startRequestId) {
         this.jobId = jobId;
         this.wnstanceId = wnstanceId;
         this.instanceId = instanceId;
         this.taskId = taskId;
         this.jobType = jobType;
         this.worker = worker.serialize();
+        this.startRequestId = startRequestId;
+    }
+
+    public void check() {
+        Assert.hasText(worker, "Start task worker cannot be empty.");
+        Assert.hasText(startRequestId, "Start request id cannot be empty.");
+        Assert.notNull(jobType, "Job type cannot be empty.");
     }
 
 }

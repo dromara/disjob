@@ -82,12 +82,13 @@ public class DisjobUtils {
             LOG.error(message.get(), t);
         } finally {
             if (isCurrentThreadInterrupted(t)) {
-                LOG.info("Retry interrupted, {}", message.get());
-                ThreadPoolExecutors.commonThreadPool().execute(()-> {
+                boolean interrupted = Thread.currentThread().isInterrupted();
+                LOG.info("Do synchronized retry interrupted {}, {}", interrupted, message.get());
+                ThreadPoolExecutors.commonThreadPool().execute(() -> {
                     try {
                         doInSynchronized(lock, action);
                     } catch (Throwable e) {
-                        LOG.error("Retry error, " + message.get(), e);
+                        LOG.error("Do synchronized retry error, " + message.get(), e);
                     }
                 });
             }
@@ -122,7 +123,7 @@ public class DisjobUtils {
         if (t == null) {
             return false;
         }
-        if (t instanceof ThreadDeath || t instanceof InterruptedException) {
+        if (t instanceof java.lang.ThreadDeath || t instanceof InterruptedException) {
             return true;
         }
         Thread curThread = Thread.currentThread();
