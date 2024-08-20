@@ -58,4 +58,9 @@ public class StopTaskParam extends ToJsonString implements Serializable {
         this.errorMsg = errorMsg;
     }
 
+    public void check() {
+        Assert.hasText(worker, "Stop task worker cannot be blank.");
+        Assert.isTrue(!ExecuteState.Const.PAUSABLE_LIST.contains(toState), () -> "Stop task taget state invalid " + toState);
+    }
+
 }

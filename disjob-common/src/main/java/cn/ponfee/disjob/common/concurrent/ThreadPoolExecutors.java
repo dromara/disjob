@@ -315,7 +315,7 @@ public final class ThreadPoolExecutors {
         final ThreadPoolExecutor threadPool = ThreadPoolExecutors.builder()
             .corePoolSize(poolSize)
             .maximumPoolSize(poolSize)
-            .workQueue(new ArrayBlockingQueue<>(poolSize * 10))
+            .workQueue(new ArrayBlockingQueue<>(poolSize * 20))
             .keepAliveTimeSeconds(600)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
             .threadFactory(NamedThreadFactory.builder().prefix("disjob-common-thread-pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build())

@@ -124,7 +124,7 @@
   <select id="findUnterminatedRetry" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
-    WHERE rnstance_id = #{rnstanceId,jdbcType=BIGINT}
+    WHERE pnstance_id = #{instanceId,jdbcType=BIGINT}
       AND run_type = 3
       AND run_state &lt; 40
   </select>

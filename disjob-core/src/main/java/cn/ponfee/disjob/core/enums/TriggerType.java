@@ -24,7 +24,6 @@ import cn.ponfee.disjob.common.util.Enums;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import cn.ponfee.disjob.core.model.SchedDepend;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
@@ -58,7 +57,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      * Cron expression<br/>
      * Specified date time of cron exp(2021-12-31 23:59:59): 59 59 23 31 12 ? 2021
      */
-    CRON(1, "0/10 * * * * ?", "Cron表达式") {
+    CRON(1, false, "0/10 * * * * ?", "Cron表达式") {
         @Override
         public boolean validate0(String triggerValue) {
             return CronExpression.isValidExpression(triggerValue);
@@ -94,7 +93,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      *
      * @see java.util.Date
      */
-    ONCE(2, "2000-01-01 00:00:00", "指定时间") {
+    ONCE(2, false, "2000-01-01 00:00:00", "指定时间") {
         @Override
         public boolean validate0(String triggerValue) {
             try {
@@ -124,11 +123,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     },
 
     /**
-     * 周期性执行
+     * 指定周期
      *
      * @see DatePeriods
      */
-    PERIOD(3, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}", "固定周期") {
+    PERIOD(3, false, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}", "指定周期") {
         @Override
         public boolean validate0(String triggerValue) {
             try {
@@ -172,9 +171,9 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     },
 
     /**
-     * 固定频率：以上一个任务实例的`计划触发时间`开始计算，在`triggerValue`秒后触发执行下一个任务实例
+     * 指定间隔，如果任务的执行耗时超过间隔时间，则可能会出现当前任务还未执行完(COMPLETED/CANCELED)时，同时开始执行下一个任务
      */
-    FIXED_RATE(4, "60", "固定频率(秒)") {
+    INTERVAL(4, false, "60", "指定间隔(秒)") {
         @Override
         public boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
@@ -198,19 +197,43 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     },
 
     /**
-     * 固定延时：以上一个任务实例`执行完成时间`开始计算，延后`triggerValue`秒后触发执行下一个任务实例
+     * 固定频率：以上一个任务实例的`计划触发时间`开始计算，在`triggerValue`秒后触发执行下一个任务实例
+     * <p>如果任务的执行耗时超过频率时间，则会在当前任务执行完(COMPLETED/CANCELED)后立即执行下一个任务，但不会同时执行
      */
-    FIXED_DELAY(5, "60", "固定延时(秒)") {
+    FIXED_RATE(5, true, "60", "固定频率(秒)") {
         @Override
         public boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date previousCompletedTime) {
+        public Date computeNextTriggerTime(String triggerValue, Date lastTriggerTime) {
+            long rate = Long.parseLong(triggerValue);
+            Assert.isTrue(rate > 0, () -> name() + " invalid trigger value: " + triggerValue);
+            return Dates.plusSeconds(lastTriggerTime, rate);
+        }
+
+        @Override
+        public List<Date> computeNextTriggerTimes(String triggerValue, Date lastTriggerTime, int count) {
+            Assert.isTrue(count == 1, () -> name() + " unsupported compute multiple next trigger time: " + count);
+            return Collections.singletonList(computeNextTriggerTime(triggerValue, lastTriggerTime));
+        }
+    },
+
+    /**
+     * 固定延时：以上一个任务实例`执行完成时间`(COMPLETED/CANCELED)开始计算，延后`triggerValue`秒后触发执行下一个任务实例
+     */
+    FIXED_DELAY(6, true, "60", "固定延时(秒)") {
+        @Override
+        public boolean validate0(String triggerValue) {
+            return Long.parseLong(triggerValue) > 0;
+        }
+
+        @Override
+        public Date computeNextTriggerTime(String triggerValue, Date lastCompletedTime) {
             long delay = Long.parseLong(triggerValue);
             Assert.isTrue(delay > 0, () -> name() + " invalid trigger value: " + triggerValue);
-            return Dates.plusSeconds(previousCompletedTime, delay);
+            return Dates.plusSeconds(lastCompletedTime, delay);
         }
 
         @Override
@@ -223,7 +246,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     /**
      * 任务依赖：依赖父任务执行完再触发执行子任务(trigger_value为父任务job_id，多个逗号分隔)
      */
-    DEPEND(6, "1003164910267351000,1003164910267351001", "任务依赖") {
+    DEPEND(7, false, "1003164910267351000,1003164910267351001", "任务依赖") {
         @Override
         public boolean validate0(String triggerValue) {
             try {
@@ -247,11 +270,13 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     ;
 
     private final int value;
+    private final boolean fixedType;
     private final String example;
     private final String desc;
 
-    TriggerType(int value, String example, String desc) {
+    TriggerType(int value, boolean fixedType, String example, String desc) {
         this.value = value;
+        this.fixedType = fixedType;
         this.example = example;
         this.desc = desc;
     }
@@ -264,6 +289,10 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     @Override
     public String desc() {
         return desc;
+    }
+
+    public boolean isFixedType() {
+        return fixedType;
     }
 
     public String example() {
@@ -286,7 +315,6 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
     public static final class Const {
         private static final Map<Integer, TriggerType> MAPPING = Enums.toMap(TriggerType.class, TriggerType::value);
-        public static final List<TriggerType> FIXED_TYPES = ImmutableList.of(FIXED_RATE, FIXED_DELAY);
     }
 
 }

@@ -185,14 +185,14 @@
       AND is_deleted = 0
   </update>
 
-  <update id="updateFixedDelayNextTriggerTime">
+  <update id="updateFixedNextTriggerTime">
     UPDATE <include refid="Table_Name" />
     SET next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
         version = version+1
     WHERE job_id = #{jobId,jdbcType=BIGINT}
       AND is_deleted = 0
       AND job_state = 1
-      AND trigger_type = 5
+      AND trigger_type IN (5, 6)
       AND last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT}
       AND next_trigger_time = 9223372036854775807
   </update>

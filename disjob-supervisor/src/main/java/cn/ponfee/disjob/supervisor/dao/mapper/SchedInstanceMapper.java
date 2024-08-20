@@ -70,7 +70,7 @@ public interface SchedInstanceMapper {
                                         @Param("expireTime") Date expireTime,
                                         @Param("size") int size);
 
-    List<SchedInstance> findUnterminatedRetry(long rnstanceId);
+    List<SchedInstance> findUnterminatedRetry(long instanceId);
 
     List<SchedInstance> findWorkflowNode(long wnstanceId);
 

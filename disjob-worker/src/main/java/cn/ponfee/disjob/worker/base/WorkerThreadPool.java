@@ -114,7 +114,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
-        this.supervisorRpcClient = supervisorRpcClient;
+        this.supervisorRpcClient = Objects.requireNonNull(supervisorRpcClient);
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());
@@ -138,7 +138,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         if (task.getOperation().isTrigger()) {
             return taskQueue.offerLast(task);
         } else {
-            ThreadPoolExecutors.commonThreadPool().execute(() -> stopTask(task));
+            ThreadPoolExecutors.commonThreadPool().execute(ThrowingRunnable.toCaught(() -> stopTask(task)));
             return true;
         }
     }

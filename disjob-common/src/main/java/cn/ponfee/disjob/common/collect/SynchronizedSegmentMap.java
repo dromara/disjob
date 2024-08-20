@@ -25,6 +25,7 @@ public class SynchronizedSegmentMap<K, V> implements Map<K, V> {
     private final Map<K, V>[] segments;
     private final int mask;
     private final int bits;
+    private final int round;
 
     public SynchronizedSegmentMap() {
         this(16);
@@ -36,6 +37,7 @@ public class SynchronizedSegmentMap<K, V> implements Map<K, V> {
         this.segments = new Map[segmentBucketsFor(buckets)];
         this.mask = segments.length - 1;
         this.bits = Integer.toBinaryString(mask).length();
+        this.round = (Integer.SIZE + bits - 1) / bits;
 
         for (int i = 0; i < segments.length; i++) {
             segments[i] = new HashMap<>();
@@ -164,7 +166,7 @@ public class SynchronizedSegmentMap<K, V> implements Map<K, V> {
     private int calculateIndex(int n) {
         int r = n & mask;
         // 0 ^ x: 不管x是0还是1，结果都是x，所以不用考虑无法整除时最后一轮移位的问题
-        for (int i = 1, j = (Integer.SIZE + bits - 1) / bits; i < j; i++) {
+        for (int i = 1; i < round; i++) {
             r ^= ((n >>> (i * bits)) & mask);
         }
         return r;

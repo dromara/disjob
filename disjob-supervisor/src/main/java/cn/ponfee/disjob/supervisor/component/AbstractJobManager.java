@@ -183,7 +183,7 @@ public abstract class AbstractJobManager {
     public void deleteJob(long jobId) {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
-        if (JobState.ENABLED.equalsValue(job.getJobState())) {
+        if (job.isEnabled()) {
             throw new IllegalStateException("Please disable job before delete this job.");
         }
         assertOneAffectedRow(jobMapper.softDelete(jobId), "Delete sched job fail or conflict.");

@@ -174,7 +174,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      * @return accurate next trigger time milliseconds
      */
     private Long reComputeNextTriggerTime(SchedJob job, Date now) {
-        if (TriggerType.FIXED_DELAY.equalsValue(job.getTriggerType())) {
+        if (TriggerType.of(job.getTriggerType()).isFixedType()) {
             // 固定延时类型不重新计算nextTriggerTime
             return job.obtainNextTriggerTime();
         }
@@ -194,7 +194,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      * @return newly next trigger time milliseconds
      */
     private static Long doComputeNextTriggerTime(SchedJob job, Date now) {
-        if (TriggerType.FIXED_DELAY.equalsValue(job.getTriggerType())) {
+        if (TriggerType.of(job.getTriggerType()).isFixedType()) {
             // 固定延时类型的nextTriggerTime：先更新为long最大值，当任务实例运行完成时去主动计算并更新
             // null值已被用作表示没有下次触发时间
             return Long.MAX_VALUE;
@@ -203,7 +203,11 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     /**
-     * Check is whether block if the next trigger collided
+     * Check is whether block if the next trigger collided.<br/>
+     * 这里没有加锁，有可能会出现：
+     * 1）查数据库时为`WAITING,PAUSED,RUNNING`，但在执行取消时已经是`CANCELED`并且在重试
+     * 2）查数据库时为`CANCELED`并且捞出重试任务`A`，但在执行取消时`A`已经失败，生成一个新的重试任务`B`
+     * 3）...
      *
      * @param job the sched job
      * @param now the now date time
@@ -215,13 +219,11 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         if (CollidedStrategy.CONCURRENT == collidedStrategy || (lastTriggerTime = job.getLastTriggerTime()) == null) {
             return false;
         }
-
         SchedInstance lastInstance = jobQuerier.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE);
         if (lastInstance == null) {
             return false;
         }
 
-        long instanceId = lastInstance.getInstanceId();
         RunState runState = RunState.of(lastInstance.getRunState());
         switch (runState) {
             case COMPLETED:
@@ -230,20 +232,21 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             case PAUSED:
                 return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
             case RUNNING:
-                List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(instanceId);
+                List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(lastInstance.getInstanceId());
                 if (jobManager.hasAliveExecuting(tasks)) {
                     return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
                 } else {
                     // all workers are dead
-                    log.info("All worker dead, terminate collided sched instance: {}", instanceId);
+                    log.info("All worker dead, terminate collided sched instance: {}", lastInstance.getInstanceId());
                     jobManager.cancelInstance(lastInstance.obtainLockInstanceId(), Operation.COLLIDED_CANCEL);
                     return false;
                 }
             case CANCELED:
-                List<SchedInstance> list = jobQuerier.findUnterminatedRetryInstance(instanceId);
+                List<SchedInstance> list = jobQuerier.findUnterminatedRetryInstance(lastInstance.getInstanceId());
                 if (CollectionUtils.isEmpty(list)) {
                     return false;
                 } else {
+                    // Cancel retrying instances
                     return checkBlockCollidedTrigger(job, list, collidedStrategy, now);
                 }
             default:
@@ -252,9 +255,9 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     private boolean checkBlockCollidedTrigger(SchedJob job, List<SchedInstance> instances, CollidedStrategy collidedStrategy, Date now) {
-        if (TriggerType.FIXED_DELAY.equalsValue(job.getTriggerType())) {
-            SchedInstance first = instances.get(0);
-            log.error("Fixed delay trigger type cannot happen run collided: {}, {}", first.obtainRnstanceId(), job.getNextTriggerTime());
+        if (TriggerType.of(job.getTriggerType()).isFixedType()) {
+            Long rnstanceId = instances.get(0).obtainRnstanceId();
+            log.error("Fixed trigger type cannot happen run collided: {}, {}", rnstanceId, job.getNextTriggerTime());
         }
         switch (collidedStrategy) {
             case DISCARD:
@@ -280,7 +283,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 return true;
             case OVERRIDE:
                 // 覆盖执行：先取消上一次的执行
-                instances.forEach(e -> jobManager.cancelInstance(e.obtainLockInstanceId(), Operation.COLLIDED_CANCEL));
+                instances.forEach(e -> jobManager.cancelInstance(e.getInstanceId(), Operation.COLLIDED_CANCEL));
                 return false;
             default:
                 throw new UnsupportedOperationException("Unsupported collided strategy: " + collidedStrategy.name());

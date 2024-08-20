@@ -24,6 +24,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
+import java.beans.Transient;
 import java.util.Date;
 import java.util.Objects;
 
@@ -107,14 +108,14 @@ public class SchedJob extends BaseEntity {
     private Date endTime;
 
     /**
-     * 触发器类型：1-Cron表达式；2-指定时间；3-固定周期；4-固定频率；5-固定延时；6-任务依赖；
+     * 触发器类型：1-Cron表达式；2-指定时间；3-指定周期；4-指定间隔；5-固定频率；6-固定延时；7-任务依赖；
      *
      * @see TriggerType
      */
     private Integer triggerType;
 
     /**
-     * 触发器值(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"DAILY","start":"2018-12-06 00:00:00","step":1}；4-周期秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；
+     * 触发器值(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"MONTHLY","start":"2000-01-01 00:00:00","step":1}；4-间隔秒数；4-频率秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；
      */
     private String triggerValue;
 
@@ -190,6 +191,16 @@ public class SchedJob extends BaseEntity {
      * 创建人
      */
     private String createdBy;
+
+    @Transient
+    public boolean isEnabled() {
+        return JobState.ENABLED.equalsValue(jobState);
+    }
+
+    @Transient
+    public boolean isDisabled() {
+        return JobState.DISABLED.equalsValue(jobState);
+    }
 
     public Long obtainNextTriggerTime() {
         if (nextTriggerTime == null || endTime == null) {

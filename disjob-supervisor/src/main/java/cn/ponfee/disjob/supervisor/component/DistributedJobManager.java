@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.BaseEntity;
@@ -289,10 +290,9 @@ public class DistributedJobManager extends AbstractJobManager {
      * @return {@code true} if stopped task successful
      */
     public boolean stopTask(StopTaskParam param) {
-        Assert.hasText(param.getWorker(), "Stop task worker cannot be blank.");
+        param.check();
         long taskId = param.getTaskId();
         ExecuteState toState = param.getToState();
-        Assert.isTrue(toState != ExecuteState.EXECUTING, () -> "Stop task invalid to state " + toState);
         log.info("Task trace [{}] stopping: {}, {}, {}", taskId, param.getOperation(), param.getToState(), param.getWorker());
         return doInSynchronizedTransaction(param.getInstanceId(), param.getWnstanceId(), instance -> {
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Stop task instance cannot be workflow lead: " + instance);
@@ -342,7 +342,7 @@ public class DistributedJobManager extends AbstractJobManager {
                     updateWorkflowFreeNodeState(instanceMapper.get(instance.getWnstanceId()), tuple.a, RS_RUNNABLE);
                 } else {
                     // non-workflow cancel operation
-                    renewFixedDelayNextTriggerTime(instance);
+                    renewFixedNextTriggerTime(instance);
                 }
             }
 
@@ -558,7 +558,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 updateWorkflowCurNodeState(instance, tuple.a, RS_PAUSABLE);
             } else if (tuple.a.isTerminal()) {
                 instance.markTerminated(tuple.a, tuple.b);
-                renewFixedDelayNextTriggerTime(instance);
+                renewFixedNextTriggerTime(instance);
             }
         } else {
             // has alive executing tasks: dispatch and pause executing tasks
@@ -598,7 +598,7 @@ public class DistributedJobManager extends AbstractJobManager {
             if (instance.isWorkflowNode()) {
                 updateWorkflowCurNodeState(instance, tuple.a, RS_TERMINABLE);
             } else {
-                renewFixedDelayNextTriggerTime(instance);
+                renewFixedNextTriggerTime(instance);
             }
         } else {
             // dispatch and cancel executing tasks
@@ -656,7 +656,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         if (!retried && !instance.isWorkflowNode()) {
-            renewFixedDelayNextTriggerTime(instance);
+            renewFixedNextTriggerTime(instance);
         }
     }
 
@@ -775,7 +775,7 @@ public class DistributedJobManager extends AbstractJobManager {
             assertOneAffectedRow(row, () -> "Update workflow terminal state failed: " + wnstanceId + ", " + state);
             SchedInstance lead = instanceMapper.get(wnstanceId);
             dependJob(lead);
-            renewFixedDelayNextTriggerTime(lead);
+            renewFixedNextTriggerTime(lead);
             return true;
         }
         if (graph.allMatch(e -> e.getValue().isTerminal() || e.getValue().isPaused())) {
@@ -867,7 +867,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private void dependJob0(SchedInstance parent, SchedDepend depend) throws JobException {
         SchedJob childJob = getRequireJob(depend.getChildJobId());
-        if (JobState.DISABLED.equalsValue(childJob.getJobState())) {
+        if (childJob.isDisabled()) {
             log.warn("Depend child job disabled: {}", childJob);
             return;
         }
@@ -960,9 +960,9 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
-    private void renewFixedDelayNextTriggerTime(SchedInstance instance) {
-        Assert.isTrue(instance.isTerminal(), () -> "Renew fixed delay instance must be terminal state: " + instance);
-        Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed delay instance cannot be workflow node: " + instance);
+    private void renewFixedNextTriggerTime(SchedInstance instance) {
+        Assert.isTrue(instance.isTerminal(), () -> "Renew fixed instance must be terminal state: " + instance);
+        Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed instance cannot be workflow node: " + instance);
         long rnstanceId = instance.obtainRnstanceId();
         SchedInstance root = (rnstanceId == instance.getInstanceId()) ? instance : instanceMapper.get(rnstanceId);
         if (!root.getJobId().equals(instance.getJobId()) || !RunType.SCHEDULE.equalsValue(root.getRunType())) {
@@ -970,13 +970,20 @@ public class DistributedJobManager extends AbstractJobManager {
         }
         SchedJob job = jobMapper.get(instance.getJobId());
         TriggerType triggerType;
-        if (job == null || (triggerType = TriggerType.of(job.getTriggerType())) != TriggerType.FIXED_DELAY) {
+        if (job == null || job.isDisabled() || !(triggerType = TriggerType.of(job.getTriggerType())).isFixedType()) {
             return;
         }
         long lastTriggerTime = instance.getTriggerTime();
-        long nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), instance.getRunEndTime()).getTime();
-        boolean updated = isOneAffectedRow(jobMapper.updateFixedDelayNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
-        log.info("Renew fixed delay next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
+        long nextTriggerTime;
+        if (triggerType == TriggerType.FIXED_RATE) {
+            Date time = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(instance.getTriggerTime()));
+            nextTriggerTime = Dates.max(time, instance.getRunEndTime()).getTime();
+        } else {
+            // TriggerType.FIXED_DELAY
+            nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), instance.getRunEndTime()).getTime();
+        }
+        boolean updated = isOneAffectedRow(jobMapper.updateFixedNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
+        log.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
     }
 
 }
