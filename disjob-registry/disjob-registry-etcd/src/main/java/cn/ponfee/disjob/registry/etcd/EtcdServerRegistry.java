@@ -86,9 +86,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             long periodMs = Math.max(ttl / 4, 1) * 1000;
             this.keepAliveCheckThread = LoopThread.createStarted("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
 
-            client.addConnectionStateListener(
-                ConnectionStateListener.<EtcdClient>builder().onConnected(c -> keepAliveRecover()).build()
-            );
+            client.addConnectionStateListener(ConnectionStateListener.<EtcdClient>builder().onConnected(c -> keepAliveRecover()).build());
 
             doRefreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
         } catch (Throwable t) {

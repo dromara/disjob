@@ -48,4 +48,19 @@ public class ConsulRegistryProperties extends AbstractRegistryProperties {
      */
     private String token;
 
+    /**
+     * Check pass period seconds
+     */
+    private int checkPassPeriodSeconds = 3;
+
+    /**
+     * Check ttl seconds
+     */
+    private String checkTtlSeconds = (checkPassPeriodSeconds * 5) + "s";
+
+    /**
+     * Check deregister critical timeout seconds
+     */
+    private String checkDeregisterCriticalTimeoutSeconds = "300s";
+
 }

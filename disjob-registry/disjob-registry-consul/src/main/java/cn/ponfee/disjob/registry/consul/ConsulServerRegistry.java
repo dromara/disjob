@@ -46,11 +46,6 @@ import java.util.stream.Collectors;
  */
 public abstract class ConsulServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
 
-    private static final int WAIT_TIME_SECONDS = 60;
-    private static final int CHECK_PASS_INTERVAL_SECONDS = 2;
-    private static final String CHECK_TTL_SECONDS = (CHECK_PASS_INTERVAL_SECONDS * 8) + "s";
-    private static final String DEREGISTER_TIME_SECONDS = "20s";
-
     /**
      * Consul client
      */
@@ -62,23 +57,34 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     private final String token;
 
     /**
+     * Check ttl seconds
+     */
+    private final String checkTtlSeconds;
+
+    /**
+     * Check deregister critical timeout seconds
+     */
+    private final String checkDeregisterCriticalTimeoutSeconds;
+
+    /**
      * Consul ttl check thread
      */
-    private final LoopThread consulTtlCheckThread;
+    private final LoopThread registryTtlScheduler;
 
-    private final ConsulSubscriberThread consulSubscriberThread;
+    private final DiscoveryWatcher discoveryWatcher;
 
     protected ConsulServerRegistry(ConsulRegistryProperties config) {
         super(config, ':');
 
         this.client = new ConsulClient(config.getHost(), config.getPort());
         this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();
+        this.checkTtlSeconds = config.getCheckTtlSeconds();
+        this.checkDeregisterCriticalTimeoutSeconds = config.getCheckDeregisterCriticalTimeoutSeconds();
 
-        int periodMs = Math.max(CHECK_PASS_INTERVAL_SECONDS, 1) * 1000;
-        this.consulTtlCheckThread = LoopThread.createStarted("consul_ttl_check", periodMs, periodMs, this::checkPass);
+        int periodMs = Math.max(config.getCheckPassPeriodSeconds(), 1) * 1000;
+        this.registryTtlScheduler = LoopThread.createStarted("consul_registry_ttl_scheduler", periodMs, periodMs, this::checkPass);
 
-        this.consulSubscriberThread = new ConsulSubscriberThread(-1);
-        consulSubscriberThread.start();
+        this.discoveryWatcher = new DiscoveryWatcher();
     }
 
     @Override
@@ -139,9 +145,9 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             return;
         }
 
-        consulTtlCheckThread.terminate();
+        registryTtlScheduler.terminate();
         registered.forEach(this::deregister);
-        ThrowingRunnable.doCaught(() -> Threads.stopThread(consulSubscriberThread, 1000));
+        ThrowingRunnable.doCaught(() -> Threads.stopThread(discoveryWatcher, 1000));
         super.close();
     }
 
@@ -169,10 +175,10 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         return service;
     }
 
-    private static NewService.Check createCheck() {
+    private NewService.Check createCheck() {
         NewService.Check check = new NewService.Check();
-        check.setTtl(CHECK_TTL_SECONDS);
-        check.setDeregisterCriticalServiceAfter(DEREGISTER_TIME_SECONDS);
+        check.setTtl(checkTtlSeconds);
+        check.setDeregisterCriticalServiceAfter(checkDeregisterCriticalTimeoutSeconds);
         return check;
     }
 
@@ -190,33 +196,34 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                     client.agentCheckPass("service:" + checkId, null, token);
                 }
                 log.debug("check pass for server: {} with check id {}", server, checkId);
-            } catch (Throwable t) {
-                if ((t instanceof OperationException) && ((OperationException) t).getStatusCode() == 404) {
+            } catch (OperationException e) {
+                if (e.getStatusCode() == 404) {
                     ThrowingRunnable.doCaught(() -> register(server), () -> "Not found server register failed: " + server);
-                    log.warn("Check pass server not found: " + server + ", check id: " + checkId, t);
-                } else {
-                    log.warn("Check pass server failed: " + server + ", check id: " + checkId, t);
                 }
+                log.warn("Check pass server operation exception: " + server + ", check id: " + checkId, e);
+            } catch (Throwable t) {
+                log.error("Check pass server error: " + server + ", check id: " + checkId, t);
             }
         }
     }
 
-    private class ConsulSubscriberThread extends Thread {
-        private long lastConsulIndex;
+    private class DiscoveryWatcher extends Thread {
+        private long lastConsulIndex = -1;
 
-        private ConsulSubscriberThread(long initConsulIndex) {
-            this.lastConsulIndex = initConsulIndex;
+        private DiscoveryWatcher() {
             super.setDaemon(true);
             super.setPriority(Thread.MAX_PRIORITY);
-            super.setName("consul_subscriber_thread");
+            super.setName("consul_discovery_watcher_thread");
             super.setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(log));
+            super.start();
         }
 
         @Override
         public void run() {
             while (state.isRunning()) {
                 try {
-                    Response<List<HealthService>> response = getDiscoveryServers(lastConsulIndex, WAIT_TIME_SECONDS);
+                    Response<List<HealthService>> response = getDiscoveryServers(lastConsulIndex);
+                    // 当有服务register时此处会执行两次，当有服务deregister时此处只会执行一次
                     Long currentIndex = response.getConsulIndex();
                     if (currentIndex != null && currentIndex > lastConsulIndex) {
                         lastConsulIndex = currentIndex;
@@ -245,9 +252,10 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
             refreshDiscoveredServers(servers);
         }
 
-        private Response<List<HealthService>> getDiscoveryServers(long index, long waitTime) {
+        private Response<List<HealthService>> getDiscoveryServers(long index) {
+            long watchTimeoutSeconds = (index == -1) ? 60 : Integer.MAX_VALUE;
             HealthServicesRequest request = HealthServicesRequest.newBuilder()
-                .setQueryParams(new QueryParams(waitTime, index))
+                .setQueryParams(new QueryParams(watchTimeoutSeconds, index))
                 .setPassing(true)
                 .setToken(token)
                 .build();
