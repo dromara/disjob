@@ -159,6 +159,9 @@
       title: '运行状态',
       width: '70',
       formatter: function (value, row, index) {
+        if (row.retrying) {
+          return $.common.sprintf("<span class='badge badge-%s'>%s</span>", "success", "重试中");
+        }
         const label = $.table.selectData(runStates, value, 'value', 'desc');
         return $.common.sprintf("<span class='badge badge-%s'>%s</span>", stateMap[value], label);
       }
@@ -241,9 +244,14 @@
       align: 'center',
       formatter: function (value, row, index) {
         if (row.wnstanceId && row.wnstanceId !== row.instanceId) {
-          // 工作流的非lead实例  ==>  不支持操作
           // return '<a style="pointer-events:none;" href="javascript:;" class="btn btn-default btn-rounded btn-xs disabled"><i class="fa fa-chevron-circle-right"></i> 操作</a>';
-          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="工作流请操作Lead实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
+          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="工作流请操作主实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
+        }
+        if (row.retrying) {
+          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="重试中请操作子实例"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
+        }
+        if (row.runType === 3 && row.runState >= 40) {
+          return '<button disabled class="btn btn-default btn-rounded btn-xs disabled" data-toggle="tooltip" data-placement="left" title="在父实例上操作删除"><i class="fa fa-chevron-circle-right"></i> 操作</button>';
         }
 
         const actions = [];

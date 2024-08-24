@@ -66,11 +66,18 @@ public interface SchedInstanceMapper {
                     @Param("toState") int toState,
                     @Param("fromState") int fromState);
 
+    int updateRetrying(@Param("instanceId") long instanceId,
+                       @Param("retrying") boolean retrying,
+                       @Param("toState") int toState,
+                       @Param("fromState") int fromState);
+
     List<SchedInstance> findExpireState(@Param("runState") int runState,
                                         @Param("expireTime") Date expireTime,
                                         @Param("size") int size);
 
-    List<SchedInstance> findUnterminatedRetry(long instanceId);
+    SchedInstance getRetrying(long instanceId);
+
+    List<SchedInstance> findRunRetry(long instanceId);
 
     List<SchedInstance> findWorkflowNode(long wnstanceId);
 

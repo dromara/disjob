@@ -80,7 +80,12 @@ public class SchedInstance extends BaseEntity {
     /**
      * 唯一标识(保证trigger_time唯一)：0-SCHEDULE/MANUAL；{instance_id}-其它场景；
      */
-    private Long  uniqueFlag;
+    private Long uniqueFlag;
+
+    /**
+     * 是否重试中
+     */
+    private Boolean retrying;
 
     /**
      * 运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；

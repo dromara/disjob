@@ -23,7 +23,6 @@ import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
@@ -34,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 
 import javax.annotation.PreDestroy;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -121,32 +119,31 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 log.warn("Scan job not discovered worker: {}, {}", job.getJobId(), job.getGroup());
                 return;
             }
-
             // 重新再计算一次nextTriggerTime
             job.setNextTriggerTime(reComputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
                 disableJob(job, "Recompute disabled, not next trigger time");
                 return;
-            } else if (job.getNextTriggerTime() > maxNextTriggerTime) {
+            }
+            long triggerTime = job.getNextTriggerTime();
+            if (job.getLastTriggerTime() != null && job.getLastTriggerTime() >= triggerTime) {
+                throw new IllegalArgumentException("Invariable trigger time: " + job.getJobId() + ", " + triggerTime);
+            }
+            if (triggerTime > maxNextTriggerTime) {
                 // 更新next_trigger_time，等待下次扫描
                 jobManager.updateJobNextTriggerTime(job);
                 return;
             }
-
             // check collided with last schedule
-            if (checkBlockCollidedTrigger(job, now)) {
+            if (shouldBlockCollidedTrigger(job, now)) {
                 return;
             }
 
-            long triggerTime = job.getNextTriggerTime();
             refreshNextTriggerTime(job, triggerTime, now);
             jobManager.triggerJob(job, RunType.SCHEDULE, triggerTime);
         } catch (DuplicateKeyException e) {
-            if (jobManager.updateJobNextTriggerTime(job)) {
-                log.info("Conflict trigger time: {}, {}", job, e.getMessage());
-            } else {
-                log.error("Conflict trigger time: {}, {}", job, e.getMessage());
-            }
+            boolean updated = jobManager.updateJobNextTriggerTime(job);
+            log.info("Update conflict next trigger time: {}, {}, {}", updated, job, e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("Scan trigger job failed: " + job, e);
             disableJob(job, StringUtils.truncate("Scan process failed: " + e.getMessage(), REMARK_MAX_LENGTH));
@@ -203,73 +200,56 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     /**
-     * Check is whether block if the next trigger collided.<br/>
-     * 这里没有加锁，有可能会出现：
-     * 1）查数据库时为`WAITING,PAUSED,RUNNING`，但在执行取消时已经是`CANCELED`并且在重试
-     * 2）查数据库时为`CANCELED`并且捞出重试任务`A`，但在执行取消时`A`已经失败，生成一个新的重试任务`B`
+     * <pre>
+     * Check is whether block if the next trigger collided.
+     *
+     * 这里没有加锁，`OVERRIDE`时有可能会出现以下情况：
+     * 1）查数据库时为`WAITING,PAUSED,RUNNING`，但在执行取消时已经是`CANCELED`并且生成了重试实例`A`，导致新实例与`A`并行执行
+     * 2）查数据库时为`CANCELED`并且捞出重试实例`A`，但在执行取消时`A`已经取消，生成一个新的重试实例`B`，导致新实例与`B`并行执行
      * 3）...
+     *
+     * 针对以上情况，后续可以考虑使用异步任务来操作取消上一个实例(last instance)，达到类似数据最终一致性的效果
+     * </pre>
      *
      * @param job the sched job
      * @param now the now date time
      * @return {@code true} will block the next trigger
      */
-    private boolean checkBlockCollidedTrigger(SchedJob job, Date now) {
+    private boolean shouldBlockCollidedTrigger(SchedJob job, Date now) {
         CollidedStrategy collidedStrategy = CollidedStrategy.of(job.getCollidedStrategy());
-        Long lastTriggerTime;
-        if (CollidedStrategy.CONCURRENT == collidedStrategy || (lastTriggerTime = job.getLastTriggerTime()) == null) {
+        Long lastTriggerTime = job.getLastTriggerTime();
+        if (CollidedStrategy.CONCURRENT == collidedStrategy || lastTriggerTime == null) {
             return false;
         }
         SchedInstance lastInstance = jobQuerier.getInstance(job.getJobId(), lastTriggerTime, RunType.SCHEDULE);
-        if (lastInstance == null) {
+        if (lastInstance == null || lastInstance.isCompleted()) {
             return false;
         }
+        if (!RunState.of(lastInstance.getRunState()).isTerminal()) {
+            return shouldBlockCollidedTrigger(job, lastInstance, collidedStrategy, now);
+        }
 
-        RunState runState = RunState.of(lastInstance.getRunState());
-        switch (runState) {
-            case COMPLETED:
-                return false;
-            case WAITING:
-            case PAUSED:
-                return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
-            case RUNNING:
-                List<SchedTask> tasks = jobQuerier.findBaseInstanceTasks(lastInstance.getInstanceId());
-                if (jobManager.hasAliveExecuting(tasks)) {
-                    return checkBlockCollidedTrigger(job, Collections.singletonList(lastInstance), collidedStrategy, now);
-                } else {
-                    // all workers are dead
-                    log.info("All worker dead, terminate collided sched instance: {}", lastInstance.getInstanceId());
-                    jobManager.cancelInstance(lastInstance.obtainLockInstanceId(), Operation.COLLIDED_CANCEL);
-                    return false;
-                }
-            case CANCELED:
-                List<SchedInstance> list = jobQuerier.findUnterminatedRetryInstance(lastInstance.getInstanceId());
-                if (CollectionUtils.isEmpty(list)) {
-                    return false;
-                } else {
-                    // Cancel retrying instances
-                    return checkBlockCollidedTrigger(job, list, collidedStrategy, now);
-                }
-            default:
-                throw new UnsupportedOperationException("Unsupported run state: " + runState.name());
+        // In here, the last instance state is `CANCELED`
+        if (lastInstance.isWorkflow() || !Boolean.TRUE.equals(lastInstance.getRetrying())) {
+            // 工作流(workflow)的重试不在lead实例上：如果`lead instance`为`CANCELED`状态，则表明整个工作流实例已经全部取消了
+            return false;
+        } else {
+            SchedInstance retryingInstance = jobQuerier.getRetryingInstance(lastInstance.getInstanceId());
+            return retryingInstance != null && shouldBlockCollidedTrigger(job, retryingInstance, collidedStrategy, now);
         }
     }
 
-    private boolean checkBlockCollidedTrigger(SchedJob job, List<SchedInstance> instances, CollidedStrategy collidedStrategy, Date now) {
+    private boolean shouldBlockCollidedTrigger(SchedJob job, SchedInstance instance, CollidedStrategy strategy, Date now) {
         if (TriggerType.of(job.getTriggerType()).isFixedType()) {
-            Long rnstanceId = instances.get(0).obtainRnstanceId();
-            log.error("Fixed trigger type cannot happen run collided: {}, {}", rnstanceId, job.getNextTriggerTime());
+            log.error("Fixed trigger type cannot be collided: {}", instance);
         }
-        switch (collidedStrategy) {
+        switch (strategy) {
             case DISCARD:
                 // 丢弃执行：基于当前时间来更新下一次的执行时间
                 Integer misfireStrategy = job.getMisfireStrategy();
-                try {
-                    job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
-                    job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
-                } finally {
-                    // restore
-                    job.setMisfireStrategy(misfireStrategy);
-                }
+                job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
+                job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
+                job.setMisfireStrategy(misfireStrategy);
                 if (job.getNextTriggerTime() == null) {
                     // It has not next triggered time, then stop the job
                     job.setRemark("Collide disabled, not next trigger time.");
@@ -282,11 +262,11 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 updateNextScanTime(job, now, SCAN_COLLIDED_INTERVAL_SECONDS);
                 return true;
             case OVERRIDE:
-                // 覆盖执行：先取消上一次的执行
-                instances.forEach(e -> jobManager.cancelInstance(e.getInstanceId(), Operation.COLLIDED_CANCEL));
+                // 覆盖执行：先取消上一次的执行（或取消上一次的重试实例）
+                jobManager.cancelInstance(instance.getInstanceId(), Operation.COLLIDED_CANCEL);
                 return false;
             default:
-                throw new UnsupportedOperationException("Unsupported collided strategy: " + collidedStrategy.name());
+                throw new UnsupportedOperationException("Unsupported collided strategy: " + strategy);
         }
     }
 

@@ -39,7 +39,7 @@ public class SchedInstancePageRequest extends PageRequest {
     private Integer runState;
     private Date startTime;
     private Date endTime;
-    private boolean parent;
+    private boolean root;
 
     public void authorize(String user, AuthorizeGroupService authorizeGroupService) {
         if (jobId == null && instanceId == null) {

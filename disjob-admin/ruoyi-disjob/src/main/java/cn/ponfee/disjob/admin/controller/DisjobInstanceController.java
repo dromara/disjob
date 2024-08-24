@@ -256,7 +256,7 @@ public class DisjobInstanceController extends BaseController {
         return request;
     }
 
-    private Object queryForPage(SchedInstancePageRequest request, boolean parent, String resetSearch) {
+    private Object queryForPage(SchedInstancePageRequest request, boolean root, String resetSearch) {
         if (StringUtils.isBlank(resetSearch)) {
             return TableDataInfo.empty();
         }
@@ -268,7 +268,7 @@ public class DisjobInstanceController extends BaseController {
             return AjaxResult.error(e.getMessage());
         }
 
-        request.setParent(parent);
+        request.setRoot(root);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
         return PageUtils.toTableDataInfo(openapiService.queryInstanceForPage(request));

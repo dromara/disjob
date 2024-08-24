@@ -6,8 +6,9 @@
 
   <sql id="Base_Column_List">
     instance_id, rnstance_id, pnstance_id, wnstance_id, job_id,
-    trigger_time, run_type, run_state, run_start_time, run_end_time,
-    run_duration, retried_count, next_scan_time, attach, version
+    trigger_time, run_type, is_retrying AS retrying, run_state,
+    run_start_time, run_end_time, run_duration, retried_count,
+    next_scan_time, attach, version
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedInstance" useGeneratedKeys="true">
@@ -87,8 +88,8 @@
   </update>
 
   <!--
-   SELECT ROUND(TIMESTAMPDIFF(MICROSECOND, '2018-05-19 12:54:43.987', '2018-05-19 12:54:43.999') / 1000)
-   SELECT ROUND((UNIX_TIMESTAMP('2018-05-19 12:54:43.999') - UNIX_TIMESTAMP('2018-05-19 12:54:43.987')) * 1000)
+   SELECT ROUND(TIMESTAMPDIFF(MICROSECOND, '2000-01-01 00:00:00.987', '2000-01-01 00:00:00.999') / 1000)
+   SELECT ROUND((UNIX_TIMESTAMP('2000-01-01 00:00:00.999') - UNIX_TIMESTAMP('2000-01-01 00:00:00.987')) * 1000)
   -->
   <update id="terminate">
     UPDATE <include refid="Table_Name" />
@@ -110,6 +111,16 @@
       AND run_state = #{fromState,jdbcType=TINYINT}
   </update>
 
+  <update id="updateRetrying">
+    UPDATE <include refid="Table_Name" />
+    SET is_retrying = #{retrying,javaType=boolean,jdbcType=TINYINT},
+        run_state = #{toState,jdbcType=TINYINT},
+        version = version+1
+    WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+      AND is_retrying = !#{retrying,javaType=boolean,jdbcType=TINYINT}
+      AND run_state = #{fromState,jdbcType=TINYINT}
+  </update>
+
   <select id="findExpireState" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
@@ -121,12 +132,20 @@
     LIMIT #{size}
   </select>
 
-  <select id="findUnterminatedRetry" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <!-- 在同一个时间点，只会存在一个重试实例(没有加唯一索引限制，只能由代码逻辑来保证) -->
+  <select id="getRetrying" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE pnstance_id = #{instanceId,jdbcType=BIGINT}
       AND run_type = 3
       AND run_state &lt; 40
+  </select>
+
+  <select id="findRunRetry" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+    SELECT <include refid="Base_Column_List"/>
+    FROM <include refid="Table_Name" />
+    WHERE pnstance_id = #{instanceId,jdbcType=BIGINT}
+      AND run_type = 3
   </select>
 
   <select id="findWorkflowNode" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
@@ -199,6 +218,9 @@
       <if test="instanceId != null">
         AND instance_id = #{instanceId}
       </if>
+      <if test="root and instanceId == null">
+        AND rnstance_id IS NULL
+      </if>
       <if test="runType != null">
         AND run_type = #{runType}
       </if>
@@ -210,9 +232,6 @@
       </if>
       <if test="endTime != null">
         AND trigger_time &lt;= #{endTime.time,javaType=_long}
-      </if>
-      <if test="parent">
-        AND pnstance_id IS NULL
       </if>
     </where>
   </sql>

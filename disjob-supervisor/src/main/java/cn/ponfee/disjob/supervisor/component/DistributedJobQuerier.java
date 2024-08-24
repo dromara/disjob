@@ -103,8 +103,8 @@ public class DistributedJobQuerier {
         return instanceMapper.findExpireState(RunState.RUNNING.value(), expireTime, size);
     }
 
-    public List<SchedInstance> findUnterminatedRetryInstance(long rnstanceId) {
-        return instanceMapper.findUnterminatedRetry(rnstanceId);
+    public SchedInstance getRetryingInstance(long instanceId) {
+        return instanceMapper.getRetrying(instanceId);
     }
 
     public List<SchedTask> findBaseInstanceTasks(long instanceId) {
@@ -134,7 +134,13 @@ public class DistributedJobQuerier {
             SchedJobConverter.INSTANCE::convert
         );
 
-        if (pageRequest.isParent()) {
+        if (pageRequest.isRoot()) {
+            if (pageRequest.getInstanceId() != null) {
+                pageResponse.forEachRow(e -> {
+                    e.setRnstanceId(null);
+                    e.setPnstanceId(null);
+                });
+            }
             fillIsTreeLeaf(pageResponse.getRows());
         }
         return pageResponse;

@@ -165,7 +165,7 @@ public class SynchronizedSegmentMap<K, V> implements Map<K, V> {
 
     private int calculateIndex(int n) {
         int r = n & mask;
-        // 0 ^ x: 不管x是0还是1，结果都是x，所以不用考虑无法整除时最后一轮移位的问题
+        // 0 ^ x: 无论x是0还是1，结果都是x，所以不用考虑无法整除时最后一轮移位的问题
         for (int i = 1; i < round; i++) {
             r ^= ((n >>> (i * bits)) & mask);
         }

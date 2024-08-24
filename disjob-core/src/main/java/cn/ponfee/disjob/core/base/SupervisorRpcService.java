@@ -38,7 +38,7 @@ public interface SupervisorRpcService {
     @PostMapping("/task/start")
     StartTaskResult startTask(StartTaskParam param) throws Exception;
 
-    @PostMapping("/task_worker/update")
+    @PostMapping("/task/worker/update")
     void updateTaskWorker(String worker, List<Long> taskIds) throws Exception;
 
     @PostMapping("/task/stop")

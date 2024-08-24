@@ -90,6 +90,7 @@ CREATE TABLE `sched_instance` (
   `trigger_time`        BIGINT         UNSIGNED  NOT NULL                               COMMENT '触发时间(毫秒时间戳)',
   `run_type`            TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '运行类型：1-SCHEDULE；2-DEPEND；3-RETRY；4-MANUAL(手动触发)；',
   `unique_flag`         BIGINT         UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '唯一标识(保证trigger_time唯一)：0-SCHEDULE/MANUAL；{instance_id}-其它场景；',
+  `is_retrying`         TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '是否重试中：0-否；1-是；',
   `run_state`           TINYINT        UNSIGNED  NOT NULL                               COMMENT '运行状态：10-待运行；20-运行中；30-已暂停；40-已完成；50-已取消；',
   `run_start_time`      DATETIME(3)                        DEFAULT NULL                 COMMENT '运行开始时间',
   `run_end_time`        DATETIME(3)                        DEFAULT NULL                 COMMENT '运行结束时间',

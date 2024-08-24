@@ -276,8 +276,15 @@ public class DistributedJobManager extends AbstractJobManager {
                     assertHasAffectedRow(row, () -> "Delete workflow task failed: " + nodeInstance);
                 }
             } else {
-                assertOneAffectedRow(instanceMapper.deleteByInstanceId(instanceId), () -> "Delete instance failed: " + instanceId);
-                assertHasAffectedRow(taskMapper.deleteByInstanceId(instanceId), () -> "Delete task failed: " + instanceId);
+                Assert.isTrue(!instance.getRetrying(), () -> "Cannot delete retrying original instance.");
+                Assert.isTrue(!instance.isRunRetry(), () -> "Cannot delete run retry sub instance.");
+                Set<Long> instanceIds = instanceMapper.findRunRetry(instanceId)
+                    .stream().map(SchedInstance::getInstanceId).collect(Collectors.toSet());
+                instanceIds.add(instanceId);
+                for (Long id : instanceIds) {
+                    assertOneAffectedRow(instanceMapper.deleteByInstanceId(id), () -> "Delete instance failed: " + id);
+                    assertHasAffectedRow(taskMapper.deleteByInstanceId(id), () -> "Delete task failed: " + id);
+                }
             }
             log.info("Delete sched instance success {}", instanceId);
         });
@@ -336,12 +343,11 @@ public class DistributedJobManager extends AbstractJobManager {
                     // trigger operation
                     afterTerminateTask(instance);
                 } else if (instance.isWorkflowNode()) {
-                    // workflow cancel operation
                     Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid workflow non-trigger stop state: " + tuple.a);
                     updateWorkflowCurNodeState(instance, tuple.a, RS_TERMINABLE);
                     updateWorkflowFreeNodeState(instanceMapper.get(instance.getWnstanceId()), tuple.a, RS_RUNNABLE);
                 } else {
-                    // non-workflow cancel operation
+                    Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid general non-trigger stop state: " + tuple.a);
                     renewFixedNextTriggerTime(instance);
                 }
             }
@@ -383,6 +389,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 String worker = e.isExecuting() ? Strings.requireNonBlank(e.getWorker()) : null;
                 taskMapper.terminate(e.getTaskId(), worker, ExecuteState.EXECUTE_TIMEOUT.value(), e.getExecuteState(), new Date(), null);
             });
+
             instance.markTerminated(tuple.a, tuple.b);
             afterTerminateTask(instance);
             log.warn("Purge instance {} to state {}", instanceId, tuple.a);
@@ -644,19 +651,16 @@ public class DistributedJobManager extends AbstractJobManager {
         Assert.isTrue(!instance.isWorkflowLead(), () -> "After terminate task cannot be workflow lead: " + instance);
         RunState runState = RunState.of(instance.getRunState());
 
-        boolean retried = false;
         if (runState == RunState.CANCELED) {
-            retried = retryJob(instance);
+            retryJob(instance);
         } else if (runState == RunState.COMPLETED) {
-            completeRetryOriginalInstanceState(instance);
+            if (!instance.isWorkflowNode()) {
+                renewFixedNextTriggerTime(instance);
+            }
             processWorkflowInstance(instance);
             dependJob(instance);
         } else {
             throw new IllegalStateException("Unknown terminate run state " + runState);
-        }
-
-        if (!retried && !instance.isWorkflowNode()) {
-            renewFixedNextTriggerTime(instance);
         }
     }
 
@@ -667,6 +671,9 @@ public class DistributedJobManager extends AbstractJobManager {
         String curNode = node.parseAttach().getCurNode();
         int row = workflowMapper.update(node.getWnstanceId(), curNode, toState.value(), null, fromStates, node.getInstanceId());
         assertHasAffectedRow(row, () -> "Update workflow state failed: " + node + ", " + toState);
+        if (toState.isTerminal()) {
+            stopRetrying(node, toState);
+        }
     }
 
     private void updateWorkflowFreeNodeState(SchedInstance lead, RunState toState, List<Integer> fromStates) {
@@ -789,21 +796,26 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------other methods
 
-    private boolean retryJob(SchedInstance prev) {
-        boolean retried = Boolean.TRUE.equals(ThrowingSupplier.doCaught(() -> retryJob0(prev)));
-        if (!retried && prev.isWorkflowNode()) {
+    private void retryJob(SchedInstance prev) {
+        Long retryingInstanceId = ThrowingSupplier.doCaught(() -> retryJob0(prev));
+        if (retryingInstanceId != null) {
+            startRetrying(prev);
+            return;
+        }
+        if (prev.isWorkflowNode()) {
             // If workflow without retry, then require update workflow graph state
             updateWorkflowCurNodeState(prev, RunState.CANCELED, RS_TERMINABLE);
             updateWorkflowFreeNodeState(instanceMapper.get(prev.getWnstanceId()), RunState.CANCELED, RS_RUNNABLE);
+        } else {
+            renewFixedNextTriggerTime(prev);
         }
-        return retried;
     }
 
-    private boolean retryJob0(SchedInstance prev) throws JobException {
+    private Long retryJob0(SchedInstance prev) throws JobException {
         SchedJob job = getRequireJob(prev.getJobId());
         int retriedCount = prev.obtainRetriedCount();
         if (!job.retryable(RunState.of(prev.getRunState()), retriedCount)) {
-            return false;
+            return null;
         }
 
         // build retry instance
@@ -835,7 +847,7 @@ public class DistributedJobManager extends AbstractJobManager {
         );
         TransactionUtils.doAfterTransactionCommit(dispatchAction);
 
-        return true;
+        return retryInstanceId;
     }
 
     private List<SchedTask> splitRetryTask(SchedJob job, SchedInstance prev, long instanceId) throws JobException {
@@ -952,35 +964,49 @@ public class DistributedJobManager extends AbstractJobManager {
         });
     }
 
-    private void completeRetryOriginalInstanceState(SchedInstance instance) {
+    private void startRetrying(SchedInstance instance) {
+        if (!instance.isRunRetry()) {
+            int state = RunState.CANCELED.value();
+            if (isNotAffectedRow(instanceMapper.updateRetrying(instance.getInstanceId(), true, state, state))) {
+                throw new IllegalStateException("Start retrying failed: " + instance);
+            }
+        }
+    }
+
+    private void stopRetrying(SchedInstance instance, RunState toState) {
         if (instance.isRunRetry()) {
-            long instanceId = instance.obtainRetryOriginalInstanceId();
-            boolean updated = isOneAffectedRow(instanceMapper.updateState(instanceId, RunState.COMPLETED.value(), RunState.CANCELED.value()));
-            log.info("Updated retry instance state to completed: {}, {}, {}", instanceId, instance.getInstanceId(), updated);
+            long id = instance.obtainRetryOriginalInstanceId();
+            if (isNotAffectedRow(instanceMapper.updateRetrying(id, false, toState.value(), RunState.CANCELED.value()))) {
+                throw new IllegalStateException("Stop retrying failed: " + toState + ", " + instance);
+            }
         }
     }
 
     private void renewFixedNextTriggerTime(SchedInstance instance) {
         Assert.isTrue(instance.isTerminal(), () -> "Renew fixed instance must be terminal state: " + instance);
         Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed instance cannot be workflow node: " + instance);
-        long rnstanceId = instance.obtainRnstanceId();
-        SchedInstance root = (rnstanceId == instance.getInstanceId()) ? instance : instanceMapper.get(rnstanceId);
-        if (!root.getJobId().equals(instance.getJobId()) || !RunType.SCHEDULE.equalsValue(root.getRunType())) {
+
+        if (instance.isRunRetry()) {
+            stopRetrying(instance, RunState.of(instance.getRunState()));
+        }
+
+        long instanceId = instance.obtainRetryOriginalInstanceId();
+        SchedInstance original = (instanceId == instance.getInstanceId()) ? instance : instanceMapper.get(instanceId);
+        if (!original.getJobId().equals(instance.getJobId()) || !RunType.SCHEDULE.equalsValue(original.getRunType())) {
             return;
         }
-        SchedJob job = jobMapper.get(instance.getJobId());
+        SchedJob job = jobMapper.get(original.getJobId());
         TriggerType triggerType;
         if (job == null || job.isDisabled() || !(triggerType = TriggerType.of(job.getTriggerType())).isFixedType()) {
             return;
         }
-        long lastTriggerTime = instance.getTriggerTime();
-        long nextTriggerTime;
+        long lastTriggerTime = original.getTriggerTime(), nextTriggerTime;
         if (triggerType == TriggerType.FIXED_RATE) {
-            Date time = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(instance.getTriggerTime()));
-            nextTriggerTime = Dates.max(time, instance.getRunEndTime()).getTime();
+            Date time = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(original.getTriggerTime()));
+            nextTriggerTime = Dates.max(time, original.getRunEndTime()).getTime();
         } else {
             // TriggerType.FIXED_DELAY
-            nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), instance.getRunEndTime()).getTime();
+            nextTriggerTime = triggerType.computeNextTriggerTime(job.getTriggerValue(), original.getRunEndTime()).getTime();
         }
         boolean updated = isOneAffectedRow(jobMapper.updateFixedNextTriggerTime(job.getJobId(), lastTriggerTime, nextTriggerTime));
         log.info("Renew fixed next trigger time: {}, {}, {}, {}", job.getJobId(), lastTriggerTime, nextTriggerTime, updated);
