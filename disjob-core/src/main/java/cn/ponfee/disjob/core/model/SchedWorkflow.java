@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.core.model;
 
 import cn.ponfee.disjob.common.dag.DAGEdge;
+import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.core.enums.RunState;
 import lombok.Getter;
@@ -72,6 +73,14 @@ public class SchedWorkflow extends BaseEntity {
 
     public DAGEdge toEdge() {
         return DAGEdge.of(preNode, curNode);
+    }
+
+    public DAGNode parseCurNode() {
+        return DAGNode.fromString(curNode);
+    }
+
+    public DAGNode parsePreNode() {
+        return DAGNode.fromString(preNode);
     }
 
     @Transient

@@ -48,10 +48,7 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvok
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
-import cn.ponfee.disjob.supervisor.instance.GeneralInstanceCreator;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
-import cn.ponfee.disjob.supervisor.instance.TriggerInstanceCreator;
-import cn.ponfee.disjob.supervisor.instance.WorkflowInstanceCreator;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -100,6 +97,7 @@ public class DistributedJobManager extends AbstractJobManager {
     private final SchedTaskMapper taskMapper;
     private final SchedWorkflowMapper workflowMapper;
     private final TransactionTemplate transactionTemplate;
+    private final TriggerInstance.Creator triggerInstanceCreator;
 
     public DistributedJobManager(SupervisorProperties conf,
                                  SchedJobMapper jobMapper,
@@ -118,6 +116,7 @@ public class DistributedJobManager extends AbstractJobManager {
         this.taskMapper = taskMapper;
         this.workflowMapper = workflowMapper;
         this.transactionTemplate = transactionTemplate;
+        this.triggerInstanceCreator = new TriggerInstance.Creator(this, workflowMapper, instanceMapper, taskMapper);
     }
 
     /**
@@ -162,13 +161,13 @@ public class DistributedJobManager extends AbstractJobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void triggerJob(SchedJob job, RunType runType, long triggerTime) throws JobException {
         Assert.isTrue(runType.isUniqueFlag(), () -> "Job run type must be unique flag mode: " + job);
-        TriggerInstanceCreator<TriggerInstance> creator = TriggerInstanceCreator.of(job.getJobType(), this);
-        TriggerInstance tInstance = creator.create(job, runType, triggerTime);
-        // If SCHEDULE, must be update job next trigger time
-        if (runType != RunType.SCHEDULE || hasAffectedRow(jobMapper.updateNextTriggerTime(job))) {
-            saveInstanceAndTasks(tInstance);
-            TransactionUtils.doAfterTransactionCommit(() -> creator.dispatch(job, tInstance));
+        if (runType == RunType.SCHEDULE && isNotAffectedRow(jobMapper.updateNextTriggerTime(job))) {
+            // If SCHEDULE, must be update job next trigger time
+            return;
         }
+        TriggerInstance triggerInstance = triggerInstanceCreator.create(job, null, runType, triggerTime);
+        triggerInstance.save();
+        TransactionUtils.doAfterTransactionCommit(triggerInstance::dispatch);
     }
 
     /**
@@ -512,23 +511,6 @@ public class DistributedJobManager extends AbstractJobManager {
         return states.stream().anyMatch(ExecuteState.Const.PAUSABLE_LIST::contains) ? null : Tuple2.of(RunState.PAUSED, null);
     }
 
-    private void saveInstanceAndTasks(TriggerInstance tInstance) {
-        instanceMapper.insert(tInstance.getInstance().fillUniqueFlag());
-        if (tInstance instanceof GeneralInstanceCreator.GeneralInstance) {
-            GeneralInstanceCreator.GeneralInstance creator = (GeneralInstanceCreator.GeneralInstance) tInstance;
-            Collects.batchProcess(creator.getTasks(), taskMapper::batchInsert, PROCESS_BATCH_SIZE);
-        } else if (tInstance instanceof WorkflowInstanceCreator.WorkflowInstance) {
-            WorkflowInstanceCreator.WorkflowInstance creator = (WorkflowInstanceCreator.WorkflowInstance) tInstance;
-            Collects.batchProcess(creator.getWorkflows(), workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
-            for (Tuple2<SchedInstance, List<SchedTask>> sub : creator.getNodeInstances()) {
-                instanceMapper.insert(sub.a.fillUniqueFlag());
-                Collects.batchProcess(sub.b, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
-            }
-        } else {
-            throw new UnsupportedOperationException("Unknown instance creator type: " + tInstance.getClass());
-        }
-    }
-
     private void pauseInstance(SchedInstance instance) {
         if (instance.isWorkflow()) {
             long instanceId = instance.getInstanceId();
@@ -627,7 +609,7 @@ public class DistributedJobManager extends AbstractJobManager {
                     updateWorkflowCurNodeState(nodeInstance, RunState.RUNNING, RS_PAUSED);
                 }
             }
-            WorkflowGraph graph = new WorkflowGraph(workflowMapper.findByWnstanceId(instanceId));
+            WorkflowGraph graph = WorkflowGraph.of(workflowMapper.findByWnstanceId(instanceId));
             ThrowingRunnable.doChecked(() -> processWorkflowNode(instance, graph, graph.map()));
         } else {
             resumeInstance0(instance);
@@ -680,7 +662,7 @@ public class DistributedJobManager extends AbstractJobManager {
         Assert.isTrue(lead.isWorkflowLead(), () -> "Update workflow free node state must be lead: " + lead);
         long wnstanceId = lead.getWnstanceId();
         workflowMapper.update(wnstanceId, null, toState.value(), null, fromStates, null);
-        updateWorkflowStopState(wnstanceId, new WorkflowGraph(workflowMapper.findByWnstanceId(wnstanceId)));
+        updateWorkflowStopState(wnstanceId, WorkflowGraph.of(workflowMapper.findByWnstanceId(wnstanceId)));
     }
 
     private void processWorkflowInstance(SchedInstance node) {
@@ -692,13 +674,13 @@ public class DistributedJobManager extends AbstractJobManager {
 
         // if terminal all, then update workflow nodes
         long wnstanceId = node.getWnstanceId();
-        WorkflowGraph graph = new WorkflowGraph(workflowMapper.findByWnstanceId(wnstanceId));
+        WorkflowGraph graph = WorkflowGraph.of(workflowMapper.findByWnstanceId(wnstanceId));
         if (updateWorkflowStopState(wnstanceId, graph)) {
             return;
         }
 
         // process next workflow node
-        Map<DAGEdge, SchedWorkflow> map = graph.successors(node.parseAttach().parseCurrentNode());
+        Map<DAGEdge, SchedWorkflow> map = graph.successors(node.parseAttach().parseCurNode());
         SchedInstance lead = instanceMapper.get(wnstanceId);
         // 使用嵌套事务：保证`processWorkflowNode`方法内部数据操作的原子性，异常则回滚而不影响外层事务
         TransactionUtils.doInNestedTransaction(
@@ -748,11 +730,9 @@ public class DistributedJobManager extends AbstractJobManager {
         long nextInstanceId = generateId();
         List<SchedTask> tasks = splitJob(SplitJobParam.from(job, target.getName()), nextInstanceId);
         RunType runType = RunType.of(lead.getRunType());
-        SchedWorkflow pre = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
-        SchedInstance nextInstance = SchedInstance.create(nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
-        nextInstance.setRnstanceId(wnstanceId);
-        nextInstance.setPnstanceId(pre == null ? null : instanceMapper.get(pre.getInstanceId()).obtainRetryOriginalInstanceId());
-        nextInstance.setWnstanceId(wnstanceId);
+        SchedWorkflow predecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
+        SchedInstance parent = (predecessor == null) ? lead : instanceMapper.get(predecessor.getInstanceId());
+        SchedInstance nextInstance = SchedInstance.create(parent, nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
         nextInstance.setAttach(new InstanceAttach(workflow.getCurNode()).toJson());
 
         int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), RunState.RUNNING.value(), nextInstanceId, RS_WAITING, null);
@@ -821,10 +801,7 @@ public class DistributedJobManager extends AbstractJobManager {
         // build retry instance
         long triggerTime = job.computeRetryTriggerTime(++retriedCount);
         long retryInstanceId = generateId();
-        SchedInstance retryInstance = SchedInstance.create(retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
-        retryInstance.setRnstanceId(prev.obtainRnstanceId());
-        retryInstance.setPnstanceId(prev.obtainRetryOriginalInstanceId());
-        retryInstance.setWnstanceId(prev.getWnstanceId());
+        SchedInstance retryInstance = SchedInstance.create(prev, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
         retryInstance.setAttach(prev.getAttach());
         // build retry tasks
         List<SchedTask> tasks = splitRetryTask(job, prev, retryInstanceId);
@@ -884,18 +861,11 @@ public class DistributedJobManager extends AbstractJobManager {
             return;
         }
 
-        TriggerInstanceCreator<TriggerInstance> creator = TriggerInstanceCreator.of(childJob.getJobType(), this);
-        TriggerInstance tInstance = creator.create(childJob, RunType.DEPEND, System.currentTimeMillis());
-        tInstance.getInstance().setRnstanceId(parent.obtainRnstanceId());
-        tInstance.getInstance().setPnstanceId(parent.obtainRetryOriginalInstanceId());
-
-        // 使用嵌套事务：保证`saveInstanceAndTasks`方法内部数据操作的原子性，异常则回滚而不影响外层事务
+        // 使用嵌套事务：保证`save`方法内部数据操作的原子性，异常则回滚而不影响外层事务
+        TriggerInstance triggerInstance = triggerInstanceCreator.create(childJob, parent, RunType.DEPEND, System.currentTimeMillis());
         Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
             transactionTemplate.getTransactionManager(),
-            () -> {
-                saveInstanceAndTasks(tInstance);
-                return () -> creator.dispatch(childJob, tInstance);
-            },
+            () -> { triggerInstance.save(); return triggerInstance::dispatch; },
             t -> log.error("Create depend instance failed: " + childJob + ", " + parent, t)
         );
         TransactionUtils.doAfterTransactionCommit(dispatchAction);
@@ -940,13 +910,12 @@ public class DistributedJobManager extends AbstractJobManager {
     private List<PredecessorInstance> findPredecessorInstances(long jobId, long wnstanceId, long curInstanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
         SchedWorkflow curWorkflow = Collects.findAny(workflows, e -> Objects.equals(curInstanceId, e.getInstanceId()));
-        if (curWorkflow == null || DAGNode.fromString(curWorkflow.getPreNode()).isStart()) {
+        if (curWorkflow == null || curWorkflow.parsePreNode().isStart()) {
             return null;
         }
 
         RetryType jobRetryType = RetryType.of(getRequireJob(jobId).getRetryType());
-        DAGNode curNode = DAGNode.fromString(curWorkflow.getCurNode());
-        return Collects.convert(new WorkflowGraph(workflows).predecessors(curNode).values(), e -> {
+        return Collects.convert(WorkflowGraph.of(workflows).predecessors(curWorkflow.parseCurNode()).values(), e -> {
             // predecessor instance下的task是全部执行成功的
             List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId(), null);
             SchedInstance pre;
@@ -985,7 +954,6 @@ public class DistributedJobManager extends AbstractJobManager {
     private void renewFixedNextTriggerTime(SchedInstance instance) {
         Assert.isTrue(instance.isTerminal(), () -> "Renew fixed instance must be terminal state: " + instance);
         Assert.isTrue(!instance.isWorkflowNode(), () -> "Renew fixed instance cannot be workflow node: " + instance);
-
         if (instance.isRunRetry()) {
             stopRetrying(instance, RunState.of(instance.getRunState()));
         }

@@ -136,10 +136,7 @@ public class DistributedJobQuerier {
 
         if (pageRequest.isRoot()) {
             if (pageRequest.getInstanceId() != null) {
-                pageResponse.forEachRow(e -> {
-                    e.setRnstanceId(null);
-                    e.setPnstanceId(null);
-                });
+                pageResponse.forEachRow(e -> e.setPnstanceId(null));
             }
             fillIsTreeLeaf(pageResponse.getRows());
         }

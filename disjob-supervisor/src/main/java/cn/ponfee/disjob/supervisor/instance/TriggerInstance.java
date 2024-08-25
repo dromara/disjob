@@ -16,20 +16,74 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
+import cn.ponfee.disjob.core.enums.JobType;
+import cn.ponfee.disjob.core.enums.RunType;
+import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.model.SchedInstance;
-import lombok.Getter;
+import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.component.AbstractJobManager;
+import cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper;
+import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
+import cn.ponfee.disjob.supervisor.dao.mapper.SchedWorkflowMapper;
 
 /**
- * Trigger instance
+ * Abstract trigger instance
  *
  * @author Ponfee
  */
-@Getter
 public abstract class TriggerInstance {
 
-    private final SchedInstance instance;
+    protected final Creator c;
+    protected final SchedJob job;
 
-    protected TriggerInstance(SchedInstance instance) {
-        this.instance = instance;
+    protected SchedInstance instance;
+
+    protected TriggerInstance(Creator creator, SchedJob job) {
+        this.c = creator;
+        this.job = job;
     }
+
+    /**
+     * Creates instance and tasks
+     *
+     * @param parent      the parent instance
+     * @param runType     the run type
+     * @param triggerTime the trigger time
+     * @throws JobException if split task occur JobException
+     */
+    protected abstract void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException;
+
+    public abstract void save();
+
+    public abstract void dispatch();
+
+    public static class Creator {
+        final AbstractJobManager jobManager;
+        final SchedWorkflowMapper workflowMapper;
+        final SchedInstanceMapper instanceMapper;
+        final SchedTaskMapper taskMapper;
+
+        public Creator(AbstractJobManager jobManager, SchedWorkflowMapper workflowMapper,
+                       SchedInstanceMapper instanceMapper, SchedTaskMapper taskMapper) {
+            this.jobManager = jobManager;
+            this.workflowMapper = workflowMapper;
+            this.instanceMapper = instanceMapper;
+            this.taskMapper = taskMapper;
+        }
+
+        public TriggerInstance create(SchedJob job, SchedInstance parent, RunType runType, long triggerTime) throws JobException {
+            TriggerInstance triggerInstance;
+            JobType jobType = JobType.of(job.getJobType());
+            if (jobType == JobType.GENERAL) {
+                triggerInstance = new GeneralInstance(this, job);
+            } else if (jobType == JobType.WORKFLOW) {
+                triggerInstance = new WorkflowInstance(this, job);
+            } else {
+                throw new UnsupportedOperationException("Unknown job type: " + jobType);
+            }
+            triggerInstance.create(parent, runType, triggerTime);
+            return triggerInstance;
+        }
+    }
+
 }

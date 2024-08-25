@@ -171,7 +171,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
                 return job.getJobExecutor();
             }
 
-            String curJobExecutor = instance.parseAttach().parseCurrentNode().getName();
+            String curJobExecutor = instance.parseAttach().parseCurNode().getName();
             Assert.hasText(curJobExecutor, () -> "Curr node job executor cannot be empty: " + instance.getInstanceId());
             return curJobExecutor;
         }

@@ -131,9 +131,16 @@ public class SchedInstance extends BaseEntity {
      */
     private Integer version;
 
+    public static SchedInstance create(SchedInstance parent, long instanceId,
+                                       long jobId, RunType runType, long triggerTime, int retriedCount) {
+        return create(parent, parent.getWnstanceId(), instanceId, jobId, runType, triggerTime, retriedCount);
+    }
+
     /**
      * Creates sched instance
      *
+     * @param parent       the parent instance
+     * @param wnstanceId   the workflow instance id
      * @param instanceId   the instance id
      * @param jobId        the job id
      * @param runType      the run type
@@ -141,20 +148,24 @@ public class SchedInstance extends BaseEntity {
      * @param retriedCount the retried count
      * @return SchedInstance
      */
-    public static SchedInstance create(long instanceId, long jobId, RunType runType,
-                                       long triggerTime, int retriedCount) {
+    public static SchedInstance create(SchedInstance parent, Long wnstanceId, long instanceId,
+                                       long jobId, RunType runType, long triggerTime, int retriedCount) {
+        Long rnstanceId = null, pnstanceId = null;
+        if (parent != null) {
+            rnstanceId = parent.obtainRnstanceId();
+            pnstanceId = parent.obtainRetryOriginalInstanceId();
+        }
         SchedInstance instance = new SchedInstance();
         instance.setInstanceId(instanceId);
+        instance.setRnstanceId(rnstanceId);
+        instance.setPnstanceId(pnstanceId);
+        instance.setWnstanceId(wnstanceId);
         instance.setJobId(jobId);
         instance.setRunType(runType.value());
         instance.setTriggerTime(triggerTime);
         instance.setRetriedCount(retriedCount);
         instance.setRunState(RunState.WAITING.value());
         return instance;
-    }
-
-    public long obtainLockInstanceId() {
-        return wnstanceId != null ? wnstanceId : instanceId;
     }
 
     /**

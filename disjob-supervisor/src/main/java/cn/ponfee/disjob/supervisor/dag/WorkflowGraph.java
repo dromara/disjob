@@ -47,9 +47,13 @@ public class WorkflowGraph {
     private final Map<DAGEdge, SchedWorkflow> map;
     private final Graph<DAGNode> graph;
 
-    public WorkflowGraph(List<SchedWorkflow> workflows) {
+    private WorkflowGraph(List<SchedWorkflow> workflows) {
         this.map = buildMap(workflows);
         this.graph = buildGraph(workflows);
+    }
+
+    public static WorkflowGraph of(List<SchedWorkflow> workflows) {
+        return new WorkflowGraph(workflows);
     }
 
     public Map<DAGEdge, SchedWorkflow> predecessors(DAGNode node) {
@@ -101,7 +105,7 @@ public class WorkflowGraph {
     private static Graph<DAGNode> buildGraph(List<SchedWorkflow> workflows) {
         ImmutableGraph.Builder<DAGNode> builder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
         for (SchedWorkflow edge : workflows) {
-            builder.putEdge(DAGNode.fromString(edge.getPreNode()), DAGNode.fromString(edge.getCurNode()));
+            builder.putEdge(edge.parsePreNode(), edge.parseCurNode());
         }
         return builder.build();
     }

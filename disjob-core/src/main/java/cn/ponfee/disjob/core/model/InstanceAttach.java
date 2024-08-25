@@ -45,7 +45,7 @@ public class InstanceAttach extends ToJsonString implements Serializable {
         this.curNode = curNode;
     }
 
-    public DAGNode parseCurrentNode() {
+    public DAGNode parseCurNode() {
         if (StringUtils.isBlank(curNode)) {
             return null;
         }
