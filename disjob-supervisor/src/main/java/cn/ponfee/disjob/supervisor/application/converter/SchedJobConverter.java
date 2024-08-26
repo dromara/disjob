@@ -25,6 +25,7 @@ import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 /**
@@ -43,8 +44,10 @@ public interface SchedJobConverter {
 
     SchedJobResponse convert(SchedJob source);
 
+    @Mapping(target = "runDuration", expression = "java( CommonMapper.timeDuration(source.getRunStartTime(),source.getRunEndTime()) )")
     SchedInstanceResponse convert(SchedInstance source);
 
+    @Mapping(target = "executeDuration", expression = "java( CommonMapper.timeDuration(source.getExecuteStartTime(),source.getExecuteEndTime()) )")
     SchedTaskResponse convert(SchedTask source);
 
 }

@@ -105,11 +105,6 @@ public class SchedInstance extends BaseEntity {
     private Date runEndTime;
 
     /**
-     * 运行时长(毫秒)
-     */
-    private Long runDuration;
-
-    /**
      * 已重试的次数(the maximum value is sched_job.retry_count)
      */
     private Integer retriedCount;

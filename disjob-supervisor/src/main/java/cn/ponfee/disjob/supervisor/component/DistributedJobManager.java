@@ -236,60 +236,6 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     /**
-     * Force change instance state
-     *
-     * @param instanceId     the instance id, unsupported workflow
-     * @param toExecuteState the target execute state
-     */
-    public void changeInstanceState(long instanceId, ExecuteState toExecuteState) {
-        Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, () -> "Force change state invalid target: " + toExecuteState);
-        Assert.isNull(instanceMapper.getWnstanceId(instanceId), () -> "Force change state unsupported workflow: " + instanceId);
-        doInSynchronizedTransaction(instanceId, null, instance -> {
-            RunState fromRunState = RunState.of(instance.getRunState());
-            RunState toRunState = toExecuteState.runState();
-            Assert.isTrue(fromRunState != RunState.RUNNING, "Force change state current cannot be RUNNING.");
-            Assert.isTrue(fromRunState != toRunState, () -> "Force change state current cannot equals target " + toRunState);
-
-            if (isNotAffectedRow(instanceMapper.updateState(instanceId, toRunState.value(), fromRunState.value()))) {
-                throw new IllegalStateException("Force change state failed: " + instanceId);
-            }
-            int changedTaskRows = taskMapper.forceChangeState(instanceId, toExecuteState.value());
-            if (toExecuteState == ExecuteState.WAITING) {
-                Tuple3<SchedJob, SchedInstance, List<SchedTask>> tuple = buildDispatchParam(instanceId, changedTaskRows);
-                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(tuple.a, tuple.b, tuple.c));
-            }
-            log.info("Force change state success {}, {}", instanceId, toExecuteState);
-        });
-    }
-
-    public void deleteInstance(long instanceId) {
-        doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
-            Assert.isTrue(instance.isTerminal(), () -> "Deleting instance must be terminal: " + instance);
-            if (instance.isWorkflow()) {
-                Assert.isTrue(instance.isWorkflowLead(), () -> "Delete workflow instance must be lead: " + instanceId);
-                List<SchedInstance> nodeInstances = instanceMapper.findWorkflowNode(instanceId);
-                assertHasAffectedRow(instanceMapper.deleteByWnstanceId(instanceId), () -> "Delete workflow instance failed: " + instanceId);
-                assertHasAffectedRow(workflowMapper.deleteByWnstanceId(instanceId), () -> "Delete workflow config failed: " + instanceId);
-                for (SchedInstance nodeInstance : nodeInstances) {
-                    int row = taskMapper.deleteByInstanceId(nodeInstance.getInstanceId());
-                    assertHasAffectedRow(row, () -> "Delete workflow task failed: " + nodeInstance);
-                }
-            } else {
-                Assert.isTrue(!instance.getRetrying(), () -> "Cannot delete retrying original instance.");
-                Assert.isTrue(!instance.isRunRetry(), () -> "Cannot delete run retry sub instance.");
-                Set<Long> instanceIds = instanceMapper.findRunRetry(instanceId)
-                    .stream().map(SchedInstance::getInstanceId).collect(Collectors.toSet());
-                instanceIds.add(instanceId);
-                for (Long id : instanceIds) {
-                    assertOneAffectedRow(instanceMapper.deleteByInstanceId(id), () -> "Delete instance failed: " + id);
-                    assertHasAffectedRow(taskMapper.deleteByInstanceId(id), () -> "Delete task failed: " + id);
-                }
-            }
-            log.info("Delete sched instance success {}", instanceId);
-        });
-    }
-
-    /**
      * Stop task
      *
      * @param param the stop task param
@@ -343,8 +289,8 @@ public class DistributedJobManager extends AbstractJobManager {
                     afterTerminateTask(instance);
                 } else if (instance.isWorkflowNode()) {
                     Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid workflow non-trigger stop state: " + tuple.a);
-                    updateWorkflowCurNodeState(instance, tuple.a, RS_TERMINABLE);
-                    updateWorkflowFreeNodeState(instanceMapper.get(instance.getWnstanceId()), tuple.a, RS_RUNNABLE);
+                    updateWorkflowNodeState(instance, tuple.a, RS_TERMINABLE);
+                    updateWorkflowLeadState(instanceMapper.get(instance.getWnstanceId()), tuple.a, RS_RUNNABLE);
                 } else {
                     Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid general non-trigger stop state: " + tuple.a);
                     renewFixedNextTriggerTime(instance);
@@ -352,6 +298,60 @@ public class DistributedJobManager extends AbstractJobManager {
             }
 
             return true;
+        });
+    }
+
+    /**
+     * Force change instance state
+     *
+     * @param instanceId     the instance id, unsupported workflow
+     * @param toExecuteState the target execute state
+     */
+    public void changeInstanceState(long instanceId, ExecuteState toExecuteState) {
+        Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, () -> "Force change state invalid target: " + toExecuteState);
+        Assert.isNull(instanceMapper.getWnstanceId(instanceId), () -> "Force change state unsupported workflow: " + instanceId);
+        doInSynchronizedTransaction(instanceId, null, instance -> {
+            RunState fromRunState = RunState.of(instance.getRunState());
+            RunState toRunState = toExecuteState.runState();
+            Assert.isTrue(fromRunState != RunState.RUNNING, "Force change state current cannot be RUNNING.");
+            Assert.isTrue(fromRunState != toRunState, () -> "Force change state current cannot equals target " + toRunState);
+
+            if (isNotAffectedRow(instanceMapper.updateState(instanceId, toRunState.value(), fromRunState.value()))) {
+                throw new IllegalStateException("Force change state failed: " + instanceId);
+            }
+            int changedTaskRows = taskMapper.forceChangeState(instanceId, toExecuteState.value());
+            if (toExecuteState == ExecuteState.WAITING) {
+                Tuple3<SchedJob, SchedInstance, List<SchedTask>> tuple = buildDispatchParam(instanceId, changedTaskRows);
+                TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(tuple.a, tuple.b, tuple.c));
+            }
+            log.info("Force change state success {}, {}", instanceId, toExecuteState);
+        });
+    }
+
+    public void deleteInstance(long instanceId) {
+        doInSynchronizedTransaction(instanceId, requireWnstanceIdIfWorkflow(instanceId), instance -> {
+            Assert.isTrue(instance.isTerminal(), () -> "Deleting instance must be terminal: " + instance);
+            if (instance.isWorkflow()) {
+                Assert.isTrue(instance.isWorkflowLead(), () -> "Delete workflow instance must be lead: " + instanceId);
+                List<SchedInstance> nodeInstances = instanceMapper.findWorkflowNode(instanceId);
+                assertHasAffectedRow(instanceMapper.deleteByWnstanceId(instanceId), () -> "Delete workflow instance failed: " + instanceId);
+                assertHasAffectedRow(workflowMapper.deleteByWnstanceId(instanceId), () -> "Delete workflow config failed: " + instanceId);
+                for (SchedInstance nodeInstance : nodeInstances) {
+                    int row = taskMapper.deleteByInstanceId(nodeInstance.getInstanceId());
+                    assertHasAffectedRow(row, () -> "Delete workflow task failed: " + nodeInstance);
+                }
+            } else {
+                Assert.isTrue(!instance.getRetrying(), () -> "Cannot delete retrying original instance.");
+                Assert.isTrue(!instance.isRunRetry(), () -> "Cannot delete run retry sub instance.");
+                Set<Long> instanceIds = instanceMapper.findRunRetry(instanceId)
+                    .stream().map(SchedInstance::getInstanceId).collect(Collectors.toSet());
+                instanceIds.add(instanceId);
+                for (Long id : instanceIds) {
+                    assertOneAffectedRow(instanceMapper.deleteByInstanceId(id), () -> "Delete instance failed: " + id);
+                    assertHasAffectedRow(taskMapper.deleteByInstanceId(id), () -> "Delete task failed: " + id);
+                }
+            }
+            log.info("Delete sched instance success {}", instanceId);
         });
     }
 
@@ -520,7 +520,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 .stream()
                 .filter(e -> RS_PAUSABLE.contains(e.getRunState()))
                 .forEach(this::pauseInstance0);
-            updateWorkflowFreeNodeState(instance, RunState.PAUSED, RS_WAITING);
+            updateWorkflowLeadState(instance, RunState.PAUSED, RS_WAITING);
         } else {
             pauseInstance0(instance);
         }
@@ -544,7 +544,7 @@ public class DistributedJobManager extends AbstractJobManager {
             int row = instanceMapper.terminate(instanceId, tuple.a.value(), RS_PAUSABLE, tuple.b);
             assertOneAffectedRow(row, () -> "Pause instance failed: " + instance + ", " + tuple.a);
             if (instance.isWorkflowNode()) {
-                updateWorkflowCurNodeState(instance, tuple.a, RS_PAUSABLE);
+                updateWorkflowNodeState(instance, tuple.a, RS_PAUSABLE);
             } else if (tuple.a.isTerminal()) {
                 instance.markTerminated(tuple.a, tuple.b);
                 renewFixedNextTriggerTime(instance);
@@ -560,7 +560,7 @@ public class DistributedJobManager extends AbstractJobManager {
             long instanceId = instance.getInstanceId();
             Assert.isTrue(instance.isWorkflowLead(), () -> "Cancel instance must be workflow lead: " + instanceId);
             instanceMapper.findWorkflowNode(instanceId).stream().filter(e -> !e.isTerminal()).forEach(e -> cancelInstance0(e, ops));
-            updateWorkflowFreeNodeState(instance, RunState.CANCELED, RS_RUNNABLE);
+            updateWorkflowLeadState(instance, RunState.CANCELED, RS_RUNNABLE);
         } else {
             cancelInstance0(instance, ops);
         }
@@ -585,7 +585,7 @@ public class DistributedJobManager extends AbstractJobManager {
             assertOneAffectedRow(row, () -> "Cancel instance failed: " + instance);
             instance.markTerminated(tuple.a, tuple.b);
             if (instance.isWorkflowNode()) {
-                updateWorkflowCurNodeState(instance, tuple.a, RS_TERMINABLE);
+                updateWorkflowNodeState(instance, tuple.a, RS_TERMINABLE);
             } else {
                 renewFixedNextTriggerTime(instance);
             }
@@ -606,11 +606,11 @@ public class DistributedJobManager extends AbstractJobManager {
             for (SchedInstance nodeInstance : instanceMapper.findWorkflowNode(instanceId)) {
                 if (nodeInstance.isPaused()) {
                     resumeInstance0(nodeInstance);
-                    updateWorkflowCurNodeState(nodeInstance, RunState.RUNNING, RS_PAUSED);
+                    updateWorkflowNodeState(nodeInstance, RunState.RUNNING, RS_PAUSED);
                 }
             }
             WorkflowGraph graph = WorkflowGraph.of(workflowMapper.findByWnstanceId(instanceId));
-            ThrowingRunnable.doChecked(() -> processWorkflowNode(instance, graph, graph.map()));
+            ThrowingRunnable.doChecked(() -> processWorkflowGraph(instance, graph, graph.map()));
         } else {
             resumeInstance0(instance);
         }
@@ -648,7 +648,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------workflow methods
 
-    private void updateWorkflowCurNodeState(SchedInstance node, RunState toState, List<Integer> fromStates) {
+    private void updateWorkflowNodeState(SchedInstance node, RunState toState, List<Integer> fromStates) {
         Assert.isTrue(node.isWorkflowNode(), () -> "Update workflow cur node state must be node: " + node);
         String curNode = node.parseAttach().getCurNode();
         int row = workflowMapper.update(node.getWnstanceId(), curNode, toState.value(), null, fromStates, node.getInstanceId());
@@ -658,11 +658,11 @@ public class DistributedJobManager extends AbstractJobManager {
         }
     }
 
-    private void updateWorkflowFreeNodeState(SchedInstance lead, RunState toState, List<Integer> fromStates) {
+    private void updateWorkflowLeadState(SchedInstance lead, RunState toState, List<Integer> fromStates) {
         Assert.isTrue(lead.isWorkflowLead(), () -> "Update workflow free node state must be lead: " + lead);
         long wnstanceId = lead.getWnstanceId();
         workflowMapper.update(wnstanceId, null, toState.value(), null, fromStates, null);
-        updateWorkflowStopState(wnstanceId, WorkflowGraph.of(workflowMapper.findByWnstanceId(wnstanceId)));
+        stopWorkflowGraph(wnstanceId, WorkflowGraph.of(workflowMapper.findByWnstanceId(wnstanceId)));
     }
 
     private void processWorkflowInstance(SchedInstance node) {
@@ -670,12 +670,12 @@ public class DistributedJobManager extends AbstractJobManager {
             return;
         }
         // update current node state
-        updateWorkflowCurNodeState(node, RunState.COMPLETED, RS_TERMINABLE);
+        updateWorkflowNodeState(node, RunState.COMPLETED, RS_TERMINABLE);
 
         // if terminal all, then update workflow nodes
         long wnstanceId = node.getWnstanceId();
         WorkflowGraph graph = WorkflowGraph.of(workflowMapper.findByWnstanceId(wnstanceId));
-        if (updateWorkflowStopState(wnstanceId, graph)) {
+        if (stopWorkflowGraph(wnstanceId, graph)) {
             return;
         }
 
@@ -685,16 +685,16 @@ public class DistributedJobManager extends AbstractJobManager {
         // 使用嵌套事务：保证`processWorkflowNode`方法内部数据操作的原子性，异常则回滚而不影响外层事务
         TransactionUtils.doInNestedTransaction(
             transactionTemplate.getTransactionManager(),
-            () -> processWorkflowNode(lead, graph, map),
+            () -> processWorkflowGraph(lead, graph, map),
             t -> {
                 log.error("Process workflow node error: " + node, t);
-                updateWorkflowFreeNodeState(lead, RunState.CANCELED, RS_RUNNABLE);
+                updateWorkflowLeadState(lead, RunState.CANCELED, RS_RUNNABLE);
             }
         );
     }
 
-    private void processWorkflowNode(SchedInstance lead, WorkflowGraph graph,
-                                     Map<DAGEdge, SchedWorkflow> map) throws JobException {
+    private void processWorkflowGraph(SchedInstance lead, WorkflowGraph graph,
+                                      Map<DAGEdge, SchedWorkflow> map) throws JobException {
         Assert.isTrue(lead.isWorkflowLead(), () -> "Process workflow node must be lead: " + lead);
         if (map.isEmpty()) {
             return;
@@ -702,12 +702,12 @@ public class DistributedJobManager extends AbstractJobManager {
         SchedJob job = getRequireJob(lead.getJobId());
         Set<DAGNode> duplicates = new HashSet<>();
         for (Map.Entry<DAGEdge, SchedWorkflow> edge : map.entrySet()) {
-            processWorkflowNode0(job, lead, graph, duplicates, edge);
+            processWorkflowGraph0(job, lead, graph, duplicates, edge);
         }
     }
 
-    private void processWorkflowNode0(SchedJob job, SchedInstance lead, WorkflowGraph graph,
-                                      Set<DAGNode> duplicates, Map.Entry<DAGEdge, SchedWorkflow> edge) throws JobException {
+    private void processWorkflowGraph0(SchedJob job, SchedInstance lead, WorkflowGraph graph,
+                                       Set<DAGNode> duplicates, Map.Entry<DAGEdge, SchedWorkflow> edge) throws JobException {
         long wnstanceId = lead.getWnstanceId();
         DAGNode target = edge.getKey().getTarget();
         SchedWorkflow workflow = edge.getValue();
@@ -739,12 +739,11 @@ public class DistributedJobManager extends AbstractJobManager {
         assertHasAffectedRow(row, () -> "Start workflow node failed: " + workflow);
 
         // save to db
-        instanceMapper.insert(nextInstance.fillUniqueFlag());
-        Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
+        triggerInstanceCreator.saveInstanceAndTasks(nextInstance, tasks);
         TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, nextInstance, tasks));
     }
 
-    private boolean updateWorkflowStopState(long wnstanceId, WorkflowGraph graph) {
+    private boolean stopWorkflowGraph(long wnstanceId, WorkflowGraph graph) {
         if (graph.anyMatch(e -> e.getKey().getTarget().isEnd() && !e.getValue().isTerminal())) {
             // if end node is not terminal state, then process the end node run state
             Map<DAGEdge, SchedWorkflow> ends = graph.predecessors(DAGNode.END);
@@ -784,8 +783,8 @@ public class DistributedJobManager extends AbstractJobManager {
         }
         if (prev.isWorkflowNode()) {
             // If workflow without retry, then require update workflow graph state
-            updateWorkflowCurNodeState(prev, RunState.CANCELED, RS_TERMINABLE);
-            updateWorkflowFreeNodeState(instanceMapper.get(prev.getWnstanceId()), RunState.CANCELED, RS_RUNNABLE);
+            updateWorkflowNodeState(prev, RunState.CANCELED, RS_TERMINABLE);
+            updateWorkflowLeadState(instanceMapper.get(prev.getWnstanceId()), RunState.CANCELED, RS_RUNNABLE);
         } else {
             renewFixedNextTriggerTime(prev);
         }
@@ -799,8 +798,8 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         // build retry instance
-        long triggerTime = job.computeRetryTriggerTime(++retriedCount);
         long retryInstanceId = generateId();
+        long triggerTime = job.computeRetryTriggerTime(++retriedCount);
         SchedInstance retryInstance = SchedInstance.create(prev, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
         retryInstance.setAttach(prev.getAttach());
         // build retry tasks
@@ -816,8 +815,7 @@ public class DistributedJobManager extends AbstractJobManager {
                     int row = workflowMapper.update(prev.getWnstanceId(), curNode, null, retryInstanceId, RS_RUNNING, prev.getInstanceId());
                     assertHasAffectedRow(row, () -> "Retry instance, workflow node update failed.");
                 }
-                instanceMapper.insert(retryInstance.fillUniqueFlag());
-                Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
+                triggerInstanceCreator.saveInstanceAndTasks(retryInstance, tasks);
                 return () -> super.dispatch(job, retryInstance, tasks);
             },
             t -> { throw new IllegalStateException("Retry instance, create retry instance fail: " + prev, t); }
@@ -862,10 +860,10 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         // 使用嵌套事务：保证`save`方法内部数据操作的原子性，异常则回滚而不影响外层事务
-        TriggerInstance triggerInstance = triggerInstanceCreator.create(childJob, parent, RunType.DEPEND, System.currentTimeMillis());
+        TriggerInstance dependInstance = triggerInstanceCreator.create(childJob, parent, RunType.DEPEND, System.currentTimeMillis());
         Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
             transactionTemplate.getTransactionManager(),
-            () -> { triggerInstance.save(); return triggerInstance::dispatch; },
+            () -> { dependInstance.save(); return dependInstance::dispatch; },
             t -> log.error("Create depend instance failed: " + childJob + ", " + parent, t)
         );
         TransactionUtils.doAfterTransactionCommit(dispatchAction);
@@ -914,12 +912,12 @@ public class DistributedJobManager extends AbstractJobManager {
             return null;
         }
 
-        RetryType jobRetryType = RetryType.of(getRequireJob(jobId).getRetryType());
+        RetryType retryType = RetryType.of(getRequireJob(jobId).getRetryType());
         return Collects.convert(WorkflowGraph.of(workflows).predecessors(curWorkflow.parseCurNode()).values(), e -> {
             // predecessor instance下的task是全部执行成功的
             List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId(), null);
             SchedInstance pre;
-            if (jobRetryType == RetryType.FAILED && (pre = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
+            if (retryType == RetryType.FAILED && (pre = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
                 Set<Long> instanceIds = instanceMapper.findChildren(pre.getPnstanceId(), RunType.RETRY.value())
                     .stream()
                     .map(SchedInstance::getInstanceId)

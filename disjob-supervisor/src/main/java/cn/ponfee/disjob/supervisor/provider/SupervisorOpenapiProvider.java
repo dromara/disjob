@@ -50,8 +50,7 @@ public class SupervisorOpenapiProvider extends BaseController {
     private final OpenapiService openapiService;
     private final AuthorizeGroupService authorizeGroupService;
 
-    public SupervisorOpenapiProvider(OpenapiService openapiService,
-                                     AuthorizeGroupService authorizeGroupService) {
+    public SupervisorOpenapiProvider(OpenapiService openapiService, AuthorizeGroupService authorizeGroupService) {
         this.openapiService = openapiService;
         this.authorizeGroupService = authorizeGroupService;
     }

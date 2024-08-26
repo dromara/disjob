@@ -17,13 +17,17 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.date.DatePeriods;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
+import cn.ponfee.disjob.core.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,6 +52,17 @@ public class TriggerValueTest {
         int num = 30 * 86400 * 1000;
         Assertions.assertTrue(num < 0);
         Assertions.assertEquals(365, TimeUnit.DAYS.toMillis(365) / (1000 * 86400));
+    }
+
+    @Test
+    public void testDuration() {
+        Date start = Dates.toDate("2000-01-01 01:02:03.456", Dates.DATEFULL_PATTERN);
+        Date end = Dates.toDate("2000-01-01 01:02:04.123", Dates.DATEFULL_PATTERN);
+        SchedInstance schedInstance = new SchedInstance();
+        schedInstance.setRunStartTime(start);
+        schedInstance.setRunEndTime(end);
+        System.out.println(SchedJobConverter.INSTANCE.convert(schedInstance).getRunDuration());
+        Assertions.assertEquals(667, SchedJobConverter.INSTANCE.convert(schedInstance).getRunDuration());
     }
 
 }

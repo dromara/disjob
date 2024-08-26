@@ -135,7 +135,7 @@ class WorkerTask {
         return new StopTaskParam(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
     }
 
-    public ExecutionTask toExecutionTask(StartTaskResult source) {
+    ExecutionTask toExecutionTask(StartTaskResult source) {
         if (source == null) {
             return null;
         }

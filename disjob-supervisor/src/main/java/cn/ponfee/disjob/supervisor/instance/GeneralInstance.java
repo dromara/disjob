@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -25,8 +24,6 @@ import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
 
 import java.util.List;
-
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
 /**
  * General instance
@@ -37,26 +34,25 @@ public class GeneralInstance extends TriggerInstance {
 
     private List<SchedTask> tasks;
 
-    public GeneralInstance(Creator creator, SchedJob job) {
+    protected GeneralInstance(Creator creator, SchedJob job) {
         super(creator, job);
     }
 
     @Override
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
-        long instanceId = c.jobManager.generateId();
+        long instanceId = creator.jobManager.generateId();
         super.instance = SchedInstance.create(parent, null, instanceId, job.getJobId(), runType, triggerTime, 0);
-        this.tasks = c.jobManager.splitJob(SplitJobParam.from(job, job.getJobExecutor()), instanceId);
+        this.tasks = creator.jobManager.splitJob(SplitJobParam.from(job, job.getJobExecutor()), instanceId);
     }
 
     @Override
     public void save() {
-        c.instanceMapper.insert(instance.fillUniqueFlag());
-        Collects.batchProcess(tasks, c.taskMapper::batchInsert, PROCESS_BATCH_SIZE);
+        creator.saveInstanceAndTasks(instance, tasks);
     }
 
     @Override
     public void dispatch() {
-        c.jobManager.dispatch(job, instance, tasks);
+        creator.jobManager.dispatch(job, instance, tasks);
     }
 
 }

@@ -189,17 +189,12 @@ public class ConsistentHash<T> {
         }
 
         SortedMap<Integer, VirtualNode> tailMap = ring.tailMap(hashFunction.hash(key));
-        VirtualNode virtualNode = tailMap.isEmpty()
-                                ? ring.firstEntry().getValue()
-                                : ring.get(tailMap.firstKey());
+        VirtualNode virtualNode = tailMap.isEmpty() ? ring.firstEntry().getValue() : ring.get(tailMap.firstKey());
         return virtualNode.physicalNode;
     }
 
     public int getExistingReplicas(T pNode) {
-        return (int) ring.entrySet()
-                         .stream()
-                         .filter(e -> e.getValue().isVirtualNodeOf(pNode))
-                         .count();
+        return (int) ring.entrySet().stream().filter(e -> e.getValue().isVirtualNodeOf(pNode)).count();
     }
 
 }

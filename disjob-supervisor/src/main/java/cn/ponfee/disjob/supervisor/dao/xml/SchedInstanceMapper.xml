@@ -7,8 +7,8 @@
   <sql id="Base_Column_List">
     instance_id, rnstance_id, pnstance_id, wnstance_id, job_id,
     trigger_time, run_type, is_retrying AS retrying, run_state,
-    run_start_time, run_end_time, run_duration, retried_count,
-    next_scan_time, attach, version
+    run_start_time, run_end_time, retried_count, next_scan_time,
+    attach, version
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedInstance" useGeneratedKeys="true">
@@ -95,8 +95,7 @@
     UPDATE <include refid="Table_Name" />
     SET run_state = #{toState,jdbcType=TINYINT},
       <if test="runEndTime != null">
-        run_end_time = IF(run_start_time IS NULL, NULL, #{runEndTime,jdbcType=TIMESTAMP}),
-        run_duration = ROUND(TIMESTAMPDIFF(MICROSECOND, run_start_time, #{runEndTime,jdbcType=TIMESTAMP}) / 1000),
+        run_end_time = #{runEndTime,jdbcType=TIMESTAMP},
       </if>
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}

@@ -41,4 +41,11 @@ public class CommonMapper {
         }
     }
 
+    public static Long timeDuration(Date startTime, Date endTime) {
+        if (startTime == null || endTime == null) {
+            return null;
+        }
+        return endTime.getTime() - startTime.getTime();
+    }
+
 }

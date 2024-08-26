@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGExpressionParser;
 import cn.ponfee.disjob.common.dag.DAGNode;
@@ -35,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
-
 /**
  * Workflow instance
  *
@@ -45,15 +42,15 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 public class WorkflowInstance extends TriggerInstance {
 
     private List<SchedWorkflow> workflows;
-    private List<Tuple2<SchedInstance, List<SchedTask>>> nodeInstances;
+    private List<Tuple2<SchedInstance, List<SchedTask>>> nodes;
 
-    public WorkflowInstance(Creator creator, SchedJob job) {
+    protected WorkflowInstance(Creator creator, SchedJob job) {
         super(creator, job);
     }
 
     @Override
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
-        long wnstanceId = c.jobManager.generateId();
+        long wnstanceId = creator.jobManager.generateId();
         long jobId = job.getJobId();
         SchedInstance leadInstance = SchedInstance.create(parent, wnstanceId, wnstanceId, jobId, runType, triggerTime, 0);
         leadInstance.setRunState(RunState.RUNNING.value());
@@ -66,12 +63,13 @@ public class WorkflowInstance extends TriggerInstance {
             .map(e -> new SchedWorkflow(wnstanceId, e.source().toString(), e.target().toString()))
             .collect(Collectors.toList());
 
-        this.nodeInstances = new ArrayList<>();
-        for (Map.Entry<DAGEdge, SchedWorkflow> first : WorkflowGraph.of(workflows).successors(DAGNode.START).entrySet()) {
-            DAGNode node = first.getKey().getTarget();
-            SchedWorkflow workflow = first.getValue();
+        // 生成第一批待执行的工作流实例
+        this.nodes = new ArrayList<>();
+        for (Map.Entry<DAGEdge, SchedWorkflow> each : WorkflowGraph.of(workflows).successors(DAGNode.START).entrySet()) {
+            DAGNode node = each.getKey().getTarget();
+            SchedWorkflow workflow = each.getValue();
 
-            long nodeInstanceId = c.jobManager.generateId();
+            long nodeInstanceId = creator.jobManager.generateId();
             workflow.setInstanceId(nodeInstanceId);
             workflow.setRunState(RunState.RUNNING.value());
 
@@ -80,25 +78,27 @@ public class WorkflowInstance extends TriggerInstance {
             nodeInstance.setAttach(new InstanceAttach(node.toString()).toJson());
 
             SplitJobParam param = SplitJobParam.from(job, node.getName());
-            List<SchedTask> tasks = c.jobManager.splitJob(param, nodeInstance.getInstanceId());
-            nodeInstances.add(Tuple2.of(nodeInstance, tasks));
+            List<SchedTask> nodeTasks = creator.jobManager.splitJob(param, nodeInstance.getInstanceId());
+            nodes.add(Tuple2.of(nodeInstance, nodeTasks));
         }
     }
 
     @Override
     public void save() {
-        c.instanceMapper.insert(instance.fillUniqueFlag());
-        Collects.batchProcess(workflows, c.workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
-        for (Tuple2<SchedInstance, List<SchedTask>> nodeInstance : nodeInstances) {
-            c.instanceMapper.insert(nodeInstance.a.fillUniqueFlag());
-            Collects.batchProcess(nodeInstance.b, c.taskMapper::batchInsert, PROCESS_BATCH_SIZE);
+        // save lead instance
+        creator.saveInstance(instance);
+        // save workflow graph
+        creator.saveWorkflows(workflows);
+        for (Tuple2<SchedInstance, List<SchedTask>> node : nodes) {
+            // save node instance and node tasks
+            creator.saveInstanceAndTasks(node.a, node.b);
         }
     }
 
     @Override
     public void dispatch() {
-        for (Tuple2<SchedInstance, List<SchedTask>> nodeInstance : nodeInstances) {
-            c.jobManager.dispatch(job, nodeInstance.a, nodeInstance.b);
+        for (Tuple2<SchedInstance, List<SchedTask>> node : nodes) {
+            creator.jobManager.dispatch(job, node.a, node.b);
         }
     }
 
