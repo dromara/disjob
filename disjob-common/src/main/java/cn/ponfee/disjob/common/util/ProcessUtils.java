@@ -31,6 +31,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.function.Consumer;
@@ -80,6 +81,13 @@ public final class ProcessUtils {
         } catch (Throwable t) {
             LOG.error("Destroy process " + process.getClass().getName() + " error.", t);
         }
+    }
+
+    public static Long getCurrentJvmProcessId() {
+        // Windows: pid@hostname, for example "1234@ponfee"
+        // Unix/Linux: 1234
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        return Long.parseLong(name.split("@")[0]);
     }
 
     /**

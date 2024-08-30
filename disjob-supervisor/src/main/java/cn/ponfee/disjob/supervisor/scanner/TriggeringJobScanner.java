@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.thread;
+package cn.ponfee.disjob.supervisor.scanner;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.*;
@@ -49,7 +49,6 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  */
 public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
-    private static final int SCAN_COLLIDED_INTERVAL_SECONDS = 60;
     private static final int REMARK_MAX_LENGTH = 255;
 
     private final LockTemplate lockTemplate;
@@ -71,8 +70,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
-        // heartbeat period duration: 3s * 5 = 15s
-        this.afterMilliseconds = (heartbeatPeriodMs * 5);
+        // heartbeat period duration: 2s * 3 = 6s
+        this.afterMilliseconds = (heartbeatPeriodMs * 3);
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
             .maximumPoolSize(Math.max(1, supervisorProperties.getMaximumProcessJobPoolSize()))
@@ -115,19 +114,20 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         try {
             // check has available workers
             if (jobManager.hasNotDiscoveredWorkers(job.getGroup())) {
-                updateNextScanTime(job, now, 30);
+                updateNextScanTime(job, now, 60000L);
                 log.warn("Scan job not discovered worker: {}, {}", job.getJobId(), job.getGroup());
                 return;
             }
             // 重新再计算一次nextTriggerTime
             job.setNextTriggerTime(reComputeNextTriggerTime(job, now));
             if (job.getNextTriggerTime() == null) {
-                disableJob(job, "Recompute disabled, not next trigger time");
+                disableJob(job, "Recompute disabled, none next trigger time");
                 return;
             }
             long triggerTime = job.getNextTriggerTime();
             if (job.getLastTriggerTime() != null && job.getLastTriggerTime() >= triggerTime) {
-                throw new IllegalArgumentException("Invariable trigger time: " + job.getJobId() + ", " + triggerTime);
+                disableJob(job, "Recompute disabled, invalid next trigger time: " + triggerTime);
+                return;
             }
             if (triggerTime > maxNextTriggerTime) {
                 // 更新next_trigger_time，等待下次扫描
@@ -153,7 +153,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 disableJob(job, StringUtils.truncate("Scan over failed: " + t.getMessage(), REMARK_MAX_LENGTH));
             } else {
                 int scanFailedCount = job.incrementAndGetScanFailedCount();
-                updateNextScanTime(job, now, IntMath.pow(scanFailedCount, 2) * 5);
+                updateNextScanTime(job, now, IntMath.pow(scanFailedCount, 2) * 5000L);
             }
         }
     }
@@ -171,7 +171,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      * @return accurate next trigger time milliseconds
      */
     private Long reComputeNextTriggerTime(SchedJob job, Date now) {
-        if (TriggerType.of(job.getTriggerType()).isFixedType()) {
+        if (job.isFixedTriggerType()) {
             // 固定延时类型不重新计算nextTriggerTime
             return job.obtainNextTriggerTime();
         }
@@ -191,7 +191,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
      * @return newly next trigger time milliseconds
      */
     private static Long doComputeNextTriggerTime(SchedJob job, Date now) {
-        if (TriggerType.of(job.getTriggerType()).isFixedType()) {
+        if (job.isFixedTriggerType()) {
             // 固定延时类型的nextTriggerTime：先更新为long最大值，当任务实例运行完成时去主动计算并更新
             // null值已被用作表示没有下次触发时间
             return Long.MAX_VALUE;
@@ -200,16 +200,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     }
 
     /**
-     * <pre>
      * Check is whether block if the next trigger collided.
-     *
-     * 这里没有加锁，`OVERRIDE`时有可能会出现以下情况：
-     * 1）查数据库时为`WAITING,PAUSED,RUNNING`，但在执行取消时已经是`CANCELED`并且生成了重试实例`A`，导致新实例与`A`并行执行
-     * 2）查数据库时为`CANCELED`并且捞出重试实例`A`，但在执行取消时`A`已经取消，生成一个新的重试实例`B`，导致新实例与`B`并行执行
-     * 3）...
-     *
-     * 针对以上情况，后续可以考虑使用异步任务来操作取消上一个实例(last instance)，达到类似数据最终一致性的效果
-     * </pre>
      *
      * @param job the sched job
      * @param now the now date time
@@ -226,7 +217,8 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         }
         if (!RunState.of(lastInstance.getRunState()).isTerminal()) {
-            return shouldBlockCollidedTrigger(job, lastInstance, collidedStrategy, now);
+            blockCollidedTrigger(job, lastInstance, collidedStrategy, now);
+            return true;
         }
 
         // In here, the last instance state is `CANCELED`
@@ -235,43 +227,53 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return false;
         } else {
             SchedInstance retryingInstance = jobQuerier.getRetryingInstance(lastInstance.getInstanceId());
-            return retryingInstance != null && shouldBlockCollidedTrigger(job, retryingInstance, collidedStrategy, now);
+            blockCollidedTrigger(job, retryingInstance, collidedStrategy, now);
+            return true;
         }
     }
 
-    private boolean shouldBlockCollidedTrigger(SchedJob job, SchedInstance instance, CollidedStrategy strategy, Date now) {
-        if (TriggerType.of(job.getTriggerType()).isFixedType()) {
-            log.error("Fixed trigger type cannot be collided: {}", instance);
+    private void blockCollidedTrigger(SchedJob job, SchedInstance instance, CollidedStrategy strategy, Date now) {
+        if (job.isFixedTriggerType()) {
+            // job.getNextTriggerTime() != Long.MAX_VALUE
+            log.warn("Fixed trigger type instance collided: {}", instance);
         }
-        switch (strategy) {
-            case DISCARD:
-                // 丢弃执行：基于当前时间来更新下一次的执行时间
-                Integer misfireStrategy = job.getMisfireStrategy();
-                job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
-                job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
-                job.setMisfireStrategy(misfireStrategy);
-                if (job.getNextTriggerTime() == null) {
-                    // It has not next triggered time, then stop the job
-                    job.setRemark("Collide disabled, not next trigger time.");
-                    job.setJobState(JobState.DISABLED.value());
-                }
+
+        if (job.getNextTriggerTime() > now.getTime()) {
+            // 还未到达下次的执行时间
+            updateNextScanTime(job, now, job.getNextTriggerTime() - now.getTime());
+            return;
+        }
+
+        if (strategy == CollidedStrategy.DISCARD) {
+            // 丢弃执行：基于当前时间来更新下一次的执行时间
+            Integer misfireStrategy = job.getMisfireStrategy();
+            job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_PAST.value());
+            job.setLastTriggerTime(job.getNextTriggerTime());
+            job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
+            job.setMisfireStrategy(misfireStrategy);
+            if (job.getNextTriggerTime() == null || job.getNextTriggerTime() < now.getTime()) {
+                // It has not next triggered time, then stop the job
+                disableJob(job, "Collide disabled, invalid next trigger time: " + job.getNextTriggerTime());
+            } else {
                 jobManager.updateJobNextTriggerTime(job);
-                return true;
-            case SERIAL:
-                // 串行执行：更新下一次的扫描时间
-                updateNextScanTime(job, now, SCAN_COLLIDED_INTERVAL_SECONDS);
-                return true;
-            case OVERRIDE:
-                // 覆盖执行：先取消上一次的执行（或取消上一次的重试实例）
+                updateNextScanTime(job, now, job.getNextTriggerTime() - now.getTime());
+            }
+        } else if (strategy == CollidedStrategy.SERIAL) {
+            // 串行执行：更新下一次的扫描时间
+            updateNextScanTime(job, now, 30000L);
+        } else if (strategy == CollidedStrategy.OVERRIDE) {
+            // 覆盖执行：先取消上一次的执行（或取消上一次的重试实例）
+            if (instance != null) {
                 jobManager.cancelInstance(instance.getInstanceId(), Operation.COLLIDED_CANCEL);
-                return false;
-            default:
-                throw new UnsupportedOperationException("Unsupported collided strategy: " + strategy);
+            }
+            updateNextScanTime(job, now, 3000L);
+        } else {
+            throw new UnsupportedOperationException("Unsupported collided strategy: " + strategy);
         }
     }
 
-    private void updateNextScanTime(SchedJob job, Date now, int delayedSeconds) {
-        job.setNextScanTime(Dates.plusSeconds(now, delayedSeconds));
+    private void updateNextScanTime(SchedJob job, Date now, long delayMillis) {
+        job.setNextScanTime(Dates.plusMillis(now, delayMillis));
         jobManager.updateJobNextScanTime(job);
     }
 

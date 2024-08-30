@@ -86,6 +86,8 @@ public class StringsTest {
         Assertions.assertEquals("disjob", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, "disjob"));
         Assertions.assertEquals("", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, ""));
         Assertions.assertEquals(" ", CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, " "));
+
+        Assertions.assertTrue(ProcessUtils.getCurrentJvmProcessId() > 0);
     }
 
 }

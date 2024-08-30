@@ -24,27 +24,28 @@ import cn.ponfee.disjob.common.util.Enums;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import cn.ponfee.disjob.core.model.SchedDepend;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.TriggerContext;
 import org.springframework.util.Assert;
 
 import java.text.ParseException;
+import java.time.temporal.Temporal;
 import java.util.*;
 
 /**
  * The trigger type enum definition.
  * <p>mapped by sched_job.trigger_type
  *
- * <pre>{@code
- *  org.springframework.scheduling.support.CronExpression.isValidExpression(cronExpression)
+ * <pre>{@link
+ *  org.springframework.scheduling.support.CronExpression#isValidExpression(String)
  * }</pre>
  *
- * <pre>{@code
- *  new org.springframework.scheduling.support.CronExpression(cronExpression).next(date)
+ * <pre>{@link
+ *  org.springframework.scheduling.support.CronExpression#next(Temporal)
  * }</pre>
  *
- * <pre>{@code
- *  new org.springframework.scheduling.support.CronTrigger(cronExpression).nextExecutionTime(triggerContext);
+ * <pre>{@link
+ *  org.springframework.scheduling.support.CronTrigger#nextExecutionTime(TriggerContext)
  * }</pre>
  *
  * @author Ponfee
@@ -64,27 +65,26 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date startTime) {
+        public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             try {
-                return new CronExpression(triggerValue).getNextValidTimeAfter(startTime);
+                return new CronExpression(triggerValue).getNextValidTimeAfter(baseTime);
             } catch (ParseException e) {
                 throw new IllegalArgumentException("Invalid cron expression: " + triggerValue, e);
             }
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes(String triggerValue, Date startTime, int count) {
-            List<Date> result = new ArrayList<>(count);
-            CronExpression cronExpression;
+        public List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
             try {
-                cronExpression = new CronExpression(triggerValue);
+                CronExpression cronExpression = new CronExpression(triggerValue);
+                List<Date> result = new ArrayList<>(count);
+                while (count-- > 0 && (baseTime = cronExpression.getNextValidTimeAfter(baseTime)) != null) {
+                    result.add(baseTime);
+                }
+                return result;
             } catch (ParseException e) {
                 throw new IllegalArgumentException("Invalid cron expression: " + triggerValue, e);
             }
-            while (count-- > 0 && (startTime = cronExpression.getNextValidTimeAfter(startTime)) != null) {
-                result.add(startTime);
-            }
-            return result;
         }
     },
 
@@ -105,20 +105,19 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date startTime) {
+        public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             try {
-                Date dateTime = Dates.DATETIME_FORMAT.parse(triggerValue);
-                return dateTime.after(startTime) ? dateTime : null;
+                Date next = Dates.DATETIME_FORMAT.parse(triggerValue);
+                return next.after(baseTime) ? next : null;
             } catch (Exception e) {
-                throw new IllegalArgumentException("Invalid once date format: " + triggerValue, e);
+                throw new IllegalArgumentException("Invalid once date value: " + triggerValue, e);
             }
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes(String triggerValue, Date startTime, int count) {
-            Assert.isTrue(count == 1, () -> name() + " unsupported compute multiple next trigger time: " + count);
-            Date nextTriggerTime = computeNextTriggerTime(triggerValue, startTime);
-            return nextTriggerTime == null ? Collections.emptyList() : Collections.singletonList(nextTriggerTime);
+        public List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
+            Date next = computeNextTriggerTime0(triggerValue, baseTime);
+            return next == null ? Collections.emptyList() : Collections.singletonList(next);
         }
     },
 
@@ -139,17 +138,13 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date startTime) {
-            List<Date> list = computeNextTriggerTimes(triggerValue, startTime, 1);
-            if (CollectionUtils.isEmpty(list)) {
-                return null;
-            }
-            Assert.isTrue(list.size() == 1, () -> name() + " compute too many next trigger time.");
-            return list.get(0);
+        public Date computeNextTriggerTime0(String triggerValue, Date targetTime) {
+            List<Date> list = computeNextTriggerTimes0(triggerValue, targetTime, 1);
+            return list.isEmpty() ? null : list.get(0);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes(String triggerValue, Date startTime, int count) {
+        public List<Date> computeNextTriggerTimes0(String triggerValue, Date targetTime, int count) {
             PeriodTriggerValue conf;
             try {
                 conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
@@ -159,10 +154,10 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
             Assert.isTrue(conf != null && conf.verify(), () -> "Invalid period config: " + triggerValue);
 
             DatePeriods period = conf.getPeriod();
-            Date start = conf.getStart(), next;
+            Date start = conf.getStart();
             List<Date> result = new ArrayList<>(count);
-
-            result.add(next = start.after(startTime) ? start : period.next(start, startTime, conf.getStep(), 1).begin());
+            Date next = start.after(targetTime) ? start : period.next(start, targetTime, conf.getStep(), 1).begin();
+            result.add(next);
             while (--count > 0) {
                 result.add(next = period.next(next, conf.getStep(), 1).begin());
             }
@@ -180,17 +175,17 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date lastTriggerTime) {
-            return computeNextTriggerTimes(triggerValue, lastTriggerTime, 1).get(0);
+        public Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
+            return computeNextTriggerTimes0(triggerValue, lastTriggerTime, 1).get(0);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes(String triggerValue, Date lastTriggerTime, int count) {
-            long period = Long.parseLong(triggerValue);
-            Assert.isTrue(period > 0, () -> name() + " invalid trigger value: " + triggerValue);
+        public List<Date> computeNextTriggerTimes0(String triggerValue, Date lastTriggerTime, int count) {
+            long interval = Long.parseLong(triggerValue);
+            Assert.isTrue(interval > 0, () -> name() + " invalid trigger value: " + triggerValue);
             List<Date> result = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
-                result.add(lastTriggerTime = Dates.plusSeconds(lastTriggerTime, period));
+                result.add(lastTriggerTime = Dates.plusSeconds(lastTriggerTime, interval));
             }
             return result;
         }
@@ -207,16 +202,15 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date lastTriggerTime) {
+        public Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
             long rate = Long.parseLong(triggerValue);
             Assert.isTrue(rate > 0, () -> name() + " invalid trigger value: " + triggerValue);
             return Dates.plusSeconds(lastTriggerTime, rate);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes(String triggerValue, Date lastTriggerTime, int count) {
-            Assert.isTrue(count == 1, () -> name() + " unsupported compute multiple next trigger time: " + count);
-            return Collections.singletonList(computeNextTriggerTime(triggerValue, lastTriggerTime));
+        public List<Date> computeNextTriggerTimes0(String triggerValue, Date lastTriggerTime, int count) {
+            throw new UnsupportedOperationException(name() + " unsupported compute multiple next trigger times.");
         }
     },
 
@@ -230,16 +224,15 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date lastCompletedTime) {
+        public Date computeNextTriggerTime0(String triggerValue, Date lastCompletedTime) {
             long delay = Long.parseLong(triggerValue);
             Assert.isTrue(delay > 0, () -> name() + " invalid trigger value: " + triggerValue);
             return Dates.plusSeconds(lastCompletedTime, delay);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes(String triggerValue, Date lastCompletedTime, int count) {
-            Assert.isTrue(count == 1, () -> name() + " unsupported compute multiple next trigger time: " + count);
-            return Collections.singletonList(computeNextTriggerTime(triggerValue, lastCompletedTime));
+        public List<Date> computeNextTriggerTimes0(String triggerValue, Date lastCompletedTime, int count) {
+            throw new UnsupportedOperationException(name() + " unsupported compute multiple next trigger times.");
         }
     },
 
@@ -257,57 +250,82 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime(String triggerValue, Date startTime) {
+        public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             throw new UnsupportedOperationException(name() + " unsupported compute one next trigger time.");
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes(String triggerValue, Date startTime, int count) {
-            throw new UnsupportedOperationException(name() + " unsupported compute multiple next trigger time.");
+        public List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
+            throw new UnsupportedOperationException(name() + " unsupported compute multiple next trigger times.");
         }
     },
 
     ;
 
     private final int value;
-    private final boolean fixedType;
+    private final boolean fixedTriggerType;
     private final String example;
     private final String desc;
 
-    TriggerType(int value, boolean fixedType, String example, String desc) {
+    TriggerType(int value, boolean fixedTriggerType, String example, String desc) {
         this.value = value;
-        this.fixedType = fixedType;
+        this.fixedTriggerType = fixedTriggerType;
         this.example = example;
         this.desc = desc;
     }
 
     @Override
-    public int value() {
+    public final int value() {
         return value;
     }
 
     @Override
-    public String desc() {
+    public final String desc() {
         return desc;
     }
 
-    public boolean isFixedType() {
-        return fixedType;
+    public final boolean isFixedTriggerType() {
+        return fixedTriggerType;
     }
 
-    public String example() {
+    public final String example() {
         return example;
     }
+
+    protected abstract boolean validate0(String triggerValue);
+
+    protected abstract Date computeNextTriggerTime0(String triggerValue, Date startTime);
+
+    protected abstract List<Date> computeNextTriggerTimes0(String triggerValue, Date startTime, int count);
 
     public final boolean validate(String triggerValue) {
         return StringUtils.isNotBlank(triggerValue) && validate0(triggerValue);
     }
 
-    protected abstract boolean validate0(String triggerValue);
+    public final Date computeNextTriggerTime(String triggerValue, Date date) {
+        Assert.notNull(date, "Param date cannot be null.");
+        Date next = computeNextTriggerTime0(triggerValue, date);
+        if (next == null || next.after(date)) {
+            return next;
+        }
+        throw new IllegalStateException(name() + " next not after: " + triggerValue + ", " + Dates.format(date));
+    }
 
-    public abstract Date computeNextTriggerTime(String triggerValue, Date startTime);
+    public final List<Date> computeNextTriggerTimes(String triggerValue, Date date, int count) {
+        Assert.notNull(date, "Param date cannot be null.");
+        List<Date> list = computeNextTriggerTimes0(triggerValue, date, count);
+        if (list.isEmpty()) {
+            return list;
+        }
 
-    public abstract List<Date> computeNextTriggerTimes(String triggerValue, Date startTime, int count);
+        Date curr, next = date;
+        for (Date item : list) {
+            curr = next;
+            next = item;
+            Assert.isTrue(next.after(curr), () -> name() + " next not after: " + triggerValue + ", " + Dates.format(date));
+        }
+        return list;
+    }
 
     public static TriggerType of(Integer value) {
         return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid trigger type value: " + value);

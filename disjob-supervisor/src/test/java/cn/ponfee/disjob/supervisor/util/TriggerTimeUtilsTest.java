@@ -39,14 +39,14 @@ import java.util.List;
 public class TriggerTimeUtilsTest {
 
     @Test
-    public void testComputeNextTriggerTimeCRON_DISCARD() {
+    public void test_CRON_SKIP_ALL_PAST() {
         SchedJob job = new SchedJob();
         job.setStartTime(null);
         job.setEndTime(null);
         job.setTriggerType(TriggerType.CRON.value());
         job.setTriggerValue("0 0 10,14,16 * * ?");
         job.setLastTriggerTime(null);
-        job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
+        job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_PAST.value());
 
         Date now = new Date();
 
@@ -59,7 +59,7 @@ public class TriggerTimeUtilsTest {
     }
 
     @Test
-    public void testComputeNextTriggerTimeCRON_LAST() throws ParseException {
+    public void test_CRON_FIRE_ONCE_NOW() throws ParseException {
         Date now = new Date();
         SchedJob job = new SchedJob();
         job.setStartTime(null);
@@ -67,7 +67,7 @@ public class TriggerTimeUtilsTest {
         job.setTriggerType(TriggerType.CRON.value());
         job.setTriggerValue("0 0 10,14,16 * * ?");
         job.setLastTriggerTime(null);
-        job.setMisfireStrategy(MisfireStrategy.LAST.value());
+        job.setMisfireStrategy(MisfireStrategy.FIRE_ONCE_NOW.value());
 
         Date date1 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
         Assertions.assertTrue(date1.after(now));
@@ -82,7 +82,7 @@ public class TriggerTimeUtilsTest {
         Date last = JavaUtilDateFormat.DEFAULT.parse("2022-05-31 10:00:00");
         job.setLastTriggerTime(last.getTime());
         Date date3 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertTrue(date3.before(now));
+        Assertions.assertEquals(date3, now);
         System.out.println("date3: " + Dates.format(date3));
 
         job.setLastTriggerTime(date3.getTime());
@@ -92,42 +92,7 @@ public class TriggerTimeUtilsTest {
     }
 
     @Test
-    public void testComputeNextTriggerTimeCRON_EVERY() throws ParseException {
-        Date now = new Date();
-        SchedJob job = new SchedJob();
-        job.setStartTime(null);
-        job.setEndTime(null);
-        job.setTriggerType(TriggerType.CRON.value());
-        job.setTriggerValue("0 0 1 * * ?");
-        job.setLastTriggerTime(null);
-        job.setMisfireStrategy(MisfireStrategy.EVERY.value());
-
-        Date date1 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertTrue(date1.after(now));
-        System.out.println("date1: " + Dates.format(date1));
-
-        job.setLastTriggerTime(date1.getTime());
-        Date date2 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertTrue(date2.after(date1));
-        System.out.println("date2: " + Dates.format(date2));
-
-        // test last non null
-        Date last = JavaUtilDateFormat.DEFAULT.parse("2022-05-20 10:00:00");
-        job.setLastTriggerTime(last.getTime());
-        Date date3 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertEquals("2022-05-21 01:00:00", Dates.format(date3));
-
-        job.setLastTriggerTime(date3.getTime());
-        Date date4 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertEquals("2022-05-22 01:00:00", Dates.format(date4));
-
-        job.setLastTriggerTime(date4.getTime());
-        Date date5 = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertEquals("2022-05-23 01:00:00", Dates.format(date5));
-    }
-
-    @Test
-    public void testComputeNextTriggerTimeONCE() throws ParseException {
+    public void test_ONCE() throws ParseException {
         Date max = new Date(Long.MAX_VALUE);
         Assertions.assertEquals(Long.MAX_VALUE, max.getTime());
 
@@ -147,45 +112,36 @@ public class TriggerTimeUtilsTest {
         job.setLastTriggerTime(null);
 
         // DISCARD
-        job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
+        job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_PAST.value());
         Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-01 23:00:00").getTime());
         Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         job.setTriggerValue(Dates.format(Dates.plusSeconds(new Date(), 5)));
-        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
+        Assertions.assertNotNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         job.setLastTriggerTime(null);
         job.setTriggerValue(Dates.format(Dates.plusSeconds(new Date(), 100)));
         Assertions.assertTrue(new Date(TriggerTimeUtils.computeNextTriggerTime(job, now)).after(new Date()));
 
-        // EVERY
-        job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-01 23:00:00").getTime());
-        job.setTriggerValue("2022-05-03 00:00:00");
-        job.setMisfireStrategy(MisfireStrategy.EVERY.value());
-
         //
-        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
-
-        //
-        job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime());
-        Assertions.assertNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
+        Assertions.assertNotNull(TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         //
         job.setLastTriggerTime(null);
-        job.setTriggerValue("2022-05-03 00:00:00");
-        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime(), TriggerTimeUtils.computeNextTriggerTime(job, now));
+        job.setTriggerValue("2999-05-03 00:00:00");
+        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2999-05-03 00:00:00").getTime(), TriggerTimeUtils.computeNextTriggerTime(job, now));
 
         // LAST
-        job.setMisfireStrategy(MisfireStrategy.LAST.value());
-        job.setTriggerValue("2022-05-03 00:00:00");
+        job.setMisfireStrategy(MisfireStrategy.FIRE_ONCE_NOW.value());
+        job.setTriggerValue("2999-05-03 00:00:00");
         job.setLastTriggerTime(null);
-        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 00:00:00").getTime(), TriggerTimeUtils.computeNextTriggerTime(job, now));
+        Assertions.assertEquals(JavaUtilDateFormat.DEFAULT.parse("2999-05-03 00:00:00").getTime(), TriggerTimeUtils.computeNextTriggerTime(job, now));
     }
 
     @Test
-    public void testComputeNextTriggerTimePERIOD() throws ParseException {
+    public void test_PERIOD() throws ParseException {
         Date now = new Date();
         SchedJob job = new SchedJob();
         job.setStartTime(null);
@@ -199,7 +155,7 @@ public class TriggerTimeUtilsTest {
         Date tomorrow = Dates.startOfDay(Dates.plusDays(now, 1));
 
         // DISCARD
-        job.setMisfireStrategy(MisfireStrategy.DISCARD.value());
+        job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_PAST.value());
         Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-03 23:00:00").getTime());
@@ -215,36 +171,35 @@ public class TriggerTimeUtilsTest {
         triggerTimes.forEach(e -> System.out.println(Dates.format(e)));
 
         // LAST
-        job.setMisfireStrategy(MisfireStrategy.LAST.value());
+        job.setMisfireStrategy(MisfireStrategy.FIRE_ONCE_NOW.value());
         job.setTriggerValue("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}");
         job.setLastTriggerTime(null);
         Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
 
         job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-05 03:12:21").getTime());
-        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), Dates.startOfDay(now).getTime());
+        Long time = TriggerTimeUtils.computeNextTriggerTime(job, now);
+        Assertions.assertEquals(time, now.getTime());
 
+        Assertions.assertNotNull(TriggerType.ONCE.computeNextTriggerTime("0000-00-00 00:00:00", new Date(Long.MIN_VALUE)));
+        Assertions.assertNull(TriggerType.ONCE.computeNextTriggerTime("0000-00-00 00:00:00", new Date(0)));
+    }
 
-        job.setMisfireStrategy(MisfireStrategy.EVERY.value());
-        job.setTriggerValue("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}");
+    @Test
+    public void test_PERIOD2() throws ParseException {
+        SchedJob job = new SchedJob();
+        job.setStartTime(null);
+        job.setEndTime(null);
+        job.setTriggerType(TriggerType.PERIOD.value());
+        job.setTriggerValue("{\"period\":\"PER_SECOND\", \"start\":\"1000-01-01 00:00:00\", \"step\":3}");
         job.setLastTriggerTime(null);
-        Assertions.assertEquals(TriggerTimeUtils.computeNextTriggerTime(job, now), tomorrow.getTime());
-
-        job.setLastTriggerTime(JavaUtilDateFormat.DEFAULT.parse("2022-05-05 03:12:21").getTime());
-        Date date = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertEquals(Dates.format(date), "2022-05-06 00:00:00");
-
-        job.setLastTriggerTime(date.getTime());
-        date = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertEquals(Dates.format(date), "2022-05-07 00:00:00");
-
-        job.setLastTriggerTime(date.getTime());
-        date = new Date(TriggerTimeUtils.computeNextTriggerTime(job, now));
-        Assertions.assertEquals(Dates.format(date), "2022-05-08 00:00:00");
+        job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_PAST.value());
+        job.setLastTriggerTime(Dates.plusDays(new Date(), -1).getTime());
+        System.out.println(Dates.format(TriggerTimeUtils.computeNextTriggerTime(job, new Date()), Dates.DATEFULL_PATTERN));
     }
 
     @Test
     public void testTaskParam() {
-        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operation.TRIGGER, 0, 0, 1L, 0, 0, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, RedeployStrategy.RESUME, 5, "jobExecutor",new Worker("default", "workerId", "host", 1));
+        ExecuteTaskParam param = CommonTest.createExecuteTaskParam(Operation.TRIGGER, 0, 0, 1L, 0, 0, JobType.GENERAL, RouteStrategy.ROUND_ROBIN, RedeployStrategy.RESUME, 5, "jobExecutor", new Worker("default", "workerId", "host", 1));
         Assertions.assertSame(param.getOperation(), Operation.TRIGGER);
     }
 

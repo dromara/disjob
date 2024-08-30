@@ -121,7 +121,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     /**
      * Listen task dispatch failed event
-     * <p> {@code `@Async`}需要标注{@code `@EnableAsync`}来启用，默认使用的是`SimpleAsyncTaskExecutor`线程池，会为每个任务创建一个新线程(慎用)
+     * <p> {@code `@Async`}需要标注{@code `@EnableAsync`}来启用，默认使用的是`SimpleAsyncTaskExecutor`线程池，会为每个任务创建一个新线程(慎用默认的线程池)
      */
     @EventListener
     public void processTaskDispatchFailedEvent(TaskDispatchFailedEvent event) {
@@ -309,8 +309,8 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     public void changeInstanceState(long instanceId, ExecuteState toExecuteState) {
         Assert.isTrue(toExecuteState != ExecuteState.EXECUTING, () -> "Force change state invalid target: " + toExecuteState);
-        Assert.isNull(instanceMapper.getWnstanceId(instanceId), () -> "Force change state unsupported workflow: " + instanceId);
         doInSynchronizedTransaction(instanceId, null, instance -> {
+            Assert.isTrue(!instance.isWorkflow(), () -> "Force change state unsupported workflow: " + instanceId);
             RunState fromRunState = RunState.of(instance.getRunState());
             RunState toRunState = toExecuteState.runState();
             Assert.isTrue(fromRunState != RunState.RUNNING, "Force change state current cannot be RUNNING.");
@@ -452,7 +452,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     /**
-     * 加JVM锁是为了避免单节点内对数据库锁的等待及数据连接超时
+     * 加JVM锁是为了尽量避免单节点内对数据库锁的等待及数据连接超时
      *
      * @param instanceId the instance id
      * @param wnstanceId the workflow instance id
@@ -963,7 +963,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
         SchedJob job = jobMapper.get(original.getJobId());
         TriggerType triggerType;
-        if (job == null || job.isDisabled() || !(triggerType = TriggerType.of(job.getTriggerType())).isFixedType()) {
+        if (job == null || job.isDisabled() || !(triggerType = TriggerType.of(job.getTriggerType())).isFixedTriggerType()) {
             return;
         }
         long lastTriggerTime = original.getTriggerTime(), nextTriggerTime;

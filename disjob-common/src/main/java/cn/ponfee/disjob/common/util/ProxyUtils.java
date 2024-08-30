@@ -40,6 +40,7 @@ public final class ProxyUtils {
      * @return jdk proxy instance
      */
     public static <T> T create(InvocationHandler invocationHandler, Class<?>... interfaces) {
+        // noinspection unchecked
         return (T) Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, invocationHandler);
     }
 
@@ -53,6 +54,7 @@ public final class ProxyUtils {
      * @return cglib proxy instance
      */
     public static <T> T create(org.springframework.cglib.proxy.InvocationHandler invocationHandler, Class<?> superClass) {
+        // noinspection unchecked
         return (T) Enhancer.create(superClass, invocationHandler);
     }
 
@@ -69,7 +71,7 @@ public final class ProxyUtils {
      *
      * @param object the object
      * @return target object
-     * @throws Exception
+     * @throws Exception if occur exception
      */
     public static Object getTargetObject(Object object) throws Exception {
         if (!AopUtils.isAopProxy(object)) {

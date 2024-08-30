@@ -31,19 +31,14 @@ import java.util.Objects;
 public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
 
     /**
-     * 触发最近一次misfire
+     * 立即触发执行一次，之后按正常的调度时间点执行
      */
-    LAST(1, "触发最近一次"),
+    FIRE_ONCE_NOW(1, "立即触发执行一次"),
 
     /**
-     * 丢弃所有misfire
+     * 跳过所有被错过的，等待下一次的调度时间点执行
      */
-    DISCARD(2, "丢弃所有"),
-
-    /**
-     * 触发所有misfire
-     */
-    EVERY(3, "触发所有"),
+    SKIP_ALL_PAST(2, "跳过所有被错过的"),
 
     ;
 

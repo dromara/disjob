@@ -132,7 +132,7 @@ public class SchedJob extends BaseEntity {
     private Integer collidedStrategy;
 
     /**
-     * 过期策略：1-触发最近一次；2-丢弃；3-触发所有；
+     * 过期策略：1-立即触发执行一次；2-跳过所有被错过的；
      *
      * @see MisfireStrategy
      */
@@ -202,6 +202,11 @@ public class SchedJob extends BaseEntity {
         return JobState.DISABLED.equalsValue(jobState);
     }
 
+    @Transient
+    public boolean isFixedTriggerType() {
+        return TriggerType.of(triggerType).isFixedTriggerType();
+    }
+
     public Long obtainNextTriggerTime() {
         if (nextTriggerTime == null || endTime == null) {
             return nextTriggerTime;
@@ -269,7 +274,7 @@ public class SchedJob extends BaseEntity {
         this.retryType = defaultIfNull(retryType, RetryType.NONE.value());
         this.executeTimeout = defaultIfNull(executeTimeout, 0);
         this.collidedStrategy = defaultIfNull(collidedStrategy, CollidedStrategy.CONCURRENT.value());
-        this.misfireStrategy = defaultIfNull(misfireStrategy, MisfireStrategy.LAST.value());
+        this.misfireStrategy = defaultIfNull(misfireStrategy, MisfireStrategy.FIRE_ONCE_NOW.value());
         this.redeployStrategy = defaultIfNull(redeployStrategy, RedeployStrategy.RESUME.value());
         this.triggerValue = StringUtils.trim(triggerValue);
 

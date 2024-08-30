@@ -32,6 +32,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -123,9 +124,13 @@ final class DestinationServerRestTemplate {
         if (e == null) {
             return true;
         }
-        if (isTimeoutException(e) || isTimeoutException(e.getCause())) {
-            // org.springframework.web.client.ResourceAccessException#getCause may be timeout
-            return false;
+        // org.springframework.web.client.ResourceAccessException#getCause may be timeout
+        Set<Throwable> set = new HashSet<>();
+        for (Throwable t = e; t != null && set.add(t); ) {
+            if (isTimeoutException(t)) {
+                return false;
+            }
+            t = t.getCause();
         }
         if (!(e instanceof HttpStatusCodeException)) {
             return true;
@@ -138,9 +143,10 @@ final class DestinationServerRestTemplate {
             return false;
         }
         return (e instanceof java.net.SocketTimeoutException)
-            || (e instanceof java.net.ConnectException)
-            || (e instanceof org.apache.http.conn.ConnectTimeoutException)
-            || (e instanceof java.rmi.ConnectException);
+            || (e instanceof java.net.SocketException)
+            || (e instanceof java.rmi.ConnectException)
+            || (e instanceof java.rmi.ConnectIOException)
+            || (e instanceof org.apache.http.conn.ConnectTimeoutException);
     }
 
 }

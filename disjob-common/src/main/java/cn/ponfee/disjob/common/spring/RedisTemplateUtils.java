@@ -32,8 +32,10 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -128,8 +130,9 @@ public class RedisTemplateUtils {
             return false;
         }
 
+        Set<Throwable> set = new HashSet<>();
         Throwable current = e;
-        while (current != null) {
+        while (current != null && set.add(current)) {
             String exMessage = current.getMessage();
             if (exMessage != null && exMessage.contains("NOSCRIPT")) {
                 return true;

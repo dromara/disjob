@@ -32,6 +32,20 @@ import java.util.function.Supplier;
 /**
  * Throwable utilities.
  *
+ * <pre>{@code
+ *  // get root cause 无限循环问题
+ *  Throwable e1 = new RuntimeException();
+ *  Throwable e2 = new RuntimeException();
+ *  //Fields.put(e1, "cause", e2);
+ *  //Fields.put(e2, "cause", e1);
+ *  e1.initCause(e2);
+ *  e2.initCause(e1);
+ *  Throwable e = e1;
+ *  while (e.getCause() != null) {
+ *      e = e.getCause();
+ *  }
+ * }</pre>
+ *
  * @author Ponfee
  */
 public final class Throwables {
@@ -40,25 +54,15 @@ public final class Throwables {
 
     private static final Supplier<String> EMPTY_MESSAGE = () -> "";
 
-    /**
-     * Gets the root cause throwable stack trace
-     *
-     * @param t the throwable
-     * @return a string of throwable stack trace information
-     */
-    public static String getRootCauseStackTrace(Throwable t) {
+    public static String getRootCauseStackTrace(Throwable t, int maxLength) {
         if (t == null) {
             return null;
         }
-
-        while (t.getCause() != null) {
-            t = t.getCause();
+        Throwable root = ExceptionUtils.getRootCause(t);
+        if (root == null) {
+            root = t;
         }
-        return ExceptionUtils.getStackTrace(t);
-    }
-
-    public static String getRootCauseStackTrace(Throwable t, int maxLength) {
-        return StringUtils.truncate(getRootCauseStackTrace(t), maxLength);
+        return StringUtils.truncate(ExceptionUtils.getStackTrace(root), maxLength);
     }
 
     public static String getRootCauseMessage(Throwable t) {

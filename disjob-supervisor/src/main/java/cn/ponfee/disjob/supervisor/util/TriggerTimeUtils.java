@@ -38,53 +38,40 @@ public final class TriggerTimeUtils {
      * @return next trigger time milliseconds
      */
     public static Long computeNextTriggerTime(SchedJob job, Date now) {
-        TriggerType triggerType;
-        if (job == null || TriggerType.DEPEND == (triggerType = TriggerType.of(job.getTriggerType()))) {
+        final Date next = computeNextTriggerTime0(job, now), end = job.getEndTime();
+        return next == null || (end != null && next.after(end)) ? null : next.getTime();
+    }
+
+    private static Date computeNextTriggerTime0(SchedJob job, Date now) {
+        TriggerType type;
+        if (job == null || TriggerType.DEPEND == (type = TriggerType.of(job.getTriggerType()))) {
             return null;
         }
 
-        MisfireStrategy misfireStrategy = MisfireStrategy.of(job.getMisfireStrategy());
-        Date last = Dates.ofTimeMillis(job.getLastTriggerTime()), next;
-        Date base = Dates.max(job.getStartTime(), last, now);
+        String value = job.getTriggerValue();
+        final Date start = job.getStartTime();
+        final Date last = Dates.ofTimeMillis(job.getLastTriggerTime());
+        final Date base = Dates.max(start, last, now);
 
-        if (triggerType == TriggerType.ONCE) {
-            // 1、ONCE只执行一次，这里要特殊处理
-            if (last != null) {
-                // already executed once, not has next time
-                next = null;
-            } else if (misfireStrategy == MisfireStrategy.DISCARD) {
-                next = triggerType.computeNextTriggerTime(job.getTriggerValue(), base);
-            } else {
-                next = triggerType.computeNextTriggerTime(job.getTriggerValue(), new Date(Long.MIN_VALUE));
-            }
-
-        } else if (misfireStrategy == MisfireStrategy.DISCARD || last == null) {
-            // 2、如果misfire为 `丢弃策略` 或 `从未触发执行过`，则基于最新的时间来计算
-            next = triggerType.computeNextTriggerTime(job.getTriggerValue(), base);
-
-        } else if (misfireStrategy == MisfireStrategy.LAST) {
-            // 3、如果这个Job有触发执行记录，则基于最近的一次触发时间(last_trigger_time)来计算
-            if (job.getStartTime() != null && job.getStartTime().after(last)) {
-                // 若start被修改则可能会出现`start > last`，则基于start
-                last = job.getStartTime();
-            } else {
-                last = triggerType.computeNextTriggerTime(job.getTriggerValue(), last);
-            }
-            do {
-                next = last;
-                last = triggerType.computeNextTriggerTime(job.getTriggerValue(), last);
-            } while (last != null && last.before(base));
-
-        } else if (misfireStrategy == MisfireStrategy.EVERY) {
-            // 4、执行所有misfire
-            next = triggerType.computeNextTriggerTime(job.getTriggerValue(), Dates.max(last, job.getStartTime()));
-
-        } else {
-            throw new IllegalArgumentException("Unsupported misfire strategy: " + job.getMisfireStrategy());
-
+        if (last == null) {
+            return type.computeNextTriggerTime(value, base);
         }
 
-        return next == null || (job.getEndTime() != null && next.after(job.getEndTime())) ? null : next.getTime();
+        MisfireStrategy strategy = MisfireStrategy.of(job.getMisfireStrategy());
+        if (type == TriggerType.ONCE) {
+            Date next = type.computeNextTriggerTime(value, new Date(Long.MIN_VALUE));
+            if (!next.after(last)) {
+                // 不支持执行时间回拨
+                return null;
+            }
+            return (strategy == MisfireStrategy.SKIP_ALL_PAST && next.before(base)) ? null : next;
+        } else {
+            Date next = type.computeNextTriggerTime(value, last);
+            if (next == null || !next.before(base)) {
+                return next;
+            }
+            return strategy == MisfireStrategy.SKIP_ALL_PAST ? type.computeNextTriggerTime(value, base) : base;
+        }
     }
 
 }

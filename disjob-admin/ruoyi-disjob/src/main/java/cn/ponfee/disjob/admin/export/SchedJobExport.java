@@ -129,7 +129,7 @@ public class SchedJobExport {
     private Integer collidedStrategy;
 
     /**
-     * 过期策略：1-触发最近一次；2-丢弃；3-触发所有；
+     * 过期策略：1-立即触发执行一次；2-跳过所有被错过的；
      */
     @Excel(name = "过期策略")
     private Integer misfireStrategy;

@@ -55,7 +55,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     /**
      * Scan triggering job period milliseconds
      */
-    private long scanTriggeringJobPeriodMs = 4500;
+    private long scanTriggeringJobPeriodMs = 3000;
 
     /**
      * Scan waiting instance period milliseconds

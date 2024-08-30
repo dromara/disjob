@@ -26,9 +26,9 @@ import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
-import cn.ponfee.disjob.supervisor.thread.RunningInstanceScanner;
-import cn.ponfee.disjob.supervisor.thread.TriggeringJobScanner;
-import cn.ponfee.disjob.supervisor.thread.WaitingInstanceScanner;
+import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
+import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
+import cn.ponfee.disjob.supervisor.scanner.WaitingInstanceScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

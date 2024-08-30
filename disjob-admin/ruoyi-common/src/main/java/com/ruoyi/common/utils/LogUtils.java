@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 处理并记录日志文件
@@ -93,7 +95,8 @@ public class LogUtils
         s.append(getBlock(request.getHeader("Referer")));
         StringWriter sw = new StringWriter();
 
-        while (t != null)
+        Set<Throwable> set = new HashSet<>();
+        while (t != null && set.add(t))
         {
             t.printStackTrace(new PrintWriter(sw));
             t = t.getCause();
