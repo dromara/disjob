@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.enums.MisfireStrategy;
 import cn.ponfee.disjob.core.enums.TriggerType;
 import cn.ponfee.disjob.core.model.SchedJob;
+import org.springframework.util.Assert;
 
 import java.util.Date;
 
@@ -38,9 +39,12 @@ public final class TriggerTimeUtils {
      * @return next trigger time milliseconds
      */
     public static Long computeNextTriggerTime(SchedJob job, Date now) {
+        Assert.notNull(now, "Compute next trigger time 'now' cannot be null.");
         final Date next = computeNextTriggerTime0(job, now), end = job.getEndTime();
         return next == null || (end != null && next.after(end)) ? null : next.getTime();
     }
+
+    // -------------------------------------------------------------------------------private methods
 
     private static Date computeNextTriggerTime0(SchedJob job, Date now) {
         TriggerType type;
@@ -48,29 +52,67 @@ public final class TriggerTimeUtils {
             return null;
         }
 
+        MisfireStrategy strategy = MisfireStrategy.of(job.getMisfireStrategy());
         String value = job.getTriggerValue();
         final Date start = job.getStartTime();
         final Date last = Dates.ofTimeMillis(job.getLastTriggerTime());
-        final Date base = Dates.max(start, last, now);
+        final Date max = Dates.max(start, last, now);
 
-        if (last == null) {
-            return type.computeNextTriggerTime(value, base);
+        if (type == TriggerType.ONCE) {
+            // `ONCE`类型要单独处理
+            Date next = type.computeNextTriggerTime(value, new Date(-1));
+            boolean isInvalid = (next == null) ||
+                (start != null && next.before(start)) ||
+                (last != null && !next.after(last)) ||
+                (strategy == MisfireStrategy.SKIP_ALL_LOST && next.before(max));
+            return isInvalid ? null : next;
         }
 
-        MisfireStrategy strategy = MisfireStrategy.of(job.getMisfireStrategy());
-        if (type == TriggerType.ONCE) {
-            Date next = type.computeNextTriggerTime(value, new Date(Long.MIN_VALUE));
-            if (!next.after(last)) {
-                // 不支持执行时间回拨
-                return null;
-            }
-            return (strategy == MisfireStrategy.SKIP_ALL_PAST && next.before(base)) ? null : next;
-        } else {
-            Date next = type.computeNextTriggerTime(value, last);
-            if (next == null || !next.before(base)) {
+        if (max.equals(start) && !start.equals(last)) {
+            // last < now <= start[max]
+            return type.computeFirstTriggerTime(value, start);
+        }
+
+        if (last == null) {
+            // start < now[max]
+            Date next = type.computeNextTriggerTime(value, max);
+            if (strategy == MisfireStrategy.SKIP_ALL_LOST || next != null) {
                 return next;
             }
-            return strategy == MisfireStrategy.SKIP_ALL_PAST ? type.computeNextTriggerTime(value, base) : base;
+            // 解决某些CRON组件支持固定时间表达式的场景，如(2022-01-02 03:04:05)：5 4 3 2 1 ? 2022
+            next = type.computeFirstTriggerTime(value, start != null ? start : new Date(-1));
+            if (next == null || (start != null && next.before(start))) {
+                return null;
+            }
+            if (strategy == MisfireStrategy.FIRE_ALL_LOST) {
+                return next;
+            }
+            // 到了这里 misfireStrategy=FIRE_ONCE_NOW
+            Date afterNext = type.computeNextTriggerTime(value, next);
+            // (next < now < afterNext) ? next : now
+            return (afterNext == null || afterNext.after(max)) ? next : max;
+        }
+
+        // last < start ? computeFirstTriggerTime(start) : computeNextTriggerTime(last)
+        Date next = (start != null && last.before(start)) ?
+            type.computeFirstTriggerTime(value, start) : type.computeNextTriggerTime(value, last);
+        if (next == null || !next.before(max)) {
+            // next == null || next >= max
+            return next;
+        }
+
+        // ---------------- On here: last < next < start < now[max] ---------------- //
+
+        if (strategy == MisfireStrategy.FIRE_ALL_LOST) {
+            return next;
+        } else if (strategy == MisfireStrategy.FIRE_ONCE_NOW) {
+            Date afterNext = type.computeNextTriggerTime(value, next);
+            // (last < next < now < afterNext) ? next : now
+            return (afterNext == null || afterNext.after(max)) ? next : max;
+        } else if (strategy == MisfireStrategy.SKIP_ALL_LOST) {
+            return type.computeNextTriggerTime(value, max);
+        } else {
+            throw new UnsupportedOperationException("Unsupported compute next trigger time: " + type);
         }
     }
 

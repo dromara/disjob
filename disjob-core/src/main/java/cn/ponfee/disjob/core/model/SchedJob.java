@@ -132,7 +132,7 @@ public class SchedJob extends BaseEntity {
     private Integer collidedStrategy;
 
     /**
-     * 过期策略：1-立即触发执行一次；2-跳过所有被错过的；
+     * 过期策略：1-立即触发执行一次；2-跳过所有被错过的；3-执行所有被错过的；
      *
      * @see MisfireStrategy
      */
@@ -214,11 +214,6 @@ public class SchedJob extends BaseEntity {
         return nextTriggerTime > endTime.getTime() ? null : nextTriggerTime;
     }
 
-    public boolean equalsTrigger(Integer type, String value) {
-        return Objects.equals(triggerType, type)
-            && Objects.equals(triggerValue, value);
-    }
-
     public void verifyForAdd(int maximumJobRetryCount) {
         verifyAndDefaultSetting(maximumJobRetryCount);
     }
@@ -227,6 +222,30 @@ public class SchedJob extends BaseEntity {
         Assert.isTrue(jobId != null && jobId > 0, () -> "Invalid jobId: " + jobId);
         Assert.isTrue(version != null && version > 0, () -> "Invalid version: " + version);
         verifyAndDefaultSetting(maximumJobRetryCount);
+    }
+
+    public boolean requiredUpdateExecutor() {
+        if (jobExecutor == null) {
+            Assert.isNull(jobParam, "Job param must be null when not set job executor.");
+            Assert.isNull(jobType, "Job type must be null when not set job executor.");
+            Assert.isNull(routeStrategy, "Route strategy must be null when not set job executor.");
+            return false;
+        }
+        return true;
+    }
+
+    public boolean requiredUpdateTrigger(Integer curTriggerType, String curTriggerValue) {
+        if (triggerType == null) {
+            Assert.isNull(triggerValue, "Trigger value must be null when not set trigger type.");
+            return false;
+        }
+        if (Objects.equals(triggerType, curTriggerType) && Objects.equals(triggerValue, curTriggerValue)) {
+            // needless update
+            this.triggerType = null;
+            this.triggerValue = null;
+            return false;
+        }
+        return true;
     }
 
     public int incrementAndGetScanFailedCount() {

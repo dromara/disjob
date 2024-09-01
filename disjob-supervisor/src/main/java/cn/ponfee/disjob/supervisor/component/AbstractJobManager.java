@@ -19,7 +19,6 @@ package cn.ponfee.disjob.supervisor.component;
 import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.JobConstants;
@@ -45,6 +44,7 @@ import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
+import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.base.Joiner;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -149,29 +149,20 @@ public abstract class AbstractJobManager {
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void updateJob(SchedJob job) throws JobException {
         job.verifyForUpdate(conf.getMaximumJobRetryCount());
+
+        if (job.requiredUpdateExecutor()) {
+            verifyJobExecutor(job);
+        }
+
         Long jobId0 = jobMapper.getJobId(job.getGroup(), job.getJobName());
         if (jobId0 != null && !jobId0.equals(job.getJobId())) {
             throw new IllegalArgumentException("Exists job name: " + job.getJobName());
-        }
-        if (job.getJobExecutor() == null) {
-            Assert.isNull(job.getJobParam(), "Job param must be null when not set job executor.");
-            Assert.isNull(job.getJobType(), "Job type must be null when not set job executor.");
-            Assert.isNull(job.getRouteStrategy(), "Route strategy must be null when not set job executor.");
-        } else {
-            verifyJobExecutor(job);
         }
 
         SchedJob dbJob = jobMapper.get(job.getJobId());
         Assert.notNull(dbJob, () -> "Sched job id not found " + job.getJobId());
         Assert.isTrue(dbJob.getGroup().equals(job.getGroup()), "Job group cannot be modify.");
-
-        if (job.getTriggerType() == null) {
-            Assert.isNull(job.getTriggerValue(), "Trigger value must be null when not set trigger type.");
-        } else if (dbJob.equalsTrigger(job.getTriggerType(), job.getTriggerValue())) {
-            // needless update
-            job.setTriggerType(null);
-            job.setTriggerValue(null);
-        } else {
+        if (job.requiredUpdateTrigger(dbJob.getTriggerType(), dbJob.getTriggerValue())) {
             dependMapper.deleteByChildJobId(job.getJobId());
             parseTriggerConfig(job);
         }
@@ -339,11 +330,10 @@ public abstract class AbstractJobManager {
     // ------------------------------------------------------------------private methods
 
     private void updateNextTriggerTime(SchedJob job) {
-        TriggerType triggerType = TriggerType.of(job.getTriggerType());
-        if (triggerType == TriggerType.DEPEND) {
+        if (TriggerType.of(job.getTriggerType()) == TriggerType.DEPEND) {
             return;
         }
-        Long nextTriggerTime = computeNextTriggerTime(job, triggerType);
+        Long nextTriggerTime = computeNextTriggerTime(job);
         if (!nextTriggerTime.equals(job.getNextTriggerTime())) {
             job.setNextTriggerTime(nextTriggerTime);
             assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
@@ -368,13 +358,12 @@ public abstract class AbstractJobManager {
     }
 
     private void parseTriggerConfig(SchedJob job) {
-        TriggerType triggerType = TriggerType.of(job.getTriggerType());
         String triggerValue = job.getTriggerValue();
         Assert.hasText(triggerValue, "Trigger value cannot be blank.");
         Assert.isTrue(triggerValue.length() <= 255, "Trigger value length cannot exceed 255.");
 
         Long jobId = job.getJobId();
-        if (triggerType == TriggerType.DEPEND) {
+        if (TriggerType.of(job.getTriggerType()) == TriggerType.DEPEND) {
             List<Long> parentJobIds = SchedDepend.parseTriggerValue(triggerValue);
             Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + triggerValue);
             Assert.isTrue(!parentJobIds.contains(jobId), () -> "Cannot depends self: " + jobId + ", " + parentJobIds);
@@ -398,19 +387,18 @@ public abstract class AbstractJobManager {
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
-            job.setNextTriggerTime(computeNextTriggerTime(job, triggerType));
+            job.setNextTriggerTime(computeNextTriggerTime(job));
         }
     }
 
-    private Long computeNextTriggerTime(SchedJob job, TriggerType triggerType) {
-        String triggerValue = job.getTriggerValue();
-        Date baseTime = Dates.max(new Date(), job.getStartTime());
-        Date nextTriggerTime = triggerType.computeNextTriggerTime(triggerValue, baseTime);
-        Assert.notNull(nextTriggerTime, () -> "Invalid " + triggerType + " value: " + triggerValue);
-        if (job.getEndTime() != null && nextTriggerTime.after(job.getEndTime())) {
-            throw new IllegalArgumentException("Expire " + triggerType + " value: " + triggerValue);
-        }
-        return nextTriggerTime.getTime();
+    private Long computeNextTriggerTime(SchedJob job) {
+        Long lastTriggerTime = job.getLastTriggerTime();
+        Date now = new Date();
+        job.setLastTriggerTime(Long.max(now.getTime() - 1, lastTriggerTime == null ? 0 : lastTriggerTime));
+        Long next = TriggerTimeUtils.computeNextTriggerTime(job, now);
+        Assert.notNull(next, () -> "Expire " + TriggerType.of(job.getTriggerType()) + " value: " + job.getTriggerValue());
+        job.setLastTriggerTime(lastTriggerTime);
+        return next;
     }
 
     private void checkCircularDepends(Long jobId, Set<Long> parentJobIds) {

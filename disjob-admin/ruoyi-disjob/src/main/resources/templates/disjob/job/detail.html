@@ -62,9 +62,9 @@
         <label class="col-sm-3 control-label">Job有效期：</label>
         <div class="col-sm-9">
           <div class="input-daterange input-group">
-            <input disabled name="startTime" th:value="${#dates.format(job.startTime, 'yyyy-MM-dd')}" type="text" class="input-sm form-control" />
+            <input disabled name="startTime" th:value="${#dates.format(job.startTime, 'yyyy-MM-dd HH:mm:ss')}" type="text" class="input-sm form-control" />
             <span class="input-group-addon"> ~ </span>
-            <input disabled name="endTime" th:value="${#dates.format(job.endTime, 'yyyy-MM-dd')}" type="text" class="input-sm form-control" />
+            <input disabled name="endTime" th:value="${#dates.format(job.endTime, 'yyyy-MM-dd HH:mm:ss')}" type="text" class="input-sm form-control" />
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@
             <li class="select-time">
               <label>触发时间：</label>
               <input name="startTime" type="text" id="tree-startTime" autocomplete="off" />
-              <span>-</span>
+              <span>~</span>
               <input name="endTime" type="text" id="tree-endTime" autocomplete="off" />
             </li>
             <li>
@@ -93,7 +93,7 @@
             <li class="select-time">
               <label>触发时间：</label>
               <input name="startTime" type="text" id="flat-startTime" autocomplete="off" />
-              <span>-</span>
+              <span>~</span>
               <input name="endTime" type="text" id="flat-endTime" autocomplete="off" />
             </li>
             <li>
@@ -297,7 +297,8 @@
     layui.use('laydate', function () {
       let treeStartDate = layui.laydate.render({
         elem: '#tree-startTime',
-        max: $('#tree-endTime').val(),
+        type: 'datetime',
+        max: $('#tree-endTime').val() || '2999-12-31 23:59:59',
         theme: 'molv',
         trigger: 'click',
         done: function (value, date) {
@@ -315,7 +316,8 @@
       });
       let treeEndDate = layui.laydate.render({
         elem: '#tree-endTime',
-        min: $('#tree-startTime').val(),
+        type: 'datetime',
+        min: $('#tree-startTime').val() || '1900-01-01 00:00:00',
         theme: 'molv',
         trigger: 'click',
         done: function (value, date) {
@@ -333,7 +335,8 @@
       });
       let flatStartDate = layui.laydate.render({
         elem: '#flat-startTime',
-        max: $('#flat-endTime').val(),
+        type: 'datetime',
+        max: $('#flat-endTime').val() || '2999-12-31 23:59:59',
         theme: 'molv',
         trigger: 'click',
         done: function (value, date) {
@@ -351,7 +354,8 @@
       });
       let flatEndDate = layui.laydate.render({
         elem: '#flat-endTime',
-        min: $('#flat-startTime').val(),
+        type: 'datetime',
+        min: $('#flat-startTime').val() || '1900-01-01 00:00:00',
         theme: 'molv',
         trigger: 'click',
         done: function (value, date) {

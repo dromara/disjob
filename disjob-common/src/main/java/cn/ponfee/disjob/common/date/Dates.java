@@ -582,7 +582,10 @@ public class Dates {
      * @return the smallest of {@code a} and {@code b}
      */
     public static Date min(Date a, Date b) {
-        return a == null ? b : (b == null || a.before(b)) ? a : b;
+        if (a == null) {
+            return b;
+        }
+        return (b == null || a.before(b)) ? a : b;
     }
 
     /**
@@ -593,7 +596,10 @@ public class Dates {
      * @return the greatest of {@code a} and {@code b}
      */
     public static Date max(Date a, Date b) {
-        return a == null ? b : (b == null || a.after(b)) ? a : b;
+        if (a == null) {
+            return b;
+        }
+        return (b == null || a.after(b)) ? a : b;
     }
 
     public static Date max(Date a, Date b, Date c) {
@@ -674,6 +680,7 @@ public class Dates {
      * @return cron expression of the spec date
      */
     public static String toCronExpression(LocalDateTime dateTime) {
+        // noinspection StringBufferReplaceableByString,AlibabaAvoidCommentBehindStatement
         return new StringBuilder(22)
             .append(dateTime.getSecond()    ).append(Char.SPACE) // second
             .append(dateTime.getMinute()    ).append(Char.SPACE) // minute

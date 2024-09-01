@@ -43,6 +43,7 @@ import java.util.function.Supplier;
  *  Throwable e = e1;
  *  while (e.getCause() != null) {
  *      e = e.getCause();
+ *      System.out.println(e + ": " + System.identityHashCode(e));
  *  }
  * }</pre>
  *

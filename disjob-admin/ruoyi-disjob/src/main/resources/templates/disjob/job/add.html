@@ -68,9 +68,9 @@
         <label class="col-sm-3 control-label">Job有效期：</label>
         <div class="col-sm-9">
           <div class="input-daterange input-group">
-            <input name="startTime" th:value="${#dates.format(job.startTime, 'yyyy-MM-dd')}" type="text" class="input-sm form-control" id="laydate-startTime" placeholder="yyyy-MM-dd" autocomplete="off" />
+            <input name="startTime" th:value="${#dates.format(job.startTime, 'yyyy-MM-dd HH:mm:ss')}" type="text" class="input-sm form-control" id="laydate-startTime" placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off" />
             <span class="input-group-addon"> ~ </span>
-            <input name="endTime" th:value="${#dates.format(job.endTime, 'yyyy-MM-dd')}" type="text" class="input-sm form-control" id="laydate-endTime" placeholder="yyyy-MM-dd" autocomplete="off" />
+            <input name="endTime" th:value="${#dates.format(job.endTime, 'yyyy-MM-dd HH:mm:ss')}" type="text" class="input-sm form-control" id="laydate-endTime" placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off" />
           </div>
         </div>
       </div>
@@ -136,7 +136,8 @@
       layui.use('laydate', function () {
         let startDate = layui.laydate.render({
           elem: '#laydate-startTime',
-          max: $('#laydate-endTime').val(),
+          type: 'datetime',
+          max: $('#laydate-endTime').val() || '2999-12-31 23:59:59',
           theme: 'molv',
           trigger: 'click',
           done: function (value, date) {
@@ -154,7 +155,8 @@
         });
         let endDate = layui.laydate.render({
           elem: '#laydate-endTime',
-          min: $('#laydate-startTime').val(),
+          type: 'datetime',
+          min: $('#laydate-startTime').val() || '1900-01-01 00:00:00',
           theme: 'molv',
           trigger: 'click',
           done: function (value, date) {

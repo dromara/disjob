@@ -65,6 +65,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
+        protected Date computeFirstTriggerTime0(String triggerValue, Date startTime) {
+            return computeNextTriggerTime0(triggerValue, Dates.minusMillis(startTime, 1));
+        }
+
+        @Override
         public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             try {
                 return new CronExpression(triggerValue).getNextValidTimeAfter(baseTime);
@@ -105,6 +110,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
+        protected Date computeFirstTriggerTime0(String triggerValue, Date startTime) {
+            return computeNextTriggerTime0(triggerValue, Dates.minusMillis(startTime, 1));
+        }
+
+        @Override
         public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             try {
                 Date next = Dates.DATETIME_FORMAT.parse(triggerValue);
@@ -126,7 +136,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      *
      * @see DatePeriods
      */
-    PERIOD(3, false, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":1}", "指定周期") {
+    PERIOD(3, false, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":10}", "指定周期") {
         @Override
         public boolean validate0(String triggerValue) {
             try {
@@ -135,6 +145,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
             } catch (Exception ignored) {
                 return false;
             }
+        }
+
+        @Override
+        protected Date computeFirstTriggerTime0(String triggerValue, Date startTime) {
+            return computeNextTriggerTime0(triggerValue, Dates.minusMillis(startTime, 1));
         }
 
         @Override
@@ -175,6 +190,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
+        protected Date computeFirstTriggerTime0(String triggerValue, Date startTime) {
+            return new Date(startTime.getTime());
+        }
+
+        @Override
         public Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
             return computeNextTriggerTimes0(triggerValue, lastTriggerTime, 1).get(0);
         }
@@ -202,6 +222,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
+        protected Date computeFirstTriggerTime0(String triggerValue, Date startTime) {
+            return new Date(startTime.getTime());
+        }
+
+        @Override
         public Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
             long rate = Long.parseLong(triggerValue);
             Assert.isTrue(rate > 0, () -> name() + " invalid trigger value: " + triggerValue);
@@ -221,6 +246,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         @Override
         public boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
+        }
+
+        @Override
+        protected Date computeFirstTriggerTime0(String triggerValue, Date startTime) {
+            return new Date(startTime.getTime());
         }
 
         @Override
@@ -247,6 +277,11 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
             } catch (NumberFormatException ignored) {
                 return false;
             }
+        }
+
+        @Override
+        protected Date computeFirstTriggerTime0(String triggerValue, Date startTime) {
+            throw new UnsupportedOperationException(name() + " unsupported compute first trigger time.");
         }
 
         @Override
@@ -294,6 +329,8 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
     protected abstract boolean validate0(String triggerValue);
 
+    protected abstract Date computeFirstTriggerTime0(String triggerValue, Date startTime);
+
     protected abstract Date computeNextTriggerTime0(String triggerValue, Date startTime);
 
     protected abstract List<Date> computeNextTriggerTimes0(String triggerValue, Date startTime, int count);
@@ -302,13 +339,18 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         return StringUtils.isNotBlank(triggerValue) && validate0(triggerValue);
     }
 
+    public final Date computeFirstTriggerTime(String triggerValue, Date date) {
+        Assert.notNull(date, "Param date cannot be null.");
+        return computeFirstTriggerTime0(triggerValue, date);
+    }
+
     public final Date computeNextTriggerTime(String triggerValue, Date date) {
         Assert.notNull(date, "Param date cannot be null.");
         Date next = computeNextTriggerTime0(triggerValue, date);
         if (next == null || next.after(date)) {
             return next;
         }
-        throw new IllegalStateException(name() + " next not after: " + triggerValue + ", " + Dates.format(date));
+        throw new IllegalStateException(name() + " invalid next after: " + triggerValue + ", " + Dates.format(date));
     }
 
     public final List<Date> computeNextTriggerTimes(String triggerValue, Date date, int count) {
@@ -322,7 +364,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         for (Date item : list) {
             curr = next;
             next = item;
-            Assert.isTrue(next.after(curr), () -> name() + " next not after: " + triggerValue + ", " + Dates.format(date));
+            Assert.isTrue(next.after(curr), () -> name() + " invalid next after: " + triggerValue + ", " + Dates.format(date));
         }
         return list;
     }
@@ -331,7 +373,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid trigger type value: " + value);
     }
 
-    public static final class Const {
+    private static final class Const {
         private static final Map<Integer, TriggerType> MAPPING = Enums.toMap(TriggerType.class, TriggerType::value);
     }
 

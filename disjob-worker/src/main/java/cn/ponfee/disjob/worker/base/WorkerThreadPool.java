@@ -518,7 +518,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 workerThreadCounter.decrementAndGet();
                 WorkerTask task = getCurrentTask();
                 if (task != null) {
-                    task.stop();
+                    ThrowingRunnable.doCaught(task::stop);
                 }
             }
         }

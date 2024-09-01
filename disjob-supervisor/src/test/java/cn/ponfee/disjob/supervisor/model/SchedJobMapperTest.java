@@ -94,7 +94,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setTriggerValue("0/10 * * * * ?");
         job.setExecuteTimeout(3600000);
         job.setCollidedStrategy(CollidedStrategy.CONCURRENT.value());
-        job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_PAST.value());
+        job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_LOST.value());
         job.setRouteStrategy(RouteStrategy.ROUND_ROBIN.value());
         job.setRedeployStrategy(RedeployStrategy.RESUME.value());
         job.setRemark("test remark");

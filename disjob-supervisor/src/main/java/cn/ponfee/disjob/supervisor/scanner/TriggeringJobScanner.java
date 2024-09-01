@@ -175,7 +175,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // 固定延时类型不重新计算nextTriggerTime
             return job.obtainNextTriggerTime();
         }
-        if (now.getTime() <= (job.getNextTriggerTime() + afterMilliseconds)) {
+        if ((job.getNextTriggerTime() + afterMilliseconds) >= now.getTime()) {
             // 没有过期不重新计算nextTriggerTime
             return job.getNextTriggerTime();
         }
@@ -247,7 +247,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         if (strategy == CollidedStrategy.DISCARD) {
             // 丢弃执行：基于当前时间来更新下一次的执行时间
             Integer misfireStrategy = job.getMisfireStrategy();
-            job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_PAST.value());
+            job.setMisfireStrategy(MisfireStrategy.SKIP_ALL_LOST.value());
             job.setLastTriggerTime(job.getNextTriggerTime());
             job.setNextTriggerTime(doComputeNextTriggerTime(job, now));
             job.setMisfireStrategy(misfireStrategy);

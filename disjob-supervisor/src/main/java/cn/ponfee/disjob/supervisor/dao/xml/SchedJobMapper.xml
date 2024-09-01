@@ -74,30 +74,36 @@
   <update id="update" parameterType="cn.ponfee.disjob.core.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_name = #{jobName,jdbcType=VARCHAR},
+
       <if test="jobExecutor != null and jobExecutor != ''">
         job_executor = #{jobExecutor,jdbcType=LONGVARCHAR},
         job_param = #{jobParam,jdbcType=LONGVARCHAR},
         job_type = #{jobType,jdbcType=TINYINT},
         route_strategy = #{routeStrategy,jdbcType=TINYINT},
       </if>
+
         job_state = #{jobState,jdbcType=TINYINT},
         retry_type = #{retryType,jdbcType=TINYINT},
         retry_count = #{retryCount,jdbcType=TINYINT},
         retry_interval = #{retryInterval,jdbcType=INTEGER},
         start_time = #{startTime,jdbcType=TIMESTAMP},
         end_time = #{endTime,jdbcType=TIMESTAMP},
+
       <if test="triggerType != null">
         trigger_type = #{triggerType,jdbcType=TINYINT},
         trigger_value = #{triggerValue,jdbcType=VARCHAR},
         next_trigger_time = #{nextTriggerTime,jdbcType=BIGINT},
       </if>
+
         execute_timeout = #{executeTimeout,jdbcType=INTEGER},
         collided_strategy = #{collidedStrategy,jdbcType=TINYINT},
         misfire_strategy = #{misfireStrategy,jdbcType=TINYINT},
         redeploy_strategy = #{redeployStrategy,jdbcType=TINYINT},
+
       <if test="remark != null and remark != ''">
         remark = #{remark,jdbcType=VARCHAR},
       </if>
+
         version = version+1,
         updated_by = #{updatedBy,jdbcType=VARCHAR}
     WHERE job_id = #{jobId,jdbcType=BIGINT}

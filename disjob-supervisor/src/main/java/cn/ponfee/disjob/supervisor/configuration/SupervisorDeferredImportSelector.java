@@ -35,6 +35,7 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  */
 class SupervisorDeferredImportSelector implements DeferredImportSelector {
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
         return new String[]{SupervisorDeferredConfiguration.class.getName()};
