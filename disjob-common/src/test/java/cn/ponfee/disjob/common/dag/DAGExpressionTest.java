@@ -28,58 +28,58 @@ import java.util.Set;
  *
  * @author Ponfee
  */
-public class DAGExpressionParserTest {
+public class DAGExpressionTest {
 
     /*
-    private static final MultiwayTreePrinter<TreeNode<DAGExpressionParser.TreeNodeId, Object>> TREE_PRINTER =
+    private static final MultiwayTreePrinter<TreeNode<DAGExpression.TreeNodeId, Object>> TREE_PRINTER =
         new MultiwayTreePrinter<>(System.out, e -> e.getNid().toString(), TreeNode::getChildren);
 
     @Test
     public void testProcess() {
-        Assertions.assertEquals("((A)->(((B)->(C)->(D)),((A)->(F)))->((G),(H),(X))->(J))", DAGExpressionParser.completeParenthesis("(A->((B->C->D),(A->F))->(G,H,X)->J)"));
-        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpressionParser.completeParenthesis("A,B->(C->D),(E)->F"));
-        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpressionParser.completeParenthesis("A,B->(C->D),E->F"));
+        Assertions.assertEquals("((A)->(((B)->(C)->(D)),((A)->(F)))->((G),(H),(X))->(J))", DAGExpression.completeParenthesis("(A->((B->C->D),(A->F))->(G,H,X)->J)"));
+        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpression.completeParenthesis("A,B->(C->D),(E)->F"));
+        Assertions.assertEquals("(A),(B)->((C)->(D)),(E)->(F)", DAGExpression.completeParenthesis("A,B->(C->D),E->F"));
     }
 
     @Test
     public void testPartition() {
-        Assertions.assertTrue(isEqualCollection(asList(Tuple2.of(0, 1), Tuple2.of(7, 1)), DAGExpressionParser.group("(A -> B)")));
+        Assertions.assertTrue(isEqualCollection(asList(Tuple2.of(0, 1), Tuple2.of(7, 1)), DAGExpression.group("(A -> B)")));
 
         Assertions.assertTrue(isEqualCollection(
             asList(Tuple2.of(0, 1), Tuple2.of(4, 2), Tuple2.of(12, 2), Tuple2.of(14, 2), Tuple2.of(19, 2), Tuple2.of(22, 2), Tuple2.of(26, 2), Tuple2.of(30, 1)),
-            DAGExpressionParser.group("(A->(B->C->D),(E->F)->(G,H)->J)")
+            DAGExpression.group("(A->(B->C->D),(E->F)->(G,H)->J)")
         ));
     }
 
     @Test
     public void testValidate() {
-        Assertions.assertTrue(DAGExpressionParser.checkParenthesis("(A->(B->C->D),(E->F)->(G,H)->J)"));
-        Assertions.assertTrue(DAGExpressionParser.checkParenthesis("afdsafd"));
-        Assertions.assertFalse(DAGExpressionParser.checkParenthesis("((A->(B->C->D),(E->F)->(G,H)->J)"));
-        Assertions.assertFalse(DAGExpressionParser.checkParenthesis(")A->(B->C->D),(E->F)->)G,H(->J("));
-        Assertions.assertFalse(DAGExpressionParser.checkParenthesis(")("));
-        Assertions.assertFalse(DAGExpressionParser.checkParenthesis("()("));
-        Assertions.assertFalse(DAGExpressionParser.checkParenthesis("())"));
-        Assertions.assertFalse(DAGExpressionParser.checkParenthesis("(()"));
-        Assertions.assertFalse(DAGExpressionParser.checkParenthesis(")()"));
+        Assertions.assertTrue(DAGExpression.checkParenthesis("(A->(B->C->D),(E->F)->(G,H)->J)"));
+        Assertions.assertTrue(DAGExpression.checkParenthesis("afdsafd"));
+        Assertions.assertFalse(DAGExpression.checkParenthesis("((A->(B->C->D),(E->F)->(G,H)->J)"));
+        Assertions.assertFalse(DAGExpression.checkParenthesis(")A->(B->C->D),(E->F)->)G,H(->J("));
+        Assertions.assertFalse(DAGExpression.checkParenthesis(")("));
+        Assertions.assertFalse(DAGExpression.checkParenthesis("()("));
+        Assertions.assertFalse(DAGExpression.checkParenthesis("())"));
+        Assertions.assertFalse(DAGExpression.checkParenthesis("(()"));
+        Assertions.assertFalse(DAGExpression.checkParenthesis(")()"));
     }
 
     @Test
     public void testBuildTree() throws IOException {
-        List<Tuple2<Integer, Integer>> partitions = DAGExpressionParser.group("(A->(B->C->D),(A->F)->(G,H,X)->J)");
-        TreeNode<DAGExpressionParser.TreeNodeId, Object> root = DAGExpressionParser.buildTree(partitions);
+        List<Tuple2<Integer, Integer>> partitions = DAGExpression.group("(A->(B->C->D),(A->F)->(G,H,X)->J)");
+        TreeNode<DAGExpression.TreeNodeId, Object> root = DAGExpression.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 3);
         System.out.println("------------------");
         TREE_PRINTER.print(root);
 
-        partitions = DAGExpressionParser.group("((A->((B->C->D),(E->F))->(G,H)->J))");
-        root = DAGExpressionParser.buildTree(partitions);
+        partitions = DAGExpression.group("((A->((B->C->D),(E->F))->(G,H)->J))");
+        root = DAGExpression.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 1);
         System.out.println("\n------------------");
         TREE_PRINTER.print(root);
 
-        partitions = DAGExpressionParser.group("(A->((B->C->D),(E->F))->(G,H)->J)");
-        root = DAGExpressionParser.buildTree(partitions);
+        partitions = DAGExpression.group("(A->((B->C->D),(E->F))->(G,H)->J)");
+        root = DAGExpression.buildTree(partitions);
         Assertions.assertEquals(root.getChildrenCount(), 2);
         System.out.println("\n------------------");
         TREE_PRINTER.print(root);
@@ -131,7 +131,7 @@ public class DAGExpressionParserTest {
     @Test
     public void testGraph() {
         String expression = "(A->((B->C->D),(A->F))->(G,H,X)->J);(A->Y)";
-        Graph<DAGNode> graph = DAGExpressionParser.parse(expression);
+        Graph<DAGNode> graph = DAGExpression.parse(expression);
         Assertions.assertEquals("[1:1:A, 2:3:A]", graph.successors(DAGNode.START).toString());
         Assertions.assertTrue(graph.predecessors(DAGNode.START).isEmpty());
 
@@ -147,7 +147,7 @@ public class DAGExpressionParserTest {
     @Test
     public void testGraphSequence() {
         String expression = "A -> B,C -> E,(F->G) -> H";
-        Graph<DAGNode> graph = DAGExpressionParser.parse(expression);
+        Graph<DAGNode> graph = DAGExpression.parse(expression);
         for (EndpointPair<DAGNode> edge : graph.edges()) {
             System.out.println(edge.source() + " -> " + edge.target());
         }
@@ -175,13 +175,13 @@ public class DAGExpressionParserTest {
 
     private static void assertSameExpression(String text1, String text2) {
         System.out.println("\n\n------\n\n");
-        Assertions.assertEquals(DAGExpressionParser.parse(text1), DAGExpressionParser.parse(text2));
+        Assertions.assertEquals(DAGExpression.parse(text1), DAGExpression.parse(text2));
     }
 
     private static void assertEdgesEquals(String expression, String edges) {
         System.out.println("\n\n------\n\n");
         System.out.println(expression);
-        Graph<DAGNode> graph = DAGExpressionParser.parse(expression);
+        Graph<DAGNode> graph = DAGExpression.parse(expression);
         Assertions.assertEquals(edges, graph.edges().toString());
         System.out.println(expression + " graph result: " + graph);
     }

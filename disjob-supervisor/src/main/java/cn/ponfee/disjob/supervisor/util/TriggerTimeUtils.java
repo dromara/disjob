@@ -101,13 +101,13 @@ public final class TriggerTimeUtils {
             return next;
         }
 
-        // ---------------- On here: last < next < start < now[max] ---------------- //
+        // ---------------- On here: start < next < now[max] ---------------- //
 
         if (strategy == MisfireStrategy.FIRE_ALL_LOST) {
             return next;
         } else if (strategy == MisfireStrategy.FIRE_ONCE_NOW) {
             Date afterNext = type.computeNextTriggerTime(value, next);
-            // (last < next < now < afterNext) ? next : now
+            // (next < now < afterNext) ? next : now
             return (afterNext == null || afterNext.after(max)) ? next : max;
         } else if (strategy == MisfireStrategy.SKIP_ALL_LOST) {
             return type.computeNextTriggerTime(value, max);

@@ -57,14 +57,14 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
     private final String token;
 
     /**
-     * Check ttl seconds
+     * Check time to live
      */
-    private final String checkTtlSeconds;
+    private final String checkTtl;
 
     /**
-     * Check deregister critical timeout seconds
+     * Check deregister critical timeout
      */
-    private final String checkDeregisterCriticalTimeoutSeconds;
+    private final String checkDeregisterCriticalTimeout;
 
     /**
      * Consul ttl check thread
@@ -78,8 +78,8 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
         this.client = new ConsulClient(config.getHost(), config.getPort());
         this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();
-        this.checkTtlSeconds = config.getCheckTtlSeconds();
-        this.checkDeregisterCriticalTimeoutSeconds = config.getCheckDeregisterCriticalTimeoutSeconds();
+        this.checkTtl = config.getCheckTtl();
+        this.checkDeregisterCriticalTimeout = config.getCheckDeregisterCriticalTimeout();
 
         int periodMs = Math.max(config.getCheckPassPeriodSeconds(), 1) * 1000;
         this.registryTtlScheduler = LoopThread.createStarted("consul_registry_ttl_scheduler", periodMs, periodMs, this::checkPass);
@@ -177,8 +177,8 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     private NewService.Check createCheck() {
         NewService.Check check = new NewService.Check();
-        check.setTtl(checkTtlSeconds);
-        check.setDeregisterCriticalServiceAfter(checkDeregisterCriticalTimeoutSeconds);
+        check.setTtl(checkTtl);
+        check.setDeregisterCriticalServiceAfter(checkDeregisterCriticalTimeout);
         return check;
     }
 

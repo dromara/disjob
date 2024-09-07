@@ -54,13 +54,13 @@ public class ConsulRegistryProperties extends AbstractRegistryProperties {
     private int checkPassPeriodSeconds = 3;
 
     /**
-     * Check ttl seconds
+     * Check time to live
      */
-    private String checkTtlSeconds = (checkPassPeriodSeconds * 5) + "s";
+    private String checkTtl = (checkPassPeriodSeconds * 3) + "s";
 
     /**
-     * Check deregister critical timeout seconds
+     * Check deregister critical timeout
      */
-    private String checkDeregisterCriticalTimeoutSeconds = "300s";
+    private String checkDeregisterCriticalTimeout = "60m";
 
 }

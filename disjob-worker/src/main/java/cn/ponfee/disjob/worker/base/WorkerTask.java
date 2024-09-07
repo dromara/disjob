@@ -58,7 +58,7 @@ class WorkerTask {
     private final Worker worker;
 
     /**
-     * 任务执行执行器
+     * 任务执行器
      */
     @Getter(AccessLevel.NONE)
     private final AtomicReference<TaskExecutor> taskExecutor = new AtomicReference<>();

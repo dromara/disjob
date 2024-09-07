@@ -96,7 +96,7 @@ import java.util.stream.Stream;
  *
  * @author Ponfee
  */
-public class DAGExpressionParser {
+public class DAGExpression {
 
     /**
      * <pre>
@@ -138,10 +138,10 @@ public class DAGExpressionParser {
     private final Map<String, List<Tuple2<String, Integer>>> incrementer = new HashMap<>();
 
     public static Graph<DAGNode> parse(String text) {
-        return new DAGExpressionParser(text).parse();
+        return new DAGExpression(text).parse();
     }
 
-    private DAGExpressionParser(String text) {
+    private DAGExpression(String text) {
         Assert.hasText(text, "Expression cannot be blank.");
         this.expression = text.trim();
     }
@@ -255,7 +255,7 @@ public class DAGExpressionParser {
         }
 
         if (!expr.startsWith(Str.OPEN) || !expr.endsWith(Str.CLOSE)) {
-            return resolve(wrappedCache.computeIfAbsent(expr, DAGExpressionParser::wrap));
+            return resolve(wrappedCache.computeIfAbsent(expr, DAGExpression::wrap));
         }
 
         List<Tuple2<Integer, Integer>> groups = group(expr);
@@ -269,7 +269,7 @@ public class DAGExpressionParser {
             // 多组括号情况，需要在外层再包层括号，如：
             //   1）“(A,B) -> (C,D)”    =>    “((A,B) -> (C,D))”
             //   2）“(B->C->D),(A->F)”  =>    “((B->C->D),(A->F))”
-            return resolve(wrappedCache.computeIfAbsent(expr, DAGExpressionParser::wrap));
+            return resolve(wrappedCache.computeIfAbsent(expr, DAGExpression::wrap));
         } else {
             throw new IllegalArgumentException("Invalid expression: " + expr);
         }

@@ -172,15 +172,6 @@ public class DistributedJobManager extends AbstractJobManager {
 
     /**
      * Set or clear task worker
-     * <pre>
-     * 当worker不相同时，可使用`CASE WHEN`语法：
-     * UPDATE sched_task SET worker =
-     *   CASE
-     *     WHEN task_id = 1 THEN 'a'
-     *     WHEN task_id = 2 THEN 'b'
-     *   END
-     * WHERE id IN (1, 2)
-     * </pre>
      *
      * @param worker  the worker
      * @param taskIds the task id list
@@ -198,10 +189,6 @@ public class DistributedJobManager extends AbstractJobManager {
 
     /**
      * Starts the task
-     * <pre>
-     * 1）如果先`get`查一次然后`start`，最后再`get`查的话数据可能会被缓存，返回`runState=10`
-     * 2）若先`instanceMapper.lock(lockInstanceId)`，不会出现以上问题
-     * </pre>
      *
      * @param param the start task param
      * @return StartTaskResult, if not null start successfully
@@ -213,6 +200,8 @@ public class DistributedJobManager extends AbstractJobManager {
             String startRequestId = param.getStartRequestId();
             log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             Date now = new Date();
+            // 如果先`get`查一次然后`start`，最后再`get`查的话数据可能会被缓存，返回`runState=10`
+            // 若先`instanceMapper.lock(lockInstanceId)`，不会出现以上问题
             if (isNotAffectedRow(taskMapper.start(param.getTaskId(), param.getWorker(), startRequestId, now))) {
                 if (!taskMapper.checkStartIdempotent(param.getTaskId(), param.getWorker(), startRequestId)) {
                     return StartTaskResult.failure("Start task failure.");
@@ -229,14 +218,14 @@ public class DistributedJobManager extends AbstractJobManager {
             SchedTask task = taskMapper.get(param.getTaskId());
             List<PredecessorInstance> predecessorInstances = null;
             if (param.getJobType() == JobType.WORKFLOW) {
-                predecessorInstances = findPredecessorInstances(param.getJobId(), param.getWnstanceId(), instanceId);
+                predecessorInstances = findWorkflowPredecessorInstances(param.getJobId(), param.getWnstanceId(), instanceId);
             }
             return StartTaskResult.success(task, predecessorInstances);
         });
     }
 
     /**
-     * Stop task
+     * Stops task
      *
      * @param param the stop task param
      * @return {@code true} if stopped task successful
@@ -728,7 +717,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         long nextInstanceId = generateId();
-        List<SchedTask> tasks = splitJob(SplitJobParam.from(job, target.getName()), nextInstanceId);
+        List<SchedTask> tasks = splitJob(SplitJobParam.of(job, target.getName()), nextInstanceId);
         RunType runType = RunType.of(lead.getRunType());
         SchedWorkflow predecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
         SchedInstance parent = (predecessor == null) ? lead : instanceMapper.get(predecessor.getInstanceId());
@@ -771,6 +760,32 @@ public class DistributedJobManager extends AbstractJobManager {
             return true;
         }
         return false;
+    }
+
+    private List<PredecessorInstance> findWorkflowPredecessorInstances(long jobId, long wnstanceId, long curInstanceId) {
+        List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
+        SchedWorkflow curWorkflow = Collects.findAny(workflows, e -> Objects.equals(curInstanceId, e.getInstanceId()));
+        if (curWorkflow == null || curWorkflow.parsePreNode().isStart()) {
+            return null;
+        }
+
+        RetryType retryType = RetryType.of(getRequireJob(jobId).getRetryType());
+        return Collects.convert(WorkflowGraph.of(workflows).predecessors(curWorkflow.parseCurNode()).values(), e -> {
+            // predecessor instance下的task是全部执行成功的
+            List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId(), null);
+            SchedInstance pre;
+            if (retryType == RetryType.FAILED && (pre = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
+                Set<Long> instanceIds = instanceMapper.findChildren(pre.getPnstanceId(), RunType.RETRY.value())
+                    .stream()
+                    .map(SchedInstance::getInstanceId)
+                    .filter(t -> !Objects.equals(t, e.getInstanceId()))
+                    .collect(Collectors.toSet());
+                instanceIds.add(pre.getPnstanceId());
+                instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceId(t, ES_COMPLETED)));
+            }
+            tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
+            return PredecessorInstance.of(e, tasks);
+        });
     }
 
     // ------------------------------------------------------------------other methods
@@ -829,7 +844,7 @@ public class DistributedJobManager extends AbstractJobManager {
         RetryType retryType = RetryType.of(job.getRetryType());
         if (retryType == RetryType.ALL) {
             // re-split job
-            return splitJob(SplitJobParam.from(job, prev), instanceId);
+            return splitJob(SplitJobParam.of(job, prev), instanceId);
         }
         if (retryType == RetryType.FAILED) {
             return taskMapper.findLargeByInstanceId(prev.getInstanceId(), null)
@@ -903,32 +918,6 @@ public class DistributedJobManager extends AbstractJobManager {
             throw new IllegalStateException("Invalid dispatch tasks size: " + expectTaskSize + ", " + waitingTasks.size());
         }
         return Tuple3.of(job, instance, waitingTasks);
-    }
-
-    private List<PredecessorInstance> findPredecessorInstances(long jobId, long wnstanceId, long curInstanceId) {
-        List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
-        SchedWorkflow curWorkflow = Collects.findAny(workflows, e -> Objects.equals(curInstanceId, e.getInstanceId()));
-        if (curWorkflow == null || curWorkflow.parsePreNode().isStart()) {
-            return null;
-        }
-
-        RetryType retryType = RetryType.of(getRequireJob(jobId).getRetryType());
-        return Collects.convert(WorkflowGraph.of(workflows).predecessors(curWorkflow.parseCurNode()).values(), e -> {
-            // predecessor instance下的task是全部执行成功的
-            List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId(), null);
-            SchedInstance pre;
-            if (retryType == RetryType.FAILED && (pre = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
-                Set<Long> instanceIds = instanceMapper.findChildren(pre.getPnstanceId(), RunType.RETRY.value())
-                    .stream()
-                    .map(SchedInstance::getInstanceId)
-                    .filter(t -> !Objects.equals(t, e.getInstanceId()))
-                    .collect(Collectors.toSet());
-                instanceIds.add(pre.getPnstanceId());
-                instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceId(t, ES_COMPLETED)));
-            }
-            tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
-            return PredecessorInstance.of(e, tasks);
-        });
     }
 
     private void startRetrying(SchedInstance instance) {

@@ -144,6 +144,15 @@
   </delete>
 
   <!-- 使用其它的批量方式需要添加jdbc参数：allowMultiQueries=true&rewriteBatchedStatements=true -->
+  <!--
+   | 当worker不相同时，可使用`CASE WHEN`语法批量UPDATE：
+   | UPDATE sched_task SET worker =
+   |   CASE
+   |     WHEN task_id = 1 THEN 'a'
+   |     WHEN task_id = 2 THEN 'b'
+   |   END
+   | WHERE id IN (1, 2)
+  -->
   <update id="batchUpdateWorker">
     UPDATE <include refid="Table_Name" />
     SET worker = #{worker,jdbcType=VARCHAR}

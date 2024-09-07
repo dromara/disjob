@@ -535,11 +535,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
          * @return {@code true} if return to idle pool successfully
          */
         private boolean returnPool() {
-            if (activePool.removeThread(this) == null) {
+            if (activePool.removeThread(this) == null || isStopped()) {
                 // maybe already removed by other operation
-                return false;
-            }
-            if (isStopped()) {
                 return false;
             }
             try {

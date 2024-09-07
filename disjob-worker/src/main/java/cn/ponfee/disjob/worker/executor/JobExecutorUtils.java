@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.dag.DAGExpressionParser;
+import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
@@ -53,7 +53,7 @@ public class JobExecutorUtils {
         Assert.hasText(param.getJobExecutor(), "Job executor cannot be blank.");
         Set<String> jobExecutors;
         if (param.getJobType() == JobType.WORKFLOW) {
-            jobExecutors = DAGExpressionParser.parse(param.getJobExecutor())
+            jobExecutors = DAGExpression.parse(param.getJobExecutor())
                 .nodes()
                 .stream()
                 .filter(Predicates.not(DAGNode::isStartOrEnd))

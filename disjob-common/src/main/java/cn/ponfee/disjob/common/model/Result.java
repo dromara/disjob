@@ -59,12 +59,9 @@ public class Result<T> extends ToJsonString implements CodeMsg, java.io.Serializ
 
     // -----------------------------------------------other methods
 
+    @SuppressWarnings("unchecked")
     public <E> Result<E> cast() {
         return (Result<E>) this;
-    }
-
-    public <E> Result<E> from(E data) {
-        return new Result<>(code, msg, data);
     }
 
     public <E> Result<E> map(Function<T, E> mapper) {

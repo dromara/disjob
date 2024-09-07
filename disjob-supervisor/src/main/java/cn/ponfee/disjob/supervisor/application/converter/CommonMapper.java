@@ -41,6 +41,14 @@ public class CommonMapper {
         }
     }
 
+    /**
+     * Returns time duration
+     *
+     * @param startTime the start time
+     * @param endTime   the end time
+     * @return duration
+     * @see org.apache.commons.lang3.time.DurationFormatUtils#formatDuration(long, String)
+     */
     public static Long duration(Date startTime, Date endTime) {
         if (startTime == null || endTime == null) {
             return null;

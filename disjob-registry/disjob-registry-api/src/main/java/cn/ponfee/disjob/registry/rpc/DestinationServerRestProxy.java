@@ -102,6 +102,7 @@ public final class DestinationServerRestProxy {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             DiscoveryServerRestProxy.Request req = DiscoveryServerRestProxy.buildRequest(prefixPath, method);
             Server destinationServer = SERVER_THREAD_LOCAL.get();
+            @SuppressWarnings("unchecked")
             String contextPath = serverContextPath.apply((S) destinationServer);
             String urlPath = Strings.concatPath(contextPath, req.path);
             return template.invoke(destinationServer, urlPath, req.httpMethod, method.getGenericReturnType(), args);

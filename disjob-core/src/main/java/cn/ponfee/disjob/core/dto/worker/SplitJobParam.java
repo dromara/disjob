@@ -50,15 +50,15 @@ public class SplitJobParam extends AuthenticationParam {
         this.routeStrategy = routeStrategy;
     }
 
-    public static SplitJobParam from(SchedJob job, SchedInstance inst) {
+    public static SplitJobParam of(SchedJob job, SchedInstance inst) {
         if (inst.isWorkflowLead()) {
             throw new IllegalArgumentException("Split job cannot workflow lead instance: " + inst.getInstanceId());
         }
         String jobExecutor = inst.isWorkflowNode() ? inst.parseAttach().parseCurNode().getName() : job.getJobExecutor();
-        return from(job, jobExecutor);
+        return of(job, jobExecutor);
     }
 
-    public static SplitJobParam from(SchedJob job, String jobExecutor) {
+    public static SplitJobParam of(SchedJob job, String jobExecutor) {
         return new SplitJobParam(
             job.getGroup(),
             jobExecutor,

@@ -56,7 +56,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class RedisTaskReceiver extends TaskReceiver {
 
     /**
-     * List Batch pop lua script
+     * List batch pop lua script
      *
      * <pre>{@code
      *   // 1、获取[0 ~ n-1]之间的元素
@@ -66,6 +66,7 @@ public class RedisTaskReceiver extends TaskReceiver {
      *   ltrim(key, n, -1)
      * }</pre>
      */
+    @SuppressWarnings("rawtypes")
     private static final RedisScript<List> BATCH_POP_SCRIPT = RedisScript.of(
         "local ret = redis.call('lrange', KEYS[1], 0, ARGV[1]-1); \n" +
         "redis.call('ltrim', KEYS[1], ARGV[1], -1);               \n" +
@@ -130,6 +131,7 @@ public class RedisTaskReceiver extends TaskReceiver {
 
         @Override
         protected boolean heartbeat() {
+            @SuppressWarnings("unchecked")
             List<byte[]> received = RedisTemplateUtils.evalScript(redisTemplate, BATCH_POP_SCRIPT, 1, gropedWorker.keysAndArgs);
             gropedWorker.redisKeyRenewal.renewIfNecessary();
             if (CollectionUtils.isEmpty(received)) {

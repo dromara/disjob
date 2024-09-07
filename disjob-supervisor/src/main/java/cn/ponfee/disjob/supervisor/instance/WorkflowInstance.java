@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.instance;
 
 import cn.ponfee.disjob.common.dag.DAGEdge;
-import cn.ponfee.disjob.common.dag.DAGExpressionParser;
+import cn.ponfee.disjob.common.dag.DAGExpression;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tuple.Tuple2;
@@ -57,7 +57,7 @@ public class WorkflowInstance extends TriggerInstance {
         leadInstance.setRunStartTime(Dates.max(new Date(), new Date(triggerTime)));
         super.instance = leadInstance;
 
-        this.workflows = DAGExpressionParser.parse(job.getJobExecutor())
+        this.workflows = DAGExpression.parse(job.getJobExecutor())
             .edges()
             .stream()
             .map(e -> new SchedWorkflow(wnstanceId, e.source().toString(), e.target().toString()))
@@ -77,7 +77,7 @@ public class WorkflowInstance extends TriggerInstance {
             SchedInstance nodeInstance = SchedInstance.create(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);
             nodeInstance.setAttach(new InstanceAttach(node.toString()).toJson());
 
-            SplitJobParam param = SplitJobParam.from(job, node.getName());
+            SplitJobParam param = SplitJobParam.of(job, node.getName());
             List<SchedTask> nodeTasks = creator.jobManager.splitJob(param, nodeInstance.getInstanceId());
             nodes.add(Tuple2.of(nodeInstance, nodeTasks));
         }

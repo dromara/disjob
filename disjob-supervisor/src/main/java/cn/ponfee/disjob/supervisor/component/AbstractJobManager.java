@@ -220,8 +220,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean isAliveWorker(String worker) {
-        return StringUtils.isNotBlank(worker)
-            && isAliveWorker(Worker.deserialize(worker));
+        return StringUtils.isNotBlank(worker) && isAliveWorker(Worker.deserialize(worker));
     }
 
     public boolean isAliveWorker(Worker worker) {
@@ -347,7 +346,7 @@ public abstract class AbstractJobManager {
         JobType.of(job.getJobType());
         RouteStrategy.of(job.getRouteStrategy());
 
-        VerifyJobParam param = VerifyJobParam.from(job);
+        VerifyJobParam param = VerifyJobParam.of(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verifyJob(param));
     }

@@ -49,18 +49,10 @@ public class VerifyJobParam extends AuthenticationParam {
         this.routeStrategy = routeStrategy;
     }
 
-    public static VerifyJobParam from(SchedJob job) {
-        return from(job, job.getJobExecutor());
-    }
-
-    public static VerifyJobParam from(SchedJob job, String jobExecutor) {
-        return new VerifyJobParam(
-            job.getGroup(),
-            jobExecutor,
-            job.getJobParam(),
-            JobType.of(job.getJobType()),
-            RouteStrategy.of(job.getRouteStrategy())
-        );
+    public static VerifyJobParam of(SchedJob job) {
+        RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
+        JobType jobType = JobType.of(job.getJobType());
+        return new VerifyJobParam(job.getGroup(), job.getJobExecutor(), job.getJobParam(), jobType, routeStrategy);
     }
 
 }
