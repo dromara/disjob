@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.core.enums.RunState;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.beans.Transient;
@@ -33,7 +32,6 @@ import java.beans.Transient;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class SchedWorkflow extends BaseEntity {
     private static final long serialVersionUID = 3485414559751420216L;
 
@@ -64,11 +62,13 @@ public class SchedWorkflow extends BaseEntity {
      */
     private Long instanceId;
 
-    public SchedWorkflow(Long wnstanceId, String preNode, String curNode) {
-        this.wnstanceId = wnstanceId;
-        this.preNode = preNode;
-        this.curNode = curNode;
-        this.runState = RunState.WAITING.value();
+    public static SchedWorkflow of(Long wnstanceId, String preNode, String curNode) {
+        SchedWorkflow workflow = new SchedWorkflow();
+        workflow.setWnstanceId(wnstanceId);
+        workflow.setPreNode(preNode);
+        workflow.setCurNode(curNode);
+        workflow.setRunState(RunState.WAITING.value());
+        return workflow;
     }
 
     public DAGEdge toEdge() {

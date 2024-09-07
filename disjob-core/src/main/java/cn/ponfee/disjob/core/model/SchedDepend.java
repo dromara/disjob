@@ -19,7 +19,6 @@ package cn.ponfee.disjob.core.model;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class SchedDepend extends BaseEntity {
     private static final long serialVersionUID = 8880747435878186418L;
 
@@ -48,9 +46,11 @@ public class SchedDepend extends BaseEntity {
      */
     private Long childJobId;
 
-    public SchedDepend(Long parentJobId, Long childJobId) {
-        this.parentJobId = parentJobId;
-        this.childJobId = childJobId;
+    public static SchedDepend of(Long parentJobId, Long childJobId) {
+        SchedDepend depend = new SchedDepend();
+        depend.setParentJobId(parentJobId);
+        depend.setChildJobId(childJobId);
+        return depend;
     }
 
     public static List<Long> parseTriggerValue(String triggerValue) {

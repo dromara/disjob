@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.dto.worker;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -27,15 +26,16 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class ExistsTaskParam extends AuthenticationParam {
     private static final long serialVersionUID = -2212057097314433737L;
 
     private long taskId;
 
-    public ExistsTaskParam(String supervisorToken, long taskId) {
-        super.setSupervisorToken(supervisorToken);
-        this.taskId = taskId;
+    public static ExistsTaskParam of(String supervisorToken, long taskId) {
+        ExistsTaskParam param = new ExistsTaskParam();
+        param.setSupervisorToken(supervisorToken);
+        param.setTaskId(taskId);
+        return param;
     }
 
 }

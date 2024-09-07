@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.util.Assert;
 
@@ -33,7 +32,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class StartTaskParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7700836087189718161L;
 
@@ -45,15 +43,17 @@ public class StartTaskParam extends ToJsonString implements Serializable {
     private String startRequestId;
     private JobType jobType;
 
-    public StartTaskParam(long jobId, Long wnstanceId, long instanceId, long taskId,
-                          JobType jobType, Worker worker, String startRequestId) {
-        this.jobId = jobId;
-        this.wnstanceId = wnstanceId;
-        this.instanceId = instanceId;
-        this.taskId = taskId;
-        this.jobType = jobType;
-        this.worker = worker.serialize();
-        this.startRequestId = startRequestId;
+    public static StartTaskParam of(long jobId, Long wnstanceId, long instanceId, long taskId,
+                                    JobType jobType, Worker worker, String startRequestId) {
+        StartTaskParam param = new StartTaskParam();
+        param.setJobId(jobId);
+        param.setWnstanceId(wnstanceId);
+        param.setInstanceId(instanceId);
+        param.setTaskId(taskId);
+        param.setJobType(jobType);
+        param.setWorker(worker.serialize());
+        param.setStartRequestId(startRequestId);
+        return param;
     }
 
     public void check() {

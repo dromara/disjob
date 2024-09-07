@@ -77,7 +77,7 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
 
     static List<IntValueDesc> values(Class<? extends IntValueEnum<?>> clazz) {
         return Arrays.stream(clazz.getEnumConstants())
-            .map(e -> new IntValueDesc(e.value(), e.desc()))
+            .map(e -> IntValueDesc.of(e.value(), e.desc()))
             .collect(ImmutableList.toImmutableList());
     }
 

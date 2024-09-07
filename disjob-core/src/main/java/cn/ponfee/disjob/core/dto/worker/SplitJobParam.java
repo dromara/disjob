@@ -21,8 +21,8 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 /**
  * Split job parameter.
@@ -31,7 +31,6 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class SplitJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
@@ -41,31 +40,20 @@ public class SplitJobParam extends AuthenticationParam {
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
-    public SplitJobParam(String group, String jobExecutor, String jobParam,
-                         JobType jobType, RouteStrategy routeStrategy) {
-        this.group = group;
-        this.jobExecutor = jobExecutor;
-        this.jobParam = jobParam;
-        this.jobType = jobType;
-        this.routeStrategy = routeStrategy;
-    }
-
-    public static SplitJobParam of(SchedJob job, SchedInstance inst) {
-        if (inst.isWorkflowLead()) {
-            throw new IllegalArgumentException("Split job cannot workflow lead instance: " + inst.getInstanceId());
-        }
-        String jobExecutor = inst.isWorkflowNode() ? inst.parseAttach().parseCurNode().getName() : job.getJobExecutor();
+    public static SplitJobParam of(SchedJob job, SchedInstance instance) {
+        Assert.isTrue(!instance.isWorkflowLead(), () -> "Split job cannot workflow lead instance: " + instance.getInstanceId());
+        String jobExecutor = instance.isWorkflowNode() ? instance.parseAttach().parseCurNode().getName() : job.getJobExecutor();
         return of(job, jobExecutor);
     }
 
     public static SplitJobParam of(SchedJob job, String jobExecutor) {
-        return new SplitJobParam(
-            job.getGroup(),
-            jobExecutor,
-            job.getJobParam(),
-            JobType.of(job.getJobType()),
-            RouteStrategy.of(job.getRouteStrategy())
-        );
+        SplitJobParam param = new SplitJobParam();
+        param.setGroup(job.getGroup());
+        param.setJobExecutor(jobExecutor);
+        param.setJobParam(job.getJobParam());
+        param.setJobType(JobType.of(job.getJobType()));
+        param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
+        return param;
     }
 
 }

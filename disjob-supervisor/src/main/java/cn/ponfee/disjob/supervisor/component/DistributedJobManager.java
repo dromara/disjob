@@ -218,7 +218,7 @@ public class DistributedJobManager extends AbstractJobManager {
             SchedTask task = taskMapper.get(param.getTaskId());
             List<PredecessorInstance> predecessorInstances = null;
             if (param.getJobType() == JobType.WORKFLOW) {
-                predecessorInstances = findWorkflowPredecessorInstances(param.getJobId(), param.getWnstanceId(), instanceId);
+                predecessorInstances = findWorkflowPredecessors(param.getJobId(), param.getWnstanceId(), instanceId);
             }
             return StartTaskResult.success(task, predecessorInstances);
         });
@@ -722,7 +722,7 @@ public class DistributedJobManager extends AbstractJobManager {
         SchedWorkflow predecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
         SchedInstance parent = (predecessor == null) ? lead : instanceMapper.get(predecessor.getInstanceId());
         SchedInstance nextInstance = SchedInstance.create(parent, nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
-        nextInstance.setAttach(new InstanceAttach(workflow.getCurNode()).toJson());
+        nextInstance.setAttach(InstanceAttach.of(workflow.getCurNode()).toJson());
 
         int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), RunState.RUNNING.value(), nextInstanceId, RS_WAITING, null);
         assertHasAffectedRow(row, () -> "Start workflow node failed: " + workflow);
@@ -762,7 +762,7 @@ public class DistributedJobManager extends AbstractJobManager {
         return false;
     }
 
-    private List<PredecessorInstance> findWorkflowPredecessorInstances(long jobId, long wnstanceId, long curInstanceId) {
+    private List<PredecessorInstance> findWorkflowPredecessors(long jobId, long wnstanceId, long curInstanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
         SchedWorkflow curWorkflow = Collects.findAny(workflows, e -> Objects.equals(curInstanceId, e.getInstanceId()));
         if (curWorkflow == null || curWorkflow.parsePreNode().isStart()) {

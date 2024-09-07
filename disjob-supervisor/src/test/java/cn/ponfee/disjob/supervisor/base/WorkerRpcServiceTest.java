@@ -44,9 +44,11 @@ public class WorkerRpcServiceTest extends SpringBootTestBase<Object> {
     @Test
     public void testSplit() throws JobException {
         String taskParam = "taskParam";
-        when(workerRpcService.splitJob(any())).thenReturn(new SplitJobResult(Collections.singletonList(taskParam)));
+        when(workerRpcService.splitJob(any())).thenReturn(SplitJobResult.of(Collections.singletonList(taskParam)));
 
-        SplitJobResult result = workerRpcService.splitJob(new SplitJobParam("group", null, null, null, null));
+        SplitJobParam param = new SplitJobParam();
+        param.setGroup("group");
+        SplitJobResult result = workerRpcService.splitJob(param);
         assertNotNull(result);
         assertNotNull(result.getTaskParams());
         assertEquals(1, result.getTaskParams().size());

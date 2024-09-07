@@ -250,7 +250,7 @@ public abstract class AbstractJobManager {
         }
 
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
-        ExistsTaskParam param = new ExistsTaskParam(supervisorToken, task.getTaskId());
+        ExistsTaskParam param = ExistsTaskParam.of(supervisorToken, task.getTaskId());
         try {
             // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发。
             // 因扫描(WaitingInstanceScanner/RunningInstanceScanner)时间是很滞后的，
@@ -381,7 +381,7 @@ public abstract class AbstractJobManager {
             // 校验是否有循环依赖 以及 依赖层级是否太深
             checkCircularDepends(jobId, new HashSet<>(parentJobIds));
 
-            List<SchedDepend> list = Collects.convert(parentJobIds, pid -> new SchedDepend(pid, jobId));
+            List<SchedDepend> list = Collects.convert(parentJobIds, pid -> SchedDepend.of(pid, jobId));
             Collects.batchProcess(list, dependMapper::batchInsert, JobConstants.PROCESS_BATCH_SIZE);
             job.setTriggerValue(Joiner.on(Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);

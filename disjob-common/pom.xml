@@ -65,6 +65,12 @@
       <artifactId>jna-platform</artifactId>
       <version>${jna-platform.version}</version>
     </dependency>
+    <dependency>
+      <groupId>guru.nidi</groupId>
+      <artifactId>graphviz-java</artifactId>
+      <version>${graphviz-java.version}</version>
+      <optional>true</optional>
+    </dependency>
     <!-- spring dependencies -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -93,12 +99,6 @@
     </dependency>
 
     <!-- Test dependencies -->
-    <dependency>
-      <groupId>guru.nidi</groupId>
-      <artifactId>graphviz-java</artifactId>
-      <version>${graphviz-java.version}</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>

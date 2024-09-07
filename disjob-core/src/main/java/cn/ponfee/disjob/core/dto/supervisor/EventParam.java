@@ -18,7 +18,6 @@ package cn.ponfee.disjob.core.dto.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -31,20 +30,17 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class EventParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -4173560082801958499L;
 
-    private Type   type;
+    private Type type;
     private String data;
 
-    public EventParam(Type type) {
-        this(type, null);
-    }
-
-    public EventParam(Type type, String data) {
-        this.type = Objects.requireNonNull(type);
-        this.data = data;
+    public static EventParam of(Type type, String data) {
+        EventParam param = new EventParam();
+        param.setType(Objects.requireNonNull(type));
+        param.setData(data);
+        return param;
     }
 
     public enum Type {

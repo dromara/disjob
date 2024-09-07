@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
+import cn.ponfee.disjob.common.dag.DAGUtils;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
@@ -39,11 +40,14 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -76,6 +80,13 @@ public class DisjobJobController extends BaseController {
     public String job(ModelMap mmap) {
         mmap.put("groups", SchedGroupService.myGroups(getLoginName()));
         return PREFIX + "/job";
+    }
+
+    @RequiresPermissions(PERMISSION_CODE)
+    @GetMapping("/dag")
+    public void dag(@RequestParam("expr") String expr, HttpServletResponse response) throws IOException {
+        response.setContentType(MediaType.IMAGE_PNG_VALUE);
+        DAGUtils.drawPngImage(expr, "DAG", 2000, response.getOutputStream());
     }
 
     /**

@@ -19,7 +19,6 @@ package cn.ponfee.disjob.core.model;
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.dag.DAGNode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,7 +31,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class InstanceAttach extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -7365475674760089839L;
 
@@ -41,15 +39,17 @@ public class InstanceAttach extends ToJsonString implements Serializable {
      */
     private String curNode;
 
-    public InstanceAttach(String curNode) {
-        this.curNode = curNode;
-    }
-
     public DAGNode parseCurNode() {
         if (StringUtils.isBlank(curNode)) {
             return null;
         }
         return DAGNode.fromString(curNode);
+    }
+
+    public static InstanceAttach of(String curNode) {
+        InstanceAttach attach = new InstanceAttach();
+        attach.setCurNode(curNode);
+        return attach;
     }
 
 }

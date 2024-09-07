@@ -128,11 +128,11 @@ class WorkerTask {
     }
 
     StartTaskParam toStartTaskParam() {
-        return new StartTaskParam(jobId, wnstanceId, instanceId, taskId, jobType, worker, UuidUtils.uuid32());
+        return StartTaskParam.of(jobId, wnstanceId, instanceId, taskId, jobType, worker, UuidUtils.uuid32());
     }
 
     StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {
-        return new StopTaskParam(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
+        return StopTaskParam.of(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
     }
 
     ExecutionTask toExecutionTask(StartTaskResult source) {

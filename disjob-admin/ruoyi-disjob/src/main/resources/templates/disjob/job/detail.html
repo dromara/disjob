@@ -33,7 +33,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="col-sm-3 control-label is-required">Job执行器：</label>
+        <label class="col-sm-3 control-label is-required" id="jobExecutorLabel">Job执行器：</label>
         <div class="col-sm-9">
           <pre id="jobExecutor"></pre>
         </div>
@@ -122,12 +122,18 @@
   <th:block th:include="include :: jsonview-js" />
 
   <script th:inline="javascript">
+    const prefix = ctx + "disjob/job";
+
     $(function () {
-      view("jobParam",   [[${job.jobParam}]]   );
-      view("jobExecutor", [[${job.jobExecutor}]] );
+      viewJson("jobParam",    [[${job.jobParam}]]    );
+      viewJson("jobExecutor", [[${job.jobExecutor}]] );
+
+      if ([[${job.jobType}]] === 2) {
+        $("#jobExecutorLabel").html('<a href="javascript:void(0)" onclick="viewDag()">Job执行器：</a>');
+      }
     });
 
-    function view(id, text) {
+    function viewJson(id, text) {
       const elem = $("#" + id);
       if (text) {
         try {
@@ -138,6 +144,19 @@
       } else {
         elem.text(" ");
       }
+    }
+
+    function viewDag() {
+      layer.photos({
+        photos: {
+          title: "DAG",
+          data: [{
+            alt: "DAG",
+            src: prefix + "/dag?expr=" + encodeURIComponent([[${job.jobExecutor}]])
+          }]
+        },
+        footer: false
+      });
     }
   </script>
 </body>

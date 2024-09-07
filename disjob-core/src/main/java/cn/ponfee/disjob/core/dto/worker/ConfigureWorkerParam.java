@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.dto.worker;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -27,7 +26,6 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class ConfigureWorkerParam extends AuthenticationParam {
     private static final long serialVersionUID = 1023942345935168778L;
 
@@ -41,8 +39,10 @@ public class ConfigureWorkerParam extends AuthenticationParam {
      */
     private String data;
 
-    public ConfigureWorkerParam(String supervisorToken) {
-        super.setSupervisorToken(supervisorToken);
+    public static ConfigureWorkerParam of(String supervisorToken) {
+        ConfigureWorkerParam param = new ConfigureWorkerParam();
+        param.setSupervisorToken(supervisorToken);
+        return param;
     }
 
     public enum Action {

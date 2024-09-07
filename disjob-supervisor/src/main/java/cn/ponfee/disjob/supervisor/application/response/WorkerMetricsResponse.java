@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.application.response;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -27,7 +26,6 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class WorkerMetricsResponse extends ServerMetricsResponse {
     private static final long serialVersionUID = -8325148543854446360L;
 
@@ -44,8 +42,10 @@ public class WorkerMetricsResponse extends ServerMetricsResponse {
     private Long queueTaskCount;
     private Long completedTaskCount;
 
-    public WorkerMetricsResponse(String workerId) {
-        this.workerId = workerId;
+    public static WorkerMetricsResponse of(String workerId) {
+        WorkerMetricsResponse response = new WorkerMetricsResponse();
+        response.setWorkerId(workerId);
+        return response;
     }
 
 }

@@ -20,12 +20,10 @@ import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operation;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * Stop task parameter.
@@ -34,7 +32,6 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class StopTaskParam extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 7700836087189718161L;
 
@@ -46,22 +43,28 @@ public class StopTaskParam extends ToJsonString implements Serializable {
     private String errorMsg;
     private String worker;
 
-    public StopTaskParam(Long wnstanceId, long instanceId, long taskId, String worker,
-                         Operation operation, ExecuteState toState, String errorMsg) {
-        Assert.hasText(worker, "Stop task worker param cannot be blank.");
-        this.wnstanceId = wnstanceId;
-        this.instanceId = instanceId;
-        this.taskId = taskId;
-        this.worker = worker;
-        this.operation = Objects.requireNonNull(operation, "Stop task operation param cannot be null.");
-        this.toState = Objects.requireNonNull(toState, "Stop task target state param cannot be null.");
-        this.errorMsg = errorMsg;
+    public static StopTaskParam of(Long wnstanceId, long instanceId, long taskId, String worker,
+                                   Operation operation, ExecuteState toState, String errorMsg) {
+        StopTaskParam param = new StopTaskParam();
+        param.setWnstanceId(wnstanceId);
+        param.setInstanceId(instanceId);
+        param.setTaskId(taskId);
+        param.setWorker(worker);
+        param.setOperation(operation);
+        param.setToState(toState);
+        param.setErrorMsg(errorMsg);
+
+        param.check();
+        return param;
     }
 
     public void check() {
         Assert.hasText(worker, "Stop task worker cannot be blank.");
+        Assert.notNull(operation, "Stop task operation cannot be null.");
+        Assert.notNull(toState, "Stop task target state cannot be null.");
+        // MANUAL_CANCEL: EXECUTING -> MANUAL_CANCELED
         // SHUTDOWN_RESUME: EXECUTING -> WAITING
-        Assert.isTrue(toState != ExecuteState.EXECUTING, () -> "Stop task target state invalid " + toState);
+        Assert.isTrue(toState != ExecuteState.EXECUTING, "Stop task target state cannot be EXECUTING.");
     }
 
 }

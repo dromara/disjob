@@ -18,7 +18,6 @@ package cn.ponfee.disjob.core.dto.worker;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
@@ -30,7 +29,6 @@ import java.util.List;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class SplitJobResult extends ToJsonString implements java.io.Serializable {
     private static final long serialVersionUID = -7020990825612520665L;
 
@@ -39,8 +37,10 @@ public class SplitJobResult extends ToJsonString implements java.io.Serializable
      */
     private List<String> taskParams;
 
-    public SplitJobResult(List<String> taskParams) {
-        this.taskParams = taskParams;
+    public static SplitJobResult of(List<String> taskParams) {
+        SplitJobResult result = new SplitJobResult();
+        result.setTaskParams(taskParams);
+        return result;
     }
 
 }

@@ -218,7 +218,7 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     private void refreshAndPublish() {
         refresh();
-        serverInvokeService.publishOtherSupervisors(new EventParam(EventParam.Type.REFRESH_GROUP));
+        serverInvokeService.publishOtherSupervisors(EventParam.of(EventParam.Type.REFRESH_GROUP, null));
     }
 
     private static Map<String, Set<String>> toUserMap(List<SchedGroup> list) {

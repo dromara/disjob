@@ -20,7 +20,6 @@ import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -30,7 +29,6 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class VerifyJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
@@ -40,19 +38,14 @@ public class VerifyJobParam extends AuthenticationParam {
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
-    public VerifyJobParam(String group, String jobExecutor, String jobParam,
-                          JobType jobType, RouteStrategy routeStrategy) {
-        this.group = group;
-        this.jobExecutor = jobExecutor;
-        this.jobParam = jobParam;
-        this.jobType = jobType;
-        this.routeStrategy = routeStrategy;
-    }
-
     public static VerifyJobParam of(SchedJob job) {
-        RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
-        JobType jobType = JobType.of(job.getJobType());
-        return new VerifyJobParam(job.getGroup(), job.getJobExecutor(), job.getJobParam(), jobType, routeStrategy);
+        VerifyJobParam param = new VerifyJobParam();
+        param.setGroup(job.getGroup());
+        param.setJobExecutor(job.getJobExecutor());
+        param.setJobParam(job.getJobParam());
+        param.setJobType(JobType.of(job.getJobType()));
+        param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
+        return param;
     }
 
 }

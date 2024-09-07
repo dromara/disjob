@@ -60,7 +60,7 @@ public class WorkflowInstance extends TriggerInstance {
         this.workflows = DAGExpression.parse(job.getJobExecutor())
             .edges()
             .stream()
-            .map(e -> new SchedWorkflow(wnstanceId, e.source().toString(), e.target().toString()))
+            .map(e -> SchedWorkflow.of(wnstanceId, e.source().toString(), e.target().toString()))
             .collect(Collectors.toList());
 
         // 生成第一批待执行的工作流实例
@@ -75,7 +75,7 @@ public class WorkflowInstance extends TriggerInstance {
 
             // 工作流的子任务实例的【root、parent、workflow】instance_id只与工作流相关联
             SchedInstance nodeInstance = SchedInstance.create(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);
-            nodeInstance.setAttach(new InstanceAttach(node.toString()).toJson());
+            nodeInstance.setAttach(InstanceAttach.of(node.toString()).toJson());
 
             SplitJobParam param = SplitJobParam.of(job, node.getName());
             List<SchedTask> nodeTasks = creator.jobManager.splitJob(param, nodeInstance.getInstanceId());

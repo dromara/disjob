@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.dto.worker;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -27,7 +26,6 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class GetMetricsParam extends AuthenticationParam {
     private static final long serialVersionUID = 6100003437491314940L;
 
@@ -36,9 +34,10 @@ public class GetMetricsParam extends AuthenticationParam {
      */
     private String group;
 
-    public GetMetricsParam(String supervisorToken, String group) {
-        super.setSupervisorToken(supervisorToken);
-        this.group = group;
+    public static GetMetricsParam of(String supervisorToken, String group) {
+        GetMetricsParam param = new GetMetricsParam();
+        param.setSupervisorToken(supervisorToken);
+        param.setGroup(group);
+        return param;
     }
-
 }

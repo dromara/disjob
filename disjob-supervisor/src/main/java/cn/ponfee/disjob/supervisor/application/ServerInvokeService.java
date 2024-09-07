@@ -195,7 +195,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
         WorkerMetricsResponse response;
         if (metrics == null || !SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
-            response = new WorkerMetricsResponse(worker.getWorkerId());
+            response = WorkerMetricsResponse.of(worker.getWorkerId());
         } else {
             response = ServerMetricsConverter.INSTANCE.convert(metrics);
         }
@@ -224,7 +224,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private void configureWorker(Worker worker, Action action, String data) {
-        ConfigureWorkerParam param = new ConfigureWorkerParam(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
+        ConfigureWorkerParam param = ConfigureWorkerParam.of(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
         param.setAction(action);
         param.setData(data);
         workerRpcClient.invoke(worker, client -> client.configureWorker(param));
@@ -235,7 +235,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private GetMetricsParam buildGetMetricsParam(String group) {
-        return new GetMetricsParam(SchedGroupService.createSupervisorAuthenticationToken(group), group);
+        return GetMetricsParam.of(SchedGroupService.createSupervisorAuthenticationToken(group), group);
     }
 
 }

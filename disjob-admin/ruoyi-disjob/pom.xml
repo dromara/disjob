@@ -41,6 +41,11 @@
       <groupId>cn.ponfee</groupId>
       <artifactId>ruoyi-system</artifactId>
     </dependency>
+    <dependency>
+      <groupId>guru.nidi</groupId>
+      <artifactId>graphviz-java</artifactId>
+      <version>${graphviz-java.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>cn.ponfee</groupId>
