@@ -70,8 +70,7 @@ public class JobExecutorUtils {
                     JobExecutor executor = load(jobExecutor);
                     Assert.isTrue(executor instanceof BroadcastJobExecutor, () -> "Not broadcast job executor: " + jobExecutor);
                 } else {
-                    param.setJobExecutor(jobExecutor);
-                    split(param.getJobExecutor(), param.getJobParam());
+                    split(jobExecutor, param.getJobParam());
                 }
             }
         } catch (JobException | JobRuntimeException e) {

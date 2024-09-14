@@ -17,12 +17,9 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.util.Enums;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * The run state enum definition.
@@ -100,11 +97,10 @@ public enum RunState implements IntValueEnum<RunState> {
     }
 
     public static RunState of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid run state value: " + value);
+        return IntValueEnum.of(RunState.class, value);
     }
 
     public static final class Const {
-        private static final Map<Integer, RunState> MAPPING = Enums.toMap(RunState.class, RunState::value);
 
         /**
          * State list of can transit to PAUSED

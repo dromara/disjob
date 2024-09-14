@@ -52,7 +52,7 @@ public class WorkflowInstance extends TriggerInstance {
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
         long wnstanceId = creator.jobManager.generateId();
         long jobId = job.getJobId();
-        SchedInstance leadInstance = SchedInstance.create(parent, wnstanceId, wnstanceId, jobId, runType, triggerTime, 0);
+        SchedInstance leadInstance = SchedInstance.of(parent, wnstanceId, wnstanceId, jobId, runType, triggerTime, 0);
         leadInstance.setRunState(RunState.RUNNING.value());
         leadInstance.setRunStartTime(Dates.max(new Date(), new Date(triggerTime)));
         super.instance = leadInstance;
@@ -74,7 +74,7 @@ public class WorkflowInstance extends TriggerInstance {
             workflow.setRunState(RunState.RUNNING.value());
 
             // 工作流的子任务实例的【root、parent、workflow】instance_id只与工作流相关联
-            SchedInstance nodeInstance = SchedInstance.create(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);
+            SchedInstance nodeInstance = SchedInstance.of(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);
             nodeInstance.setAttach(InstanceAttach.of(node.toString()).toJson());
 
             SplitJobParam param = SplitJobParam.of(job, node.getName());

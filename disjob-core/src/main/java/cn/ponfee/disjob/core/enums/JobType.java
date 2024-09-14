@@ -17,10 +17,6 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.util.Enums;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * The job type enum definition.
@@ -61,11 +57,7 @@ public enum JobType implements IntValueEnum<JobType> {
     }
 
     public static JobType of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid job type value: " + value);
-    }
-
-    private static final class Const {
-        private static final Map<Integer, JobType> MAPPING = Enums.toMap(JobType.class, JobType::value);
+        return IntValueEnum.of(JobType.class, value);
     }
 
 }

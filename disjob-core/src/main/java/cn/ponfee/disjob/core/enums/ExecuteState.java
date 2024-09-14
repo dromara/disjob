@@ -123,16 +123,16 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
         return desc;
     }
 
+    public RunState runState() {
+        return runState;
+    }
+
     public boolean isTerminal() {
         return runState.isTerminal();
     }
 
     public boolean isFailure() {
         return runState.isFailure();
-    }
-
-    public RunState runState() {
-        return runState;
     }
 
     public static ExecuteState of(Integer value) {

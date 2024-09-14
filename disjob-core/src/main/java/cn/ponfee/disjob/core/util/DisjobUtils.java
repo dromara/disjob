@@ -19,6 +19,7 @@ package cn.ponfee.disjob.core.util;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
 import com.google.common.collect.Interner;
@@ -71,6 +72,12 @@ public class DisjobUtils {
         }
 
         throw new Error("Not found available server host.");
+    }
+
+    public static <R> R doInSynchronized(Long lock, ThrowingSupplier<R, ?> action) throws Throwable {
+        synchronized (INSTANCE_LOCK_POOL.intern(lock)) {
+            return action.get();
+        }
     }
 
     public static void doInSynchronized(Long lock, ThrowingRunnable<?> action, Supplier<String> message) {

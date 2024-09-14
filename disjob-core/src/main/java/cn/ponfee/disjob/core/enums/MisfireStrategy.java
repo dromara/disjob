@@ -17,10 +17,6 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.util.Enums;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * The misfire strategy enum definition.
@@ -66,11 +62,7 @@ public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
     }
 
     public static MisfireStrategy of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid misfire strategy value: " + value);
-    }
-
-    private static final class Const {
-        private static final Map<Integer, MisfireStrategy> MAPPING = Enums.toMap(MisfireStrategy.class, MisfireStrategy::value);
+        return IntValueEnum.of(MisfireStrategy.class, value);
     }
 
 }

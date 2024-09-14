@@ -17,10 +17,6 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.util.Enums;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * The run type enum definition.
@@ -89,11 +85,7 @@ public enum RunType implements IntValueEnum<RunType> {
     }
 
     public static RunType of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid run type value: " + value);
-    }
-
-    private static final class Const {
-        private static final Map<Integer, RunType> MAPPING = Enums.toMap(RunType.class, RunType::value);
+        return IntValueEnum.of(RunType.class, value);
     }
 
 }

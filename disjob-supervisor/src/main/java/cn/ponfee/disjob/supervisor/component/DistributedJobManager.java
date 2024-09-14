@@ -195,8 +195,7 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     public StartTaskResult startTask(StartTaskParam param) {
         param.check();
-        long instanceId = param.getInstanceId();
-        return doInSynchronizedTransaction0(instanceId, param.getWnstanceId(), lockInstanceId -> {
+        return doInSynchronizedTransaction0(param.getInstanceId(), param.getWnstanceId(), lockInstanceId -> {
             String startRequestId = param.getStartRequestId();
             log.info("Task trace [{}] starting: {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             Date now = new Date();
@@ -208,19 +207,19 @@ public class DistributedJobManager extends AbstractJobManager {
                 }
                 log.info("Start task idempotent: {}, {}, {}", param.getTaskId(), param.getWorker(), startRequestId);
             }
-            if (isNotAffectedRow(instanceMapper.start(instanceId, now))) {
-                SchedInstance instance = instanceMapper.get(instanceId);
+            if (isNotAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
+                SchedInstance instance = instanceMapper.get(param.getInstanceId());
                 if (instance == null || !instance.isRunning()) {
                     throw new IllegalStateException("Start instance failure: " + instance);
                 }
             }
 
             SchedTask task = taskMapper.get(param.getTaskId());
-            List<PredecessorInstance> predecessorInstances = null;
+            List<PredecessorInstance> predecessors = null;
             if (param.getJobType() == JobType.WORKFLOW) {
-                predecessorInstances = findWorkflowPredecessors(param.getJobId(), param.getWnstanceId(), instanceId);
+                predecessors = findWorkflowPredecessors(param.getJobId(), param.getWnstanceId(), param.getInstanceId());
             }
-            return StartTaskResult.success(task, predecessorInstances);
+            return StartTaskResult.success(task, predecessors);
         });
     }
 
@@ -721,7 +720,7 @@ public class DistributedJobManager extends AbstractJobManager {
         RunType runType = RunType.of(lead.getRunType());
         SchedWorkflow predecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
         SchedInstance parent = (predecessor == null) ? lead : instanceMapper.get(predecessor.getInstanceId());
-        SchedInstance nextInstance = SchedInstance.create(parent, nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
+        SchedInstance nextInstance = SchedInstance.of(parent, nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
         nextInstance.setAttach(InstanceAttach.of(workflow.getCurNode()).toJson());
 
         int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), RunState.RUNNING.value(), nextInstanceId, RS_WAITING, null);
@@ -815,7 +814,7 @@ public class DistributedJobManager extends AbstractJobManager {
         // build retry instance
         long retryInstanceId = generateId();
         long triggerTime = job.computeRetryTriggerTime(++retriedCount);
-        SchedInstance retryInstance = SchedInstance.create(prev, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
+        SchedInstance retryInstance = SchedInstance.of(prev, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
         retryInstance.setAttach(prev.getAttach());
         // build retry tasks
         List<SchedTask> tasks = splitRetryTask(job, prev, retryInstanceId);
@@ -852,7 +851,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 .filter(SchedTask::isFailure)
                 // Broadcast task must be retried with the same worker
                 .filter(e -> RouteStrategy.of(job.getRouteStrategy()).isNotBroadcast() || super.isAliveWorker(e.getWorker()))
-                .map(e -> SchedTask.create(e.getTaskParam(), generateId(), instanceId, e.getTaskNo(), e.getTaskCount(), e.getWorker()))
+                .map(e -> SchedTask.of(e.getTaskParam(), generateId(), instanceId, e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
         }
         throw new IllegalArgumentException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);

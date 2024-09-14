@@ -126,9 +126,9 @@ public class SchedInstance extends BaseEntity {
      */
     private Integer version;
 
-    public static SchedInstance create(SchedInstance parent, long instanceId,
-                                       long jobId, RunType runType, long triggerTime, int retriedCount) {
-        return create(parent, parent.getWnstanceId(), instanceId, jobId, runType, triggerTime, retriedCount);
+    public static SchedInstance of(SchedInstance parent, long instanceId, long jobId,
+                                   RunType runType, long triggerTime, int retriedCount) {
+        return of(parent, parent.getWnstanceId(), instanceId, jobId, runType, triggerTime, retriedCount);
     }
 
     /**
@@ -143,8 +143,8 @@ public class SchedInstance extends BaseEntity {
      * @param retriedCount the retried count
      * @return SchedInstance
      */
-    public static SchedInstance create(SchedInstance parent, Long wnstanceId, long instanceId,
-                                       long jobId, RunType runType, long triggerTime, int retriedCount) {
+    public static SchedInstance of(SchedInstance parent, Long wnstanceId, long instanceId,
+                                   long jobId, RunType runType, long triggerTime, int retriedCount) {
         Long rnstanceId = null, pnstanceId = null;
         if (parent != null) {
             rnstanceId = parent.obtainRnstanceId();
@@ -172,14 +172,15 @@ public class SchedInstance extends BaseEntity {
         if (rnstanceId != null) {
             return rnstanceId;
         }
-        if (pnstanceId != null) {
-            return pnstanceId;
-        }
-        return instanceId;
+        return pnstanceId != null ? pnstanceId : instanceId;
     }
 
     public long obtainRetryOriginalInstanceId() {
         return isRunRetry() ? pnstanceId : instanceId;
+    }
+
+    public int obtainRetriedCount() {
+        return retriedCount != null ? retriedCount : 0;
     }
 
     @Transient
@@ -241,10 +242,6 @@ public class SchedInstance extends BaseEntity {
         Assert.state(runEndTime != null, () -> "Run end time cannot be null: " + instanceId);
         this.runState = runState.value();
         this.runEndTime = runEndTime;
-    }
-
-    public int obtainRetriedCount() {
-        return retriedCount != null ? retriedCount : 0;
     }
 
 }

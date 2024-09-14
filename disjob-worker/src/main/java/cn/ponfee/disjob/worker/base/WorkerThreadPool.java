@@ -628,7 +628,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private void run(WorkerTask workerTask) {
             ExecutionTask executionTask;
             try {
-                StartTaskResult startTaskResult = supervisorRpcClient.startTask(workerTask.toStartTaskParam());
+                StartTaskResult startTaskResult = DisjobUtils.doInSynchronized(
+                    workerTask.getLockInstanceId(), () -> supervisorRpcClient.startTask(workerTask.toStartTaskParam()));
                 if (!startTaskResult.isSuccess()) {
                     LOG.warn("Start task failed: {}, {}", workerTask, startTaskResult.getMessage());
                     return;

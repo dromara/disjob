@@ -34,7 +34,6 @@ import java.util.List;
 public class Prime {
 
     private static final Logger LOG = LoggerFactory.getLogger(Prime.class);
-    private static final boolean[] PRIME_0_9 = {false, false, true, true, false, true, false, true, false, false};
 
     public static class Power {
         public static long countPrimes(long m, long n) {
@@ -49,18 +48,16 @@ public class Prime {
         }
 
         private static boolean isPrime(long x) {
-            if (x < PRIME_0_9.length) {
-                return PRIME_0_9[(int) x];
+            if (x <= 3) {
+                return x > 1;
             }
 
-            // 6n,    6n+1, 6n+2,    6n+3,    6n+4,    6n+5
-            // 3(2n), 6n+1, 2(3n+1), 3(2n+1), 2(3n+2), 6n+5
             long a = x % 6;
             if (a != 1L && a != 5L) {
                 return false;
             }
-            for (long i = 2; i * i <= x; ++i) {
-                if (x % i == 0) {
+            for (long i = 5; i * i <= x; i += 6) {
+                if (x % i == 0 || x % (i + 2) == 0) {
                     return false;
                 }
             }
@@ -81,8 +78,8 @@ public class Prime {
         }
 
         public static boolean isPrime(long x) {
-            if (x < PRIME_0_9.length) {
-                return PRIME_0_9[(int) x];
+            if (x <= 3) {
+                return x > 1;
             }
 
             // 6n,    6n+1, 6n+2,    6n+3,    6n+4,    6n+5
@@ -92,12 +89,13 @@ public class Prime {
                 return false;
             }
 
-            long sqrt = LongMath.sqrt(x, RoundingMode.CEILING);
+            long sqrt = LongMath.sqrt(x, RoundingMode.FLOOR);
             //long sqrt = (long) Math.ceil(Math.sqrt(x));
             //long sqrt = sqrtNewton(x);
             //long sqrt = sqrtBinary(x);
-            for (long i = 4; i <= sqrt; i++) {
-                if (x % i == 0) {
+            for (long i = 5; i <= sqrt; i += 6) {
+                //     6n-1           6n+1
+                if (x % i == 0 || x % (i + 2) == 0) {
                     return false;
                 }
             }
@@ -200,7 +198,7 @@ public class Prime {
     }
 
     private static void check(long m, long n) {
-        Assert.isTrue(0 <= m && m <= n, "Invalid [" + m + ", " + n + "]");
+        Assert.isTrue(0 <= m && m <= n, () -> "Invalid [" + m + ", " + n + "]");
     }
 
     private static void check(long n) {

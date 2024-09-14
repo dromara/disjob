@@ -109,8 +109,8 @@ public class SchedTask extends BaseEntity {
      * @param worker     the worker
      * @return SchedTask
      */
-    public static SchedTask create(String taskParam, long taskId, long instanceId,
-                                   int taskNo, int taskCount, String worker) {
+    public static SchedTask of(String taskParam, long taskId, long instanceId,
+                               int taskNo, int taskCount, String worker) {
         SchedTask task = new SchedTask();
         task.setTaskParam(taskParam == null ? "" : taskParam);
         task.setTaskId(taskId);

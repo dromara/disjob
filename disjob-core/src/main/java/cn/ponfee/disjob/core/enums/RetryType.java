@@ -17,10 +17,6 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.util.Enums;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * The retry type enum definition.
@@ -66,11 +62,7 @@ public enum RetryType implements IntValueEnum<RetryType> {
     }
 
     public static RetryType of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid retry type value: " + value);
-    }
-
-    private static final class Const {
-        private static final Map<Integer, RetryType> MAPPING = Enums.toMap(RetryType.class, RetryType::value);
+        return IntValueEnum.of(RetryType.class, value);
     }
 
 }

@@ -26,7 +26,6 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.ExistsTaskParam;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
-import cn.ponfee.disjob.core.dto.worker.SplitJobResult;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -189,25 +188,27 @@ public abstract class AbstractJobManager {
     }
 
     public List<SchedTask> splitJob(SplitJobParam param, long instanceId) throws JobException {
+        String group = param.getGroup();
         if (param.getRouteStrategy().isBroadcast()) {
-            List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(param.getGroup());
+            List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(group);
             if (discoveredServers.isEmpty()) {
                 throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
             }
             String taskParam = param.getJobParam();
             int count = discoveredServers.size();
             return IntStream.range(0, count)
-                .mapToObj(i -> SchedTask.create(taskParam, generateId(), instanceId, i + 1, count, discoveredServers.get(i).serialize()))
+                .mapToObj(i -> SchedTask.of(taskParam, generateId(), instanceId, i + 1, count, discoveredServers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
-            List<String> taskParams = splitJob(param).getTaskParams();
+            SchedGroupService.fillSupervisorAuthenticationToken(group, param);
+            List<String> taskParams = groupedWorkerRpcClient.call(group, client -> client.splitJob(param)).getTaskParams();
             Assert.notEmpty(taskParams, () -> "Not split any task: " + param);
             int count = taskParams.size();
             if (count > conf.getMaximumSplitTaskSize()) {
                 throw new IllegalStateException("Split task size must less than " + conf.getMaximumSplitTaskSize() + ": " + param);
             }
             return IntStream.range(0, count)
-                .mapToObj(i -> SchedTask.create(taskParams.get(i), generateId(), instanceId, i + 1, count, null))
+                .mapToObj(i -> SchedTask.of(taskParams.get(i), generateId(), instanceId, i + 1, count, null))
                 .collect(Collectors.toList());
         }
     }
@@ -349,11 +350,6 @@ public abstract class AbstractJobManager {
         VerifyJobParam param = VerifyJobParam.of(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verifyJob(param));
-    }
-
-    private SplitJobResult splitJob(SplitJobParam param) throws JobException {
-        SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
-        return groupedWorkerRpcClient.call(param.getGroup(), client -> client.splitJob(param));
     }
 
     private void parseTriggerConfig(SchedJob job) {

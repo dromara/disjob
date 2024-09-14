@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.IntValueEnum;
 import cn.ponfee.disjob.common.date.CronExpression;
 import cn.ponfee.disjob.common.date.DatePeriods;
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.util.Enums;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import cn.ponfee.disjob.core.model.SchedDepend;
@@ -60,7 +59,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     CRON(1, false, "0/10 * * * * ?", "Cron表达式") {
         @Override
-        public boolean validate0(String triggerValue) {
+        protected boolean validate0(String triggerValue) {
             return CronExpression.isValidExpression(triggerValue);
         }
 
@@ -70,7 +69,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
+        protected Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             try {
                 return new CronExpression(triggerValue).getNextValidTimeAfter(baseTime);
             } catch (ParseException e) {
@@ -79,7 +78,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
+        protected List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
             try {
                 CronExpression cronExpression = new CronExpression(triggerValue);
                 List<Date> result = new ArrayList<>(count);
@@ -100,7 +99,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     ONCE(2, false, "2000-01-01 00:00:00", "指定时间") {
         @Override
-        public boolean validate0(String triggerValue) {
+        protected boolean validate0(String triggerValue) {
             try {
                 Dates.DATETIME_FORMAT.parse(triggerValue);
                 return true;
@@ -115,7 +114,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
+        protected Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             try {
                 Date next = Dates.DATETIME_FORMAT.parse(triggerValue);
                 return next.after(baseTime) ? next : null;
@@ -125,7 +124,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
+        protected List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
             Date next = computeNextTriggerTime0(triggerValue, baseTime);
             return next == null ? Collections.emptyList() : Collections.singletonList(next);
         }
@@ -138,7 +137,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     PERIOD(3, false, "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":10}", "指定周期") {
         @Override
-        public boolean validate0(String triggerValue) {
+        protected boolean validate0(String triggerValue) {
             try {
                 PeriodTriggerValue conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
                 return conf != null && conf.verify();
@@ -153,13 +152,13 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime0(String triggerValue, Date targetTime) {
+        protected Date computeNextTriggerTime0(String triggerValue, Date targetTime) {
             List<Date> list = computeNextTriggerTimes0(triggerValue, targetTime, 1);
             return list.isEmpty() ? null : list.get(0);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes0(String triggerValue, Date targetTime, int count) {
+        protected List<Date> computeNextTriggerTimes0(String triggerValue, Date targetTime, int count) {
             PeriodTriggerValue conf;
             try {
                 conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
@@ -185,7 +184,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     INTERVAL(4, false, "60", "指定间隔(秒)") {
         @Override
-        public boolean validate0(String triggerValue) {
+        protected boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
         }
 
@@ -195,12 +194,12 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
+        protected Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
             return computeNextTriggerTimes0(triggerValue, lastTriggerTime, 1).get(0);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes0(String triggerValue, Date lastTriggerTime, int count) {
+        protected List<Date> computeNextTriggerTimes0(String triggerValue, Date lastTriggerTime, int count) {
             long interval = Long.parseLong(triggerValue);
             Assert.isTrue(interval > 0, () -> name() + " invalid trigger value: " + triggerValue);
             List<Date> result = new ArrayList<>(count);
@@ -217,7 +216,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     FIXED_RATE(5, true, "60", "固定频率(秒)") {
         @Override
-        public boolean validate0(String triggerValue) {
+        protected boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
         }
 
@@ -227,14 +226,14 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
+        protected Date computeNextTriggerTime0(String triggerValue, Date lastTriggerTime) {
             long rate = Long.parseLong(triggerValue);
             Assert.isTrue(rate > 0, () -> name() + " invalid trigger value: " + triggerValue);
             return Dates.plusSeconds(lastTriggerTime, rate);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes0(String triggerValue, Date lastTriggerTime, int count) {
+        protected List<Date> computeNextTriggerTimes0(String triggerValue, Date lastTriggerTime, int count) {
             throw new UnsupportedOperationException(name() + " unsupported compute multiple next trigger times.");
         }
     },
@@ -244,7 +243,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     FIXED_DELAY(6, true, "60", "固定延时(秒)") {
         @Override
-        public boolean validate0(String triggerValue) {
+        protected boolean validate0(String triggerValue) {
             return Long.parseLong(triggerValue) > 0;
         }
 
@@ -254,14 +253,14 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime0(String triggerValue, Date lastCompletedTime) {
+        protected Date computeNextTriggerTime0(String triggerValue, Date lastCompletedTime) {
             long delay = Long.parseLong(triggerValue);
             Assert.isTrue(delay > 0, () -> name() + " invalid trigger value: " + triggerValue);
             return Dates.plusSeconds(lastCompletedTime, delay);
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes0(String triggerValue, Date lastCompletedTime, int count) {
+        protected List<Date> computeNextTriggerTimes0(String triggerValue, Date lastCompletedTime, int count) {
             throw new UnsupportedOperationException(name() + " unsupported compute multiple next trigger times.");
         }
     },
@@ -271,7 +270,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
      */
     DEPEND(7, false, "1003164910267351000,1003164910267351001", "任务依赖") {
         @Override
-        public boolean validate0(String triggerValue) {
+        protected boolean validate0(String triggerValue) {
             try {
                 return !SchedDepend.parseTriggerValue(triggerValue).isEmpty();
             } catch (NumberFormatException ignored) {
@@ -285,12 +284,12 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         }
 
         @Override
-        public Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
+        protected Date computeNextTriggerTime0(String triggerValue, Date baseTime) {
             throw new UnsupportedOperationException(name() + " unsupported compute one next trigger time.");
         }
 
         @Override
-        public List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
+        protected List<Date> computeNextTriggerTimes0(String triggerValue, Date baseTime, int count) {
             throw new UnsupportedOperationException(name() + " unsupported compute multiple next trigger times.");
         }
     },
@@ -369,12 +368,8 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         return list;
     }
 
-    public static TriggerType of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid trigger type value: " + value);
-    }
-
-    private static final class Const {
-        private static final Map<Integer, TriggerType> MAPPING = Enums.toMap(TriggerType.class, TriggerType::value);
+    public static TriggerType of(int value) {
+        return IntValueEnum.of(TriggerType.class, value);
     }
 
 }

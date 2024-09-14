@@ -30,7 +30,7 @@ public class PrimeTest {
 
     @Test
     public void test0() {
-        for (int i = 0; i <= 127; i++) {
+        for (int i = 0; i < 1000; i++) {
             assertPrime(i);
         }
 

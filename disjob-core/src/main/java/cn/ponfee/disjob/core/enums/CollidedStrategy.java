@@ -17,10 +17,6 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import cn.ponfee.disjob.common.util.Enums;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * The collided strategy enum definition.
@@ -71,11 +67,7 @@ public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
     }
 
     public static CollidedStrategy of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid collided strategy value: " + value);
-    }
-
-    private static final class Const {
-        private static final Map<Integer, CollidedStrategy> MAPPING = Enums.toMap(CollidedStrategy.class, CollidedStrategy::value);
+        return IntValueEnum.of(CollidedStrategy.class, value);
     }
 
 }

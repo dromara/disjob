@@ -18,8 +18,6 @@ package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
 
-import java.util.Objects;
-
 /**
  * The job state enum definition.
  * <p>mapped by sched_job.job_state
@@ -59,13 +57,7 @@ public enum JobState implements IntValueEnum<JobState> {
     }
 
     public static JobState of(Integer value) {
-        Objects.requireNonNull(value, "Job state value cannot be null.");
-        for (JobState state : JobState.values()) {
-            if (state.value == value) {
-                return state;
-            }
-        }
-        throw new IllegalArgumentException("Invalid job state value: " + value);
+        return IntValueEnum.of(JobState.class, value);
     }
 
 }
