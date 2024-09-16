@@ -43,16 +43,17 @@ import java.util.Map.Entry;
  */
 public class JobExecutorParser {
     private static final Logger LOG = LoggerFactory.getLogger(JobExecutorParser.class);
-    private static final Map<String, Class<? extends JobExecutor>> JOB_EXECUTOR_MAP;
+    private static final Map<String, Class<? extends JobExecutor<?>>> JOB_EXECUTOR_MAP;
 
     static {
-        Map<String, Class<? extends JobExecutor>> map = new HashMap<>();
+        Map<String, Class<? extends JobExecutor<?>>> map = new HashMap<>();
         for (Class<?> clazz : new ResourceScanner("cn/ponfee/disjob/**/*.class").scan4class(new Class<?>[]{JobExecutor.class}, null)) {
             if (Modifier.isAbstract(clazz.getModifiers())) {
                 continue;
             }
 
-            Class<? extends JobExecutor> type = (Class<? extends JobExecutor>) clazz;
+            @SuppressWarnings("unchecked")
+            Class<? extends JobExecutor<?>> type = (Class<? extends JobExecutor<?>>) clazz;
             map.put(type.getName(), type);
             Component component = AnnotatedElementUtils.findMergedAnnotation(clazz, Component.class);
             if (component == null) {
@@ -102,9 +103,9 @@ public class JobExecutorParser {
     public static void parse(Object param, String fieldName) {
         String jobExecutor = (String) Fields.get(param, fieldName);
         try {
-            JobExecutorUtils.load(jobExecutor);
+            JobExecutorUtils.loadJobExecutor(jobExecutor);
         } catch (Exception ex) {
-            Class<? extends JobExecutor> executorClass = JOB_EXECUTOR_MAP.get(jobExecutor);
+            Class<? extends JobExecutor<?>> executorClass = JOB_EXECUTOR_MAP.get(jobExecutor);
             if (executorClass != null) {
                 // maybe spring bean name
                 Fields.put(param, fieldName, executorClass.getName());

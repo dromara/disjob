@@ -20,12 +20,12 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
-import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.ExistsTaskParam;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
+import cn.ponfee.disjob.core.dto.worker.SplitJobResult;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
@@ -33,6 +33,7 @@ import cn.ponfee.disjob.core.model.SchedDepend;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -188,25 +189,21 @@ public abstract class AbstractJobManager {
     }
 
     public List<SchedTask> splitJob(SplitJobParam param, long instanceId) throws JobException {
-        String group = param.getGroup();
         if (param.getRouteStrategy().isBroadcast()) {
-            List<Worker> discoveredServers = workerDiscover.getDiscoveredServers(group);
-            if (discoveredServers.isEmpty()) {
-                throw new JobException(JobCodeMsg.NOT_DISCOVERED_WORKER);
-            }
-            String taskParam = param.getJobParam();
-            int count = discoveredServers.size();
+            List<Worker> workers = workerDiscover.getDiscoveredServers(param.getGroup());
+            Assert.state(!workers.isEmpty(), () -> "Not discovered broadcast worker: " + param.getGroup());
+            int count = workers.size();
+            param.setBroadcastWorkerCount(count);
+
+            List<String> taskParams = splitTasks(param);
+            Assert.state(taskParams.size() == count, () -> "Invalid broadcast split size: " + taskParams.size() + "!=" + count);
             return IntStream.range(0, count)
-                .mapToObj(i -> SchedTask.of(taskParam, generateId(), instanceId, i + 1, count, discoveredServers.get(i).serialize()))
+                .mapToObj(i -> SchedTask.of(taskParams.get(i), generateId(), instanceId, i + 1, count, workers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
-            SchedGroupService.fillSupervisorAuthenticationToken(group, param);
-            List<String> taskParams = groupedWorkerRpcClient.call(group, client -> client.splitJob(param)).getTaskParams();
-            Assert.notEmpty(taskParams, () -> "Not split any task: " + param);
+            List<String> taskParams = splitTasks(param);
             int count = taskParams.size();
-            if (count > conf.getMaximumSplitTaskSize()) {
-                throw new IllegalStateException("Split task size must less than " + conf.getMaximumSplitTaskSize() + ": " + param);
-            }
+            Assert.state(0 < count && count <= conf.getMaximumSplitTaskSize(), () -> "Invalid basic split size: " + count);
             return IntStream.range(0, count)
                 .mapToObj(i -> SchedTask.of(taskParams.get(i), generateId(), instanceId, i + 1, count, null))
                 .collect(Collectors.toList());
@@ -342,14 +339,22 @@ public abstract class AbstractJobManager {
 
     private void verifyJobExecutor(SchedJob job) throws JobException {
         Assert.hasText(job.getJobExecutor(), () -> "Job executor cannot be blank.");
-        Assert.isTrue(job.getJobExecutor().length() <= 65535, "Job executor length cannot exceed 65535.");
-        Assert.isTrue(StringUtils.length(job.getJobParam()) <= 65535, "Job param length cannot exceed 65535.");
+        DisjobUtils.checkClobMaximumLength(job.getJobExecutor(), "Job executor");
+        DisjobUtils.checkClobMaximumLength(job.getJobParam(), "Job param");
         JobType.of(job.getJobType());
         RouteStrategy.of(job.getRouteStrategy());
 
         VerifyJobParam param = VerifyJobParam.of(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verifyJob(param));
+    }
+
+    private List<String> splitTasks(SplitJobParam param) throws JobException {
+        SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
+        SplitJobResult result = groupedWorkerRpcClient.call(param.getGroup(), client -> client.splitJob(param));
+        List<String> taskParams = result.getTaskParams();
+        taskParams.forEach(e -> DisjobUtils.checkClobMaximumLength(e, "Split task param"));
+        return taskParams;
     }
 
     private void parseTriggerConfig(SchedJob job) {

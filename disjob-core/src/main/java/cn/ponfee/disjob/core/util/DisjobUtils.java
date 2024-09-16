@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
+import cn.ponfee.disjob.core.base.JobConstants;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import org.apache.commons.lang3.StringUtils;
@@ -100,6 +101,13 @@ public class DisjobUtils {
                 });
             }
             Threads.interruptIfNecessary(t);
+        }
+    }
+
+    public static void checkClobMaximumLength(String text, String name) {
+        int length = StringUtils.length(text);
+        if (length > JobConstants.CLOB_MAXIMUM_LENGTH) {
+            throw new IllegalArgumentException(name + " length too large: " + length);
         }
     }
 

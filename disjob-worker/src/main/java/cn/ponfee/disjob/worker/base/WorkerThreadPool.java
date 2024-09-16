@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.collect.SynchronizedSegmentMap;
 import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
@@ -33,6 +34,7 @@ import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
 import cn.ponfee.disjob.worker.executor.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +60,6 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerThreadPool.class);
     private static final int ERROR_MSG_MAX_LENGTH = 2048;
-    private static final int SNAPSHOT_MAX_LENGTH = 65535;
     private static final AtomicInteger NAMED_SEQ = new AtomicInteger(1);
     private static final AtomicInteger FUTURE_TASK_NAMED_SEQ = new AtomicInteger(1);
 
@@ -472,8 +473,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         @Override
         public void save(String executeSnapshot) throws Exception {
-            if (executeSnapshot != null && executeSnapshot.length() > SNAPSHOT_MAX_LENGTH) {
-                throw new SavepointFailedException("Execution snapshot length to large " + executeSnapshot.length());
+            if (StringUtils.length(executeSnapshot) > JobConstants.CLOB_MAXIMUM_LENGTH) {
+                throw new SavepointFailedException("Execution snapshot length too large: " + executeSnapshot.length());
             }
             if (!supervisorRpcClient.savepoint(taskId, worker, executeSnapshot)) {
                 throw new SavepointFailedException("Save execution snapshot data occur error.");
@@ -646,9 +647,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 return;
             }
 
-            TaskExecutor taskExecutor;
+            JobExecutor<?> taskExecutor;
             try {
-                taskExecutor = JobExecutorUtils.load(workerTask.getJobExecutor());
+                taskExecutor = JobExecutorUtils.loadJobExecutor(workerTask.getJobExecutor());
                 workerTask.bindTaskExecutor(taskExecutor);
                 taskExecutor.init(executionTask);
                 LOG.info("Initialized task executor: {}", workerTask.getTaskId());
@@ -689,7 +690,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
         }
 
-        private void execute(WorkerTask workerTask, TaskExecutor taskExecutor, ExecutionTask executionTask) throws Exception {
+        private void execute(WorkerTask workerTask, JobExecutor<?> taskExecutor, ExecutionTask executionTask) throws Exception {
             ExecutionResult result;
             Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId(), workerTask.getWorker().serialize());
             if (workerTask.getExecuteTimeout() > 0) {

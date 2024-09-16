@@ -18,8 +18,6 @@ package cn.ponfee.disjob.core.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.model.SchedWorkflow;
 import lombok.Getter;
@@ -40,14 +38,12 @@ public class PredecessorInstance extends ToJsonString implements Serializable {
 
     private long instanceId;
     private String curNode;
-    private RunState runState;
     private List<PredecessorTask> tasks;
 
     public static PredecessorInstance of(SchedWorkflow workflow, List<SchedTask> tasks) {
         PredecessorInstance instance = new PredecessorInstance();
         instance.setInstanceId(workflow.getInstanceId());
         instance.setCurNode(workflow.getCurNode());
-        instance.setRunState(RunState.of(workflow.getRunState()));
         instance.setTasks(Collects.convert(tasks, PredecessorInstance::convert));
         return instance;
     }
@@ -60,7 +56,6 @@ public class PredecessorInstance extends ToJsonString implements Serializable {
         target.setTaskNo(source.getTaskNo());
         target.setTaskCount(source.getTaskCount());
         target.setExecuteSnapshot(source.getExecuteSnapshot());
-        target.setExecuteState(ExecuteState.of(source.getExecuteState()));
         return target;
     }
 

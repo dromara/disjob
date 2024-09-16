@@ -143,6 +143,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     public boolean savepoint(long taskId, String worker, String executeSnapshot) {
+        DisjobUtils.checkClobMaximumLength(executeSnapshot, "Execute snapshot");
         return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executeSnapshot));
     }
 
@@ -213,13 +214,7 @@ public class DistributedJobManager extends AbstractJobManager {
                     throw new IllegalStateException("Start instance failure: " + instance);
                 }
             }
-
-            SchedTask task = taskMapper.get(param.getTaskId());
-            List<PredecessorInstance> predecessors = null;
-            if (param.getJobType() == JobType.WORKFLOW) {
-                predecessors = findWorkflowPredecessors(param.getJobId(), param.getWnstanceId(), param.getInstanceId());
-            }
-            return StartTaskResult.success(task, predecessors);
+            return StartTaskResult.success(taskMapper.get(param.getTaskId()));
         });
     }
 
@@ -670,15 +665,13 @@ public class DistributedJobManager extends AbstractJobManager {
         // process next workflow node
         Map<DAGEdge, SchedWorkflow> map = graph.successors(node.parseAttach().parseCurNode());
         SchedInstance lead = instanceMapper.get(wnstanceId);
+
+        Consumer<Throwable> errorHandler = t -> {
+            log.error("Process workflow node error: {}", node, t);
+            updateWorkflowLeadState(lead, RunState.CANCELED, RS_RUNNABLE);
+        };
         // 使用嵌套事务：保证`processWorkflowNode`方法内部数据操作的原子性，异常则回滚而不影响外层事务
-        TransactionUtils.doInNestedTransaction(
-            transactionTemplate.getTransactionManager(),
-            () -> processWorkflowGraph(lead, graph, map),
-            t -> {
-                log.error("Process workflow node error: " + node, t);
-                updateWorkflowLeadState(lead, RunState.CANCELED, RS_RUNNABLE);
-            }
-        );
+        TransactionUtils.doInNestedTransaction(transactionTemplate, () -> processWorkflowGraph(lead, graph, map), errorHandler);
     }
 
     private void processWorkflowGraph(SchedInstance lead, WorkflowGraph graph,
@@ -716,15 +709,18 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         long nextInstanceId = generateId();
-        List<SchedTask> tasks = splitJob(SplitJobParam.of(job, target.getName()), nextInstanceId);
         RunType runType = RunType.of(lead.getRunType());
-        SchedWorkflow predecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
-        SchedInstance parent = (predecessor == null) ? lead : instanceMapper.get(predecessor.getInstanceId());
+        SchedWorkflow lastPredecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
+        SchedInstance parent = (lastPredecessor == null) ? lead : instanceMapper.get(lastPredecessor.getInstanceId());
         SchedInstance nextInstance = SchedInstance.of(parent, nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
         nextInstance.setAttach(InstanceAttach.of(workflow.getCurNode()).toJson());
 
         int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), RunState.RUNNING.value(), nextInstanceId, RS_WAITING, null);
         assertHasAffectedRow(row, () -> "Start workflow node failed: " + workflow);
+
+        List<PredecessorInstance> list = predecessors.isEmpty() ? null : loadWorkflowPredecessorInstances(job, wnstanceId, nextInstanceId);
+        SplitJobParam splitJobParam = SplitJobParam.of(job, nextInstance, list);
+        List<SchedTask> tasks = splitJob(splitJobParam, nextInstanceId);
 
         // save to db
         triggerInstanceCreator.saveInstanceAndTasks(nextInstance, tasks);
@@ -761,15 +757,16 @@ public class DistributedJobManager extends AbstractJobManager {
         return false;
     }
 
-    private List<PredecessorInstance> findWorkflowPredecessors(long jobId, long wnstanceId, long curInstanceId) {
+    private List<PredecessorInstance> loadWorkflowPredecessorInstances(SchedJob job, long wnstanceId, Long instanceId) {
         List<SchedWorkflow> workflows = workflowMapper.findByWnstanceId(wnstanceId);
-        SchedWorkflow curWorkflow = Collects.findAny(workflows, e -> Objects.equals(curInstanceId, e.getInstanceId()));
-        if (curWorkflow == null || curWorkflow.parsePreNode().isStart()) {
+        SchedWorkflow curWorkflow = workflows.stream().filter(e -> instanceId.equals(e.getInstanceId())).findAny().orElse(null);
+        Assert.state(curWorkflow != null, () -> "Not found current workflow node: " + wnstanceId + ", " + instanceId);
+        Map<DAGEdge, SchedWorkflow> predecessors = WorkflowGraph.of(workflows).predecessors(curWorkflow.parseCurNode());
+        if (predecessors.isEmpty()) {
             return null;
         }
-
-        RetryType retryType = RetryType.of(getRequireJob(jobId).getRetryType());
-        return Collects.convert(WorkflowGraph.of(workflows).predecessors(curWorkflow.parseCurNode()).values(), e -> {
+        RetryType retryType = RetryType.of(job.getRetryType());
+        return Collects.convert(predecessors.values(), e -> {
             // predecessor instance下的task是全部执行成功的
             List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId(), null);
             SchedInstance pre;
@@ -789,69 +786,74 @@ public class DistributedJobManager extends AbstractJobManager {
 
     // ------------------------------------------------------------------other methods
 
-    private void retryJob(SchedInstance prev) {
-        Long retryingInstanceId = ThrowingSupplier.doCaught(() -> retryJob0(prev));
+    private void retryJob(SchedInstance failed) {
+        Long retryingInstanceId = ThrowingSupplier.doCaught(() -> retryJob0(failed));
         if (retryingInstanceId != null) {
-            startRetrying(prev);
+            startRetrying(failed);
             return;
         }
-        if (prev.isWorkflowNode()) {
+        if (failed.isWorkflowNode()) {
             // If workflow without retry, then require update workflow graph state
-            updateWorkflowNodeState(prev, RunState.CANCELED, RS_TERMINABLE);
-            updateWorkflowLeadState(instanceMapper.get(prev.getWnstanceId()), RunState.CANCELED, RS_RUNNABLE);
+            updateWorkflowNodeState(failed, RunState.CANCELED, RS_TERMINABLE);
+            updateWorkflowLeadState(instanceMapper.get(failed.getWnstanceId()), RunState.CANCELED, RS_RUNNABLE);
         } else {
-            renewFixedNextTriggerTime(prev);
+            renewFixedNextTriggerTime(failed);
         }
     }
 
-    private Long retryJob0(SchedInstance prev) throws JobException {
-        SchedJob job = getRequireJob(prev.getJobId());
-        int retriedCount = prev.obtainRetriedCount();
-        if (!job.retryable(RunState.of(prev.getRunState()), retriedCount)) {
+    private Long retryJob0(SchedInstance failed) throws JobException {
+        SchedJob job = getRequireJob(failed.getJobId());
+        int retriedCount = failed.obtainRetriedCount();
+        if (!job.retryable(RunState.of(failed.getRunState()), retriedCount)) {
             return null;
         }
 
         // build retry instance
         long retryInstanceId = generateId();
         long triggerTime = job.computeRetryTriggerTime(++retriedCount);
-        SchedInstance retryInstance = SchedInstance.of(prev, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
-        retryInstance.setAttach(prev.getAttach());
+        SchedInstance retryInstance = SchedInstance.of(failed, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
+        retryInstance.setAttach(failed.getAttach());
         // build retry tasks
-        List<SchedTask> tasks = splitRetryTask(job, prev, retryInstanceId);
+        List<SchedTask> tasks = splitRetryTask(job, failed, retryInstanceId);
         Assert.notEmpty(tasks, "Retry instance, split retry task cannot be empty.");
+
+        ThrowingRunnable<Throwable> persistenceAction = () -> {
+            if (failed.isWorkflowNode()) {
+                // 如果是workflow，则需要更新sched_workflow.instance_id
+                String curNode = failed.parseAttach().getCurNode();
+                int row = workflowMapper.update(failed.getWnstanceId(), curNode, null, retryInstanceId, RS_RUNNING, failed.getInstanceId());
+                assertHasAffectedRow(row, () -> "Retry instance, workflow node update failed.");
+            }
+            triggerInstanceCreator.saveInstanceAndTasks(retryInstance, tasks);
+        };
+        Consumer<Throwable> errorHandler = t -> { throw new IllegalStateException("Create retry instance failed: " + failed, t); };
         // 使用嵌套事务：保证`workflow & instance & tasks`操作的原子性，异常则回滚而不影响外层事务
-        Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
-            transactionTemplate.getTransactionManager(),
-            () -> {
-                if (prev.isWorkflowNode()) {
-                    // 如果是workflow，则需要更新sched_workflow.instance_id
-                    String curNode = prev.parseAttach().getCurNode();
-                    int row = workflowMapper.update(prev.getWnstanceId(), curNode, null, retryInstanceId, RS_RUNNING, prev.getInstanceId());
-                    assertHasAffectedRow(row, () -> "Retry instance, workflow node update failed.");
-                }
-                triggerInstanceCreator.saveInstanceAndTasks(retryInstance, tasks);
-                return () -> super.dispatch(job, retryInstance, tasks);
-            },
-            t -> { throw new IllegalStateException("Retry instance, create retry instance fail: " + prev, t); }
-        );
-        TransactionUtils.doAfterTransactionCommit(dispatchAction);
+        TransactionUtils.doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
+        TransactionUtils.doAfterTransactionCommit(() -> super.dispatch(job, retryInstance, tasks));
 
         return retryInstanceId;
     }
 
-    private List<SchedTask> splitRetryTask(SchedJob job, SchedInstance prev, long instanceId) throws JobException {
+    private List<SchedTask> splitRetryTask(SchedJob job, SchedInstance failed, long retryInstanceId) throws JobException {
         RetryType retryType = RetryType.of(job.getRetryType());
         if (retryType == RetryType.ALL) {
             // re-split job
-            return splitJob(SplitJobParam.of(job, prev), instanceId);
+            SplitJobParam splitJobParam;
+            if (failed.isWorkflow()) {
+                List<PredecessorInstance> list = loadWorkflowPredecessorInstances(job, failed.getWnstanceId(), failed.getInstanceId());
+                splitJobParam = SplitJobParam.of(job, failed, list);
+            } else {
+                splitJobParam = SplitJobParam.of(job);
+            }
+            return splitJob(splitJobParam, retryInstanceId);
         }
         if (retryType == RetryType.FAILED) {
-            return taskMapper.findLargeByInstanceId(prev.getInstanceId(), null)
+            return taskMapper.findLargeByInstanceId(failed.getInstanceId(), null)
                 .stream()
                 .filter(SchedTask::isFailure)
                 // Broadcast task must be retried with the same worker
                 .filter(e -> RouteStrategy.of(job.getRouteStrategy()).isNotBroadcast() || super.isAliveWorker(e.getWorker()))
-                .map(e -> SchedTask.of(e.getTaskParam(), generateId(), instanceId, e.getTaskNo(), e.getTaskCount(), e.getWorker()))
+                .map(e -> SchedTask.of(e.getTaskParam(), generateId(), retryInstanceId, e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
         }
         throw new IllegalArgumentException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);
@@ -875,12 +877,9 @@ public class DistributedJobManager extends AbstractJobManager {
 
         // 使用嵌套事务：保证`save`方法内部数据操作的原子性，异常则回滚而不影响外层事务
         TriggerInstance dependInstance = triggerInstanceCreator.create(childJob, parent, RunType.DEPEND, System.currentTimeMillis());
-        Runnable dispatchAction = TransactionUtils.doInNestedTransaction(
-            transactionTemplate.getTransactionManager(),
-            () -> { dependInstance.save(); return dependInstance::dispatch; },
-            t -> log.error("Create depend instance failed: " + childJob + ", " + parent, t)
-        );
-        TransactionUtils.doAfterTransactionCommit(dispatchAction);
+        Consumer<Throwable> errorHandler = t -> log.error("Create depend instance failed: {}, {}", childJob, parent, t);
+        TransactionUtils.doInNestedTransaction(transactionTemplate, dependInstance::save, errorHandler);
+        TransactionUtils.doAfterTransactionCommit(dependInstance::dispatch);
     }
 
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operation ops) {

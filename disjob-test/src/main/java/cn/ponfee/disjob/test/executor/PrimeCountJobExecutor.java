@@ -19,10 +19,7 @@ package cn.ponfee.disjob.test.executor;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.test.util.Prime;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
-import cn.ponfee.disjob.worker.executor.ExecutionResult;
-import cn.ponfee.disjob.worker.executor.ExecutionTask;
-import cn.ponfee.disjob.worker.executor.JobExecutor;
-import cn.ponfee.disjob.worker.executor.Savepoint;
+import cn.ponfee.disjob.worker.executor.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author Ponfee
  */
-public class PrimeCountJobExecutor extends JobExecutor {
+public class PrimeCountJobExecutor extends BasicJobExecutor {
 
     /**
      * 默认以每块1亿分批统计
@@ -54,12 +51,12 @@ public class PrimeCountJobExecutor extends JobExecutor {
     /**
      * 任务分片，自定义控制任务的拆分数量
      *
-     * @param jobParamString the job param
+     * @param splitParam the split param
      * @return task list
      */
     @Override
-    public List<String> split(String jobParamString) {
-        JobParam jobParam = Jsons.fromJson(jobParamString, JobParam.class);
+    public List<String> split(BasicSplitParam splitParam) {
+        JobParam jobParam = Jsons.fromJson(splitParam.getJobParam(), JobParam.class);
         long m = jobParam.getM();
         long n = jobParam.getN();
         long blockSize = Optional.ofNullable(jobParam.getBlockSize()).orElse(DEFAULT_BLOCK_SIZE);

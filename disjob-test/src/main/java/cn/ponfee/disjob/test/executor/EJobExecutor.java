@@ -18,10 +18,7 @@ package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.test.util.Constants;
-import cn.ponfee.disjob.worker.executor.ExecutionResult;
-import cn.ponfee.disjob.worker.executor.ExecutionTask;
-import cn.ponfee.disjob.worker.executor.JobExecutor;
-import cn.ponfee.disjob.worker.executor.Savepoint;
+import cn.ponfee.disjob.worker.executor.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -41,12 +38,12 @@ import java.util.stream.IntStream;
  */
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Service("EJobExecutor")
-public class EJobExecutor extends JobExecutor {
+public class EJobExecutor extends BasicJobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(EJobExecutor.class);
 
     @Override
-    public List<String> split(String jobParamString) {
+    public List<String> split(BasicSplitParam splitParam) {
         return IntStream.range(0, Constants.TASK_COUNT)
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
             .collect(Collectors.toList());

@@ -22,14 +22,15 @@ import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.common.util.Predicates;
 import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
+import cn.ponfee.disjob.core.dag.PredecessorInstance;
+import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
-import org.apache.commons.collections4.CollectionUtils;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.springframework.util.Assert;
@@ -56,7 +57,7 @@ public class JobExecutorUtils {
             jobExecutors = DAGExpression.parse(param.getJobExecutor())
                 .nodes()
                 .stream()
-                .filter(Predicates.not(DAGNode::isStartOrEnd))
+                .filter(e -> !e.isStartOrEnd())
                 .map(DAGNode::getName)
                 .collect(Collectors.toSet());
             Assert.notEmpty(jobExecutors, () -> "Invalid workflow job executor: " + param.getJobExecutor());
@@ -64,14 +65,16 @@ public class JobExecutorUtils {
             jobExecutors = Collections.singleton(param.getJobExecutor());
         }
 
+        String jobParam = param.getJobParam();
         try {
             for (String jobExecutor : jobExecutors) {
+                JobExecutor<?> executor = loadJobExecutor(jobExecutor);
                 if (param.getRouteStrategy().isBroadcast()) {
-                    JobExecutor executor = load(jobExecutor);
-                    Assert.isTrue(executor instanceof BroadcastJobExecutor, () -> "Not broadcast job executor: " + jobExecutor);
+                    Assert.isTrue(executor instanceof BroadcastJobExecutor, () -> "Not broadcast job: " + jobExecutor);
                 } else {
-                    split(jobExecutor, param.getJobParam());
+                    Assert.isTrue(executor instanceof BasicJobExecutor, () -> "Not basic job: " + jobExecutor);
                 }
+                Assert.isTrue(executor.verify(jobParam), () -> "Verify job failed: " + jobExecutor + ", " + jobParam);
             }
         } catch (JobException | JobRuntimeException e) {
             throw e;
@@ -83,23 +86,35 @@ public class JobExecutorUtils {
     /**
      * Splits job to many sched task.
      *
-     * @param jobExecutor the job executor
-     * @param jobParam    the job param
+     * @param param the param
      * @return list of task param
      * @throws JobException if split failed
      */
-    public static List<String> split(String jobExecutor, String jobParam) throws JobException {
+    public static List<String> split(SplitJobParam param) throws JobException {
+        Integer workerCount = param.getBroadcastWorkerCount();
+        String jobParam = param.getJobParam();
+        List<PredecessorInstance> predecessorInstances = param.getPredecessorInstances();
+
         try {
-            JobSplitter jobSplitter = load(jobExecutor);
-            List<String> taskParams = jobSplitter.split(jobParam);
-            if (CollectionUtils.isEmpty(taskParams)) {
-                throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Job split none tasks.");
+            JobExecutor<?> jobExecutor = loadJobExecutor(param.getJobExecutor());
+            List<String> taskParams;
+            if (param.getRouteStrategy().isBroadcast()) {
+                Assert.isTrue(workerCount > 0, () -> "Broadcast worker count must be greater than 0: " + workerCount);
+                BroadcastJobExecutor executor = (BroadcastJobExecutor) jobExecutor;
+                taskParams = executor.split(BroadcastSplitParam.of(workerCount, jobParam, predecessorInstances));
+                Assert.isTrue(taskParams.size() == workerCount, () -> "Broadcast job split task failed: " + workerCount);
+            } else {
+                Assert.isNull(workerCount, () -> "Broadcast worker count must be null: " + workerCount);
+                BasicJobExecutor executor = (BasicJobExecutor) jobExecutor;
+                taskParams = executor.split(BasicSplitParam.of(jobParam, predecessorInstances));
+                Assert.notEmpty(taskParams, "Basic job split task failed.");
             }
+            taskParams.forEach(e -> DisjobUtils.checkClobMaximumLength(e, "Splitting task param"));
             return taskParams;
         } catch (JobException | JobRuntimeException e) {
             throw e;
         } catch (Throwable t) {
-            throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Split job occur error", t);
+            throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Split job failed: " + t.getMessage(), t);
         }
     }
 
@@ -110,16 +125,16 @@ public class JobExecutorUtils {
      * @return JobExecutor instance object
      * @throws JobException if new instance failed
      */
-    public static JobExecutor load(String text) throws JobException {
+    public static JobExecutor<?> loadJobExecutor(String text) throws JobException {
         if (SpringContextHolder.isNotNull()) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
             // get by spring bean name
-            JobExecutor executor = SpringContextHolder.getPrototypeBean(text, JobExecutor.class);
+            JobExecutor<?> executor = SpringContextHolder.getPrototypeBean(text, JobExecutor.class);
             if (executor != null) {
                 return executor;
             }
 
-            Class<? extends JobExecutor> jobExecutorClass = getJobExecutorClass(text);
+            Class<? extends JobExecutor<?>> jobExecutorClass = getJobExecutorClass(text);
             executor = SpringContextHolder.getPrototypeBean(jobExecutorClass);
             if (executor != null) {
                 return executor;
@@ -129,7 +144,7 @@ public class JobExecutorUtils {
             SpringContextHolder.autowireBean(executor);
             return executor;
         } else {
-            Class<? extends JobExecutor> jobExecutorClass = getJobExecutorClass(text);
+            Class<? extends JobExecutor<?>> jobExecutorClass = getJobExecutorClass(text);
             return ClassUtils.newInstance(jobExecutorClass);
         }
     }
@@ -154,8 +169,10 @@ public class JobExecutorUtils {
         }
     }
 
-    private static Class<? extends JobExecutor> getJobExecutorClass(String text) throws JobException {
-        Class<? extends JobExecutor> type = ClassUtils.getClass(text);
+    // ---------------------------------------------------------------------------------private methods
+
+    private static Class<? extends JobExecutor<?>> getJobExecutorClass(String text) throws JobException {
+        Class<? extends JobExecutor<?>> type = ClassUtils.getClass(text);
         if (type == null) {
             throw new JobException(JobCodeMsg.LOAD_JOB_EXECUTOR_ERROR, "Illegal job executor class: " + text);
         }

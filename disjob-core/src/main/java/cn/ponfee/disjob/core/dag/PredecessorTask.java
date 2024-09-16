@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.enums.ExecuteState;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -47,11 +46,6 @@ public class PredecessorTask extends ToJsonString implements Serializable {
      * 任务总数量
      */
     private int taskCount;
-
-    /**
-     * 执行状态
-     */
-    private ExecuteState executeState;
 
     /**
      * 保存的执行快照数据

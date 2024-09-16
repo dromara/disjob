@@ -75,12 +75,12 @@ public class SchedWorkflow extends BaseEntity {
         return DAGEdge.of(preNode, curNode);
     }
 
-    public DAGNode parseCurNode() {
-        return DAGNode.fromString(curNode);
-    }
-
     public DAGNode parsePreNode() {
         return DAGNode.fromString(preNode);
+    }
+
+    public DAGNode parseCurNode() {
+        return DAGNode.fromString(curNode);
     }
 
     @Transient

@@ -38,9 +38,8 @@ public enum JobCodeMsg implements CodeMsg {
     NOT_RESUMABLE_INSTANCE(455, "Not resumable instance state."),
 
     SERVER_ERROR(500, "Server error."),
-    NOT_DISCOVERED_WORKER(550, "Not Discovered worker."),
-    JOB_EXECUTE_FAILED(561, "Job execute failed."),
-    JOB_EXECUTE_ERROR(562, "Job execute error."),
+    JOB_EXECUTE_FAILED(560, "Job execute failed."),
+    JOB_EXECUTE_ERROR(561, "Job execute error."),
 
     ;
 

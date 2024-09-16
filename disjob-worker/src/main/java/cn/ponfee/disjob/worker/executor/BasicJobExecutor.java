@@ -18,22 +18,19 @@ package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.core.exception.JobException;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
- * Broadcast job executor
+ * Basic job executor
  *
  * @author Ponfee
  */
-public abstract class BroadcastJobExecutor extends JobExecutor<BroadcastSplitParam> {
+public abstract class BasicJobExecutor extends JobExecutor<BasicSplitParam> {
 
     @Override
-    public List<String> split(BroadcastSplitParam param) throws JobException {
-        return IntStream.range(0, param.getWorkerCount())
-            .mapToObj(i -> param.getJobParam())
-            .collect(Collectors.toList());
+    public List<String> split(BasicSplitParam splitParam) throws JobException {
+        return Collections.singletonList(splitParam.getJobParam());
     }
 
 }

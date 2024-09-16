@@ -17,13 +17,11 @@
 package cn.ponfee.disjob.core.dto.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.model.SchedTask;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Start task result
@@ -71,11 +69,6 @@ public class StartTaskResult extends ToJsonString implements Serializable {
      */
     private String executeSnapshot;
 
-    /**
-     * 工作流(DAG)任务的前驱节点实例列表
-     */
-    private List<PredecessorInstance> predecessorInstances;
-
     public static StartTaskResult failure(String message) {
         StartTaskResult result = new StartTaskResult();
         result.setSuccess(false);
@@ -83,7 +76,7 @@ public class StartTaskResult extends ToJsonString implements Serializable {
         return result;
     }
 
-    public static StartTaskResult success(SchedTask task, List<PredecessorInstance> predecessorInstances) {
+    public static StartTaskResult success(SchedTask task) {
         StartTaskResult result = new StartTaskResult();
         result.setSuccess(true);
         result.setTaskId(task.getTaskId());
@@ -92,7 +85,6 @@ public class StartTaskResult extends ToJsonString implements Serializable {
         result.setExecuteSnapshot(task.getExecuteSnapshot());
 
         result.setTaskParam(task.getTaskParam());
-        result.setPredecessorInstances(predecessorInstances);
         return result;
     }
 

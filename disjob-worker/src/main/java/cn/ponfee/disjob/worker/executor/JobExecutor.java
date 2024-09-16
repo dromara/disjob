@@ -17,8 +17,7 @@
 package cn.ponfee.disjob.worker.executor;
 
 /**
- * Schedule job executor base class.
- * <p>JobSplitter + TaskExecutor  =>  JobExecutor
+ * JobSplitter + TaskExecutor  =>  JobExecutor
  *
  * <p>Note: if in spring context and a stateful bean, must be annotated with @Scope("prototype")
  *
@@ -26,6 +25,6 @@ package cn.ponfee.disjob.worker.executor;
  * @see org.springframework.context.annotation.Scope
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#SCOPE_PROTOTYPE
  */
-public abstract class JobExecutor extends TaskExecutor implements JobSplitter {
+public abstract class JobExecutor<T extends SplitParam> extends TaskExecutor implements JobSplitter<T> {
 
 }

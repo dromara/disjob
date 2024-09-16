@@ -16,35 +16,34 @@
 
 package cn.ponfee.disjob.worker.executor;
 
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.dag.PredecessorInstance;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 /**
- * Split schedule job to one instance and many tasks.
+ * Broadcast split param
  *
  * @author Ponfee
  */
-interface JobSplitter<T extends SplitParam> {
+@Getter
+@Setter
+public class BroadcastSplitParam extends SplitParam {
+    private static final long serialVersionUID = -1619064963405033482L;
 
     /**
-     * Verifies job param
-     *
-     * @param jobParam the job param
-     * @return {@code true} if verified success
+     * Worker数量
      */
-    default boolean verify(String jobParam) {
-        return true;
+    private int workerCount;
+
+    public static BroadcastSplitParam of(int workerCount, String jobParam,
+                                         List<PredecessorInstance> predecessorInstances) {
+        BroadcastSplitParam splitParam = new BroadcastSplitParam();
+        splitParam.setWorkerCount(workerCount);
+        splitParam.setJobParam(jobParam);
+        splitParam.setPredecessorInstances(predecessorInstances);
+        return splitParam;
     }
-
-    /**
-     * Provides default split single task.
-     * <p>Subclass can override this method to customize implementation.
-     *
-     * @param splitParam the split param
-     * @return list of task param
-     * @throws JobException if split failed
-     */
-    List<String> split(T splitParam) throws JobException;
 
 }

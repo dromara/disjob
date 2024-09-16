@@ -96,10 +96,8 @@ public class LogUtils
         StringWriter sw = new StringWriter();
 
         Set<Throwable> set = new HashSet<>();
-        while (t != null && set.add(t))
-        {
+        for (; t != null && set.add(t); t = t.getCause()) {
             t.printStackTrace(new PrintWriter(sw));
-            t = t.getCause();
         }
         s.append(getBlock(sw.toString()));
         getErrorLog().error(s.toString());

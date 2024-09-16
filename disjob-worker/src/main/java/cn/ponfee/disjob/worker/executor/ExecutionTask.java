@@ -17,12 +17,10 @@
 package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * The execution task
@@ -74,10 +72,5 @@ public class ExecutionTask extends ToJsonString implements Serializable {
      * 保存的执行快照数据
      */
     private String executeSnapshot;
-
-    /**
-     * 工作流(DAG)任务的前驱节点实例列表
-     */
-    private List<PredecessorInstance> predecessorInstances;
 
 }

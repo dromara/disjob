@@ -16,24 +16,27 @@
 
 package cn.ponfee.disjob.worker.executor;
 
-import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.core.dag.PredecessorInstance;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
- * Broadcast job executor
+ * Basic split param
  *
  * @author Ponfee
  */
-public abstract class BroadcastJobExecutor extends JobExecutor<BroadcastSplitParam> {
+@Getter
+@Setter
+public class BasicSplitParam extends SplitParam {
+    private static final long serialVersionUID = -8867238833867836535L;
 
-    @Override
-    public List<String> split(BroadcastSplitParam param) throws JobException {
-        return IntStream.range(0, param.getWorkerCount())
-            .mapToObj(i -> param.getJobParam())
-            .collect(Collectors.toList());
+    public static BasicSplitParam of(String jobParam, List<PredecessorInstance> predecessorInstances) {
+        BasicSplitParam splitParam = new BasicSplitParam();
+        splitParam.setJobParam(jobParam);
+        splitParam.setPredecessorInstances(predecessorInstances);
+        return splitParam;
     }
 
 }

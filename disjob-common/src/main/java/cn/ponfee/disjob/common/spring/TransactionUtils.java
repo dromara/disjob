@@ -17,13 +17,13 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -115,22 +115,14 @@ public class TransactionUtils {
      * 创建一个新事务，如果当前存在事务，则将这个事务挂起。
      * <p>内部事务与外部事务相互独立，互不依赖。
      *
-     * @param txManager the txManager
-     * @param action    the action code
-     * @param log       the exception log
-     * @param <R>       return type
-     * @return do action result
+     * @param txManager    the txManager
+     * @param action       the action code
+     * @param errorHandler the error handler
      */
-    public static <R> R doInRequiresNewTransaction(PlatformTransactionManager txManager,
-                                                   ThrowingSupplier<R, Throwable> action,
-                                                   Consumer<Throwable> log) {
-        return doInPropagationTransaction(txManager, action, log, TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    }
-
-    public static void doInNestedTransaction(PlatformTransactionManager txManager,
-                                             ThrowingRunnable<Throwable> action,
-                                             Consumer<Throwable> errorHandler) {
-        doInNestedTransaction(txManager, action.toSupplier(null), errorHandler);
+    public static void doInRequiresNewTransaction(PlatformTransactionManager txManager,
+                                                  ThrowingRunnable<Throwable> action,
+                                                  Consumer<Throwable> errorHandler) {
+        doInPropagationTransaction(txManager, action, errorHandler, TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     /**
@@ -139,17 +131,16 @@ public class TransactionUtils {
      * <p>内部事务的提交/回滚不影响外部事务的提交/回滚
      * <p>内部事务的提交/回滚最终依赖外部事务的提交/回滚。
      *
-     * @param txManager    the txManager
-     * @param action       the action code
-     * @param errorHandler the error handler
-     * @param <R>          return type
-     * @return do action result
+     * @param transactionTemplate the transaction template
+     * @param action              the action code
+     * @param errorHandler        the error handler
      */
-    public static <R> R doInNestedTransaction(PlatformTransactionManager txManager,
-                                              ThrowingSupplier<R, Throwable> action,
-                                              Consumer<Throwable> errorHandler) {
+    public static void doInNestedTransaction(TransactionTemplate transactionTemplate,
+                                             ThrowingRunnable<Throwable> action,
+                                             Consumer<Throwable> errorHandler) {
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
-            return doInPropagationTransaction(txManager, action, errorHandler, TransactionDefinition.PROPAGATION_NESTED);
+            PlatformTransactionManager txManager = transactionTemplate.getTransactionManager();
+            doInPropagationTransaction(txManager, action, errorHandler, TransactionDefinition.PROPAGATION_NESTED);
         } else {
             throw new IllegalStateException("Do nested transaction must be in parent transaction.");
         }
@@ -157,22 +148,20 @@ public class TransactionUtils {
 
     // ----------------------------------------------------------------------private methods
 
-    private static <R> R doInPropagationTransaction(PlatformTransactionManager txManager,
-                                                    ThrowingSupplier<R, Throwable> action,
-                                                    Consumer<Throwable> errorHandler,
-                                                    int transactionPropagation) {
+    private static void doInPropagationTransaction(PlatformTransactionManager txManager,
+                                                   ThrowingRunnable<Throwable> action,
+                                                   Consumer<Throwable> errorHandler,
+                                                   int transactionPropagation) {
         Objects.requireNonNull(txManager, "Transaction manager cannot be null.");
         DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
         txDefinition.setPropagationBehavior(transactionPropagation);
         TransactionStatus status = txManager.getTransaction(txDefinition);
         try {
-            R result = action.get();
+            action.run();
             txManager.commit(status);
-            return result;
         } catch (Throwable t) {
             txManager.rollback(status);
             errorHandler.accept(t);
-            return null;
         }
     }
 

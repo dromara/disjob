@@ -21,7 +21,7 @@ package cn.ponfee.disjob.worker.executor;
  *
  * @author Ponfee
  */
-public abstract class TaskExecutor {
+abstract class TaskExecutor {
 
     private volatile boolean stopped = false;
 

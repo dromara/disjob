@@ -54,7 +54,7 @@ public class WorkerRpcProvider implements WorkerRpcService {
     @Override
     public SplitJobResult splitJob(SplitJobParam param) throws JobException {
         localWorker.verifySupervisorAuthenticationToken(param);
-        List<String> taskParams = JobExecutorUtils.split(param.getJobExecutor(), param.getJobParam());
+        List<String> taskParams = JobExecutorUtils.split(param);
         return SplitJobResult.of(taskParams);
     }
 

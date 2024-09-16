@@ -41,8 +41,9 @@ public class GeneralInstance extends TriggerInstance {
     @Override
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
         long instanceId = creator.jobManager.generateId();
+        SplitJobParam splitJobParam = SplitJobParam.of(job);
         super.instance = SchedInstance.of(parent, null, instanceId, job.getJobId(), runType, triggerTime, 0);
-        this.tasks = creator.jobManager.splitJob(SplitJobParam.of(job, job.getJobExecutor()), instanceId);
+        this.tasks = creator.jobManager.splitJob(splitJobParam, instanceId);
     }
 
     @Override

@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Represents int value enum type structure.
@@ -64,12 +63,9 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
         return value == value();
     }
 
-    static <T extends Enum<T> & IntValueEnum<T>> T of(Class<T> type, Integer value) {
-        Objects.requireNonNull(type, "Enum type cannot be null.");
-        Objects.requireNonNull(value, "Enum value cannot be null.");
-        int val = value;
+    static <T extends Enum<T> & IntValueEnum<T>> T of(Class<T> type, int value) {
         for (T e : type.getEnumConstants()) {
-            if (e.value() == val) {
+            if (e.value() == value) {
                 return e;
             }
         }

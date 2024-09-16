@@ -16,8 +16,6 @@
 
 package cn.ponfee.disjob.common.base;
 
-import java.util.Objects;
-
 /**
  * Represents value enum type structure.
  *
@@ -42,8 +40,6 @@ public interface ValueEnum<V, T extends Enum<T> & ValueEnum<V, T>> {
     String desc();
 
     static <V, T extends Enum<T> & ValueEnum<V, T>> T of(Class<T> type, V value) {
-        Objects.requireNonNull(type, "Enum type cannot be null.");
-        Objects.requireNonNull(value, "Enum value cannot be null.");
         for (T e : type.getEnumConstants()) {
             if (value.equals(e.value())) {
                 return e;

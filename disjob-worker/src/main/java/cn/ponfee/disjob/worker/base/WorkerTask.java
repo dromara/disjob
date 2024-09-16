@@ -24,7 +24,7 @@ import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
-import cn.ponfee.disjob.worker.executor.TaskExecutor;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -43,7 +43,7 @@ class WorkerTask {
      * 任务的操作类型
      */
     @Getter(AccessLevel.NONE)
-    private final AtomicReference<Operation> operation;
+    private final AtomicReference<Operation> operationRef;
 
     private final long taskId;
     private final long instanceId;
@@ -61,10 +61,10 @@ class WorkerTask {
      * 任务执行器
      */
     @Getter(AccessLevel.NONE)
-    private final AtomicReference<TaskExecutor> taskExecutor = new AtomicReference<>();
+    private final AtomicReference<JobExecutor<?>> taskExecutorRef = new AtomicReference<>();
 
     WorkerTask(ExecuteTaskParam param) {
-        this.operation = new AtomicReference<>(param.getOperation());
+        this.operationRef = new AtomicReference<>(param.getOperation());
         this.taskId = param.getTaskId();
         this.instanceId = param.getInstanceId();
         this.wnstanceId = param.getWnstanceId();
@@ -85,20 +85,20 @@ class WorkerTask {
     }
 
     Operation getOperation() {
-        return operation.get();
+        return operationRef.get();
     }
 
     boolean updateOperation(Operation expect, Operation update) {
         return !Objects.equals(expect, update)
-            && operation.compareAndSet(expect, update);
+            && operationRef.compareAndSet(expect, update);
     }
 
-    void bindTaskExecutor(TaskExecutor executor) {
-        taskExecutor.set(executor);
+    void bindTaskExecutor(JobExecutor<?> executor) {
+        taskExecutorRef.set(executor);
     }
 
     void stop() {
-        TaskExecutor executor = taskExecutor.get();
+        JobExecutor<?> executor = taskExecutorRef.get();
         if (executor != null) {
             executor.stop();
         }
@@ -114,17 +114,17 @@ class WorkerTask {
         }
         WorkerTask that = (WorkerTask) o;
         return this.taskId == that.taskId
-            && this.operation.get() == that.operation.get();
+            && this.operationRef.get() == that.operationRef.get();
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(taskId) + operation.get().ordinal() * 31;
+        return Long.hashCode(taskId) + operationRef.get().ordinal() * 31;
     }
 
     @Override
     public String toString() {
-        return taskId + "-" + operation;
+        return taskId + "-" + operationRef.get();
     }
 
     StartTaskParam toStartTaskParam() {
@@ -151,7 +151,6 @@ class WorkerTask {
         target.setTaskCount(source.getTaskCount());
         target.setExecuteSnapshot(source.getExecuteSnapshot());
         target.setTaskParam(source.getTaskParam());
-        target.setPredecessorInstances(source.getPredecessorInstances());
 
         return target;
     }

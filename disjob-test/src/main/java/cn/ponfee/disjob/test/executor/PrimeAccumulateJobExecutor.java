@@ -18,41 +18,54 @@ package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.dag.PredecessorTask;
-import cn.ponfee.disjob.core.enums.RunState;
-import cn.ponfee.disjob.worker.executor.ExecutionResult;
-import cn.ponfee.disjob.worker.executor.ExecutionTask;
-import cn.ponfee.disjob.worker.executor.JobExecutor;
-import cn.ponfee.disjob.worker.executor.Savepoint;
-import org.springframework.util.Assert;
+import cn.ponfee.disjob.worker.executor.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 质数计数后的累加器
  *
  * @author Ponfee
  */
-public class PrimeAccumulateJobExecutor extends JobExecutor {
+public class PrimeAccumulateJobExecutor extends BasicJobExecutor {
+
+    private static final TypeReference<List<Param>> TYPE = new TypeReference<List<Param>>() {};
 
     @Override
-    public List<String> split(String jobParamString) {
-        return Collections.singletonList(null);
+    public List<String> split(BasicSplitParam splitParam) {
+        List<Param> list = splitParam.getPredecessorInstances()
+            .stream()
+            .flatMap(e -> e.getTasks().stream())
+            .map(Param::of)
+            .collect(Collectors.toList());
+        return Collections.singletonList(Jsons.toJson(list));
     }
 
     @Override
     public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
-        long sum = task.getPredecessorInstances()
-            .stream()
-            .peek(e -> Assert.state(RunState.COMPLETED == e.getRunState(), "Previous instance uncompleted: " + e.getInstanceId()))
-            .flatMap(e -> e.getTasks().stream())
-            .map(PredecessorTask::getExecuteSnapshot)
-            .map(e -> Jsons.fromJson(e, PrimeCountJobExecutor.ExecuteSnapshot.class))
-            .mapToLong(PrimeCountJobExecutor.ExecuteSnapshot::getCount)
-            .sum();
+        long sum = Jsons.fromJson(task.getTaskParam(), TYPE).stream().mapToLong(Param::getPrimeCount).sum();
         savepoint.save(Long.toString(sum));
-
         return ExecutionResult.success();
+    }
+
+    @Getter
+    @Setter
+    public static class Param implements java.io.Serializable {
+        private static final long serialVersionUID = 5822170830027680636L;
+        private long taskId;
+        private long primeCount;
+
+        public static Param of(PredecessorTask task) {
+            Param param = new Param();
+            param.setTaskId(task.getTaskId());
+            param.setPrimeCount(Jsons.fromJson(task.getExecuteSnapshot(), PrimeCountJobExecutor.ExecuteSnapshot.class).getCount());
+            return param;
+        }
     }
 
 }

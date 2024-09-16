@@ -17,10 +17,7 @@
 package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.worker.executor.ExecutionResult;
-import cn.ponfee.disjob.worker.executor.ExecutionTask;
-import cn.ponfee.disjob.worker.executor.JobExecutor;
-import cn.ponfee.disjob.worker.executor.Savepoint;
+import cn.ponfee.disjob.worker.executor.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +32,14 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
-public class NoopJobExecutor extends JobExecutor {
+public class NoopJobExecutor extends BasicJobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(NoopJobExecutor.class);
     public static volatile long major = 9997;
     public static volatile long minor = 19997;
 
     @Override
-    public List<String> split(String jobParamString) {
+    public List<String> split(BasicSplitParam splitParam) {
         return IntStream.range(0, 1 + ThreadLocalRandom.current().nextInt(5))
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
             .collect(Collectors.toList());
