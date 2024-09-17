@@ -16,11 +16,14 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
+import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.model.SchedTask;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+
+import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 
 /**
  * Mybatis mapper of sched_task database table.
@@ -83,5 +86,11 @@ public interface SchedTaskMapper {
      * @return update sql affected rows
      */
     int batchUpdateWorker(@Param("worker") String worker, @Param("taskIds") List<Long> taskIds);
+
+    // -------------------------------------------------default methods
+
+    default boolean terminate(long taskId, String worker, ExecuteState to, ExecuteState from, Date executeEndTime, String errorMsg) {
+        return isOneAffectedRow(terminate(taskId, worker, to.value(), from.value(), executeEndTime, errorMsg));
+    }
 
 }

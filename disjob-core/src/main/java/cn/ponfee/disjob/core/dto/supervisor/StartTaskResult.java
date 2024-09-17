@@ -40,9 +40,9 @@ public class StartTaskResult extends ToJsonString implements Serializable {
     private boolean success;
 
     /**
-     * Start message
+     * Start failed message
      */
-    private String message;
+    private String failedMessage;
 
     /**
      * 任务ID
@@ -69,10 +69,10 @@ public class StartTaskResult extends ToJsonString implements Serializable {
      */
     private String executeSnapshot;
 
-    public static StartTaskResult failure(String message) {
+    public static StartTaskResult failure(String failedMessage) {
         StartTaskResult result = new StartTaskResult();
         result.setSuccess(false);
-        result.setMessage(message);
+        result.setFailedMessage(failedMessage);
         return result;
     }
 

@@ -53,13 +53,15 @@ public class StartTaskParam extends ToJsonString implements Serializable {
         param.setJobType(jobType);
         param.setWorker(worker.serialize());
         param.setStartRequestId(startRequestId);
+
+        param.check();
         return param;
     }
 
     public void check() {
         Assert.hasText(worker, "Start task worker cannot be empty.");
-        Assert.hasText(startRequestId, "Start request id cannot be empty.");
-        Assert.notNull(jobType, "Job type cannot be empty.");
+        Assert.hasText(startRequestId, "Start task request id cannot be empty.");
+        Assert.notNull(jobType, "Start task job type cannot be null.");
     }
 
 }

@@ -49,7 +49,7 @@ public class SplitJobParam extends AuthenticationParam {
     private Integer broadcastWorkerCount;
 
     /**
-     * 工作流(DAG)任务的前驱节点实例列表
+     * 工作流(DAG)任务的前驱节点实例列表(非工作流任务时，为null)
      */
     private List<PredecessorInstance> predecessorInstances;
 

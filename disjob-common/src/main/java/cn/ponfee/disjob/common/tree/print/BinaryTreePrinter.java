@@ -55,7 +55,7 @@ public class BinaryTreePrinter<T> {
     private final Branch branch;
 
     /**
-     * 只有一个子节点时，是否区分左右方向
+     * 只有一个子节点时，是否区分左右
      */
     private final boolean directed;
 
@@ -122,7 +122,7 @@ public class BinaryTreePrinter<T> {
             treeWidths[i] = maxRightOffsets[i] - minLeftOffsets[i] + 1;
         }
 
-        String halfTreeSpaceStr = spaces(treeSpace/2);
+        String halfTreeSpaceStr = spaces(treeSpace / 2);
         int nextTreeIndex = 0;
         while (nextTreeIndex < trees.size()) {
             // print a row of trees starting at nextTreeIndex
@@ -302,10 +302,10 @@ public class BinaryTreePrinter<T> {
             // there's a left subtree only
             if (branch == Branch.RECTANGLE) {
                 if (directed) {
-                    allTreeLines.add(new TreeLine("│", 0, 0));
-                } else {
                     allTreeLines.add(new TreeLine("┌┘", -1, 0));
                     leftTreeAdjust = -1;
+                } else {
+                    allTreeLines.add(new TreeLine("│", 0, 0));
                 }
             } else {
                 allTreeLines.add(new TreeLine("/", -1, -1));
@@ -315,10 +315,10 @@ public class BinaryTreePrinter<T> {
             // there's a right subtree only
             if (branch == Branch.RECTANGLE) {
                 if (directed) {
-                    allTreeLines.add(new TreeLine("│", 0, 0));
-                } else {
                     allTreeLines.add(new TreeLine("└┐", 0, 1));
                     rightTreeAdjust = 1;
+                } else {
+                    allTreeLines.add(new TreeLine("│", 0, 0));
                 }
             } else {
                 allTreeLines.add(new TreeLine("\\", 1, 1));

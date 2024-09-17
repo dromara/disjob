@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.worker.executor;
 
+import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,13 +30,13 @@ import java.util.List;
  */
 @Getter
 @Setter
-abstract class SplitParam implements java.io.Serializable {
+abstract class SplitParam extends ToJsonString implements java.io.Serializable {
     private static final long serialVersionUID = 6130197382386756271L;
 
     private String jobParam;
 
     /**
-     * 工作流(DAG)任务的前驱节点实例列表
+     * 工作流(DAG)任务的前驱节点实例列表(非工作流任务时，为null)
      */
     private List<PredecessorInstance> predecessorInstances;
 

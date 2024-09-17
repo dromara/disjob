@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
+import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import org.apache.ibatis.annotations.Param;
@@ -23,6 +24,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 
 /**
  * Mybatis mapper of sched_instance database table.
@@ -108,7 +111,22 @@ public interface SchedInstanceMapper {
 
     List<SchedInstance> queryPageRecords(SchedInstancePageRequest request);
 
-    List<SchedInstance> queryByPnstanceId(long pinstanceId);
+    List<SchedInstance> queryByPnstanceId(long pnstanceId);
 
-    List<Map<String, Object>> queryChildCount(List<Long> pinstanceIds);
+    List<Map<String, Object>> queryChildCount(List<Long> pnstanceIds);
+
+    // -------------------------------------------------default methods
+
+    default boolean terminate(long instanceId, RunState toState, List<Integer> fromStateList, Date runEndTime) {
+        return isOneAffectedRow(terminate(instanceId, toState.value(), fromStateList, runEndTime));
+    }
+
+    default boolean updateState(long instanceId, RunState toState, RunState fromState) {
+        return isOneAffectedRow(updateState(instanceId, toState.value(), fromState.value()));
+    }
+
+    default boolean updateRetrying(long instanceId, boolean retrying, RunState toState, RunState fromState) {
+        return isOneAffectedRow(updateRetrying(instanceId, retrying, toState.value(), fromState.value()));
+    }
+
 }

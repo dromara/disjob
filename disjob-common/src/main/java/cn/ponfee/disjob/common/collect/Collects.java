@@ -105,6 +105,7 @@ public class Collects {
             return list;
         }
 
+        @SuppressWarnings("rawtypes")
         Class<? extends List> type = list.getClass();
         if (type == ArrayList.class || type == LinkedList.class) {
             list.sort(comparator);

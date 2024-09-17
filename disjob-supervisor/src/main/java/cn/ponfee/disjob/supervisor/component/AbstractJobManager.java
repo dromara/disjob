@@ -108,28 +108,19 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------database single operation without spring transactional
 
-    public boolean disableJob(SchedJob job) {
-        return isOneAffectedRow(jobMapper.disable(job));
+    public void disableJob(SchedJob job) {
+        jobMapper.disable(job);
     }
 
     public boolean updateJobNextTriggerTime(SchedJob job) {
         return isOneAffectedRow(jobMapper.updateNextTriggerTime(job));
     }
 
-    public boolean updateJobNextScanTime(SchedJob job) {
-        return isOneAffectedRow(jobMapper.updateNextScanTime(job));
+    public void updateJobNextScanTime(SchedJob job) {
+        jobMapper.updateNextScanTime(job);
     }
 
     // ------------------------------------------------------------------database operation within spring @transactional
-
-    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public boolean changeJobState(long jobId, JobState toState) {
-        boolean updated = isOneAffectedRow(jobMapper.updateState(jobId, toState.value(), 1 ^ toState.value()));
-        if (updated && toState == JobState.ENABLED) {
-            updateNextTriggerTime(jobMapper.get(jobId));
-        }
-        return updated;
-    }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public Long addJob(SchedJob job) throws JobException {
@@ -180,6 +171,15 @@ public abstract class AbstractJobManager {
         assertOneAffectedRow(jobMapper.softDelete(jobId), "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
         dependMapper.deleteByChildJobId(jobId);
+    }
+
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
+    public boolean changeJobState(long jobId, JobState toState) {
+        boolean updated = isOneAffectedRow(jobMapper.updateState(jobId, toState.value(), 1 ^ toState.value()));
+        if (updated && toState == JobState.ENABLED) {
+            updateNextTriggerTime(jobMapper.get(jobId));
+        }
+        return updated;
     }
 
     // ------------------------------------------------------------------others operation
@@ -250,9 +250,7 @@ public abstract class AbstractJobManager {
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
         ExistsTaskParam param = ExistsTaskParam.of(supervisorToken, task.getTaskId());
         try {
-            // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发。
-            // 因扫描(WaitingInstanceScanner/RunningInstanceScanner)时间是很滞后的，
-            // 所以若任务已分发成功，不考虑该任务还在时间轮中的可能性，认定任务已在线程池(WorkerThreadPool)中了。
+            // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发
             return !destinationWorkerRpcClient.call(worker, client -> client.existsTask(param));
         } catch (Throwable e) {
             log.error("Invoke worker exists task error: " + worker, e);
@@ -378,7 +376,6 @@ public abstract class AbstractJobManager {
                     throw new IllegalArgumentException("Inconsistent depend group: " + parentJob.getGroup() + ", " + job.getGroup());
                 }
             }
-
             // 校验是否有循环依赖 以及 依赖层级是否太深
             checkCircularDepends(jobId, new HashSet<>(parentJobIds));
 

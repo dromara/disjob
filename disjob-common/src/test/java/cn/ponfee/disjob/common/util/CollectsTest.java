@@ -17,12 +17,14 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.tree.print.BinaryTreePrinter;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.collections.Sets;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -172,6 +174,19 @@ public class CollectsTest {
         assertThat(m1 == m2).isFalse();
         assertThat(m1).isNotSameAs(m2);
         assertThat(m1).isEqualTo(m2);
+    }
+
+    @Test
+    public void testTreePrint() throws IOException {
+        BinaryTreePrinter<Integer> printer = BinaryTreePrinter.<Integer>builder(
+                Object::toString,
+                i -> i > 5 ? null : i + 1,
+                i -> i > 7 ? null : i + 2
+            )
+            .directed(true)
+            .branch(BinaryTreePrinter.Branch.RECTANGLE)
+            .build();
+        printer.print(1);
     }
 
 }
