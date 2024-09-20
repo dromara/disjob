@@ -24,15 +24,28 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * Abstract split param
+ * Split param
  *
  * @author Ponfee
  */
 @Getter
 @Setter
-abstract class SplitParam extends ToJsonString implements java.io.Serializable {
+public class SplitParam extends ToJsonString implements java.io.Serializable {
     private static final long serialVersionUID = 6130197382386756271L;
 
+    /**
+     * 是否广播任务
+     */
+    private boolean broadcast;
+
+    /**
+     * 广播时的Worker数量
+     */
+    private Integer broadcastWorkerCount;
+
+    /**
+     * Job参数
+     */
     private String jobParam;
 
     /**

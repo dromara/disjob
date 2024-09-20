@@ -20,9 +20,9 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.worker.executor.BasicJobExecutor;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,7 +57,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public class HttpJobExecutor extends BasicJobExecutor {
+public class HttpJobExecutor extends JobExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(HttpJobExecutor.class);
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;

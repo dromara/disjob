@@ -70,6 +70,8 @@ import static cn.ponfee.disjob.common.util.Functions.doIfTrue;
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
+import static com.google.common.collect.ImmutableList.of;
+import static java.util.Collections.singletonList;
 
 /**
  * Manage distributed schedule job.
@@ -79,19 +81,19 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
 @Component
 public class DistributedJobManager extends AbstractJobManager {
 
-    private static final List<Integer> RS_TERMINABLE = Collects.convert(RunState.Const.TERMINABLE_LIST, RunState::value);
-    private static final List<Integer> RS_RUNNABLE = Collects.convert(RunState.Const.RUNNABLE_LIST, RunState::value);
-    private static final List<Integer> RS_PAUSABLE = Collects.convert(RunState.Const.PAUSABLE_LIST, RunState::value);
-    private static final List<Integer> RS_WAITING = Collections.singletonList(RunState.WAITING.value());
-    private static final List<Integer> RS_RUNNING = Collections.singletonList(RunState.RUNNING.value());
-    private static final List<Integer> RS_PAUSED = Collections.singletonList(RunState.PAUSED.value());
+    private static final List<Integer> RS_TERMINABLE = of(RunState.WAITING.value(), RunState.RUNNING.value(), RunState.PAUSED.value());
+    private static final List<Integer> RS_RUNNABLE   = of(RunState.WAITING.value(), RunState.PAUSED.value());
+    private static final List<Integer> RS_PAUSABLE   = of(RunState.WAITING.value(), RunState.RUNNING.value());
+    private static final List<Integer> RS_WAITING    = singletonList(RunState.WAITING.value());
+    private static final List<Integer> RS_RUNNING    = singletonList(RunState.RUNNING.value());
+    private static final List<Integer> RS_PAUSED     = singletonList(RunState.PAUSED.value());
 
-    private static final List<Integer> ES_EXECUTABLE = Collects.convert(ExecuteState.Const.EXECUTABLE_LIST, ExecuteState::value);
-    private static final List<Integer> ES_PAUSABLE = Collects.convert(ExecuteState.Const.PAUSABLE_LIST, ExecuteState::value);
-    private static final List<Integer> ES_WAITING = Collections.singletonList(ExecuteState.WAITING.value());
-    private static final List<Integer> ES_EXECUTING = Collections.singletonList(ExecuteState.EXECUTING.value());
-    private static final List<Integer> ES_PAUSED = Collections.singletonList(ExecuteState.PAUSED.value());
-    private static final List<Integer> ES_COMPLETED = Collections.singletonList(ExecuteState.COMPLETED.value());
+    private static final List<Integer> ES_EXECUTABLE = of(ExecuteState.WAITING.value(), ExecuteState.PAUSED.value());
+    private static final List<Integer> ES_PAUSABLE   = of(ExecuteState.WAITING.value(), ExecuteState.EXECUTING.value());
+    private static final List<Integer> ES_WAITING    = singletonList(ExecuteState.WAITING.value());
+    private static final List<Integer> ES_EXECUTING  = singletonList(ExecuteState.EXECUTING.value());
+    private static final List<Integer> ES_PAUSED     = singletonList(ExecuteState.PAUSED.value());
+    private static final List<Integer> ES_COMPLETED  = singletonList(ExecuteState.COMPLETED.value());
 
     private final SchedInstanceMapper instanceMapper;
     private final SchedTaskMapper taskMapper;
@@ -190,7 +192,7 @@ public class DistributedJobManager extends AbstractJobManager {
      * Starts the task
      *
      * @param param the start task param
-     * @return StartTaskResult, if not null start successfully
+     * @return start result
      */
     public StartTaskResult startTask(StartTaskParam param) {
         param.check();
@@ -217,7 +219,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     /**
-     * Stops task
+     * Stops the task
      *
      * @param param the stop task param
      * @return {@code true} if stopped task successful
@@ -489,7 +491,7 @@ public class DistributedJobManager extends AbstractJobManager {
             );
         }
         // if task has WAITING or EXECUTING state, then return null
-        return states.stream().anyMatch(ExecuteState.Const.PAUSABLE_LIST::contains) ? null : Tuple2.of(RunState.PAUSED, null);
+        return states.stream().anyMatch(ExecuteState::isPausable) ? null : Tuple2.of(RunState.PAUSED, null);
     }
 
     private void pauseInstance(SchedInstance instance) {

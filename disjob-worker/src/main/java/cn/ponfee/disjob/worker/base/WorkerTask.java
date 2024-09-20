@@ -61,21 +61,21 @@ class WorkerTask {
      * 任务执行器
      */
     @Getter(AccessLevel.NONE)
-    private final AtomicReference<JobExecutor<?>> taskExecutorRef = new AtomicReference<>();
+    private final AtomicReference<JobExecutor> taskExecutorRef = new AtomicReference<>();
 
     WorkerTask(ExecuteTaskParam param) {
-        this.operationRef = new AtomicReference<>(param.getOperation());
+        this.operationRef = new AtomicReference<>(Objects.requireNonNull(param.getOperation()));
         this.taskId = param.getTaskId();
         this.instanceId = param.getInstanceId();
         this.wnstanceId = param.getWnstanceId();
         this.triggerTime = param.getTriggerTime();
         this.jobId = param.getJobId();
-        this.jobType = param.getJobType();
-        this.routeStrategy = param.getRouteStrategy();
-        this.redeployStrategy = param.getRedeployStrategy();
+        this.jobType = Objects.requireNonNull(param.getJobType());
+        this.routeStrategy = Objects.requireNonNull(param.getRouteStrategy());
+        this.redeployStrategy = Objects.requireNonNull(param.getRedeployStrategy());
         this.executeTimeout = param.getExecuteTimeout();
         this.jobExecutor = param.getJobExecutor();
-        this.worker = param.getWorker();
+        this.worker = Objects.requireNonNull(param.getWorker());
     }
 
     // --------------------------------------------------------other methods
@@ -93,15 +93,43 @@ class WorkerTask {
             && operationRef.compareAndSet(expect, update);
     }
 
-    void bindTaskExecutor(JobExecutor<?> executor) {
+    void bindTaskExecutor(JobExecutor executor) {
         taskExecutorRef.set(executor);
     }
 
     void stop() {
-        JobExecutor<?> executor = taskExecutorRef.get();
+        JobExecutor executor = taskExecutorRef.get();
         if (executor != null) {
             executor.stop();
         }
+    }
+
+    StartTaskParam toStartTaskParam() {
+        return StartTaskParam.of(jobId, wnstanceId, instanceId, taskId, jobType, worker.serialize(), UuidUtils.uuid32());
+    }
+
+    StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {
+        return StopTaskParam.of(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
+    }
+
+    ExecutionTask toExecutionTask(StartTaskResult source) {
+        if (source == null) {
+            return null;
+        }
+
+        ExecutionTask target = new ExecutionTask();
+        target.setBroadcast(routeStrategy.isBroadcast());
+        target.setJobId(jobId);
+        target.setWnstanceId(wnstanceId);
+        target.setInstanceId(instanceId);
+
+        target.setTaskId(source.getTaskId());
+        target.setTaskNo(source.getTaskNo());
+        target.setTaskCount(source.getTaskCount());
+        target.setExecuteSnapshot(source.getExecuteSnapshot());
+        target.setTaskParam(source.getTaskParam());
+
+        return target;
     }
 
     @Override
@@ -125,34 +153,6 @@ class WorkerTask {
     @Override
     public String toString() {
         return taskId + "-" + operationRef.get();
-    }
-
-    StartTaskParam toStartTaskParam() {
-        return StartTaskParam.of(jobId, wnstanceId, instanceId, taskId, jobType, worker, UuidUtils.uuid32());
-    }
-
-    StopTaskParam toStopTaskParam(Operation ops, ExecuteState toState, String errorMsg) {
-        return StopTaskParam.of(wnstanceId, instanceId, taskId, worker.serialize(), ops, toState, errorMsg);
-    }
-
-    ExecutionTask toExecutionTask(StartTaskResult source) {
-        if (source == null) {
-            return null;
-        }
-
-        ExecutionTask target = new ExecutionTask();
-
-        target.setJobId(jobId);
-        target.setWnstanceId(wnstanceId);
-        target.setInstanceId(instanceId);
-
-        target.setTaskId(source.getTaskId());
-        target.setTaskNo(source.getTaskNo());
-        target.setTaskCount(source.getTaskCount());
-        target.setExecuteSnapshot(source.getExecuteSnapshot());
-        target.setTaskParam(source.getTaskParam());
-
-        return target;
     }
 
 }

@@ -18,22 +18,25 @@ package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.core.exception.JobException;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Split schedule job to one instance and many tasks.
  *
  * @author Ponfee
  */
-interface JobSplitter<T extends SplitParam> {
+interface JobSplitter {
 
     /**
-     * Verifies job param
+     * Verifies job and param
      *
-     * @param jobParam the job param
+     * @param param the verifies param
      * @return {@code true} if verified success
      */
-    default boolean verify(String jobParam) {
+    default boolean verify(VerifyParam param) {
         return true;
     }
 
@@ -41,10 +44,18 @@ interface JobSplitter<T extends SplitParam> {
      * Provides default split single task.
      * <p>Subclass can override this method to customize implementation.
      *
-     * @param splitParam the split param
+     * @param param the split param
      * @return list of task param
      * @throws JobException if split failed
      */
-    List<String> split(T splitParam) throws JobException;
+    default List<String> split(SplitParam param) throws JobException {
+        if (param.isBroadcast()) {
+            return IntStream.range(0, param.getBroadcastWorkerCount())
+                .mapToObj(i -> param.getJobParam())
+                .collect(Collectors.toList());
+        } else {
+            return Collections.singletonList(param.getJobParam());
+        }
+    }
 
 }

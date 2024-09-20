@@ -56,7 +56,7 @@ import static org.apache.commons.lang3.SystemUtils.OS_NAME;
  *
  * @author Ponfee
  */
-public class ScriptJobExecutor extends BasicJobExecutor {
+public class ScriptJobExecutor extends JobExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(ScriptJobExecutor.class);
 
     private static final String[] DOWNLOAD_PROTOCOL = {"http://", "https://", "ftp://"};

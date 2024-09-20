@@ -24,7 +24,6 @@ import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.ProcessUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
-import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.JobType;
@@ -51,30 +50,25 @@ import java.util.stream.Collectors;
 public class JobExecutorUtils {
 
     public static void verify(VerifyJobParam param) throws JobException {
-        Assert.hasText(param.getJobExecutor(), "Job executor cannot be blank.");
-        Set<String> jobExecutors;
-        if (param.getJobType() == JobType.WORKFLOW) {
-            jobExecutors = DAGExpression.parse(param.getJobExecutor())
-                .nodes()
-                .stream()
-                .filter(e -> !e.isStartOrEnd())
-                .map(DAGNode::getName)
-                .collect(Collectors.toSet());
-            Assert.notEmpty(jobExecutors, () -> "Invalid workflow job executor: " + param.getJobExecutor());
-        } else {
-            jobExecutors = Collections.singleton(param.getJobExecutor());
-        }
-
-        String jobParam = param.getJobParam();
         try {
-            for (String jobExecutor : jobExecutors) {
-                JobExecutor<?> executor = loadJobExecutor(jobExecutor);
-                if (param.getRouteStrategy().isBroadcast()) {
-                    Assert.isTrue(executor instanceof BroadcastJobExecutor, () -> "Not broadcast job: " + jobExecutor);
-                } else {
-                    Assert.isTrue(executor instanceof BasicJobExecutor, () -> "Not basic job: " + jobExecutor);
-                }
-                Assert.isTrue(executor.verify(jobParam), () -> "Verify job failed: " + jobExecutor + ", " + jobParam);
+            Assert.hasText(param.getJobExecutor(), "Job executor cannot be blank.");
+            Set<String> jobExecutors;
+            if (param.getJobType() == JobType.WORKFLOW) {
+                jobExecutors = DAGExpression.parse(param.getJobExecutor())
+                    .nodes()
+                    .stream()
+                    .filter(e -> !e.isStartOrEnd())
+                    .map(DAGNode::getName)
+                    .collect(Collectors.toSet());
+                Assert.notEmpty(jobExecutors, () -> "Invalid workflow job executor: " + param.getJobExecutor());
+            } else {
+                jobExecutors = Collections.singleton(param.getJobExecutor());
+            }
+
+            for (String jobExecutorStr : jobExecutors) {
+                JobExecutor jobExecutor = loadJobExecutor(jobExecutorStr);
+                VerifyParam verifyParam = buildVerifyParam(param);
+                Assert.isTrue(jobExecutor.verify(verifyParam), () -> "Verify job failed: " + param);
             }
         } catch (JobException | JobRuntimeException e) {
             throw e;
@@ -84,7 +78,7 @@ public class JobExecutorUtils {
     }
 
     /**
-     * Splits job to many sched task.
+     * Splits job to many task.
      *
      * @param param the param
      * @return list of task param
@@ -92,29 +86,25 @@ public class JobExecutorUtils {
      */
     public static List<String> split(SplitJobParam param) throws JobException {
         Integer workerCount = param.getBroadcastWorkerCount();
-        String jobParam = param.getJobParam();
-        List<PredecessorInstance> predecessorInstances = param.getPredecessorInstances();
-
         try {
-            JobExecutor<?> jobExecutor = loadJobExecutor(param.getJobExecutor());
+            JobExecutor jobExecutor = loadJobExecutor(param.getJobExecutor());
             List<String> taskParams;
             if (param.getRouteStrategy().isBroadcast()) {
-                Assert.isTrue(workerCount > 0, () -> "Broadcast worker count must be greater than 0: " + workerCount);
-                BroadcastJobExecutor executor = (BroadcastJobExecutor) jobExecutor;
-                taskParams = executor.split(BroadcastSplitParam.of(workerCount, jobParam, predecessorInstances));
-                Assert.isTrue(taskParams.size() == workerCount, () -> "Broadcast job split task failed: " + workerCount);
+                Assert.isTrue(workerCount > 0, () -> "Broadcast worker count must greater than zero: " + workerCount);
+                taskParams = jobExecutor.split(buildSplitParam(param));
+                int size = (taskParams == null) ? 0 : taskParams.size();
+                Assert.isTrue(size == workerCount, () -> "Split job task size not equals broadcast worker count: " + size + ", " + workerCount);
             } else {
                 Assert.isNull(workerCount, () -> "Broadcast worker count must be null: " + workerCount);
-                BasicJobExecutor executor = (BasicJobExecutor) jobExecutor;
-                taskParams = executor.split(BasicSplitParam.of(jobParam, predecessorInstances));
-                Assert.notEmpty(taskParams, "Basic job split task failed.");
+                taskParams = jobExecutor.split(buildSplitParam(param));
+                Assert.notEmpty(taskParams, "Split job task cannot be empty.");
             }
             taskParams.forEach(e -> DisjobUtils.checkClobMaximumLength(e, "Splitting task param"));
             return taskParams;
         } catch (JobException | JobRuntimeException e) {
             throw e;
         } catch (Throwable t) {
-            throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Split job failed: " + t.getMessage(), t);
+            throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Split job task failed: " + t.getMessage(), t);
         }
     }
 
@@ -125,16 +115,16 @@ public class JobExecutorUtils {
      * @return JobExecutor instance object
      * @throws JobException if new instance failed
      */
-    public static JobExecutor<?> loadJobExecutor(String text) throws JobException {
+    public static JobExecutor loadJobExecutor(String text) throws JobException {
         if (SpringContextHolder.isNotNull()) {
             // must be annotated with @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
             // get by spring bean name
-            JobExecutor<?> executor = SpringContextHolder.getPrototypeBean(text, JobExecutor.class);
+            JobExecutor executor = SpringContextHolder.getPrototypeBean(text, JobExecutor.class);
             if (executor != null) {
                 return executor;
             }
 
-            Class<? extends JobExecutor<?>> jobExecutorClass = getJobExecutorClass(text);
+            Class<? extends JobExecutor> jobExecutorClass = getJobExecutorClass(text);
             executor = SpringContextHolder.getPrototypeBean(jobExecutorClass);
             if (executor != null) {
                 return executor;
@@ -144,7 +134,7 @@ public class JobExecutorUtils {
             SpringContextHolder.autowireBean(executor);
             return executor;
         } else {
-            Class<? extends JobExecutor<?>> jobExecutorClass = getJobExecutorClass(text);
+            Class<? extends JobExecutor> jobExecutorClass = getJobExecutorClass(text);
             return ClassUtils.newInstance(jobExecutorClass);
         }
     }
@@ -171,8 +161,8 @@ public class JobExecutorUtils {
 
     // ---------------------------------------------------------------------------------private methods
 
-    private static Class<? extends JobExecutor<?>> getJobExecutorClass(String text) throws JobException {
-        Class<? extends JobExecutor<?>> type = ClassUtils.getClass(text);
+    private static Class<? extends JobExecutor> getJobExecutorClass(String text) throws JobException {
+        Class<? extends JobExecutor> type = ClassUtils.getClass(text);
         if (type == null) {
             throw new JobException(JobCodeMsg.LOAD_JOB_EXECUTOR_ERROR, "Illegal job executor class: " + text);
         }
@@ -182,6 +172,22 @@ public class JobExecutorUtils {
             throw new JobException(JobCodeMsg.LOAD_JOB_EXECUTOR_ERROR, "Invalid job executor '" + type + "': " + text);
         }
         return type;
+    }
+
+    private static VerifyParam buildVerifyParam(VerifyJobParam param) {
+        VerifyParam verifyParam = new VerifyParam();
+        verifyParam.setBroadcast(param.getRouteStrategy().isBroadcast());
+        verifyParam.setJobParam(param.getJobParam());
+        return verifyParam;
+    }
+
+    private static SplitParam buildSplitParam(SplitJobParam param) {
+        SplitParam splitParam = new SplitParam();
+        splitParam.setBroadcast(param.getRouteStrategy().isBroadcast());
+        splitParam.setBroadcastWorkerCount(param.getBroadcastWorkerCount());
+        splitParam.setJobParam(param.getJobParam());
+        splitParam.setPredecessorInstances(param.getPredecessorInstances());
+        return splitParam;
     }
 
 }

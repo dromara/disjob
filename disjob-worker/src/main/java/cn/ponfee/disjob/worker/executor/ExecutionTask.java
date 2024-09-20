@@ -33,6 +33,11 @@ public class ExecutionTask extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 8910065837652403459L;
 
     /**
+     * 是否广播任务
+     */
+    private boolean broadcast;
+
+    /**
      * sched_job.job_id
      */
     private long jobId;

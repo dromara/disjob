@@ -84,8 +84,15 @@ public enum RunType implements IntValueEnum<RunType> {
         throw new UnsupportedOperationException(this + " cannot supported unique flag.");
     }
 
-    public static RunType of(Integer value) {
-        return IntValueEnum.of(RunType.class, value);
+    public static RunType of(int value) {
+        for (RunType e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid run type value: " + value);
     }
+
+    private static final RunType[] VALUES = RunType.values();
 
 }

@@ -17,9 +17,6 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
-import com.google.common.collect.ImmutableList;
-
-import java.util.List;
 
 /**
  * The run state enum definition.
@@ -88,6 +85,10 @@ public enum RunState implements IntValueEnum<RunState> {
         return desc;
     }
 
+    public boolean isPausable() {
+        return this == WAITING || this == RUNNING;
+    }
+
     public boolean isTerminal() {
         return terminal;
     }
@@ -96,28 +97,15 @@ public enum RunState implements IntValueEnum<RunState> {
         return failure;
     }
 
-    public static RunState of(Integer value) {
-        return IntValueEnum.of(RunState.class, value);
+    public static RunState of(int value) {
+        for (RunState e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid run state value: " + value);
     }
 
-    public static final class Const {
-
-        /**
-         * State list of can transit to PAUSED
-         */
-        public static final List<RunState> PAUSABLE_LIST = ImmutableList.of(WAITING, RUNNING);
-
-        /**
-         * State list of can transit to RUNNING
-         */
-        public static final List<RunState> RUNNABLE_LIST = ImmutableList.of(WAITING, PAUSED);
-
-        /**
-         * State list of can transit to terminated
-         *
-         * @see #isTerminal()
-         */
-        public static final List<RunState> TERMINABLE_LIST = ImmutableList.of(WAITING, RUNNING, PAUSED);
-    }
+    private static final RunState[] VALUES = RunState.values();
 
 }

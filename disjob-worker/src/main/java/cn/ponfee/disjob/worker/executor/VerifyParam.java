@@ -16,21 +16,28 @@
 
 package cn.ponfee.disjob.worker.executor;
 
-import cn.ponfee.disjob.core.exception.JobException;
-
-import java.util.Collections;
-import java.util.List;
+import cn.ponfee.disjob.common.base.ToJsonString;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Basic job executor
+ * Verify param
  *
  * @author Ponfee
  */
-public abstract class BasicJobExecutor extends JobExecutor<BasicSplitParam> {
+@Getter
+@Setter
+public class VerifyParam extends ToJsonString implements java.io.Serializable {
+    private static final long serialVersionUID = -3729803336650393095L;
 
-    @Override
-    public List<String> split(BasicSplitParam splitParam) throws JobException {
-        return Collections.singletonList(splitParam.getJobParam());
-    }
+    /**
+     * 是否广播任务
+     */
+    private boolean broadcast;
+
+    /**
+     * Job参数
+     */
+    private String jobParam;
 
 }

@@ -38,12 +38,12 @@ import java.util.stream.IntStream;
  */
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Service("DJobExecutor")
-public class DJobExecutor extends BasicJobExecutor {
+public class DJobExecutor extends JobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(DJobExecutor.class);
 
     @Override
-    public List<String> split(BasicSplitParam splitParam) {
+    public List<String> split(SplitParam param) {
         return IntStream.range(0, Constants.TASK_COUNT)
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
             .collect(Collectors.toList());

@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -39,7 +38,7 @@ public class Enums {
      * @return the immutable map of enum to map enums, never null
      * @see EnumUtils#getEnumMap(Class)
      */
-    public static <E extends Enum<E>> Map<String, E> toMap(Class<E> enumType) {
+    public static <E extends Enum<E>> ImmutableMap<String, E> toMap(Class<E> enumType) {
         return toMap(enumType, Enum::name);
     }
 
@@ -52,7 +51,7 @@ public class Enums {
      * @param <E>       the enum type
      * @return the immutable map of enum to map enums, never null
      */
-    public static <K, E extends Enum<E>> Map<K, E> toMap(Class<E> enumType, Function<E, K> keyMapper) {
+    public static <K, E extends Enum<E>> ImmutableMap<K, E> toMap(Class<E> enumType, Function<E, K> keyMapper) {
         return Arrays.stream(enumType.getEnumConstants())
             .collect(ImmutableMap.toImmutableMap(keyMapper, Function.identity()));
     }

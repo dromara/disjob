@@ -19,9 +19,9 @@ package cn.ponfee.disjob.test.util;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.test.executor.PrimeCountJobExecutor;
-import cn.ponfee.disjob.worker.executor.BasicSplitParam;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
 import cn.ponfee.disjob.worker.executor.Savepoint;
+import cn.ponfee.disjob.worker.executor.SplitParam;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -46,7 +46,9 @@ public class PrimeCountJobExecutorTest {
         System.out.println(json);
 
         PrimeCountJobExecutor jobExecutor = new PrimeCountJobExecutor();
-        List<String> taskParams = jobExecutor.split(BasicSplitParam.of(job.getJobParam(), null));
+        SplitParam splitParam = new SplitParam();
+        splitParam.setJobParam(job.getJobParam());
+        List<String> taskParams = jobExecutor.split(splitParam);
         System.out.println(Jsons.toJson(taskParams));
 
         for (String taskParam : taskParams) {

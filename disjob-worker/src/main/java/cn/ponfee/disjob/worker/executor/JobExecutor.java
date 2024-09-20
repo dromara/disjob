@@ -25,6 +25,6 @@ package cn.ponfee.disjob.worker.executor;
  * @see org.springframework.context.annotation.Scope
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#SCOPE_PROTOTYPE
  */
-public abstract class JobExecutor<T extends SplitParam> extends TaskExecutor implements JobSplitter<T> {
+public abstract class JobExecutor extends TaskExecutor implements JobSplitter {
 
 }

@@ -32,14 +32,14 @@ import java.util.stream.IntStream;
  *
  * @author Ponfee
  */
-public class NoopJobExecutor extends BasicJobExecutor {
+public class NoopJobExecutor extends JobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(NoopJobExecutor.class);
     public static volatile long major = 9997;
     public static volatile long minor = 19997;
 
     @Override
-    public List<String> split(BasicSplitParam splitParam) {
+    public List<String> split(SplitParam param) {
         return IntStream.range(0, 1 + ThreadLocalRandom.current().nextInt(5))
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
             .collect(Collectors.toList());

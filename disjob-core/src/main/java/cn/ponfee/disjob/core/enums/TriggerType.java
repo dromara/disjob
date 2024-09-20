@@ -372,7 +372,14 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     }
 
     public static TriggerType of(int value) {
-        return IntValueEnum.of(TriggerType.class, value);
+        for (TriggerType e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid trigger type value: " + value);
     }
+
+    private static final TriggerType[] VALUES = TriggerType.values();
 
 }

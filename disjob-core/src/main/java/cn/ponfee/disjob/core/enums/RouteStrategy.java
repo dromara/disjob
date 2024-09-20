@@ -92,8 +92,15 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
         return !isRoundRobin();
     }
 
-    public static RouteStrategy of(Integer value) {
-        return IntValueEnum.of(RouteStrategy.class, value);
+    public static RouteStrategy of(int value) {
+        for (RouteStrategy e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid route strategy value: " + value);
     }
+
+    private static final RouteStrategy[] VALUES = RouteStrategy.values();
 
 }

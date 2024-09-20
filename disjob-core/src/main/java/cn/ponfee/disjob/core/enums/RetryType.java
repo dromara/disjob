@@ -61,8 +61,15 @@ public enum RetryType implements IntValueEnum<RetryType> {
         return desc;
     }
 
-    public static RetryType of(Integer value) {
-        return IntValueEnum.of(RetryType.class, value);
+    public static RetryType of(int value) {
+        for (RetryType e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid retry type value: " + value);
     }
+
+    private static final RetryType[] VALUES = RetryType.values();
 
 }

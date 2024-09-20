@@ -66,8 +66,15 @@ public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
         return desc;
     }
 
-    public static CollidedStrategy of(Integer value) {
-        return IntValueEnum.of(CollidedStrategy.class, value);
+    public static CollidedStrategy of(int value) {
+        for (CollidedStrategy e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid collided strategy value: " + value);
     }
+
+    private static final CollidedStrategy[] VALUES = CollidedStrategy.values();
 
 }

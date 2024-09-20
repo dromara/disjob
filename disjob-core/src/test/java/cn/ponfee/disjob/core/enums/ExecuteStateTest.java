@@ -16,8 +16,10 @@
 
 package cn.ponfee.disjob.core.enums;
 
-import cn.ponfee.disjob.common.base.IntValueEnum;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,7 +32,26 @@ public class ExecuteStateTest {
 
     @Test
     public void testOf() {
-        assertThat(IntValueEnum.of(ExecuteState.class, 10)).isSameAs(ExecuteState.WAITING);
         assertThat(ExecuteState.of(10)).isSameAs(ExecuteState.WAITING);
     }
+
+    @Test
+    public void testEquals() {
+        Assertions.assertNotSame(RunState.class.getEnumConstants(), RunState.class.getEnumConstants());
+        Assertions.assertNotSame(RunState.values(), RunState.values());
+        Assertions.assertNotSame(RunState.class.getEnumConstants(), RunState.values());
+
+        RunState[] enumConstants = RunState.class.getEnumConstants();
+        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(enumConstants));
+        enumConstants[0] = RunState.PAUSED;
+        Assertions.assertEquals("[PAUSED, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(enumConstants));
+        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(RunState.class.getEnumConstants()));
+
+        RunState[] values = RunState.values();
+        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(values));
+        values[0] = RunState.PAUSED;
+        Assertions.assertEquals("[PAUSED, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(values));
+        Assertions.assertEquals("[WAITING, RUNNING, PAUSED, COMPLETED, CANCELED]", Arrays.toString(RunState.values()));
+    }
+
 }

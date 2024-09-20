@@ -56,8 +56,15 @@ public enum JobType implements IntValueEnum<JobType> {
         return desc;
     }
 
-    public static JobType of(Integer value) {
-        return IntValueEnum.of(JobType.class, value);
+    public static JobType of(int value) {
+        for (JobType e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid job type value: " + value);
     }
+
+    private static final JobType[] VALUES = JobType.values();
 
 }

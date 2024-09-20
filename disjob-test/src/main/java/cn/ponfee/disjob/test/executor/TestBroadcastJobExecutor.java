@@ -17,9 +17,9 @@
 package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.worker.executor.BroadcastJobExecutor;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author Ponfee
  */
-public class TestBroadcastJobExecutor extends BroadcastJobExecutor {
+public class TestBroadcastJobExecutor extends JobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestBroadcastJobExecutor.class);
 

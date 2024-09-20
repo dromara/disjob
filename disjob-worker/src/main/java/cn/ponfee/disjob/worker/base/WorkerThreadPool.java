@@ -647,7 +647,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 return;
             }
 
-            JobExecutor<?> taskExecutor;
+            JobExecutor taskExecutor;
             try {
                 taskExecutor = JobExecutorUtils.loadJobExecutor(workerTask.getJobExecutor());
                 workerTask.bindTaskExecutor(taskExecutor);
@@ -690,7 +690,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             }
         }
 
-        private void execute(WorkerTask workerTask, JobExecutor<?> taskExecutor, ExecutionTask executionTask) throws Exception {
+        private void execute(WorkerTask workerTask, JobExecutor taskExecutor, ExecutionTask executionTask) throws Exception {
             ExecutionResult result;
             Savepoint savepoint = new TaskSavepoint(workerTask.getTaskId(), workerTask.getWorker().serialize());
             if (workerTask.getExecuteTimeout() > 0) {

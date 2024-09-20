@@ -18,9 +18,7 @@ package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
 import cn.ponfee.disjob.common.util.Enums;
-import com.google.common.collect.ImmutableList;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -127,6 +125,10 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
         return runState;
     }
 
+    public boolean isPausable() {
+        return this == WAITING || this == EXECUTING;
+    }
+
     public boolean isTerminal() {
         return runState.isTerminal();
     }
@@ -136,28 +138,9 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     }
 
     public static ExecuteState of(Integer value) {
-        return Objects.requireNonNull(Const.MAPPING.get(value), () -> "Invalid execute state value: " + value);
+        return Objects.requireNonNull(MAPPING.get(value), () -> "Invalid execute state value: " + value);
     }
 
-    public static final class Const {
-        private static final Map<Integer, ExecuteState> MAPPING = Enums.toMap(ExecuteState.class, ExecuteState::value);
-
-        /**
-         * State list of can transit to PAUSED
-         */
-        public static final List<ExecuteState> PAUSABLE_LIST = ImmutableList.of(WAITING, EXECUTING);
-
-        /**
-         * State list of can transit to EXECUTING
-         */
-        public static final List<ExecuteState> EXECUTABLE_LIST = ImmutableList.of(WAITING, PAUSED);
-
-        /**
-         * State list of can transit to terminated
-         *
-         * @see #isTerminal()
-         */
-        public static final List<ExecuteState> TERMINABLE_LIST = ImmutableList.of(WAITING, EXECUTING, PAUSED);
-    }
+    private static final Map<Integer, ExecuteState> MAPPING = Enums.toMap(ExecuteState.class, ExecuteState::value);
 
 }

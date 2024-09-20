@@ -39,6 +39,16 @@ public interface ValueEnum<V, T extends Enum<T> & ValueEnum<V, T>> {
      */
     String desc();
 
+    /**
+     * Return ValueEnum object of value
+     * <p>Enum.values()和EnumClass.getEnumConstants()都会clone数组，效率不高
+     *
+     * @param type  the ValueEnum class
+     * @param value the value
+     * @param <V>   value type
+     * @param <T>   ValueEnum type
+     * @return ValueEnum object
+     */
     static <V, T extends Enum<T> & ValueEnum<V, T>> T of(Class<T> type, V value) {
         for (T e : type.getEnumConstants()) {
             if (value.equals(e.value())) {

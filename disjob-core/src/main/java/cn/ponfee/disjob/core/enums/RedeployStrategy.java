@@ -67,8 +67,15 @@ public enum RedeployStrategy implements IntValueEnum<RedeployStrategy> {
         return operation;
     }
 
-    public static RedeployStrategy of(Integer value) {
-        return IntValueEnum.of(RedeployStrategy.class, value);
+    public static RedeployStrategy of(int value) {
+        for (RedeployStrategy e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid redeploy strategy value: " + value);
     }
+
+    private static final RedeployStrategy[] VALUES = RedeployStrategy.values();
 
 }

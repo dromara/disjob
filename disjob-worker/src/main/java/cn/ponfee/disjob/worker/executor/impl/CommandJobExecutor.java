@@ -52,7 +52,7 @@ import java.nio.charset.Charset;
  *
  * @author Ponfee
  */
-public class CommandJobExecutor extends BasicJobExecutor {
+public class CommandJobExecutor extends JobExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(CommandJobExecutor.class);
 
     private Charset charset;

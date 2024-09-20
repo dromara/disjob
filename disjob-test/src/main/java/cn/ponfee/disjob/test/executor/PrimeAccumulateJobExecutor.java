@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
  *
  * @author Ponfee
  */
-public class PrimeAccumulateJobExecutor extends BasicJobExecutor {
+public class PrimeAccumulateJobExecutor extends JobExecutor {
 
     private static final TypeReference<List<Param>> TYPE = new TypeReference<List<Param>>() {};
 
     @Override
-    public List<String> split(BasicSplitParam splitParam) {
-        List<Param> list = splitParam.getPredecessorInstances()
+    public List<String> split(SplitParam param) {
+        List<Param> list = param.getPredecessorInstances()
             .stream()
             .flatMap(e -> e.getTasks().stream())
             .map(Param::of)

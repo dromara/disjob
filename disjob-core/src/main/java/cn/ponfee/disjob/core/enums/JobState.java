@@ -56,8 +56,15 @@ public enum JobState implements IntValueEnum<JobState> {
         return desc;
     }
 
-    public static JobState of(Integer value) {
-        return IntValueEnum.of(JobState.class, value);
+    public static JobState of(int value) {
+        for (JobState e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid job state value: " + value);
     }
+
+    private static final JobState[] VALUES = JobState.values();
 
 }

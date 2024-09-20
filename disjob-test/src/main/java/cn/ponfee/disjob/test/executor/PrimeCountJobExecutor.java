@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author Ponfee
  */
-public class PrimeCountJobExecutor extends BasicJobExecutor {
+public class PrimeCountJobExecutor extends JobExecutor {
 
     /**
      * 默认以每块1亿分批统计
@@ -51,12 +51,12 @@ public class PrimeCountJobExecutor extends BasicJobExecutor {
     /**
      * 任务分片，自定义控制任务的拆分数量
      *
-     * @param splitParam the split param
+     * @param param the split param
      * @return task list
      */
     @Override
-    public List<String> split(BasicSplitParam splitParam) {
-        JobParam jobParam = Jsons.fromJson(splitParam.getJobParam(), JobParam.class);
+    public List<String> split(SplitParam param) {
+        JobParam jobParam = Jsons.fromJson(param.getJobParam(), JobParam.class);
         long m = jobParam.getM();
         long n = jobParam.getN();
         long blockSize = Optional.ofNullable(jobParam.getBlockSize()).orElse(DEFAULT_BLOCK_SIZE);

@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.dto.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,14 +43,14 @@ public class StartTaskParam extends ToJsonString implements Serializable {
     private JobType jobType;
 
     public static StartTaskParam of(long jobId, Long wnstanceId, long instanceId, long taskId,
-                                    JobType jobType, Worker worker, String startRequestId) {
+                                    JobType jobType, String worker, String startRequestId) {
         StartTaskParam param = new StartTaskParam();
         param.setJobId(jobId);
         param.setWnstanceId(wnstanceId);
         param.setInstanceId(instanceId);
         param.setTaskId(taskId);
         param.setJobType(jobType);
-        param.setWorker(worker.serialize());
+        param.setWorker(worker);
         param.setStartRequestId(startRequestId);
 
         param.check();

@@ -38,12 +38,12 @@ import java.util.stream.IntStream;
  */
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Service("EJobExecutor")
-public class EJobExecutor extends BasicJobExecutor {
+public class EJobExecutor extends JobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(EJobExecutor.class);
 
     @Override
-    public List<String> split(BasicSplitParam splitParam) {
+    public List<String> split(SplitParam param) {
         return IntStream.range(0, Constants.TASK_COUNT)
             .mapToObj(i -> getClass().getSimpleName() + "-" + i)
             .collect(Collectors.toList());

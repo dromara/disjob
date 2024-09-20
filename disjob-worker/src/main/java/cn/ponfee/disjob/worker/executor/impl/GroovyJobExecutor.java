@@ -17,9 +17,9 @@
 package cn.ponfee.disjob.worker.executor.impl;
 
 import cn.ponfee.disjob.common.util.GroovyUtils;
-import cn.ponfee.disjob.worker.executor.BasicJobExecutor;
 import cn.ponfee.disjob.worker.executor.ExecutionResult;
 import cn.ponfee.disjob.worker.executor.ExecutionTask;
+import cn.ponfee.disjob.worker.executor.JobExecutor;
 import cn.ponfee.disjob.worker.executor.Savepoint;
 import com.google.common.collect.ImmutableMap;
 
@@ -39,7 +39,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
-public class GroovyJobExecutor extends BasicJobExecutor {
+public class GroovyJobExecutor extends JobExecutor {
 
     public static final String JOB_EXECUTOR = "jobExecutor";
     public static final String EXECUTION_TASK = "executionTask";

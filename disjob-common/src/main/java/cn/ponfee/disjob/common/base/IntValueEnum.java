@@ -63,15 +63,6 @@ public interface IntValueEnum<T extends Enum<T> & IntValueEnum<T>> {
         return value == value();
     }
 
-    static <T extends Enum<T> & IntValueEnum<T>> T of(Class<T> type, int value) {
-        for (T e : type.getEnumConstants()) {
-            if (e.value() == value) {
-                return e;
-            }
-        }
-        throw new IllegalArgumentException("Invalid enum " + type + " int value: " + value);
-    }
-
     static List<IntValueDesc> values(Class<? extends IntValueEnum<?>> clazz) {
         return Arrays.stream(clazz.getEnumConstants())
             .map(e -> IntValueDesc.of(e.value(), e.desc()))

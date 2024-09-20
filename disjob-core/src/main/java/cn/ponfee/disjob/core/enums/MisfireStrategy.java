@@ -61,8 +61,15 @@ public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
         return desc;
     }
 
-    public static MisfireStrategy of(Integer value) {
-        return IntValueEnum.of(MisfireStrategy.class, value);
+    public static MisfireStrategy of(int value) {
+        for (MisfireStrategy e : VALUES) {
+            if (e.value() == value) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("Invalid misfire strategy value: " + value);
     }
+
+    private static final MisfireStrategy[] VALUES = MisfireStrategy.values();
 
 }
