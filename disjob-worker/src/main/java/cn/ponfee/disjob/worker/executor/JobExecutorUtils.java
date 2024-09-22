@@ -67,8 +67,8 @@ public class JobExecutorUtils {
 
             for (String jobExecutorStr : jobExecutors) {
                 JobExecutor jobExecutor = loadJobExecutor(jobExecutorStr);
-                VerifyParam verifyParam = buildVerifyParam(param);
-                Assert.isTrue(jobExecutor.verify(verifyParam), () -> "Verify job failed: " + param);
+                boolean result = jobExecutor.verify(buildVerifyParam(param));
+                Assert.isTrue(result, () -> "Verify job failed: " + param);
             }
         } catch (JobException | JobRuntimeException e) {
             throw e;

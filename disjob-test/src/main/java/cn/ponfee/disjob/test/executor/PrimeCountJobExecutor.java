@@ -100,7 +100,7 @@ public class PrimeCountJobExecutor extends JobExecutor {
 
         ExecuteSnapshot execution;
         if (StringUtils.isEmpty(task.getExecuteSnapshot())) {
-            execution = new ExecuteSnapshot(start);
+            execution = ExecuteSnapshot.of(start);
         } else {
             execution = Jsons.fromJson(task.getExecuteSnapshot(), ExecuteSnapshot.class);
             if (execution.getNext() == null || execution.isFinished()) {
@@ -168,16 +168,16 @@ public class PrimeCountJobExecutor extends JobExecutor {
         private long count;
         private boolean finished;
 
-        public ExecuteSnapshot() { }
-
-        public ExecuteSnapshot(long start) {
-            this.next = start;
-            this.count = 0;
-            this.finished = false;
-        }
-
         public void increment(long delta) {
             this.count += delta;
+        }
+
+        public static ExecuteSnapshot of(long start) {
+            ExecuteSnapshot e = new ExecuteSnapshot();
+            e.setNext(start);
+            e.setCount(0);
+            e.setFinished(false);
+            return e;
         }
     }
 

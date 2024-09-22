@@ -87,7 +87,7 @@ public class PooledObjectProcessor<K, V> {
                         throw new NullPointerException("Created null object: " + key);
                     }
                 }
-                if ((value = queue.poll(1000L, TimeUnit.MILLISECONDS)) != null) {
+                if ((value = queue.poll(200L, TimeUnit.MILLISECONDS)) != null) {
                     return value;
                 }
             }

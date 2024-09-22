@@ -44,7 +44,7 @@ public class TestBroadcastJobExecutor extends JobExecutor {
     @Override
     public ExecutionResult execute(ExecutionTask task, Savepoint savepoint) throws Exception {
         Thread.sleep(5000 + ThreadLocalRandom.current().nextLong(10000));
-        LOG.info("Broadcast job execute done: {}", task.getTaskId());
+        LOG.info("Broadcast job execute done: {}, {}", task.getTaskId(), task.isBroadcast());
         savepoint.save(Dates.format(new Date()) + ": " + getClass().getSimpleName());
         return ExecutionResult.success();
     }

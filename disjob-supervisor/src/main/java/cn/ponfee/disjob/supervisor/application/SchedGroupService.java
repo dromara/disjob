@@ -221,6 +221,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         serverInvokeService.publishOtherSupervisors(EventParam.of(EventParam.Type.REFRESH_GROUP, null));
     }
 
+    @SuppressWarnings("unchecked")
     private static Map<String, Set<String>> toUserMap(List<SchedGroup> list) {
         Map<String, ?> userMap = list.stream()
             .flatMap(e -> {
@@ -240,6 +241,7 @@ public class SchedGroupService extends SingletonClassConstraint {
                 return users.stream();
             })
             .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
+
         return (Map<String, Set<String>>) userMap;
     }
 

@@ -118,8 +118,9 @@ class WorkerTask {
         }
 
         ExecutionTask target = new ExecutionTask();
-        target.setBroadcast(routeStrategy.isBroadcast());
         target.setJobId(jobId);
+        target.setBroadcast(routeStrategy.isBroadcast());
+        target.setJobType(jobType);
         target.setWnstanceId(wnstanceId);
         target.setInstanceId(instanceId);
 

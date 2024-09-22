@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.worker.executor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import cn.ponfee.disjob.core.enums.JobType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,14 +34,19 @@ public class ExecutionTask extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 8910065837652403459L;
 
     /**
-     * 是否广播任务
+     * sched_job.job_id
      */
-    private boolean broadcast;
+    private long jobId;
 
     /**
      * sched_job.job_id
      */
-    private long jobId;
+    private JobType jobType;
+
+    /**
+     * 是否广播任务
+     */
+    private boolean broadcast;
 
     /**
      * sched_instance.wnstance_id
