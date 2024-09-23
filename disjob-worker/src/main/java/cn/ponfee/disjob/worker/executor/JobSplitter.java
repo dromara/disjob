@@ -50,7 +50,7 @@ interface JobSplitter {
      */
     default List<String> split(SplitParam param) throws JobException {
         if (param.isBroadcast()) {
-            return IntStream.range(0, param.getBroadcastWorkerCount())
+            return IntStream.range(0, param.getWorkerCount())
                 .mapToObj(i -> param.getJobParam())
                 .collect(Collectors.toList());
         } else {

@@ -189,20 +189,18 @@ public abstract class AbstractJobManager {
     }
 
     public List<SchedTask> splitJob(SplitJobParam param, long instanceId) throws JobException {
+        List<Worker> workers = workerDiscover.getDiscoveredServers(param.getGroup());
+        Assert.state(!workers.isEmpty(), () -> "Not discovered broadcast worker: " + param.getGroup());
+        int workerCount = workers.size();
+        param.setWorkerCount(workerCount);
+        List<String> taskParams = splitTasks(param);
+        int count = taskParams.size();
         if (param.getRouteStrategy().isBroadcast()) {
-            List<Worker> workers = workerDiscover.getDiscoveredServers(param.getGroup());
-            Assert.state(!workers.isEmpty(), () -> "Not discovered broadcast worker: " + param.getGroup());
-            int count = workers.size();
-            param.setBroadcastWorkerCount(count);
-
-            List<String> taskParams = splitTasks(param);
-            Assert.state(taskParams.size() == count, () -> "Invalid broadcast split size: " + taskParams.size() + "!=" + count);
+            Assert.state(count == workerCount, () -> "Invalid broadcast split size: " + count + "!=" + workerCount);
             return IntStream.range(0, count)
                 .mapToObj(i -> SchedTask.of(taskParams.get(i), generateId(), instanceId, i + 1, count, workers.get(i).serialize()))
                 .collect(Collectors.toList());
         } else {
-            List<String> taskParams = splitTasks(param);
-            int count = taskParams.size();
             Assert.state(0 < count && count <= conf.getMaximumSplitTaskSize(), () -> "Invalid basic split size: " + count);
             return IntStream.range(0, count)
                 .mapToObj(i -> SchedTask.of(taskParams.get(i), generateId(), instanceId, i + 1, count, null))

@@ -51,7 +51,7 @@ public class JobExecutorUtils {
 
     public static void verify(VerifyJobParam param) throws JobException {
         try {
-            Assert.hasText(param.getJobExecutor(), "Job executor cannot be blank.");
+            param.check();
             Set<String> jobExecutors;
             if (param.getJobType() == JobType.WORKFLOW) {
                 jobExecutors = DAGExpression.parse(param.getJobExecutor())
@@ -85,18 +85,16 @@ public class JobExecutorUtils {
      * @throws JobException if split failed
      */
     public static List<String> split(SplitJobParam param) throws JobException {
-        Integer workerCount = param.getBroadcastWorkerCount();
         try {
+            param.check();
+            int workerCount = param.getWorkerCount();
+            Assert.isTrue(workerCount > 0, () -> "Worker count must greater than zero: " + workerCount);
             JobExecutor jobExecutor = loadJobExecutor(param.getJobExecutor());
-            List<String> taskParams;
+            List<String> taskParams = jobExecutor.split(buildSplitParam(param));
             if (param.getRouteStrategy().isBroadcast()) {
-                Assert.isTrue(workerCount > 0, () -> "Broadcast worker count must greater than zero: " + workerCount);
-                taskParams = jobExecutor.split(buildSplitParam(param));
                 int size = (taskParams == null) ? 0 : taskParams.size();
-                Assert.isTrue(size == workerCount, () -> "Split job task size not equals broadcast worker count: " + size + ", " + workerCount);
+                Assert.isTrue(size == workerCount, () -> "Split job task size not equals worker count: " + size + ", " + workerCount);
             } else {
-                Assert.isNull(workerCount, () -> "Broadcast worker count must be null: " + workerCount);
-                taskParams = jobExecutor.split(buildSplitParam(param));
                 Assert.notEmpty(taskParams, "Split job task cannot be empty.");
             }
             taskParams.forEach(e -> DisjobUtils.checkClobMaximumLength(e, "Splitting task param"));
@@ -184,7 +182,7 @@ public class JobExecutorUtils {
     private static SplitParam buildSplitParam(SplitJobParam param) {
         SplitParam splitParam = new SplitParam();
         splitParam.setBroadcast(param.getRouteStrategy().isBroadcast());
-        splitParam.setBroadcastWorkerCount(param.getBroadcastWorkerCount());
+        splitParam.setWorkerCount(param.getWorkerCount());
         splitParam.setJobParam(param.getJobParam());
         splitParam.setPredecessorInstances(param.getPredecessorInstances());
         return splitParam;

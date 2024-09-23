@@ -39,9 +39,9 @@ public class SplitParam extends ToJsonString implements java.io.Serializable {
     private boolean broadcast;
 
     /**
-     * 广播时的Worker数量
+     * Worker数量
      */
-    private Integer broadcastWorkerCount;
+    private int workerCount;
 
     /**
      * Job参数

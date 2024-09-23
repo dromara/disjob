@@ -17,15 +17,17 @@
 package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.worker.executor.ExecutionResult;
-import cn.ponfee.disjob.worker.executor.ExecutionTask;
-import cn.ponfee.disjob.worker.executor.JobExecutor;
-import cn.ponfee.disjob.worker.executor.Savepoint;
+import cn.ponfee.disjob.core.exception.JobException;
+import cn.ponfee.disjob.worker.executor.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Test broadcast job executor
@@ -35,6 +37,14 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TestBroadcastJobExecutor extends JobExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestBroadcastJobExecutor.class);
+
+    @Override
+    public List<String> split(SplitParam param) throws JobException {
+        Assert.isTrue(param.isBroadcast(), "Must be broadcast.");
+        return IntStream.range(0, param.getWorkerCount())
+            .mapToObj(i -> param.getJobParam() + "-" + i)
+            .collect(Collectors.toList());
+    }
 
     @Override
     public void init(ExecutionTask task) {

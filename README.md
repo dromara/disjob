@@ -118,7 +118,7 @@ disjob                                        # 主项目①
 
 2. 启动以下各应用(执行java main方法)组成分布式调度集群
 
-> 已配置不同的端口可同时启动。可以在开发工具中运行Java类，也可通过`java -jar`命令运行构建好的jar包。
+> 已配置不同的端口可同时启动，可以在开发工具中运行Java main方法，也可通过`java -jar`命令运行构建好的jar包
 
 - [启动内嵌的本地Mysql & Redis](disjob-test/src/main/java/cn/ponfee/disjob/test/EmbeddedMysqlAndRedisServer.java)
   - MacOS系统若报`MariaDB`的“[Library not loaded](disjob-test/src/main/DB/MariaDB/MariaDB.md)”错误时参考

@@ -50,7 +50,7 @@ public class EventParam extends ToJsonString implements Serializable {
         REFRESH_GROUP {
             @Override
             public <T> T parse(String data) {
-                throw new UnsupportedOperationException();
+                throw new UnsupportedOperationException("Refresh group not support args.");
             }
         },
 

@@ -44,14 +44,21 @@ public class SplitJobParam extends AuthenticationParam {
     private RouteStrategy routeStrategy;
 
     /**
-     * 广播任务时的worker数量
+     * Worker数量
      */
-    private Integer broadcastWorkerCount;
+    private int workerCount;
 
     /**
      * 工作流(DAG)任务的前驱节点实例列表(非工作流任务时，为null)
      */
     private List<PredecessorInstance> predecessorInstances;
+
+    public void check() {
+        Assert.hasText(group, "Group cannot be empty.");
+        Assert.hasText(jobExecutor, "Job executor cannot be empty.");
+        Assert.notNull(jobType, "Job type cannot be null.");
+        Assert.notNull(routeStrategy, "Route strategy cannot be null.");
+    }
 
     public static SplitJobParam of(SchedJob job) {
         Assert.isTrue(JobType.GENERAL.equalsValue(job.getJobType()), "Job must be general.");
@@ -72,6 +79,8 @@ public class SplitJobParam extends AuthenticationParam {
         param.setJobType(JobType.of(job.getJobType()));
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setPredecessorInstances(predecessorInstances);
+
+        param.check();
         return param;
     }
 

@@ -21,6 +21,7 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.Assert;
 
 /**
  * Verify job parameter.
@@ -38,6 +39,13 @@ public class VerifyJobParam extends AuthenticationParam {
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
+    public void check() {
+        Assert.hasText(group, "Group cannot be empty.");
+        Assert.hasText(jobExecutor, "Job executor cannot be empty.");
+        Assert.notNull(jobType, "Job type cannot be null.");
+        Assert.notNull(routeStrategy, "Route strategy cannot be null.");
+    }
+
     public static VerifyJobParam of(SchedJob job) {
         VerifyJobParam param = new VerifyJobParam();
         param.setGroup(job.getGroup());
@@ -45,6 +53,8 @@ public class VerifyJobParam extends AuthenticationParam {
         param.setJobParam(job.getJobParam());
         param.setJobType(JobType.of(job.getJobType()));
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
+
+        param.check();
         return param;
     }
 
