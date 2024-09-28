@@ -83,6 +83,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
         supervisorStartup.start();
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public void stop(Runnable callback) {
         if (!state.stop()) {

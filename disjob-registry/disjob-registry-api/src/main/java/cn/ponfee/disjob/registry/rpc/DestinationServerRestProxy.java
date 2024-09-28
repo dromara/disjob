@@ -42,25 +42,25 @@ public final class DestinationServerRestProxy {
 
     private static final ThreadLocal<Server> SERVER_THREAD_LOCAL = new NamedThreadLocal<>("destination-server");
 
-    public static <T, S extends Server> DestinationServerInvoker<T, S> create(Class<T> interfaceCls,
-                                                                              @Nullable T localServiceProvider,
-                                                                              @Nullable S localServer,
-                                                                              Function<S, String> serverContextPath,
-                                                                              RestTemplate restTemplate,
-                                                                              RetryProperties retry) {
+    public static <T, S extends Server> DestinationServerClient<T, S> create(Class<T> interfaceCls,
+                                                                             @Nullable T localServiceProvider,
+                                                                             @Nullable S localServer,
+                                                                             Function<S, String> serverContextPath,
+                                                                             RestTemplate restTemplate,
+                                                                             RetryProperties retry) {
         DestinationServerRestTemplate template = new DestinationServerRestTemplate(restTemplate, retry);
         String prefixPath = DiscoveryServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
         InvocationHandler invocationHandler = new ServerInvocationHandler<>(template, serverContextPath, prefixPath);
         T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceCls);
-        return new DestinationServerInvoker<>(remoteServiceClient, localServiceProvider, localServer);
+        return new DestinationServerClient<>(remoteServiceClient, localServiceProvider, localServer);
     }
 
-    public static final class DestinationServerInvoker<T, S extends Server> {
+    public static final class DestinationServerClient<T, S extends Server> {
         private final T remoteServiceClient;
         private final T localServiceProvider;
         private final S localServer;
 
-        private DestinationServerInvoker(T remoteServiceClient, T localServiceProvider, S localServer) {
+        private DestinationServerClient(T remoteServiceClient, T localServiceProvider, S localServer) {
             this.remoteServiceClient = remoteServiceClient;
             this.localServiceProvider = localServiceProvider;
             this.localServer = localServer;

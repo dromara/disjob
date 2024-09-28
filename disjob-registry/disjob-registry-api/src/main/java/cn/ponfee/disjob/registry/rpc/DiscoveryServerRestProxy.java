@@ -127,25 +127,25 @@ public final class DiscoveryServerRestProxy {
      * @param <D>                  discovery server type
      * @return rpc service client proxy
      */
-    public static <T, D extends Server> GroupedServerInvoker<T> create(Class<T> interfaceCls,
-                                                                       @Nullable T localServiceProvider,
-                                                                       Predicate<String> serverGroupMatcher,
-                                                                       Discovery<D> discoveryServer,
-                                                                       RestTemplate restTemplate,
-                                                                       RetryProperties retry) {
+    public static <T, D extends Server> GroupedServerClient<T> create(Class<T> interfaceCls,
+                                                                      @Nullable T localServiceProvider,
+                                                                      Predicate<String> serverGroupMatcher,
+                                                                      Discovery<D> discoveryServer,
+                                                                      RestTemplate restTemplate,
+                                                                      RetryProperties retry) {
         DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
         String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
         InvocationHandler groupedInvocationHandler = new GroupedInvocationHandler(template, prefixPath);
         T remoteServiceClient = ProxyUtils.create(groupedInvocationHandler, interfaceCls);
-        return new GroupedServerInvoker<>(localServiceProvider, remoteServiceClient, serverGroupMatcher);
+        return new GroupedServerClient<>(localServiceProvider, remoteServiceClient, serverGroupMatcher);
     }
 
-    public static final class GroupedServerInvoker<T> {
+    public static final class GroupedServerClient<T> {
         private final T localServiceProvider;
         private final T remoteServiceClient;
         private final Predicate<String> serverGroupMatcher;
 
-        private GroupedServerInvoker(T localServiceProvider, T remoteServiceClient, Predicate<String> serverGroupMatcher) {
+        private GroupedServerClient(T localServiceProvider, T remoteServiceClient, Predicate<String> serverGroupMatcher) {
             this.localServiceProvider = localServiceProvider;
             this.remoteServiceClient = remoteServiceClient;
             this.serverGroupMatcher = serverGroupMatcher;

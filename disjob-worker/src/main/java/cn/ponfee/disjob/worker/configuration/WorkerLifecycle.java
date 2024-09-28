@@ -78,6 +78,7 @@ public class WorkerLifecycle implements SmartLifecycle {
         workerStartup.start();
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public void stop(Runnable callback) {
         if (!state.stop()) {

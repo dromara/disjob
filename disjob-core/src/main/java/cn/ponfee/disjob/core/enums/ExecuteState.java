@@ -56,9 +56,9 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     DISPATCH_FAILED(50, RunState.CANCELED, "派发失败"),
 
     /**
-     * 初始化失败取消
+     * 初始化异常取消
      */
-    INITIALIZE_FAILED(51, RunState.CANCELED, "初始化失败"),
+    INITIALIZE_EXCEPTION(51, RunState.CANCELED, "初始化异常"),
 
     /**
      * 执行失败取消
@@ -83,17 +83,22 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     /**
      * 广播任务中止(分派的worker已下线)
      */
-    BROADCAST_ABORTED(56, RunState.CANCELED, "广播任务中止"),
+    BROADCAST_ABORTED(56, RunState.CANCELED, "广播终止"),
+
+    /**
+     * 执行终止
+     */
+    EXECUTE_ABORTED(57, RunState.CANCELED, "执行终止"),
 
     /**
      * 手动取消
      */
-    MANUAL_CANCELED(57, RunState.CANCELED, "手动取消"),
+    MANUAL_CANCELED(58, RunState.CANCELED, "手动取消"),
 
     /**
-     * Worker关闭取消
+     * Worker关机取消
      */
-    SHUTDOWN_CANCELED(58, RunState.CANCELED, "Worker关闭取消"),
+    SHUTDOWN_CANCELED(59, RunState.CANCELED, "关机取消"),
     ;
 
     private final int value;

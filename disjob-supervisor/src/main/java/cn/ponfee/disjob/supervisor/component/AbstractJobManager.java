@@ -37,8 +37,8 @@ import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
-import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
+import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
@@ -80,8 +80,8 @@ public abstract class AbstractJobManager {
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
-    private final GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient;
-    private final DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient;
+    private final GroupedServerClient<WorkerRpcService> groupedWorkerRpcClient;
+    private final DestinationServerClient<WorkerRpcService, Worker> destinationWorkerRpcClient;
 
     protected AbstractJobManager(SupervisorProperties conf,
                                  SchedJobMapper jobMapper,
@@ -89,8 +89,8 @@ public abstract class AbstractJobManager {
                                  IdGenerator idGenerator,
                                  SupervisorRegistry workerDiscover,
                                  TaskDispatcher taskDispatcher,
-                                 GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient,
-                                 DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient) {
+                                 GroupedServerClient<WorkerRpcService> groupedWorkerRpcClient,
+                                 DestinationServerClient<WorkerRpcService, Worker> destinationWorkerRpcClient) {
         conf.check();
         this.conf = conf;
         this.jobMapper = jobMapper;
@@ -165,9 +165,7 @@ public abstract class AbstractJobManager {
     public void deleteJob(long jobId) {
         SchedJob job = jobMapper.get(jobId);
         Assert.notNull(job, () -> "Job id not found: " + jobId);
-        if (job.isEnabled()) {
-            throw new IllegalStateException("Please disable job before delete this job.");
-        }
+        Assert.state(!job.isEnabled(), "Please disable job before delete this job.");
         assertOneAffectedRow(jobMapper.softDelete(jobId), "Delete sched job fail or conflict.");
         dependMapper.deleteByParentJobId(jobId);
         dependMapper.deleteByChildJobId(jobId);
@@ -190,7 +188,7 @@ public abstract class AbstractJobManager {
 
     public List<SchedTask> splitJob(SplitJobParam param, long instanceId) throws JobException {
         List<Worker> workers = workerDiscover.getDiscoveredServers(param.getGroup());
-        Assert.state(!workers.isEmpty(), () -> "Not discovered broadcast worker: " + param.getGroup());
+        Assert.state(!workers.isEmpty(), () -> "Not discovered worker for split job: " + param.getGroup());
         int workerCount = workers.size();
         param.setWorkerCount(workerCount);
         List<String> taskParams = splitTasks(param);
@@ -370,9 +368,8 @@ public abstract class AbstractJobManager {
             for (Long parentJobId : parentJobIds) {
                 SchedJob parentJob = parentJobMap.get(parentJobId);
                 Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
-                if (!job.getGroup().equals(parentJob.getGroup())) {
-                    throw new IllegalArgumentException("Inconsistent depend group: " + parentJob.getGroup() + ", " + job.getGroup());
-                }
+                String cGroup = job.getGroup(), pGroup = parentJob.getGroup();
+                Assert.isTrue(cGroup.equals(pGroup), () -> "Inconsistent depend group: " + cGroup + ", " + pGroup);
             }
             // 校验是否有循环依赖 以及 依赖层级是否太深
             checkCircularDepends(jobId, new HashSet<>(parentJobIds));
@@ -405,12 +402,8 @@ public abstract class AbstractJobManager {
             if (MapUtils.isEmpty(map)) {
                 return;
             }
-            if (map.containsKey(jobId)) {
-                throw new IllegalArgumentException("Circular depends job: " + map.get(jobId));
-            }
-            if (i >= conf.getMaximumJobDependsDepth()) {
-                throw new IllegalArgumentException("Exceed depends depth: " + outerDepends);
-            }
+            Assert.isTrue(!map.containsKey(jobId), () -> "Circular depends job: " + map.get(jobId));
+            Assert.isTrue(i < conf.getMaximumJobDependsDepth(), () -> "Exceed depends depth: " + outerDepends);
             parentJobIds = map.keySet();
         }
     }

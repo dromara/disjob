@@ -94,7 +94,7 @@
   <update id="terminate">
     UPDATE <include refid="Table_Name" />
     SET <if test="executeEndTime != null">
-          execute_end_time = #{executeEndTime,jdbcType=TIMESTAMP},
+          execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
         </if>
         <if test="errorMsg!=null and errorMsg.length()>0">
           error_msg = #{errorMsg,jdbcType=VARCHAR},
@@ -112,7 +112,7 @@
   <update id="updateStateByInstanceId">
     UPDATE <include refid="Table_Name" />
     SET <if test="executeEndTime != null">
-          execute_end_time = #{executeEndTime,jdbcType=TIMESTAMP},
+          execute_end_time = IF(execute_start_time IS NULL, NULL, #{executeEndTime,jdbcType=TIMESTAMP}),
         </if>
         execute_state = #{toState,jdbcType=TINYINT}
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}

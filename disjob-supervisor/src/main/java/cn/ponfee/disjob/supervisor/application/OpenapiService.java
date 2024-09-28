@@ -162,8 +162,8 @@ public class OpenapiService extends SingletonClassConstraint {
         return tasks.stream().map(SchedJobConverter.INSTANCE::convert).collect(Collectors.toList());
     }
 
-    public PageResponse<SchedInstanceResponse> queryInstanceForPage(SchedInstancePageRequest pageRequest) {
-        return jobQuerier.queryInstanceForPage(pageRequest);
+    public PageResponse<SchedInstanceResponse> queryInstanceForPage(SchedInstancePageRequest req) {
+        return jobQuerier.queryInstanceForPage(req);
     }
 
     public List<SchedInstanceResponse> listInstanceChildren(long pnstanceId) {

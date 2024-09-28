@@ -43,8 +43,8 @@ import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
-import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
+import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
@@ -110,8 +110,8 @@ public class DistributedJobManager extends AbstractJobManager {
                                  IdGenerator idGenerator,
                                  SupervisorRegistry discoveryWorker,
                                  TaskDispatcher taskDispatcher,
-                                 GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient,
-                                 DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient,
+                                 GroupedServerClient<WorkerRpcService> groupedWorkerRpcClient,
+                                 DestinationServerClient<WorkerRpcService, Worker> destinationWorkerRpcClient,
                                  @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
         super(conf, jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
         this.instanceMapper = instanceMapper;
@@ -210,9 +210,7 @@ public class DistributedJobManager extends AbstractJobManager {
             }
             if (isNotAffectedRow(instanceMapper.start(param.getInstanceId(), now))) {
                 SchedInstance instance = instanceMapper.get(param.getInstanceId());
-                if (instance == null || !instance.isRunning()) {
-                    throw new IllegalStateException("Start instance failure: " + instance);
-                }
+                Assert.state(instance != null && instance.isRunning(), () -> "Start instance failure: " + instance);
             }
             return StartTaskResult.success(taskMapper.get(param.getTaskId()));
         });
@@ -369,7 +367,7 @@ public class DistributedJobManager extends AbstractJobManager {
             tasks.stream().filter(e -> ES_PAUSABLE.contains(e.getExecuteState())).forEach(e -> {
                 String worker = e.isExecuting() ? Strings.requireNonBlank(e.getWorker()) : null;
                 ExecuteState fromState = ExecuteState.of(e.getExecuteState());
-                taskMapper.terminate(e.getTaskId(), worker, ExecuteState.EXECUTE_TIMEOUT, fromState, new Date(), null);
+                taskMapper.terminate(e.getTaskId(), worker, ExecuteState.EXECUTE_ABORTED, fromState, new Date(), null);
             });
 
             instance.markTerminated(tuple.a, tuple.b);
@@ -901,7 +899,7 @@ public class DistributedJobManager extends AbstractJobManager {
             } else {
                 // update dead task
                 Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;
-                ExecuteState toState = ExecuteState.EXECUTE_TIMEOUT;
+                ExecuteState toState = ops.toState().isTerminal() ? ExecuteState.EXECUTE_ABORTED : ops.toState();
                 ExecuteState fromState = ExecuteState.EXECUTING;
                 if (taskMapper.terminate(task.getTaskId(), task.getWorker(), toState, fromState, executeEndTime, null)) {
                     log.info("Terminate dead worker executing task success: {}", task);
@@ -917,9 +915,8 @@ public class DistributedJobManager extends AbstractJobManager {
         SchedInstance instance = instanceMapper.get(instanceId);
         SchedJob job = getRequireJob(instance.getJobId());
         List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceId(instanceId, ES_WAITING);
-        if (waitingTasks.size() != expectTaskSize) {
-            throw new IllegalStateException("Invalid dispatch tasks size: " + expectTaskSize + ", " + waitingTasks.size());
-        }
+        int size = waitingTasks.size();
+        Assert.state(size == expectTaskSize, () -> "Invalid dispatch tasks size: " + size + ", " + expectTaskSize);
         return Tuple3.of(job, instance, waitingTasks);
     }
 

@@ -22,9 +22,9 @@ import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
-import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
-import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
@@ -99,11 +99,11 @@ public @interface EnableSupervisor {
 
         @DependsOn(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
         @Bean
-        public GroupedServerInvoker<WorkerRpcService> groupedWorkerRpcClient(RetryProperties retry,
-                                                                             SupervisorRegistry discoveryWorker,
-                                                                             @Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                                                             @Nullable WorkerRpcService workerRpcProvider,
-                                                                             @Nullable Worker.Local localWorker) {
+        public GroupedServerClient<WorkerRpcService> groupedWorkerRpcClient(RetryProperties retry,
+                                                                            SupervisorRegistry discoveryWorker,
+                                                                            @Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                                                            @Nullable WorkerRpcService workerRpcProvider,
+                                                                            @Nullable Worker.Local localWorker) {
             retry.check();
             Predicate<String> serverGroupMatcher = localWorker != null ? localWorker::equalsGroup : g -> false;
             return DiscoveryServerRestProxy.create(
@@ -113,8 +113,8 @@ public @interface EnableSupervisor {
 
         @DependsOn(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
         @Bean
-        public DestinationServerInvoker<WorkerRpcService, Worker> destinationWorkerRpcClient(@Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                                                                                             @Nullable WorkerRpcService workerRpcProvider) {
+        public DestinationServerClient<WorkerRpcService, Worker> destinationWorkerRpcClient(@Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                                                                            @Nullable WorkerRpcService workerRpcProvider) {
             RetryProperties retry = RetryProperties.of(0, 0);
             Function<Worker, String> workerContextPath = worker -> Supervisor.local().getWorkerContextPath(worker.getGroup());
             return DestinationServerRestProxy.create(

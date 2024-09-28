@@ -95,7 +95,7 @@
     UPDATE <include refid="Table_Name" />
     SET run_state = #{toState,jdbcType=TINYINT},
       <if test="runEndTime != null">
-        run_end_time = #{runEndTime,jdbcType=TIMESTAMP},
+        run_end_time = IF(run_start_time IS NULL, NULL, #{runEndTime,jdbcType=TIMESTAMP}),
       </if>
         version = version+1
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}

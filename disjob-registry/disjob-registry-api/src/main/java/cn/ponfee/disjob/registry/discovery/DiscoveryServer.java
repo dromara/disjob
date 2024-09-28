@@ -36,6 +36,7 @@ public interface DiscoveryServer<S extends Server> {
 
     boolean isAlive(S server);
 
+    @SuppressWarnings("unchecked")
     static <S extends Server> DiscoveryServer<S> of(ServerRole discoveryRole) {
         switch (discoveryRole) {
             case WORKER:

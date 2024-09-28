@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.function.Function;
 
-import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
+import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.create;
 
 /**
@@ -37,7 +37,7 @@ import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.create;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
-    private final DestinationServerInvoker<Controller, Worker> httpTaskReceiverClient;
+    private final DestinationServerClient<Controller, Worker> httpTaskReceiverClient;
 
     public HttpTaskDispatcher(ApplicationEventPublisher eventPublisher,
                               Discovery<Worker> discoveryWorker,

@@ -31,7 +31,7 @@ import cn.ponfee.disjob.core.dto.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
-import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerInvoker;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
@@ -64,15 +64,15 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private final SupervisorRegistry supervisorRegistry;
     private final Supervisor.Local localSupervisor;
-    private final DestinationServerInvoker<SupervisorRpcService, Supervisor> supervisorRpcClient;
-    private final DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient;
+    private final DestinationServerClient<SupervisorRpcService, Supervisor> supervisorRpcClient;
+    private final DestinationServerClient<WorkerRpcService, Worker> workerRpcClient;
 
     public ServerInvokeService(SupervisorRegistry supervisorRegistry,
                                Supervisor.Local localSupervisor,
                                ServerProperties serverProperties,
                                SupervisorRpcService localSupervisorRpcProvider,
                                @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                               DestinationServerInvoker<WorkerRpcService, Worker> workerRpcClient) {
+                               DestinationServerClient<WorkerRpcService, Worker> workerRpcClient) {
         this.supervisorRegistry = supervisorRegistry;
         this.localSupervisor = localSupervisor;
         String supervisorContextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());

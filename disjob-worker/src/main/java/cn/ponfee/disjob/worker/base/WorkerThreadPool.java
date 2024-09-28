@@ -655,7 +655,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 LOG.info("Initialized task executor: {}", workerTask.getTaskId());
             } catch (Throwable t) {
                 LOG.error("Initialize task executor error: " + workerTask, t);
-                stopTask(workerTask, Operation.TRIGGER, INITIALIZE_FAILED, toErrorMsg(t));
+                stopTask(workerTask, Operation.TRIGGER, INITIALIZE_EXCEPTION, toErrorMsg(t));
                 Threads.interruptIfNecessary(t);
                 return;
             }

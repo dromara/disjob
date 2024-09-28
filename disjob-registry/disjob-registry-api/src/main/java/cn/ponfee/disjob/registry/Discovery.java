@@ -39,6 +39,7 @@ public interface Discovery<D extends Server> extends Closeable {
 
     /**
      * Returns is whether discovered any server.
+     *
      * @return {@code true} if discovered at least one server.
      */
     boolean hasDiscoveredServers();
