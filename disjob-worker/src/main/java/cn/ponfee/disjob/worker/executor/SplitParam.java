@@ -39,17 +39,29 @@ public class SplitParam extends ToJsonString implements java.io.Serializable {
     private boolean broadcast;
 
     /**
-     * Worker数量
-     */
-    private int workerCount;
-
-    /**
      * Job参数
      */
     private String jobParam;
 
     /**
-     * 工作流(DAG)任务的前驱节点实例列表(非工作流任务时，为null)
+     * sched_job.retry_count
+     * <p>最大可重试次数
+     */
+    private int retryCount;
+
+    /**
+     * sched_instance.retried_count
+     * <p>当前是第几次重试，如果当前非重试执行，则为0
+     */
+    private int retriedCount;
+
+    /**
+     * Worker数量
+     */
+    private int workerCount;
+
+    /**
+     * 工作流(DAG)任务的前驱节点实例列表(若为`非工作流任务`或`工作流第一批任务节点`时，则为null)
      */
     private List<PredecessorInstance> predecessorInstances;
 

@@ -50,6 +50,8 @@ class WorkerTask {
     private final Long wnstanceId;
     private final long triggerTime;
     private final long jobId;
+    private final int retryCount;
+    private final int retriedCount;
     private final JobType jobType;
     private final RouteStrategy routeStrategy;
     private final RedeployStrategy redeployStrategy;
@@ -70,6 +72,8 @@ class WorkerTask {
         this.wnstanceId = param.getWnstanceId();
         this.triggerTime = param.getTriggerTime();
         this.jobId = param.getJobId();
+        this.retryCount = param.getRetryCount();
+        this.retriedCount = param.getRetriedCount();
         this.jobType = Objects.requireNonNull(param.getJobType());
         this.routeStrategy = Objects.requireNonNull(param.getRouteStrategy());
         this.redeployStrategy = Objects.requireNonNull(param.getRedeployStrategy());
@@ -119,6 +123,8 @@ class WorkerTask {
 
         ExecutionTask target = new ExecutionTask();
         target.setJobId(jobId);
+        target.setRetryCount(retryCount);
+        target.setRetriedCount(retriedCount);
         target.setBroadcast(routeStrategy.isBroadcast());
         target.setJobType(jobType);
         target.setWnstanceId(wnstanceId);

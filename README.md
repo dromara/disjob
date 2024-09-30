@@ -52,6 +52,9 @@ disjob                                        # 主项目①
 │   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
 ├── disjob-samples                            # Samples项目③
+│   ├── disjob-samples-conf-common            # Samples公共配置（log4j2.xml）
+│   ├── disjob-samples-conf-supervisor        # Samples Supervisor配置
+│   ├── disjob-samples-conf-worker            # Samples Worker配置
 │   ├── disjob-samples-frameless-worker       # Worker单独部署的范例（普通Java-main应用）
 │   ├── disjob-samples-springboot-common      # Samples Spring-boot公共模块
 │   ├── disjob-samples-springboot-merged      # Supervisor与Worker合并部署的范例（Spring-boot应用）

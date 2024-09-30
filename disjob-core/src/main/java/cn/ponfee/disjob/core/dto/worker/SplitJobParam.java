@@ -40,6 +40,8 @@ public class SplitJobParam extends AuthenticationParam {
     private String group;
     private String jobExecutor;
     private String jobParam;
+    private int retryCount;
+    private int retriedCount;
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
@@ -49,7 +51,7 @@ public class SplitJobParam extends AuthenticationParam {
     private int workerCount;
 
     /**
-     * 工作流(DAG)任务的前驱节点实例列表(非工作流任务时，为null)
+     * 工作流(DAG)任务的前驱节点实例列表(若为`非工作流任务`或`工作流第一批任务节点`时，则为null)
      */
     private List<PredecessorInstance> predecessorInstances;
 
@@ -60,22 +62,24 @@ public class SplitJobParam extends AuthenticationParam {
         Assert.notNull(routeStrategy, "Route strategy cannot be null.");
     }
 
-    public static SplitJobParam of(SchedJob job) {
+    public static SplitJobParam of(SchedJob job, SchedInstance instance) {
         Assert.isTrue(JobType.GENERAL.equalsValue(job.getJobType()), "Job must be general.");
-        return of(job, job.getJobExecutor(), null);
+        return of(job, instance.getRetriedCount(), job.getJobExecutor(), null);
     }
 
     public static SplitJobParam of(SchedJob job, SchedInstance instance, List<PredecessorInstance> predecessorInstances) {
         Assert.isTrue(JobType.WORKFLOW.equalsValue(job.getJobType()), "Job must be workflow.");
         Assert.isTrue(instance.isWorkflowNode(), () -> "Split job must be node instance: " + instance.getInstanceId());
-        return of(job, instance.parseAttach().parseCurNode().getName(), predecessorInstances);
+        return of(job, instance.getRetriedCount(), instance.parseAttach().parseCurNode().getName(), predecessorInstances);
     }
 
-    private static SplitJobParam of(SchedJob job, String jobExecutor, List<PredecessorInstance> predecessorInstances) {
+    private static SplitJobParam of(SchedJob job, int retriedCount, String jobExecutor, List<PredecessorInstance> predecessorInstances) {
         SplitJobParam param = new SplitJobParam();
         param.setGroup(job.getGroup());
         param.setJobExecutor(jobExecutor);
         param.setJobParam(job.getJobParam());
+        param.setRetryCount(job.getRetryCount());
+        param.setRetriedCount(retriedCount);
         param.setJobType(JobType.of(job.getJobType()));
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setPredecessorInstances(predecessorInstances);

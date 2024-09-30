@@ -32,6 +32,7 @@ import lombok.Setter;
 import org.springframework.util.Assert;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import static cn.ponfee.disjob.common.util.Numbers.nullZero;
 import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
@@ -53,6 +54,8 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     private Long wnstanceId;
     private long triggerTime;
     private long jobId;
+    private int retryCount;
+    private int retriedCount;
     private JobType jobType;
     private RouteStrategy routeStrategy;
     private RedeployStrategy redeployStrategy;
@@ -77,7 +80,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         byte[] jobExecutorBytes = jobExecutor.getBytes(UTF_8);
 
         int supervisorTokenBytesLength = supervisorTokenBytes == null ? -1 : supervisorTokenBytes.length;
-        int length = 56 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobExecutorBytes.length;
+        int length = 64 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobExecutorBytes.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(length)
             .put((byte) operation.ordinal())        // 1: operation
@@ -86,6 +89,8 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             .putLong(nullZero(wnstanceId))          // 8: wnstanceId
             .putLong(triggerTime)                   // 8: triggerTime
             .putLong(jobId)                         // 8: jobId
+            .putInt(retryCount)                     // 4: retryCount
+            .putInt(retriedCount)                   // 4: retriedCount
             .put((byte) jobType.ordinal())          // 1: jobType
             .put((byte) routeStrategy.ordinal())    // 1: routeStrategy
             .put((byte) redeployStrategy.ordinal()) // 1: redeployStrategy
@@ -117,6 +122,8 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         param.setWnstanceId(zeroNull(buf.getLong()));                              //   8: wnstanceId
         param.setTriggerTime(buf.getLong());                                       //   8: triggerTime
         param.setJobId(buf.getLong());                                             //   8: jobId
+        param.setRetryCount(buf.getInt());                                         //   4: retryCount
+        param.setRetriedCount(buf.getInt());                                       //   4: retriedCount
         param.setJobType(JobType.values()[buf.get()]);                             //   1: jobType
         param.setRouteStrategy(RouteStrategy.values()[buf.get()]);                 //   1: routeStrategy
         param.setRedeployStrategy(RedeployStrategy.values()[buf.get()]);           //   1: redeployStrategy
@@ -147,14 +154,15 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         }
 
         public ExecuteTaskParam build(Operation operation, long taskId, long triggerTime, Worker worker) {
-            Assert.notNull(operation, "Operation cannot be null.");
             ExecuteTaskParam param = new ExecuteTaskParam();
-            param.setOperation(operation);
+            param.setOperation(Objects.requireNonNull(operation, "Operation cannot be null."));
             param.setTaskId(taskId);
             param.setInstanceId(instance.getInstanceId());
             param.setWnstanceId(instance.getWnstanceId());
             param.setTriggerTime(triggerTime);
             param.setJobId(job.getJobId());
+            param.setRetryCount(job.getRetryCount());
+            param.setRetriedCount(instance.getRetriedCount());
             param.setJobType(JobType.of(job.getJobType()));
             param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
             param.setRedeployStrategy(RedeployStrategy.of(job.getRedeployStrategy()));

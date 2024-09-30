@@ -817,7 +817,7 @@ public class DistributedJobManager extends AbstractJobManager {
         SchedInstance retryInstance = SchedInstance.of(failed, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
         retryInstance.setAttach(failed.getAttach());
         // build retry tasks
-        List<SchedTask> tasks = splitRetryTask(job, failed, retryInstanceId);
+        List<SchedTask> tasks = splitRetryTask(job, failed, retryInstance);
         Assert.notEmpty(tasks, "Retry instance, split retry task cannot be empty.");
 
         ThrowingRunnable<Throwable> persistenceAction = () -> {
@@ -837,18 +837,18 @@ public class DistributedJobManager extends AbstractJobManager {
         return retryInstanceId;
     }
 
-    private List<SchedTask> splitRetryTask(SchedJob job, SchedInstance failed, long retryInstanceId) throws JobException {
+    private List<SchedTask> splitRetryTask(SchedJob job, SchedInstance failed, SchedInstance retry) throws JobException {
         RetryType retryType = RetryType.of(job.getRetryType());
         if (retryType == RetryType.ALL) {
             // re-split job
             SplitJobParam splitJobParam;
             if (failed.isWorkflow()) {
                 List<PredecessorInstance> list = loadWorkflowPredecessorInstances(job, failed.getWnstanceId(), failed.getInstanceId());
-                splitJobParam = SplitJobParam.of(job, failed, list);
+                splitJobParam = SplitJobParam.of(job, retry, list);
             } else {
-                splitJobParam = SplitJobParam.of(job);
+                splitJobParam = SplitJobParam.of(job, retry);
             }
-            return splitJob(splitJobParam, retryInstanceId);
+            return splitJob(splitJobParam, retry.getInstanceId());
         }
         if (retryType == RetryType.FAILED) {
             return taskMapper.findLargeByInstanceId(failed.getInstanceId(), null)
@@ -856,7 +856,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 .filter(SchedTask::isFailure)
                 // Broadcast task must be retried with the same worker
                 .filter(e -> RouteStrategy.of(job.getRouteStrategy()).isNotBroadcast() || super.isAliveWorker(e.getWorker()))
-                .map(e -> SchedTask.of(e.getTaskParam(), generateId(), retryInstanceId, e.getTaskNo(), e.getTaskCount(), e.getWorker()))
+                .map(e -> SchedTask.of(e.getTaskParam(), generateId(), retry.getInstanceId(), e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
         }
         throw new IllegalArgumentException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);

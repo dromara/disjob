@@ -99,6 +99,7 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
      * Worker关机取消
      */
     SHUTDOWN_CANCELED(59, RunState.CANCELED, "关机取消"),
+
     ;
 
     private final int value;

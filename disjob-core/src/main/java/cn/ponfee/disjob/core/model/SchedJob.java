@@ -115,7 +115,7 @@ public class SchedJob extends BaseEntity {
     private Integer triggerType;
 
     /**
-     * 触发器值(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"MONTHLY","start":"2000-01-01 00:00:00","step":1}；4-间隔秒数；4-频率秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；
+     * 触发器值(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"MONTHLY","start":"2000-01-01 00:00:00","step":1}；4-指定间隔秒数；5-固定频率秒数；6-固定延时秒数；7-父任务job_id(多个逗号分隔)；
      */
     private String triggerValue;
 

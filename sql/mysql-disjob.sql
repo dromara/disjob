@@ -42,7 +42,7 @@ CREATE TABLE `sched_job` (
   `retry_count`         TINYINT        UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '调度失败可重试的最大次数',
   `retry_interval`      INT            UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '调度失败重试间隔(毫秒)，阶梯递增(square of sched_instance.retried_count)',
   `trigger_type`        TINYINT        UNSIGNED  NOT NULL                               COMMENT '触发器类型：1-Cron表达式；2-指定时间；3-指定周期；4-指定间隔；5-固定频率；6-固定延时；7-任务依赖；',
-  `trigger_value`       VARCHAR(255)             NOT NULL                               COMMENT '触发器值(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"MONTHLY","start":"2000-01-01 00:00:00","step":1}；4-间隔秒数；4-频率秒数；5-延时秒数；6-父任务job_id(多个逗号分隔)；',
+  `trigger_value`       VARCHAR(255)             NOT NULL                               COMMENT '触发器值(对应trigger_type)：1-Cron表达式；2-时间格式(2000-01-01 00:00:00)；3-{"period":"MONTHLY","start":"2000-01-01 00:00:00","step":1}；4-指定间隔秒数；5-固定频率秒数；6-固定延时秒数；7-父任务job_id(多个逗号分隔)；',
   `start_time`          DATETIME(3)                        DEFAULT NULL                 COMMENT 'Job有效起始时间(为空不限制)',
   `end_time`            DATETIME(3)                        DEFAULT NULL                 COMMENT 'Job有效终止时间(为空不限制)',
   `execute_timeout`     INT            UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '执行超时时间(毫秒)，若大于0则执行超时会中断任务',
@@ -78,7 +78,7 @@ CREATE TABLE `sched_depend` (
   UNIQUE KEY `uk_parentjobid_childjobid` (`parent_job_id`, `child_job_id`),
   KEY `ix_childjobid` (`child_job_id`),
   KEY `ix_createdat` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度依赖表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='作业依赖表';
 
 CREATE TABLE `sched_instance` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',
@@ -109,7 +109,7 @@ CREATE TABLE `sched_instance` (
   KEY `ix_wnstanceid` (`wnstance_id`),
   KEY `ix_updatedat` (`updated_at`),
   KEY `ix_createdat` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务实例表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度实例表';
 
 CREATE TABLE `sched_task` (
   `id`                  BIGINT         UNSIGNED  NOT NULL  AUTO_INCREMENT               COMMENT '自增主键ID',

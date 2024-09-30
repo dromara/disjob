@@ -52,6 +52,9 @@ disjob                                        # Main project①
 │   └── disjob-registry-zookeeper             # Server registry center: Zookeeper implementation
 ├── disjob-reports                            # Aggregate test coverage reports of various modules
 ├── disjob-samples                            # Samples project③
+│   ├── disjob-samples-conf-common            # Samples common config (log4j2.xml)
+│   ├── disjob-samples-conf-supervisor        # Samples Supervisor config
+│   ├── disjob-samples-conf-worker            # Samples Worker config
 │   ├── disjob-samples-frameless-worker       # Example of Worker deployed separately (ordinary Java-main application)
 │   ├── disjob-samples-springboot-common      # Samples Spring-boot common module
 │   ├── disjob-samples-springboot-merged      # Example of Supervisor and Worker deployed together (Spring-boot application)

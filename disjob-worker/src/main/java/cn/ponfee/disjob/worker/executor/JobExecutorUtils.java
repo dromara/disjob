@@ -182,8 +182,10 @@ public class JobExecutorUtils {
     private static SplitParam buildSplitParam(SplitJobParam param) {
         SplitParam splitParam = new SplitParam();
         splitParam.setBroadcast(param.getRouteStrategy().isBroadcast());
-        splitParam.setWorkerCount(param.getWorkerCount());
         splitParam.setJobParam(param.getJobParam());
+        splitParam.setRetryCount(param.getRetryCount());
+        splitParam.setRetriedCount(param.getRetriedCount());
+        splitParam.setWorkerCount(param.getWorkerCount());
         splitParam.setPredecessorInstances(param.getPredecessorInstances());
         return splitParam;
     }

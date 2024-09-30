@@ -39,9 +39,21 @@ public class ExecutionTask extends ToJsonString implements Serializable {
     private long jobId;
 
     /**
-     * sched_job.job_id
+     * sched_job.job_type
      */
     private JobType jobType;
+
+    /**
+     * sched_job.retry_count
+     * <p>最大可重试次数
+     */
+    private int retryCount;
+
+    /**
+     * sched_instance.retried_count
+     * <p>当前是第几次重试，如果当前非重试执行，则为0
+     */
+    private int retriedCount;
 
     /**
      * 是否广播任务

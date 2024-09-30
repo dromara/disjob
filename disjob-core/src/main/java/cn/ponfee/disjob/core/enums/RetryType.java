@@ -34,12 +34,12 @@ public enum RetryType implements IntValueEnum<RetryType> {
     /**
      * 只重试失败的Task(copy previous failed task param)
      */
-    FAILED(1, "重试失败任务"),
+    FAILED(1, "重试失败的任务"),
 
     /**
      * 重试所有的Task(re-split job param to task param)
      */
-    ALL(2, "重试所有任务"),
+    ALL(2, "重试所有的任务"),
 
     ;
 
