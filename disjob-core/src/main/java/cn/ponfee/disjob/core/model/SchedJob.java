@@ -146,11 +146,11 @@ public class SchedJob extends BaseEntity {
     private Integer routeStrategy;
 
     /**
-     * 重新发布的执行策略(当worker重新发布时task的执行策略)：1-恢复执行；2-暂停执行；3-取消执行；
+     * Worker关机的执行策略(如重新发布服务时)：1-恢复执行；2-暂停执行；3-取消执行；
      *
-     * @see RedeployStrategy
+     * @see ShutdownStrategy
      */
-    private Integer redeployStrategy;
+    private Integer shutdownStrategy;
 
     /**
      * 最近一次的触发时间(毫秒时间戳)
@@ -294,7 +294,7 @@ public class SchedJob extends BaseEntity {
         this.executeTimeout = defaultIfNull(executeTimeout, 0);
         this.collidedStrategy = defaultIfNull(collidedStrategy, CollidedStrategy.CONCURRENT.value());
         this.misfireStrategy = defaultIfNull(misfireStrategy, MisfireStrategy.FIRE_ONCE_NOW.value());
-        this.redeployStrategy = defaultIfNull(redeployStrategy, RedeployStrategy.RESUME.value());
+        this.shutdownStrategy = defaultIfNull(shutdownStrategy, ShutdownStrategy.RESUME.value());
         this.triggerValue = StringUtils.trim(triggerValue);
 
         // verify
@@ -302,7 +302,7 @@ public class SchedJob extends BaseEntity {
         Assert.isTrue(executeTimeout >= 0, () -> "Invalid execute timeout: " + executeTimeout);
         CollidedStrategy.of(collidedStrategy);
         MisfireStrategy.of(misfireStrategy);
-        RedeployStrategy.of(redeployStrategy);
+        ShutdownStrategy.of(shutdownStrategy);
         if (RetryType.of(retryType) == RetryType.NONE) {
             this.retryCount = defaultIfNull(retryCount, 0);
             this.retryInterval = defaultIfNull(retryInterval, 0);

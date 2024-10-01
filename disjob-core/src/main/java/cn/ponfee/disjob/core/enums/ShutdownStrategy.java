@@ -19,12 +19,12 @@ package cn.ponfee.disjob.core.enums;
 import cn.ponfee.disjob.common.base.IntValueEnum;
 
 /**
- * The redeployed strategy enum definition.
- * <p>mapped by sched_job.redeploy_strategy
+ * The shutdown strategy enum definition.
+ * <p>mapped by sched_job.shutdown_strategy
  *
  * @author Ponfee
  */
-public enum RedeployStrategy implements IntValueEnum<RedeployStrategy> {
+public enum ShutdownStrategy implements IntValueEnum<ShutdownStrategy> {
 
     /**
      * 恢复执行
@@ -47,7 +47,7 @@ public enum RedeployStrategy implements IntValueEnum<RedeployStrategy> {
     private final Operation operation;
     private final String desc;
 
-    RedeployStrategy(int value, Operation operation, String desc) {
+    ShutdownStrategy(int value, Operation operation, String desc) {
         this.value = value;
         this.operation = operation;
         this.desc = desc;
@@ -67,15 +67,15 @@ public enum RedeployStrategy implements IntValueEnum<RedeployStrategy> {
         return operation;
     }
 
-    public static RedeployStrategy of(int value) {
-        for (RedeployStrategy e : VALUES) {
+    public static ShutdownStrategy of(int value) {
+        for (ShutdownStrategy e : VALUES) {
             if (e.value() == value) {
                 return e;
             }
         }
-        throw new IllegalArgumentException("Invalid redeploy strategy value: " + value);
+        throw new IllegalArgumentException("Invalid shutdown strategy value: " + value);
     }
 
-    private static final RedeployStrategy[] VALUES = RedeployStrategy.values();
+    private static final ShutdownStrategy[] VALUES = ShutdownStrategy.values();
 
 }

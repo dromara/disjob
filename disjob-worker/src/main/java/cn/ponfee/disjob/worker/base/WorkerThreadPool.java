@@ -579,7 +579,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
             if (task == null) {
                 return;
             }
-            Operation ops = task.getRedeployStrategy().operation();
+            Operation ops = task.getShutdownStrategy().operation();
             boolean updated = task.updateOperation(Operation.TRIGGER, ops);
             LOG.info("Close worker thread update task operation: {}, {}, {}", updated, task, ops);
             ThrowingRunnable.doCaught(this::doStop, () -> "Close worker thread error: " + task + ", " + super.getName());

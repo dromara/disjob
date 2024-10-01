@@ -61,7 +61,7 @@
     const jobTypes           = [[${@disjobService.enums('JobType')}]];
     const triggerTypes       = [[${@disjobService.enums('TriggerType')}]];
     const routeStrategies    = [[${@disjobService.enums('RouteStrategy')}]];
-    const redeployStrategies = [[${@disjobService.enums('RedeployStrategy')}]];
+    const shutdownStrategies = [[${@disjobService.enums('ShutdownStrategy')}]];
 
     $(function () {
       const options = {
@@ -131,10 +131,10 @@
           }
         },
         {
-          field: 'redeployStrategy',
-          title: '重新发布的执行策略',
+          field: 'shutdownStrategy',
+          title: 'Worker关机的执行策略',
           formatter: function (value, row, index) {
-            return $.table.selectData(redeployStrategies, value, 'value', 'desc');
+            return $.table.selectData(shutdownStrategies, value, 'value', 'desc');
           }
         },
         {

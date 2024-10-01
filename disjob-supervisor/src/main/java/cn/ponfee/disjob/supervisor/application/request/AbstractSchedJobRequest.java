@@ -50,7 +50,7 @@ public abstract class AbstractSchedJobRequest extends ToJsonString implements Se
     private Integer collidedStrategy;
     private Integer misfireStrategy;
     private Integer routeStrategy;
-    private Integer redeployStrategy;
+    private Integer shutdownStrategy;
     private String remark;
 
 }

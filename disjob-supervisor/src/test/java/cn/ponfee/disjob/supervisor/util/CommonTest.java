@@ -24,8 +24,8 @@ import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.enums.RedeployStrategy;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -118,7 +118,7 @@ public class CommonTest {
             ThreadLocalRandom.current().nextLong(),
             JobType.GENERAL,
             RouteStrategy.ROUND_ROBIN,
-            RedeployStrategy.RESUME,
+            ShutdownStrategy.RESUME,
             1,
             "JobExecutor测试中文乱码。",
             new Worker("default", "workerId", "host", 1)
@@ -219,7 +219,7 @@ public class CommonTest {
                                                           long jobId,
                                                           JobType jobType,
                                                           RouteStrategy routeStrategy,
-                                                          RedeployStrategy redeployStrategy,
+                                                          ShutdownStrategy shutdownStrategy,
                                                           int executeTimeout,
                                                           String jobExecutor,
                                                           Worker worker) {
@@ -232,7 +232,7 @@ public class CommonTest {
         param.setJobId(jobId);
         param.setJobType(jobType);
         param.setRouteStrategy(routeStrategy);
-        param.setRedeployStrategy(redeployStrategy);
+        param.setShutdownStrategy(shutdownStrategy);
         param.setExecuteTimeout(executeTimeout);
         param.setSupervisorToken("supervisor token");
         param.setWorker(worker);

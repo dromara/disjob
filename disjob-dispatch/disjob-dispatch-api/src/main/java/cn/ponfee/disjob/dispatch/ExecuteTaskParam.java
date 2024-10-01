@@ -23,8 +23,8 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.enums.RedeployStrategy;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
+import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
@@ -47,6 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Setter
 public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel.Timing<ExecuteTaskParam> {
     private static final long serialVersionUID = -6493747747321536680L;
+    private static final Operation[] OPERATION_VALUES = Operation.values();
 
     private Operation operation;
     private long taskId;
@@ -58,7 +59,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
     private int retriedCount;
     private JobType jobType;
     private RouteStrategy routeStrategy;
-    private RedeployStrategy redeployStrategy;
+    private ShutdownStrategy shutdownStrategy;
     private int executeTimeout;
     private String jobExecutor;
     private Worker worker;
@@ -91,9 +92,9 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             .putLong(jobId)                         // 8: jobId
             .putInt(retryCount)                     // 4: retryCount
             .putInt(retriedCount)                   // 4: retriedCount
-            .put((byte) jobType.ordinal())          // 1: jobType
-            .put((byte) routeStrategy.ordinal())    // 1: routeStrategy
-            .put((byte) redeployStrategy.ordinal()) // 1: redeployStrategy
+            .put((byte) jobType.value())            // 1: jobType
+            .put((byte) routeStrategy.value())      // 1: routeStrategy
+            .put((byte) shutdownStrategy.value())   // 1: shutdownStrategy
             .putInt(executeTimeout);                // 4: executeTimeout
 
         buffer.putInt(supervisorTokenBytesLength);  // 4: supervisorToken byte array length
@@ -116,7 +117,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         ByteBuffer buf = ByteBuffer.wrap(bytes);
 
         ExecuteTaskParam param = new ExecuteTaskParam();
-        param.setOperation(Operation.values()[buf.get()]);                         //   1: operation
+        param.setOperation(OPERATION_VALUES[buf.get()]);                           //   1: operation
         param.setTaskId(buf.getLong());                                            //   8: taskId
         param.setInstanceId(buf.getLong());                                        //   8: instanceId
         param.setWnstanceId(zeroNull(buf.getLong()));                              //   8: wnstanceId
@@ -124,9 +125,9 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         param.setJobId(buf.getLong());                                             //   8: jobId
         param.setRetryCount(buf.getInt());                                         //   4: retryCount
         param.setRetriedCount(buf.getInt());                                       //   4: retriedCount
-        param.setJobType(JobType.values()[buf.get()]);                             //   1: jobType
-        param.setRouteStrategy(RouteStrategy.values()[buf.get()]);                 //   1: routeStrategy
-        param.setRedeployStrategy(RedeployStrategy.values()[buf.get()]);           //   1: redeployStrategy
+        param.setJobType(JobType.of(buf.get()));                                   //   1: jobType
+        param.setRouteStrategy(RouteStrategy.of(buf.get()));                       //   1: routeStrategy
+        param.setShutdownStrategy(ShutdownStrategy.of(buf.get()));                 //   1: shutdownStrategy
         param.setExecuteTimeout(buf.getInt());                                     //   4: executeTimeout
 
         param.setSupervisorToken(Strings.of(Bytes.get(buf, buf.getInt()), UTF_8)); // 4+x: supervisorToken
@@ -165,7 +166,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
             param.setRetriedCount(instance.getRetriedCount());
             param.setJobType(JobType.of(job.getJobType()));
             param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
-            param.setRedeployStrategy(RedeployStrategy.of(job.getRedeployStrategy()));
+            param.setShutdownStrategy(ShutdownStrategy.of(job.getShutdownStrategy()));
             param.setExecuteTimeout(job.getExecuteTimeout());
             param.setSupervisorToken(supervisorToken);
             param.setWorker(worker);

@@ -54,7 +54,7 @@ class WorkerTask {
     private final int retriedCount;
     private final JobType jobType;
     private final RouteStrategy routeStrategy;
-    private final RedeployStrategy redeployStrategy;
+    private final ShutdownStrategy shutdownStrategy;
     private final int executeTimeout;
     private final String jobExecutor;
     private final Worker worker;
@@ -76,7 +76,7 @@ class WorkerTask {
         this.retriedCount = param.getRetriedCount();
         this.jobType = Objects.requireNonNull(param.getJobType());
         this.routeStrategy = Objects.requireNonNull(param.getRouteStrategy());
-        this.redeployStrategy = Objects.requireNonNull(param.getRedeployStrategy());
+        this.shutdownStrategy = Objects.requireNonNull(param.getShutdownStrategy());
         this.executeTimeout = param.getExecuteTimeout();
         this.jobExecutor = param.getJobExecutor();
         this.worker = Objects.requireNonNull(param.getWorker());
