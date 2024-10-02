@@ -18,7 +18,9 @@ package cn.ponfee.disjob.supervisor.provider;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.spring.RpcController;
-import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.supervisor.EventParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
@@ -26,6 +28,8 @@ import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
+import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
+import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 
 import java.util.List;
@@ -37,13 +41,15 @@ import java.util.List;
  */
 @RpcController
 @SupervisorAuthentication(SupervisorAuthentication.Subject.WORKER)
-public class SupervisorRpcProvider implements SupervisorRpcService {
+public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
     private final DistributedJobManager jobManager;
 
     public SupervisorRpcProvider(DistributedJobManager jobManager) {
         this.jobManager = jobManager;
     }
+
+    // -------------------------------------------------------for worker invoke method
 
     @Override
     public StartTaskResult startTask(StartTaskParam param) {
@@ -70,6 +76,13 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
         return jobManager.cancelInstance(instanceId, operation);
     }
 
+    @Override
+    public boolean savepoint(long taskId, String worker, String executeSnapshot) {
+        return jobManager.savepoint(taskId, worker, executeSnapshot);
+    }
+
+    // -------------------------------------------------------for other supervisor invoke method
+
     @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
     @Override
     public SupervisorMetrics getMetrics() {
@@ -84,11 +97,6 @@ public class SupervisorRpcProvider implements SupervisorRpcService {
     @Override
     public void publishEvent(EventParam param) {
         EventSubscribeService.subscribe(param);
-    }
-
-    @Override
-    public boolean savepoint(long taskId, String worker, String executeSnapshot) {
-        return jobManager.savepoint(taskId, worker, executeSnapshot);
     }
 
 }

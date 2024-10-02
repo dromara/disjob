@@ -75,7 +75,7 @@
 
     <spring-boot.version>2.7.18</spring-boot.version>
     <mapstruct.version>1.6.2</mapstruct.version>
-    <guava.version>33.3.0-jre</guava.version>
+    <guava.version>33.3.1-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.17.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
@@ -97,7 +97,7 @@
 
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-    <maven-gpg-plugin.version>3.2.6</maven-gpg-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
   </properties>
 
   <dependencyManagement>

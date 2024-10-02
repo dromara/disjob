@@ -127,7 +127,7 @@ xss:
   # 排除链接（多个用逗号分隔）
   excludes: /system/notice/*
   # 匹配链接
-  urlPatterns: /system/*,/monitor/*,/tool/*
+  urlPatterns: /system/*,/monitor/*,/tool/*,/disjob/*
 
 # springdoc “swagger-ui” and “api-docs” endpoint custom path, StandaloneLayout/BaseLayout
 springdoc:

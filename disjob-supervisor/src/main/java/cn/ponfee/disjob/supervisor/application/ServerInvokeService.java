@@ -37,6 +37,8 @@ import cn.ponfee.disjob.supervisor.application.request.ConfigureAllWorkerRequest
 import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest;
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
+import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
+import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -64,20 +66,20 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private final SupervisorRegistry supervisorRegistry;
     private final Supervisor.Local localSupervisor;
-    private final DestinationServerClient<SupervisorRpcService, Supervisor> supervisorRpcClient;
+    private final DestinationServerClient<ExtendedSupervisorRpcService, Supervisor> supervisorRpcClient;
     private final DestinationServerClient<WorkerRpcService, Worker> workerRpcClient;
 
     public ServerInvokeService(SupervisorRegistry supervisorRegistry,
                                Supervisor.Local localSupervisor,
                                ServerProperties serverProperties,
-                               SupervisorRpcService localSupervisorRpcProvider,
+                               ExtendedSupervisorRpcService localSupervisorRpcProvider,
                                @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                                DestinationServerClient<WorkerRpcService, Worker> workerRpcClient) {
         this.supervisorRegistry = supervisorRegistry;
         this.localSupervisor = localSupervisor;
         String supervisorContextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
         this.supervisorRpcClient = DestinationServerRestProxy.create(
-            SupervisorRpcService.class,
+            ExtendedSupervisorRpcService.class,
             localSupervisorRpcProvider,
             localSupervisor,
             supervisor -> supervisorContextPath,
@@ -161,7 +163,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         Long pingTime = null;
         try {
             long start = System.currentTimeMillis();
-            metrics = supervisorRpcClient.call(supervisor, SupervisorRpcService::getMetrics);
+            metrics = supervisorRpcClient.call(supervisor, ExtendedSupervisorRpcService::getMetrics);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
@@ -224,7 +226,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private void configureWorker(Worker worker, Action action, String data) {
-        ConfigureWorkerParam param = ConfigureWorkerParam.of(SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup()));
+        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
+        ConfigureWorkerParam param = ConfigureWorkerParam.of(supervisorToken);
         param.setAction(action);
         param.setData(data);
         workerRpcClient.invoke(worker, client -> client.configureWorker(param));

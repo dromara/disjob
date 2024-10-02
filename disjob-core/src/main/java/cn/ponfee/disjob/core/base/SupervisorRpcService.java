@@ -16,12 +16,10 @@
 
 package cn.ponfee.disjob.core.base;
 
-import cn.ponfee.disjob.core.dto.supervisor.EventParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -49,12 +47,6 @@ public interface SupervisorRpcService {
 
     @PostMapping("/instance/cancel")
     boolean cancelInstance(long instanceId, Operation operation) throws Exception;
-
-    @GetMapping("/metrics/get")
-    SupervisorMetrics getMetrics();
-
-    @PostMapping("event/publish")
-    void publishEvent(EventParam param);
 
     /**
      * Savepoint the task execution snapshot data

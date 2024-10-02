@@ -16,10 +16,10 @@
 
 package cn.ponfee.disjob.supervisor.application.converter;
 
-import cn.ponfee.disjob.core.base.SupervisorMetrics;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
+import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

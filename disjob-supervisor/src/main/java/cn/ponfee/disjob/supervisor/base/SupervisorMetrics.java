@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.base;
+package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
