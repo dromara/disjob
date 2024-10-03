@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `sched_registry` (
 
 
 -- ----------------------------
--- INITIALIZE TEST SAMPLES JOB
+-- INITIALIZE SAMPLE TEST DATA
 -- ----------------------------
 INSERT INTO `sched_group` (`group`, `own_user`, `supervisor_token`, `worker_token`, `user_token`, `dev_users`)
 VALUES ('app-test', 'disjob', '20bb8b7f1cb94dc894b45546a7c2982f', '358678bfe34648f68b607036a27c6854', '1878f0158782423f9306e7d4c70c999c', 'admin,alice');

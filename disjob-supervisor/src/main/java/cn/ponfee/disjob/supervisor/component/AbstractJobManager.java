@@ -73,10 +73,10 @@ public abstract class AbstractJobManager {
     private static final Comparator<Tuple2<Worker, Long>> WORKLOAD_COMPARATOR = Comparator.comparingLong(e -> e.b);
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
+
     protected final SupervisorProperties conf;
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
-
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
@@ -352,9 +352,8 @@ public abstract class AbstractJobManager {
     }
 
     private void parseTriggerConfig(SchedJob job) {
-        String triggerValue = job.getTriggerValue();
-        Assert.hasText(triggerValue, "Trigger value cannot be blank.");
-        Assert.isTrue(triggerValue.length() <= 255, "Trigger value length cannot exceed 255.");
+        String triggerValue = DisjobUtils.trimRequired(job.getTriggerValue(), 255, "Trigger value");
+        job.setTriggerValue(triggerValue);
 
         Long jobId = job.getJobId();
         if (TriggerType.of(job.getTriggerType()) == TriggerType.DEPEND) {

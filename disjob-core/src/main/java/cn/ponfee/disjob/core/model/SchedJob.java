@@ -18,6 +18,7 @@ package cn.ponfee.disjob.core.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
 import cn.ponfee.disjob.core.enums.*;
+import cn.ponfee.disjob.core.util.DisjobUtils;
 import com.google.common.math.IntMath;
 import lombok.Getter;
 import lombok.Setter;
@@ -215,6 +216,7 @@ public class SchedJob extends BaseEntity {
     }
 
     public void verifyForAdd(int maximumJobRetryCount) {
+        this.group = DisjobUtils.trimRequired(group, 60, "Group");
         verifyAndDefaultSetting(maximumJobRetryCount);
     }
 
@@ -277,16 +279,8 @@ public class SchedJob extends BaseEntity {
     // ----------------------------------------------------------------private methods
 
     private void verifyAndDefaultSetting(int maximumJobRetryCount) {
-        Assert.hasText(group, "Group cannot be blank.");
-        this.group = group.trim();
-        Assert.isTrue(group.length() <= 60, "Group length cannot exceed 60.");
-
-        Assert.hasText(jobName, "jobName cannot be blank.");
-        this.jobName = jobName.trim();
-        Assert.isTrue(jobName.length() <= 60, "jobName length cannot exceed 60.");
-
-        this.remark = StringUtils.trim(remark);
-        Assert.isTrue(StringUtils.length(remark) <= 255, "remark length cannot exceed 255.");
+        this.jobName = DisjobUtils.trimRequired(jobName, 60, "Job name");
+        this.remark = DisjobUtils.trimOptional(remark, 255, "Remark");
 
         // set default
         this.jobState = defaultIfNull(jobState, JobState.DISABLED.value());

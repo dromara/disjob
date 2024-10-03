@@ -111,6 +111,22 @@ public class DisjobUtils {
         }
     }
 
+    public static String trimRequired(String text, int maximumLength, String name) {
+        if (StringUtils.isBlank(text)) {
+            throw new IllegalArgumentException(name + " cannot be blank");
+        }
+        return trimOptional(text, maximumLength, name);
+    }
+
+    public static String trimOptional(String text, int maximumLength, String name) {
+        String str = StringUtils.trim(text);
+        int length = StringUtils.length(str);
+        if (length > maximumLength) {
+            throw new IllegalArgumentException(name + " length exceed limit: " + length + " > " + maximumLength);
+        }
+        return str;
+    }
+
     // ----------------------------------------------------------------------private methods
 
     private static boolean isValidHost(String host, String from) {

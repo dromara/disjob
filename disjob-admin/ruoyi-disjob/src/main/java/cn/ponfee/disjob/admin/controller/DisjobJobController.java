@@ -97,10 +97,10 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public TableDataInfo list(SchedJobPageRequest request) {
         request.authorizeAndTruncateGroup(getLoginName());
+
         if (CollectionUtils.isEmpty(request.getGroups())) {
             return TableDataInfo.empty();
         }
-
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
         PageResponse<SchedJobResponse> response = openapiService.queryJobForPage(request);
@@ -139,7 +139,6 @@ public class DisjobJobController extends BaseController {
             List<SchedJobResponse> rows = openapiService.queryJobForPage(request).getRows();
             list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);
         }
-
         ExcelUtil<SchedJobExport> excel = new ExcelUtil<>(SchedJobExport.class);
         return excel.exportExcel(list, "作业配置数据");
     }
@@ -205,7 +204,7 @@ public class DisjobJobController extends BaseController {
     @ResponseBody
     public AjaxResult doEdit(SchedJobUpdateRequest req) throws JobException {
         String user = getLoginName();
-        authorizeGroupService.authorizeJob(user, req.getJobId());
+        AuthorizeGroupService.authorizeGroup(user, req.getGroup());
 
         req.setUpdatedBy(user);
         openapiService.updateJob(req);
