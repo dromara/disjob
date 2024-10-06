@@ -17,12 +17,12 @@
 package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.date.CronExpression;
+import cn.ponfee.disjob.common.date.DatePeriodValue;
 import cn.ponfee.disjob.common.date.DatePeriods;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.model.PeriodTriggerValue;
-import cn.ponfee.disjob.core.model.SchedDepend;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.util.Assert;
@@ -142,7 +142,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         @Override
         protected boolean validate0(String triggerValue) {
             try {
-                PeriodTriggerValue conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
+                DatePeriodValue conf = Jsons.fromJson(triggerValue, DatePeriodValue.class);
                 return conf != null && conf.verify();
             } catch (Exception ignored) {
                 return false;
@@ -162,9 +162,9 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
 
         @Override
         protected List<Date> computeNextTriggerTimes0(String triggerValue, Date targetTime, int count) {
-            PeriodTriggerValue conf;
+            DatePeriodValue conf;
             try {
-                conf = Jsons.fromJson(triggerValue, PeriodTriggerValue.class);
+                conf = Jsons.fromJson(triggerValue, DatePeriodValue.class);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid period config: " + triggerValue, e);
             }
@@ -275,7 +275,7 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         @Override
         protected boolean validate0(String triggerValue) {
             try {
-                return !SchedDepend.parseTriggerValue(triggerValue).isEmpty();
+                return !Collects.split(triggerValue, Long::parseLong).isEmpty();
             } catch (NumberFormatException ignored) {
                 return false;
             }

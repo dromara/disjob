@@ -71,7 +71,7 @@ disjob                                        # Main project①
 - Supervisor and Worker discover each other through the registry center, supported: Database, Redis, Consul, Nacos, Zookeeper, Etcd
 - Supervisor is responsible for generating tasks and dispatching them to Worker for execution, supported: Redis, Http
 - Need to specify the group, Job tasks will only be dispatched to the specified group of Workers for execution
-- Provides the ability to split tasks, override the method [JobExecutor#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java) to split many tasks, then distributed and parallel execution
+- Provides the ability to split tasks, override the method [JobSplitter#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java) to split many tasks, then distributed and parallel execution
 - Supports pausing and cancelling running tasks, paused tasks can be resumed for execution, failed tasks support retry
 - Supports savepoint task execution snapshot, so that manually or abnormally paused tasks can be resumed from the savepoint
 - If a task throw [PauseTaskException](disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/PauseTaskException.java) at executing, then will pause all instance tasks (even if dispatched other worker machine tasks)
@@ -202,4 +202,3 @@ Scan the QR code to add WeChat friends, note `disjob`, and invite you to join th
 - [ ] Monitor real-time executing logs of tasks online
 - [ ] Alarm subscribe: Email, SMS, Voice, Lark, Ding Talk, WeChat
 - [ ] Visual monitoring BI dashboard
-- [ ] Support more Savepoint implementation: File System, Hadoop, RocksDB, OSS

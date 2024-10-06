@@ -50,7 +50,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 作业配置Controller
@@ -219,7 +218,7 @@ public class DisjobJobController extends BaseController {
     @PostMapping("/remove")
     @ResponseBody
     public AjaxResult remove(@RequestParam("ids") String ids) {
-        Set<Long> jobIds = Collects.split(ids, Str.COMMA, Long::parseLong);
+        List<Long> jobIds = Collects.split(ids, Str.COMMA, Long::parseLong);
         if (jobIds.isEmpty()) {
             return error("Job id不能为空");
         }

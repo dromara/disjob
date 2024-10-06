@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.model;
+package cn.ponfee.disjob.common.date;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.common.date.DatePeriods;
-import cn.ponfee.disjob.core.enums.TriggerType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,15 +24,13 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Period trigger value data structure.
- * <p>trigger_value of trigger_type=PERIOD
+ * Date period config value.
  *
  * @author Ponfee
- * @see TriggerType#PERIOD
  */
 @Setter
 @Getter
-public class PeriodTriggerValue extends ToJsonString implements Serializable {
+public class DatePeriodValue extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -8395535372974631095L;
 
     /**

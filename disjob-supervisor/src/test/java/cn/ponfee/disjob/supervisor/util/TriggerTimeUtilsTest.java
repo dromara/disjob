@@ -17,12 +17,12 @@
 package cn.ponfee.disjob.supervisor.util;
 
 import cn.ponfee.disjob.common.date.CronExpression;
+import cn.ponfee.disjob.common.date.DatePeriodValue;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import org.junit.jupiter.api.Assertions;
@@ -170,7 +170,7 @@ public class TriggerTimeUtilsTest {
         job.setTriggerValue("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}");
         job.setLastTriggerTime(null);
 
-        PeriodTriggerValue triggerValue = Jsons.fromJson("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}", PeriodTriggerValue.class);
+        DatePeriodValue triggerValue = Jsons.fromJson("{\"period\":\"DAILY\", \"start\":\"2022-05-01 00:00:00\", \"step\":1}", DatePeriodValue.class);
 
         Date tomorrow = Dates.startOfDay(Dates.plusDays(now, 1));
 

@@ -16,13 +16,9 @@
 
 package cn.ponfee.disjob.supervisor.util;
 
-import cn.ponfee.disjob.common.date.CronExpression;
-import cn.ponfee.disjob.common.date.DatePeriods;
-import cn.ponfee.disjob.common.date.Dates;
-import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
+import cn.ponfee.disjob.common.date.*;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.TriggerType;
-import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +54,7 @@ public class CronExpressionTest {
         Assertions.assertFalse(TriggerType.ONCE.validate("0 0 10,14,16 * * ?"));
         Assertions.assertFalse(TriggerType.CRON.validate("2022-05-31 14:31:43"));
 
-        PeriodTriggerValue value = new PeriodTriggerValue();
+        DatePeriodValue value = new DatePeriodValue();
         value.setPeriod(DatePeriods.DAILY);
         value.setStart(new Date());
         value.setStep(2);

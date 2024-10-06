@@ -16,15 +16,9 @@
 
 package cn.ponfee.disjob.core.model;
 
-import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * The schedule job entity, mapped database table sched_depend
@@ -51,14 +45,6 @@ public class SchedDepend extends BaseEntity {
         depend.setParentJobId(parentJobId);
         depend.setChildJobId(childJobId);
         return depend;
-    }
-
-    public static List<Long> parseTriggerValue(String triggerValue) {
-        return Arrays.stream(triggerValue.split(Str.COMMA))
-            .filter(StringUtils::isNotBlank)
-            .map(e -> Long.parseLong(e.trim()))
-            .distinct()
-            .collect(Collectors.toList());
     }
 
 }

@@ -16,11 +16,11 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
+import cn.ponfee.disjob.common.date.DatePeriodValue;
 import cn.ponfee.disjob.common.date.DatePeriods;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.model.PeriodTriggerValue;
 import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import org.junit.jupiter.api.Assertions;
@@ -40,7 +40,7 @@ public class TriggerValueTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> DatePeriods.valueOf("ABC"));
 
         String conf = "{\"period\":\"DAILY\", \"start\":\"2000-01-01 00:00:00\", \"step\":2}";
-        PeriodTriggerValue triggerValue = Jsons.fromJson(conf, PeriodTriggerValue.class);
+        DatePeriodValue triggerValue = Jsons.fromJson(conf, DatePeriodValue.class);
         Assertions.assertEquals(triggerValue.getPeriod(), DatePeriods.DAILY);
         Assertions.assertEquals(triggerValue.getStep(), 2);
         Assertions.assertEquals(triggerValue.getStart(), JavaUtilDateFormat.DEFAULT.parse("2000-01-01 00:00:00"));

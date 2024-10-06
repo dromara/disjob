@@ -27,7 +27,7 @@ import cn.ponfee.disjob.common.base.IntValueEnum;
 public enum ShutdownStrategy implements IntValueEnum<ShutdownStrategy> {
 
     /**
-     * 恢复执行
+     * 恢复执行(执行转移)
      */
     RESUME(1, Operation.SHUTDOWN_RESUME, "恢复执行"),
 

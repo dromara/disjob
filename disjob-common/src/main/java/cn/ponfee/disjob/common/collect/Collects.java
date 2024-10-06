@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.common.collect;
 
+import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.util.Numbers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -69,14 +70,19 @@ public class Collects {
         return duplicate(list, Function.identity());
     }
 
-    public static <R> Set<R> split(String str, String separator, Function<String, R> converter) {
+    public static <R> List<R> split(String str, Function<String, R> converter) {
+        return split(str, Str.COMMA, converter);
+    }
+
+    public static <R> List<R> split(String str, String separator, Function<String, R> converter) {
         if (StringUtils.isEmpty(str)) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
         return Arrays.stream(str.split(separator))
             .filter(StringUtils::isNotBlank)
             .map(e -> converter.apply(e.trim()))
-            .collect(Collectors.toSet());
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     /**

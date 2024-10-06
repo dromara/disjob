@@ -357,7 +357,7 @@ public abstract class AbstractJobManager {
 
         Long jobId = job.getJobId();
         if (TriggerType.of(job.getTriggerType()) == TriggerType.DEPEND) {
-            List<Long> parentJobIds = SchedDepend.parseTriggerValue(triggerValue);
+            List<Long> parentJobIds = Collects.split(triggerValue, Long::parseLong);
             Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + triggerValue);
             Assert.isTrue(!parentJobIds.contains(jobId), () -> "Cannot depends self: " + jobId + ", " + parentJobIds);
 

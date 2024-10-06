@@ -71,7 +71,7 @@ disjob                                        # 主项目①
 - Supervisor与Worker通过注册中心相互发现，支持的注册中心有：Database、Redis、Consul、Nacos、Zookeeper、Etcd
 - Supervisor负责生成任务，把任务派发给Worker执行，支持的任务派发方式有：Redis、Http
 - 需要指定Job的分组(group)，Job的任务只会派发给指定组的Worker执行
-- 提供任务分片的能力，重写拆分方法[JobExecutor#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
+- 提供任务分片的能力，重写拆分方法[JobSplitter#split](disjob-worker/src/main/java/cn/ponfee/disjob/worker/executor/JobSplitter.java)即可拆分为多个任务，实现分布式任务及并行执行
 - 支持暂停和取消运行中的任务，已暂停的任务可恢复继续执行，执行失败的任务支持重试
 - 支持任务保存(Savepoint)其执行状态，让手动或异常暂停的任务能从上一次的执行状态中恢复继续执行
 - 任务在执行时若抛出[PauseTaskException](disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/PauseTaskException.java)，会暂停对应实例下的全部任务(包括分派到其它worker机器的任务)
@@ -294,4 +294,3 @@ Worker接收到子任务后，会提交到框架自定义的线程池中执行�
 - [ ] 在线查看任务实时运行日志
 - [ ] 任务执行异常告警通知：邮件、短信、电话、飞书、钉钉、微信
 - [ ] 任务执行情况的可视化监控BI(Dashboard)
-- [ ] 增加多种Savepoint的支持：File System、Hadoop、RocksDB
