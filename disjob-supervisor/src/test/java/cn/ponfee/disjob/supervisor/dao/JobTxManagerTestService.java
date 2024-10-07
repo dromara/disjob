@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.dao;
 
 import cn.ponfee.disjob.common.tuple.Tuple2;
-import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.transaction.AbstractTxManagerTestService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

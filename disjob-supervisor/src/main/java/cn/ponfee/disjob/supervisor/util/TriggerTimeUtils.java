@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.enums.MisfireStrategy;
 import cn.ponfee.disjob.core.enums.TriggerType;
-import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
 import org.springframework.util.Assert;
 
 import java.util.Date;

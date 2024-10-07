@@ -19,8 +19,6 @@ package cn.ponfee.disjob.core.dto.worker;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
@@ -60,32 +58,6 @@ public class SplitJobParam extends AuthenticationParam {
         Assert.hasText(jobExecutor, "Job executor cannot be empty.");
         Assert.notNull(jobType, "Job type cannot be null.");
         Assert.notNull(routeStrategy, "Route strategy cannot be null.");
-    }
-
-    public static SplitJobParam of(SchedJob job, SchedInstance instance) {
-        Assert.isTrue(JobType.GENERAL.equalsValue(job.getJobType()), "Job must be general.");
-        return of(job, instance.getRetriedCount(), job.getJobExecutor(), null);
-    }
-
-    public static SplitJobParam of(SchedJob job, SchedInstance instance, List<PredecessorInstance> predecessorInstances) {
-        Assert.isTrue(JobType.WORKFLOW.equalsValue(job.getJobType()), "Job must be workflow.");
-        Assert.isTrue(instance.isWorkflowNode(), () -> "Split job must be node instance: " + instance.getInstanceId());
-        return of(job, instance.getRetriedCount(), instance.parseAttach().parseCurNode().getName(), predecessorInstances);
-    }
-
-    private static SplitJobParam of(SchedJob job, int retriedCount, String jobExecutor, List<PredecessorInstance> predecessorInstances) {
-        SplitJobParam param = new SplitJobParam();
-        param.setGroup(job.getGroup());
-        param.setJobExecutor(jobExecutor);
-        param.setJobParam(job.getJobParam());
-        param.setRetryCount(job.getRetryCount());
-        param.setRetriedCount(retriedCount);
-        param.setJobType(JobType.of(job.getJobType()));
-        param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
-        param.setPredecessorInstances(predecessorInstances);
-
-        param.check();
-        return param;
     }
 
 }

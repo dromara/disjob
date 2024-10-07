@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;

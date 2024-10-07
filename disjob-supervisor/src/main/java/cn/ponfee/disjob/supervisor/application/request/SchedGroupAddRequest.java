@@ -18,8 +18,8 @@ package cn.ponfee.disjob.supervisor.application.request;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
+import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;

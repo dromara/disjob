@@ -29,10 +29,6 @@ import cn.ponfee.disjob.core.dto.worker.SplitJobResult;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.model.SchedDepend;
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -40,10 +36,16 @@ import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.base.DataConverter;
+import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
+import cn.ponfee.disjob.supervisor.model.SchedDepend;
+import cn.ponfee.disjob.supervisor.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
 import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.base.Joiner;
 import org.apache.commons.collections4.CollectionUtils;
@@ -260,7 +262,7 @@ public abstract class AbstractJobManager {
     }
 
     public boolean dispatch(boolean redispatch, SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
-        ExecuteTaskParam.Builder builder = newExecuteTaskParamBuilder(job, instance);
+        ExecuteTaskParamBuilder builder = newExecuteTaskParamBuilder(job, instance);
         RouteStrategy routeStrategy = RouteStrategy.of(job.getRouteStrategy());
         List<ExecuteTaskParam> list = new ArrayList<>(tasks.size());
         List<Tuple2<Worker, Long>> workload;
@@ -293,9 +295,9 @@ public abstract class AbstractJobManager {
 
     // ------------------------------------------------------------------protected methods
 
-    protected ExecuteTaskParam.Builder newExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
+    protected ExecuteTaskParamBuilder newExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
-        return ExecuteTaskParam.builder(instance, job, supervisorToken);
+        return new ExecuteTaskParamBuilder(instance, job, supervisorToken);
     }
 
     protected boolean dispatch(List<ExecuteTaskParam> tasks) {
@@ -338,7 +340,7 @@ public abstract class AbstractJobManager {
         JobType.of(job.getJobType());
         RouteStrategy.of(job.getRouteStrategy());
 
-        VerifyJobParam param = VerifyJobParam.of(job);
+        VerifyJobParam param = DataConverter.toVerifyJobParam(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verifyJob(param));
     }

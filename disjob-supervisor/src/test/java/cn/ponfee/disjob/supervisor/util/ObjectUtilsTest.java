@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor.util;
 import cn.ponfee.disjob.common.spring.ResourceScanner;
 import cn.ponfee.disjob.common.util.*;
 import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

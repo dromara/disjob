@@ -17,9 +17,6 @@
 package cn.ponfee.disjob.core.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.model.SchedWorkflow;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,24 +36,5 @@ public class PredecessorInstance extends ToJsonString implements Serializable {
     private long instanceId;
     private String curNode;
     private List<PredecessorTask> tasks;
-
-    public static PredecessorInstance of(SchedWorkflow workflow, List<SchedTask> tasks) {
-        PredecessorInstance instance = new PredecessorInstance();
-        instance.setInstanceId(workflow.getInstanceId());
-        instance.setCurNode(workflow.getCurNode());
-        instance.setTasks(Collects.convert(tasks, PredecessorInstance::convert));
-        return instance;
-    }
-
-    // ----------------------------------------------------------------------private methods
-
-    private static PredecessorTask convert(SchedTask source) {
-        PredecessorTask target = new PredecessorTask();
-        target.setTaskId(source.getTaskId());
-        target.setTaskNo(source.getTaskNo());
-        target.setTaskCount(source.getTaskCount());
-        target.setExecuteSnapshot(source.getExecuteSnapshot());
-        return target;
-    }
 
 }

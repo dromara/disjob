@@ -4,7 +4,7 @@
 
   <sql id="Table_Name">sched_job</sql>
 
-  <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
+  <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT job_id jobId, remark
     FROM <include refid="Table_Name" />
     WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)

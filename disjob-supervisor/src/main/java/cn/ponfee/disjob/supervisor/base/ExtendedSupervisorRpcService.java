@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
-import cn.ponfee.disjob.core.dto.supervisor.EventParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -32,6 +31,6 @@ public interface ExtendedSupervisorRpcService extends SupervisorRpcService {
     SupervisorMetrics getMetrics();
 
     @PostMapping("event/publish")
-    void publishEvent(EventParam param);
+    void publishEvent(SupervisorEvent event);
 
 }

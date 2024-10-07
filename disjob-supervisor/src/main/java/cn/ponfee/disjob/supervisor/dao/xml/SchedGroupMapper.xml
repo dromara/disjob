@@ -14,7 +14,7 @@
     version, updated_by, created_by, updated_at, created_at
   </sql>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedGroup" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.supervisor.model.SchedGroup" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       `group`,
       own_user,
@@ -28,14 +28,14 @@
     )
   </insert>
 
-  <select id="get" resultType="cn.ponfee.disjob.core.model.SchedGroup">
+  <select id="get" resultType="cn.ponfee.disjob.supervisor.model.SchedGroup">
     SELECT <include refid="Large_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE `group` = #{group,jdbcType=VARCHAR}
       AND is_deleted = 0
   </select>
 
-  <select id="findAll" resultType="cn.ponfee.disjob.core.model.SchedGroup">
+  <select id="findAll" resultType="cn.ponfee.disjob.supervisor.model.SchedGroup">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE is_deleted = 0
@@ -117,7 +117,7 @@
     <include refid="Query_Page_Condition" />
   </select>
 
-  <select id="queryPageRecords" resultType="cn.ponfee.disjob.core.model.SchedGroup">
+  <select id="queryPageRecords" resultType="cn.ponfee.disjob.supervisor.model.SchedGroup">
     SELECT <include refid="Large_Column_List" />
     FROM <include refid="Table_Name" />
     <include refid="Query_Page_Condition" />

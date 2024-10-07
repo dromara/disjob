@@ -17,16 +17,16 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.util.ClassUtils;
-import cn.ponfee.disjob.core.model.SchedGroup;
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
+import cn.ponfee.disjob.supervisor.model.SchedGroup;
+import cn.ponfee.disjob.supervisor.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

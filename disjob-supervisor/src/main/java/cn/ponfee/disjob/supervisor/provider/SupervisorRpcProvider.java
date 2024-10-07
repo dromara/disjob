@@ -21,14 +21,14 @@ import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dto.supervisor.EventParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.supervisor.application.EventSubscribeService;
+import cn.ponfee.disjob.supervisor.application.SupervisorEventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
+import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 
@@ -95,8 +95,8 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
     @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
     @Override
-    public void publishEvent(EventParam param) {
-        EventSubscribeService.subscribe(param);
+    public void publishEvent(SupervisorEvent event) {
+        SupervisorEventSubscribeService.subscribe(event);
     }
 
 }

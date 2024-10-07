@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.dto.supervisor;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import cn.ponfee.disjob.core.model.SchedTask;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -73,18 +72,6 @@ public class StartTaskResult extends ToJsonString implements Serializable {
         StartTaskResult result = new StartTaskResult();
         result.setSuccess(false);
         result.setFailedMessage(failedMessage);
-        return result;
-    }
-
-    public static StartTaskResult success(SchedTask task) {
-        StartTaskResult result = new StartTaskResult();
-        result.setSuccess(true);
-        result.setTaskId(task.getTaskId());
-        result.setTaskNo(task.getTaskNo());
-        result.setTaskCount(task.getTaskCount());
-        result.setExecuteSnapshot(task.getExecuteSnapshot());
-
-        result.setTaskParam(task.getTaskParam());
         return result;
     }
 

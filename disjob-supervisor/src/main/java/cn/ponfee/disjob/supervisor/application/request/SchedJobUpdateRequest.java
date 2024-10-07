@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.application.request;
 
-import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
 import lombok.Getter;
 import lombok.Setter;
 

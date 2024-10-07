@@ -12,14 +12,14 @@
     version, updated_by, created_by, updated_at, created_at
   </sql>
 
-  <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.core.model.SchedJob">
+  <select id="findByJobIds" parameterType="collection" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE job_id IN (<foreach collection="collection" separator="," item="jobId">#{jobId,jdbcType=BIGINT}</foreach>)
       AND is_deleted = 0
   </select>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedJob" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       job_id,
       `group`,
@@ -71,7 +71,7 @@
     )
   </insert>
 
-  <update id="update" parameterType="cn.ponfee.disjob.core.model.SchedJob">
+  <update id="update" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_name = #{jobName,jdbcType=VARCHAR},
 
@@ -111,7 +111,7 @@
       AND is_deleted = 0
   </update>
 
-  <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedJob">
+  <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE job_id = #{jobId,jdbcType=BIGINT}
@@ -133,7 +133,7 @@
       AND is_deleted = 0
   </select>
 
-  <select id="findBeTriggering" resultType="cn.ponfee.disjob.core.model.SchedJob">
+  <select id="findBeTriggering" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE job_state = 1
@@ -144,7 +144,7 @@
     LIMIT #{size}
   </select>
 
-  <update id="updateNextScanTime" parameterType="cn.ponfee.disjob.core.model.SchedJob">
+  <update id="updateNextScanTime" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET next_scan_time = #{nextScanTime,jdbcType=TIMESTAMP},
         scan_failed_count = #{scanFailedCount,jdbcType=INTEGER},
@@ -154,7 +154,7 @@
       AND is_deleted = 0
   </update>
 
-  <update id="disable" parameterType="cn.ponfee.disjob.core.model.SchedJob">
+  <update id="disable" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_state = 0,
         next_trigger_time = null,
@@ -166,7 +166,7 @@
       AND is_deleted = 0
   </update>
 
-  <update id="updateNextTriggerTime" parameterType="cn.ponfee.disjob.core.model.SchedJob">
+  <update id="updateNextTriggerTime" parameterType="cn.ponfee.disjob.supervisor.model.SchedJob">
     UPDATE <include refid="Table_Name" />
     SET job_state = #{jobState,jdbcType=TINYINT},
         last_trigger_time = #{lastTriggerTime,jdbcType=BIGINT},
@@ -243,7 +243,7 @@
   </select>
 
   <!-- 文件导出功能时：paged=false -->
-  <select id="queryPageRecords" resultType="cn.ponfee.disjob.core.model.SchedJob">
+  <select id="queryPageRecords" resultType="cn.ponfee.disjob.supervisor.model.SchedJob">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     <include refid="Query_Page_Condition" />

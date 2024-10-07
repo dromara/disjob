@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.date.DatePeriods;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.application.converter.SchedJobConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

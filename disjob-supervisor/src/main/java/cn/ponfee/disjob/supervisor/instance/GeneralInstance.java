@@ -16,12 +16,12 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
-import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.supervisor.base.DataConverter;
+import cn.ponfee.disjob.supervisor.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public class GeneralInstance extends TriggerInstance {
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
         long instanceId = creator.jobManager.generateId();
         super.instance = SchedInstance.of(parent, null, instanceId, job.getJobId(), runType, triggerTime, 0);
-        this.tasks = creator.jobManager.splitJob(SplitJobParam.of(job, instance), instanceId);
+        this.tasks = creator.jobManager.splitJob(DataConverter.toSplitJobParam(job, instance), instanceId);
     }
 
     @Override

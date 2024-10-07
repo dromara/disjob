@@ -127,7 +127,7 @@ public class Supervisor extends Server {
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "unused"})
     public abstract static class Local extends Supervisor {
         private static volatile Local instance = null;
 

@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
-import cn.ponfee.disjob.core.model.SchedDepend;
+import cn.ponfee.disjob.supervisor.model.SchedDepend;
 
 import java.util.List;
 import java.util.Set;

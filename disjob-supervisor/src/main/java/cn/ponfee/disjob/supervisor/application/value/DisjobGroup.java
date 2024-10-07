@@ -18,7 +18,7 @@ package cn.ponfee.disjob.supervisor.application.value;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.util.Strings;
-import cn.ponfee.disjob.core.model.SchedGroup;
+import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

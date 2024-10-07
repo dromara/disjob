@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
-import cn.ponfee.disjob.core.model.SchedWorkflow;
+import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

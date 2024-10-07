@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.worker.enums;
+package cn.ponfee.disjob.core.enums;
 
 import cn.ponfee.disjob.common.base.IntValueEnum;
 import cn.ponfee.disjob.common.spring.ResourceScanner;
-import cn.ponfee.disjob.core.enums.TriggerType;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;

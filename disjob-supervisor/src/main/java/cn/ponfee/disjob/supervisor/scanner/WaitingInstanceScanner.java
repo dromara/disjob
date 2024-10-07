@@ -21,11 +21,11 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Date;

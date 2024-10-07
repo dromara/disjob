@@ -16,14 +16,14 @@
 
 package cn.ponfee.disjob.supervisor.application.converter;
 
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
+import cn.ponfee.disjob.supervisor.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

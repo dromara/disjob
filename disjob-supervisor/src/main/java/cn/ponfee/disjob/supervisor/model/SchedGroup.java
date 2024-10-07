@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.model;
+package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
 import lombok.Getter;

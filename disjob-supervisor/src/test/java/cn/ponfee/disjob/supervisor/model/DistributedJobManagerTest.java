@@ -20,7 +20,6 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.model.SchedTask;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;

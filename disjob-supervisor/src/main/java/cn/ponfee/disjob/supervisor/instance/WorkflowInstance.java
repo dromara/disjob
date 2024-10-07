@@ -25,8 +25,9 @@ import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.model.*;
+import cn.ponfee.disjob.supervisor.base.DataConverter;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
+import cn.ponfee.disjob.supervisor.model.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,7 +78,7 @@ public class WorkflowInstance extends TriggerInstance {
             SchedInstance nodeInstance = SchedInstance.of(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);
             nodeInstance.setAttach(InstanceAttach.of(node.toString()).toJson());
 
-            SplitJobParam splitJobParam = SplitJobParam.of(job, nodeInstance, null);
+            SplitJobParam splitJobParam = DataConverter.toSplitJobParam(job, nodeInstance, null);
             List<SchedTask> nodeTasks = creator.jobManager.splitJob(splitJobParam, nodeInstance.getInstanceId());
             nodes.add(Tuple2.of(nodeInstance, nodeTasks));
         }

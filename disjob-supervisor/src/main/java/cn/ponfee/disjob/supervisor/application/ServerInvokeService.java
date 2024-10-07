@@ -24,7 +24,6 @@ import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.common.util.Strings;
 import cn.ponfee.disjob.core.base.*;
-import cn.ponfee.disjob.core.dto.supervisor.EventParam;
 import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.dto.worker.GetMetricsParam;
@@ -38,6 +37,7 @@ import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest
 import cn.ponfee.disjob.supervisor.application.response.SupervisorMetricsResponse;
 import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
+import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
@@ -140,7 +140,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         );
     }
 
-    public void publishOtherSupervisors(EventParam eventParam) {
+    public void publishOtherSupervisors(SupervisorEvent event) {
         try {
             List<Supervisor> supervisors = supervisorRegistry.getRegisteredServers()
                 .stream()
@@ -148,7 +148,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
                 .collect(Collectors.toList());
             MultithreadExecutors.run(
                 supervisors,
-                supervisor -> publishSupervisor(supervisor, eventParam),
+                supervisor -> publishSupervisor(supervisor, event),
                 ThreadPoolExecutors.commonThreadPool()
             );
         } catch (Exception e) {
@@ -233,8 +233,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
         workerRpcClient.invoke(worker, client -> client.configureWorker(param));
     }
 
-    private void publishSupervisor(Supervisor supervisor, EventParam param) {
-        RetryTemplate.executeQuietly(() -> supervisorRpcClient.invoke(supervisor, client -> client.publishEvent(param)), 1, 2000);
+    private void publishSupervisor(Supervisor supervisor, SupervisorEvent event) {
+        RetryTemplate.executeQuietly(() -> supervisorRpcClient.invoke(supervisor, client -> client.publishEvent(event)), 1, 2000);
     }
 
     private GetMetricsParam buildGetMetricsParam(String group) {

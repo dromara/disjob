@@ -27,7 +27,7 @@
     </foreach>
   </insert>
 
-  <select id="findByWnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedWorkflow">
+  <select id="findByWnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedWorkflow">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}

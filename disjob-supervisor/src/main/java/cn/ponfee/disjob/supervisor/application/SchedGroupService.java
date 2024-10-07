@@ -23,10 +23,8 @@ import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
 import cn.ponfee.disjob.core.base.Tokens;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dto.supervisor.EventParam;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.TokenType;
-import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
@@ -34,10 +32,12 @@ import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
 import cn.ponfee.disjob.supervisor.application.value.DisjobGroup;
+import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedGroupMapper;
 import cn.ponfee.disjob.supervisor.exception.GroupNotFoundException;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
+import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -218,7 +218,7 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     private void refreshAndPublish() {
         refresh();
-        serverInvokeService.publishOtherSupervisors(EventParam.of(EventParam.Type.REFRESH_GROUP, null));
+        serverInvokeService.publishOtherSupervisors(SupervisorEvent.of(SupervisorEvent.Type.REFRESH_GROUP, null));
     }
 
     @SuppressWarnings("unchecked")

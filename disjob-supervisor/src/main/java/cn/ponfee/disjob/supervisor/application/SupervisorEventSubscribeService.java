@@ -19,14 +19,14 @@ package cn.ponfee.disjob.supervisor.application;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
-import cn.ponfee.disjob.core.dto.supervisor.EventParam;
-import cn.ponfee.disjob.core.dto.supervisor.EventParam.Type;
+import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
+import cn.ponfee.disjob.supervisor.base.SupervisorEvent.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,39 +38,39 @@ import java.util.concurrent.TimeUnit;
  * @author Ponfee
  */
 @Service
-public class EventSubscribeService extends SingletonClassConstraint {
-    private static final Logger LOG = LoggerFactory.getLogger(EventSubscribeService.class);
+public class SupervisorEventSubscribeService extends SingletonClassConstraint {
+    private static final Logger LOG = LoggerFactory.getLogger(SupervisorEventSubscribeService.class);
 
-    private static final ConcurrentMap<Type, EventParam> MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Type, SupervisorEvent> MAP = new ConcurrentHashMap<>();
 
     private final SchedGroupService groupService;
 
-    public EventSubscribeService(SchedGroupService groupService) {
+    public SupervisorEventSubscribeService(SchedGroupService groupService) {
         this.groupService = groupService;
 
         long initialDelay = 5000 + ThreadLocalRandom.current().nextLong(5000);
         ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::process, initialDelay, 5000, TimeUnit.MILLISECONDS);
     }
 
-    public static void subscribe(EventParam param) {
-        if (param != null && param.getType() != null) {
+    public static void subscribe(SupervisorEvent event) {
+        if (event != null && event.getType() != null) {
             // add or update value
-            MAP.put(param.getType(), param);
+            MAP.put(event.getType(), event);
         }
     }
 
     private void process() {
-        Set<Type> types = new HashSet<>(MAP.keySet());
+        List<Type> types = new ArrayList<>(MAP.keySet());
         for (Type type : types) {
             ThrowingRunnable.doCaught(() -> process(MAP.remove(type)));
         }
     }
 
-    private void process(EventParam param) {
-        if (param == null) {
+    private void process(SupervisorEvent event) {
+        if (event == null) {
             return;
         }
-        Type type = param.getType();
+        Type type = event.getType();
 
         if (type == Type.REFRESH_GROUP) {
             groupService.refresh();

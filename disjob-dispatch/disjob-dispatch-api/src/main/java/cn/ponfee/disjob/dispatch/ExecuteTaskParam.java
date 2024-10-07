@@ -25,14 +25,10 @@ import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.util.Assert;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import static cn.ponfee.disjob.common.util.Numbers.nullZero;
 import static cn.ponfee.disjob.common.util.Numbers.zeroNull;
@@ -74,6 +70,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
      *
      * @return string of serialized result
      */
+    @SuppressWarnings("all")
     public byte[] serialize() {
         String supervisorToken = super.getSupervisorToken();
         byte[] supervisorTokenBytes = (supervisorToken != null) ? supervisorToken.getBytes(UTF_8) : null;
@@ -113,6 +110,7 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
      * @param bytes the serialized byte array
      * @return TaskParam of deserialized result
      */
+    @SuppressWarnings("all")
     public static ExecuteTaskParam deserialize(byte[] bytes) {
         ByteBuffer buf = ByteBuffer.wrap(bytes);
 
@@ -134,56 +132,6 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));  // 4+x: worker
         param.setJobExecutor(Strings.of(Bytes.remained(buf), UTF_8));              //   x: jobExecutorBytes
         return param;
-    }
-
-    public static Builder builder(SchedInstance instance, SchedJob job, String supervisorToken) {
-        return new Builder(instance, job, supervisorToken);
-    }
-
-    public static class Builder {
-        private final SchedInstance instance;
-        private final SchedJob job;
-        private final String supervisorToken;
-
-        private Builder(SchedInstance instance, SchedJob job, String supervisorToken) {
-            if (!instance.getJobId().equals(job.getJobId())) {
-                throw new IllegalArgumentException("Inconsistent job id: " + instance.getJobId() + "!=" + job.getJobId());
-            }
-            this.instance = instance;
-            this.job = job;
-            this.supervisorToken = supervisorToken;
-        }
-
-        public ExecuteTaskParam build(Operation operation, long taskId, long triggerTime, Worker worker) {
-            ExecuteTaskParam param = new ExecuteTaskParam();
-            param.setOperation(Objects.requireNonNull(operation, "Operation cannot be null."));
-            param.setTaskId(taskId);
-            param.setInstanceId(instance.getInstanceId());
-            param.setWnstanceId(instance.getWnstanceId());
-            param.setTriggerTime(triggerTime);
-            param.setJobId(job.getJobId());
-            param.setRetryCount(job.getRetryCount());
-            param.setRetriedCount(instance.getRetriedCount());
-            param.setJobType(JobType.of(job.getJobType()));
-            param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
-            param.setShutdownStrategy(ShutdownStrategy.of(job.getShutdownStrategy()));
-            param.setExecuteTimeout(job.getExecuteTimeout());
-            param.setSupervisorToken(supervisorToken);
-            param.setWorker(worker);
-            param.setJobExecutor(obtainJobExecutor());
-            return param;
-        }
-
-        private String obtainJobExecutor() {
-            if (!instance.isWorkflow()) {
-                Assert.hasText(job.getJobExecutor(), () -> "General job executor cannot be null: " + job.getJobId());
-                return job.getJobExecutor();
-            }
-
-            String curJobExecutor = instance.parseAttach().parseCurNode().getName();
-            Assert.hasText(curJobExecutor, () -> "Curr node job executor cannot be empty: " + instance.getInstanceId());
-            return curJobExecutor;
-        }
     }
 
 }

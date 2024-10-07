@@ -37,7 +37,6 @@ import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.model.*;
 import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -45,10 +44,13 @@ import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
+import cn.ponfee.disjob.supervisor.base.DataConverter;
+import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
 import cn.ponfee.disjob.supervisor.instance.TriggerInstance;
+import cn.ponfee.disjob.supervisor.model.*;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -212,7 +214,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 SchedInstance instance = instanceMapper.get(param.getInstanceId());
                 Assert.state(instance != null && instance.isRunning(), () -> "Start instance failure: " + instance);
             }
-            return StartTaskResult.success(taskMapper.get(param.getTaskId()));
+            return DataConverter.toStartTaskResult(taskMapper.get(param.getTaskId()));
         });
     }
 
@@ -720,7 +722,7 @@ public class DistributedJobManager extends AbstractJobManager {
         assertHasAffectedRow(row, () -> "Start workflow node failed: " + workflow);
 
         List<PredecessorInstance> list = predecessors.isEmpty() ? null : loadWorkflowPredecessorInstances(job, wnstanceId, nextInstanceId);
-        SplitJobParam splitJobParam = SplitJobParam.of(job, nextInstance, list);
+        SplitJobParam splitJobParam = DataConverter.toSplitJobParam(job, nextInstance, list);
         List<SchedTask> tasks = splitJob(splitJobParam, nextInstanceId);
 
         // save to db
@@ -783,7 +785,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceId(t, ES_COMPLETED)));
             }
             tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
-            return PredecessorInstance.of(e, tasks);
+            return DataConverter.toPredecessorInstance(e, tasks);
         });
     }
 
@@ -844,9 +846,9 @@ public class DistributedJobManager extends AbstractJobManager {
             SplitJobParam splitJobParam;
             if (failed.isWorkflow()) {
                 List<PredecessorInstance> list = loadWorkflowPredecessorInstances(job, failed.getWnstanceId(), failed.getInstanceId());
-                splitJobParam = SplitJobParam.of(job, retry, list);
+                splitJobParam = DataConverter.toSplitJobParam(job, retry, list);
             } else {
-                splitJobParam = SplitJobParam.of(job, retry);
+                splitJobParam = DataConverter.toSplitJobParam(job, retry);
             }
             return splitJob(splitJobParam, retry.getInstanceId());
         }
@@ -887,15 +889,15 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operation ops) {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
-        ExecuteTaskParam.Builder executeTaskParamBuilder = null;
+        ExecuteTaskParamBuilder builder = null;
         long triggerTime = System.currentTimeMillis();
         for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId(), ES_EXECUTING)) {
             Worker worker = Worker.deserialize(task.getWorker());
             if (super.isAliveWorker(worker)) {
-                if (executeTaskParamBuilder == null) {
-                    executeTaskParamBuilder = newExecuteTaskParamBuilder(getRequireJob(instance.getJobId()), instance);
+                if (builder == null) {
+                    builder = newExecuteTaskParamBuilder(getRequireJob(instance.getJobId()), instance);
                 }
-                executingTasks.add(executeTaskParamBuilder.build(ops, task.getTaskId(), triggerTime, worker));
+                executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));
             } else {
                 // update dead task
                 Date executeEndTime = ops.toState().isTerminal() ? new Date() : null;

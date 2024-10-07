@@ -11,7 +11,7 @@
     attach, version
   </sql>
 
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.core.model.SchedInstance" useGeneratedKeys="true">
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.supervisor.model.SchedInstance" useGeneratedKeys="true">
     INSERT INTO <include refid="Table_Name" /> (
       instance_id,
       rnstance_id,
@@ -41,7 +41,7 @@
     )
   </insert>
 
-  <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="get" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -53,7 +53,7 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="getByUniqueKey" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="getByUniqueKey" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE job_id = #{jobId,jdbcType=BIGINT}
@@ -68,7 +68,7 @@
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
   </select>
 
-  <select id="findChildren" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="findChildren" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE pnstance_id = #{pnstanceId}
@@ -120,7 +120,7 @@
       AND run_state = #{fromState,jdbcType=TINYINT}
   </update>
 
-  <select id="findExpireState" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="findExpireState" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE run_state = #{runState,jdbcType=TINYINT}
@@ -132,7 +132,7 @@
   </select>
 
   <!-- 在同一个时间点，只会存在一个重试实例(没有加唯一索引限制，只能由代码逻辑来保证) -->
-  <select id="getRetrying" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="getRetrying" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE pnstance_id = #{instanceId,jdbcType=BIGINT}
@@ -140,14 +140,14 @@
       AND run_state &lt; 40
   </select>
 
-  <select id="findRunRetry" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="findRunRetry" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE pnstance_id = #{instanceId,jdbcType=BIGINT}
       AND run_type = 3
   </select>
 
-  <select id="findWorkflowNode" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="findWorkflowNode" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List"/>
     FROM <include refid="Table_Name" />
     WHERE wnstance_id = #{wnstanceId,jdbcType=BIGINT}
@@ -162,7 +162,7 @@
       AND version = #{version,jdbcType=INTEGER}
   </update>
 
-  <select id="lock" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="lock" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -188,7 +188,7 @@
     <include refid="Query_Page_Condition" />
   </select>
 
-  <select id="queryPageRecords" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="queryPageRecords" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     <include refid="Query_Page_Condition" />
@@ -196,7 +196,7 @@
     LIMIT #{offset}, #{pageSize}
   </select>
 
-  <select id="queryByPnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.core.model.SchedInstance">
+  <select id="queryByPnstanceId" parameterType="_long" resultType="cn.ponfee.disjob.supervisor.model.SchedInstance">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE pnstance_id = #{pnstanceId}

@@ -20,14 +20,14 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.model.SchedInstance;
-import cn.ponfee.disjob.core.model.SchedJob;
-import cn.ponfee.disjob.core.model.SchedTask;
-import cn.ponfee.disjob.core.model.SchedWorkflow;
 import cn.ponfee.disjob.supervisor.component.AbstractJobManager;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedWorkflowMapper;
+import cn.ponfee.disjob.supervisor.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
+import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
 
 import java.util.List;
 

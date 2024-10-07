@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.supervisor.dao.mapper;
 
 import cn.ponfee.disjob.core.enums.ExecuteState;
-import cn.ponfee.disjob.core.model.SchedTask;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;

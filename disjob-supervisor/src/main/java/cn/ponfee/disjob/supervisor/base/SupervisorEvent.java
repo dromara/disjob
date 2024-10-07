@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.dto.supervisor;
+package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
@@ -30,17 +30,17 @@ import java.util.Objects;
  */
 @Getter
 @Setter
-public class EventParam extends ToJsonString implements Serializable {
+public class SupervisorEvent extends ToJsonString implements Serializable {
     private static final long serialVersionUID = -4173560082801958499L;
 
     private Type type;
     private String data;
 
-    public static EventParam of(Type type, String data) {
-        EventParam param = new EventParam();
-        param.setType(Objects.requireNonNull(type));
-        param.setData(data);
-        return param;
+    public static SupervisorEvent of(Type type, String data) {
+        SupervisorEvent event = new SupervisorEvent();
+        event.setType(Objects.requireNonNull(type));
+        event.setData(data);
+        return event;
     }
 
     public enum Type {

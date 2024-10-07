@@ -16,10 +16,10 @@
 
 package cn.ponfee.disjob.supervisor.application.converter;
 
-import cn.ponfee.disjob.core.model.SchedGroup;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
+import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

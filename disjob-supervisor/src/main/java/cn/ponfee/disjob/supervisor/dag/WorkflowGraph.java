@@ -18,7 +18,7 @@ package cn.ponfee.disjob.supervisor.dag;
 
 import cn.ponfee.disjob.common.dag.DAGEdge;
 import cn.ponfee.disjob.common.dag.DAGNode;
-import cn.ponfee.disjob.core.model.SchedWorkflow;
+import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;

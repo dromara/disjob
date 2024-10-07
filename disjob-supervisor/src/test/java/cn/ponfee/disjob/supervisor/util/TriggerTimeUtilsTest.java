@@ -23,8 +23,8 @@ import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.model.SchedJob;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

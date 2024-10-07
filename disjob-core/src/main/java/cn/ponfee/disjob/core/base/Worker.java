@@ -21,7 +21,6 @@ import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.TokenType;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
-import cn.ponfee.disjob.core.model.SchedJob;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -60,8 +59,6 @@ public class Worker extends Server {
 
     /**
      * Group name
-     *
-     * @see SchedJob#getGroup()
      */
     private final String group;
 
@@ -203,7 +200,7 @@ public class Worker extends Server {
 
     // -------------------------------------------------------------------------------local Worker
 
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "unused"})
     public abstract static class Local extends Worker {
         private static volatile Local instance = null;
 
