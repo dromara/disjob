@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.test.util;
+package cn.ponfee.disjob.test.base;
 
 import com.google.common.math.LongMath;
 import org.slf4j.Logger;

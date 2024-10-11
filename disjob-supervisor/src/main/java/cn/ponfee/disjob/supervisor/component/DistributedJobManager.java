@@ -28,6 +28,7 @@ import cn.ponfee.disjob.common.spring.TransactionUtils;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Strings;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
@@ -37,15 +38,14 @@ import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
-import cn.ponfee.disjob.supervisor.base.DataConverter;
 import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
+import cn.ponfee.disjob.supervisor.base.ModelConverter;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.dao.mapper.*;
@@ -145,7 +145,7 @@ public class DistributedJobManager extends AbstractJobManager {
     }
 
     public boolean savepoint(long taskId, String worker, String executeSnapshot) {
-        DisjobUtils.checkClobMaximumLength(executeSnapshot, "Execute snapshot");
+        CoreUtils.checkClobMaximumLength(executeSnapshot, "Execute snapshot");
         return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executeSnapshot));
     }
 
@@ -214,7 +214,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 SchedInstance instance = instanceMapper.get(param.getInstanceId());
                 Assert.state(instance != null && instance.isRunning(), () -> "Start instance failure: " + instance);
             }
-            return DataConverter.toStartTaskResult(taskMapper.get(param.getTaskId()));
+            return ModelConverter.toStartTaskResult(taskMapper.get(param.getTaskId()));
         });
     }
 
@@ -457,7 +457,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private <T> T doInSynchronizedTransaction0(long instanceId, Long wnstanceId, LongFunction<T> action) {
         Long lockInstanceId = wnstanceId != null ? wnstanceId : (Long) instanceId;
-        synchronized (DisjobUtils.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
+        synchronized (CoreUtils.INSTANCE_LOCK_POOL.intern(lockInstanceId)) {
             return transactionTemplate.execute(status -> action.apply(lockInstanceId));
         }
     }
@@ -471,10 +471,8 @@ public class DistributedJobManager extends AbstractJobManager {
         if (currentDispatchFailedCount >= conf.getTaskDispatchFailedCountThreshold()) {
             return true;
         }
-        if (isNotAffectedRow(taskMapper.incrementDispatchFailedCount(taskId, currentDispatchFailedCount))) {
-            return false;
-        }
-        return (currentDispatchFailedCount + 1) == conf.getTaskDispatchFailedCountThreshold();
+        return isOneAffectedRow(taskMapper.incrementDispatchFailedCount(taskId, currentDispatchFailedCount))
+            && (currentDispatchFailedCount + 1) == conf.getTaskDispatchFailedCountThreshold();
     }
 
     private Tuple2<RunState, Date> obtainRunState(long instanceId) {
@@ -637,7 +635,7 @@ public class DistributedJobManager extends AbstractJobManager {
 
     private void updateWorkflowNodeState(SchedInstance node, RunState toState, List<Integer> fromStates) {
         Assert.isTrue(node.isWorkflowNode(), () -> "Update workflow cur node state must be node: " + node);
-        String curNode = node.parseAttach().getCurNode();
+        String curNode = node.getWorkflowCurNode();
         int row = workflowMapper.update(node.getWnstanceId(), curNode, toState.value(), null, fromStates, node.getInstanceId());
         assertHasAffectedRow(row, () -> "Update workflow state failed: " + node + ", " + toState);
         if (toState.isTerminal()) {
@@ -667,7 +665,7 @@ public class DistributedJobManager extends AbstractJobManager {
         }
 
         // process next workflow node
-        Map<DAGEdge, SchedWorkflow> map = graph.successors(node.parseAttach().parseCurNode());
+        Map<DAGEdge, SchedWorkflow> map = graph.successors(node.parseWorkflowCurNode());
         SchedInstance lead = instanceMapper.get(wnstanceId);
 
         Consumer<Throwable> errorHandler = t -> {
@@ -716,13 +714,13 @@ public class DistributedJobManager extends AbstractJobManager {
         SchedWorkflow lastPredecessor = predecessors.stream().max(Comparator.comparing(BaseEntity::getUpdatedAt)).orElse(null);
         SchedInstance parent = (lastPredecessor == null) ? lead : instanceMapper.get(lastPredecessor.getInstanceId());
         SchedInstance nextInstance = SchedInstance.of(parent, nextInstanceId, job.getJobId(), runType, System.currentTimeMillis(), 0);
-        nextInstance.setAttach(InstanceAttach.of(workflow.getCurNode()).toJson());
+        nextInstance.setWorkflowCurNode(workflow.getCurNode());
 
         int row = workflowMapper.update(wnstanceId, workflow.getCurNode(), RunState.RUNNING.value(), nextInstanceId, RS_WAITING, null);
         assertHasAffectedRow(row, () -> "Start workflow node failed: " + workflow);
 
         List<PredecessorInstance> list = predecessors.isEmpty() ? null : loadWorkflowPredecessorInstances(job, wnstanceId, nextInstanceId);
-        SplitJobParam splitJobParam = DataConverter.toSplitJobParam(job, nextInstance, list);
+        SplitJobParam splitJobParam = ModelConverter.toSplitJobParam(job, nextInstance, list);
         List<SchedTask> tasks = splitJob(splitJobParam, nextInstanceId);
 
         // save to db
@@ -785,7 +783,7 @@ public class DistributedJobManager extends AbstractJobManager {
                 instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceId(t, ES_COMPLETED)));
             }
             tasks.sort(Comparator.comparing(SchedTask::getTaskNo));
-            return DataConverter.toPredecessorInstance(e, tasks);
+            return ModelConverter.toPredecessorInstance(e, tasks);
         });
     }
 
@@ -817,7 +815,7 @@ public class DistributedJobManager extends AbstractJobManager {
         long retryInstanceId = generateId();
         long triggerTime = job.computeRetryTriggerTime(++retriedCount);
         SchedInstance retryInstance = SchedInstance.of(failed, retryInstanceId, job.getJobId(), RunType.RETRY, triggerTime, retriedCount);
-        retryInstance.setAttach(failed.getAttach());
+        retryInstance.setWorkflowCurNode(failed.getWorkflowCurNode());
         // build retry tasks
         List<SchedTask> tasks = splitRetryTask(job, failed, retryInstance);
         Assert.notEmpty(tasks, "Retry instance, split retry task cannot be empty.");
@@ -825,7 +823,7 @@ public class DistributedJobManager extends AbstractJobManager {
         ThrowingRunnable<Throwable> persistenceAction = () -> {
             if (failed.isWorkflowNode()) {
                 // 如果是workflow，则需要更新sched_workflow.instance_id
-                String curNode = failed.parseAttach().getCurNode();
+                String curNode = failed.getWorkflowCurNode();
                 int row = workflowMapper.update(failed.getWnstanceId(), curNode, null, retryInstanceId, RS_RUNNING, failed.getInstanceId());
                 assertHasAffectedRow(row, () -> "Retry instance, workflow node update failed.");
             }
@@ -846,9 +844,9 @@ public class DistributedJobManager extends AbstractJobManager {
             SplitJobParam splitJobParam;
             if (failed.isWorkflow()) {
                 List<PredecessorInstance> list = loadWorkflowPredecessorInstances(job, failed.getWnstanceId(), failed.getInstanceId());
-                splitJobParam = DataConverter.toSplitJobParam(job, retry, list);
+                splitJobParam = ModelConverter.toSplitJobParam(job, retry, list);
             } else {
-                splitJobParam = DataConverter.toSplitJobParam(job, retry);
+                splitJobParam = ModelConverter.toSplitJobParam(job, retry);
             }
             return splitJob(splitJobParam, retry.getInstanceId());
         }

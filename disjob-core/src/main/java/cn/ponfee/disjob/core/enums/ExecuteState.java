@@ -51,7 +51,7 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     COMPLETED(40, RunState.COMPLETED, "执行完成"),
 
     /**
-     * 派发失败取消
+     * 派发失败取消(任务派发失败的次数sched_task.dispatch_failed_count > SupervisorProperties#taskDispatchFailedCountThreshold)
      */
     DISPATCH_FAILED(50, RunState.CANCELED, "派发失败"),
 
@@ -61,7 +61,7 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     INITIALIZE_EXCEPTION(51, RunState.CANCELED, "初始化异常"),
 
     /**
-     * 执行失败取消
+     * 执行失败取消(`JobExecutor#execute`方法的返回结果为null或code!=0)
      */
     EXECUTE_FAILED(52, RunState.CANCELED, "执行失败"),
 
@@ -71,34 +71,34 @@ public enum ExecuteState implements IntValueEnum<ExecuteState> {
     EXECUTE_EXCEPTION(53, RunState.CANCELED, "执行异常"),
 
     /**
-     * 执行超时取消
+     * 执行超时取消(任务的执行耗时 > sched_job.execute_timeout > 0)
      */
     EXECUTE_TIMEOUT(54, RunState.CANCELED, "执行超时"),
 
     /**
-     * 执行冲突取消(sched_job.collided_strategy=3)
+     * 执行冲突取消(sched_job.collided_strategy=3 并且 当前任务还未执行完成 时被取消)
      */
     EXECUTE_COLLIDED(55, RunState.CANCELED, "执行冲突"),
 
     /**
-     * 广播任务中止(分派的worker已下线)
+     * 广播任务终止(广播任务分派的Worker已下线导致未执行)
      */
     BROADCAST_ABORTED(56, RunState.CANCELED, "广播终止"),
 
     /**
-     * 执行终止
+     * 执行终止(如执行过程中Worker异常关机)
      */
     EXECUTE_ABORTED(57, RunState.CANCELED, "执行终止"),
 
     /**
-     * 手动取消
+     * Worker关机取消(sched_job.shutdown_strategy=3 并且 Worker正常关闭)
      */
-    MANUAL_CANCELED(58, RunState.CANCELED, "手动取消"),
+    SHUTDOWN_CANCELED(58, RunState.CANCELED, "关机取消"),
 
     /**
-     * Worker关机取消
+     * 手动取消
      */
-    SHUTDOWN_CANCELED(59, RunState.CANCELED, "关机取消"),
+    MANUAL_CANCELED(59, RunState.CANCELED, "手动取消"),
 
     ;
 

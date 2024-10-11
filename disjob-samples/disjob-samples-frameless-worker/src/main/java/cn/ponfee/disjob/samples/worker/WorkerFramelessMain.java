@@ -26,10 +26,10 @@ import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.HttpProperties;
 import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
@@ -168,7 +168,7 @@ public class WorkerFramelessMain {
         Object[] args = {
             workerProps.getGroup(),
             UuidUtils.uuid32(),
-            DisjobUtils.getLocalHost(config.getString(DISJOB_BOUND_SERVER_HOST)),
+            CoreUtils.getLocalHost(config.getString(DISJOB_BOUND_SERVER_HOST)),
             Optional.ofNullable(config.getInt(SpringUtils.SPRING_BOOT_SERVER_PORT)).orElseGet(() -> NetUtils.findAvailablePort(10000)),
             workerProps.getWorkerToken(),
             workerProps.getSupervisorToken(),

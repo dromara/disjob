@@ -17,8 +17,8 @@
 package cn.ponfee.disjob.supervisor;
 
 import cn.ponfee.disjob.common.util.NetUtils;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.MockedStatic;
@@ -69,18 +69,18 @@ public abstract class MockitoTestBase {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     static {
-        // Mock DisjobUtils.getLocalHost返回`127.0.0.1`，支持在断网时能跑测试用例
-        MockedStatic<DisjobUtils> mocked = mockStatic(DisjobUtils.class);
+        // Mock CoreUtils.getLocalHost返回`127.0.0.1`，支持在断网时能跑测试用例
+        MockedStatic<CoreUtils> mocked = mockStatic(CoreUtils.class);
 
-        // Mock DisjobUtils#getLocalHost(String)
-        mocked.when(() -> DisjobUtils.getLocalHost(any())).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
-        Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, DisjobUtils.getLocalHost(null));
-        mocked.verify(() -> DisjobUtils.getLocalHost(any()));
+        // Mock CoreUtils#getLocalHost(String)
+        mocked.when(() -> CoreUtils.getLocalHost(any())).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
+        Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, CoreUtils.getLocalHost(null));
+        mocked.verify(() -> CoreUtils.getLocalHost(any()));
 
-        // Mock DisjobUtils#getLocalHost()
-        mocked.when(DisjobUtils::getLocalHost).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
-        Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, DisjobUtils.getLocalHost());
-        mocked.verify(DisjobUtils::getLocalHost);
+        // Mock CoreUtils#getLocalHost()
+        mocked.when(CoreUtils::getLocalHost).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
+        Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, CoreUtils.getLocalHost());
+        mocked.verify(CoreUtils::getLocalHost);
     }
 
     // Only reset mock field which is defined in MockitoTestBase

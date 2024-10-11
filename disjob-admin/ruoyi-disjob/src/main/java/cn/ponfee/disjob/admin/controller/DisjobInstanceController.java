@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.admin.controller;
 
-import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.admin.base.Pagination;
 import cn.ponfee.disjob.common.base.TextTokenizer;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.util.Jsons;
@@ -271,7 +271,7 @@ public class DisjobInstanceController extends BaseController {
         request.setRoot(root);
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        return PageUtils.toTableDataInfo(openapiService.queryInstanceForPage(request));
+        return Pagination.toTableDataInfo(openapiService.queryInstanceForPage(request));
     }
 
 }

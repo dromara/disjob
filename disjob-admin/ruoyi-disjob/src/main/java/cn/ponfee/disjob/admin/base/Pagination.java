@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.admin.util;
+package cn.ponfee.disjob.admin.base;
 
 import cn.ponfee.disjob.common.model.PageResponse;
 import com.ruoyi.common.core.page.TableDataInfo;
@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author Ponfee
  */
-public class PageUtils {
+public class Pagination {
 
     /**
      * 转为table结构

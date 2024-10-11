@@ -8,7 +8,7 @@
     instance_id, rnstance_id, pnstance_id, wnstance_id, job_id,
     trigger_time, run_type, is_retrying AS retrying, run_state,
     run_start_time, run_end_time, retried_count, next_scan_time,
-    attach, version
+    workflow_cur_node, version
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.ponfee.disjob.supervisor.model.SchedInstance" useGeneratedKeys="true">
@@ -24,7 +24,7 @@
       run_state,
       run_start_time,
       retried_count,
-      attach
+      workflow_cur_node
     ) VALUES (
       #{instanceId,jdbcType=BIGINT},
       #{rnstanceId,jdbcType=BIGINT},
@@ -37,7 +37,7 @@
       #{runState,jdbcType=TINYINT},
       #{runStartTime,jdbcType=TIMESTAMP},
       #{retriedCount,jdbcType=TINYINT},
-      #{attach,jdbcType=VARCHAR}
+      #{workflowCurNode,jdbcType=VARCHAR}
     )
   </insert>
 

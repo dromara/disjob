@@ -23,11 +23,11 @@ import java.text.ParseException;
 import java.util.Date;
 
 /**
- * Common data type convert mapper
+ * Common data converter
  *
  * @author Ponfee
  */
-public class CommonMapper {
+public class CommonConverter {
 
     public static String asString(Date date) {
         return Dates.format(date);

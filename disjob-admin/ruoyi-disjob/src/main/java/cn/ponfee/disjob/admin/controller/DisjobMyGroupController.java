@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.admin.controller;
 
-import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.admin.base.Pagination;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
@@ -96,7 +96,7 @@ public class DisjobMyGroupController extends BaseController {
 
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
-        return PageUtils.toTableDataInfo(schedGroupService.queryForPage(request));
+        return Pagination.toTableDataInfo(schedGroupService.queryForPage(request));
     }
 
     /**

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.test.util;
+package cn.ponfee.disjob.test.base;
 
 /**
  * Test constants definitions

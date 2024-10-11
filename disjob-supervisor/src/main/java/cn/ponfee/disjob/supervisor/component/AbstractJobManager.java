@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.IdGenerator;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
@@ -29,15 +30,15 @@ import cn.ponfee.disjob.core.dto.worker.SplitJobResult;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
-import cn.ponfee.disjob.supervisor.base.DataConverter;
 import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
+import cn.ponfee.disjob.supervisor.base.ModelConverter;
+import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
@@ -46,7 +47,6 @@ import cn.ponfee.disjob.supervisor.model.SchedDepend;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
-import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.base.Joiner;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -335,12 +335,12 @@ public abstract class AbstractJobManager {
 
     private void verifyJobExecutor(SchedJob job) throws JobException {
         Assert.hasText(job.getJobExecutor(), () -> "Job executor cannot be blank.");
-        DisjobUtils.checkClobMaximumLength(job.getJobExecutor(), "Job executor");
-        DisjobUtils.checkClobMaximumLength(job.getJobParam(), "Job param");
+        CoreUtils.checkClobMaximumLength(job.getJobExecutor(), "Job executor");
+        CoreUtils.checkClobMaximumLength(job.getJobParam(), "Job param");
         JobType.of(job.getJobType());
         RouteStrategy.of(job.getRouteStrategy());
 
-        VerifyJobParam param = DataConverter.toVerifyJobParam(job);
+        VerifyJobParam param = ModelConverter.toVerifyJobParam(job);
         SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedWorkerRpcClient.invoke(job.getGroup(), client -> client.verifyJob(param));
     }
@@ -349,12 +349,12 @@ public abstract class AbstractJobManager {
         SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
         SplitJobResult result = groupedWorkerRpcClient.call(param.getGroup(), client -> client.splitJob(param));
         List<String> taskParams = result.getTaskParams();
-        taskParams.forEach(e -> DisjobUtils.checkClobMaximumLength(e, "Split task param"));
+        taskParams.forEach(e -> CoreUtils.checkClobMaximumLength(e, "Split task param"));
         return taskParams;
     }
 
     private void parseTriggerConfig(SchedJob job) {
-        String triggerValue = DisjobUtils.trimRequired(job.getTriggerValue(), 255, "Trigger value");
+        String triggerValue = CoreUtils.trimRequired(job.getTriggerValue(), 255, "Trigger value");
         job.setTriggerValue(triggerValue);
 
         Long jobId = job.getJobId();
@@ -388,7 +388,7 @@ public abstract class AbstractJobManager {
         Long lastTriggerTime = job.getLastTriggerTime();
         Date now = new Date();
         job.setLastTriggerTime(Long.max(now.getTime() - 1, lastTriggerTime == null ? 0 : lastTriggerTime));
-        Long next = TriggerTimeUtils.computeNextTriggerTime(job, now);
+        Long next = TriggerTimes.computeNextTriggerTime(job, now);
         Assert.notNull(next, () -> "Expire " + TriggerType.of(job.getTriggerType()) + " value: " + job.getTriggerValue());
         job.setLastTriggerTime(lastTriggerTime);
         return next;

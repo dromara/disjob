@@ -74,7 +74,7 @@ public final class ExecuteTaskParamBuilder {
             return job.getJobExecutor();
         }
 
-        String curJobExecutor = instance.parseAttach().parseCurNode().getName();
+        String curJobExecutor = instance.parseWorkflowCurNode().getName();
         Assert.hasText(curJobExecutor, () -> "Curr node job executor cannot be empty: " + instance.getInstanceId());
         return curJobExecutor;
     }

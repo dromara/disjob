@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.core.util;
+package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
@@ -22,7 +22,6 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.NetUtils;
-import cn.ponfee.disjob.core.base.JobConstants;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import org.apache.commons.lang3.StringUtils;
@@ -34,13 +33,13 @@ import java.util.function.Supplier;
 import static cn.ponfee.disjob.core.base.JobConstants.DISJOB_BOUND_SERVER_HOST;
 
 /**
- * Disjob utility
+ * Core utility
  *
  * @author Ponfee
  */
-public class DisjobUtils {
+public class CoreUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DisjobUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CoreUtils.class);
 
     /**
      * Instance lock pool

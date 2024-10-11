@@ -19,11 +19,7 @@ package cn.ponfee.disjob.worker.configuration;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
-import cn.ponfee.disjob.core.base.JobConstants;
-import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.base.WorkerRpcService;
-import cn.ponfee.disjob.core.util.DisjobUtils;
+import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.TaskTimingWheel;
 import cn.ponfee.disjob.worker.configuration.EnableWorker.EnableWorkerConfiguration;
@@ -57,7 +53,7 @@ public @interface EnableWorker {
         @Bean(JobConstants.SPRING_BEAN_NAME_LOCAL_WORKER)
         public Worker.Local localWorker(WebServerApplicationContext webServerApplicationContext, WorkerProperties config) {
             config.check();
-            String host = DisjobUtils.getLocalHost();
+            String host = CoreUtils.getLocalHost();
             String workerToken = config.getWorkerToken();
             String supervisorToken = config.getSupervisorToken();
             String supervisorContextPath = config.getSupervisorContextPath();

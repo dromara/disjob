@@ -94,6 +94,7 @@ public final class SpringUtils {
         return parseAnnotation(type, attributes);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends Annotation> T parseAnnotation(Class<T> type, Map<String, Object> attributes) {
         return (T) AnnotationParser.annotationForMap(type, attributes == null ? Collections.emptyMap() : attributes);
     }

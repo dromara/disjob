@@ -48,6 +48,7 @@ import java.util.Properties;
  */
 public class YamlPropertySourceFactory extends DefaultPropertySourceFactory {
 
+    @SuppressWarnings({"SingleStatementInBlock" , "ConstantConditions"})
     @Override
     public PropertySource<?> createPropertySource(String name, EncodedResource resource) throws IOException {
         String sourceName = name != null ? name : resource.getResource().getFilename();

@@ -25,9 +25,12 @@ import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.supervisor.base.DataConverter;
+import cn.ponfee.disjob.supervisor.base.ModelConverter;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
-import cn.ponfee.disjob.supervisor.model.*;
+import cn.ponfee.disjob.supervisor.model.SchedInstance;
+import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
+import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,9 +79,9 @@ public class WorkflowInstance extends TriggerInstance {
 
             // 工作流的子任务实例的【root、parent、workflow】instance_id只与工作流相关联
             SchedInstance nodeInstance = SchedInstance.of(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);
-            nodeInstance.setAttach(InstanceAttach.of(node.toString()).toJson());
+            nodeInstance.setWorkflowCurNode(node.toString());
 
-            SplitJobParam splitJobParam = DataConverter.toSplitJobParam(job, nodeInstance, null);
+            SplitJobParam splitJobParam = ModelConverter.toSplitJobParam(job, nodeInstance, null);
             List<SchedTask> nodeTasks = creator.jobManager.splitJob(splitJobParam, nodeInstance.getInstanceId());
             nodes.add(Tuple2.of(nodeInstance, nodeTasks));
         }

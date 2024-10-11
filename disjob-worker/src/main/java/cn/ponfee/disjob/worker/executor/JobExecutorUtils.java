@@ -23,13 +23,13 @@ import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.spring.SpringContextHolder;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.ProcessUtils;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobCodeMsg;
 import cn.ponfee.disjob.core.dto.worker.SplitJobParam;
 import cn.ponfee.disjob.core.dto.worker.VerifyJobParam;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.core.exception.JobRuntimeException;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.springframework.util.Assert;
@@ -97,7 +97,7 @@ public class JobExecutorUtils {
             } else {
                 Assert.notEmpty(taskParams, "Split job task cannot be empty.");
             }
-            taskParams.forEach(e -> DisjobUtils.checkClobMaximumLength(e, "Splitting task param"));
+            taskParams.forEach(e -> CoreUtils.checkClobMaximumLength(e, "Splitting task param"));
             return taskParams;
         } catch (JobException | JobRuntimeException e) {
             throw e;

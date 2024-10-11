@@ -22,9 +22,9 @@ import cn.ponfee.disjob.common.date.JavaUtilDateFormat;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
+import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
-import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -98,7 +98,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(TriggerTimes.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -137,7 +137,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(TriggerTimes.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());
@@ -176,7 +176,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
         job.setShutdownStrategy(ShutdownStrategy.RESUME.value());
         job.setRemark("test remark");
         job.setLastTriggerTime(null);
-        job.setNextTriggerTime(TriggerTimeUtils.computeNextTriggerTime(job, new Date()));
+        job.setNextTriggerTime(TriggerTimes.computeNextTriggerTime(job, new Date()));
         job.setUpdatedBy("0");
         job.setCreatedBy("0");
         job.setUpdatedAt(new Date());

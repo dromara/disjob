@@ -19,7 +19,6 @@ package cn.ponfee.disjob.supervisor.configuration;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.core.base.*;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
@@ -85,7 +84,7 @@ public @interface EnableSupervisor {
         @Bean(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
         public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext) {
             UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
-            String host = DisjobUtils.getLocalHost();
+            String host = CoreUtils.getLocalHost();
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
             Object[] args = {host, port, workerCtxPath};
             try {

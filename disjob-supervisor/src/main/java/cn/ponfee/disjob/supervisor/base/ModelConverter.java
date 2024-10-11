@@ -33,17 +33,17 @@ import org.springframework.util.Assert;
 import java.util.List;
 
 /**
- * Data converter
+ * Model converter
  *
  * @author Ponfee
  */
-public final class DataConverter {
+public final class ModelConverter {
 
     public static PredecessorInstance toPredecessorInstance(SchedWorkflow workflow, List<SchedTask> tasks) {
         PredecessorInstance instance = new PredecessorInstance();
         instance.setInstanceId(workflow.getInstanceId());
         instance.setCurNode(workflow.getCurNode());
-        instance.setTasks(Collects.convert(tasks, DataConverter::toPredecessorTask));
+        instance.setTasks(Collects.convert(tasks, ModelConverter::toPredecessorTask));
         return instance;
     }
 
@@ -68,8 +68,8 @@ public final class DataConverter {
                                                 List<PredecessorInstance> predecessorInstances) {
         Assert.isTrue(JobType.WORKFLOW.equalsValue(job.getJobType()), "Job must be workflow.");
         Assert.isTrue(instance.isWorkflowNode(), () -> "Split job must be node instance: " + instance);
-        String curNode = instance.parseAttach().parseCurNode().getName();
-        return toSplitJobParam(job, instance.getRetriedCount(), curNode, predecessorInstances);
+        String curJobExecutor = instance.parseWorkflowCurNode().getName();
+        return toSplitJobParam(job, instance.getRetriedCount(), curJobExecutor, predecessorInstances);
     }
 
     public static StartTaskResult toStartTaskResult(SchedTask task) {
@@ -79,7 +79,6 @@ public final class DataConverter {
         result.setTaskNo(task.getTaskNo());
         result.setTaskCount(task.getTaskCount());
         result.setExecuteSnapshot(task.getExecuteSnapshot());
-
         result.setTaskParam(task.getTaskParam());
         return result;
     }

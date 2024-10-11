@@ -29,7 +29,7 @@ import org.mapstruct.factory.Mappers;
  *
  * @author Ponfee
  */
-@Mapper(uses = CommonMapper.class)
+@Mapper(uses = CommonConverter.class)
 public interface ServerMetricsConverter {
 
     ServerMetricsConverter INSTANCE = Mappers.getMapper(ServerMetricsConverter.class);

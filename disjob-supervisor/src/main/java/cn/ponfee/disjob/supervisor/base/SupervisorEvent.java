@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Event param
+ * Supervisor event
  *
  * @author Ponfee
  */

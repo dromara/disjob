@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.test.util;
 
+import cn.ponfee.disjob.test.base.Prime;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

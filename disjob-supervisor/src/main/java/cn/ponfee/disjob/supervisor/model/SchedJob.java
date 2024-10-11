@@ -17,8 +17,8 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.enums.*;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import com.google.common.math.IntMath;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +27,6 @@ import org.springframework.util.Assert;
 
 import java.beans.Transient;
 import java.util.Date;
-import java.util.Objects;
 
 import static cn.ponfee.disjob.common.date.Dates.format;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
@@ -216,7 +215,7 @@ public class SchedJob extends BaseEntity {
     }
 
     public void verifyForAdd(int maximumJobRetryCount) {
-        this.group = DisjobUtils.trimRequired(group, 60, "Group");
+        this.group = CoreUtils.trimRequired(group, 60, "Group");
         verifyAndDefaultSetting(maximumJobRetryCount);
     }
 
@@ -241,7 +240,7 @@ public class SchedJob extends BaseEntity {
             Assert.isNull(triggerValue, "Trigger value must be null when not set trigger type.");
             return false;
         }
-        if (Objects.equals(triggerType, curTriggerType) && Objects.equals(triggerValue, curTriggerValue)) {
+        if (curTriggerType.equals(triggerType) && curTriggerValue.equals(triggerValue)) {
             // needless update
             this.triggerType = null;
             this.triggerValue = null;
@@ -279,8 +278,8 @@ public class SchedJob extends BaseEntity {
     // ----------------------------------------------------------------private methods
 
     private void verifyAndDefaultSetting(int maximumJobRetryCount) {
-        this.jobName = DisjobUtils.trimRequired(jobName, 60, "Job name");
-        this.remark = DisjobUtils.trimOptional(remark, 255, "Remark");
+        this.jobName = CoreUtils.trimRequired(jobName, 60, "Job name");
+        this.remark = CoreUtils.trimOptional(remark, 255, "Remark");
 
         // set default
         this.jobState = defaultIfNull(jobState, JobState.DISABLED.value());

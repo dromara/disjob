@@ -22,6 +22,7 @@ import cn.ponfee.disjob.common.collect.SynchronizedSegmentMap;
 import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
@@ -29,7 +30,6 @@ import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.core.util.DisjobUtils;
 import cn.ponfee.disjob.worker.exception.CancelTaskException;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
@@ -339,7 +339,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         StopTaskParam param = task.toStopTaskParam(ops, toState, errorMsg);
         LOG.info("Stop task trace: {}, {}, {}", task.getTaskId(), ops, toState);
-        DisjobUtils.doInSynchronized(
+        CoreUtils.doInSynchronized(
             task.getLockInstanceId(),
             () -> supervisorRpcClient.stopTask(param),
             () -> "Stop task error: " + task.getTaskId() + ", " + ops + ", " + toState
@@ -356,7 +356,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         Long lockInstanceId = task.getLockInstanceId();
         LOG.info("Stop instance trace: {}, {}, {}", lockInstanceId, task.getTaskId(), ops);
-        DisjobUtils.doInSynchronized(
+        CoreUtils.doInSynchronized(
             lockInstanceId,
             () -> stopInstance(lockInstanceId, task.getTaskId(), ops),
             () -> "Stop instance error: " + lockInstanceId + ", " + task.getTaskId() + ", " + ops
@@ -629,7 +629,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         private void run(WorkerTask workerTask) {
             ExecutionTask executionTask;
             try {
-                StartTaskResult startTaskResult = DisjobUtils.doInSynchronized(
+                StartTaskResult startTaskResult = CoreUtils.doInSynchronized(
                     workerTask.getLockInstanceId(), () -> supervisorRpcClient.startTask(workerTask.toStartTaskParam()));
                 if (!startTaskResult.isSuccess()) {
                     LOG.warn("Start task failed: {}, {}", workerTask, startTaskResult.getFailedMessage());

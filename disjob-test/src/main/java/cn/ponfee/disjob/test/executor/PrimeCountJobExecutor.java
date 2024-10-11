@@ -17,7 +17,7 @@
 package cn.ponfee.disjob.test.executor;
 
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.test.util.Prime;
+import cn.ponfee.disjob.test.base.Prime;
 import cn.ponfee.disjob.worker.exception.PauseTaskException;
 import cn.ponfee.disjob.worker.executor.*;
 import lombok.Getter;

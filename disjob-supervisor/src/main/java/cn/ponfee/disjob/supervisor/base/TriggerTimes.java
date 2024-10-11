@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.supervisor.util;
+package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.core.enums.MisfireStrategy;
@@ -29,7 +29,7 @@ import java.util.Date;
  *
  * @author Ponfee
  */
-public final class TriggerTimeUtils {
+public final class TriggerTimes {
 
     /**
      * Returns the next trigger time

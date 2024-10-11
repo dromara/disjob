@@ -21,12 +21,12 @@ import cn.ponfee.disjob.common.concurrent.*;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.*;
+import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
 import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
-import cn.ponfee.disjob.supervisor.util.TriggerTimeUtils;
 import com.google.common.math.IntMath;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -180,7 +180,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             return job.getNextTriggerTime();
         }
         // 其它情况则基于原来的lastTriggerTime重新再计算一次nextTriggerTime
-        return TriggerTimeUtils.computeNextTriggerTime(job, now);
+        return TriggerTimes.computeNextTriggerTime(job, now);
     }
 
     /**
@@ -196,7 +196,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             // null值已被用作表示没有下次触发时间
             return Long.MAX_VALUE;
         }
-        return TriggerTimeUtils.computeNextTriggerTime(job, now);
+        return TriggerTimes.computeNextTriggerTime(job, now);
     }
 
     /**

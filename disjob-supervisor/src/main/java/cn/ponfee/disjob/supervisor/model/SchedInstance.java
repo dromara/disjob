@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.supervisor.model;
 
+import cn.ponfee.disjob.common.dag.DAGNode;
 import cn.ponfee.disjob.common.model.BaseEntity;
-import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
 import lombok.Getter;
@@ -110,11 +110,11 @@ public class SchedInstance extends BaseEntity {
     private Integer retriedCount;
 
     /**
-     * 附加信息
+     * 工作流任务的当前节点(sched_workflow.cur_node，非工作流任务时为NULL)
      *
-     * @see InstanceAttach
+     * @see SchedWorkflow#getCurNode()
      */
-    private String attach;
+    private String workflowCurNode;
 
     /**
      * 下一次的扫描时间
@@ -223,11 +223,8 @@ public class SchedInstance extends BaseEntity {
         return RunType.RETRY.equalsValue(runType);
     }
 
-    public InstanceAttach parseAttach() {
-        if (StringUtils.isBlank(attach)) {
-            return null;
-        }
-        return Jsons.fromJson(attach, InstanceAttach.class);
+    public DAGNode parseWorkflowCurNode() {
+        return StringUtils.isBlank(workflowCurNode) ? null : DAGNode.fromString(workflowCurNode);
     }
 
     public SchedInstance fillUniqueFlag() {

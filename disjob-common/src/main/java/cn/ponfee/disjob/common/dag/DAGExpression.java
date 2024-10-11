@@ -48,7 +48,7 @@ import java.util.stream.Stream;
  * Parse DAG expression to graph
  *
  * <pre>
- * 解析：new DAGParser("A->((B->C->D),(A->F))->(G,H,X)->J; A->Y").parse();
+ * 解析：DAGExpression.parse( "A->((B->C->D),(A->F))->(G,H,X)->J; A->Y" );
  * 结果：
  *  "A->((B->C->D),(A->F))->(G,H,X)->J"
  *    <0:0:Start -> 1:1:A>
@@ -117,7 +117,7 @@ public class DAGExpression {
     private static final String SEP_STAGE = "->";
     private static final String SEP_UNION = ",";
     private static final List<String> SEP_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION);
-    private static final List<String> ALL_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.CLOSE, Str.OPEN);
+    private static final List<String> ALL_SYMBOLS = ImmutableList.of(SEP_STAGE, SEP_UNION, Str.OPEN, Str.CLOSE);
     private static final char[] SINGLE_SYMBOLS = {Char.OPEN, Char.CLOSE, Char.COMMA};
 
     private final String expression;
@@ -485,6 +485,7 @@ public class DAGExpression {
                 --depth;
             }
         }
+        // assert: size % 2 = 0
         Assert.isTrue((list.size() & 0x01) == 0, () -> "Expression not pair with '()': " + expr);
         return list;
     }
@@ -512,7 +513,7 @@ public class DAGExpression {
                     return null;
                 }
                 return list.stream().map(GraphEdge::toDAGEdge).collect(Collectors.toList());
-            } catch (Exception e) {
+            } catch (Exception ignored) {
                 return null;
             }
         }
@@ -590,7 +591,7 @@ public class DAGExpression {
                 return false;
             }
             PartitionIdentityKey that = (PartitionIdentityKey) obj;
-            // 比较对象地址
+            // compare object address
             return this.expr  == that.expr
                 && this.open  == that.open
                 && this.close == that.close;

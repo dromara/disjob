@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.admin.controller;
 
-import cn.ponfee.disjob.admin.export.SchedJobExport;
-import cn.ponfee.disjob.admin.util.PageUtils;
+import cn.ponfee.disjob.admin.base.Pagination;
+import cn.ponfee.disjob.admin.base.SchedJobExport;
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
@@ -103,7 +103,7 @@ public class DisjobJobController extends BaseController {
         request.setPageNumber(super.getPageNumber());
         request.setPageSize(super.getPageSize());
         PageResponse<SchedJobResponse> response = openapiService.queryJobForPage(request);
-        return PageUtils.toTableDataInfo(response);
+        return Pagination.toTableDataInfo(response);
     }
 
     /**

@@ -44,10 +44,10 @@ public interface SchedJobConverter {
 
     SchedJobResponse convert(SchedJob source);
 
-    @Mapping(target = "runDuration", expression = "java( CommonMapper.duration(source.getRunStartTime(),source.getRunEndTime()) )")
+    @Mapping(target = "runDuration", expression = "java( CommonConverter.duration(source.getRunStartTime(), source.getRunEndTime()) )")
     SchedInstanceResponse convert(SchedInstance source);
 
-    @Mapping(target = "executeDuration", expression = "java( CommonMapper.duration(source.getExecuteStartTime(),source.getExecuteEndTime()) )")
+    @Mapping(target = "executeDuration", expression = "java( CommonConverter.duration(source.getExecuteStartTime(), source.getExecuteEndTime()) )")
     SchedTaskResponse convert(SchedTask source);
 
 }
