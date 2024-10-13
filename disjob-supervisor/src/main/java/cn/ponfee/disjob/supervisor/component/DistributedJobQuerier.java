@@ -33,6 +33,7 @@ import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
@@ -49,19 +50,12 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 @Component
+@RequiredArgsConstructor
 public class DistributedJobQuerier {
 
     private final SchedJobMapper jobMapper;
     private final SchedTaskMapper taskMapper;
     private final SchedInstanceMapper instanceMapper;
-
-    public DistributedJobQuerier(SchedJobMapper jobMapper,
-                                 SchedTaskMapper taskMapper,
-                                 SchedInstanceMapper instanceMapper) {
-        this.jobMapper = jobMapper;
-        this.taskMapper = taskMapper;
-        this.instanceMapper = instanceMapper;
-    }
 
     public SchedJob getJob(long jobId) {
         return jobMapper.get(jobId);

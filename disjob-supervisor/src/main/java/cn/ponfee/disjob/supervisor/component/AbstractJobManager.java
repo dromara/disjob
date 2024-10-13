@@ -42,6 +42,7 @@ import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedDependMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
+import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
 import cn.ponfee.disjob.supervisor.model.SchedDepend;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
@@ -64,6 +65,8 @@ import java.util.stream.IntStream;
 import static cn.ponfee.disjob.common.spring.TransactionUtils.assertOneAffectedRow;
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
+import static com.google.common.collect.ImmutableList.of;
+import static java.util.Collections.singletonList;
 
 /**
  * Abstract job manager
@@ -72,13 +75,25 @@ import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_
  */
 public abstract class AbstractJobManager {
 
+    protected static final List<Integer> RS_TERMINABLE = of(RunState.WAITING.value(), RunState.RUNNING.value(), RunState.PAUSED.value());
+    protected static final List<Integer> RS_RUNNABLE   = of(RunState.WAITING.value(), RunState.PAUSED.value());
+    protected static final List<Integer> RS_PAUSABLE   = of(RunState.WAITING.value(), RunState.RUNNING.value());
+    protected static final List<Integer> RS_WAITING    = singletonList(RunState.WAITING.value());
+    protected static final List<Integer> RS_RUNNING    = singletonList(RunState.RUNNING.value());
+    protected static final List<Integer> RS_PAUSED     = singletonList(RunState.PAUSED.value());
+    protected static final List<Integer> ES_EXECUTABLE = of(ExecuteState.WAITING.value(), ExecuteState.PAUSED.value());
+    protected static final List<Integer> ES_PAUSABLE   = of(ExecuteState.WAITING.value(), ExecuteState.EXECUTING.value());
+    protected static final List<Integer> ES_WAITING    = singletonList(ExecuteState.WAITING.value());
+    protected static final List<Integer> ES_EXECUTING  = singletonList(ExecuteState.EXECUTING.value());
+    protected static final List<Integer> ES_PAUSED     = singletonList(ExecuteState.PAUSED.value());
+    protected static final List<Integer> ES_COMPLETED  = singletonList(ExecuteState.COMPLETED.value());
     private static final Comparator<Tuple2<Worker, Long>> WORKLOAD_COMPARATOR = Comparator.comparingLong(e -> e.b);
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected final SupervisorProperties conf;
     protected final SchedJobMapper jobMapper;
     protected final SchedDependMapper dependMapper;
+    protected final SchedTaskMapper taskMapper;
     private final IdGenerator idGenerator;
     private final SupervisorRegistry workerDiscover;
     private final TaskDispatcher taskDispatcher;
@@ -88,6 +103,7 @@ public abstract class AbstractJobManager {
     protected AbstractJobManager(SupervisorProperties conf,
                                  SchedJobMapper jobMapper,
                                  SchedDependMapper dependMapper,
+                                 SchedTaskMapper taskMapper,
                                  IdGenerator idGenerator,
                                  SupervisorRegistry workerDiscover,
                                  TaskDispatcher taskDispatcher,
@@ -97,6 +113,7 @@ public abstract class AbstractJobManager {
         this.conf = conf;
         this.jobMapper = jobMapper;
         this.dependMapper = dependMapper;
+        this.taskMapper = taskMapper;
         this.idGenerator = idGenerator;
         this.workerDiscover = workerDiscover;
         this.taskDispatcher = taskDispatcher;
@@ -271,7 +288,8 @@ public abstract class AbstractJobManager {
             for (SchedTask task : tasks) {
                 Worker worker = Worker.deserialize(task.getWorker());
                 if (!isAliveWorker(worker)) {
-                    abortBroadcastWaitingTask(task.getTaskId());
+                    // 上游调用方有些处于事务中，有些不在事务中。因为此处的update操作非必须要求原子性，所以不用加Spring事务。
+                    taskMapper.terminate(task.getTaskId(), null, ExecuteState.BROADCAST_ABORTED, ExecuteState.WAITING, null, null);
                 } else {
                     list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
@@ -303,22 +321,6 @@ public abstract class AbstractJobManager {
     protected boolean dispatch(List<ExecuteTaskParam> tasks) {
         return taskDispatcher.dispatch(tasks);
     }
-
-    /**
-     * Broadcast strategy task after assigned worker.
-     * if the worker was dead, should cancel the task.
-     *
-     * @param taskId the task id
-     */
-    protected abstract void abortBroadcastWaitingTask(long taskId);
-
-    /**
-     * Lists the pausable tasks
-     *
-     * @param instanceId the instance id
-     * @return List<SchedTask>
-     */
-    protected abstract List<SchedTask> listPausableTasks(long instanceId);
 
     // ------------------------------------------------------------------private methods
 
@@ -415,7 +417,7 @@ public abstract class AbstractJobManager {
             log.error("Not found available worker for calculate workload: {}", job.getGroup());
             return null;
         }
-        List<SchedTask> pausableTasks = listPausableTasks(instance.getInstanceId());
+        List<SchedTask> pausableTasks = taskMapper.findBaseByInstanceId(instance.getInstanceId(), ES_PAUSABLE);
         if (CollectionUtils.isEmpty(pausableTasks)) {
             return null;
         }

@@ -50,19 +50,6 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
      */
     private PageRequest request;
 
-    public PageResponse() {
-    }
-
-    public PageResponse(List<T> rows, long total) {
-        this(rows, total, null);
-    }
-
-    public PageResponse(List<T> rows, long total, PageRequest request) {
-        this.rows = rows;
-        this.total = total;
-        this.request = request;
-    }
-
     public int getTotalPages() {
         return computeTotalPages(request.getPageSize(), total);
     }
@@ -78,7 +65,19 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
     }
 
     public static <T> PageResponse<T> empty() {
-        return new PageResponse<>(Collections.emptyList(), 0);
+        return of(Collections.emptyList(), 0, null);
+    }
+
+    public static <T> PageResponse<T> of(List<T> rows, long total) {
+        return of(rows, total, null);
+    }
+
+    public static <T> PageResponse<T> of(List<T> rows, long total, PageRequest request) {
+        PageResponse<T> response = new PageResponse<>();
+        response.setRows(rows);
+        response.setTotal(total);
+        response.setRequest(request);
+        return response;
     }
 
 }

@@ -72,8 +72,6 @@ import static cn.ponfee.disjob.common.util.Functions.doIfTrue;
 import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
-import static com.google.common.collect.ImmutableList.of;
-import static java.util.Collections.singletonList;
 
 /**
  * Manage distributed schedule job.
@@ -83,22 +81,7 @@ import static java.util.Collections.singletonList;
 @Component
 public class DistributedJobManager extends AbstractJobManager {
 
-    private static final List<Integer> RS_TERMINABLE = of(RunState.WAITING.value(), RunState.RUNNING.value(), RunState.PAUSED.value());
-    private static final List<Integer> RS_RUNNABLE   = of(RunState.WAITING.value(), RunState.PAUSED.value());
-    private static final List<Integer> RS_PAUSABLE   = of(RunState.WAITING.value(), RunState.RUNNING.value());
-    private static final List<Integer> RS_WAITING    = singletonList(RunState.WAITING.value());
-    private static final List<Integer> RS_RUNNING    = singletonList(RunState.RUNNING.value());
-    private static final List<Integer> RS_PAUSED     = singletonList(RunState.PAUSED.value());
-
-    private static final List<Integer> ES_EXECUTABLE = of(ExecuteState.WAITING.value(), ExecuteState.PAUSED.value());
-    private static final List<Integer> ES_PAUSABLE   = of(ExecuteState.WAITING.value(), ExecuteState.EXECUTING.value());
-    private static final List<Integer> ES_WAITING    = singletonList(ExecuteState.WAITING.value());
-    private static final List<Integer> ES_EXECUTING  = singletonList(ExecuteState.EXECUTING.value());
-    private static final List<Integer> ES_PAUSED     = singletonList(ExecuteState.PAUSED.value());
-    private static final List<Integer> ES_COMPLETED  = singletonList(ExecuteState.COMPLETED.value());
-
     private final SchedInstanceMapper instanceMapper;
-    private final SchedTaskMapper taskMapper;
     private final SchedWorkflowMapper workflowMapper;
     private final TransactionTemplate transactionTemplate;
     private final TriggerInstance.Creator triggerInstanceCreator;
@@ -115,9 +98,8 @@ public class DistributedJobManager extends AbstractJobManager {
                                  GroupedServerClient<WorkerRpcService> groupedWorkerRpcClient,
                                  DestinationServerClient<WorkerRpcService, Worker> destinationWorkerRpcClient,
                                  @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate transactionTemplate) {
-        super(conf, jobMapper, dependMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
+        super(conf, jobMapper, dependMapper, taskMapper, idGenerator, discoveryWorker, taskDispatcher, groupedWorkerRpcClient, destinationWorkerRpcClient);
         this.instanceMapper = instanceMapper;
-        this.taskMapper = taskMapper;
         this.workflowMapper = workflowMapper;
         this.transactionTemplate = transactionTemplate;
         this.triggerInstanceCreator = new TriggerInstance.Creator(this, workflowMapper, instanceMapper, taskMapper);
@@ -129,12 +111,15 @@ public class DistributedJobManager extends AbstractJobManager {
      */
     @EventListener
     public void processTaskDispatchFailedEvent(TaskDispatchFailedEvent event) {
-        if (!shouldTerminateDispatchFailedTask(event.getTaskId())) {
-            return;
-        }
-        if (!taskMapper.terminate(event.getTaskId(), null, ExecuteState.DISPATCH_FAILED, ExecuteState.WAITING, null, null)) {
-            log.warn("Terminate dispatch failed task unsuccessful: {}", event.getTaskId());
-        }
+        transactionTemplate.executeWithoutResult(status -> {
+            long taskId = event.getTaskId();
+            if (!shouldTerminateDispatchFailedTask(taskId)) {
+                return;
+            }
+            if (!taskMapper.terminate(taskId, null, ExecuteState.DISPATCH_FAILED, ExecuteState.WAITING, null, null)) {
+                log.warn("Terminate dispatch failed task unsuccessful: {}", taskId);
+            }
+        });
     }
 
     // ------------------------------------------------------------------database single operation without spring transactional
@@ -147,16 +132,6 @@ public class DistributedJobManager extends AbstractJobManager {
     public boolean savepoint(long taskId, String worker, String executeSnapshot) {
         CoreUtils.checkClobMaximumLength(executeSnapshot, "Execute snapshot");
         return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executeSnapshot));
-    }
-
-    @Override
-    protected void abortBroadcastWaitingTask(long taskId) {
-        taskMapper.terminate(taskId, null, ExecuteState.BROADCAST_ABORTED, ExecuteState.WAITING, null, null);
-    }
-
-    @Override
-    protected List<SchedTask> listPausableTasks(long instanceId) {
-        return taskMapper.findBaseByInstanceId(instanceId, ES_PAUSABLE);
     }
 
     // ------------------------------------------------------------------database operation within spring @Transactional

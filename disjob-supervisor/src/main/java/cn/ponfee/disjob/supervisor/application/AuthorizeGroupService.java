@@ -64,6 +64,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
 
     public AuthorizeGroupService(DistributedJobQuerier jobQuerier) {
         this.jobQuerier = jobQuerier;
+
         commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 2, 2, TimeUnit.DAYS);
     }
 

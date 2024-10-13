@@ -36,4 +36,7 @@ public interface TypedMap<K, V> extends Map<K, V>, TypedDictionary<K, V> {
     @Override
     boolean containsKey(Object key);
 
+    @Override
+    boolean containsValue(Object value);
+
 }

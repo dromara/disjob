@@ -104,7 +104,7 @@
     FROM <include refid="Table_Name" />
     WHERE is_deleted = 0
       <if test="_parameter != null and _parameter != ''">
-        AND `group` LIKE #{term}
+        AND `group` LIKE #{_parameter}
       </if>
     LIMIT 20
   </select>

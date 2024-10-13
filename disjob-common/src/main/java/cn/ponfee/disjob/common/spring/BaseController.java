@@ -97,8 +97,20 @@ public abstract class BaseController implements TypedDictionary<String, String> 
     }
 
     @Override
-    public String get(String key) {
-        return getRequest().getParameter(key);
+    public String get(Object key) {
+        return getRequest().getParameter(key == null ? null : key.toString());
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        // noinspection SuspiciousMethodCalls
+        return getRequest().getParameterMap().containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        // noinspection SuspiciousMethodCalls
+        return getRequest().getParameterMap().containsValue(value);
     }
 
 }

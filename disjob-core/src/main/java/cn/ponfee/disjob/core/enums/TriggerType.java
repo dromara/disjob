@@ -358,10 +358,6 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     public final List<Date> computeNextTriggerTimes(String triggerValue, Date date, int count) {
         Assert.notNull(date, "Param date cannot be null.");
         List<Date> list = computeNextTriggerTimes0(triggerValue, date, count);
-        if (list.isEmpty()) {
-            return list;
-        }
-
         Date curr, next = date;
         for (Date item : list) {
             curr = next;

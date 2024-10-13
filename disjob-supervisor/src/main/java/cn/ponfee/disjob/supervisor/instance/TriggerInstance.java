@@ -28,6 +28,7 @@ import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
 import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 
@@ -64,19 +65,12 @@ public abstract class TriggerInstance {
 
     public abstract void dispatch();
 
+    @AllArgsConstructor
     public static class Creator {
         final AbstractJobManager jobManager;
         private final SchedWorkflowMapper workflowMapper;
         private final SchedInstanceMapper instanceMapper;
         private final SchedTaskMapper taskMapper;
-
-        public Creator(AbstractJobManager jobManager, SchedWorkflowMapper workflowMapper,
-                       SchedInstanceMapper instanceMapper, SchedTaskMapper taskMapper) {
-            this.jobManager = jobManager;
-            this.workflowMapper = workflowMapper;
-            this.instanceMapper = instanceMapper;
-            this.taskMapper = taskMapper;
-        }
 
         public TriggerInstance create(SchedJob job, SchedInstance parent, RunType runType, long triggerTime) throws JobException {
             JobType jobType = JobType.of(job.getJobType());

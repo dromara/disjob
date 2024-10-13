@@ -18,14 +18,12 @@ package cn.ponfee.disjob.common.model;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
 import cn.ponfee.disjob.common.collect.Collects;
-import cn.ponfee.disjob.common.collect.TypedDictionary;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.ToLongFunction;
 
@@ -36,7 +34,7 @@ import java.util.function.ToLongFunction;
  */
 @Getter
 @Setter
-public class PageRequest extends ToJsonString implements TypedDictionary<String, Object>, Serializable {
+public class PageRequest extends ToJsonString implements Serializable {
     private static final long serialVersionUID = 2032344850017264330L;
 
     /**
@@ -58,21 +56,6 @@ public class PageRequest extends ToJsonString implements TypedDictionary<String,
      * Sort string, for example: "updated_at desc, name asc"
      */
     private String sort;
-
-    /**
-     * Parameter of query condition
-     */
-    private Map<String, Object> params = Collections.emptyMap();
-
-    @Override
-    public Object get(String key) {
-        return params.get(key);
-    }
-
-    @Override
-    public Object remove(String key) {
-        return params.remove(key);
-    }
 
     public long getOffset() {
         return (long) (pageNumber - 1) * pageSize;
@@ -100,7 +83,7 @@ public class PageRequest extends ToJsonString implements TypedDictionary<String,
             total = list.size();
         }
         List<B> rows = (mapper == null) ? (List<B>) list : Collects.convert(list, mapper);
-        return new PageResponse<>(rows, total, this0);
+        return PageResponse.of(rows, total, this0);
     }
 
     // ------------------------------------------------------------------------private methods

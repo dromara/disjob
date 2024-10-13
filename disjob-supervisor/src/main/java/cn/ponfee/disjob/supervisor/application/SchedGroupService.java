@@ -81,6 +81,7 @@ public class SchedGroupService extends SingletonClassConstraint {
         this.groupMapper = groupMapper;
         this.supervisorRegistry = supervisorRegistry;
         this.serverInvokeService = serverInvokeService;
+
         int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 30);
         commonScheduledPool().scheduleWithFixedDelay(this::refresh, periodSeconds, periodSeconds, TimeUnit.SECONDS);
         refresh();

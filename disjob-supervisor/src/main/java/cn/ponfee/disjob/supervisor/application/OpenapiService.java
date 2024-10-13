@@ -38,6 +38,7 @@ import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -53,17 +54,13 @@ import java.util.stream.Collectors;
  * @author Ponfee
  */
 @Service
+@RequiredArgsConstructor
 public class OpenapiService extends SingletonClassConstraint {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);
 
     private final DistributedJobManager jobManager;
     private final DistributedJobQuerier jobQuerier;
-
-    public OpenapiService(DistributedJobManager jobManager, DistributedJobQuerier jobQuerier) {
-        this.jobManager = jobManager;
-        this.jobQuerier = jobQuerier;
-    }
 
     // ------------------------------------------------------------------ sched job
 

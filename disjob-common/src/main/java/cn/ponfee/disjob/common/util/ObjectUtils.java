@@ -26,7 +26,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -48,10 +47,6 @@ public final class ObjectUtils {
 
     public static String toString(Object obj, String defaultStr) {
         return (obj == null) ? defaultStr : ToStringBuilder.reflectionToString(obj, ToStringStyle.JSON_STYLE);
-    }
-
-    public static <T, R> R applyIfNotNull(T object, Function<T, R> mapper) {
-        return object == null ? null : mapper.apply(object);
     }
 
     /**
@@ -110,6 +105,7 @@ public final class ObjectUtils {
      * @param type  target object type
      * @return target type object
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> T cast(Object value, Class<T> type) {
         if (type.isInstance(value)) {
             return (T) value;

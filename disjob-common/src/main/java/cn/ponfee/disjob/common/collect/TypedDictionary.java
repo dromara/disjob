@@ -30,18 +30,22 @@ import java.util.function.Function;
  */
 public interface TypedDictionary<K, V> {
 
-    V get(K key);
+    V get(Object key);
 
     default V put(K key, V value) {
         throw new UnsupportedOperationException("Cannot suppoerted put key value operation.");
     }
 
-    default V remove(K key) {
+    default V remove(Object key) {
         throw new UnsupportedOperationException("Cannot suppoerted remove key operation.");
     }
 
-    default boolean containsKey(K key) {
+    default boolean containsKey(Object key) {
         return get(key) != null;
+    }
+
+    default boolean containsValue(Object value) {
+        throw new UnsupportedOperationException("Cannot suppoerted contains value operation.");
     }
 
     // --------------------------------------------------------object

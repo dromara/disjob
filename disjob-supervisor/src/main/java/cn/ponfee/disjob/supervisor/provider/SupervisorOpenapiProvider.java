@@ -30,6 +30,7 @@ import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,15 +46,11 @@ import static cn.ponfee.disjob.supervisor.auth.AuthenticationConfigurer.requestU
 @RestController
 @RequestMapping("/supervisor/openapi")
 @SupervisorAuthentication(SupervisorAuthentication.Subject.USER)
+@RequiredArgsConstructor
 public class SupervisorOpenapiProvider extends BaseController {
 
     private final OpenapiService openapiService;
     private final AuthorizeGroupService authorizeGroupService;
-
-    public SupervisorOpenapiProvider(OpenapiService openapiService, AuthorizeGroupService authorizeGroupService) {
-        this.openapiService = openapiService;
-        this.authorizeGroupService = authorizeGroupService;
-    }
 
     // ------------------------------------------------------------------job
 

@@ -46,11 +46,6 @@ public enum Operation {
     COLLIDED_CANCEL(EXECUTING, EXECUTE_COLLIDED),
 
     /**
-     * Manual cancel from EXECUTING to MANUAL_CANCELED
-     */
-    MANUAL_CANCEL(EXECUTING, MANUAL_CANCELED),
-
-    /**
      * Shutdown resume from EXECUTING to WAITING
      */
     SHUTDOWN_RESUME(EXECUTING, WAITING),
@@ -64,6 +59,11 @@ public enum Operation {
      * Shutdown cancel from EXECUTING to SHUTDOWN_CANCELED
      */
     SHUTDOWN_CANCEL(EXECUTING, SHUTDOWN_CANCELED),
+
+    /**
+     * Manual cancel from EXECUTING to MANUAL_CANCELED
+     */
+    MANUAL_CANCEL(EXECUTING, MANUAL_CANCELED),
 
     ;
 

@@ -208,7 +208,7 @@ public abstract class TaskDispatcher implements Startable {
         } else {
             // discard
             log.error("Dispatched task retried max count still failed: {}", task);
-            eventPublisher.publishEvent(new TaskDispatchFailedEvent(task.getJobId(), task.getInstanceId(), task.getTaskId()));
+            eventPublisher.publishEvent(TaskDispatchFailedEvent.of(task.getJobId(), task.getInstanceId(), task.getTaskId()));
         }
     }
 

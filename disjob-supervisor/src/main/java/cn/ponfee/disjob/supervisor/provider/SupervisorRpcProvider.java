@@ -31,6 +31,7 @@ import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
 import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
 import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -41,24 +42,21 @@ import java.util.List;
  */
 @RpcController
 @SupervisorAuthentication(SupervisorAuthentication.Subject.WORKER)
+@RequiredArgsConstructor
 public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
     private final DistributedJobManager jobManager;
 
-    public SupervisorRpcProvider(DistributedJobManager jobManager) {
-        this.jobManager = jobManager;
-    }
-
     // -------------------------------------------------------for worker invoke method
-
-    @Override
-    public StartTaskResult startTask(StartTaskParam param) {
-        return jobManager.startTask(param);
-    }
 
     @Override
     public void updateTaskWorker(String worker, List<Long> taskIds) {
         jobManager.updateTaskWorker(worker, taskIds);
+    }
+
+    @Override
+    public StartTaskResult startTask(StartTaskParam param) {
+        return jobManager.startTask(param);
     }
 
     @Override

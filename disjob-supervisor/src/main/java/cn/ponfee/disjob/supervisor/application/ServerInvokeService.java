@@ -66,27 +66,24 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private final SupervisorRegistry supervisorRegistry;
     private final Supervisor.Local localSupervisor;
-    private final DestinationServerClient<ExtendedSupervisorRpcService, Supervisor> supervisorRpcClient;
     private final DestinationServerClient<WorkerRpcService, Worker> workerRpcClient;
+    private final DestinationServerClient<ExtendedSupervisorRpcService, Supervisor> supervisorRpcClient;
 
     public ServerInvokeService(SupervisorRegistry supervisorRegistry,
                                Supervisor.Local localSupervisor,
+                               DestinationServerClient<WorkerRpcService, Worker> workerRpcClient,
                                ServerProperties serverProperties,
                                ExtendedSupervisorRpcService localSupervisorRpcProvider,
-                               @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
-                               DestinationServerClient<WorkerRpcService, Worker> workerRpcClient) {
+                               @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+        String supervisorContextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
+
         this.supervisorRegistry = supervisorRegistry;
         this.localSupervisor = localSupervisor;
-        String supervisorContextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
-        this.supervisorRpcClient = DestinationServerRestProxy.create(
-            ExtendedSupervisorRpcService.class,
-            localSupervisorRpcProvider,
-            localSupervisor,
-            supervisor -> supervisorContextPath,
-            restTemplate,
-            RetryProperties.of(0, 0)
-        );
         this.workerRpcClient = workerRpcClient;
+        this.supervisorRpcClient = DestinationServerRestProxy.create(
+            ExtendedSupervisorRpcService.class, localSupervisorRpcProvider, localSupervisor,
+            supervisor -> supervisorContextPath, restTemplate, RetryProperties.of(0, 0)
+        );
     }
 
     // ------------------------------------------------------------public methods
