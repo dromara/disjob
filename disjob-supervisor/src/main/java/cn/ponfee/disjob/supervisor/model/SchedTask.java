@@ -17,11 +17,14 @@
 package cn.ponfee.disjob.supervisor.model;
 
 import cn.ponfee.disjob.common.model.BaseEntity;
+import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.beans.Transient;
+import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -33,6 +36,8 @@ import java.util.Date;
 @Setter
 public class SchedTask extends BaseEntity {
     private static final long serialVersionUID = 4882055618593707631L;
+
+    public static final Comparator<SchedTask> TASK_NO_COMPARATOR = Comparator.comparing(SchedTask::getTaskNo);
 
     /**
      * 全局唯一ID
@@ -122,6 +127,10 @@ public class SchedTask extends BaseEntity {
         return task;
     }
 
+    public Worker worker() {
+        return StringUtils.isBlank(worker) ? null : Worker.deserialize(worker);
+    }
+
     @Transient
     public boolean isWaiting() {
         return ExecuteState.WAITING.equalsValue(executeState);
@@ -130,6 +139,11 @@ public class SchedTask extends BaseEntity {
     @Transient
     public boolean isExecuting() {
         return ExecuteState.EXECUTING.equalsValue(executeState);
+    }
+
+    @Transient
+    public boolean isPausable() {
+        return ExecuteState.of(executeState).isPausable();
     }
 
     @Transient

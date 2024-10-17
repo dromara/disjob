@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -51,7 +51,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
      */
     public static final int SQL_GROUP_IN_MAX_SIZE = 50;
 
-    private final DistributedJobQuerier jobQuerier;
+    private final JobQuerier jobQuerier;
 
     private final Cache<Long, String> jobGroupCache = CacheBuilder.newBuilder()
         .initialCapacity(1_000)
@@ -62,7 +62,7 @@ public class AuthorizeGroupService extends SingletonClassConstraint {
         .expireAfterAccess(Duration.ofDays(1))
         .build();
 
-    public AuthorizeGroupService(DistributedJobQuerier jobQuerier) {
+    public AuthorizeGroupService(JobQuerier jobQuerier) {
         this.jobQuerier = jobQuerier;
 
         commonScheduledPool().scheduleWithFixedDelay(ThrowingRunnable.toCaught(jobGroupCache::cleanUp), 2, 2, TimeUnit.DAYS);

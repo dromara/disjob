@@ -99,7 +99,7 @@
     )
   </select>
 
-  <select id="searchGroup" resultType="string">
+  <select id="searchGroup" parameterType="string" resultType="string">
     SELECT `group`
     FROM <include refid="Table_Name" />
     WHERE is_deleted = 0

@@ -22,8 +22,8 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.JobManager;
+import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -50,8 +50,8 @@ public class SupervisorLifecycle implements SmartLifecycle {
     public SupervisorLifecycle(Supervisor.Local localSupervisor,
                                SupervisorProperties supervisorProperties,
                                SupervisorRegistry supervisorRegistry,
-                               DistributedJobManager distributedJobManager,
-                               DistributedJobQuerier distributedJobQuerier,
+                               JobManager jobManager,
+                               JobQuerier jobQuerier,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) LockTemplate scanWaitingInstanceLocker,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
@@ -60,8 +60,8 @@ public class SupervisorLifecycle implements SmartLifecycle {
             .localSupervisor(localSupervisor)
             .supervisorProperties(supervisorProperties)
             .supervisorRegistry(supervisorRegistry)
-            .distributedJobManager(distributedJobManager)
-            .distributedJobQuerier(distributedJobQuerier)
+            .jobManager(jobManager)
+            .jobQuerier(jobQuerier)
             .scanTriggeringJobLocker(scanTriggeringJobLocker)
             .scanWaitingInstanceLocker(scanWaitingInstanceLocker)
             .scanRunningInstanceLocker(scanRunningInstanceLocker)

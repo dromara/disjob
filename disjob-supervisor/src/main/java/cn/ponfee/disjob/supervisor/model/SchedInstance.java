@@ -204,6 +204,11 @@ public class SchedInstance extends BaseEntity {
     }
 
     @Transient
+    public boolean isPausable() {
+        return RunState.of(runState).isPausable();
+    }
+
+    @Transient
     public boolean isPaused() {
         return RunState.PAUSED.equalsValue(runState);
     }

@@ -21,7 +21,7 @@ import cn.ponfee.disjob.common.util.UuidUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.supervisor.SpringBootTestBase;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedJobMapper;
 import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ import java.util.stream.LongStream;
 /**
  * @author Ponfee
  */
-public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper> {
+public class JobManagerTest extends SpringBootTestBase<SchedJobMapper> {
 
     @Resource
     private IdGenerator idGenerator;
@@ -45,7 +45,7 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
     private SchedTaskMapper taskMapper;
 
     @Resource
-    private DistributedJobManager distributedJobManager;
+    private JobManager jobManager;
 
     @Test
     public void testUpdateTaskWorkerNonDeadlock() throws Throwable {
@@ -66,7 +66,7 @@ public class DistributedJobManagerTest extends SpringBootTestBase<SchedJobMapper
                 List<Long> subList = new ArrayList<>(taskIds.subList(0, taskIds.size() / 2));
                 Collections.shuffle(subList);
                 Worker worker = workers.get(ThreadLocalRandom.current().nextInt(workers.size()));
-                distributedJobManager.updateTaskWorker(worker.serialize(), subList);
+                jobManager.updateTaskWorker(worker.serialize(), subList);
             }
         };
 

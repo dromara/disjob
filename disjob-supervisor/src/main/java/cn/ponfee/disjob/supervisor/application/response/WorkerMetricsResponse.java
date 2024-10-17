@@ -42,10 +42,4 @@ public class WorkerMetricsResponse extends ServerMetricsResponse {
     private Long queueTaskCount;
     private Long completedTaskCount;
 
-    public static WorkerMetricsResponse of(String workerId) {
-        WorkerMetricsResponse response = new WorkerMetricsResponse();
-        response.setWorkerId(workerId);
-        return response;
-    }
-
 }

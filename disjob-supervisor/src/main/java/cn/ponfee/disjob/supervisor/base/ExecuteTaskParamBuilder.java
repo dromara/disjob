@@ -22,6 +22,7 @@ import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
+import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import org.springframework.util.Assert;
@@ -35,17 +36,17 @@ import java.util.Objects;
  */
 public final class ExecuteTaskParamBuilder {
 
-    private final SchedInstance instance;
     private final SchedJob job;
+    private final SchedInstance instance;
     private final String supervisorToken;
 
-    public ExecuteTaskParamBuilder(SchedInstance instance, SchedJob job, String supervisorToken) {
+    public ExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
         if (!instance.getJobId().equals(job.getJobId())) {
             throw new IllegalArgumentException("Inconsistent job id: " + instance.getJobId() + "!=" + job.getJobId());
         }
-        this.instance = instance;
         this.job = job;
-        this.supervisorToken = supervisorToken;
+        this.instance = instance;
+        this.supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
     }
 
     public ExecuteTaskParam build(Operation operation, long taskId, long triggerTime, Worker worker) {

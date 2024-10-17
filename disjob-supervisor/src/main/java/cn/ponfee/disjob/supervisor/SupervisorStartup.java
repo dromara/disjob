@@ -23,8 +23,8 @@ import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.JobManager;
+import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
@@ -55,8 +55,8 @@ public class SupervisorStartup implements Startable {
     private SupervisorStartup(Supervisor.Local localSupervisor,
                               SupervisorProperties supervisorProperties,
                               SupervisorRegistry supervisorRegistry,
-                              DistributedJobManager distributedJobManager,
-                              DistributedJobQuerier distributedJobQuerier,
+                              JobManager jobManager,
+                              JobQuerier jobQuerier,
                               LockTemplate scanTriggeringJobLocker,
                               LockTemplate scanWaitingInstanceLocker,
                               LockTemplate scanRunningInstanceLocker,
@@ -64,7 +64,7 @@ public class SupervisorStartup implements Startable {
         Objects.requireNonNull(localSupervisor, "Local supervisor cannot null.");
         Objects.requireNonNull(supervisorProperties, "Supervisor properties cannot null.").check();
         Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
-        Objects.requireNonNull(distributedJobManager, "Distributed job manager cannot null.");
+        Objects.requireNonNull(jobManager, "Distributed job manager cannot null.");
         Objects.requireNonNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
         Objects.requireNonNull(scanWaitingInstanceLocker, "Scan waiting instance locker cannot null.");
         Objects.requireNonNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
@@ -75,20 +75,20 @@ public class SupervisorStartup implements Startable {
         this.triggeringJobScanner = new TriggeringJobScanner(
             supervisorProperties,
             scanTriggeringJobLocker,
-            distributedJobManager,
-            distributedJobQuerier
+            jobManager,
+            jobQuerier
         );
         this.waitingInstanceScanner = new WaitingInstanceScanner(
             supervisorProperties.getScanWaitingInstancePeriodMs(),
             scanWaitingInstanceLocker,
-            distributedJobManager,
-            distributedJobQuerier
+            jobManager,
+            jobQuerier
         );
         this.runningInstanceScanner = new RunningInstanceScanner(
             supervisorProperties.getScanRunningInstancePeriodMs(),
             scanRunningInstanceLocker,
-            distributedJobManager,
-            distributedJobQuerier
+            jobManager,
+            jobQuerier
         );
         this.taskDispatcher = taskDispatcher;
     }
@@ -137,8 +137,8 @@ public class SupervisorStartup implements Startable {
         private Supervisor.Local localSupervisor;
         private SupervisorProperties supervisorProperties;
         private SupervisorRegistry supervisorRegistry;
-        private DistributedJobManager distributedJobManager;
-        private DistributedJobQuerier distributedJobQuerier;
+        private JobManager jobManager;
+        private JobQuerier jobQuerier;
         private LockTemplate scanTriggeringJobLocker;
         private LockTemplate scanWaitingInstanceLocker;
         private LockTemplate scanRunningInstanceLocker;
@@ -162,13 +162,13 @@ public class SupervisorStartup implements Startable {
             return this;
         }
 
-        public Builder distributedJobManager(DistributedJobManager distributedJobManager) {
-            this.distributedJobManager = distributedJobManager;
+        public Builder jobManager(JobManager jobManager) {
+            this.jobManager = jobManager;
             return this;
         }
 
-        public Builder distributedJobQuerier(DistributedJobQuerier distributedJobQuerier) {
-            this.distributedJobQuerier = distributedJobQuerier;
+        public Builder jobQuerier(JobQuerier jobQuerier) {
+            this.jobQuerier = jobQuerier;
             return this;
         }
 
@@ -197,8 +197,8 @@ public class SupervisorStartup implements Startable {
                 localSupervisor,
                 supervisorProperties,
                 supervisorRegistry,
-                distributedJobManager,
-                distributedJobQuerier,
+                jobManager,
+                jobQuerier,
                 scanTriggeringJobLocker,
                 scanWaitingInstanceLocker,
                 scanRunningInstanceLocker,

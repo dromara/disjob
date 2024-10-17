@@ -30,7 +30,7 @@ import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
 import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+import cn.ponfee.disjob.supervisor.component.JobManager;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -45,7 +45,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
-    private final DistributedJobManager jobManager;
+    private final JobManager jobManager;
+    private final Supervisor.Local localSupervisor;
 
     // -------------------------------------------------------for worker invoke method
 
@@ -86,7 +87,7 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
     public SupervisorMetrics getMetrics() {
         SupervisorMetrics metrics = new SupervisorMetrics();
         metrics.setVersion(JobConstants.VERSION);
-        metrics.setStartupTime(Dates.toDate(Supervisor.local().getStartupTime()));
+        metrics.setStartupTime(Dates.toDate(localSupervisor.getStartupTime()));
         metrics.setAlsoWorker(Worker.local() != null);
         return metrics;
     }

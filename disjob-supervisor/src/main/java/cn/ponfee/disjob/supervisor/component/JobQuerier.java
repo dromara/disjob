@@ -45,13 +45,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Distributed job query
+ * Job querier
  *
  * @author Ponfee
  */
 @Component
 @RequiredArgsConstructor
-public class DistributedJobQuerier {
+public class JobQuerier {
 
     private final SchedJobMapper jobMapper;
     private final SchedTaskMapper taskMapper;

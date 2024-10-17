@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.dispatch.event;
 
+import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,11 +33,11 @@ public class TaskDispatchFailedEvent {
     private long instanceId;
     private long taskId;
 
-    public static TaskDispatchFailedEvent of(long jobId, long instanceId, long taskId) {
+    public static TaskDispatchFailedEvent of(ExecuteTaskParam task) {
         TaskDispatchFailedEvent event = new TaskDispatchFailedEvent();
-        event.setJobId(jobId);
-        event.setInstanceId(instanceId);
-        event.setTaskId(taskId);
+        event.setJobId(task.getJobId());
+        event.setInstanceId(task.getInstanceId());
+        event.setTaskId(task.getTaskId());
         return event;
     }
 

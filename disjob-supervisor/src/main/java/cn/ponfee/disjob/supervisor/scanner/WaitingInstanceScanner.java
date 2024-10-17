@@ -21,8 +21,8 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.AbstractHeartbeatThread;
 import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.JobManager;
+import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
@@ -41,15 +41,15 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private final LockTemplate lockTemplate;
-    private final DistributedJobManager jobManager;
-    private final DistributedJobQuerier jobQuerier;
+    private final JobManager jobManager;
+    private final JobQuerier jobQuerier;
     private final long beforeMilliseconds;
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
     public WaitingInstanceScanner(long heartbeatPeriodMilliseconds,
                                   LockTemplate lockTemplate,
-                                  DistributedJobManager jobManager,
-                                  DistributedJobQuerier jobQuerier) {
+                                  JobManager jobManager,
+                                  JobQuerier jobQuerier) {
         super(heartbeatPeriodMilliseconds);
         SingletonClassConstraint.constrain(this);
 
@@ -116,8 +116,8 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             log.error("Scanned waiting state instance not discovered worker: {}, {}", instance.getInstanceId(), job.getGroup());
             return;
         }
-        log.info("Scanned waiting state instance re-dispatch task: {}", instance.getInstanceId());
-        jobManager.dispatch(true, job, instance, redispatchingTasks);
+        boolean result = jobManager.redispatch(job, instance, redispatchingTasks);
+        log.info("Scanned waiting state instance re-dispatch task: {}, {}", result, instance.getInstanceId());
     }
 
     private void processNoWaitingTask(SchedInstance instance, List<SchedTask> tasks) {

@@ -16,12 +16,11 @@
 
 package cn.ponfee.disjob.worker.executor;
 
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.exception.JobException;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Split schedule job to one instance and many tasks.
@@ -49,13 +48,9 @@ interface JobSplitter {
      * @throws JobException if split failed
      */
     default List<String> split(SplitParam param) throws JobException {
-        if (param.isBroadcast()) {
-            return IntStream.range(0, param.getWorkerCount())
-                .mapToObj(i -> param.getJobParam())
-                .collect(Collectors.toList());
-        } else {
-            return Collections.singletonList(param.getJobParam());
-        }
+        return param.isBroadcast()
+            ? Collects.generate(param.getWorkerCount(), i -> param.getJobParam())
+            : Collections.singletonList(param.getJobParam());
     }
 
 }

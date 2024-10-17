@@ -22,8 +22,8 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.JobManager;
+import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
@@ -53,16 +53,16 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private final LockTemplate lockTemplate;
     private final int jobScanFailedCountThreshold;
-    private final DistributedJobManager jobManager;
-    private final DistributedJobQuerier jobQuerier;
+    private final JobManager jobManager;
+    private final JobQuerier jobQuerier;
     private final long afterMilliseconds;
     private final ExecutorService processJobExecutor;
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
     public TriggeringJobScanner(SupervisorProperties supervisorProperties,
                                 LockTemplate lockTemplate,
-                                DistributedJobManager jobManager,
-                                DistributedJobQuerier jobQuerier) {
+                                JobManager jobManager,
+                                JobQuerier jobQuerier) {
         super(supervisorProperties.getScanTriggeringJobPeriodMs());
         SingletonClassConstraint.constrain(this);
 

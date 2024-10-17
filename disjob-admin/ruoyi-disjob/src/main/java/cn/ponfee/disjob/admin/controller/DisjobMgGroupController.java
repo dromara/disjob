@@ -181,7 +181,7 @@ public class DisjobMgGroupController extends BaseController {
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/worker")
     public String worker(@RequestParam("group") String group, ModelMap mmap) {
-        mmap.put("workers", serverInvokeService.workers(group, null));
+        mmap.put("workers", serverInvokeService.workers(group));
         return PREFIX + "/worker";
     }
 

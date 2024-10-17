@@ -33,8 +33,8 @@ import cn.ponfee.disjob.supervisor.application.request.SchedJobUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedJobResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.JobManager;
+import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
@@ -59,8 +59,8 @@ public class OpenapiService extends SingletonClassConstraint {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenapiService.class);
 
-    private final DistributedJobManager jobManager;
-    private final DistributedJobQuerier jobQuerier;
+    private final JobManager jobManager;
+    private final JobQuerier jobQuerier;
 
     // ------------------------------------------------------------------ sched job
 

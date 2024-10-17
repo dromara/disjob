@@ -46,6 +46,10 @@ public class RetryProperties extends ToJsonString implements Serializable {
      */
     private long backoffPeriod = 3000;
 
+    public static RetryProperties none() {
+        return of(0, 0);
+    }
+
     public static RetryProperties of(int maxCount, int backoffPeriod) {
         RetryProperties retry = new RetryProperties();
         retry.setMaxCount(maxCount);

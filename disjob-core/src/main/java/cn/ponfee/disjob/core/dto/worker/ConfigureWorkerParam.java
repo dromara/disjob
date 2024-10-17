@@ -39,9 +39,11 @@ public class ConfigureWorkerParam extends AuthenticationParam {
      */
     private String data;
 
-    public static ConfigureWorkerParam of(String supervisorToken) {
+    public static ConfigureWorkerParam of(String supervisorToken, Action action, String data) {
         ConfigureWorkerParam param = new ConfigureWorkerParam();
         param.setSupervisorToken(supervisorToken);
+        param.setAction(action);
+        param.setData(data);
         return param;
     }
 

@@ -17,7 +17,7 @@
 //package cn.ponfee.disjob.supervisor.config;
 //
 //import cn.ponfee.disjob.common.spring.SpringContextHolder;
-//import cn.ponfee.disjob.supervisor.component.DistributedJobManager;
+//import cn.ponfee.disjob.supervisor.component.JobManager;
 //import lombok.extern.slf4j.Slf4j;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.stereotype.Component;
@@ -57,7 +57,7 @@
 //    private static final ConcurrentMap<String, Session> WEBSOCKET_SESSION_CACHE = new ConcurrentHashMap<>();
 //
 //    @Resource
-//    private DistributedJobManager jobManager;
+//    private JobManager jobManager;
 //
 //    @Bean
 //    public ServerEndpointExporter serverEndpointExporter() {

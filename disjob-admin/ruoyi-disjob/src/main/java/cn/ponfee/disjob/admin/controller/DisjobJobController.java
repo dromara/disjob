@@ -23,6 +23,7 @@ import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.dag.DAGUtils;
+import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
@@ -37,6 +38,7 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.file.ImageUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -61,6 +63,7 @@ import java.util.List;
 public class DisjobJobController extends BaseController {
 
     static final String PREFIX = "disjob/job";
+    private static final int MAX_TEXT_LENGTH = 1000;
     private static final String PERMISSION_CODE = "disjob:job:operate";
 
     private final OpenapiService openapiService;
@@ -85,7 +88,17 @@ public class DisjobJobController extends BaseController {
     @GetMapping("/dag")
     public void dag(@RequestParam("expr") String expr, HttpServletResponse response) throws IOException {
         response.setContentType(MediaType.IMAGE_PNG_VALUE);
-        DAGUtils.drawPngImage(expr, "DAG", 2000, response.getOutputStream());
+        try {
+            DAGUtils.drawPngImage(expr, "DAG", 2000, response.getOutputStream());
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            String errorMessage = "[Error]: " + Throwables.getRootCauseMessage(e);
+            if (errorMessage.length() > MAX_TEXT_LENGTH) {
+                errorMessage = errorMessage.substring(0, MAX_TEXT_LENGTH - 3) + "...";
+            }
+            ImageUtils.createImage(errorMessage, response.getOutputStream(), 1000, 580);
+        }
     }
 
     /**

@@ -18,9 +18,6 @@ package cn.ponfee.disjob.common.collect;
 
 import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.util.Numbers;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,8 +29,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Collection utilities
@@ -83,6 +82,10 @@ public class Collects {
             .map(e -> converter.apply(e.trim()))
             .distinct()
             .collect(Collectors.toList());
+    }
+
+    public static <R> List<R> generate(int size, IntFunction<R> mapper) {
+        return IntStream.range(0, size).mapToObj(mapper).collect(Collectors.toList());
     }
 
     /**
@@ -253,7 +256,7 @@ public class Collects {
         if (source.isEmpty()) {
             return Collections.emptyList();
         }
-        return source.stream().map(mapper).collect(ImmutableList.toImmutableList());
+        return source.stream().map(mapper).collect(Collectors.toList());
     }
 
     public static <S, T> Set<T> convert(Set<S> source, Function<S, T> mapper) {
@@ -263,7 +266,7 @@ public class Collects {
         if (source.isEmpty()) {
             return Collections.emptySet();
         }
-        return source.stream().map(mapper).collect(ImmutableSet.toImmutableSet());
+        return source.stream().map(mapper).collect(Collectors.toSet());
     }
 
     @SafeVarargs
@@ -284,7 +287,7 @@ public class Collects {
     public static <K, V> Map<K, V> concat(Map<K, V>... maps) {
         return Arrays.stream(maps)
             .flatMap(e -> e.entrySet().stream())
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
     @SafeVarargs

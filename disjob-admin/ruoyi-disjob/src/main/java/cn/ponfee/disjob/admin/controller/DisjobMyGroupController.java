@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.admin.controller;
 
 import cn.ponfee.disjob.admin.base.Pagination;
-import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.supervisor.application.AuthorizeGroupService;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.application.ServerInvokeService;
@@ -26,6 +25,7 @@ import cn.ponfee.disjob.supervisor.application.request.ConfigureOneWorkerRequest
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupUpdateRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedGroupResponse;
+import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -40,6 +40,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -75,12 +76,14 @@ public class DisjobMyGroupController extends BaseController {
         return PREFIX + "/mygroup";
     }
 
+    /*
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping("/search_user")
     @ResponseBody
     public List<String> searchUser(@RequestParam(value = "term") String term) {
         return sysUserService.searchUser(term);
     }
+    */
 
     /**
      * 查询分组列表
@@ -144,13 +147,17 @@ public class DisjobMyGroupController extends BaseController {
                          ModelMap mmap) {
         AuthorizeGroupService.authorizeGroup(getLoginName(), group);
 
-        if (StringUtils.isBlank(worker) || !worker.contains(Str.COLON)) {
-            worker = null;
+        List<WorkerMetricsResponse> workers;
+        if (StringUtils.isBlank(worker)) {
+            workers = serverInvokeService.workers(group);
+        } else {
+            WorkerMetricsResponse w = serverInvokeService.worker(group, worker);
+            workers = (w == null) ? Collections.emptyList() : Collections.singletonList(w);
         }
 
         mmap.put("group", group);
         mmap.put("worker", worker);
-        mmap.put("workers", serverInvokeService.workers(group, worker));
+        mmap.put("workers", workers);
         return PREFIX + "/worker";
     }
 

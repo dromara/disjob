@@ -18,6 +18,7 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
+import cn.ponfee.disjob.common.base.TextTokenizer;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.MultithreadExecutors;
 import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
@@ -39,6 +40,7 @@ import cn.ponfee.disjob.supervisor.application.response.WorkerMetricsResponse;
 import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
 import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
+import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -50,10 +52,11 @@ import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 
 /**
  * Invoke remote server service
@@ -64,25 +67,24 @@ import java.util.stream.Collectors;
 public class ServerInvokeService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
+    private final WorkerClient workerClient;
     private final SupervisorRegistry supervisorRegistry;
     private final Supervisor.Local localSupervisor;
-    private final DestinationServerClient<WorkerRpcService, Worker> workerRpcClient;
-    private final DestinationServerClient<ExtendedSupervisorRpcService, Supervisor> supervisorRpcClient;
+    private final DestinationServerClient<ExtendedSupervisorRpcService, Supervisor> supervisorClient;
 
-    public ServerInvokeService(SupervisorRegistry supervisorRegistry,
+    public ServerInvokeService(WorkerClient workerClient,
+                               SupervisorRegistry supervisorRegistry,
                                Supervisor.Local localSupervisor,
-                               DestinationServerClient<WorkerRpcService, Worker> workerRpcClient,
-                               ServerProperties serverProperties,
                                ExtendedSupervisorRpcService localSupervisorRpcProvider,
+                               ServerProperties serverProperties,
                                @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
         String supervisorContextPath = Strings.trimPath(serverProperties.getServlet().getContextPath());
-
+        this.workerClient = workerClient;
         this.supervisorRegistry = supervisorRegistry;
         this.localSupervisor = localSupervisor;
-        this.workerRpcClient = workerRpcClient;
-        this.supervisorRpcClient = DestinationServerRestProxy.create(
+        this.supervisorClient = DestinationServerRestProxy.create(
             ExtendedSupervisorRpcService.class, localSupervisorRpcProvider, localSupervisor,
-            supervisor -> supervisorContextPath, restTemplate, RetryProperties.of(0, 0)
+            supervisor -> supervisorContextPath, restTemplate, RetryProperties.none()
         );
     }
 
@@ -90,22 +92,28 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     public List<SupervisorMetricsResponse> supervisors() throws Exception {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
-        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(localSupervisor) ? 0 : 1));
+        list = Collects.sorted(list, Comparator.comparing(e -> localSupervisor.equals(e) ? 0 : 1));
         return MultithreadExecutors.call(list, this::getSupervisorMetrics, ThreadPoolExecutors.commonThreadPool());
     }
 
-    public List<WorkerMetricsResponse> workers(String group, String worker) {
-        if (StringUtils.isNotBlank(worker)) {
-            String[] array = worker.trim().split(":");
-            String host = array[0].trim();
-            int port = Numbers.toInt(array[1].trim(), -1);
-            WorkerMetricsResponse metrics = getWorkerMetrics(new Worker(group, "metrics", host, port));
-            return StringUtils.isBlank(metrics.getWorkerId()) ? Collections.emptyList() : Collections.singletonList(metrics);
-        } else {
-            List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
-            list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.local()) ? 0 : 1));
-            return MultithreadExecutors.call(list, this::getWorkerMetrics, ThreadPoolExecutors.commonThreadPool());
+    public List<WorkerMetricsResponse> workers(String group) {
+        List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
+        list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.local()) ? 0 : 1));
+        return MultithreadExecutors.call(list, this::getWorkerMetrics, ThreadPoolExecutors.commonThreadPool());
+    }
+
+    public WorkerMetricsResponse worker(String group, String worker) {
+        if (StringUtils.isBlank(worker) || !worker.contains(COLON)) {
+            return null;
         }
+        TextTokenizer tokenizer = new TextTokenizer(worker, COLON);
+        String host = tokenizer.next();
+        Integer port = Numbers.toWrapInt(tokenizer.next());
+        if (StringUtils.isBlank(host) || port == null) {
+            return null;
+        }
+        WorkerMetricsResponse metrics = getWorkerMetrics(new Worker(group, "-", host, port));
+        return StringUtils.isBlank(metrics.getWorkerId()) ? null : metrics;
     }
 
     public void configureOneWorker(ConfigureOneWorkerRequest req) {
@@ -160,7 +168,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         Long pingTime = null;
         try {
             long start = System.currentTimeMillis();
-            metrics = supervisorRpcClient.call(supervisor, ExtendedSupervisorRpcService::getMetrics);
+            metrics = supervisorClient.call(supervisor, ExtendedSupervisorRpcService::getMetrics);
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping supervisor occur error: {} {}", supervisor, e.getMessage());
@@ -186,7 +194,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         GetMetricsParam param = buildGetMetricsParam(group);
         try {
             long start = System.currentTimeMillis();
-            metrics = workerRpcClient.call(worker, client -> client.getMetrics(param));
+            metrics = workerClient.call(worker, service -> service.getMetrics(param));
             pingTime = System.currentTimeMillis() - start;
         } catch (Throwable e) {
             LOG.warn("Ping worker occur error: {} {}", worker, e.getMessage());
@@ -194,11 +202,10 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
         WorkerMetricsResponse response;
         if (metrics == null || !SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
-            response = WorkerMetricsResponse.of(worker.getWorkerId());
+            response = new WorkerMetricsResponse();
         } else {
             response = ServerMetricsConverter.INSTANCE.convert(metrics);
         }
-
         response.setHost(worker.getHost());
         response.setPort(worker.getPort());
         response.setPingTime(pingTime);
@@ -216,7 +223,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private void verifyWorkerSignature(Worker worker) {
         String group = worker.getGroup();
         GetMetricsParam param = buildGetMetricsParam(group);
-        WorkerMetrics metrics = workerRpcClient.call(worker, client -> client.getMetrics(param));
+        WorkerMetrics metrics = workerClient.call(worker, service -> service.getMetrics(param));
         if (!SchedGroupService.verifyWorkerSignatureToken(metrics.getSignature(), group)) {
             throw new AuthenticationException("Worker authenticated failed: " + worker);
         }
@@ -224,14 +231,16 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     private void configureWorker(Worker worker, Action action, String data) {
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
-        ConfigureWorkerParam param = ConfigureWorkerParam.of(supervisorToken);
-        param.setAction(action);
-        param.setData(data);
-        workerRpcClient.invoke(worker, client -> client.configureWorker(param));
+        ConfigureWorkerParam param = ConfigureWorkerParam.of(supervisorToken, action, data);
+        workerClient.invoke(worker, service -> service.configureWorker(param));
     }
 
     private void publishSupervisor(Supervisor supervisor, SupervisorEvent event) {
-        RetryTemplate.executeQuietly(() -> supervisorRpcClient.invoke(supervisor, client -> client.publishEvent(event)), 1, 2000);
+        RetryTemplate.executeQuietly(
+            () -> supervisorClient.invoke(supervisor, service -> service.publishEvent(event)),
+            1,
+            2000
+        );
     }
 
     private GetMetricsParam buildGetMetricsParam(String group) {

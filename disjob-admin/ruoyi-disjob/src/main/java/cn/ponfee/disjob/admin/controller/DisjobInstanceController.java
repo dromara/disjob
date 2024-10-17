@@ -30,7 +30,7 @@ import cn.ponfee.disjob.supervisor.application.request.SchedInstancePageRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedJobSearchRequest;
 import cn.ponfee.disjob.supervisor.application.response.SchedInstanceResponse;
 import cn.ponfee.disjob.supervisor.application.response.SchedTaskResponse;
-import cn.ponfee.disjob.supervisor.component.DistributedJobQuerier;
+import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.exception.KeyNotExistsException;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -65,11 +65,11 @@ public class DisjobInstanceController extends BaseController {
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^[1-9]\\d*$");
 
     private final OpenapiService openapiService;
-    private final DistributedJobQuerier jobQuerier;
+    private final JobQuerier jobQuerier;
     private final AuthorizeGroupService authorizeGroupService;
 
     public DisjobInstanceController(OpenapiService openapiService,
-                                    DistributedJobQuerier jobQuerier,
+                                    JobQuerier jobQuerier,
                                     AuthorizeGroupService authorizeGroupService) {
         this.openapiService = openapiService;
         this.jobQuerier = jobQuerier;

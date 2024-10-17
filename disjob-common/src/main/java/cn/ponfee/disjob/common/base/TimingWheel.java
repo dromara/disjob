@@ -125,6 +125,7 @@ public abstract class TimingWheel<T extends TimingWheel.Timing<T>> implements ja
         this.tickMs = tickMs;
         this.roundMs = tickMs * ringSize;
 
+        @SuppressWarnings("unchecked")
         TimingQueue<T>[] ring = new TimingQueue[ringSize];
         // initialize 0 ~ ringSize slots
         for (int i = 0; i < ring.length; i++) {

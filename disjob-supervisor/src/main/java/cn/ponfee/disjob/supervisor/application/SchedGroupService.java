@@ -71,15 +71,15 @@ public class SchedGroupService extends SingletonClassConstraint {
     private static volatile Map<String, Set<String>> userCache;
 
     private final SchedGroupMapper groupMapper;
-    private final SupervisorRegistry supervisorRegistry;
+    private final SupervisorRegistry workerDiscover;
     private final ServerInvokeService serverInvokeService;
 
     public SchedGroupService(SchedGroupMapper groupMapper,
-                             SupervisorRegistry supervisorRegistry,
+                             SupervisorRegistry workerDiscover,
                              ServerInvokeService serverInvokeService,
                              SupervisorProperties supervisorProperties) {
         this.groupMapper = groupMapper;
-        this.supervisorRegistry = supervisorRegistry;
+        this.workerDiscover = workerDiscover;
         this.serverInvokeService = serverInvokeService;
 
         int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 30);
@@ -102,7 +102,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     }
 
     public boolean delete(String group, String updatedBy) {
-        List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
+        List<Worker> list = workerDiscover.getDiscoveredServers(group);
         if (CollectionUtils.isNotEmpty(list)) {
             throw new KeyExistsException("Group '" + group + "' has registered workers, cannot delete.");
         }
