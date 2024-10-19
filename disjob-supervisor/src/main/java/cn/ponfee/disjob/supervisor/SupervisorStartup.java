@@ -22,7 +22,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
@@ -44,53 +44,38 @@ public class SupervisorStartup implements Startable {
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
     private final Supervisor.Local localSupervisor;
+    private final Registry<Supervisor> supervisorRegistry;
+    private final TaskDispatcher taskDispatcher;
     private final TriggeringJobScanner triggeringJobScanner;
     private final WaitingInstanceScanner waitingInstanceScanner;
     private final RunningInstanceScanner runningInstanceScanner;
-    private final TaskDispatcher taskDispatcher;
-    private final SupervisorRegistry supervisorRegistry;
-
     private final TripState state = TripState.create();
 
-    private SupervisorStartup(Supervisor.Local localSupervisor,
-                              SupervisorProperties supervisorProperties,
-                              SupervisorRegistry supervisorRegistry,
-                              JobManager jobManager,
-                              JobQuerier jobQuerier,
-                              LockTemplate scanTriggeringJobLocker,
-                              LockTemplate scanWaitingInstanceLocker,
-                              LockTemplate scanRunningInstanceLocker,
-                              TaskDispatcher taskDispatcher) {
+    public SupervisorStartup(Supervisor.Local localSupervisor,
+                             SupervisorProperties supervisorConf,
+                             Registry<Supervisor> supervisorRegistry,
+                             JobManager jobManager,
+                             JobQuerier jobQuerier,
+                             TaskDispatcher taskDispatcher,
+                             LockTemplate scanTriggeringJobLocker,
+                             LockTemplate scanWaitingInstanceLocker,
+                             LockTemplate scanRunningInstanceLocker) {
         Objects.requireNonNull(localSupervisor, "Local supervisor cannot null.");
-        Objects.requireNonNull(supervisorProperties, "Supervisor properties cannot null.").check();
+        Objects.requireNonNull(supervisorConf, "Supervisor config cannot null.").check();
         Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
-        Objects.requireNonNull(jobManager, "Distributed job manager cannot null.");
+        Objects.requireNonNull(jobManager, "Job manager cannot null.");
+        Objects.requireNonNull(jobQuerier, "Job querier cannot null.");
+        Objects.requireNonNull(taskDispatcher, "Task dispatcher cannot null.");
         Objects.requireNonNull(scanTriggeringJobLocker, "Scan triggering job locker cannot null.");
         Objects.requireNonNull(scanWaitingInstanceLocker, "Scan waiting instance locker cannot null.");
         Objects.requireNonNull(scanRunningInstanceLocker, "Scan running instance locker cannot null.");
-        Objects.requireNonNull(taskDispatcher, "Task dispatcher cannot null.");
 
         this.localSupervisor = localSupervisor;
         this.supervisorRegistry = supervisorRegistry;
-        this.triggeringJobScanner = new TriggeringJobScanner(
-            supervisorProperties,
-            scanTriggeringJobLocker,
-            jobManager,
-            jobQuerier
-        );
-        this.waitingInstanceScanner = new WaitingInstanceScanner(
-            supervisorProperties.getScanWaitingInstancePeriodMs(),
-            scanWaitingInstanceLocker,
-            jobManager,
-            jobQuerier
-        );
-        this.runningInstanceScanner = new RunningInstanceScanner(
-            supervisorProperties.getScanRunningInstancePeriodMs(),
-            scanRunningInstanceLocker,
-            jobManager,
-            jobQuerier
-        );
         this.taskDispatcher = taskDispatcher;
+        this.triggeringJobScanner = new TriggeringJobScanner(supervisorConf, scanTriggeringJobLocker, jobManager, jobQuerier);
+        this.waitingInstanceScanner = new WaitingInstanceScanner(supervisorConf, scanWaitingInstanceLocker, jobManager, jobQuerier);
+        this.runningInstanceScanner = new RunningInstanceScanner(supervisorConf, scanRunningInstanceLocker, jobManager, jobQuerier);
     }
 
     @Override
@@ -125,86 +110,6 @@ public class SupervisorStartup implements Startable {
         ThrowingRunnable.doCaught(runningInstanceScanner::close);
         ThrowingRunnable.doCaught(waitingInstanceScanner::close);
         LOG.info("Supervisor stop end: {}", localSupervisor);
-    }
-
-    // ----------------------------------------------------------------------------------------builder
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private Supervisor.Local localSupervisor;
-        private SupervisorProperties supervisorProperties;
-        private SupervisorRegistry supervisorRegistry;
-        private JobManager jobManager;
-        private JobQuerier jobQuerier;
-        private LockTemplate scanTriggeringJobLocker;
-        private LockTemplate scanWaitingInstanceLocker;
-        private LockTemplate scanRunningInstanceLocker;
-        private TaskDispatcher taskDispatcher;
-
-        private Builder() {
-        }
-
-        public Builder localSupervisor(Supervisor.Local localSupervisor) {
-            this.localSupervisor = localSupervisor;
-            return this;
-        }
-
-        public Builder supervisorProperties(SupervisorProperties supervisorProperties) {
-            this.supervisorProperties = supervisorProperties;
-            return this;
-        }
-
-        public Builder supervisorRegistry(SupervisorRegistry supervisorRegistry) {
-            this.supervisorRegistry = supervisorRegistry;
-            return this;
-        }
-
-        public Builder jobManager(JobManager jobManager) {
-            this.jobManager = jobManager;
-            return this;
-        }
-
-        public Builder jobQuerier(JobQuerier jobQuerier) {
-            this.jobQuerier = jobQuerier;
-            return this;
-        }
-
-        public Builder scanTriggeringJobLocker(LockTemplate scanTriggeringJobLocker) {
-            this.scanTriggeringJobLocker = scanTriggeringJobLocker;
-            return this;
-        }
-
-        public Builder scanWaitingInstanceLocker(LockTemplate scanWaitingInstanceLocker) {
-            this.scanWaitingInstanceLocker = scanWaitingInstanceLocker;
-            return this;
-        }
-
-        public Builder scanRunningInstanceLocker(LockTemplate scanRunningInstanceLocker) {
-            this.scanRunningInstanceLocker = scanRunningInstanceLocker;
-            return this;
-        }
-
-        public Builder taskDispatcher(TaskDispatcher taskDispatcher) {
-            this.taskDispatcher = taskDispatcher;
-            return this;
-        }
-
-        public SupervisorStartup build() {
-            return new SupervisorStartup(
-                localSupervisor,
-                supervisorProperties,
-                supervisorRegistry,
-                jobManager,
-                jobQuerier,
-                scanTriggeringJobLocker,
-                scanWaitingInstanceLocker,
-                scanRunningInstanceLocker,
-                taskDispatcher
-            );
-        }
     }
 
 }

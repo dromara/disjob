@@ -23,7 +23,7 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.registry.WorkerRegistry;
+import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
 
@@ -38,9 +38,9 @@ import java.util.List;
 public class WorkerRpcProvider implements WorkerRpcService {
 
     private final Worker.Local localWorker;
-    private final WorkerRegistry workerRegistry;
+    private final Registry<Worker> workerRegistry;
 
-    public WorkerRpcProvider(Worker.Local localWorker, WorkerRegistry workerRegistry) {
+    public WorkerRpcProvider(Worker.Local localWorker, Registry<Worker> workerRegistry) {
         this.localWorker = localWorker;
         this.workerRegistry = workerRegistry;
     }

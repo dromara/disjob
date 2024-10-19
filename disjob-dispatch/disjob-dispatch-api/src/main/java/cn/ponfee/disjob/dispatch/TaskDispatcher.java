@@ -47,7 +47,7 @@ public abstract class TaskDispatcher implements Startable {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final ApplicationEventPublisher eventPublisher;
-    private final Discovery<Worker> discoveryWorker;
+    private final Discovery<Worker> discoverWorker;
     private final TaskReceiver taskReceiver;
 
     private final int retryMaxCount;
@@ -55,12 +55,12 @@ public abstract class TaskDispatcher implements Startable {
     private final AsyncDelayedExecutor<DispatchTaskParam> asyncDelayedExecutor;
 
     protected TaskDispatcher(ApplicationEventPublisher eventPublisher,
-                             Discovery<Worker> discoveryWorker,
+                             Discovery<Worker> discoverWorker,
                              RetryProperties retryProperties,
                              @Nullable TaskReceiver taskReceiver) {
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
         this.eventPublisher = Objects.requireNonNull(eventPublisher);
-        this.discoveryWorker = Objects.requireNonNull(discoveryWorker);
+        this.discoverWorker = Objects.requireNonNull(discoverWorker);
         this.taskReceiver = taskReceiver;
 
         this.retryMaxCount = retryProperties.getMaxCount();
@@ -166,7 +166,7 @@ public abstract class TaskDispatcher implements Startable {
     private void assignWorker(List<DispatchTaskParam> params) {
         DispatchTaskParam first = params.get(0);
         String group = first.group();
-        List<Worker> workers = discoveryWorker.getDiscoveredServers(group);
+        List<Worker> workers = discoverWorker.getDiscoveredServers(group);
         if (CollectionUtils.isEmpty(workers)) {
             log.error("Not found available [{}] worker for assign task.", group);
             return;

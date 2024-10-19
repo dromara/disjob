@@ -47,6 +47,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -124,14 +125,9 @@ public class WorkerFramelessMain {
         // `verify/split/metrics/configure` 接口还是要走http
         String workerContextPath = config.getString(SpringUtils.SPRING_BOOT_CONTEXT_PATH);
         VertxWebServer vertxWebServer = new VertxWebServer(localWorker.getPort(), workerContextPath, paramTaskReceiver, new WorkerRpcProvider(localWorker, workerRegistry));
-        WorkerStartup workerStartup = WorkerStartup.builder()
-            .localWorker(localWorker)
-            .workerProperties(workerProps)
-            .retryProperties(config.extract(RetryProperties.class, RetryProperties.KEY_PREFIX))
-            .taskReceiver(actualTaskReceiver)
-            .workerRegistry(workerRegistry)
-            .restTemplate(RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null))
-            .build();
+        RetryProperties retryProperties = config.extract(RetryProperties.class, RetryProperties.KEY_PREFIX);
+        RestTemplate restTemplate = RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null);
+        WorkerStartup workerStartup = new WorkerStartup(localWorker, workerProps, retryProperties, workerRegistry, actualTaskReceiver, restTemplate, null);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> close(workerStartup, vertxWebServer)));
 

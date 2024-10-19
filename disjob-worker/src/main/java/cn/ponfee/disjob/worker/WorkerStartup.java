@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -48,16 +49,15 @@ public class WorkerStartup implements Startable {
     private final TimingWheelRotator timingWheelRotator;
     private final TaskReceiver taskReceiver;
     private final WorkerRegistry workerRegistry;
-
     private final TripState state = TripState.create();
 
-    private WorkerStartup(Worker.Local localWorker,
-                          WorkerProperties workerProperties,
-                          RetryProperties retryProperties,
-                          WorkerRegistry workerRegistry,
-                          TaskReceiver taskReceiver,
-                          SupervisorRpcService supervisorRpcService,
-                          RestTemplate restTemplate) {
+    public WorkerStartup(Worker.Local localWorker,
+                         WorkerProperties workerProperties,
+                         RetryProperties retryProperties,
+                         WorkerRegistry workerRegistry,
+                         TaskReceiver taskReceiver,
+                         RestTemplate restTemplate,
+                         @Nullable SupervisorRpcService supervisorRpcService) {
         Objects.requireNonNull(localWorker, "Local worker cannot null.");
         Objects.requireNonNull(workerProperties, "Worker properties cannot be null.").check();
         Objects.requireNonNull(retryProperties, "Retry properties cannot be null.").check();
@@ -66,7 +66,8 @@ public class WorkerStartup implements Startable {
         Objects.requireNonNull(restTemplate, "Rest template cannot null.");
 
         SupervisorRpcService supervisorRpcClient = DiscoveryServerRestProxy.create(
-            SupervisorRpcService.class, supervisorRpcService, workerRegistry, restTemplate, retryProperties
+            SupervisorRpcService.class, supervisorRpcService,
+            workerRegistry, restTemplate, retryProperties
         );
 
         this.localWorker = localWorker;
@@ -114,72 +115,6 @@ public class WorkerStartup implements Startable {
         ThrowingRunnable.doCaught(timingWheelRotator::close);
         ThrowingRunnable.doCaught(workerThreadPool::close);
         LOG.info("Worker stop end: {}", localWorker);
-    }
-
-    // ----------------------------------------------------------------------------------------builder
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private Worker.Local localWorker;
-        private WorkerProperties workerProperties;
-        private RetryProperties retryProperties;
-        private WorkerRegistry workerRegistry;
-        private TaskReceiver taskReceiver;
-        private SupervisorRpcService supervisorRpcService;
-        private RestTemplate restTemplate;
-
-        private Builder() {
-        }
-
-        public Builder localWorker(Worker.Local localWorker) {
-            this.localWorker = localWorker;
-            return this;
-        }
-
-        public Builder workerProperties(WorkerProperties workerProperties) {
-            this.workerProperties = workerProperties;
-            return this;
-        }
-
-        public Builder retryProperties(RetryProperties retryProperties) {
-            this.retryProperties = retryProperties;
-            return this;
-        }
-
-        public Builder workerRegistry(WorkerRegistry workerRegistry) {
-            this.workerRegistry = workerRegistry;
-            return this;
-        }
-
-        public Builder taskReceiver(TaskReceiver taskReceiver) {
-            this.taskReceiver = taskReceiver;
-            return this;
-        }
-
-        public Builder supervisorRpcService(SupervisorRpcService supervisorRpcService) {
-            this.supervisorRpcService = supervisorRpcService;
-            return this;
-        }
-
-        public Builder restTemplate(RestTemplate restTemplate) {
-            this.restTemplate = restTemplate;
-            return this;
-        }
-
-        public WorkerStartup build() {
-            return new WorkerStartup(
-                localWorker,
-                workerProperties,
-                retryProperties,
-                workerRegistry,
-                taskReceiver,
-                supervisorRpcService,
-                restTemplate
-            );
-        }
     }
 
 }

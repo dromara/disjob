@@ -53,15 +53,15 @@ public class WorkerLifecycle implements SmartLifecycle {
                            @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                            // if the local server also is a supervisor -> cn.ponfee.disjob.supervisor.provider.SupervisorRpcProvider
                            @Nullable SupervisorRpcService supervisorRpcService) {
-        this.workerStartup = WorkerStartup.builder()
-            .localWorker(localWorker)
-            .workerProperties(workerProperties)
-            .retryProperties(retryProperties)
-            .workerRegistry(workerRegistry)
-            .taskReceiver(taskReceiver)
-            .supervisorRpcService(supervisorRpcService)
-            .restTemplate(restTemplate)
-            .build();
+        this.workerStartup = new WorkerStartup(
+            localWorker,
+            workerProperties,
+            retryProperties,
+            workerRegistry,
+            taskReceiver,
+            restTemplate,
+            supervisorRpcService
+        );
     }
 
     @Override

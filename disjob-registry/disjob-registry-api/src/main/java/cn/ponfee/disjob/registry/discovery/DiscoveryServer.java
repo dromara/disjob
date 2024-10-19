@@ -18,6 +18,8 @@ package cn.ponfee.disjob.registry.discovery;
 
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRole;
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 
@@ -35,6 +37,19 @@ public interface DiscoveryServer<S extends Server> {
     boolean hasServers();
 
     boolean isAlive(S server);
+
+    /**
+     * Returns sorted ImmutableList
+     *
+     * @param servers the server list
+     * @return sorted ImmutableList
+     */
+    default ImmutableList<S> toSortedImmutableList(List<S> servers) {
+        if (CollectionUtils.isEmpty(servers)) {
+            return ImmutableList.of();
+        }
+        return servers.stream().sorted().collect(ImmutableList.toImmutableList());
+    }
 
     @SuppressWarnings("unchecked")
     static <S extends Server> DiscoveryServer<S> of(ServerRole discoveryRole) {

@@ -23,6 +23,7 @@ import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
+import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
@@ -46,11 +47,11 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
     private final long beforeMilliseconds;
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
-    public WaitingInstanceScanner(long heartbeatPeriodMilliseconds,
+    public WaitingInstanceScanner(SupervisorProperties conf,
                                   LockTemplate lockTemplate,
                                   JobManager jobManager,
                                   JobQuerier jobQuerier) {
-        super(heartbeatPeriodMilliseconds);
+        super(conf.getScanWaitingInstancePeriodMs());
         SingletonClassConstraint.constrain(this);
 
         this.lockTemplate = lockTemplate;

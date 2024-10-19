@@ -25,7 +25,7 @@ import cn.ponfee.disjob.core.base.Tokens;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.TokenType;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupAddRequest;
 import cn.ponfee.disjob.supervisor.application.request.SchedGroupPageRequest;
@@ -71,15 +71,15 @@ public class SchedGroupService extends SingletonClassConstraint {
     private static volatile Map<String, Set<String>> userCache;
 
     private final SchedGroupMapper groupMapper;
-    private final SupervisorRegistry workerDiscover;
+    private final Discovery<Worker> discoverWorker;
     private final ServerInvokeService serverInvokeService;
 
     public SchedGroupService(SchedGroupMapper groupMapper,
-                             SupervisorRegistry workerDiscover,
+                             Discovery<Worker> discoverWorker,
                              ServerInvokeService serverInvokeService,
                              SupervisorProperties supervisorProperties) {
         this.groupMapper = groupMapper;
-        this.workerDiscover = workerDiscover;
+        this.discoverWorker = discoverWorker;
         this.serverInvokeService = serverInvokeService;
 
         int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 30);
@@ -102,7 +102,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     }
 
     public boolean delete(String group, String updatedBy) {
-        List<Worker> list = workerDiscover.getDiscoveredServers(group);
+        List<Worker> list = discoverWorker.getDiscoveredServers(group);
         if (CollectionUtils.isNotEmpty(list)) {
             throw new KeyExistsException("Group '" + group + "' has registered workers, cannot delete.");
         }
@@ -219,7 +219,8 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     private void refreshAndPublish() {
         refresh();
-        serverInvokeService.publishOtherSupervisors(SupervisorEvent.of(SupervisorEvent.Type.REFRESH_GROUP, null));
+        SupervisorEvent event = SupervisorEvent.of(SupervisorEvent.Type.REFRESH_GROUP, null);
+        serverInvokeService.publishOtherSupervisors(event);
     }
 
     @SuppressWarnings("unchecked")

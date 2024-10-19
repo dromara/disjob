@@ -44,7 +44,7 @@ public class SupervisorInfoController extends BaseController {
 
     @RequiresPermissions(PERMISSION_CODE)
     @GetMapping
-    public String supervisor(ModelMap mmap) throws Exception {
+    public String supervisor(ModelMap mmap) {
         mmap.put("list", serverInvokeService.supervisors());
         return PREFIX + "/supervisor";
     }

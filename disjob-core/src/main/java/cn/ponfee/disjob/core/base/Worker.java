@@ -54,7 +54,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.AUTHENTICATE_HEADER_TOKEN;
  */
 @JsonSerialize(using = Worker.JacksonSerializer.class)
 @JsonDeserialize(using = Worker.JacksonDeserializer.class)
-public class Worker extends Server {
+public class Worker extends Server implements Comparable<Worker> {
     private static final long serialVersionUID = 8981019172872301692L;
 
     /**
@@ -170,6 +170,23 @@ public class Worker extends Server {
 
     public static Local local() {
         return Local.instance;
+    }
+
+    @Override
+    public int compareTo(Worker that) {
+        int n = this.group.compareTo(that.group);
+        if (n != 0) {
+            return n;
+        }
+        n = this.workerId.compareTo(that.workerId);
+        if (n != 0) {
+            return n;
+        }
+        n = this.host.compareTo(that.host);
+        if (n != 0) {
+            return n;
+        }
+        return Integer.compare(this.port, that.port);
     }
 
     // --------------------------------------------------------custom jackson serialize & deserialize

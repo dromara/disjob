@@ -20,7 +20,7 @@ import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
@@ -33,10 +33,8 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.*;
 
 /**
  * Supervisor lifecycle
- *
- * https://www.cnblogs.com/deityjian/p/11296846.html
- *
- * InitializingBean#afterPropertiesSet -> SmartLifecycle#start -> SmartLifecycle#stop -> DisposableBean#destroy
+ * <p>https://www.cnblogs.com/deityjian/p/11296846.html
+ * <p>InitializingBean#afterPropertiesSet -> SmartLifecycle#start -> SmartLifecycle#stop -> DisposableBean#destroy
  *
  * @author Ponfee
  */
@@ -49,24 +47,24 @@ public class SupervisorLifecycle implements SmartLifecycle {
 
     public SupervisorLifecycle(Supervisor.Local localSupervisor,
                                SupervisorProperties supervisorProperties,
-                               SupervisorRegistry supervisorRegistry,
+                               Registry<Supervisor> supervisorRegistry,
                                JobManager jobManager,
                                JobQuerier jobQuerier,
+                               TaskDispatcher taskDispatcher,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_TRIGGERING_JOB_LOCKER) LockTemplate scanTriggeringJobLocker,
                                @Qualifier(SPRING_BEAN_NAME_SCAN_WAITING_INSTANCE_LOCKER) LockTemplate scanWaitingInstanceLocker,
-                               @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker,
-                               TaskDispatcher taskDispatcher) {
-        this.supervisorStartup = SupervisorStartup.builder()
-            .localSupervisor(localSupervisor)
-            .supervisorProperties(supervisorProperties)
-            .supervisorRegistry(supervisorRegistry)
-            .jobManager(jobManager)
-            .jobQuerier(jobQuerier)
-            .scanTriggeringJobLocker(scanTriggeringJobLocker)
-            .scanWaitingInstanceLocker(scanWaitingInstanceLocker)
-            .scanRunningInstanceLocker(scanRunningInstanceLocker)
-            .taskDispatcher(taskDispatcher)
-            .build();
+                               @Qualifier(SPRING_BEAN_NAME_SCAN_RUNNING_INSTANCE_LOCKER) LockTemplate scanRunningInstanceLocker) {
+        this.supervisorStartup = new SupervisorStartup(
+            localSupervisor,
+            supervisorProperties,
+            supervisorRegistry,
+            jobManager,
+            jobQuerier,
+            taskDispatcher,
+            scanTriggeringJobLocker,
+            scanWaitingInstanceLocker,
+            scanRunningInstanceLocker
+        );
     }
 
     @Override

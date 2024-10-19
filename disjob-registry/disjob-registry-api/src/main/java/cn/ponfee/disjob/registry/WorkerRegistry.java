@@ -18,6 +18,11 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.collections4.CollectionUtils;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Worker registry and discovery supervisor.
@@ -25,5 +30,21 @@ import cn.ponfee.disjob.core.base.Worker;
  * @author Ponfee
  */
 public interface WorkerRegistry extends Registry<Worker>, Discovery<Supervisor> {
+
+    /**
+     * Gets registered workers of current group
+     *
+     * @return worker list of current group
+     */
+    default List<Worker> getRegisteredWorkers() {
+        List<Worker> workers = getRegisteredServers();
+        if (CollectionUtils.isEmpty(workers)) {
+            return Collections.emptyList();
+        }
+
+        return workers.stream()
+            .filter(e -> Worker.local().equalsGroup(e.getGroup()))
+            .collect(ImmutableList.toImmutableList());
+    }
 
 }

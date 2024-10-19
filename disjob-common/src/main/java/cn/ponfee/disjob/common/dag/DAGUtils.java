@@ -41,7 +41,6 @@ public class DAGUtils {
         MutableGraph graph = Factory.mutGraph(name).setDirected(true);
         graph.graphAttrs().add(Rank.dir(Rank.RankDir.LEFT_TO_RIGHT));
         graph.graphAttrs().add(GraphAttr.splines(GraphAttr.SplineMode.CURVED));
-        graph.graphAttrs().add(GraphAttr.splines(GraphAttr.SplineMode.CURVED));
         for (EndpointPair<DAGNode> edge : DAGExpression.parse(expression).edges()) {
             DAGNode s = edge.source(), t = edge.target();
             Node source = Factory.node(s.toString()).with(s.isStart() ? Shape.M_DIAMOND : Shape.RECTANGLE, Label.of(s.getName()));

@@ -53,7 +53,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private static final Logger LOG = LoggerFactory.getLogger(TimingWheelRotator.class);
 
     private final SupervisorRpcService supervisorRpcClient;
-    private final Discovery<Supervisor> discoverySupervisor;
+    private final Discovery<Supervisor> discoverSupervisor;
     private final TimingWheel<ExecuteTaskParam> timingWheel;
     private final WorkerThreadPool workerThreadPool;
     private final LoopThread heartbeatThread;
@@ -61,12 +61,12 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> LOG.warn("Not found available supervisor."));
 
     public TimingWheelRotator(SupervisorRpcService supervisorRpcClient,
-                              Discovery<Supervisor> discoverySupervisor,
+                              Discovery<Supervisor> discoverSupervisor,
                               TimingWheel<ExecuteTaskParam> timingWheel,
                               WorkerThreadPool threadPool,
                               int processThreadPoolSize) {
         this.supervisorRpcClient = supervisorRpcClient;
-        this.discoverySupervisor = discoverySupervisor;
+        this.discoverSupervisor = discoverSupervisor;
         this.timingWheel = timingWheel;
         this.workerThreadPool = threadPool;
 
@@ -96,7 +96,7 @@ public class TimingWheelRotator extends SingletonClassConstraint implements Star
 
     private void process() {
         // check has available supervisors
-        if (!discoverySupervisor.hasDiscoveredServers()) {
+        if (!discoverSupervisor.hasDiscoveredServers()) {
             logPrinter.execute();
             return;
         }

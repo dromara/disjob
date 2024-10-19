@@ -16,8 +16,9 @@
 
 package cn.ponfee.disjob.registry.discovery;
 
-import cn.ponfee.disjob.common.collect.ImmutableHashList;
 import cn.ponfee.disjob.core.base.Worker;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.util.Assert;
 
@@ -34,28 +35,28 @@ import java.util.stream.Collectors;
 public final class DiscoveryWorker implements DiscoveryServer<Worker> {
 
     /**
-     * Map<group, ImmutableHashList<serialize, Worker>>
+     * Map<group, List<Worker>>
      */
-    private volatile Map<String, ImmutableHashList<String, Worker>> groupedWorkers = Collections.emptyMap();
+    private volatile ImmutableMap<String, ImmutableList<Worker>> groupedWorkers = ImmutableMap.of();
 
     @Override
     public synchronized void refreshServers(List<Worker> discoveredWorkers) {
         if (CollectionUtils.isEmpty(discoveredWorkers)) {
-            this.groupedWorkers = Collections.emptyMap();
+            this.groupedWorkers = ImmutableMap.of();
         } else {
             this.groupedWorkers = discoveredWorkers.stream()
                 .collect(Collectors.groupingBy(Worker::getGroup))
                 .entrySet()
                 .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> ImmutableHashList.of(e.getValue(), Worker::serialize)));
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, e -> toSortedImmutableList(e.getValue())));
         }
     }
 
     @Override
     public List<Worker> getServers(String group) {
         Assert.hasText(group, "Get discovery worker group cannot null.");
-        ImmutableHashList<String, Worker> workers = groupedWorkers.get(group);
-        return workers == null ? Collections.emptyList() : workers.values();
+        List<Worker> workers = groupedWorkers.get(group);
+        return workers == null ? Collections.emptyList() : workers;
     }
 
     @Override
@@ -65,8 +66,8 @@ public final class DiscoveryWorker implements DiscoveryServer<Worker> {
 
     @Override
     public boolean isAlive(Worker worker) {
-        ImmutableHashList<String, Worker> workers = groupedWorkers.get(worker.getGroup());
-        return workers != null && workers.contains(worker);
+        List<Worker> workers = groupedWorkers.get(worker.getGroup());
+        return workers != null && Collections.binarySearch(workers, worker) > -1;
     }
 
 }

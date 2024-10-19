@@ -90,7 +90,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
 
     // ------------------------------------------------------------public methods
 
-    public List<SupervisorMetricsResponse> supervisors() throws Exception {
+    public List<SupervisorMetricsResponse> supervisors() {
         List<Supervisor> list = supervisorRegistry.getRegisteredServers();
         list = Collects.sorted(list, Comparator.comparing(e -> localSupervisor.equals(e) ? 0 : 1));
         return MultithreadExecutors.call(list, this::getSupervisorMetrics, ThreadPoolExecutors.commonThreadPool());

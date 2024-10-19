@@ -97,7 +97,7 @@ public class DisjobJobController extends BaseController {
             if (errorMessage.length() > MAX_TEXT_LENGTH) {
                 errorMessage = errorMessage.substring(0, MAX_TEXT_LENGTH - 3) + "...";
             }
-            ImageUtils.createImage(errorMessage, response.getOutputStream(), 1000, 580);
+            ImageUtils.createImage(errorMessage, response.getOutputStream(), 1000, 600);
         }
     }
 

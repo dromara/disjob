@@ -16,10 +16,11 @@
 
 package cn.ponfee.disjob.registry.discovery;
 
-import cn.ponfee.disjob.common.collect.ImmutableHashList;
 import cn.ponfee.disjob.core.base.Supervisor;
+import com.google.common.collect.ImmutableList;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,10 +30,7 @@ import java.util.List;
  */
 public final class DiscoverySupervisor implements DiscoveryServer<Supervisor> {
 
-    /**
-     * ImmutableHashList<serialize, Supervisor>
-     */
-    private volatile ImmutableHashList<String, Supervisor> supervisors = ImmutableHashList.empty();
+    private volatile ImmutableList<Supervisor> supervisors = ImmutableList.of();
 
     /**
      * <pre>
@@ -49,13 +47,13 @@ public final class DiscoverySupervisor implements DiscoveryServer<Supervisor> {
      */
     @Override
     public synchronized void refreshServers(List<Supervisor> discoveredSupervisors) {
-        this.supervisors = ImmutableHashList.of(discoveredSupervisors, Supervisor::serialize);
+        this.supervisors = toSortedImmutableList(discoveredSupervisors);
     }
 
     @Override
     public List<Supervisor> getServers(String group) {
         Assert.isNull(group, "Get discovery supervisor group must be null.");
-        return supervisors.values();
+        return supervisors;
     }
 
     @Override
@@ -65,7 +63,7 @@ public final class DiscoverySupervisor implements DiscoveryServer<Supervisor> {
 
     @Override
     public boolean isAlive(Supervisor supervisor) {
-        return supervisors.contains(supervisor);
+        return Collections.binarySearch(supervisors, supervisor) > -1;
     }
 
 }

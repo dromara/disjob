@@ -29,7 +29,7 @@ import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
@@ -68,7 +68,7 @@ public class WorkerClient {
     public WorkerClient(TaskDispatcher taskDispatcher,
                         Supervisor.Local localSupervisor,
                         RetryProperties retry,
-                        SupervisorRegistry discoveryWorker,
+                        Discovery<Worker> discoverWorker,
                         @Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                         @Nullable WorkerRpcService workerRpcProvider,
                         @Nullable Worker.Local localWorker) {
@@ -77,7 +77,7 @@ public class WorkerClient {
         retry.check();
         Predicate<String> serverGroupMatcher = localWorker != null ? localWorker::equalsGroup : g -> false;
         this.groupedClient = DiscoveryServerRestProxy.create(
-            WorkerRpcService.class, workerRpcProvider, serverGroupMatcher, discoveryWorker, restTemplate, retry
+            WorkerRpcService.class, workerRpcProvider, serverGroupMatcher, discoverWorker, restTemplate, retry
         );
 
         Function<Worker, String> workerContextPath = worker -> localSupervisor.getWorkerContextPath(worker.getGroup());

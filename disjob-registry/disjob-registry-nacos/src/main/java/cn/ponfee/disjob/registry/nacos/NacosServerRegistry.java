@@ -21,9 +21,11 @@ import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
 import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.PreDestroy;
 import java.util.Collections;
@@ -94,9 +96,13 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
     }
 
     @Override
-    public List<R> getRegisteredServers() throws Exception {
-        List<Instance> list = client.getAllInstances(registryRootPath);
-        return deserializeRegistryServers(list, Instance::getInstanceId);
+    public List<R> getRegisteredServers() {
+        try {
+            List<Instance> list = client.getAllInstances(registryRootPath);
+            return deserializeRegistryServers(list, Instance::getInstanceId);
+        } catch (NacosException e) {
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
     // ------------------------------------------------------------------Close

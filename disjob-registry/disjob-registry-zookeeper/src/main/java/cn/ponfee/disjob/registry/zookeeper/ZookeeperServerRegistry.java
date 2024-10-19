@@ -22,6 +22,7 @@ import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.PreDestroy;
 import java.util.Collections;
@@ -108,8 +109,13 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     }
 
     @Override
-    public List<R> getRegisteredServers() throws Exception {
-        return deserializeRegistryServers(client.getChildren(zkRegistryRootPath));
+    public List<R> getRegisteredServers() {
+        try {
+            List<String> servers = client.getChildren(zkRegistryRootPath);
+            return deserializeRegistryServers(servers);
+        } catch (Exception e) {
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
     // ------------------------------------------------------------------Close

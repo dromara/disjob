@@ -37,7 +37,7 @@ public enum MisfireStrategy implements IntValueEnum<MisfireStrategy> {
     SKIP_ALL_LOST(2, "跳过所有被错过的"),
 
     /**
-     * 执行所有被错过的，之后按正常的调度时间点执行
+     * 依次执行所有被错过的，之后再按正常的调度时间点执行
      */
     FIRE_ALL_LOST(3, "执行所有被错过的"),
 

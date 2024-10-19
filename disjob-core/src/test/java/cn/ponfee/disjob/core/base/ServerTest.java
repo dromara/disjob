@@ -18,6 +18,11 @@ package cn.ponfee.disjob.core.base;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -37,6 +42,38 @@ public class ServerTest {
         assertThat(worker1.matches(worker2)).isTrue();
         assertThat(worker1.equals(worker2)).isFalse();
         assertThat(worker3.matches(worker2)).isFalse();
+    }
+
+    @Test
+    public void testSortWorker() {
+        List<Worker> list = new ArrayList<>();
+        list.add(new Worker("group-a", "workerId1", "localhost1", 80));
+        list.add(new Worker("group-a", "workerId2", "localhost1", 80));
+        list.add(new Worker("group-b", "workerId1", "localhost1", 80));
+        list.add(new Worker("group-b", "workerId1", "localhost2", 80));
+        list.add(new Worker("group-b", "workerId1", "localhost2", 82));
+        Collections.shuffle(list);
+        System.out.println(list);
+        list.sort(Comparator.naturalOrder());
+        System.out.println(list);
+        assertThat(list.toString()).isEqualTo("[group-a:workerId1:localhost1:80, group-a:workerId2:localhost1:80, group-b:workerId1:localhost1:80, group-b:workerId1:localhost2:80, group-b:workerId1:localhost2:82]");
+    }
+
+    @Test
+    public void testSortSupervisor() {
+        List<Supervisor> list = new ArrayList<>();
+        list.add(new Supervisor("supervisor1", 80));
+        list.add(new Supervisor("supervisor1", 85));
+        list.add(new Supervisor("supervisor2", 85));
+        list.add(new Supervisor("supervisor3", 10));
+        Collections.shuffle(list);
+
+        System.out.println(list);
+        System.out.println(Collections.binarySearch(list, new Supervisor("supervisor1", 80)));
+        list.sort(Comparator.naturalOrder());
+        System.out.println(list);
+        assertThat(list.toString()).isEqualTo("[supervisor1:80, supervisor1:85, supervisor2:85, supervisor3:10]");
+        assertThat(Collections.binarySearch(list, new Supervisor("supervisor1", 80))).isEqualTo(0);
     }
 
 }

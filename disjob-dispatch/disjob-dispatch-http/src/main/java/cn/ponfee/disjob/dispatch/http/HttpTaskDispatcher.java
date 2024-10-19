@@ -40,12 +40,12 @@ public class HttpTaskDispatcher extends TaskDispatcher {
     private final DestinationServerClient<Controller, Worker> httpTaskReceiverClient;
 
     public HttpTaskDispatcher(ApplicationEventPublisher eventPublisher,
-                              Discovery<Worker> discoveryWorker,
+                              Discovery<Worker> discoverWorker,
                               RetryProperties retryProperties,
                               Supervisor.Local localSupervisor,
                               RestTemplate restTemplate,
                               HttpTaskReceiver httpTaskReceiver) {
-        super(eventPublisher, discoveryWorker, retryProperties, httpTaskReceiver);
+        super(eventPublisher, discoverWorker, retryProperties, httpTaskReceiver);
 
         Function<Worker, String> workerContextPath = worker -> localSupervisor.getWorkerContextPath(worker.getGroup());
         RetryProperties retry = RetryProperties.none();

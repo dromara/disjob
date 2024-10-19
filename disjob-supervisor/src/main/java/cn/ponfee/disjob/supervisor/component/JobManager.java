@@ -41,7 +41,7 @@ import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
@@ -112,7 +112,7 @@ public class JobManager {
     private final SchedInstanceMapper instanceMapper;
     private final SchedWorkflowMapper workflowMapper;
     private final SchedTaskMapper taskMapper;
-    private final SupervisorRegistry workerDiscover;
+    private final Discovery<Worker> discoverWorker;
     private final WorkerClient workerClient;
     private final TransactionTemplate transactionTemplate;
     private final TriggerInstance.Creator triggerInstanceCreator;
@@ -124,7 +124,7 @@ public class JobManager {
                       SchedInstanceMapper instanceMapper,
                       SchedWorkflowMapper workflowMapper,
                       SchedTaskMapper taskMapper,
-                      SupervisorRegistry workerDiscover,
+                      Discovery<Worker> discoverWorker,
                       WorkerClient workerClient,
                       @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate txTemplate) {
         conf.check();
@@ -135,7 +135,7 @@ public class JobManager {
         this.instanceMapper = instanceMapper;
         this.workflowMapper = workflowMapper;
         this.taskMapper = taskMapper;
-        this.workerDiscover = workerDiscover;
+        this.discoverWorker = discoverWorker;
         this.workerClient = workerClient;
         this.transactionTemplate = txTemplate;
         this.triggerInstanceCreator = new TriggerInstance.Creator(this, workflowMapper, instanceMapper, taskMapper);
@@ -148,11 +148,11 @@ public class JobManager {
     }
 
     public boolean hasNotDiscoveredWorkers(String group) {
-        return CollectionUtils.isEmpty(workerDiscover.getDiscoveredServers(group));
+        return CollectionUtils.isEmpty(discoverWorker.getDiscoveredServers(group));
     }
 
     public boolean hasNotDiscoveredWorkers() {
-        return !workerDiscover.hasDiscoveredServers();
+        return !discoverWorker.hasDiscoveredServers();
     }
 
     public boolean hasAliveExecutingTasks(List<SchedTask> tasks) {
@@ -161,7 +161,7 @@ public class JobManager {
     }
 
     public List<SchedTask> splitJob(SplitJobParam param, long instanceId) throws JobException {
-        List<Worker> workers = workerDiscover.getDiscoveredServers(param.getGroup());
+        List<Worker> workers = discoverWorker.getDiscoveredServers(param.getGroup());
         Assert.state(!workers.isEmpty(), () -> "Not discovered worker for split job: " + param.getGroup());
         int wCount = workers.size();
         List<String> taskParams = workerClient.splitJob(param, wCount);
@@ -181,12 +181,8 @@ public class JobManager {
         if (!task.isWaiting()) {
             return false;
         }
-        Worker worker;
-        if (!isAliveWorker(worker = task.worker())) {
-            // not dispatched to a worker successfully or dispatched worker are dead
-            return true;
-        }
-        return !workerClient.existsTask(worker, task.getTaskId());
+        Worker worker = task.worker();
+        return !isAliveWorker(worker) || !workerClient.existsTask(worker, task.getTaskId());
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
@@ -560,7 +556,7 @@ public class JobManager {
     // ------------------------------------------------------------------private methods
 
     private boolean isAliveWorker(Worker worker) {
-        return worker != null && workerDiscover.isDiscoveredServer(worker);
+        return worker != null && discoverWorker.isDiscoveredServer(worker);
     }
 
     private SchedJob getRequireJob(long jobId) {
@@ -625,6 +621,7 @@ public class JobManager {
     private Long computeNextTriggerTime(SchedJob job) {
         Long lastTriggerTime = job.getLastTriggerTime();
         Date now = new Date();
+        // 若更改Job状态或者修改Job trigger config，则以当前时间为基准来计算nextTriggerTime
         job.setLastTriggerTime(Long.max(now.getTime() - 1, lastTriggerTime == null ? 0 : lastTriggerTime));
         Long next = TriggerTimes.computeNextTriggerTime(job, now);
         Assert.notNull(next, () -> "Expire " + TriggerType.of(job.getTriggerType()) + " value: " + job.getTriggerValue());
@@ -681,7 +678,7 @@ public class JobManager {
     }
 
     private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
-        List<Worker> workers = workerDiscover.getDiscoveredServers(job.getGroup());
+        List<Worker> workers = discoverWorker.getDiscoveredServers(job.getGroup());
         if (CollectionUtils.isEmpty(workers)) {
             LOG.error("Not found available worker for calculate workload: {}", job.getGroup());
             return null;

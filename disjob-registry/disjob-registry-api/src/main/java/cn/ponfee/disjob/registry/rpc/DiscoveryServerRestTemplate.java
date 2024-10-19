@@ -47,14 +47,14 @@ import java.util.concurrent.ThreadLocalRandom;
 final class DiscoveryServerRestTemplate<D extends Server> {
     private static final Logger LOG = LoggerFactory.getLogger(DiscoveryServerRestTemplate.class);
 
-    private final Discovery<D> discoveryServer;
+    private final Discovery<D> discoverServer;
     private final RestTemplate restTemplate;
     private final int retryMaxCount;
     private final long retryBackoffPeriod;
 
-    DiscoveryServerRestTemplate(Discovery<D> discoveryServer, RestTemplate restTemplate, RetryProperties retry) {
+    DiscoveryServerRestTemplate(Discovery<D> discoverServer, RestTemplate restTemplate, RetryProperties retry) {
         retry.check();
-        this.discoveryServer = Objects.requireNonNull(discoveryServer);
+        this.discoverServer = Objects.requireNonNull(discoverServer);
         this.restTemplate = Objects.requireNonNull(restTemplate);
         this.retryMaxCount = retry.getMaxCount();
         this.retryBackoffPeriod = retry.getBackoffPeriod();
@@ -75,8 +75,8 @@ final class DiscoveryServerRestTemplate<D extends Server> {
      * @throws Exception if occur exception
      */
     <T> T execute(String group, String path, HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
-        List<D> servers = discoveryServer.getDiscoveredServers(group);
-        ServerRole discoveryServerRole = discoveryServer.discoveryRole();
+        List<D> servers = discoverServer.getDiscoveredServers(group);
+        ServerRole discoveryServerRole = discoverServer.discoveryRole();
         if (CollectionUtils.isEmpty(servers)) {
             String errMsg = (group == null ? " " : " '" + group + "' ");
             throw new IllegalStateException("Not found available" + errMsg + discoveryServerRole);

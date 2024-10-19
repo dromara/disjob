@@ -53,6 +53,7 @@ public enum ServerRole {
         this.key = key;
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Server> Class<T> type() {
         return (Class<T>) type;
     }

@@ -54,9 +54,8 @@ public interface Registry<R extends Server> extends Closeable {
      * Gets alive registered servers.
      *
      * @return list of alive registered servers
-     * @throws Exception if occur exception
      */
-    List<R> getRegisteredServers() throws Exception;
+    List<R> getRegisteredServers();
 
     /**
      * Close registry.

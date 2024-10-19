@@ -48,11 +48,11 @@ public class RedisTaskDispatcher extends TaskDispatcher {
     private final RedisTemplate<String, String> redisTemplate;
 
     public RedisTaskDispatcher(ApplicationEventPublisher eventPublisher,
-                               Discovery<Worker> discoveryWorker,
+                               Discovery<Worker> discoverWorker,
                                RetryProperties retryProperties,
                                RedisTemplate<String, String> redisTemplate,
                                RedisTaskReceiver redisTaskReceiver) {
-        super(eventPublisher, discoveryWorker, retryProperties, redisTaskReceiver);
+        super(eventPublisher, discoverWorker, retryProperties, redisTaskReceiver);
 
         this.redisTemplate = redisTemplate;
     }

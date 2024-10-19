@@ -43,7 +43,7 @@ import static cn.ponfee.disjob.common.collect.Collects.get;
  */
 @JsonSerialize(using = Supervisor.JacksonSerializer.class)
 @JsonDeserialize(using = Supervisor.JacksonDeserializer.class)
-public class Supervisor extends Server {
+public class Supervisor extends Server implements Comparable<Supervisor> {
     private static final long serialVersionUID = -1254559108807415145L;
 
     private final transient String serializedValue;
@@ -94,6 +94,15 @@ public class Supervisor extends Server {
             return true;
         }
         return (o instanceof Supervisor) && super.equals(o);
+    }
+
+    @Override
+    public int compareTo(Supervisor that) {
+        int n = this.host.compareTo(that.host);
+        if (n != 0) {
+            return n;
+        }
+        return Integer.compare(this.port, that.port);
     }
 
     // --------------------------------------------------------custom jackson serialize & deserialize

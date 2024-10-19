@@ -59,14 +59,14 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private final ExecutorService processJobExecutor;
     private final PeriodExecutor logPrinter = new PeriodExecutor(30000, () -> log.warn("Not discovered any worker."));
 
-    public TriggeringJobScanner(SupervisorProperties supervisorProperties,
+    public TriggeringJobScanner(SupervisorProperties conf,
                                 LockTemplate lockTemplate,
                                 JobManager jobManager,
                                 JobQuerier jobQuerier) {
-        super(supervisorProperties.getScanTriggeringJobPeriodMs());
+        super(conf.getScanTriggeringJobPeriodMs());
         SingletonClassConstraint.constrain(this);
 
-        this.jobScanFailedCountThreshold = supervisorProperties.getJobScanFailedCountThreshold();
+        this.jobScanFailedCountThreshold = conf.getJobScanFailedCountThreshold();
         this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
@@ -74,7 +74,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         this.afterMilliseconds = (heartbeatPeriodMs * 3);
         this.processJobExecutor = ThreadPoolExecutors.builder()
             .corePoolSize(1)
-            .maximumPoolSize(Math.max(1, supervisorProperties.getMaximumProcessJobPoolSize()))
+            .maximumPoolSize(Math.max(1, conf.getMaximumProcessJobPoolSize()))
             .workQueue(new SynchronousQueue<>())
             .keepAliveTimeSeconds(300)
             .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)

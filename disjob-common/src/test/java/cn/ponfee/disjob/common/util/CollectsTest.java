@@ -19,6 +19,7 @@ package cn.ponfee.disjob.common.util;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tree.print.BinaryTreePrinter;
 import cn.ponfee.disjob.common.tuple.Tuple2;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.junit.jupiter.api.Test;
@@ -187,6 +188,32 @@ public class CollectsTest {
             .branch(BinaryTreePrinter.Branch.RECTANGLE)
             .build();
         printer.print(1);
+    }
+
+    @Test
+    public void testImmutableList() {
+        List<String> list = new ArrayList<>();
+        list.add("A");
+        list.add("B");
+        List<String> unmodifiableList = Collections.unmodifiableList(list);
+        assertThat(list.size()).isEqualTo(2);
+        assertThat(unmodifiableList.size()).isEqualTo(2);
+        list.add("C");
+        assertThat(list.size()).isEqualTo(3);
+        assertThat(unmodifiableList.size()).isEqualTo(3);
+
+        List<String> immutableList = ImmutableList.copyOf(list);
+        assertThat(immutableList.size()).isEqualTo(3);
+        list.add("D");
+        assertThat(list.size()).isEqualTo(4);
+        assertThat(immutableList.size()).isEqualTo(3);
+
+        assertThatThrownBy(() -> immutableList.add("E"))
+            .isInstanceOf(UnsupportedOperationException.class);
+
+        List<String> immutableList2 = ImmutableList.of();
+        assertThatThrownBy(() -> immutableList2.add("E"))
+            .isInstanceOf(UnsupportedOperationException.class);
     }
 
 }

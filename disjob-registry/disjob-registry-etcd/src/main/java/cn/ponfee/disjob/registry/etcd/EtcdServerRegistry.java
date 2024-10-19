@@ -27,6 +27,7 @@ import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.support.CloseableClient;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.PreDestroy;
 import java.util.Collections;
@@ -131,8 +132,13 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     }
 
     @Override
-    public List<R> getRegisteredServers() throws Exception {
-        return deserializeRegistryServers(client.getKeyChildren(registryRootPath));
+    public List<R> getRegisteredServers() {
+        try {
+            List<String> servers = client.getKeyChildren(registryRootPath);
+            return deserializeRegistryServers(servers);
+        } catch (Exception e) {
+            return ExceptionUtils.rethrow(e);
+        }
     }
 
     // ------------------------------------------------------------------Close

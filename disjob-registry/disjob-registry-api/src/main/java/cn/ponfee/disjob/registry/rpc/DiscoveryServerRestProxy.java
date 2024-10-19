@@ -89,7 +89,7 @@ public final class DiscoveryServerRestProxy {
      *
      * @param interfaceCls         the interface class
      * @param localServiceProvider the localServiceProvider
-     * @param discoveryServer      the discoveryServer
+     * @param discoverServer       the discoverServer
      * @param restTemplate         the restTemplate
      * @param retry                the retry config
      * @param <T>                  interface type
@@ -98,7 +98,7 @@ public final class DiscoveryServerRestProxy {
      */
     public static <T, D extends Server> T create(Class<T> interfaceCls,
                                                  @Nullable T localServiceProvider,
-                                                 Discovery<D> discoveryServer,
+                                                 Discovery<D> discoverServer,
                                                  RestTemplate restTemplate,
                                                  RetryProperties retry) {
         InvocationHandler invocationHandler;
@@ -107,7 +107,7 @@ public final class DiscoveryServerRestProxy {
             invocationHandler = new RetryInvocationHandler(localServiceProvider, retry.getMaxCount(), retry.getBackoffPeriod());
         } else {
             // 远程调用：通过Discovery<D>来获取目标服务器
-            DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
+            DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoverServer, restTemplate, retry);
             String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
             invocationHandler = new UngroupedInvocationHandler(template, prefixPath);
         }
@@ -120,7 +120,7 @@ public final class DiscoveryServerRestProxy {
      * @param interfaceCls         the interface class
      * @param localServiceProvider the localServiceProvider
      * @param serverGroupMatcher   the serverGroupMatcher
-     * @param discoveryServer      the discoveryServer
+     * @param discoverServer       the discoverServer
      * @param restTemplate         the restTemplate
      * @param retry                the retry config
      * @param <T>                  interface type
@@ -130,10 +130,10 @@ public final class DiscoveryServerRestProxy {
     public static <T, D extends Server> GroupedServerClient<T> create(Class<T> interfaceCls,
                                                                       @Nullable T localServiceProvider,
                                                                       Predicate<String> serverGroupMatcher,
-                                                                      Discovery<D> discoveryServer,
+                                                                      Discovery<D> discoverServer,
                                                                       RestTemplate restTemplate,
                                                                       RetryProperties retry) {
-        DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoveryServer, restTemplate, retry);
+        DiscoveryServerRestTemplate<D> template = new DiscoveryServerRestTemplate<>(discoverServer, restTemplate, retry);
         String prefixPath = getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
         InvocationHandler groupedInvocationHandler = new GroupedInvocationHandler(template, prefixPath);
         T remoteServiceClient = ProxyUtils.create(groupedInvocationHandler, interfaceCls);
