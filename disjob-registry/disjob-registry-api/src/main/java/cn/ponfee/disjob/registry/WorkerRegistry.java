@@ -44,6 +44,7 @@ public interface WorkerRegistry extends Registry<Worker>, Discovery<Supervisor> 
 
         return workers.stream()
             .filter(e -> Worker.local().equalsGroup(e.getGroup()))
+            .sorted()
             .collect(ImmutableList.toImmutableList());
     }
 
