@@ -24,6 +24,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.Assert;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -133,13 +134,16 @@ public class TransactionUtils {
         }
     }
 
+    public static void assertDoInTransaction() {
+        Assert.isTrue(TransactionSynchronizationManager.isActualTransactionActive(), "Must do in transaction.");
+    }
+
     public static boolean isCurrentDoAfterCommit() {
         return Boolean.TRUE.equals(DO_AFTER_COMMIT.get());
     }
 
     public static boolean isNotDoInTransaction() {
-        return !TransactionSynchronizationManager.isActualTransactionActive()
-            || isCurrentDoAfterCommit();
+        return !TransactionSynchronizationManager.isActualTransactionActive() || isCurrentDoAfterCommit();
     }
 
     /**

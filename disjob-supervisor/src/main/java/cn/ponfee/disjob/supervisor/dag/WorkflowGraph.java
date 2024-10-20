@@ -80,10 +80,6 @@ public class WorkflowGraph {
         return map.entrySet().stream().anyMatch(predicate);
     }
 
-    public boolean noneMatch(Predicate<Map.Entry<DAGEdge, SchedWorkflow>> predicate) {
-        return map.entrySet().stream().noneMatch(predicate);
-    }
-
     // --------------------------------------------------------------private methods
 
     private Map<DAGEdge, SchedWorkflow> find(Set<DAGNode> nodes) {

@@ -26,6 +26,7 @@ import cn.ponfee.disjob.core.enums.RunState;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
+import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.dag.WorkflowGraph;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
@@ -48,13 +49,13 @@ public class WorkflowInstance extends TriggerInstance {
     private List<SchedWorkflow> workflows;
     private List<Tuple2<SchedInstance, List<SchedTask>>> nodes;
 
-    protected WorkflowInstance(Creator creator, SchedJob job) {
-        super(creator, job);
+    protected WorkflowInstance(JobManager jobManager, SchedJob job) {
+        super(jobManager, job);
     }
 
     @Override
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
-        long wnstanceId = creator.jobManager.generateId();
+        long wnstanceId = jobManager.generateId();
         long jobId = job.getJobId();
         SchedInstance leadInstance = SchedInstance.of(parent, wnstanceId, wnstanceId, jobId, runType, triggerTime, 0);
         leadInstance.setRunState(RunState.RUNNING.value());
@@ -73,7 +74,7 @@ public class WorkflowInstance extends TriggerInstance {
             DAGNode node = each.getKey().getTarget();
             SchedWorkflow workflow = each.getValue();
 
-            long nodeInstanceId = creator.jobManager.generateId();
+            long nodeInstanceId = jobManager.generateId();
             workflow.setInstanceId(nodeInstanceId);
             workflow.setRunState(RunState.RUNNING.value());
 
@@ -82,27 +83,25 @@ public class WorkflowInstance extends TriggerInstance {
             nodeInstance.setWorkflowCurNode(node.toString());
 
             SplitJobParam splitJobParam = ModelConverter.toSplitJobParam(job, nodeInstance, null);
-            List<SchedTask> nodeTasks = creator.jobManager.splitJob(splitJobParam, nodeInstance.getInstanceId());
+            List<SchedTask> nodeTasks = jobManager.splitJob(splitJobParam, nodeInstance.getInstanceId());
             nodes.add(Tuple2.of(nodeInstance, nodeTasks));
         }
     }
 
     @Override
     public void save() {
-        // save lead instance
-        creator.saveInstance(instance);
-        // save workflow graph
-        creator.saveWorkflows(workflows);
+        // save lead instance & workflow graph
+        jobManager.saveInstanceAndWorkflows(instance, workflows);
         for (Tuple2<SchedInstance, List<SchedTask>> node : nodes) {
             // save node instance and node tasks
-            creator.saveInstanceAndTasks(node.a, node.b);
+            jobManager.saveInstanceAndTasks(node.a, node.b);
         }
     }
 
     @Override
     public void dispatch() {
         for (Tuple2<SchedInstance, List<SchedTask>> node : nodes) {
-            creator.jobManager.dispatch(job, node.a, node.b);
+            jobManager.dispatch(job, node.a, node.b);
         }
     }
 

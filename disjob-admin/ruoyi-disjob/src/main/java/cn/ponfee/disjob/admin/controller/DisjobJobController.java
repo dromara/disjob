@@ -63,7 +63,7 @@ import java.util.List;
 public class DisjobJobController extends BaseController {
 
     static final String PREFIX = "disjob/job";
-    private static final int MAX_TEXT_LENGTH = 1000;
+    private static final int MAX_TEXT_LENGTH = 900;
     private static final String PERMISSION_CODE = "disjob:job:operate";
 
     private final OpenapiService openapiService;
@@ -97,7 +97,7 @@ public class DisjobJobController extends BaseController {
             if (errorMessage.length() > MAX_TEXT_LENGTH) {
                 errorMessage = errorMessage.substring(0, MAX_TEXT_LENGTH - 3) + "...";
             }
-            ImageUtils.createImage(errorMessage, response.getOutputStream(), 1000, 600);
+            ImageUtils.createImage(errorMessage, response.getOutputStream(), 1000, 580);
         }
     }
 

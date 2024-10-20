@@ -19,6 +19,7 @@ package cn.ponfee.disjob.supervisor.instance;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
+import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
@@ -34,25 +35,25 @@ public class GeneralInstance extends TriggerInstance {
 
     private List<SchedTask> tasks;
 
-    protected GeneralInstance(Creator creator, SchedJob job) {
-        super(creator, job);
+    protected GeneralInstance(JobManager jobManager, SchedJob job) {
+        super(jobManager, job);
     }
 
     @Override
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
-        long instanceId = creator.jobManager.generateId();
+        long instanceId = jobManager.generateId();
         super.instance = SchedInstance.of(parent, null, instanceId, job.getJobId(), runType, triggerTime, 0);
-        this.tasks = creator.jobManager.splitJob(ModelConverter.toSplitJobParam(job, instance), instanceId);
+        this.tasks = jobManager.splitJob(ModelConverter.toSplitJobParam(job, instance), instanceId);
     }
 
     @Override
     public void save() {
-        creator.saveInstanceAndTasks(instance, tasks);
+        jobManager.saveInstanceAndTasks(instance, tasks);
     }
 
     @Override
     public void dispatch() {
-        creator.jobManager.dispatch(job, instance, tasks);
+        jobManager.dispatch(job, instance, tasks);
     }
 
 }

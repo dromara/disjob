@@ -25,7 +25,6 @@ import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.model.BaseEntity;
-import cn.ponfee.disjob.common.spring.TransactionUtils;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import cn.ponfee.disjob.common.util.Strings;
@@ -115,7 +114,6 @@ public class JobManager {
     private final Discovery<Worker> discoverWorker;
     private final WorkerClient workerClient;
     private final TransactionTemplate transactionTemplate;
-    private final TriggerInstance.Creator triggerInstanceCreator;
 
     public JobManager(SupervisorProperties conf,
                       IdGenerator idGenerator,
@@ -138,7 +136,6 @@ public class JobManager {
         this.discoverWorker = discoverWorker;
         this.workerClient = workerClient;
         this.transactionTemplate = txTemplate;
-        this.triggerInstanceCreator = new TriggerInstance.Creator(this, workflowMapper, instanceMapper, taskMapper);
     }
 
     // ------------------------------------------------------------------non-database operation methods
@@ -191,6 +188,20 @@ public class JobManager {
 
     public boolean redispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
         return dispatch(true, job, instance, tasks);
+    }
+
+    // ------------------------------------------------------------------must in transaction active(PROPAGATION_MANDATORY)
+
+    public void saveInstanceAndWorkflows(SchedInstance instance, List<SchedWorkflow> workflows) {
+        assertDoInTransaction();
+        instanceMapper.insert(instance.fillUniqueFlag());
+        Collects.batchProcess(workflows, workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
+    }
+
+    public void saveInstanceAndTasks(SchedInstance instance, List<SchedTask> tasks) {
+        assertDoInTransaction();
+        instanceMapper.insert(instance.fillUniqueFlag());
+        Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
     }
 
     // ------------------------------------------------------------------database single operation without spring transactional
@@ -282,9 +293,9 @@ public class JobManager {
             // If SCHEDULE, must be update job next trigger time
             return;
         }
-        TriggerInstance triggerInstance = triggerInstanceCreator.create(job, null, runType, triggerTime);
+        TriggerInstance triggerInstance = TriggerInstance.of(this, job, null, runType, triggerTime);
         triggerInstance.save();
-        TransactionUtils.doAfterTransactionCommit(triggerInstance::dispatch);
+        doAfterTransactionCommit(triggerInstance::dispatch);
     }
 
     /**
@@ -437,7 +448,7 @@ public class JobManager {
             int changedTaskRows = taskMapper.forceChangeState(instanceId, toExecuteState.value());
             if (toExecuteState == ExecuteState.WAITING) {
                 Tuple3<SchedJob, SchedInstance, List<SchedTask>> tuple = buildDispatchParam(instanceId, changedTaskRows);
-                TransactionUtils.doAfterTransactionCommit(() -> dispatch(tuple.a, tuple.b, tuple.c));
+                doAfterTransactionCommit(() -> dispatch(tuple.a, tuple.b, tuple.c));
             }
             LOG.info("Force change state success {}, {}", instanceId, toExecuteState);
         });
@@ -788,7 +799,7 @@ public class JobManager {
             }
         } else {
             // has alive executing tasks: dispatch and pause executing tasks
-            TransactionUtils.doAfterTransactionCommit(() -> workerClient.dispatch(executingTasks));
+            doAfterTransactionCommit(() -> workerClient.dispatch(executingTasks));
         }
     }
 
@@ -829,7 +840,7 @@ public class JobManager {
             }
         } else {
             // dispatch and cancel executing tasks
-            TransactionUtils.doAfterTransactionCommit(() -> workerClient.dispatch(executingTasks));
+            doAfterTransactionCommit(() -> workerClient.dispatch(executingTasks));
         }
     }
 
@@ -851,7 +862,7 @@ public class JobManager {
             WorkflowGraph graph = WorkflowGraph.of(workflowMapper.findByWnstanceId(instanceId));
             try {
                 List<Runnable> dispatchActions = processWorkflowGraph(instance, graph, graph.map());
-                TransactionUtils.doAfterTransactionCommit(dispatchActions);
+                doAfterTransactionCommit(dispatchActions);
             } catch (JobException e) {
                 ExceptionUtils.rethrow(e);
             }
@@ -871,7 +882,7 @@ public class JobManager {
 
         // dispatch task
         Tuple3<SchedJob, SchedInstance, List<SchedTask>> param = buildDispatchParam(instanceId, row);
-        TransactionUtils.doAfterTransactionCommit(() -> dispatch(param.a, param.b, param.c));
+        doAfterTransactionCommit(() -> dispatch(param.a, param.b, param.c));
     }
 
     private void afterTerminateTask(SchedInstance instance) {
@@ -929,13 +940,13 @@ public class JobManager {
                 int row = workflowMapper.update(failed.getWnstanceId(), curNode, null, retryInstanceId, RS_RUNNING, failed.getInstanceId());
                 assertHasAffectedRow(row, () -> "Retry instance, workflow node update failed.");
             }
-            triggerInstanceCreator.saveInstanceAndTasks(retryInstance, tasks);
+            saveInstanceAndTasks(retryInstance, tasks);
             return () -> dispatch(job, retryInstance, tasks);
         };
         Consumer<Throwable> errorHandler = t -> { throw new IllegalStateException("Create retry instance failed: " + failed, t); };
         // 使用嵌套事务：保证`workflow & instance & tasks`操作的原子性，异常则回滚而不影响外层事务
-        Runnable dispatchAction = TransactionUtils.doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
-        TransactionUtils.doAfterTransactionCommit(dispatchAction);
+        Runnable dispatchAction = doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
+        doAfterTransactionCommit(dispatchAction);
 
         return retryInstanceId;
     }
@@ -982,11 +993,11 @@ public class JobManager {
         }
 
         // 使用嵌套事务：保证`save`方法内部数据操作的原子性，异常则回滚而不影响外层事务
-        TriggerInstance dependInstance = triggerInstanceCreator.create(childJob, parent, RunType.DEPEND, System.currentTimeMillis());
+        TriggerInstance dependInstance = TriggerInstance.of(this, childJob, parent, RunType.DEPEND, System.currentTimeMillis());
         Consumer<Throwable> errorHandler = t -> LOG.error("Create depend instance failed: {}, {}", childJob, parent, t);
         ThrowingSupplier<Runnable, Throwable> persistenceAction = () -> { dependInstance.save(); return dependInstance::dispatch; };
-        Runnable dispatchAction = TransactionUtils.doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
-        TransactionUtils.doAfterTransactionCommit(dispatchAction);
+        Runnable dispatchAction = doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
+        doAfterTransactionCommit(dispatchAction);
     }
 
     private List<ExecuteTaskParam> loadExecutingTasks(SchedInstance instance, Operation ops) {
@@ -1114,8 +1125,8 @@ public class JobManager {
         };
         // 使用嵌套事务：保证`processWorkflowNode`方法内部数据操作的原子性，异常则回滚而不影响外层事务
         ThrowingSupplier<List<Runnable>, Throwable> persistenceAction = () -> processWorkflowGraph(lead, graph, map);
-        List<Runnable> dispatchActions = TransactionUtils.doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
-        TransactionUtils.doAfterTransactionCommit(dispatchActions);
+        List<Runnable> dispatchActions = doInNestedTransaction(transactionTemplate, persistenceAction, errorHandler);
+        doAfterTransactionCommit(dispatchActions);
     }
 
     private List<Runnable> processWorkflowGraph(SchedInstance lead, WorkflowGraph graph,
@@ -1168,7 +1179,7 @@ public class JobManager {
         List<SchedTask> tasks = splitJob(splitJobParam, nextInstanceId);
 
         // save to db
-        triggerInstanceCreator.saveInstanceAndTasks(nextInstance, tasks);
+        saveInstanceAndTasks(nextInstance, tasks);
         dispatchActions.add(() -> dispatch(job, nextInstance, tasks));
     }
 

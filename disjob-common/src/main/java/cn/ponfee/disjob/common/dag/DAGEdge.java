@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.common.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
-import com.google.common.graph.EndpointPair;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -46,11 +45,6 @@ public final class DAGEdge extends ToJsonString implements Serializable {
         Objects.requireNonNull(source, "DAG source text cannot be blank.");
         Objects.requireNonNull(target, "DAG target text cannot be blank.");
         return new DAGEdge(DAGNode.fromString(source), DAGNode.fromString(target));
-    }
-
-    public static DAGEdge of(EndpointPair<DAGNode> pair) {
-        Objects.requireNonNull(pair, "DAG node pair cannot be blank.");
-        return new DAGEdge(pair.source(), pair.target());
     }
 
     public DAGNode getSource() {

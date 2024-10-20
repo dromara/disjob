@@ -189,7 +189,8 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     @Override
     public List<R> getRegisteredServers() {
         Object[] args = {namespace, registerRoleName, System.currentTimeMillis() - sessionTimeoutMs};
-        return deserializeRegistryServers(jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args));
+        List<String> servers = jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
+        return deserializeRegistryServers(servers);
     }
 
     // ------------------------------------------------------------------Close

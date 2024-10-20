@@ -16,23 +16,12 @@
 
 package cn.ponfee.disjob.supervisor.instance;
 
-import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.RunType;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.supervisor.component.JobManager;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedInstanceMapper;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedTaskMapper;
-import cn.ponfee.disjob.supervisor.dao.mapper.SchedWorkflowMapper;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
-import cn.ponfee.disjob.supervisor.model.SchedTask;
-import cn.ponfee.disjob.supervisor.model.SchedWorkflow;
-import lombok.AllArgsConstructor;
-
-import java.util.List;
-
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 
 /**
  * Abstract trigger instance
@@ -41,13 +30,13 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  */
 public abstract class TriggerInstance {
 
-    protected final Creator creator;
+    protected final JobManager jobManager;
     protected final SchedJob job;
 
     protected SchedInstance instance;
 
-    protected TriggerInstance(Creator creator, SchedJob job) {
-        this.creator = creator;
+    protected TriggerInstance(JobManager jobManager, SchedJob job) {
+        this.jobManager = jobManager;
         this.job = job;
     }
 
@@ -65,40 +54,20 @@ public abstract class TriggerInstance {
 
     public abstract void dispatch();
 
-    @AllArgsConstructor
-    public static class Creator {
-        final JobManager jobManager;
-        private final SchedWorkflowMapper workflowMapper;
-        private final SchedInstanceMapper instanceMapper;
-        private final SchedTaskMapper taskMapper;
-
-        public TriggerInstance create(SchedJob job, SchedInstance parent, RunType runType, long triggerTime) throws JobException {
-            JobType jobType = JobType.of(job.getJobType());
-            TriggerInstance triggerInstance;
-            if (jobType == JobType.GENERAL) {
-                triggerInstance = new GeneralInstance(this, job);
-            } else if (jobType == JobType.WORKFLOW) {
-                triggerInstance = new WorkflowInstance(this, job);
-            } else {
-                throw new UnsupportedOperationException("Unknown job type: " + jobType);
-            }
-            triggerInstance.create(parent, runType, triggerTime);
-
-            return triggerInstance;
+    public static TriggerInstance of(JobManager jobManager, SchedJob job, SchedInstance parent,
+                                     RunType runType, long triggerTime) throws JobException {
+        JobType jobType = JobType.of(job.getJobType());
+        TriggerInstance triggerInstance;
+        if (jobType == JobType.GENERAL) {
+            triggerInstance = new GeneralInstance(jobManager, job);
+        } else if (jobType == JobType.WORKFLOW) {
+            triggerInstance = new WorkflowInstance(jobManager, job);
+        } else {
+            throw new UnsupportedOperationException("Unknown job type: " + jobType);
         }
+        triggerInstance.create(parent, runType, triggerTime);
 
-        public void saveInstanceAndTasks(SchedInstance instance, List<SchedTask> tasks) {
-            saveInstance(instance);
-            Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
-        }
-
-        void saveWorkflows(List<SchedWorkflow> workflows) {
-            Collects.batchProcess(workflows, workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
-        }
-
-        void saveInstance(SchedInstance instance) {
-            instanceMapper.insert(instance.fillUniqueFlag());
-        }
+        return triggerInstance;
     }
 
 }
