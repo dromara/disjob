@@ -43,7 +43,7 @@ public class GeneralInstance extends TriggerInstance {
     protected void create(SchedInstance parent, RunType runType, long triggerTime) throws JobException {
         long instanceId = jobManager.generateId();
         super.instance = SchedInstance.of(parent, null, instanceId, job.getJobId(), runType, triggerTime, 0);
-        this.tasks = jobManager.splitJob(ModelConverter.toSplitJobParam(job, instance), instanceId);
+        this.tasks = jobManager.splitJob(job.getGroup(), instanceId, ModelConverter.toSplitJobParam(job, instance));
     }
 
     @Override

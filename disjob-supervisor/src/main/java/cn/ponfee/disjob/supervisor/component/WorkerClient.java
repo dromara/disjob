@@ -37,6 +37,8 @@ import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClien
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
+import cn.ponfee.disjob.supervisor.model.SchedTask;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,8 +47,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 
 import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE;
@@ -61,17 +65,19 @@ public class WorkerClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerClient.class);
 
+    private final Discovery<Worker> discoverWorker;
     private final TaskDispatcher taskDispatcher;
     private final GroupedServerClient<WorkerRpcService> groupedClient;
     private final DestinationServerClient<WorkerRpcService, Worker> destinationClient;
 
-    public WorkerClient(TaskDispatcher taskDispatcher,
+    public WorkerClient(Discovery<Worker> discoverWorker,
+                        TaskDispatcher taskDispatcher,
                         Supervisor.Local localSupervisor,
                         RetryProperties retry,
-                        Discovery<Worker> discoverWorker,
                         @Qualifier(SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
                         @Nullable WorkerRpcService workerRpcProvider,
                         @Nullable Worker.Local localWorker) {
+        this.discoverWorker = discoverWorker;
         this.taskDispatcher = taskDispatcher;
 
         retry.check();
@@ -82,8 +88,51 @@ public class WorkerClient {
 
         Function<Worker, String> workerContextPath = worker -> localSupervisor.getWorkerContextPath(worker.getGroup());
         this.destinationClient = DestinationServerRestProxy.create(
-            WorkerRpcService.class, workerRpcProvider, Worker.local(), workerContextPath, restTemplate, RetryProperties.none()
+            WorkerRpcService.class, workerRpcProvider, localWorker, workerContextPath, restTemplate, RetryProperties.none()
         );
+    }
+
+    public List<Worker> getDiscoveredWorkers(String group) {
+        return discoverWorker.getDiscoveredServers(group);
+    }
+
+    public boolean hasNotDiscoveredWorkers(String group) {
+        return CollectionUtils.isEmpty(getDiscoveredWorkers(group));
+    }
+
+    public boolean hasNotDiscoveredWorkers() {
+        return !discoverWorker.hasDiscoveredServers();
+    }
+
+    public boolean isAliveWorker(Worker worker) {
+        return worker != null && discoverWorker.isDiscoveredServer(worker);
+    }
+
+    public boolean hasAliveExecutingTasks(List<SchedTask> tasks) {
+        return CollectionUtils.isNotEmpty(tasks)
+            && tasks.stream().filter(SchedTask::isExecuting).anyMatch(e -> isAliveWorker(e.worker()));
+    }
+
+    public boolean shouldRedispatch(SchedTask task) {
+        if (!task.isWaiting()) {
+            return false;
+        }
+
+        Worker worker = task.worker();
+        if (!isAliveWorker(worker)) {
+            return true;
+        }
+
+        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
+        ExistsTaskParam param = ExistsTaskParam.of(supervisorToken, task.getTaskId());
+        try {
+            // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发
+            return !destinationClient.call(worker, service -> service.existsTask(param));
+        } catch (Throwable e) {
+            LOG.error("Invoke worker exists task error: " + worker, e);
+            // 若调用异常(如请求超时)，则默认为Worker已存在该task，本次不做处理，等下一次扫描时再判断是否要重新分发任务
+            return false;
+        }
     }
 
     public void verifyJob(SchedJob job) throws JobException {
@@ -98,26 +147,32 @@ public class WorkerClient {
         groupedClient.invoke(job.getGroup(), client -> client.verifyJob(param));
     }
 
-    public List<String> splitJob(SplitJobParam param, int workerCount) throws JobException {
-        param.setWorkerCount(workerCount);
-        SchedGroupService.fillSupervisorAuthenticationToken(param.getGroup(), param);
-        SplitJobResult result = groupedClient.call(param.getGroup(), client -> client.splitJob(param));
+    public List<SchedTask> splitJob(String group, long instanceId, SplitJobParam param,
+                                    LongSupplier idGenerator, int maximumSplitTaskSize) throws JobException {
+        List<Worker> workers = getDiscoveredWorkers(group);
+        Assert.state(!workers.isEmpty(), () -> "Not discovered worker for split job: " + group);
+        int wCount = workers.size();
+
+        param.setWorkerCount(wCount);
+        SchedGroupService.fillSupervisorAuthenticationToken(group, param);
+        SplitJobResult result = groupedClient.call(group, client -> client.splitJob(param));
         List<String> taskParams = result.getTaskParams();
         taskParams.forEach(e -> CoreUtils.checkClobMaximumLength(e, "Split task param"));
-        return taskParams;
-    }
 
-    public boolean existsTask(Worker worker, long taskId) {
-        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
-        ExistsTaskParam param = ExistsTaskParam.of(supervisorToken, taskId);
-        try {
-            // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发
-            return destinationClient.call(worker, service -> service.existsTask(param));
-        } catch (Throwable e) {
-            LOG.error("Invoke worker exists task error: " + worker, e);
-            // 若调用异常(如请求超时)，则默认为Worker已存在该task，本次不做处理，等下一次扫描时再判断是否要重新分发任务
-            return true;
+        int tCount = taskParams.size();
+        boolean isBroadcast = param.getRouteStrategy().isBroadcast();
+        if (isBroadcast) {
+            Assert.state(tCount == wCount, () -> "Illegal broadcast split task size: " + tCount + "!=" + wCount);
+        } else {
+            Assert.state(0 < tCount && tCount <= maximumSplitTaskSize, () -> "Illegal split task size: " + tCount);
         }
+
+        List<SchedTask> tasks = new ArrayList<>(tCount);
+        for (int i = 0; i < tCount; i++) {
+            String worker = isBroadcast ? workers.get(i).serialize() : null;
+            tasks.add(SchedTask.of(taskParams.get(i), idGenerator.getAsLong(), instanceId, i + 1, tCount, worker));
+        }
+        return tasks;
     }
 
     public <R, E extends Throwable> R call(Worker worker, ThrowingFunction<WorkerRpcService, R, E> function) throws E {

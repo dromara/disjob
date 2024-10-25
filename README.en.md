@@ -77,7 +77,7 @@ disjob                                        # Main project①
 - If a task throw [PauseTaskException](disjob-worker/src/main/java/cn/ponfee/disjob/worker/exception/PauseTaskException.java) at executing, then will pause all instance tasks (even if dispatched other worker machine tasks)
 - Supports broadcast tasks, broadcast tasks will be dispatched to all workers under the group for execution
 - Supports dependencies jobs, multiple Jobs configured with dependencies will be executed in the established dependency order
-- Supports DAG workflows, can configure jobExecutor as a complex DAG expression, such as: A->B,C,(D->E)->D,F->G
+- Supports DAG workflows, can configure jobExecutor as a complex DAG expression, such as: A->B,C,(D->E)->F,G->H
 - Provides a Web management backend, job configuration, task monitoring, etc.
 
 ## [Download From Maven Central](https://central.sonatype.com/namespace/cn.ponfee)

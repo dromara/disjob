@@ -18,6 +18,7 @@ package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Symbol.Str;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
@@ -49,6 +50,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -67,8 +69,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(SchedGroupService.class);
 
     private static final Lock LOCK = new ReentrantLock();
-    private static volatile Map<String, DisjobGroup> groupCache;
-    private static volatile Map<String, Set<String>> userCache;
+    private static final AtomicReference<Cache> CACHE = new AtomicReference<>(Cache.of());
 
     private final SchedGroupMapper groupMapper;
     private final Discovery<Worker> discoverWorker;
@@ -77,12 +78,13 @@ public class SchedGroupService extends SingletonClassConstraint {
     public SchedGroupService(SchedGroupMapper groupMapper,
                              Discovery<Worker> discoverWorker,
                              ServerInvokeService serverInvokeService,
-                             SupervisorProperties supervisorProperties) {
+                             SupervisorProperties supervisorConf) {
         this.groupMapper = groupMapper;
         this.discoverWorker = discoverWorker;
         this.serverInvokeService = serverInvokeService;
 
-        int periodSeconds = Math.max(supervisorProperties.getGroupRefreshPeriodSeconds(), 30);
+        supervisorConf.check();
+        int periodSeconds = Math.max(supervisorConf.getGroupRefreshPeriodSeconds(), 30);
         commonScheduledPool().scheduleWithFixedDelay(this::refresh, periodSeconds, periodSeconds, TimeUnit.SECONDS);
         refresh();
     }
@@ -156,17 +158,12 @@ public class SchedGroupService extends SingletonClassConstraint {
 
     // ------------------------------------------------------------other static methods
 
-    public static Set<String> myGroups(String user) {
-        Set<String> groups = userCache.get(user);
-        return groups == null ? Collections.emptySet() : groups;
+    public static ImmutableSet<String> myGroups(String user) {
+        return CACHE.get().myGroups(user);
     }
 
     public static DisjobGroup getGroup(String group) {
-        DisjobGroup disjobGroup = groupCache.get(group);
-        if (disjobGroup == null) {
-            throw new GroupNotFoundException("Not found worker group: " + group);
-        }
-        return disjobGroup;
+        return CACHE.get().getGroup(group);
     }
 
     public static boolean isDeveloper(String group, String user) {
@@ -202,12 +199,7 @@ public class SchedGroupService extends SingletonClassConstraint {
     void refresh() {
         if (LOCK.tryLock()) {
             try {
-                List<SchedGroup> list = groupMapper.findAll();
-                Map<String, DisjobGroup> groupMap0 = list.stream().collect(Collectors.toMap(SchedGroup::getGroup, DisjobGroup::of));
-                Map<String, Set<String>> userMap0 = toUserMap(list);
-
-                SchedGroupService.groupCache = groupMap0;
-                SchedGroupService.userCache = userMap0;
+                CACHE.set(Cache.of(groupMapper.findAll()));
             } catch (Throwable t) {
                 LOG.error("Refresh sched group error.", t);
                 Threads.interruptIfNecessary(t);
@@ -223,28 +215,58 @@ public class SchedGroupService extends SingletonClassConstraint {
         serverInvokeService.publishOtherSupervisors(event);
     }
 
-    @SuppressWarnings("unchecked")
-    private static Map<String, Set<String>> toUserMap(List<SchedGroup> list) {
-        Map<String, ?> userMap = list.stream()
-            .flatMap(e -> {
-                String group = e.getGroup();
-                String devUsers = e.getDevUsers();
-                if (StringUtils.isBlank(devUsers)) {
-                    return Stream.of(Pair.of(e.getOwnUser(), group));
-                }
+    private static Map<String, ImmutableSet<String>> toUserMap(List<SchedGroup> list) {
+        Stream<Pair<String, String>> stream = list.stream().flatMap(e -> {
+            String group = e.getGroup();
+            String devUsers = e.getDevUsers();
+            if (StringUtils.isBlank(devUsers)) {
+                return Stream.of(Pair.of(e.getOwnUser(), group));
+            }
+            String[] array = devUsers.split(Str.COMMA);
+            List<Pair<String, String>> users = new ArrayList<>(array.length + 1);
+            users.add(Pair.of(e.getOwnUser(), group));
+            Arrays.stream(array).filter(StringUtils::isNotBlank).map(String::trim).forEach(u -> users.add(Pair.of(u, group)));
+            return users.stream();
+        });
 
-                String[] array = devUsers.split(Str.COMMA);
-                List<Pair<String, String>> users = new ArrayList<>(array.length + 1);
-                users.add(Pair.of(e.getOwnUser(), group));
-                Arrays.stream(array)
-                    .filter(StringUtils::isNotBlank)
-                    .map(String::trim)
-                    .forEach(u -> users.add(Pair.of(u, group)));
-                return users.stream();
-            })
-            .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
+        return stream.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
+    }
 
-        return (Map<String, Set<String>>) userMap;
+    private static class Cache {
+        /**
+         * Map<group, DisjobGroup>
+         */
+        final Map<String, DisjobGroup> groupMap;
+        /**
+         * Map<user, groups>
+         */
+        final Map<String, ImmutableSet<String>> userMap;
+
+        Cache(Map<String, DisjobGroup> groupMap, Map<String, ImmutableSet<String>> userMap) {
+            this.groupMap = groupMap;
+            this.userMap = userMap;
+        }
+
+        static Cache of() {
+            return new Cache(Collections.emptyMap(), Collections.emptyMap());
+        }
+
+        static Cache of(List<SchedGroup> list) {
+            return new Cache(Collects.toMap(list, SchedGroup::getGroup, DisjobGroup::of), toUserMap(list));
+        }
+
+        DisjobGroup getGroup(String group) {
+            DisjobGroup disjobGroup = groupMap.get(group);
+            if (disjobGroup == null) {
+                throw new GroupNotFoundException("Not found worker group: " + group);
+            }
+            return disjobGroup;
+        }
+
+        ImmutableSet<String> myGroups(String user) {
+            ImmutableSet<String> groups = userMap.get(user);
+            return groups == null ? ImmutableSet.of() : groups;
+        }
     }
 
 }

@@ -32,14 +32,12 @@ import org.springframework.util.Assert;
 public class VerifyJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
-    private String group;
     private String jobExecutor;
     private String jobParam;
     private JobType jobType;
     private RouteStrategy routeStrategy;
 
     public void check() {
-        Assert.hasText(group, "Group cannot be empty.");
         Assert.hasText(jobExecutor, "Job executor cannot be empty.");
         Assert.notNull(jobType, "Job type cannot be null.");
         Assert.notNull(routeStrategy, "Route strategy cannot be null.");

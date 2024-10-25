@@ -86,8 +86,9 @@ final class DiscoveryServerRestTemplate<D extends Server> {
         Map<String, String> authenticationHeaders = null;
         if (discoveryServerRole == ServerRole.SUPERVISOR) {
             // Worker 远程调用 Supervisor
-            serverContextPath = Worker.local().getSupervisorContextPath();
-            authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
+            Worker.Local localWorker = Worker.local();
+            serverContextPath = localWorker.getSupervisorContextPath();
+            authenticationHeaders = localWorker.createWorkerAuthenticationHeaders();
         } else {
             // Supervisor 远程调用 Worker
             serverContextPath = Supervisor.local().getWorkerContextPath(group);

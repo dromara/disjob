@@ -23,6 +23,7 @@ import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
+import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
@@ -42,6 +43,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     private final LockTemplate lockTemplate;
+    private final WorkerClient workerClient;
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
     private final long beforeMilliseconds;
@@ -49,6 +51,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     public RunningInstanceScanner(SupervisorProperties conf,
                                   LockTemplate lockTemplate,
+                                  WorkerClient workerClient,
                                   JobManager jobManager,
                                   JobQuerier jobQuerier) {
         super(conf.getScanRunningInstancePeriodMs());
@@ -56,6 +59,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
         this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
+        this.workerClient = workerClient;
         this.jobQuerier = jobQuerier;
         // heartbeat period duration: 20s * 12 = 240s
         this.beforeMilliseconds = (heartbeatPeriodMs * 12);
@@ -63,7 +67,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (jobManager.hasNotDiscoveredWorkers()) {
+        if (workerClient.hasNotDiscoveredWorkers()) {
             logPrinter.execute();
             return true;
         }
@@ -105,7 +109,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     private void processHasWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
         // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
-        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, jobManager::shouldRedispatch);
+        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, workerClient::shouldRedispatch);
         if (CollectionUtils.isEmpty(redispatchingTasks)) {
             return;
         }
@@ -115,7 +119,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             return;
         }
         // check is whether not discovered worker
-        if (jobManager.hasNotDiscoveredWorkers(job.getGroup())) {
+        if (workerClient.hasNotDiscoveredWorkers(job.getGroup())) {
             log.error("Scanned running state instance not discovered worker: {}, {}", instance.getInstanceId(), job.getGroup());
             return;
         }
@@ -139,7 +143,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     private void processHasExecutingTask(SchedInstance instance, List<SchedTask> tasks) {
         // check has alive executing state task
-        if (jobManager.hasAliveExecutingTasks(tasks)) {
+        if (workerClient.hasAliveExecutingTasks(tasks)) {
             return;
         }
         boolean purged = jobManager.purgeInstance(instance);

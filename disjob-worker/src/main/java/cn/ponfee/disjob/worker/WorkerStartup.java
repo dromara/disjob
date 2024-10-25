@@ -23,6 +23,7 @@ import cn.ponfee.disjob.core.base.RetryProperties;
 import cn.ponfee.disjob.core.base.SupervisorRpcService;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
+import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
 import cn.ponfee.disjob.worker.base.TimingWheelRotator;
@@ -48,7 +49,7 @@ public class WorkerStartup implements Startable {
     private final WorkerThreadPool workerThreadPool;
     private final TimingWheelRotator timingWheelRotator;
     private final TaskReceiver taskReceiver;
-    private final WorkerRegistry workerRegistry;
+    private final Registry<Worker> workerRegistry;
     private final TripState state = TripState.create();
 
     public WorkerStartup(Worker.Local localWorker,

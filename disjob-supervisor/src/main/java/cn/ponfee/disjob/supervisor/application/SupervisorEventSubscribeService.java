@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.base.SupervisorEvent.Type;
@@ -31,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+
+import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
 
 /**
  * Event subscribe service
@@ -49,7 +50,7 @@ public class SupervisorEventSubscribeService extends SingletonClassConstraint {
         this.groupService = groupService;
 
         long initialDelay = 5000 + ThreadLocalRandom.current().nextLong(5000);
-        ThreadPoolExecutors.commonScheduledPool().scheduleWithFixedDelay(this::process, initialDelay, 5000, TimeUnit.MILLISECONDS);
+        commonScheduledPool().scheduleWithFixedDelay(this::process, initialDelay, 5000, TimeUnit.MILLISECONDS);
     }
 
     public static void subscribe(SupervisorEvent event) {

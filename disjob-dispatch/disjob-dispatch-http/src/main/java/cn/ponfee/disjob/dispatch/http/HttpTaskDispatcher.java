@@ -25,6 +25,7 @@ import cn.ponfee.disjob.registry.Discovery;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
@@ -37,21 +38,21 @@ import static cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.create;
  */
 public class HttpTaskDispatcher extends TaskDispatcher {
 
-    private final DestinationServerClient<Controller, Worker> httpTaskReceiverClient;
+    private final DestinationServerClient<HttpTaskController, Worker> httpTaskReceiverClient;
 
     public HttpTaskDispatcher(ApplicationEventPublisher eventPublisher,
                               Discovery<Worker> discoverWorker,
                               RetryProperties retryProperties,
                               Supervisor.Local localSupervisor,
                               RestTemplate restTemplate,
-                              HttpTaskReceiver httpTaskReceiver) {
+                              @Nullable HttpTaskReceiver httpTaskReceiver) {
         super(eventPublisher, discoverWorker, retryProperties, httpTaskReceiver);
 
         Function<Worker, String> workerContextPath = worker -> localSupervisor.getWorkerContextPath(worker.getGroup());
         RetryProperties retry = RetryProperties.none();
         // `TaskDispatcher#dispatch0`内部有处理本地worker的分派逻辑，这里不需要本地的`Controller`，所以传null
-        this.httpTaskReceiverClient = create(Controller.class, null, null, workerContextPath, restTemplate, retry);
-        //this.httpTaskReceiverClient = create(Controller.class, httpTaskReceiver, Worker.local(), workerContextPath, restTemplate, retry);
+        this.httpTaskReceiverClient = create(HttpTaskController.class, null, null, workerContextPath, restTemplate, retry);
+        //this.httpTaskReceiverClient = create(HttpTaskController.class, httpTaskReceiver, Worker.local(), workerContextPath, restTemplate, retry);
     }
 
     @Override

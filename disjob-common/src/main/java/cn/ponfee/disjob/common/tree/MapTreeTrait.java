@@ -48,6 +48,7 @@ public class MapTreeTrait<T extends Serializable & Comparable<T>, A>
         super.put(childrenKey, children);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<MapTreeTrait<T, A>> getChildren() {
         return (List<MapTreeTrait<T, A>>) super.get(childrenKey);

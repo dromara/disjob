@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Http task receiver controller
+ * Http task controller
  *
  * @author Ponfee
  */
 @RequestMapping(WorkerRpcService.PREFIX_PATH)
-interface Controller {
+interface HttpTaskController {
 
     /**
      * Receive task http method

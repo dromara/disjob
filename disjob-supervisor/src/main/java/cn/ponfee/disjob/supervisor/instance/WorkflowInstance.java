@@ -82,8 +82,8 @@ public class WorkflowInstance extends TriggerInstance {
             SchedInstance nodeInstance = SchedInstance.of(leadInstance, nodeInstanceId, jobId, runType, triggerTime, 0);
             nodeInstance.setWorkflowCurNode(node.toString());
 
-            SplitJobParam splitJobParam = ModelConverter.toSplitJobParam(job, nodeInstance, null);
-            List<SchedTask> nodeTasks = jobManager.splitJob(splitJobParam, nodeInstance.getInstanceId());
+            SplitJobParam param = ModelConverter.toSplitJobParam(job, nodeInstance, null);
+            List<SchedTask> nodeTasks = jobManager.splitJob(job.getGroup(), nodeInstance.getInstanceId(), param);
             nodes.add(Tuple2.of(nodeInstance, nodeTasks));
         }
     }

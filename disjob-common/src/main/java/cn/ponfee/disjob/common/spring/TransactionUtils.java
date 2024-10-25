@@ -148,7 +148,7 @@ public class TransactionUtils {
 
     /**
      * 创建一个新事务，如果当前存在事务，则将这个事务挂起。
-     * <p>内部事务与外部事务相互独立，互不依赖。
+     * <p>内部事务与外部事务相互独立，互不依赖，互不影响。
      *
      * @param txManager    the txManager
      * @param action       the action
@@ -162,10 +162,12 @@ public class TransactionUtils {
     }
 
     /**
+     * <pre>
      * 如果当前存在事务则开启一个嵌套事务，如果当前不存在事务则新建一个事务并运行。
-     * <p>内部事务为外部事务的一个子事务。
-     * <p>内部事务的提交/回滚不影响外部事务的提交/回滚
-     * <p>内部事务的提交/回滚最终依赖外部事务的提交/回滚。
+     *   1）内部事务为外部事务的一个子事务。
+     *   2）内部事务的提交/回滚不影响外部事务的提交/回滚
+     *   3）内部事务的提交/回滚最终依赖外部事务的提交/回滚。
+     * </pre>
      *
      * @param transactionTemplate the transaction template
      * @param action              the action

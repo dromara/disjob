@@ -29,7 +29,7 @@ import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam;
 import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.dto.worker.GetMetricsParam;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
-import cn.ponfee.disjob.registry.SupervisorRegistry;
+import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.supervisor.application.converter.ServerMetricsConverter;
@@ -68,12 +68,12 @@ public class ServerInvokeService extends SingletonClassConstraint {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInvokeService.class);
 
     private final WorkerClient workerClient;
-    private final SupervisorRegistry supervisorRegistry;
+    private final Registry<Supervisor> supervisorRegistry;
     private final Supervisor.Local localSupervisor;
     private final DestinationServerClient<ExtendedSupervisorRpcService, Supervisor> supervisorClient;
 
     public ServerInvokeService(WorkerClient workerClient,
-                               SupervisorRegistry supervisorRegistry,
+                               Registry<Supervisor> supervisorRegistry,
                                Supervisor.Local localSupervisor,
                                ExtendedSupervisorRpcService localSupervisorRpcProvider,
                                ServerProperties serverProperties,
@@ -97,7 +97,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     public List<WorkerMetricsResponse> workers(String group) {
-        List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
+        List<Worker> list = workerClient.getDiscoveredWorkers(group);
+        // 当前Supervisor同时也是Worker时，此Worker排到最前面
         list = Collects.sorted(list, Comparator.comparing(e -> e.equals(Worker.local()) ? 0 : 1));
         return MultithreadExecutors.call(list, this::getWorkerMetrics, ThreadPoolExecutors.commonThreadPool());
     }
@@ -119,7 +120,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     public void configureOneWorker(ConfigureOneWorkerRequest req) {
         Worker worker = req.toWorker();
         if (req.getAction() == Action.ADD_WORKER) {
-            List<Worker> workers = supervisorRegistry.getDiscoveredServers(req.getGroup());
+            List<Worker> workers = workerClient.getDiscoveredWorkers(req.getGroup());
             if (workers != null && workers.stream().anyMatch(worker::matches)) {
                 throw new KeyExistsException("Worker already registered: " + worker);
             }
@@ -213,7 +214,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private List<Worker> getDiscoveredWorkers(String group) {
-        List<Worker> list = supervisorRegistry.getDiscoveredServers(group);
+        List<Worker> list = workerClient.getDiscoveredWorkers(group);
         if (CollectionUtils.isEmpty(list)) {
             throw new KeyNotExistsException("Group '" + group + "' not exists workers.");
         }

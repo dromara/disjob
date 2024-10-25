@@ -40,7 +40,6 @@ import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.core.exception.JobException;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.event.TaskDispatchFailedEvent;
-import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.supervisor.base.ExecuteTaskParamBuilder;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
@@ -67,7 +66,6 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -79,7 +77,6 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_MANAGER;
 import static cn.ponfee.disjob.supervisor.dao.SupervisorDataSourceConfig.SPRING_BEAN_NAME_TX_TEMPLATE;
 import static com.google.common.collect.ImmutableList.of;
-import static java.util.Collections.singletonList;
 
 /**
  * Job manager
@@ -94,15 +91,15 @@ public class JobManager {
     private static final List<Integer> RS_TERMINABLE = of(RunState.WAITING.value(), RunState.RUNNING.value(), RunState.PAUSED.value());
     private static final List<Integer> RS_RUNNABLE   = of(RunState.WAITING.value(), RunState.PAUSED.value());
     private static final List<Integer> RS_PAUSABLE   = of(RunState.WAITING.value(), RunState.RUNNING.value());
-    private static final List<Integer> RS_WAITING    = singletonList(RunState.WAITING.value());
-    private static final List<Integer> RS_RUNNING    = singletonList(RunState.RUNNING.value());
-    private static final List<Integer> RS_PAUSED     = singletonList(RunState.PAUSED.value());
+    private static final List<Integer> RS_WAITING    = of(RunState.WAITING.value());
+    private static final List<Integer> RS_RUNNING    = of(RunState.RUNNING.value());
+    private static final List<Integer> RS_PAUSED     = of(RunState.PAUSED.value());
     private static final List<Integer> ES_EXECUTABLE = of(ExecuteState.WAITING.value(), ExecuteState.PAUSED.value());
     private static final List<Integer> ES_PAUSABLE   = of(ExecuteState.WAITING.value(), ExecuteState.EXECUTING.value());
-    private static final List<Integer> ES_WAITING    = singletonList(ExecuteState.WAITING.value());
-    private static final List<Integer> ES_EXECUTING  = singletonList(ExecuteState.EXECUTING.value());
-    private static final List<Integer> ES_PAUSED     = singletonList(ExecuteState.PAUSED.value());
-    private static final List<Integer> ES_COMPLETED  = singletonList(ExecuteState.COMPLETED.value());
+    private static final List<Integer> ES_WAITING    = of(ExecuteState.WAITING.value());
+    private static final List<Integer> ES_EXECUTING  = of(ExecuteState.EXECUTING.value());
+    private static final List<Integer> ES_PAUSED     = of(ExecuteState.PAUSED.value());
+    private static final List<Integer> ES_COMPLETED  = of(ExecuteState.COMPLETED.value());
 
     private final SupervisorProperties conf;
     private final IdGenerator idGenerator;
@@ -111,7 +108,6 @@ public class JobManager {
     private final SchedInstanceMapper instanceMapper;
     private final SchedWorkflowMapper workflowMapper;
     private final SchedTaskMapper taskMapper;
-    private final Discovery<Worker> discoverWorker;
     private final WorkerClient workerClient;
     private final TransactionTemplate transactionTemplate;
 
@@ -122,7 +118,6 @@ public class JobManager {
                       SchedInstanceMapper instanceMapper,
                       SchedWorkflowMapper workflowMapper,
                       SchedTaskMapper taskMapper,
-                      Discovery<Worker> discoverWorker,
                       WorkerClient workerClient,
                       @Qualifier(SPRING_BEAN_NAME_TX_TEMPLATE) TransactionTemplate txTemplate) {
         conf.check();
@@ -133,7 +128,6 @@ public class JobManager {
         this.instanceMapper = instanceMapper;
         this.workflowMapper = workflowMapper;
         this.taskMapper = taskMapper;
-        this.discoverWorker = discoverWorker;
         this.workerClient = workerClient;
         this.transactionTemplate = txTemplate;
     }
@@ -144,42 +138,8 @@ public class JobManager {
         return idGenerator.generateId();
     }
 
-    public boolean hasNotDiscoveredWorkers(String group) {
-        return CollectionUtils.isEmpty(discoverWorker.getDiscoveredServers(group));
-    }
-
-    public boolean hasNotDiscoveredWorkers() {
-        return !discoverWorker.hasDiscoveredServers();
-    }
-
-    public boolean hasAliveExecutingTasks(List<SchedTask> tasks) {
-        return CollectionUtils.isNotEmpty(tasks)
-            && tasks.stream().filter(SchedTask::isExecuting).anyMatch(e -> isAliveWorker(e.worker()));
-    }
-
-    public List<SchedTask> splitJob(SplitJobParam param, long instanceId) throws JobException {
-        List<Worker> workers = discoverWorker.getDiscoveredServers(param.getGroup());
-        Assert.state(!workers.isEmpty(), () -> "Not discovered worker for split job: " + param.getGroup());
-        int wCount = workers.size();
-        List<String> taskParams = workerClient.splitJob(param, wCount);
-        int tCount = taskParams.size();
-        if (param.getRouteStrategy().isBroadcast()) {
-            Assert.state(tCount == wCount, () -> "Illegal broadcast split task size: " + tCount + "!=" + wCount);
-        } else {
-            Assert.state(0 < tCount && tCount <= conf.getMaximumSplitTaskSize(), () -> "Illegal split task size: " + tCount);
-        }
-        return Collects.generate(tCount, i -> {
-            String worker = param.getRouteStrategy().isBroadcast() ? workers.get(i).serialize() : null;
-            return SchedTask.of(taskParams.get(i), generateId(), instanceId, i + 1, tCount, worker);
-        });
-    }
-
-    public boolean shouldRedispatch(SchedTask task) {
-        if (!task.isWaiting()) {
-            return false;
-        }
-        Worker worker = task.worker();
-        return !isAliveWorker(worker) || !workerClient.existsTask(worker, task.getTaskId());
+    public List<SchedTask> splitJob(String group, long instanceId, SplitJobParam param) throws JobException {
+        return workerClient.splitJob(group, instanceId, param, this::generateId, conf.getMaximumSplitTaskSize());
     }
 
     public boolean dispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
@@ -188,20 +148,6 @@ public class JobManager {
 
     public boolean redispatch(SchedJob job, SchedInstance instance, List<SchedTask> tasks) {
         return dispatch(true, job, instance, tasks);
-    }
-
-    // ------------------------------------------------------------------must in transaction active(PROPAGATION_MANDATORY)
-
-    public void saveInstanceAndWorkflows(SchedInstance instance, List<SchedWorkflow> workflows) {
-        assertDoInTransaction();
-        instanceMapper.insert(instance.fillUniqueFlag());
-        Collects.batchProcess(workflows, workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
-    }
-
-    public void saveInstanceAndTasks(SchedInstance instance, List<SchedTask> tasks) {
-        assertDoInTransaction();
-        instanceMapper.insert(instance.fillUniqueFlag());
-        Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
     }
 
     // ------------------------------------------------------------------database single operation without spring transactional
@@ -226,6 +172,20 @@ public class JobManager {
     public boolean savepoint(long taskId, String worker, String executeSnapshot) {
         CoreUtils.checkClobMaximumLength(executeSnapshot, "Execute snapshot");
         return isOneAffectedRow(taskMapper.savepoint(taskId, worker, executeSnapshot));
+    }
+
+    // ------------------------------------------------------------------must in transaction active(propagation Mandatory)
+
+    public void saveInstanceAndWorkflows(SchedInstance instance, List<SchedWorkflow> workflows) {
+        assertDoInTransaction();
+        instanceMapper.insert(instance.fillUniqueFlag());
+        Collects.batchProcess(workflows, workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
+    }
+
+    public void saveInstanceAndTasks(SchedInstance instance, List<SchedTask> tasks) {
+        assertDoInTransaction();
+        instanceMapper.insert(instance.fillUniqueFlag());
+        Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
     }
 
     // ------------------------------------------------------------------database operation within spring @transactional
@@ -287,15 +247,15 @@ public class JobManager {
     }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
-    public void triggerJob(SchedJob job, RunType runType, long triggerTime) throws JobException {
-        Assert.isTrue(runType.isUniqueFlag(), () -> "Job run type must be unique flag mode: " + job);
-        if (runType == RunType.SCHEDULE && isNotAffectedRow(jobMapper.updateNextTriggerTime(job))) {
-            // If SCHEDULE, must be update job next trigger time
-            return;
+    public void manualTriggerJob(long jobId) throws JobException {
+        triggerJob(getRequireJob(jobId), RunType.MANUAL, System.currentTimeMillis());
+    }
+
+    @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
+    public void scheduleTriggerJob(SchedJob job, long triggerTime) throws JobException {
+        if (isOneAffectedRow(jobMapper.updateNextTriggerTime(job))) {
+            triggerJob(job, RunType.SCHEDULE, triggerTime);
         }
-        TriggerInstance triggerInstance = TriggerInstance.of(this, job, null, runType, triggerTime);
-        triggerInstance.save();
-        doAfterTransactionCommit(triggerInstance::dispatch);
     }
 
     /**
@@ -497,7 +457,7 @@ public class JobManager {
                 return false;
             }
             List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId, null);
-            if (tasks.stream().anyMatch(SchedTask::isWaiting) || hasAliveExecutingTasks(tasks)) {
+            if (tasks.stream().anyMatch(SchedTask::isWaiting) || workerClient.hasAliveExecutingTasks(tasks)) {
                 LOG.warn("Purge instance failed, has waiting or alive executing task: {}", tasks);
                 return false;
             }
@@ -566,12 +526,14 @@ public class JobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private boolean isAliveWorker(Worker worker) {
-        return worker != null && discoverWorker.isDiscoveredServer(worker);
-    }
-
     private SchedJob getRequireJob(long jobId) {
         return Objects.requireNonNull(jobMapper.get(jobId), () -> "Job not found: " + jobId);
+    }
+
+    private void triggerJob(SchedJob job, RunType runType, long triggerTime) throws JobException {
+        TriggerInstance triggerInstance = TriggerInstance.of(this, job, null, runType, triggerTime);
+        triggerInstance.save();
+        doAfterTransactionCommit(triggerInstance::dispatch);
     }
 
     private boolean shouldTerminateDispatchFailedTask(long taskId) {
@@ -591,7 +553,7 @@ public class JobManager {
         if (TriggerType.of(job.getTriggerType()) == TriggerType.DEPEND) {
             return;
         }
-        Long nextTriggerTime = computeNextTriggerTime(job);
+        Long nextTriggerTime = TriggerTimes.updateNextTriggerTime(job);
         if (!nextTriggerTime.equals(job.getNextTriggerTime())) {
             job.setNextTriggerTime(nextTriggerTime);
             assertOneAffectedRow(jobMapper.updateNextTriggerTime(job), () -> "Update next trigger time failed: " + job);
@@ -608,9 +570,7 @@ public class JobManager {
             Assert.notEmpty(parentJobIds, () -> "Invalid dependency parent job id config: " + triggerValue);
             Assert.isTrue(!parentJobIds.contains(jobId), () -> "Cannot depends self: " + jobId + ", " + parentJobIds);
 
-            Map<Long, SchedJob> parentJobMap = jobMapper.findByJobIds(parentJobIds)
-                .stream()
-                .collect(Collectors.toMap(SchedJob::getJobId, Function.identity()));
+            Map<Long, SchedJob> parentJobMap = Collects.toMap(jobMapper.findByJobIds(parentJobIds), SchedJob::getJobId);
             for (Long parentJobId : parentJobIds) {
                 SchedJob parentJob = parentJobMap.get(parentJobId);
                 Assert.notNull(parentJob, () -> "Parent job id not found: " + parentJobId);
@@ -625,27 +585,14 @@ public class JobManager {
             job.setTriggerValue(Joiner.on(Symbol.Str.COMMA).join(parentJobIds));
             job.setNextTriggerTime(null);
         } else {
-            job.setNextTriggerTime(computeNextTriggerTime(job));
+            job.setNextTriggerTime(TriggerTimes.updateNextTriggerTime(job));
         }
-    }
-
-    private Long computeNextTriggerTime(SchedJob job) {
-        Long lastTriggerTime = job.getLastTriggerTime();
-        Date now = new Date();
-        // 若更改Job状态或者修改Job trigger config，则以当前时间为基准来计算nextTriggerTime
-        job.setLastTriggerTime(Long.max(now.getTime() - 1, lastTriggerTime == null ? 0 : lastTriggerTime));
-        Long next = TriggerTimes.computeNextTriggerTime(job, now);
-        Assert.notNull(next, () -> "Expire " + TriggerType.of(job.getTriggerType()) + " value: " + job.getTriggerValue());
-        job.setLastTriggerTime(lastTriggerTime);
-        return next;
     }
 
     private void checkCircularDepends(Long jobId, Set<Long> parentJobIds) {
         Set<Long> outerDepends = parentJobIds;
         for (int i = 1; ; i++) {
-            Map<Long, SchedDepend> map = dependMapper.findByChildJobIds(parentJobIds)
-                .stream()
-                .collect(Collectors.toMap(SchedDepend::getParentJobId, Function.identity()));
+            Map<Long, SchedDepend> map = Collects.toMap(dependMapper.findByChildJobIds(parentJobIds), SchedDepend::getParentJobId);
             if (MapUtils.isEmpty(map)) {
                 return;
             }
@@ -664,7 +611,7 @@ public class JobManager {
         if (routeStrategy.isBroadcast()) {
             for (SchedTask task : tasks) {
                 Worker worker = task.worker();
-                if (!isAliveWorker(worker)) {
+                if (!workerClient.isAliveWorker(worker)) {
                     // 上游调用方有些处于事务中，有些不在事务中。因为此处的update操作非必须要求原子性，所以不用加Spring事务。
                     taskMapper.terminate(task.getTaskId(), null, ExecuteState.BROADCAST_ABORTED, ExecuteState.WAITING, null, null);
                 } else {
@@ -689,7 +636,7 @@ public class JobManager {
     }
 
     private List<Tuple2<Worker, Long>> calculateWorkload(SchedJob job, SchedInstance instance) {
-        List<Worker> workers = discoverWorker.getDiscoveredServers(job.getGroup());
+        List<Worker> workers = workerClient.getDiscoveredWorkers(job.getGroup());
         if (CollectionUtils.isEmpty(workers)) {
             LOG.error("Not found available worker for calculate workload: {}", job.getGroup());
             return null;
@@ -962,14 +909,14 @@ public class JobManager {
             } else {
                 splitJobParam = ModelConverter.toSplitJobParam(job, retry);
             }
-            return splitJob(splitJobParam, retry.getInstanceId());
+            return splitJob(job.getGroup(), retry.getInstanceId(), splitJobParam);
         }
         if (retryType == RetryType.FAILED) {
             return taskMapper.findLargeByInstanceId(failed.getInstanceId(), null)
                 .stream()
                 .filter(SchedTask::isFailure)
                 // Broadcast task must be retried with the same worker
-                .filter(e -> RouteStrategy.of(job.getRouteStrategy()).isNotBroadcast() || isAliveWorker(e.worker()))
+                .filter(e -> !job.isBroadcast() || workerClient.isAliveWorker(e.worker()))
                 .map(e -> SchedTask.of(e.getTaskParam(), generateId(), retry.getInstanceId(), e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
         }
@@ -981,11 +928,11 @@ public class JobManager {
             return;
         }
         for (SchedDepend depend : dependMapper.findByParentJobId(parent.getJobId())) {
-            ThrowingRunnable.doCaught(() -> dependJob0(parent, depend), () -> "Depend job error: " + parent + ", " + depend);
+            ThrowingRunnable.doCaught(() -> dependJob(parent, depend), () -> "Depend job error: " + parent + ", " + depend);
         }
     }
 
-    private void dependJob0(SchedInstance parent, SchedDepend depend) throws JobException {
+    private void dependJob(SchedInstance parent, SchedDepend depend) throws JobException {
         SchedJob childJob = getRequireJob(depend.getChildJobId());
         if (childJob.isDisabled()) {
             LOG.warn("Depend child job disabled: {}", childJob);
@@ -1006,7 +953,7 @@ public class JobManager {
         long triggerTime = System.currentTimeMillis();
         for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId(), ES_EXECUTING)) {
             Worker worker = task.worker();
-            if (isAliveWorker(worker)) {
+            if (workerClient.isAliveWorker(worker)) {
                 if (builder == null) {
                     builder = new ExecuteTaskParamBuilder(getRequireJob(instance.getJobId()), instance);
                 }
@@ -1137,14 +1084,14 @@ public class JobManager {
             SchedJob job = getRequireJob(lead.getJobId());
             Set<DAGNode> duplicates = new HashSet<>();
             for (Map.Entry<DAGEdge, SchedWorkflow> edge : map.entrySet()) {
-                processWorkflowGraph0(dispatchActions, job, lead, graph, duplicates, edge);
+                processWorkflowGraph(dispatchActions, job, lead, graph, duplicates, edge);
             }
         }
         return dispatchActions;
     }
 
-    private void processWorkflowGraph0(List<Runnable> dispatchActions, SchedJob job, SchedInstance lead, WorkflowGraph graph,
-                                       Set<DAGNode> duplicates, Map.Entry<DAGEdge, SchedWorkflow> edge) throws JobException {
+    private void processWorkflowGraph(List<Runnable> dispatchActions, SchedJob job, SchedInstance lead, WorkflowGraph graph,
+                                      Set<DAGNode> duplicates, Map.Entry<DAGEdge, SchedWorkflow> edge) throws JobException {
         long wnstanceId = lead.getWnstanceId();
         DAGNode target = edge.getKey().getTarget();
         SchedWorkflow workflow = edge.getValue();
@@ -1176,7 +1123,7 @@ public class JobManager {
 
         List<PredecessorInstance> list = predecessors.isEmpty() ? null : loadWorkflowPredecessorInstances(job, wnstanceId, nextInstanceId);
         SplitJobParam splitJobParam = ModelConverter.toSplitJobParam(job, nextInstance, list);
-        List<SchedTask> tasks = splitJob(splitJobParam, nextInstanceId);
+        List<SchedTask> tasks = splitJob(job.getGroup(), nextInstanceId, splitJobParam);
 
         // save to db
         saveInstanceAndTasks(nextInstance, tasks);

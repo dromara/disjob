@@ -25,6 +25,7 @@ import cn.ponfee.disjob.dispatch.TaskDispatcher;
 import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
+import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.scanner.RunningInstanceScanner;
 import cn.ponfee.disjob.supervisor.scanner.TriggeringJobScanner;
@@ -54,6 +55,7 @@ public class SupervisorStartup implements Startable {
     public SupervisorStartup(Supervisor.Local localSupervisor,
                              SupervisorProperties supervisorConf,
                              Registry<Supervisor> supervisorRegistry,
+                             WorkerClient workerClient,
                              JobManager jobManager,
                              JobQuerier jobQuerier,
                              TaskDispatcher taskDispatcher,
@@ -63,6 +65,7 @@ public class SupervisorStartup implements Startable {
         Objects.requireNonNull(localSupervisor, "Local supervisor cannot null.");
         Objects.requireNonNull(supervisorConf, "Supervisor config cannot null.").check();
         Objects.requireNonNull(supervisorRegistry, "Supervisor registry cannot null.");
+        Objects.requireNonNull(workerClient, "Worker client cannot null.");
         Objects.requireNonNull(jobManager, "Job manager cannot null.");
         Objects.requireNonNull(jobQuerier, "Job querier cannot null.");
         Objects.requireNonNull(taskDispatcher, "Task dispatcher cannot null.");
@@ -73,9 +76,9 @@ public class SupervisorStartup implements Startable {
         this.localSupervisor = localSupervisor;
         this.supervisorRegistry = supervisorRegistry;
         this.taskDispatcher = taskDispatcher;
-        this.triggeringJobScanner = new TriggeringJobScanner(supervisorConf, scanTriggeringJobLocker, jobManager, jobQuerier);
-        this.waitingInstanceScanner = new WaitingInstanceScanner(supervisorConf, scanWaitingInstanceLocker, jobManager, jobQuerier);
-        this.runningInstanceScanner = new RunningInstanceScanner(supervisorConf, scanRunningInstanceLocker, jobManager, jobQuerier);
+        this.triggeringJobScanner = new TriggeringJobScanner(supervisorConf, scanTriggeringJobLocker, workerClient, jobManager, jobQuerier);
+        this.waitingInstanceScanner = new WaitingInstanceScanner(supervisorConf, scanWaitingInstanceLocker, workerClient, jobManager, jobQuerier);
+        this.runningInstanceScanner = new RunningInstanceScanner(supervisorConf, scanRunningInstanceLocker, workerClient, jobManager, jobQuerier);
     }
 
     @Override

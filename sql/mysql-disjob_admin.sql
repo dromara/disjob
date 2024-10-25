@@ -43,8 +43,8 @@ create table sys_dept (
 -- ----------------------------
 -- 初始化-部门表数据
 -- ----------------------------
-insert into sys_dept values(100,  0,   '0',          'Disjob',   0, 'disjob', '15888888888', 'disjob@qq.com', '0', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(101,  100, '0,100',      '深圳总公司', 1, 'disjob', '15888888888', 'rdisjobqq.com', '0', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(100,  0,   '0',          '公司总部',   0, 'disjob', '15888888888', 'disjob@qq.com', '0', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(101,  100, '0,100',      '深圳分公司', 1, 'disjob', '15888888888', 'rdisjobqq.com', '0', '0', 'admin', sysdate(), '', null);
 insert into sys_dept values(102,  100, '0,100',      '长沙分公司', 2, 'disjob', '15888888888', 'rdisjobqq.com', '0', '0', 'admin', sysdate(), '', null);
 insert into sys_dept values(103,  101, '0,100,101',  '研发部门',   1, 'disjob', '15888888888', 'disjob@qq.com', '0', '0', 'admin', sysdate(), '', null);
 insert into sys_dept values(104,  101, '0,100,101',  '市场部门',   2, 'disjob', '15888888888', 'disjob@qq.com', '0', '0', 'admin', sysdate(), '', null);
@@ -88,8 +88,9 @@ create table sys_user (
 -- ----------------------------
 -- 初始化-用户信息表数据：admin/123456、disjob/123456
 -- ----------------------------
-insert into sys_user values(1,  103, 'admin',  '管理员',  '00', 'ponfee.cn@gmail.com', '15888888888', '1', '', '9d6f39c3df35e33504d646820e139943', 'b67ffd', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
-insert into sys_user values(2,  105, 'disjob', 'Disjob', '00', 'ponfee.cn@gmail.com', '15666666666', '1', '', '3c7230aa7e491814538c02c9e3a2e343', '468561', '0', '0', '127.0.0.1', null, null, 'admin', sysdate(), '', null, '测试员');
+insert into sys_user values(1,  103, 'admin',  '管理员', '00', 'ponfee1.cn@gmail.com', '15888888888', '1', '', '9d6f39c3df35e33504d646820e139943', 'b67ffd', '0', '0', '127.0.0.1', sysdate(), sysdate(), 'admin', sysdate(), '', null, '管理员');
+insert into sys_user values(2,  105, 'disjob', '巴韭特', '00', 'ponfee2.cn@gmail.com', '15666666666', '1', '', '3c7230aa7e491814538c02c9e3a2e343', '468561', '0', '0', '127.0.0.1', null, null, 'admin', sysdate(), '', null, '');
+insert into sys_user values(3,  107, 'nobody', '路人甲', '00', 'ponfee3.cn@gmail.com', '15777777777', '1', '', '11111111111111111111111111111111', '111111', '0', '0', '127.0.0.1', null, null, 'admin', sysdate(), '', null, '');
 
 
 -- ----------------------------
@@ -143,8 +144,9 @@ create table sys_role (
 -- ----------------------------
 -- 初始化-角色信息表数据
 -- ----------------------------
-insert into sys_role values('1', '超级管理员', 'administrator',  1, 1, '0', '0', 'admin', sysdate(), '', null, '超级管理员');
-insert into sys_role values('2', '普通角色',   'normal', 2, 2, '0', '0', 'admin', sysdate(), '', null, '普通角色');
+insert into sys_role values('1', '超级管理员', 'administrator', 1, 1, '0', '0', 'admin', sysdate(), '', null, '超级管理员');
+insert into sys_role values('2', '开发人员',   'developer',     2, 2, '0', '0', 'admin', sysdate(), '', null, '开发人员');
+insert into sys_role values('3', '运维人员',   'operator',      3, 3, '0', '0', 'admin', sysdate(), '', null, '运维人员');
 
 
 -- ----------------------------
@@ -272,7 +274,7 @@ insert into sys_menu values('1061', '生成代码', '115', '5',  '#', '',  'F', 
 -- Disjob
 -- ----------------------------
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `url`, `target`, `menu_type`, `visible`, `is_refresh`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-VALUES (5, '调度管理', 0, 5, '#', '', 'M', '0', '1', '', 'fa fa-tasks', 'admin', sysdate(), '调度管理目录');
+VALUES (5, '调度管理', '0', '5', '#', '', 'M', '0', '1', '', 'fa fa-tasks', 'admin', sysdate(), '调度管理目录');
 
 -- 5.1）Supervisor菜单 SQL
 insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
@@ -294,6 +296,10 @@ values(1104, '作业配置', '5', '4', '/disjob/job', 'C', '0', 'disjob:job:oper
 insert into sys_menu (`menu_id`, menu_name, parent_id, order_num, url, menu_type, visible, perms, icon, create_by, create_time, remark)
 values(1105, '任务实例', '5', '5', '/disjob/instance', 'C', '0', 'disjob:instance:operate', '#', 'admin', sysdate(), '任务实例菜单');
 
+-- 6）点赞
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `url`, `target`, `menu_type`, `visible`, `is_refresh`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
+VALUES (6, '点个赞呗', '0', '6', 'https://gitee.com/dromara/disjob', 'menuBlank', 'C', '0', '1', '', 'fa fa-star-o', 'admin', sysdate(), '到gitee点赞');
+
 
 -- ----------------------------
 -- 6、用户和角色关联表  用户N-1角色
@@ -310,6 +316,7 @@ create table sys_user_role (
 -- ----------------------------
 insert into sys_user_role values ('1', '1');
 insert into sys_user_role values ('2', '2');
+insert into sys_user_role values ('3', '3');
 
 
 -- ----------------------------
@@ -329,6 +336,7 @@ INSERT INTO sys_role_menu VALUES ('2', '5'   );
 INSERT INTO sys_role_menu VALUES ('2', '1103');
 INSERT INTO sys_role_menu VALUES ('2', '1104');
 INSERT INTO sys_role_menu VALUES ('2', '1105');
+INSERT INTO sys_role_menu VALUES ('2', '6');
 
 -- ----------------------------
 -- 8、角色和部门关联表  角色1-N部门

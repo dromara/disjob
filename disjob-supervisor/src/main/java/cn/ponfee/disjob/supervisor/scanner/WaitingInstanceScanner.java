@@ -23,6 +23,7 @@ import cn.ponfee.disjob.common.concurrent.PeriodExecutor;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
+import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
@@ -42,6 +43,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
 public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private final LockTemplate lockTemplate;
+    private final WorkerClient workerClient;
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
     private final long beforeMilliseconds;
@@ -49,12 +51,14 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     public WaitingInstanceScanner(SupervisorProperties conf,
                                   LockTemplate lockTemplate,
+                                  WorkerClient workerClient,
                                   JobManager jobManager,
                                   JobQuerier jobQuerier) {
         super(conf.getScanWaitingInstancePeriodMs());
         SingletonClassConstraint.constrain(this);
 
         this.lockTemplate = lockTemplate;
+        this.workerClient = workerClient;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
         // heartbeat period duration: 10s * 12 = 120s
@@ -63,7 +67,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (jobManager.hasNotDiscoveredWorkers()) {
+        if (workerClient.hasNotDiscoveredWorkers()) {
             logPrinter.execute();
             return true;
         }
@@ -103,7 +107,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private void processHasWaitingTask(SchedInstance instance, List<SchedTask> waitingTasks) {
         // sieve the (un-dispatch) or (assigned worker dead) waiting tasks to do re-dispatch
-        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, jobManager::shouldRedispatch);
+        List<SchedTask> redispatchingTasks = Collects.filter(waitingTasks, workerClient::shouldRedispatch);
         if (CollectionUtils.isEmpty(redispatchingTasks)) {
             return;
         }
@@ -113,7 +117,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
             return;
         }
         // check is whether not discovered worker
-        if (jobManager.hasNotDiscoveredWorkers(job.getGroup())) {
+        if (workerClient.hasNotDiscoveredWorkers(job.getGroup())) {
             log.error("Scanned waiting state instance not discovered worker: {}, {}", instance.getInstanceId(), job.getGroup());
             return;
         }

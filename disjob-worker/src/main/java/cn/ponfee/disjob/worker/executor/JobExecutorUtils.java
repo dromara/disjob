@@ -67,7 +67,7 @@ public class JobExecutorUtils {
 
             for (String jobExecutorStr : jobExecutors) {
                 JobExecutor jobExecutor = loadJobExecutor(jobExecutorStr);
-                boolean result = jobExecutor.verify(buildVerifyParam(param));
+                boolean result = jobExecutor.verify(convert(param));
                 Assert.isTrue(result, () -> "Verify job failed: " + param);
             }
         } catch (JobException | JobRuntimeException e) {
@@ -90,7 +90,7 @@ public class JobExecutorUtils {
             int workerCount = param.getWorkerCount();
             Assert.isTrue(workerCount > 0, () -> "Worker count must greater than zero: " + workerCount);
             JobExecutor jobExecutor = loadJobExecutor(param.getJobExecutor());
-            List<String> taskParams = jobExecutor.split(buildSplitParam(param));
+            List<String> taskParams = jobExecutor.split(convert(param));
             if (param.getRouteStrategy().isBroadcast()) {
                 int size = (taskParams == null) ? 0 : taskParams.size();
                 Assert.isTrue(size == workerCount, () -> "Split job task size not equals worker count: " + size + ", " + workerCount);
@@ -172,14 +172,14 @@ public class JobExecutorUtils {
         return type;
     }
 
-    private static VerifyParam buildVerifyParam(VerifyJobParam param) {
+    private static VerifyParam convert(VerifyJobParam param) {
         VerifyParam verifyParam = new VerifyParam();
         verifyParam.setBroadcast(param.getRouteStrategy().isBroadcast());
         verifyParam.setJobParam(param.getJobParam());
         return verifyParam;
     }
 
-    private static SplitParam buildSplitParam(SplitJobParam param) {
+    private static SplitParam convert(SplitJobParam param) {
         SplitParam splitParam = new SplitParam();
         splitParam.setBroadcast(param.getRouteStrategy().isBroadcast());
         splitParam.setJobParam(param.getJobParam());

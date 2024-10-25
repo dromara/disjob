@@ -47,7 +47,7 @@ public enum RouteStrategy implements IntValueEnum<RouteStrategy> {
     CONSISTENT_HASH(4, "一致性哈希"),
 
     /**
-     * 本地优先(当supervisor同时也是worker角色时生效)
+     * 本地优先(当Supervisor同时也是Worker角色时，分派给当前本地的Worker执行)
      */
     LOCAL_PRIORITY(5, "本地优先"),
 

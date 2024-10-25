@@ -125,7 +125,7 @@ public class SchedJob extends BaseEntity {
     private Integer executeTimeout;
 
     /**
-     * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；
+     * 冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并发执行；2-顺序执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；
      *
      * @see CollidedStrategy
      */
@@ -205,6 +205,11 @@ public class SchedJob extends BaseEntity {
     @Transient
     public boolean isFixedTriggerType() {
         return TriggerType.of(triggerType).isFixedTriggerType();
+    }
+
+    @Transient
+    public boolean isBroadcast() {
+        return RouteStrategy.of(routeStrategy).isBroadcast();
     }
 
     public Long obtainNextTriggerTime() {

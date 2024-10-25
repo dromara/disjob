@@ -30,6 +30,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -105,7 +106,9 @@ public final class DestinationServerRestProxy {
             @SuppressWarnings("unchecked")
             String contextPath = serverContextPath.apply((S) destinationServer);
             String urlPath = Strings.concatPath(contextPath, req.path);
-            return template.invoke(destinationServer, urlPath, req.httpMethod, method.getGenericReturnType(), args);
+            Class<?> declaringClass = method.getDeclaringClass();
+            Type returnType = method.getGenericReturnType();
+            return template.invoke(declaringClass, destinationServer, urlPath, req.httpMethod, returnType, args);
         }
     }
 

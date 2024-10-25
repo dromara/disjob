@@ -48,6 +48,7 @@ public final class Comparators {
      * @param b the object b
      * @return 0(a==b), 1(a>b), -1(a<b)
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static int compare(Object a, Object b) {
         if (a == b) {
             return Comparators.EQ;

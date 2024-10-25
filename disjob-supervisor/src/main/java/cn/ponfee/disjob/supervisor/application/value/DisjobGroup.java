@@ -24,8 +24,6 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Disjob group
@@ -39,14 +37,19 @@ public class DisjobGroup {
     private final String workerToken;
     private final String userToken;
     private final String ownUser;
-    private final Set<String> alarmUsers;
-    private final Set<String> devUsers;
+    private final ImmutableSet<String> alarmUsers;
+    private final ImmutableSet<String> devUsers;
     private final String workerContextPath;
     private final String webHook;
 
-    private DisjobGroup(String supervisorToken, String workerToken, String userToken,
-                        String ownUser, Set<String> devUsers, Set<String> alarmUsers,
-                        String workerContextPath, String webHook) {
+    private DisjobGroup(String supervisorToken,
+                        String workerToken,
+                        String userToken,
+                        String ownUser,
+                        ImmutableSet<String> devUsers,
+                        ImmutableSet<String> alarmUsers,
+                        String workerContextPath,
+                        String webHook) {
         this.supervisorToken = supervisorToken;
         this.workerToken = workerToken;
         this.userToken = userToken;
@@ -77,9 +80,9 @@ public class DisjobGroup {
 
     // --------------------------------------------------------------private methods
 
-    private static Set<String> parse(String str, String ownUser) {
+    private static ImmutableSet<String> parse(String str, String ownUser) {
         if (StringUtils.isBlank(str)) {
-            return Collections.singleton(ownUser);
+            return ImmutableSet.of(ownUser);
         }
 
         String[] array = str.split(Str.COMMA);

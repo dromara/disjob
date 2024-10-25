@@ -28,7 +28,7 @@ import cn.ponfee.disjob.dispatch.TaskReceiver;
  * @author Ponfee
  */
 @RpcController
-public class HttpTaskReceiver extends TaskReceiver implements Controller {
+public class HttpTaskReceiver extends TaskReceiver implements HttpTaskController {
 
     public HttpTaskReceiver(Worker.Local localWorker, TimingWheel<ExecuteTaskParam> timingWheel) {
         super(localWorker, timingWheel);

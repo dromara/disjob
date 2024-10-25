@@ -46,7 +46,7 @@ CREATE TABLE `sched_job` (
   `start_time`            DATETIME(3)                        DEFAULT NULL                 COMMENT 'Job有效起始时间(为空不限制)',
   `end_time`              DATETIME(3)                        DEFAULT NULL                 COMMENT 'Job有效终止时间(为空不限制)',
   `execute_timeout`       INT            UNSIGNED  NOT NULL  DEFAULT '0'                  COMMENT '执行超时时间(毫秒)，若大于0则执行超时会中断任务',
-  `collided_strategy`     TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并行执行；2-串行执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；',
+  `collided_strategy`     TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '冲突策略(如果上一次调度未完成，下一次调度执行策略)：1-并发执行；2-顺序执行；3-覆盖上次任务（取消上次任务，执行本次任务）；4-丢弃本次任务；',
   `misfire_strategy`      TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '过期策略：1-立即触发执行一次；2-跳过所有被错过的；3-执行所有被错过的；',
   `route_strategy`        TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT '任务分派给哪一个worker的路由策略：1-轮询；2-随机；3-简单的哈希；4-一致性哈希；5-本地优先；6-广播；',
   `shutdown_strategy`     TINYINT        UNSIGNED  NOT NULL  DEFAULT '1'                  COMMENT 'Worker关机的执行策略(如重新发布服务时)：1-恢复执行；2-暂停执行；3-取消执行；',

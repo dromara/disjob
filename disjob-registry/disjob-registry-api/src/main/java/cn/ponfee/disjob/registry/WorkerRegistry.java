@@ -32,18 +32,18 @@ import java.util.List;
 public interface WorkerRegistry extends Registry<Worker>, Discovery<Supervisor> {
 
     /**
-     * Gets registered workers of current group
+     * Gets registered workers of group
      *
-     * @return worker list of current group
+     * @param group the group
+     * @return worker list of group
      */
-    default List<Worker> getRegisteredWorkers() {
+    default List<Worker> getRegisteredWorkers(String group) {
         List<Worker> workers = getRegisteredServers();
         if (CollectionUtils.isEmpty(workers)) {
             return Collections.emptyList();
         }
-
         return workers.stream()
-            .filter(e -> Worker.local().equalsGroup(e.getGroup()))
+            .filter(e -> e.getGroup().equals(group))
             .sorted()
             .collect(ImmutableList.toImmutableList());
     }

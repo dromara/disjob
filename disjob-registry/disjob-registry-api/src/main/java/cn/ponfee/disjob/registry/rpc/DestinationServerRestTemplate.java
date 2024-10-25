@@ -18,10 +18,7 @@ package cn.ponfee.disjob.registry.rpc;
 
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.util.Jsons;
-import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.*;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -45,7 +42,7 @@ import java.util.Set;
 final class DestinationServerRestTemplate {
     private static final Logger LOG = LoggerFactory.getLogger(DestinationServerRestTemplate.class);
 
-    private static final Set<HttpStatus> RETRIABLE_HTTP_STATUS = ImmutableSet.of(
+    private static final Set<HttpStatus> RETRYABLE_HTTP_STATUS = ImmutableSet.of(
         // 4xx
         HttpStatus.REQUEST_TIMEOUT,
         //HttpStatus.CONFLICT,
@@ -78,6 +75,7 @@ final class DestinationServerRestTemplate {
     /**
      * Invoke remote server
      *
+     * @param declaringClass    the declaring class
      * @param destinationServer the destination server
      * @param httpMethod        the http method
      * @param returnType        the return type
@@ -86,11 +84,13 @@ final class DestinationServerRestTemplate {
      * @return invoked remote http response
      * @throws Exception if occur exception
      */
-    <T> T invoke(Server destinationServer, String path, HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
+    <T> T invoke(Class<?> declaringClass, Server destinationServer, String path,
+                 HttpMethod httpMethod, Type returnType, Object... args) throws Exception {
         Map<String, String> authenticationHeaders = null;
-        if (destinationServer instanceof Supervisor && Worker.local() != null) {
-            // 这里可能存在Supervisor-A同时也为Worker-A角色，当Supervisor-A远程调用另一个Supervisor-B，
-            // 此时会用Worker-A的身份认证信息去调用Supervisor-B，接收方Supervisor-B也会认为是Worker-A调用过来的，与实际情况不大相符
+        if (destinationServer instanceof Supervisor && SupervisorRpcService.class.equals(declaringClass)) {
+            // `ExtendedSupervisorRpcService`声明的接口是供Supervisor之间的调用，因此不需要带认证信息。
+            // `SupervisorRpcService`声明的接口是供Worker调用Supervisor，需要带上Worker的认证信息。
+            // 但目前Worker调用Supervisor都是用的DiscoveryServerRestTemplate，因此实际上不会走到此处
             authenticationHeaders = Worker.local().createWorkerAuthenticationHeaders();
         }
 
@@ -135,7 +135,7 @@ final class DestinationServerRestTemplate {
         if (!(e instanceof HttpStatusCodeException)) {
             return true;
         }
-        return !RETRIABLE_HTTP_STATUS.contains(((HttpStatusCodeException) e).getStatusCode());
+        return !RETRYABLE_HTTP_STATUS.contains(((HttpStatusCodeException) e).getStatusCode());
     }
 
     private static boolean isTimeoutException(Throwable e) {

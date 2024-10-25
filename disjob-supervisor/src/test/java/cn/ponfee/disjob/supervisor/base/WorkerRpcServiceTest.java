@@ -47,7 +47,6 @@ public class WorkerRpcServiceTest extends SpringBootTestBase<Object> {
         when(workerRpcService.splitJob(any())).thenReturn(SplitJobResult.of(Collections.singletonList(taskParam)));
 
         SplitJobParam param = new SplitJobParam();
-        param.setGroup("group");
         SplitJobResult result = workerRpcService.splitJob(param);
         assertNotNull(result);
         assertNotNull(result.getTaskParams());

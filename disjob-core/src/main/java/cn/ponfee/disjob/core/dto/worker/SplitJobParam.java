@@ -35,7 +35,6 @@ import java.util.List;
 public class SplitJobParam extends AuthenticationParam {
     private static final long serialVersionUID = -216622646271234535L;
 
-    private String group;
     private String jobExecutor;
     private String jobParam;
     private int retryCount;
@@ -54,7 +53,6 @@ public class SplitJobParam extends AuthenticationParam {
     private List<PredecessorInstance> predecessorInstances;
 
     public void check() {
-        Assert.hasText(group, "Group cannot be empty.");
         Assert.hasText(jobExecutor, "Job executor cannot be empty.");
         Assert.notNull(jobType, "Job type cannot be null.");
         Assert.notNull(routeStrategy, "Route strategy cannot be null.");

@@ -27,17 +27,17 @@ import cn.ponfee.disjob.common.base.IntValueEnum;
 public enum CollidedStrategy implements IntValueEnum<CollidedStrategy> {
 
     /**
-     * 并行执行
+     * 可同时并发执行(并行Parallel)
      */
-    CONCURRENT(1, "并行执行"),
+    CONCURRENT(1, "并发执行"),
 
     /**
-     * 串行执行
+     * 按顺序依次执行(串行Serial)
      */
-    SERIAL(2, "串行执行"),
+    SEQUENTIAL(2, "顺序执行"),
 
     /**
-     * 覆盖上次任务（取消上次任务，执行本次任务）
+     * 覆盖上次任务(取消上次任务，执行本次任务)
      */
     OVERRIDE(3, "覆盖上次任务"),
 

@@ -27,17 +27,17 @@ import cn.ponfee.disjob.common.base.IntValueEnum;
 public enum ShutdownStrategy implements IntValueEnum<ShutdownStrategy> {
 
     /**
-     * 恢复执行(执行转移)
+     * 恢复执行：Worker关闭时，停止当前Worker中所有正在执行的task，将状态更改为`WAITING`，等待一段时间后会自动转移到其它的Worker上执行
      */
     RESUME(1, Operation.SHUTDOWN_RESUME, "恢复执行"),
 
     /**
-     * 暂停执行
+     * 暂停执行：Worker关闭时，暂停当前Worker中所有正在执行的task，将状态更改为`PAUSED`
      */
     PAUSE(2, Operation.SHUTDOWN_PAUSE, "暂停执行"),
 
     /**
-     * 取消执行
+     * 取消执行：Worker关闭时，取消当前Worker中所有正在执行的task，将状态更改为`SHUTDOWN_CANCELED`
      */
     CANCEL(3, Operation.SHUTDOWN_CANCEL, "取消执行"),
 

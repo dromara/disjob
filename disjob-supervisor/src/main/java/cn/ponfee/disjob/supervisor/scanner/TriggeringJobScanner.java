@@ -24,6 +24,7 @@ import cn.ponfee.disjob.core.enums.*;
 import cn.ponfee.disjob.supervisor.base.TriggerTimes;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
+import cn.ponfee.disjob.supervisor.component.WorkerClient;
 import cn.ponfee.disjob.supervisor.configuration.SupervisorProperties;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
@@ -51,8 +52,9 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private static final int REMARK_MAX_LENGTH = 255;
 
-    private final LockTemplate lockTemplate;
     private final int jobScanFailedCountThreshold;
+    private final LockTemplate lockTemplate;
+    private final WorkerClient workerClient;
     private final JobManager jobManager;
     private final JobQuerier jobQuerier;
     private final long afterMilliseconds;
@@ -61,6 +63,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     public TriggeringJobScanner(SupervisorProperties conf,
                                 LockTemplate lockTemplate,
+                                WorkerClient workerClient,
                                 JobManager jobManager,
                                 JobQuerier jobQuerier) {
         super(conf.getScanTriggeringJobPeriodMs());
@@ -68,6 +71,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
         this.jobScanFailedCountThreshold = conf.getJobScanFailedCountThreshold();
         this.lockTemplate = lockTemplate;
+        this.workerClient = workerClient;
         this.jobManager = jobManager;
         this.jobQuerier = jobQuerier;
         // heartbeat period duration: 2s * 3 = 6s
@@ -84,7 +88,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     @Override
     protected boolean heartbeat() {
-        if (jobManager.hasNotDiscoveredWorkers()) {
+        if (workerClient.hasNotDiscoveredWorkers()) {
             logPrinter.execute();
             return true;
         }
@@ -113,7 +117,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
     private void processJob(SchedJob job, Date now, long maxNextTriggerTime) {
         try {
             // check has available workers
-            if (jobManager.hasNotDiscoveredWorkers(job.getGroup())) {
+            if (workerClient.hasNotDiscoveredWorkers(job.getGroup())) {
                 updateNextScanTime(job, now, 60000L);
                 log.warn("Scan job not discovered worker: {}, {}", job.getJobId(), job.getGroup());
                 return;
@@ -140,7 +144,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
             }
 
             refreshNextTriggerTime(job, triggerTime, now);
-            jobManager.triggerJob(job, RunType.SCHEDULE, triggerTime);
+            jobManager.scheduleTriggerJob(job, triggerTime);
         } catch (DuplicateKeyException e) {
             boolean updated = jobManager.updateJobNextTriggerTime(job);
             log.info("Update conflict next trigger time: {}, {}, {}", updated, job, e.getMessage());
@@ -258,7 +262,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
                 jobManager.updateJobNextTriggerTime(job);
                 updateNextScanTime(job, now, job.getNextTriggerTime() - now.getTime());
             }
-        } else if (strategy == CollidedStrategy.SERIAL) {
+        } else if (strategy == CollidedStrategy.SEQUENTIAL) {
             // 串行执行：更新下一次的扫描时间
             updateNextScanTime(job, now, 30000L);
         } else if (strategy == CollidedStrategy.OVERRIDE) {

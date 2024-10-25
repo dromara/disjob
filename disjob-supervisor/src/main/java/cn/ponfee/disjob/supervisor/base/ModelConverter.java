@@ -49,7 +49,6 @@ public final class ModelConverter {
 
     public static VerifyJobParam toVerifyJobParam(SchedJob job) {
         VerifyJobParam param = new VerifyJobParam();
-        param.setGroup(job.getGroup());
         param.setJobExecutor(job.getJobExecutor());
         param.setJobParam(job.getJobParam());
         param.setJobType(JobType.of(job.getJobType()));
@@ -97,7 +96,6 @@ public final class ModelConverter {
     private static SplitJobParam toSplitJobParam(SchedJob job, int retriedCount, String jobExecutor,
                                                  List<PredecessorInstance> predecessorInstances) {
         SplitJobParam param = new SplitJobParam();
-        param.setGroup(job.getGroup());
         param.setJobExecutor(jobExecutor);
         param.setJobParam(job.getJobParam());
         param.setRetryCount(job.getRetryCount());

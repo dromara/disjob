@@ -53,6 +53,7 @@ public final class GenericUtils {
         return target;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static Map<String, String> covariant(Properties properties) {
         return (Map) properties;
     }
@@ -61,8 +62,8 @@ public final class GenericUtils {
     /**
      * 获取泛型的实际类型参数
      *
-     * @param clazz
-     * @return
+     * @param clazz the class
+     * @return actual type
      */
     public static <T> Class<T> getActualTypeArgument(Class<?> clazz) {
         return getActualTypeArgument(clazz, 0);

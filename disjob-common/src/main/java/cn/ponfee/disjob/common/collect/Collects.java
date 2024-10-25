@@ -88,6 +88,17 @@ public class Collects {
         return IntStream.range(0, size).mapToObj(mapper).collect(Collectors.toList());
     }
 
+    public static <E, K> Map<K, E> toMap(List<E> list, Function<E, K> keyMapper) {
+        return toMap(list, keyMapper, Function.identity());
+    }
+
+    public static <E, K, V> Map<K, V> toMap(List<E> list, Function<E, K> keyMapper, Function<E, V> valueMapper) {
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+        return list.stream().collect(Collectors.toMap(keyMapper, valueMapper));
+    }
+
     /**
      * Returns the duplicates elements for list
      *

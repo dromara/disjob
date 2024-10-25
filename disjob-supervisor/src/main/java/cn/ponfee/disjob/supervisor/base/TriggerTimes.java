@@ -31,6 +31,17 @@ import java.util.Date;
  */
 public final class TriggerTimes {
 
+    public static Long updateNextTriggerTime(SchedJob job) {
+        Long lastTriggerTime = job.getLastTriggerTime();
+        Date now = new Date();
+        // 若更改Job状态或者修改Job trigger config，则以当前时间为基准来计算nextTriggerTime
+        job.setLastTriggerTime(Long.max(now.getTime() - 1, lastTriggerTime == null ? 0 : lastTriggerTime));
+        Long next = computeNextTriggerTime(job, now);
+        Assert.notNull(next, () -> "Expire " + TriggerType.of(job.getTriggerType()) + " value: " + job.getTriggerValue());
+        job.setLastTriggerTime(lastTriggerTime);
+        return next;
+    }
+
     /**
      * Returns the next trigger time
      *
@@ -96,12 +107,13 @@ public final class TriggerTimes {
         // last < start ? computeFirstTriggerTime(start) : computeNextTriggerTime(last)
         Date next = (start != null && last.before(start)) ?
             type.computeFirstTriggerTime(value, start) : type.computeNextTriggerTime(value, last);
+        // start < next && last < next
         if (next == null || !next.before(max)) {
             // next == null || next >= max
             return next;
         }
 
-        // ---------------- On here: start < next < now[max] ---------------- //
+        // ---------------- On here: start < next < now[max] && last < next < now[max] ---------------- //
 
         if (strategy == MisfireStrategy.FIRE_ALL_LOST) {
             return next;
