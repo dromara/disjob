@@ -181,7 +181,8 @@ public class SynchronizedSegmentMap<K, V> implements Map<K, V> {
 
     private int calculateIndex(int n) {
         int r = n & mask;
-        // 0 ^ x: 无论x是0还是1，结果都是x，所以不用考虑无法整除时最后一轮移位的问题
+        // 0 ^ x = x: 无论x是0还是1，结果都是x，最后一轮不足整数倍时右移后左侧是补0，0与r相应的位置`^`后还是r所在位置的值
+        // 如：101101 >>> 4  ->  0010 & 1111  ->  0010 ^ 1101  ->  1111
         for (int i = 1; i < round; i++) {
             r ^= ((n >>> (i * bits)) & mask);
         }

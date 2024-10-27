@@ -23,6 +23,7 @@ import java.util.*;
  *
  * @author Ponfee
  */
+@SuppressWarnings("unchecked")
 public final class Tuple0 extends Tuple {
     private static final long serialVersionUID = -3627925720098458172L;
     private static final Tuple0 INSTANCE = new Tuple0();

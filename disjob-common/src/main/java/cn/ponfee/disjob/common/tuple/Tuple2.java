@@ -23,6 +23,7 @@ import java.util.Map;
  *
  * @author Ponfee
  */
+@SuppressWarnings({"unchecked", "PublicField"})
 public final class Tuple2<A, B> extends Tuple implements Map.Entry<A, B> {
     private static final long serialVersionUID = -3627925720098458172L;
 

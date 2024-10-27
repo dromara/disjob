@@ -51,13 +51,18 @@ public final class TriggerTimes {
      */
     public static Long computeNextTriggerTime(SchedJob job, Date now) {
         Assert.notNull(now, "Compute next trigger time 'now' cannot be null.");
-        final Date next = computeNextTriggerTime0(job, now), end = job.getEndTime();
+        Date last = Dates.ofTimeMillis(job.getLastTriggerTime());
+        Date next = computeNextTriggerTime0(job, last, now);
+        if (last != null && next != null && !next.after(last)) {
+            throw new IllegalStateException("Next trigger time must be after last: " + last + ", " + last);
+        }
+        Date end = job.getEndTime();
         return next == null || (end != null && next.after(end)) ? null : next.getTime();
     }
 
     // -------------------------------------------------------------------------------private methods
 
-    private static Date computeNextTriggerTime0(SchedJob job, Date now) {
+    private static Date computeNextTriggerTime0(SchedJob job, Date last, Date now) {
         TriggerType type;
         if (job == null || TriggerType.DEPEND == (type = TriggerType.of(job.getTriggerType()))) {
             return null;
@@ -66,7 +71,6 @@ public final class TriggerTimes {
         MisfireStrategy strategy = MisfireStrategy.of(job.getMisfireStrategy());
         String value = job.getTriggerValue();
         final Date start = job.getStartTime();
-        final Date last = Dates.ofTimeMillis(job.getLastTriggerTime());
         final Date max = Dates.max(start, last, now);
 
         if (type == TriggerType.ONCE) {

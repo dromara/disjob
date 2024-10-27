@@ -58,10 +58,10 @@ public class ConsistentHashExecutionRouter extends ExecutionRouter {
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
         ConsistentHash<Worker> consistentHashRouter = getConsistentHash(workers);
-        tasks.forEach(task -> {
+        for (ExecuteTaskParam task : tasks) {
             String key = Long.toString(task.getTaskId());
             task.setWorker(consistentHashRouter.routeNode(key));
-        });
+        }
     }
 
     // ------------------------------------------------------private methods

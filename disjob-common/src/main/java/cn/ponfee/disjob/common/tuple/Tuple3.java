@@ -21,6 +21,7 @@ package cn.ponfee.disjob.common.tuple;
  *
  * @author Ponfee
  */
+@SuppressWarnings({"unchecked", "PublicField"})
 public final class Tuple3<A, B, C> extends Tuple {
     private static final long serialVersionUID = -8101132015890693468L;
 

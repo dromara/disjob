@@ -19,29 +19,26 @@ package cn.ponfee.disjob.worker.exception;
 import cn.ponfee.disjob.core.enums.Operation;
 
 /**
- * Exception for pause the executing task.
+ * Operation task exception
  *
  * @author Ponfee
  */
-public class PauseTaskException extends OperationTaskException {
-    private static final long serialVersionUID = 409247238969878885L;
+public abstract class OperationTaskException extends Exception {
+    private static final long serialVersionUID = 1726398099653634708L;
 
-    public PauseTaskException() {
-        super("Pause task.");
-    }
-
-    public PauseTaskException(String message) {
+    protected OperationTaskException(String message) {
         super(message);
     }
 
-    public PauseTaskException(String message, Throwable cause) {
+    protected OperationTaskException(String message, Throwable cause) {
         super(message, cause);
     }
 
-
-    @Override
-    public final Operation operation() {
-        return Operation.PAUSE;
-    }
+    /**
+     * Gets operation
+     *
+     * @return Operation
+     */
+    public abstract Operation operation();
 
 }

@@ -16,12 +16,14 @@
 
 package cn.ponfee.disjob.worker.exception;
 
+import cn.ponfee.disjob.core.enums.Operation;
+
 /**
  * Exception for cancel the executing task.
  *
  * @author Ponfee
  */
-public class CancelTaskException extends Exception {
+public class CancelTaskException extends OperationTaskException {
     private static final long serialVersionUID = -3461401416673580272L;
 
     public CancelTaskException() {
@@ -34,6 +36,11 @@ public class CancelTaskException extends Exception {
 
     public CancelTaskException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    @Override
+    public final Operation operation() {
+        return Operation.EXCEPTION_CANCEL;
     }
 
 }

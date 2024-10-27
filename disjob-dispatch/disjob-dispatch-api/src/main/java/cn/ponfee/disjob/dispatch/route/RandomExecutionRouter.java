@@ -48,11 +48,11 @@ public class RandomExecutionRouter extends ExecutionRouter {
 
     @Override
     protected void doRoute(List<ExecuteTaskParam> tasks, List<Worker> workers) {
-        tasks.forEach(task -> {
+        for (ExecuteTaskParam task : tasks) {
             Random rd = (random != null) ? random : ThreadLocalRandom.current();
             int index = rd.nextInt(workers.size());
             task.setWorker(workers.get(index));
-        });
+        }
     }
 
 }

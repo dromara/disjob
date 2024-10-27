@@ -57,6 +57,7 @@ public class NacosRegistryProperties extends AbstractRegistryProperties {
      */
     private String namingLoadCacheAtStart = "true";
 
+    @SuppressWarnings("unchecked")
     public Properties toProperties() {
         Properties properties = new Properties();
         BeanMap.create(this).forEach((k, v) -> {

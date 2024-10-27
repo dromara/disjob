@@ -30,8 +30,7 @@ import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.ExecuteState;
 import cn.ponfee.disjob.core.enums.Operation;
-import cn.ponfee.disjob.worker.exception.CancelTaskException;
-import cn.ponfee.disjob.worker.exception.PauseTaskException;
+import cn.ponfee.disjob.worker.exception.OperationTaskException;
 import cn.ponfee.disjob.worker.exception.SavepointFailedException;
 import cn.ponfee.disjob.worker.executor.*;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +47,7 @@ import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import static cn.ponfee.disjob.core.enums.ExecuteState.*;
 
@@ -339,11 +339,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         StopTaskParam param = task.toStopTaskParam(ops, toState, errorMsg);
         LOG.info("Stop task trace: {}, {}, {}", task.getTaskId(), ops, toState);
-        CoreUtils.doInSynchronized(
-            task.getLockInstanceId(),
-            () -> supervisorRpcClient.stopTask(param),
-            () -> "Stop task error: " + task.getTaskId() + ", " + ops + ", " + toState
-        );
+        Supplier<String> msgSupplier = () -> "Stop task error: " + task.getTaskId() + ", " + ops + ", " + toState;
+        CoreUtils.doInSynchronized(task.getLockInstanceId(), () -> supervisorRpcClient.stopTask(param), msgSupplier);
     }
 
     private void stopInstance(WorkerTask task, Operation ops, String errorMsg) {
@@ -356,11 +353,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
 
         Long lockInstanceId = task.getLockInstanceId();
         LOG.info("Stop instance trace: {}, {}, {}", lockInstanceId, task.getTaskId(), ops);
-        CoreUtils.doInSynchronized(
-            lockInstanceId,
-            () -> stopInstance(lockInstanceId, task.getTaskId(), ops),
-            () -> "Stop instance error: " + lockInstanceId + ", " + task.getTaskId() + ", " + ops
-        );
+        Supplier<String> msgSupplier = () -> "Stop instance error: " + lockInstanceId + ", " + task.getTaskId() + ", " + ops;
+        CoreUtils.doInSynchronized(lockInstanceId, () -> stopInstance(lockInstanceId, task.getTaskId(), ops), msgSupplier);
     }
 
     private void stopInstance(long lockInstanceId, long taskId, Operation ops) throws Exception {
@@ -641,7 +635,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 if (workerTask.getRouteStrategy().isNotBroadcast()) {
                     // reset task worker
                     List<Long> list = Collections.singletonList(workerTask.getTaskId());
-                    ThrowingRunnable.doCaught(() -> supervisorRpcClient.updateTaskWorker(null, list), () -> "Reset task worker error: " + workerTask);
+                    ThrowingRunnable<?> action = () -> supervisorRpcClient.updateTaskWorker(null, list);
+                    ThrowingRunnable.doCaught(action, () -> "Reset task worker error: " + workerTask);
                 }
                 Threads.interruptIfNecessary(t);
                 return;
@@ -665,10 +660,9 @@ public class WorkerThreadPool extends Thread implements Closeable {
             } catch (TimeoutException e) {
                 LOG.error("Execute task timeout: " + workerTask, e);
                 stopTask(workerTask, Operation.TRIGGER, EXECUTE_TIMEOUT, toErrorMsg(e));
-            } catch (PauseTaskException | CancelTaskException e) {
-                Operation ops = (e instanceof PauseTaskException) ? Operation.PAUSE : Operation.EXCEPTION_CANCEL;
-                LOG.error("{} task exception: {}, {}", ops, workerTask, e.getMessage());
-                stopInstance(workerTask, ops, toErrorMsg(e));
+            } catch (OperationTaskException e) {
+                LOG.error("Operation task exception: {}, {}, {}", e.operation(), workerTask, e.getMessage());
+                stopInstance(workerTask, e.operation(), toErrorMsg(e));
             } catch (Throwable t) {
                 if (t instanceof java.lang.ThreadDeath) {
                     // 调用`Thread#stop()`时可能会抛出该异常
