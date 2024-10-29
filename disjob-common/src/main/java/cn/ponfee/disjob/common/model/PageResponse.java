@@ -20,6 +20,7 @@ import cn.ponfee.disjob.common.base.ToJsonString;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -50,8 +51,29 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
      */
     private PageRequest request;
 
+    @Transient
     public int getTotalPages() {
         return computeTotalPages(request.getPageSize(), total);
+    }
+
+    @Transient
+    public boolean hasPrevious() {
+        return request.isPaged() && request.getPageNumber() > 1 && getTotalPages() > 1;
+    }
+
+    @Transient
+    public boolean hasNext() {
+        return request.isPaged() && request.getPageNumber() < getTotalPages();
+    }
+
+    @Transient
+    public boolean isFirst() {
+        return !hasPrevious();
+    }
+
+    @Transient
+    public boolean isLast() {
+        return !hasNext();
     }
 
     public void forEachRow(Consumer<T> action) {
@@ -59,6 +81,8 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
             rows.forEach(action);
         }
     }
+
+    // ------------------------------------------------------------static methods
 
     public static int computeTotalPages(int pageSize, long total) {
         return (int) ((total + pageSize - 1) / pageSize);

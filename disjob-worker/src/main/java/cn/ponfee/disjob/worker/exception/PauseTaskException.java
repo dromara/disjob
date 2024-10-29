@@ -23,7 +23,7 @@ import cn.ponfee.disjob.core.enums.Operation;
  *
  * @author Ponfee
  */
-public class PauseTaskException extends OperationTaskException {
+public final class PauseTaskException extends OperationTaskException {
     private static final long serialVersionUID = 409247238969878885L;
 
     public PauseTaskException() {
@@ -40,7 +40,7 @@ public class PauseTaskException extends OperationTaskException {
 
 
     @Override
-    public final Operation operation() {
+    public Operation operation() {
         return Operation.PAUSE;
     }
 

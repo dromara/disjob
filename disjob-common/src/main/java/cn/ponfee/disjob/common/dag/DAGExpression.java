@@ -25,14 +25,11 @@ import cn.ponfee.disjob.common.tree.TreeNode;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.util.Jsons;
 import cn.ponfee.disjob.common.util.Predicates;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -87,10 +84,10 @@ import java.util.stream.Stream;
  * └─────────────────────────────────┘
  * 但可通过json graph来表达：
  *   [
- *     {"source": "1:1:A", "target": "1:1:C"},
- *     {"source": "1:1:A", "target": "1:1:D"},
- *     {"source": "1:1:B", "target": "1:1:D"},
- *     {"source": "1:1:B", "target": "1:1:E"}
+ *     "1:1:A -> 1:1:C",
+ *     "1:1:A -> 1:1:D",
+ *     "1:1:B -> 1:1:D",
+ *     "1:1:B -> 1:1:E"
  *   ]
  * </pre>
  *
@@ -106,13 +103,15 @@ public class DAGExpression {
      * 4、(?m) 开启多行匹配模式，“.”不匹配空白字符
      * 5、(?d) 单行模式，“.”不匹配空白字符
      *
-     * Match json array: [{...}]
+     * Match json array: [ "..." ]
      * 有两种方式：
-     *   1、(?s)^\s*\[\s*\{.+}\s*]\s*$
-     *   2、(?m)^\s*\[\s*\{(\s*\S+\s*)+}\s*]\s*$
+     *   1、(?s)^\s*\[\s*".+"\s*]\s*$
+     *   2、(?m)^\s*\[\s*"(\s*\S+\s*)+"\s*]\s*$
      * </pre>
      */
-    private static final Pattern JSON_ARRAY_PATTERN = Pattern.compile("(?s)^\\s*\\[\\s*\\{.+}\\s*]\\s*$");
+    private static final Pattern JSON_ARRAY_PATTERN = Pattern.compile("(?s)^\\s*\\[\\s*\".+\"\\s*]\\s*$");
+
+    private static final Pattern JSON_ITEM_PATTERN = Pattern.compile("^\\d+:\\d+:(\\s*\\S+\\s*)+$");
 
     private static final String SEP_STAGE = "->";
     private static final String SEP_UNION = ",";
@@ -150,7 +149,7 @@ public class DAGExpression {
         ImmutableGraph.Builder<DAGNode> graphBuilder = GraphBuilder.directed().allowsSelfLoops(false).immutable();
 
         List<DAGEdge> edges;
-        if (JSON_ARRAY_PATTERN.matcher(expression).matches() && (edges = GraphEdge.fromJson(expression)) != null) {
+        if (JSON_ARRAY_PATTERN.matcher(expression).matches() && (edges = parseJsonGraph(expression)) != null) {
             parseJsonGraph(graphBuilder, edges);
         } else {
             parsePlainExpr(graphBuilder);
@@ -169,10 +168,10 @@ public class DAGExpression {
      *
      * <pre>
      * [
-     *   {"source":"1:1:A","target":"1:1:C"},
-     *   {"source":"1:1:A","target":"1:1:D"},
-     *   {"source":"1:1:B","target":"1:1:D"},
-     *   {"source":"1:1:B","target":"1:1:E"}
+     *   "1:1:A -> 1:1:C",
+     *   "1:1:A -> 1:1:D",
+     *   "1:1:B -> 1:1:D",
+     *   "1:1:B -> 1:1:E"
      * ]
      * </pre>
      *
@@ -310,6 +309,31 @@ public class DAGExpression {
     }
 
     // ------------------------------------------------------------------------------------static methods
+
+    private static List<DAGEdge> parseJsonGraph(String json) {
+        try {
+            List<String> list = Jsons.fromJson(json, Jsons.LIST_STRING);
+            if (CollectionUtils.isEmpty(list)) {
+                return null;
+            }
+
+            List<DAGEdge> edges = new ArrayList<>(list.size());
+            for (String item : list) {
+                String[] array = item.split(SEP_STAGE);
+                Assert.isTrue(array.length == 2, "Invalid json graph item: " + item);
+                String source = processJsonItem(array[0].trim());
+                String target = processJsonItem(array[1].trim());
+                edges.add(DAGEdge.of(source, target));
+            }
+            return edges;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static String processJsonItem(String item) {
+        return JSON_ITEM_PATTERN.matcher(item).matches() ? item : "1:1:" + item;
+    }
 
     private static Tuple2<List<String>, List<String>> divideFirstStage(List<String> list) {
         if (CollectionUtils.isEmpty(list)) {
@@ -492,31 +516,6 @@ public class DAGExpression {
 
     private static String wrap(String text) {
         return Str.OPEN + text + Str.CLOSE;
-    }
-
-    @Getter
-    @Setter
-    private static final class GraphEdge {
-        private static final TypeReference<List<GraphEdge>> LIST_TYPE = new TypeReference<List<GraphEdge>>() {};
-
-        private String source;
-        private String target;
-
-        private DAGEdge toDAGEdge() {
-            return DAGEdge.of(source, target);
-        }
-
-        private static List<DAGEdge> fromJson(String text) {
-            try {
-                List<GraphEdge> list = Jsons.fromJson(text, LIST_TYPE);
-                if (CollectionUtils.isEmpty(list)) {
-                    return null;
-                }
-                return list.stream().map(GraphEdge::toDAGEdge).collect(Collectors.toList());
-            } catch (Exception ignored) {
-                return null;
-            }
-        }
     }
 
     private static final class TreeNodeId implements Serializable, Comparable<TreeNodeId> {

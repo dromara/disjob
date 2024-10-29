@@ -75,8 +75,7 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         ADD_WORKER {
             @Override
             public <T> T parse(String data) {
-                // noinspection unchecked
-                return (T) data;
+                throw new UnsupportedOperationException();
             }
         },
 

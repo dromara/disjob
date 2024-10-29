@@ -48,6 +48,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,6 +63,7 @@ import java.util.Map;
 public final class Jsons {
 
     public static final TypeReference<Map<String, Object>> MAP_NORMAL = new TypeReference<Map<String, Object>>() {};
+    public static final TypeReference<List<String>> LIST_STRING = new TypeReference<List<String>>() {};
 
     /**
      * 标准：忽略对象中值为null的属性

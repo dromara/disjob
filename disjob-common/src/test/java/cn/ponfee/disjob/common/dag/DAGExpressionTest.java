@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * DAGExpression Test
@@ -85,6 +86,32 @@ public class DAGExpressionTest {
         TREE_PRINTER.print(root);
     }
     */
+
+    @Test
+    public void testRegexp() {
+        Pattern json_array_pattern = Pattern.compile("(?s)^\\s*\\[\\s*\".+\"\\s*]\\s*$");
+        boolean matches = json_array_pattern.matcher("[\"1:1:A -> 1:1:C\",\"1:1:A -> 1:1:D\"]").matches();
+        Assertions.assertTrue(matches);
+
+        matches = json_array_pattern.matcher("[\"1:1:A -> 1:1:C\",\"1:1:A -> 1:1:D]").matches();
+        Assertions.assertFalse(matches);
+
+        matches = json_array_pattern.matcher("[\"1:1:A -> 1:1:C\",\"1:1:A -> 1:1:D\"").matches();
+        Assertions.assertFalse(matches);
+
+        matches = json_array_pattern.matcher("\"1:1:A -> 1:1:C\",\"1:1:A -> 1:1:D\"]").matches();
+        Assertions.assertFalse(matches);
+
+        matches = json_array_pattern.matcher("[\"1:1:A -> 1:1:C\",1:1:A -> 1:1:D\"]").matches();
+        Assertions.assertTrue(matches);
+
+        Pattern json_item_pattern = Pattern.compile("^\\d+:\\d+:(\\s*\\S+\\s*)+$");
+        matches = json_item_pattern.matcher("1:1:A").matches();
+        Assertions.assertTrue(matches);
+
+        matches = json_item_pattern.matcher("1:1:A B").matches();
+        Assertions.assertTrue(matches);
+    }
 
     @Test
     public void testSameExpression() {

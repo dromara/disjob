@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Ponfee
  */
+@SuppressWarnings("unchecked")
 public final class GroovyUtils {
 
     /**

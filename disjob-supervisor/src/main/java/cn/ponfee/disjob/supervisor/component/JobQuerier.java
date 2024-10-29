@@ -54,8 +54,8 @@ import java.util.stream.Collectors;
 public class JobQuerier {
 
     private final SchedJobMapper jobMapper;
-    private final SchedTaskMapper taskMapper;
     private final SchedInstanceMapper instanceMapper;
+    private final SchedTaskMapper taskMapper;
 
     public SchedJob getJob(long jobId) {
         return jobMapper.get(jobId);

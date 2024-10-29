@@ -143,10 +143,9 @@ public class DisjobJobController extends BaseController {
     public AjaxResult export(SchedJobPageRequest request) {
         request.authorizeAndTruncateGroup(getLoginName());
 
-        List<SchedJobExport> list;
-        if (CollectionUtils.isEmpty(request.getGroups())) {
-            list = Collections.emptyList();
-        } else {
+        List<SchedJobExport> list = Collections.emptyList();
+        if (CollectionUtils.isNotEmpty(request.getGroups())) {
+            // 不分页查询，导出全部数据
             request.setPaged(false);
             List<SchedJobResponse> rows = openapiService.queryJobForPage(request).getRows();
             list = Collects.convert(rows, SchedJobExport::ofSchedJobResponse);

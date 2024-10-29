@@ -125,8 +125,6 @@ public class ServerInvokeService extends SingletonClassConstraint {
                 throw new KeyExistsException("Worker already registered: " + worker);
             }
             verifyWorkerSignature(worker);
-            // add worker to this group
-            req.setData(req.getGroup());
         } else {
             List<Worker> workers = getDiscoveredWorkers(req.getGroup());
             if (!workers.contains(worker)) {
@@ -245,7 +243,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private GetMetricsParam buildGetMetricsParam(String group) {
-        return GetMetricsParam.of(SchedGroupService.createSupervisorAuthenticationToken(group), group);
+        return GetMetricsParam.of(SchedGroupService.createSupervisorAuthenticationToken(group));
     }
 
 }

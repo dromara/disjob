@@ -135,16 +135,13 @@ public class OpenapiService extends SingletonClassConstraint {
         jobManager.deleteInstance(instanceId);
     }
 
-    public SchedInstanceResponse getInstance(long instanceId, boolean withTasks) {
+    public SchedInstanceResponse getInstance(long instanceId, boolean includeTasks) {
         SchedInstance instance = jobQuerier.getInstance(instanceId);
         if (instance == null) {
             return null;
         }
 
-        List<SchedTask> tasks = null;
-        if (withTasks) {
-            tasks = jobQuerier.findLargeInstanceTasks(instanceId);
-        }
+        List<SchedTask> tasks = includeTasks ? jobQuerier.findLargeInstanceTasks(instanceId) : null;
         return SchedInstanceResponse.of(instance, tasks);
     }
 

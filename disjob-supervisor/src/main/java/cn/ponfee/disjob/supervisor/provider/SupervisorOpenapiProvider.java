@@ -160,10 +160,10 @@ public class SupervisorOpenapiProvider extends BaseController {
 
     @GetMapping("/instance/get")
     public Result<SchedInstanceResponse> getInstance(@RequestParam(value = "instanceId") long instanceId,
-                                                     @RequestParam(value = "withTasks", defaultValue = "false") boolean withTasks) {
+                                                     @RequestParam(value = "includeTasks", defaultValue = "false") boolean includeTasks) {
         authorizeGroupService.authorizeInstance(requestUser(), requestGroup(), instanceId);
 
-        return Result.success(openapiService.getInstance(instanceId, withTasks));
+        return Result.success(openapiService.getInstance(instanceId, includeTasks));
     }
 
     @GetMapping("/instance/tasks")

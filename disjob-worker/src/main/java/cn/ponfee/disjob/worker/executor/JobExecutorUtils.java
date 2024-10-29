@@ -102,7 +102,7 @@ public class JobExecutorUtils {
         } catch (JobException | JobRuntimeException e) {
             throw e;
         } catch (Throwable t) {
-            throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED, "Split job task failed: " + t.getMessage(), t);
+            throw new JobException(JobCodeMsg.SPLIT_JOB_FAILED.getCode(), "Split job task failed: " + t.getMessage(), t);
         }
     }
 

@@ -240,8 +240,7 @@
             "workerId": null,
             "host": value.split(":")[0],
             "port": value.split(":")[1],
-            "action": "ADD_WORKER",
-            "data": null
+            "action": "ADD_WORKER"
           };
           $.operate.post(prefix + "/configure_one_worker", params, function (result) {
             if (result.code === 0) {
@@ -260,8 +259,7 @@
         "workerId": workerId,
         "host": host,
         "port": port,
-        "action": action,
-        "data": null
+        "action": action
       };
       $.modal.confirm("确认要 `" + msg + "` 吗？", function () {
         $.operate.post(prefix + "/configure_one_worker", params, function (result) {

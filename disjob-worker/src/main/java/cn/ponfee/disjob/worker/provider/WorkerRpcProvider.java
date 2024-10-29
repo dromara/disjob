@@ -66,11 +66,6 @@ public class WorkerRpcProvider implements WorkerRpcService {
 
     @Override
     public WorkerMetrics getMetrics(GetMetricsParam param) {
-        String wGroup = localWorker.getGroup();
-        String pGroup = param.getGroup();
-        if (!wGroup.equals(pGroup)) {
-            throw new IllegalArgumentException("Inconsistent get metrics group: " + wGroup + " != " + pGroup);
-        }
         localWorker.verifySupervisorAuthenticationToken(param);
 
         return WorkerConfigurator.metrics();
@@ -89,11 +84,6 @@ public class WorkerRpcProvider implements WorkerRpcService {
             workerRegistry.deregister(localWorker);
 
         } else if (action == Action.ADD_WORKER) {
-            String cGroup = localWorker.getGroup();
-            String dGroup = action.parse(param.getData());
-            if (!cGroup.equals(dGroup)) {
-                throw new UnsupportedOperationException("Inconsistent add worker group: " + cGroup + "!=" + dGroup);
-            }
             workerRegistry.register(localWorker);
 
         } else {

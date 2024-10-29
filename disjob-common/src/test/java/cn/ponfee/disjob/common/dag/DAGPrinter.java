@@ -51,15 +51,9 @@ public class DAGPrinter {
         drawGraph("A->(B->C,D,E),(H->I,J,K)", "41.png");
         drawGraph("A,B,C->D",                 "50.png");
 
-        drawGraph(
-            "[                                                \n" +
-            "  {\"source\": \"1:1:A\", \"target\": \"1:1:C\"},\n" +
-            "  {\"source\": \"1:1:A\", \"target\": \"1:1:D\"},\n" +
-            "  {\"source\": \"1:1:B\", \"target\": \"1:1:D\"},\n" +
-            "  {\"source\": \"1:1:B\", \"target\": \"1:1:E\"} \n" +
-            "]                                                  ",
-            "json-graph.png"
-        );
+        drawGraph("[\"A->C\",\"A->D\",\"B->D\",\"B->E\"]", "json-graph1.png");
+        drawGraph("[\"A -> B\",\"B -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"B -> C\",\"C -> G\",\"G -> H\",\"H -> I\",\"I -> K\",\"K -> Z\",\"G -> J\",\"J -> K\",\"C -> L\",\"L -> M\",\"M -> Z\"]", "json-graph2.png");
+        drawGraph("[\"A -> B\",\"B -> C\",\"C -> Z\",\"A -> D\",\"D -> E\",\"E -> F\",\"F -> Z\",\"A -> G\",\"G -> H\",\"H -> I\",\"I -> J\",\"J -> N\",\"I -> K\",\"K -> N\",\"G -> L\",\"L -> M\",\"M -> N\",\"N -> Z\"]", "json-graph3.png");
     }
 
     private static void drawGraph(String expr, String fileName) throws IOException {

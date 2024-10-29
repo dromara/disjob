@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.dag;
 
 import cn.ponfee.disjob.common.base.ToJsonString;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -42,9 +43,9 @@ public final class DAGEdge extends ToJsonString implements Serializable {
     }
 
     public static DAGEdge of(String source, String target) {
-        Objects.requireNonNull(source, "DAG source text cannot be blank.");
-        Objects.requireNonNull(target, "DAG target text cannot be blank.");
-        return new DAGEdge(DAGNode.fromString(source), DAGNode.fromString(target));
+        Assert.hasText(source, "DAG source text cannot be blank.");
+        Assert.hasText(target, "DAG target text cannot be blank.");
+        return new DAGEdge(DAGNode.fromString(source.trim()), DAGNode.fromString(target.trim()));
     }
 
     public DAGNode getSource() {
@@ -72,6 +73,11 @@ public final class DAGEdge extends ToJsonString implements Serializable {
         DAGEdge other = (DAGEdge) obj;
         return this.source.equals(other.source)
             && this.target.equals(other.target);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + source + " -> " + target + ")";
     }
 
 }

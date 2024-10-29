@@ -47,6 +47,7 @@ public class DelayedData<E> implements Delayed {
         return unit.convert(diff, TimeUnit.MILLISECONDS);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public int compareTo(Delayed o) {
         return Ints.saturatedCast(this.fireTime - ((DelayedData<E>) o).fireTime);

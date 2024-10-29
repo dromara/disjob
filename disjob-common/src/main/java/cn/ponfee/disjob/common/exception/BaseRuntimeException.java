@@ -16,8 +16,6 @@
 
 package cn.ponfee.disjob.common.exception;
 
-import cn.ponfee.disjob.common.model.CodeMsg;
-
 /**
  * Base unchecked(runtime) exception definition(运行时异常)
  *
@@ -31,30 +29,19 @@ public abstract class BaseRuntimeException extends RuntimeException {
      */
     private final int code;
 
-    protected BaseRuntimeException(int code) {
-        this(code, null, null);
-    }
-
-    protected BaseRuntimeException(CodeMsg codeMsg) {
-        this(codeMsg.getCode(), codeMsg.getMsg(), null);
-    }
-
     /**
-     * @param code    error code
-     * @param message error message
+     * @param code    the error code
+     * @param message the error message
      */
     protected BaseRuntimeException(int code, String message) {
-        this(code, message, null);
-    }
-
-    protected BaseRuntimeException(CodeMsg codeMsg, Throwable cause) {
-        this(codeMsg.getCode(), codeMsg.getMsg(), cause);
+        super(message);
+        this.code = code;
     }
 
     /**
-     * @param code    error code
-     * @param message error message
-     * @param cause   root cause
+     * @param code    the error code
+     * @param message the error message
+     * @param cause   the root cause
      */
     protected BaseRuntimeException(int code, String message, Throwable cause) {
         super(message, cause);
@@ -62,11 +49,11 @@ public abstract class BaseRuntimeException extends RuntimeException {
     }
 
     /**
-     * @param code               error code
-     * @param message            error message
-     * @param cause              root cause
+     * @param code               the error code
+     * @param message            the error message
+     * @param cause              the root cause
      * @param enableSuppression  the enableSuppression
-     * @param writableStackTrace then writableStackTrace
+     * @param writableStackTrace the writableStackTrace
      */
     protected BaseRuntimeException(int code,
                                    String message,

@@ -16,8 +16,6 @@
 
 package cn.ponfee.disjob.common.exception;
 
-import cn.ponfee.disjob.common.model.CodeMsg;
-
 /**
  * Base checked exception definition(编译时异常)
  *
@@ -31,30 +29,19 @@ public abstract class BaseException extends Exception {
      */
     private final int code;
 
-    protected BaseException(int code) {
-        this(code, null, null);
-    }
-
-    protected BaseException(CodeMsg codeMsg) {
-        this(codeMsg.getCode(), codeMsg.getMsg(), null);
-    }
-
     /**
-     * @param code    error code
-     * @param message error message
+     * @param code    the error code
+     * @param message the error message
      */
     protected BaseException(int code, String message) {
-        this(code, message, null);
-    }
-
-    protected BaseException(CodeMsg codeMsg, Throwable cause) {
-        this(codeMsg.getCode(), codeMsg.getMsg(), cause);
+        super(message);
+        this.code = code;
     }
 
     /**
-     * @param code    error code
-     * @param message error message
-     * @param cause   root cause
+     * @param code    the error code
+     * @param message the error message
+     * @param cause   the root cause
      */
     protected BaseException(int code, String message, Throwable cause) {
         super(message, cause);
@@ -62,11 +49,11 @@ public abstract class BaseException extends Exception {
     }
 
     /**
-     * @param code               error code
-     * @param message            error message
-     * @param cause              root cause
+     * @param code               the error code
+     * @param message            the error message
+     * @param cause              the root cause
      * @param enableSuppression  the enableSuppression
-     * @param writableStackTrace then writableStackTrace
+     * @param writableStackTrace the writableStackTrace
      */
     protected BaseException(int code,
                             String message,
