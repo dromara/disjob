@@ -43,7 +43,7 @@
     WHERE task_id = #{taskId,jdbcType=BIGINT}
   </select>
 
-  <select id="findBaseByInstanceId" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
+  <select id="findBaseByInstanceIdAndStates" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
     SELECT <include refid="Base_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}
@@ -52,7 +52,7 @@
     </if>
   </select>
 
-  <select id="findLargeByInstanceId" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
+  <select id="findLargeByInstanceIdAndStates" resultType="cn.ponfee.disjob.supervisor.model.SchedTask">
     SELECT <include refid="Large_Column_List" />
     FROM <include refid="Table_Name" />
     WHERE instance_id = #{instanceId,jdbcType=BIGINT}

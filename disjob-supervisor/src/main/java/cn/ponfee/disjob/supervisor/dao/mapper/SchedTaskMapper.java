@@ -36,12 +36,11 @@ public interface SchedTaskMapper {
 
     SchedTask get(long taskId);
 
-    List<SchedTask> findBaseByInstanceId(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
+    List<SchedTask> findBaseByInstanceIdAndStates(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
 
-    List<SchedTask> findLargeByInstanceId(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
+    List<SchedTask> findLargeByInstanceIdAndStates(@Param("instanceId") long instanceId, @Param("states") List<Integer> states);
 
-    int incrementDispatchFailedCount(@Param("taskId") long taskId,
-                                     @Param("currentDispatchFailedCount") int currentDispatchFailedCount);
+    int incrementDispatchFailedCount(@Param("taskId") long taskId, @Param("currentDispatchFailedCount") int currentDispatchFailedCount);
 
     int start(@Param("taskId") long taskId,
               @Param("worker") String worker,
@@ -66,9 +65,7 @@ public interface SchedTaskMapper {
 
     int forceChangeState(@Param("instanceId") long instanceId, @Param("toState") int toState);
 
-    int savepoint(@Param("taskId") long taskId,
-                  @Param("worker") String worker,
-                  @Param("executeSnapshot") String executeSnapshot);
+    int savepoint(@Param("taskId") long taskId, @Param("worker") String worker, @Param("executeSnapshot") String executeSnapshot);
 
     /**
      * Delete the sched task.
@@ -93,4 +90,11 @@ public interface SchedTaskMapper {
         return isOneAffectedRow(terminate(taskId, worker, to.value(), from.value(), executeEndTime, errorMsg));
     }
 
+    default List<SchedTask> findBaseByInstanceId(long instanceId) {
+        return findBaseByInstanceIdAndStates(instanceId, null);
+    }
+
+    default List<SchedTask> findLargeByInstanceId(long instanceId){
+        return findLargeByInstanceIdAndStates(instanceId, null);
+    }
 }

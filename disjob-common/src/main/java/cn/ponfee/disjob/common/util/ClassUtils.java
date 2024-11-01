@@ -18,6 +18,7 @@ package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.base.Null;
 import cn.ponfee.disjob.common.collect.ArrayHashKey;
+import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import cn.ponfee.disjob.common.tuple.Tuple3;
 import com.google.common.base.Joiner;
@@ -31,6 +32,7 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -238,6 +240,25 @@ public final class ClassUtils {
         }
 
         return getPackagePath(className.substring(0, className.lastIndexOf('.')));
+    }
+
+    public static Class<?> findAnnotatedClass(Class<?> supClass, Class<?> subClass, Class<? extends Annotation> annClass) {
+        if (supClass == null || subClass == null || !supClass.isAssignableFrom(subClass)) {
+            return null;
+        }
+        Deque<Class<?>> stack = Collects.newLinkedList(subClass);
+        while (!stack.isEmpty()) {
+            subClass = stack.pop();
+            if (subClass.isAnnotationPresent(annClass)) {
+                return subClass;
+            }
+            for (Class<?> cls : Collects.concat(subClass.getInterfaces(), subClass.getSuperclass())) {
+                if (cls != null && supClass.isAssignableFrom(cls)) {
+                    stack.push(cls);
+                }
+            }
+        }
+        return null;
     }
 
     // -----------------------------------------------------------------------------constructor & instance

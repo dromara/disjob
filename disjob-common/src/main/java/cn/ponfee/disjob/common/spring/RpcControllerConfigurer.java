@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.common.spring;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.Jsons;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,12 +60,19 @@ public class RpcControllerConfigurer implements WebMvcConfigurer {
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
-            if (parameter.getExecutable() instanceof Method) {
-                //return AnnotationUtils.findAnnotation(parameter.getDeclaringClass(), RpcController.class) != null;
-                return parameter.getDeclaringClass().isAnnotationPresent(RpcController.class);
+            if (parameter.getMethod() == null) {
+                return false;
             }
-
-            return false;
+            Class<?> declaringClass = parameter.getDeclaringClass();
+            if (declaringClass.isAnnotationPresent(RpcController.class)) {
+                return true;
+            }
+            Class<?> containingClass = parameter.getContainingClass();
+            if (containingClass.equals(declaringClass)) {
+                return false;
+            }
+            // jdk proxied: Proxy.isProxyClass(containingClass)
+            return ClassUtils.findAnnotatedClass(declaringClass, containingClass, RpcController.class) != null;
         }
 
         @Override
@@ -73,16 +81,16 @@ public class RpcControllerConfigurer implements WebMvcConfigurer {
                                       NativeWebRequest webRequest,
                                       WebDataBinderFactory binderFactory) throws IOException {
             Method method = Objects.requireNonNull(parameter.getMethod());
-            HttpServletRequest httpServletRequest = Objects.requireNonNull(webRequest.getNativeRequest(HttpServletRequest.class));
+            HttpServletRequest request = Objects.requireNonNull(webRequest.getNativeRequest(HttpServletRequest.class));
             int parameterIndex = parameter.getParameterIndex();
             Object[] arguments;
             if (parameterIndex == 0) {
-                arguments = parseMethodParameters(method, httpServletRequest);
+                arguments = parseMethodParameters(method, request);
                 if (method.getParameterCount() > 1) {
-                    httpServletRequest.setAttribute(CACHE_ATTRIBUTE_KEY, arguments);
+                    request.setAttribute(CACHE_ATTRIBUTE_KEY, arguments);
                 }
             } else {
-                arguments = (Object[]) httpServletRequest.getAttribute(CACHE_ATTRIBUTE_KEY);
+                arguments = (Object[]) request.getAttribute(CACHE_ATTRIBUTE_KEY);
             }
 
             return Collects.get(arguments, parameterIndex);

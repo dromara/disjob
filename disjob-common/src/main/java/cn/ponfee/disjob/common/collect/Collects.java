@@ -295,13 +295,6 @@ public class Collects {
     }
 
     @SafeVarargs
-    public static <K, V> Map<K, V> concat(Map<K, V>... maps) {
-        return Arrays.stream(maps)
-            .flatMap(e -> e.entrySet().stream())
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-    }
-
-    @SafeVarargs
     public static <T> T[] concat(T[] a1, T... a2) {
         if (a1 == null || a1.length == 0) {
             return a2;
@@ -321,6 +314,13 @@ public class Collects {
             throw t1.isAssignableFrom(t2) ? e : new IllegalArgumentException("Cannot store " + t2.getName() + " into " + t1.getName() + "[]", e);
         }
         return result;
+    }
+
+    @SafeVarargs
+    public static <K, V> Map<K, V> concat(Map<K, V>... maps) {
+        return Arrays.stream(maps)
+            .flatMap(e -> e.entrySet().stream())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
     @SafeVarargs

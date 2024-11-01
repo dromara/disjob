@@ -69,8 +69,7 @@ public interface SchedJobMapper {
      * @param size               the size
      * @return jobs
      */
-    List<SchedJob> findBeTriggering(@Param("maxNextTriggerTime") long maxNextTriggerTime,
-                                    @Param("size") int size);
+    List<SchedJob> findBeTriggering(@Param("maxNextTriggerTime") long maxNextTriggerTime, @Param("size") int size);
 
     int updateNextScanTime(SchedJob job);
 
@@ -110,9 +109,7 @@ public interface SchedJobMapper {
      * @param fromState the source state
      * @return update sql affected rows
      */
-    int updateState(@Param("jobId") long jobId,
-                    @Param("toState") int toState,
-                    @Param("fromState") int fromState);
+    int updateState(@Param("jobId") long jobId, @Param("toState") int toState, @Param("fromState") int fromState);
 
     /**
      * Soft delete the job.

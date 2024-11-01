@@ -30,11 +30,11 @@ public final class Comparators {
     public static final int LT = -1;
 
     public static <T extends Comparable<? super T>> Comparator<T> asc() {
-        return Comparator.naturalOrder();
+        return Comparator.nullsFirst(Comparator.naturalOrder());
     }
 
     public static <T extends Comparable<? super T>> Comparator<T> desc() {
-        return Comparator.reverseOrder();
+        return Comparator.nullsLast(Comparator.reverseOrder());
     }
 
     public static <T extends Comparable<? super T>> Comparator<T> order(boolean asc) {

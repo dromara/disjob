@@ -17,11 +17,13 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.tree.print.BinaryTreePrinter;
 import cn.ponfee.disjob.common.tuple.Tuple2;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.collections.Sets;
 
@@ -214,6 +216,26 @@ public class CollectsTest {
         List<String> immutableList2 = ImmutableList.of();
         assertThatThrownBy(() -> immutableList2.add("E"))
             .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    public void testComparator() {
+        List<Integer> ascList = Lists.newArrayList(3, 1, null, 9, 10, 8);
+        ascList.sort(Comparators.asc());
+        assertThat(ascList.toString()).isEqualTo("[null, 1, 3, 8, 9, 10]");
+
+        List<Integer> descList = Lists.newArrayList(3, 1, null, 9, 10, 8);
+        descList.sort(Comparators.desc());
+        assertThat(descList.toString()).isEqualTo("[10, 9, 8, 3, 1, null]");
+
+        System.out.println(Lists.newArrayList(3, 1, null, 9, 10, 8).stream().max(Comparators.asc()).orElse(null));
+        System.out.println(Lists.<Integer>newArrayList().stream().max(Comparators.asc()).orElse(null));
+        System.out.println(Lists.<Integer>newArrayList(null, null).stream().filter(Objects::nonNull).max(Comparators.asc()).orElse(null));
+        System.out.println(Lists.newArrayList(3, 1, null, 9, 10, 8).stream().reduce(-1, (a, b) -> a == null ? b : (b == null ? a : Integer.max(a, b))));
+
+        List<Date> dates = Lists.newArrayList(Dates.toDate("2000-01-01",Dates.DATE_PATTERN),null,Dates.toDate("2001-01-01",Dates.DATE_PATTERN),null);
+        Date maxDate = dates.stream().filter(Objects::nonNull).max(Comparator.naturalOrder()).orElseGet(Date::new);
+        assertThat(Dates.format(maxDate)).isEqualTo("2001-01-01 00:00:00");
     }
 
 }

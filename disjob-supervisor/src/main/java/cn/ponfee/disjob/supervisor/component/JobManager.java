@@ -330,57 +330,57 @@ public class JobManager {
      */
     public boolean stopTask(StopTaskParam param) {
         param.check();
-        long taskId = param.getTaskId();
-        ExecuteState toState = param.getToState();
-        LOG.info("Task trace [{}] stopping: {}, {}, {}", taskId, param.getOperation(), param.getToState(), param.getWorker());
+        Operation ops = param.getOperation();
+        LOG.info("Task trace [{}] stopping: {}, {}, {}", param.getTaskId(), ops, param.getToState(), param.getWorker());
         return doInSynchronizedTransaction(param.getInstanceId(), param.getWnstanceId(), instance -> {
             Assert.isTrue(!instance.isWorkflowLead(), () -> "Stop task instance cannot be workflow lead: " + instance);
             if (instance.isTerminal()) {
                 return false;
             }
-
+            ExecuteState toState = param.getToState();
             Date executeEndTime = toState.isTerminal() ? new Date() : null;
             String errMsg = param.getErrorMsg();
-            if (!taskMapper.terminate(taskId, param.getWorker(), toState, ExecuteState.EXECUTING, executeEndTime, errMsg)) {
+            if (!taskMapper.terminate(param.getTaskId(), param.getWorker(), toState, ExecuteState.EXECUTING, executeEndTime, errMsg)) {
                 // usual is worker invoke http timeout, then retry
-                LOG.warn("Conflict stop executing task: {}, {}", taskId, toState);
+                LOG.warn("Conflict stop executing task: {}, {}", param.getTaskId(), toState);
                 return false;
             }
 
             if (toState == ExecuteState.WAITING) {
-                Assert.isTrue(param.getOperation() == Operation.SHUTDOWN_RESUME, () -> "Operation must be RESUME: " + param.getOperation());
+                Assert.isTrue(ops == Operation.SHUTDOWN_RESUME, () -> "Operation must be SHUTDOWN_RESUME, but actual: " + ops);
                 if (!updateInstanceNextScanTime(instance, new Date(System.currentTimeMillis() + conf.getShutdownTaskDelayResumeMs()))) {
-                    LOG.warn("Resume task renew instance update time failed: {}", taskId);
+                    LOG.warn("Resume task renew instance update time failed: {}", param.getTaskId());
                 }
                 return true;
             }
 
-            Tuple2<RunState, Date> tuple = obtainRunState(param.getInstanceId());
+            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(param.getInstanceId()));
             if (tuple == null) {
                 // If the instance has (WAITING or EXECUTING) task
                 return true;
             }
 
             if (!tuple.a.isTerminal()) {
-                Assert.isTrue(tuple.a == RunState.PAUSED, () -> "Expect pause run state, but actual: " + tuple.a);
+                Assert.isTrue(tuple.a == RunState.PAUSED, () -> "Run state must be PAUSED, but actual: " + tuple.a);
                 pauseInstance(instance.isWorkflow() ? instanceMapper.get(instance.getWnstanceId()) : instance);
                 return true;
             }
 
-            if (instanceMapper.terminate(param.getInstanceId(), tuple.a, RS_TERMINABLE, tuple.b)) {
-                instance.markTerminated(tuple.a, tuple.b);
-                // the last executing task of this sched instance
-                if (param.getOperation().isTrigger()) {
-                    // trigger operation
-                    afterTerminateTask(instance);
-                } else if (instance.isWorkflowNode()) {
-                    Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid workflow non-trigger stop state: " + tuple.a);
-                    updateWorkflowNodeState(instance, tuple.a, RS_TERMINABLE);
-                    updateWorkflowLeadState(instanceMapper.get(instance.getWnstanceId()), tuple.a, RS_RUNNABLE);
-                } else {
-                    Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid general non-trigger stop state: " + tuple.a);
-                    renewFixedNextTriggerTime(instance);
-                }
+            if (!instanceMapper.terminate(param.getInstanceId(), tuple.a, RS_TERMINABLE, tuple.b)) {
+                throw new IllegalStateException("Stop task instance failed: " + param.getInstanceId() + ", " + tuple.a);
+            }
+            // the last executing task of this sched instance
+            instance.markTerminated(tuple.a, tuple.b);
+            if (ops.isTrigger()) {
+                // trigger operation
+                afterTerminateTask(instance);
+            } else if (instance.isWorkflowNode()) {
+                Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid workflow non-trigger stop state: " + tuple.a);
+                updateWorkflowNodeState(instance, tuple.a, RS_TERMINABLE);
+                updateWorkflowLeadState(instanceMapper.get(instance.getWnstanceId()), tuple.a, RS_RUNNABLE);
+            } else {
+                Assert.isTrue(tuple.a == RunState.CANCELED, () -> "Invalid general non-trigger stop state: " + tuple.a);
+                renewFixedNextTriggerTime(instance);
             }
 
             return true;
@@ -388,7 +388,7 @@ public class JobManager {
     }
 
     /**
-     * Force change instance state
+     * Force change instance state, for example: CANCELED -> WAITING
      *
      * @param instanceId     the instance id, unsupported workflow
      * @param toExecuteState the target execute state
@@ -456,7 +456,7 @@ public class JobManager {
             if (!instance.isPausable()) {
                 return false;
             }
-            List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId, null);
+            List<SchedTask> tasks = taskMapper.findBaseByInstanceId(instanceId);
             if (tasks.stream().anyMatch(SchedTask::isWaiting) || workerClient.hasAliveExecutingTasks(tasks)) {
                 LOG.warn("Purge instance failed, has waiting or alive executing task: {}", tasks);
                 return false;
@@ -468,7 +468,7 @@ public class JobManager {
             }
             Assert.isTrue(tuple.a.isTerminal(), () -> "Purge instance state must be terminal state: " + instance);
             if (!instanceMapper.terminate(instanceId, tuple.a, RS_TERMINABLE, tuple.b)) {
-                return false;
+                throw new IllegalStateException("Purge instance failed: " + instance + ", " + tuple.a);
             }
             tasks.stream().filter(SchedTask::isPausable).forEach(e -> {
                 String worker = e.isExecuting() ? Strings.requireNonBlank(e.getWorker()) : null;
@@ -641,7 +641,7 @@ public class JobManager {
             LOG.error("Not found available worker for calculate workload: {}", job.getGroup());
             return null;
         }
-        List<SchedTask> pausableTasks = taskMapper.findBaseByInstanceId(instance.getInstanceId(), ES_PAUSABLE);
+        List<SchedTask> pausableTasks = taskMapper.findBaseByInstanceIdAndStates(instance.getInstanceId(), ES_PAUSABLE);
         if (CollectionUtils.isEmpty(pausableTasks)) {
             return null;
         }
@@ -691,18 +691,14 @@ public class JobManager {
         }
     }
 
-    private Tuple2<RunState, Date> obtainRunState(long instanceId) {
-        return obtainRunState(taskMapper.findBaseByInstanceId(instanceId, null));
-    }
-
     private Tuple2<RunState, Date> obtainRunState(List<SchedTask> tasks) {
-        List<ExecuteState> states = tasks.stream().map(SchedTask::getExecuteState).map(ExecuteState::of).collect(Collectors.toList());
+        List<ExecuteState> states = tasks.stream().map(e -> ExecuteState.of(e.getExecuteState())).collect(Collectors.toList());
         if (states.stream().allMatch(ExecuteState::isTerminal)) {
             // executeEndTime is null: canceled task maybe never not started
-            return Tuple2.of(
-                states.stream().anyMatch(ExecuteState::isFailure) ? RunState.CANCELED : RunState.COMPLETED,
-                tasks.stream().map(SchedTask::getExecuteEndTime).filter(Objects::nonNull).max(Comparator.naturalOrder()).orElseGet(Date::new)
-            );
+            RunState toState = states.stream().anyMatch(ExecuteState::isFailure) ? RunState.CANCELED : RunState.COMPLETED;
+            Date maxExecuteEndTime = tasks.stream()
+                .map(SchedTask::getExecuteEndTime).filter(Objects::nonNull).max(Comparator.naturalOrder()).orElseGet(Date::new);
+            return Tuple2.of(toState, maxExecuteEndTime);
         }
         // if task has WAITING or EXECUTING state, then return null
         return states.stream().anyMatch(ExecuteState::isPausable) ? null : Tuple2.of(RunState.PAUSED, null);
@@ -732,7 +728,7 @@ public class JobManager {
         List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
         if (executingTasks.isEmpty()) {
             // has non executing task, update sched instance state
-            Tuple2<RunState, Date> tuple = obtainRunState(instanceId);
+            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
             // must be paused or terminated
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
             if (!instanceMapper.terminate(instanceId, tuple.a, RS_PAUSABLE, tuple.b)) {
@@ -770,14 +766,14 @@ public class JobManager {
         List<ExecuteTaskParam> executingTasks = loadExecutingTasks(instance, ops);
         if (executingTasks.isEmpty()) {
             // has non executing execute_state
-            Tuple2<RunState, Date> tuple = obtainRunState(instanceId);
+            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
             Assert.notNull(tuple, () -> "Cancel instance obtain run state failed: " + instanceId);
             // if all task paused, should update to canceled state
             if (tuple.a == RunState.PAUSED) {
                 tuple = Tuple2.of(RunState.CANCELED, new Date());
             }
             if (!instanceMapper.terminate(instanceId, tuple.a, RS_TERMINABLE, tuple.b)) {
-                throw new IllegalStateException("Cancel instance failed: " + instance);
+                throw new IllegalStateException("Cancel instance failed: " + instance + ", " + tuple.a);
             }
             instance.markTerminated(tuple.a, tuple.b);
             if (instance.isWorkflowNode()) {
@@ -912,7 +908,7 @@ public class JobManager {
             return splitJob(job.getGroup(), retry.getInstanceId(), splitJobParam);
         }
         if (retryType == RetryType.FAILED) {
-            return taskMapper.findLargeByInstanceId(failed.getInstanceId(), null)
+            return taskMapper.findLargeByInstanceId(failed.getInstanceId())
                 .stream()
                 .filter(SchedTask::isFailure)
                 // Broadcast task must be retried with the same worker
@@ -951,7 +947,7 @@ public class JobManager {
         List<ExecuteTaskParam> executingTasks = new ArrayList<>();
         ExecuteTaskParamBuilder builder = null;
         long triggerTime = System.currentTimeMillis();
-        for (SchedTask task : taskMapper.findBaseByInstanceId(instance.getInstanceId(), ES_EXECUTING)) {
+        for (SchedTask task : taskMapper.findBaseByInstanceIdAndStates(instance.getInstanceId(), ES_EXECUTING)) {
             Worker worker = task.worker();
             if (workerClient.isAliveWorker(worker)) {
                 if (builder == null) {
@@ -976,7 +972,7 @@ public class JobManager {
     private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParam(long instanceId, int expectTaskSize) {
         SchedInstance instance = instanceMapper.get(instanceId);
         SchedJob job = getRequireJob(instance.getJobId());
-        List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceId(instanceId, ES_WAITING);
+        List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceIdAndStates(instanceId, ES_WAITING);
         int size = waitingTasks.size();
         Assert.state(size == expectTaskSize, () -> "Invalid dispatch tasks size: " + size + ", " + expectTaskSize);
         return Tuple3.of(job, instance, waitingTasks);
@@ -1145,7 +1141,7 @@ public class JobManager {
             // terminate lead instance
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.COMPLETED;
             if (!instanceMapper.terminate(wnstanceId, state, RS_TERMINABLE, new Date())) {
-                throw new IllegalStateException("Update workflow terminal state failed: " + wnstanceId + ", " + state);
+                throw new IllegalStateException("Stop workflow instance failed: " + wnstanceId + ", " + state);
             }
             SchedInstance lead = instanceMapper.get(wnstanceId);
             dependJob(lead);
@@ -1173,7 +1169,7 @@ public class JobManager {
         RetryType retryType = RetryType.of(job.getRetryType());
         return Collects.convert(predecessors.values(), e -> {
             // predecessor instance下的task是全部执行成功的
-            List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId(), null);
+            List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId());
             SchedInstance pre;
             if (retryType == RetryType.FAILED && (pre = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
                 Set<Long> instanceIds = instanceMapper.findChildren(pre.getPnstanceId(), RunType.RETRY.value())
@@ -1182,7 +1178,7 @@ public class JobManager {
                     .filter(t -> !Objects.equals(t, e.getInstanceId()))
                     .collect(Collectors.toSet());
                 instanceIds.add(pre.getPnstanceId());
-                instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceId(t, ES_COMPLETED)));
+                instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceIdAndStates(t, ES_COMPLETED)));
             }
             tasks.sort(SchedTask.TASK_NO_COMPARATOR);
             return ModelConverter.toPredecessorInstance(e, tasks);

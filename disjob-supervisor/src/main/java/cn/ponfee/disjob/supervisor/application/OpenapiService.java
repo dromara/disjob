@@ -86,7 +86,7 @@ public class OpenapiService extends SingletonClassConstraint {
     }
 
     public void manualTriggerJob(long jobId) throws JobException {
-        LOG.info("Do manual trigger the sched job {}", jobId);
+        LOG.info("Do manual trigger sched job {}", jobId);
         jobManager.manualTriggerJob(jobId);
     }
 
@@ -126,7 +126,7 @@ public class OpenapiService extends SingletonClassConstraint {
         // verify the execution state
         ExecuteState.of(targetExecuteState);
 
-        LOG.info("Do force change state {}, {}", instanceId, targetExecuteState);
+        LOG.info("Do force change sched instance state {}, {}", instanceId, targetExecuteState);
         jobManager.changeInstanceState(instanceId, ExecuteState.of(targetExecuteState));
     }
 

@@ -26,10 +26,7 @@ import cn.ponfee.disjob.common.spring.YamlProperties;
 import cn.ponfee.disjob.common.util.ClassUtils;
 import cn.ponfee.disjob.common.util.NetUtils;
 import cn.ponfee.disjob.common.util.UuidUtils;
-import cn.ponfee.disjob.core.base.CoreUtils;
-import cn.ponfee.disjob.core.base.HttpProperties;
-import cn.ponfee.disjob.core.base.RetryProperties;
-import cn.ponfee.disjob.core.base.Worker;
+import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
 import cn.ponfee.disjob.dispatch.TaskReceiver;
 import cn.ponfee.disjob.dispatch.http.HttpTaskReceiver;
@@ -124,7 +121,8 @@ public class WorkerFramelessMain {
 
         // `verify/split/metrics/configure` 接口还是要走http
         String workerContextPath = config.getString(SpringUtils.SPRING_BOOT_CONTEXT_PATH);
-        VertxWebServer vertxWebServer = new VertxWebServer(localWorker.getPort(), workerContextPath, paramTaskReceiver, new WorkerRpcProvider(localWorker, workerRegistry));
+        WorkerRpcService workerRpcService = WorkerRpcProvider.create(localWorker, workerRegistry);
+        VertxWebServer vertxWebServer = new VertxWebServer(localWorker.getPort(), workerContextPath, paramTaskReceiver, workerRpcService);
         RetryProperties retryProperties = config.extract(RetryProperties.class, RetryProperties.KEY_PREFIX);
         RestTemplate restTemplate = RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null);
         WorkerStartup workerStartup = new WorkerStartup(localWorker, workerProps, retryProperties, workerRegistry, actualTaskReceiver, restTemplate, null);

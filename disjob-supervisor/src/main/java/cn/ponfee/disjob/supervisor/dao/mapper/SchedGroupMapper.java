@@ -42,12 +42,9 @@ public interface SchedGroupMapper {
                     @Param("updatedBy") String updatedBy,
                     @Param("oldToken") String oldToken);
 
-    int updateOwnUser(@Param("group") String group,
-                      @Param("ownUser") String ownUser,
-                      @Param("updatedBy") String updatedBy);
+    int updateOwnUser(@Param("group") String group, @Param("ownUser") String ownUser, @Param("updatedBy") String updatedBy);
 
-    int softDelete(@Param("group") String group,
-                   @Param("updatedBy") String updatedBy);
+    int softDelete(@Param("group") String group, @Param("updatedBy") String updatedBy);
 
     int edit(SchedGroup schedGroup);
 

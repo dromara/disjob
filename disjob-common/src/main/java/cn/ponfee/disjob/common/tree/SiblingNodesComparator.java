@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.common.tree;
 
-import cn.ponfee.disjob.common.util.Comparators;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.io.Serializable;
@@ -71,7 +70,7 @@ public class SiblingNodesComparator<T extends Serializable & Comparable<T>, A> {
     }
 
     private static <U extends Comparable<? super U>> Comparator<U> comparator(boolean nullsFirst, boolean asc) {
-        Comparator<U> comparator = Comparators.order(asc);
+        Comparator<U> comparator = asc ? Comparator.naturalOrder() : Comparator.reverseOrder();
         return nullsFirst ? Comparator.nullsFirst(comparator) : Comparator.nullsLast(comparator);
     }
 

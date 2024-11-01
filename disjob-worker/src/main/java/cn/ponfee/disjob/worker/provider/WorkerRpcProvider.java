@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.worker.provider;
 
 import cn.ponfee.disjob.common.spring.RpcController;
+import cn.ponfee.disjob.common.util.ProxyUtils;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.base.WorkerMetrics;
 import cn.ponfee.disjob.core.base.WorkerRpcService;
@@ -27,7 +28,8 @@ import cn.ponfee.disjob.registry.Registry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
 
-import java.util.List;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 
 /**
  * Worker rpc service provider.
@@ -35,59 +37,88 @@ import java.util.List;
  * @author Ponfee
  */
 @RpcController
-public class WorkerRpcProvider implements WorkerRpcService {
+public interface WorkerRpcProvider extends WorkerRpcService {
 
-    private final Worker.Local localWorker;
-    private final Registry<Worker> workerRegistry;
-
-    public WorkerRpcProvider(Worker.Local localWorker, Registry<Worker> workerRegistry) {
-        this.localWorker = localWorker;
-        this.workerRegistry = workerRegistry;
+    /**
+     * Creates WorkerRpcService proxy
+     *
+     * @param localWorker    the localWorker
+     * @param workerRegistry the workerRegistry
+     * @return WorkerRpcService proxy
+     */
+    static WorkerRpcProvider create(Worker.Local localWorker, Registry<Worker> workerRegistry) {
+        InvocationHandler invocationHandler = new AuthenticateHandler(localWorker, workerRegistry);
+        return ProxyUtils.create(invocationHandler, WorkerRpcProvider.class);
     }
 
-    @Override
-    public void verifyJob(VerifyJobParam param) throws JobException {
-        localWorker.verifySupervisorAuthenticationToken(param);
-        JobExecutorUtils.verify(param);
+    class AuthenticateHandler implements InvocationHandler {
+        private final Worker.Local localWorker;
+        private final WorkerRpcService target;
+
+        private AuthenticateHandler(Worker.Local localWorker, Registry<Worker> workerRegistry) {
+            this.localWorker = localWorker;
+            this.target = new WorkerRpcImpl(localWorker, workerRegistry);
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            for (int i = 0; i < parameterTypes.length; i++) {
+                // 要通过参数类型判断，防止参数值传null绕过认证的漏洞
+                if (AuthenticationParam.class.isAssignableFrom(parameterTypes[i])) {
+                    localWorker.verifySupervisorAuthenticationToken((AuthenticationParam) args[i]);
+                }
+            }
+            return method.invoke(target, args);
+        }
     }
 
-    @Override
-    public SplitJobResult splitJob(SplitJobParam param) throws JobException {
-        localWorker.verifySupervisorAuthenticationToken(param);
-        List<String> taskParams = JobExecutorUtils.split(param);
-        return SplitJobResult.of(taskParams);
-    }
+    class WorkerRpcImpl implements WorkerRpcService {
+        private final Worker.Local localWorker;
+        private final Registry<Worker> workerRegistry;
 
-    @Override
-    public boolean existsTask(ExistsTaskParam param) {
-        localWorker.verifySupervisorAuthenticationToken(param);
-        return WorkerConfigurator.existsTask(param.getTaskId());
-    }
+        private WorkerRpcImpl(Worker.Local localWorker, Registry<Worker> workerRegistry) {
+            this.localWorker = localWorker;
+            this.workerRegistry = workerRegistry;
+        }
 
-    @Override
-    public WorkerMetrics getMetrics(GetMetricsParam param) {
-        localWorker.verifySupervisorAuthenticationToken(param);
+        @Override
+        public void verifyJob(VerifyJobParam param) throws JobException {
+            JobExecutorUtils.verify(param);
+        }
 
-        return WorkerConfigurator.metrics();
-    }
+        @Override
+        public SplitJobResult splitJob(SplitJobParam param) throws JobException {
+            return SplitJobResult.of(JobExecutorUtils.split(param));
+        }
 
-    @Override
-    public void configureWorker(ConfigureWorkerParam param) {
-        localWorker.verifySupervisorAuthenticationToken(param);
+        @Override
+        public boolean existsTask(ExistsTaskParam param) {
+            return WorkerConfigurator.existsTask(param.getTaskId());
+        }
 
-        Action action = param.getAction();
-        if (action == Action.MODIFY_MAXIMUM_POOL_SIZE) {
-            Integer maximumPoolSize = action.parse(param.getData());
-            WorkerConfigurator.modifyMaximumPoolSize(maximumPoolSize);
+        @Override
+        public WorkerMetrics getMetrics(GetMetricsParam param) {
+            return WorkerConfigurator.metrics();
+        }
 
-        } else if (action == Action.REMOVE_WORKER) {
-            workerRegistry.deregister(localWorker);
-
-        } else if (action == Action.ADD_WORKER) {
-            workerRegistry.register(localWorker);
-
-        } else {
-            throw new UnsupportedOperationException("Unsupported configure worker action: " + action);
+        @Override
+        public void configureWorker(ConfigureWorkerParam param) {
+            Action action = param.getAction();
+            switch (param.getAction()) {
+                case MODIFY_MAXIMUM_POOL_SIZE:
+                    Integer maximumPoolSize = action.parse(param.getData());
+                    WorkerConfigurator.modifyMaximumPoolSize(maximumPoolSize);
+                    break;
+                case REMOVE_WORKER:
+                    workerRegistry.deregister(localWorker);
+                    break;
+                case ADD_WORKER:
+                    workerRegistry.register(localWorker);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unsupported configure worker action: " + action);
+            }
         }
     }
 

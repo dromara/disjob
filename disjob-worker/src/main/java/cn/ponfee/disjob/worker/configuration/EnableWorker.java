@@ -76,7 +76,7 @@ public @interface EnableWorker {
 
         @Bean
         public WorkerRpcService workerRpcService(Worker.Local localWorker, Registry<Worker> workerRegistry) {
-            return new WorkerRpcProvider(localWorker, workerRegistry);
+            return WorkerRpcProvider.create(localWorker, workerRegistry);
         }
     }
 

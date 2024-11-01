@@ -17,6 +17,7 @@ import org.apache.shiro.authz.AuthorizationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingPathVariableException;
@@ -132,7 +133,7 @@ public class GlobalExceptionHandler {
     private static boolean isResponseJson(HandlerMethod handlerMethod, HttpServletRequest request) {
         if (handlerMethod == null ||
             handlerMethod.getBeanType() == BasicErrorController.class ||
-            handlerMethod.getBeanType().isAnnotationPresent(RpcController.class)) {
+            AnnotationUtils.findAnnotation(handlerMethod.getBeanType(), RpcController.class) != null) {
             return false;
         }
 

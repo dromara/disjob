@@ -54,20 +54,16 @@ public interface SchedInstanceMapper {
 
     Long getWnstanceId(long instanceId);
 
-    List<SchedInstance> findChildren(@Param("pnstanceId") long pnstanceId,
-                                     @Param("runType") Integer runType);
+    List<SchedInstance> findChildren(@Param("pnstanceId") long pnstanceId, @Param("runType") Integer runType);
 
-    int start(@Param("instanceId") long instanceId,
-              @Param("runStartTime") Date runStartTime);
+    int start(@Param("instanceId") long instanceId, @Param("runStartTime") Date runStartTime);
 
     int terminate(@Param("instanceId") long instanceId,
                   @Param("toState") int toState,
                   @Param("fromStateList") List<Integer> fromStateList,
                   @Param("runEndTime") Date runEndTime);
 
-    int updateState(@Param("instanceId") long instanceId,
-                    @Param("toState") int toState,
-                    @Param("fromState") int fromState);
+    int updateState(@Param("instanceId") long instanceId, @Param("toState") int toState, @Param("fromState") int fromState);
 
     int updateRetrying(@Param("instanceId") long instanceId,
                        @Param("retrying") boolean retrying,
