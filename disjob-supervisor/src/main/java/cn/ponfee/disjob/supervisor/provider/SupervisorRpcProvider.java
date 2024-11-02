@@ -27,6 +27,7 @@ import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.supervisor.application.SupervisorEventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
+import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication.Subject;
 import cn.ponfee.disjob.supervisor.base.ExtendedSupervisorRpcService;
 import cn.ponfee.disjob.supervisor.base.SupervisorEvent;
 import cn.ponfee.disjob.supervisor.base.SupervisorMetrics;
@@ -41,7 +42,7 @@ import java.util.List;
  * @author Ponfee
  */
 @RpcController
-@SupervisorAuthentication(SupervisorAuthentication.Subject.WORKER)
+@SupervisorAuthentication(Subject.WORKER)
 @RequiredArgsConstructor
 public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
@@ -82,7 +83,7 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
     // -------------------------------------------------------for other supervisor invoke method
 
-    @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
+    @SupervisorAuthentication(Subject.ANON)
     @Override
     public SupervisorMetrics getMetrics() {
         SupervisorMetrics metrics = new SupervisorMetrics();
@@ -92,7 +93,7 @@ public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
         return metrics;
     }
 
-    @SupervisorAuthentication(SupervisorAuthentication.Subject.ANON)
+    @SupervisorAuthentication(Subject.ANON)
     @Override
     public void publishEvent(SupervisorEvent event) {
         SupervisorEventSubscribeService.subscribe(event);

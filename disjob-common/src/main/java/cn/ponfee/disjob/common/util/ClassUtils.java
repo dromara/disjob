@@ -57,7 +57,7 @@ public final class ClassUtils {
     public static final Pattern QUALIFIED_CLASS_NAME_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*$");
 
     private static final ConcurrentMap<Object, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<Object, Method>              METHOD_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Object, Method> METHOD_CACHE = new ConcurrentHashMap<>();
 
     /**
      * Returns class object for text, can be class qualifier name or source code
@@ -84,7 +84,7 @@ public final class ClassUtils {
     /**
      * Returns the member field(include super class)
      *
-     * @param clazz the type
+     * @param clazz     the type
      * @param fieldName the field name
      * @return member field object
      */
@@ -150,7 +150,7 @@ public final class ClassUtils {
     /**
      * Returns the static field, find in class pointer chain
      *
-     * @param clazz the clazz
+     * @param clazz           the clazz
      * @param staticFieldName the static field name
      * @return static field object
      */
@@ -190,7 +190,7 @@ public final class ClassUtils {
     /**
      * Returns the static field
      *
-     * @param clazz the clazz
+     * @param clazz           the clazz
      * @param staticFieldName the static field name
      * @return static field object
      */
@@ -558,7 +558,7 @@ public final class ClassUtils {
      * 方法匹配
      *
      * @param definedTypes 方法体中定义的参数类型
-     * @param actualTypes 调用方法实际传入的参数类型
+     * @param actualTypes  调用方法实际传入的参数类型
      * @return
      */
     private static boolean matches(Class<?>[] definedTypes, Class<?>[] actualTypes) {

@@ -98,8 +98,7 @@ public final class ObjectUtils {
 
     /**
      * Returns target type value from origin value cast
-     *
-     * See com.alibaba.fastjson.util.TypeUtils#castToInt(Object)
+     * <p> See com.alibaba.fastjson.util.TypeUtils#castToInt(Object)
      *
      * @param value source object
      * @param type  target object type

@@ -210,7 +210,8 @@ public class JavaUtilDateFormat extends DateFormat {
                     return Dates.toDate(LocalDateTime.parse(source, DATE_TO_STRING_FORMAT));
                 }
                 break;
-            default: break;
+            default:
+                break;
         }
 
         return backstopFormat.parse(source);
@@ -267,21 +268,24 @@ public class JavaUtilDateFormat extends DateFormat {
 
     // ------------------------------------------------------------------------deprecated methods
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public void setCalendar(Calendar newCalendar) {
         if (!Objects.equals(newCalendar, super.getCalendar())) {
             throw new UnsupportedOperationException();
         }
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public void setNumberFormat(NumberFormat newNumberFormat) {
         if (!Objects.equals(newNumberFormat, super.getNumberFormat())) {
             throw new UnsupportedOperationException();
         }
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public void setTimeZone(TimeZone zone) {
         if (zone == null && super.getTimeZone() == null) {
             return;
@@ -294,7 +298,8 @@ public class JavaUtilDateFormat extends DateFormat {
         }
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public void setLenient(boolean lenient) {
         if (lenient != super.isLenient()) {
             throw new UnsupportedOperationException();

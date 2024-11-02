@@ -89,9 +89,11 @@ public class LazyLoader<T> implements Supplier<T> {
     }
 
     /**
+     * <pre>
      * 注意：
-     *   1、调用目标类的final方法时，此时的调用对象是代理对象，其所有成员变量都会是null
-     *   2、用的是lazyLoader.get()，如果延时加载到null则会抛`NullPointerException("Not load target object.")`
+     *   1）调用目标类的final方法时，此时的调用对象是代理对象，其所有成员变量都会是null
+     *   2）用的是lazyLoader.get()，如果延时加载到null则会抛`NullPointerException("Not load target object.")`
+     * </pre>
      *
      * @param type       目标类
      * @param lazyLoader 延时加载器

@@ -194,8 +194,6 @@ public class SchedGroupService extends SingletonClassConstraint {
         return Tokens.verifySignature(tokenSecret, workerToken, TokenType.worker, group);
     }
 
-    // ------------------------------------------------------------private methods
-
     void refresh() {
         if (LOCK.tryLock()) {
             try {
@@ -208,6 +206,8 @@ public class SchedGroupService extends SingletonClassConstraint {
             }
         }
     }
+
+    // ------------------------------------------------------------private methods
 
     private void refreshAndPublish() {
         refresh();

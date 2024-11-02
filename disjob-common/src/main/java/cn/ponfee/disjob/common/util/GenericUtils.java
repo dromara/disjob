@@ -27,8 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * 泛型工具类
- *
- * https://segmentfault.com/a/1190000018319217
+ * <p>https://segmentfault.com/a/1190000018319217
  *
  * @author Ponfee
  */
@@ -38,6 +37,7 @@ public final class GenericUtils {
 
     /**
      * map泛型协变
+     *
      * @param origin
      * @return
      */
@@ -59,6 +59,7 @@ public final class GenericUtils {
     }
 
     // ----------------------------------------------------------------------------class actual type argument
+
     /**
      * 获取泛型的实际类型参数
      *
@@ -102,9 +103,9 @@ public final class GenericUtils {
     /**
      * public void genericMethod(List<Long> list, Map<String, String> map){}
      *
-     * @param method            方法对象
-     * @param methodArgsIndex 方法参数索引号
-     * @param genericArgsIndex  泛型参数索引号
+     * @param method           方法对象
+     * @param methodArgsIndex  方法参数索引号
+     * @param genericArgsIndex 泛型参数索引号
      * @return
      */
     public static <T> Class<T> getActualArgTypeArgument(Method method, int methodArgsIndex, int genericArgsIndex) {
@@ -120,7 +121,7 @@ public final class GenericUtils {
     /**
      * public List<String> genericMethod(){}
      *
-     * @param method the method
+     * @param method           the method
      * @param genericArgsIndex the generic argument index
      * @return
      */
@@ -187,9 +188,9 @@ public final class GenericUtils {
      * public class ClassB extends classA<String>{}
      * }</pre>
      *
-     * @param clazz            the sub class
-     * @param method           the super class defined method
-     * @param methodArgsIndex  the method arg index
+     * @param clazz           the sub class
+     * @param method          the super class defined method
+     * @param methodArgsIndex the method arg index
      * @return a Class of method arg actual type
      */
     public static <T> Class<T> getMethodArgActualType(Class<?> clazz, Method method, int methodArgsIndex) {

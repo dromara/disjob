@@ -203,8 +203,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
      * 按层级方式展开节点：兄弟节点相邻
      * <p>子节点优先搜索CFS(Children-First Search)
      * <p>Should be invoking after {@link #mount(List)}
-     *
-     * Note：为了构建复杂表头，保证左侧的叶子节点必须排在右侧叶子节点前面，此处不能用广度优先搜索策略
+     * <p>Note：为了构建复杂表头，保证左侧的叶子节点必须排在右侧叶子节点前面，此处不能用广度优先搜索策略
      *
      * @return a list nodes for CFS tree node
      */
@@ -379,7 +378,7 @@ public final class TreeNode<T extends Serializable & Comparable<T>, A> extends B
         super.path = buildPath(parentPath, super.nid);
 
         // find child nodes for the current node
-        for (Iterator<E> iter = nodes.iterator(); iter.hasNext();) {
+        for (Iterator<E> iter = nodes.iterator(); iter.hasNext(); ) {
             BaseNode<T, A> node = iter.next();
 
             if (!ignoreOrphan && ObjectUtils.isEmpty(node.pid)) { // effect condition that pid is null

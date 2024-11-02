@@ -42,8 +42,8 @@ public class Maths {
      * {@link Math#log(double)   }  以e为底n的对数（自然对数，ln）
      * {@link Math#log1p(double) }  以e为底n+1的对数
      *
-     * @param n     a value
-     * @param base  底数
+     * @param n    a value
+     * @param base 底数
      * @return a double of logarithm
      */
     public static strictfp double log(double n, double base) {
@@ -110,8 +110,8 @@ public class Maths {
     /**
      * Returns a long value for {@code base}<sup>{@code exponent}</sup>.
      *
-     * @param base      the base
-     * @param exponent  the exponent
+     * @param base     the base
+     * @param exponent the exponent
      * @return a long value for {@code base}<sup>{@code exponent}</sup>.
      */
     public static long pow(long base, int exponent) {
@@ -195,7 +195,7 @@ public class Maths {
             return Math.abs(a - b);
         }
 
-        for (int c; (c = a % b) != 0;) {
+        for (int c; (c = a % b) != 0; ) {
             a = b;
             b = c;
         }

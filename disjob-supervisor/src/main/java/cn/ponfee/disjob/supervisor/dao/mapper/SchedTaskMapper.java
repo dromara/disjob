@@ -94,7 +94,7 @@ public interface SchedTaskMapper {
         return findBaseByInstanceIdAndStates(instanceId, null);
     }
 
-    default List<SchedTask> findLargeByInstanceId(long instanceId){
+    default List<SchedTask> findLargeByInstanceId(long instanceId) {
         return findLargeByInstanceIdAndStates(instanceId, null);
     }
 }

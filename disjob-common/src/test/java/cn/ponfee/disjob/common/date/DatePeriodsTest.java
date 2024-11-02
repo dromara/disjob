@@ -41,8 +41,8 @@ public class DatePeriodsTest {
         Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(origin, target, 2, 1).toString());
         Assertions.assertEquals("2018-10-29 16:23:32.000 ~ 2018-10-29 18:23:31.999", DatePeriods.HOURLY.next(origin, Dates.toDate("2018-10-29 14:23:32.000", format), 2, 1).toString());
         Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(Dates.toDate("2018-10-29 14:23:32.000", format), 2, 0).toString());
-        Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.toDate("2018-10-29 14:23:32.000", format),-1), 2, 1).toString());
-        Assertions.assertEquals("2018-10-29 16:23:32.000 ~ 2018-10-29 18:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.toDate("2018-10-29 14:23:32.000", format),1), 2, 1).toString());
+        Assertions.assertEquals("2018-10-29 14:23:32.000 ~ 2018-10-29 16:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.toDate("2018-10-29 14:23:32.000", format), -1), 2, 1).toString());
+        Assertions.assertEquals("2018-10-29 16:23:32.000 ~ 2018-10-29 18:23:31.999", DatePeriods.HOURLY.next(origin, Dates.plusMillis(Dates.toDate("2018-10-29 14:23:32.000", format), 1), 2, 1).toString());
         Assertions.assertEquals("2018-11-07 10:23:32.000 ~ 2018-11-07 17:23:31.999", DatePeriods.HOURLY.next(origin, target, 7, 31).toString());
         Assertions.assertEquals("2019-06-02 12:23:32.000 ~ 2019-06-09 12:23:31.999", DatePeriods.DAILY.next(origin, target, 7, 31).toString());
         Assertions.assertEquals("2022-12-18 12:23:32.000 ~ 2023-02-05 12:23:31.999", DatePeriods.WEEKLY.next(origin, target, 7, 31).toString());

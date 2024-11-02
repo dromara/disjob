@@ -28,13 +28,13 @@ public class CommonConfiguration {
 
     @Bean
     @Order(34)
-    public String string1(){
+    public String string1() {
         return "String-1";
     }
 
     @Bean
     @Order(14)
-    public String string2(){
+    public String string2() {
         return "String-2";
     }
 

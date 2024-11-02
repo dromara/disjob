@@ -241,8 +241,7 @@ public final class Files {
 
     // ---------------------------------------------------------------read line
 
-    public static List<String> readLines(File file, String charset)
-            throws FileNotFoundException {
+    public static List<String> readLines(File file, String charset) throws FileNotFoundException {
         return readLines(new FileInputStream(file), charset);
     }
 
@@ -261,9 +260,7 @@ public final class Files {
      */
     public static void readLines(InputStream input, String charset,
                                  Consumer<String> consumer) {
-        try (Scanner scanner = (charset == null)
-                ? new Scanner(input)
-                : new Scanner(input, charset)) {
+        try (Scanner scanner = (charset == null) ? new Scanner(input) : new Scanner(input, charset)) {
             while (scanner.hasNextLine()) {
                 consumer.accept(scanner.nextLine());
             }

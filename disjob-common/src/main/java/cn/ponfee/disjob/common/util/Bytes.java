@@ -44,7 +44,7 @@ public final class Bytes {
 
     public static String encodeHex(byte b, boolean lowercase) {
         char[] codes = lowercase ? HEX_LOWER_CODES : HEX_UPPER_CODES;
-        return new String(new char[] {
+        return new String(new char[]{
             codes[(0xF0 & b) >>> 4], codes[0x0F & b]
         });
     }

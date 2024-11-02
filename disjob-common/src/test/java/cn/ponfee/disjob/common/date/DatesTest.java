@@ -108,7 +108,7 @@ public class DatesTest {
         Assertions.assertEquals(3, dayOfMonth(date));
         Assertions.assertEquals(156, dayOfYear(toDate("2023-06-05 15:23:45.321", DATEFULL_PATTERN)));
 
-        Assertions.assertEquals(15, daysBetween(JavaUtilDateFormat.DEFAULT.parse("2023-05-21 15:23:45"),JavaUtilDateFormat.DEFAULT.parse("2023-06-05 15:23:45")));
+        Assertions.assertEquals(15, daysBetween(JavaUtilDateFormat.DEFAULT.parse("2023-05-21 15:23:45"), JavaUtilDateFormat.DEFAULT.parse("2023-06-05 15:23:45")));
 
         Assertions.assertEquals("45 23 15 3 1 ? 2023", toCronExpression(JavaUtilDateFormat.DEFAULT.parse(str)));
     }
@@ -133,7 +133,7 @@ public class DatesTest {
 
     @Test
     public void testDateFormat() {
-       DateEntity entity = Jsons.fromJson("{\"createTime\":\"2000-03-01 00:00:00\"}",DateEntity.class);
+        DateEntity entity = Jsons.fromJson("{\"createTime\":\"2000-03-01 00:00:00\"}", DateEntity.class);
         Assertions.assertEquals("2000-03-01 00:00:00", Dates.format(entity.getCreateTime()));
     }
 

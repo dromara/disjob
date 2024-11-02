@@ -35,7 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SynchronizedSegmentMapTest {
 
-    @Test @Disabled
+    @Test
+    @Disabled
     public void test1() {
         String s = null;
         System.out.println("abc " + s);
@@ -79,11 +80,12 @@ public class SynchronizedSegmentMapTest {
         assertThat(m.size()).isEqualTo(0);
     }
 
-    @Test @Disabled
+    @Test
+    @Disabled
     public void test2() {
         SynchronizedSegmentMap<String, String> map = new SynchronizedSegmentMap<>(14);
         for (int i = 0; i < 30000; i++) {
-            String s = RandomStringUtils.randomGraph(1+ThreadLocalRandom.current().nextInt(20));
+            String s = RandomStringUtils.randomGraph(1 + ThreadLocalRandom.current().nextInt(20));
             map.execute(s, e -> e.put(s, s));
         }
         map.execute(System.out::println);

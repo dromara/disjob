@@ -54,6 +54,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
@@ -124,9 +125,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
             if (workers != null && workers.stream().anyMatch(worker::matches)) {
                 throw new KeyExistsException("Worker already registered: " + worker);
             }
-            verifyWorkerSignature(worker);
         } else {
-            List<Worker> workers = getDiscoveredWorkers(req.getGroup());
+            List<Worker> workers = getRequiredDiscoveredWorkers(req.getGroup());
             if (!workers.contains(worker)) {
                 throw new KeyNotExistsException("Not found worker: " + worker);
             }
@@ -136,12 +136,9 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     public void configureAllWorker(ConfigureAllWorkerRequest req) {
-        List<Worker> workers = getDiscoveredWorkers(req.getGroup());
-        MultithreadExecutors.run(
-            workers,
-            worker -> configureWorker(worker, req.getAction(), req.getData()),
-            ThreadPoolExecutors.commonThreadPool()
-        );
+        List<Worker> workers = getRequiredDiscoveredWorkers(req.getGroup());
+        Consumer<Worker> action = worker -> configureWorker(worker, req.getAction(), req.getData());
+        MultithreadExecutors.run(workers, action, ThreadPoolExecutors.commonThreadPool());
     }
 
     public void publishOtherSupervisors(SupervisorEvent event) {
@@ -150,11 +147,8 @@ public class ServerInvokeService extends SingletonClassConstraint {
                 .stream()
                 .filter(e -> !localSupervisor.equals(e))
                 .collect(Collectors.toList());
-            MultithreadExecutors.run(
-                supervisors,
-                supervisor -> publishSupervisor(supervisor, event),
-                ThreadPoolExecutors.commonThreadPool()
-            );
+            Consumer<Supervisor> action = supervisor -> publishSupervisor(supervisor, event);
+            MultithreadExecutors.run(supervisors, action, ThreadPoolExecutors.commonThreadPool());
         } catch (Exception e) {
             LOG.error("Publish other supervisor error.", e);
         }
@@ -211,7 +205,7 @@ public class ServerInvokeService extends SingletonClassConstraint {
         return response;
     }
 
-    private List<Worker> getDiscoveredWorkers(String group) {
+    private List<Worker> getRequiredDiscoveredWorkers(String group) {
         List<Worker> list = workerClient.getDiscoveredWorkers(group);
         if (CollectionUtils.isEmpty(list)) {
             throw new KeyNotExistsException("Group '" + group + "' not exists workers.");
@@ -229,6 +223,9 @@ public class ServerInvokeService extends SingletonClassConstraint {
     }
 
     private void configureWorker(Worker worker, Action action, String data) {
+        if (action == Action.ADD_WORKER) {
+            verifyWorkerSignature(worker);
+        }
         String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
         ConfigureWorkerParam param = ConfigureWorkerParam.of(supervisorToken, action, data);
         workerClient.invoke(worker, service -> service.configureWorker(param));

@@ -122,7 +122,7 @@ public class JavaUtilDateFormatTest {
 
 
         assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse(String.valueOf(date.getTime())).toString());
-        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse(String.valueOf(date.getTime()/1000)).toString());
+        assertEquals("Sun Jan 02 03:04:05 CST 2022", JavaUtilDateFormat.DEFAULT.parse(String.valueOf(date.getTime() / 1000)).toString());
     }
 
     @Test
@@ -199,7 +199,6 @@ public class JavaUtilDateFormatTest {
         assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse("2022/07/19T21:44:27.873Z")));
 
 
-
         assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022-07-19 21:44:27Z")));
         assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse("2022-07-19 21:44:27.Z")));
         assertEquals("2022-07-19 21:44:27.800", fastDateFormat.format(format.parse("2022-07-19 21:44:27.8Z")));
@@ -220,7 +219,7 @@ public class JavaUtilDateFormatTest {
 
         String dateString = "2022-07-19T13:44:27.873Z";
         Date date = JavaUtilDateFormat.PATTERN_73.parse(dateString);
-        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse(Long.toString(date.getTime()/1000))));
+        assertEquals("2022-07-19 21:44:27.000", fastDateFormat.format(format.parse(Long.toString(date.getTime() / 1000))));
         assertEquals("2022-07-19 21:44:27.873", fastDateFormat.format(format.parse(Long.toString(date.getTime()))));
     }
 

@@ -33,14 +33,14 @@ public class DatePeriodCalculatorTest {
     private static final FastDateFormat FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
 
     @Test
-    public void test1()  {
+    public void test1() {
         test(Dates.toDate("2020-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
         test(Dates.toDate("2021-02-26 00:00:00", "yyyy-MM-dd HH:mm:ss"));
         test(Dates.toDate("2021-12-31 00:00:00", "yyyy-MM-dd HH:mm:ss"));
         test(Dates.toDate("2021-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss"));
     }
 
-    private static void test(Date original )  {
+    private static void test(Date original) {
         int step = 2, next = 1;
         Date target = original;
         String except, actual;

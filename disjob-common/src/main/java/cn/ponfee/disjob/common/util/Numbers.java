@@ -273,16 +273,14 @@ public final class Numbers {
             return val;
         }
 
-        return BigDecimal.valueOf(val)
-                .setScale(scale, RoundingMode.HALF_UP)
-                .doubleValue();
+        return BigDecimal.valueOf(val).setScale(scale, RoundingMode.HALF_UP).doubleValue();
     }
 
     /**
      * 向下转单位
      *
      * @param value the number value
-     * @param pow the pow
+     * @param pow   the pow
      * @return double value
      */
     public static double lower(double value, int pow) {
@@ -290,9 +288,7 @@ public final class Numbers {
     }
 
     public static double lower(double value, int pow, int scale) {
-        return BigDecimal.valueOf(value / Math.pow(10, pow))
-                         .setScale(scale, RoundingMode.HALF_UP)
-                         .doubleValue();
+        return BigDecimal.valueOf(value / Math.pow(10, pow)).setScale(scale, RoundingMode.HALF_UP).doubleValue();
     }
 
     /**
@@ -307,9 +303,7 @@ public final class Numbers {
     }
 
     public static double upper(double value, int pow, int scale) {
-        return BigDecimal.valueOf(value * Math.pow(10, pow))
-                         .setScale(scale, RoundingMode.HALF_UP)
-                         .doubleValue();
+        return BigDecimal.valueOf(value * Math.pow(10, pow)).setScale(scale, RoundingMode.HALF_UP).doubleValue();
     }
 
     public static long nullZero(Long value) {
@@ -462,7 +456,7 @@ public final class Numbers {
      * </pre>
      *
      * @param quantity the quantity
-     * @param segment the segment
+     * @param segment  the segment
      * @return int array
      */
     public static int[] slice(int quantity, int segment) {
@@ -584,9 +578,7 @@ public final class Numbers {
         }
         try {
             String val = obj.toString();
-            return val.indexOf('.') == -1
-                    ? Long.parseLong(val)
-                    : (long) Double.parseDouble(val);
+            return val.indexOf('.') == -1 ? Long.parseLong(val) : (long) Double.parseDouble(val);
         } catch (NumberFormatException ignored) {
             return null;
         }

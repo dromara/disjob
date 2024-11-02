@@ -197,7 +197,7 @@ public class SchedJobMapperTest extends SpringBootTestBase<SchedJobMapper> {
     }
 
     enum ScriptType {
-        CMD,SHELL
+        CMD, SHELL
     }
 
     @Getter

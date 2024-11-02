@@ -40,8 +40,8 @@ import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonSched
  */
 @Service
 public class SupervisorEventSubscribeService extends SingletonClassConstraint {
-    private static final Logger LOG = LoggerFactory.getLogger(SupervisorEventSubscribeService.class);
 
+    private static final Logger LOG = LoggerFactory.getLogger(SupervisorEventSubscribeService.class);
     private static final ConcurrentMap<Type, SupervisorEvent> MAP = new ConcurrentHashMap<>();
 
     private final SchedGroupService groupService;
@@ -71,11 +71,10 @@ public class SupervisorEventSubscribeService extends SingletonClassConstraint {
         if (event == null) {
             return;
         }
-        Type type = event.getType();
 
+        Type type = event.getType();
         if (type == Type.REFRESH_GROUP) {
             groupService.refresh();
-
         } else {
             LOG.error("Unsupported subscribe event type: {}", type);
         }

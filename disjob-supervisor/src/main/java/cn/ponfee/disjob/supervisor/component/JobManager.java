@@ -248,7 +248,7 @@ public class JobManager {
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
     public void manualTriggerJob(long jobId) throws JobException {
-        triggerJob(getRequireJob(jobId), RunType.MANUAL, System.currentTimeMillis());
+        triggerJob(getRequiredJob(jobId), RunType.MANUAL, System.currentTimeMillis());
     }
 
     @Transactional(transactionManager = SPRING_BEAN_NAME_TX_MANAGER, rollbackFor = Exception.class)
@@ -346,15 +346,20 @@ public class JobManager {
                 return false;
             }
 
+            List<SchedTask> tasks = taskMapper.findBaseByInstanceId(param.getInstanceId());
             if (toState == ExecuteState.WAITING) {
                 Assert.isTrue(ops == Operation.SHUTDOWN_RESUME, () -> "Operation must be SHUTDOWN_RESUME, but actual: " + ops);
+                if (tasks.stream().allMatch(SchedTask::isWaiting)) {
+                    boolean updated = instanceMapper.updateState(param.getInstanceId(), RunState.WAITING, RunState.RUNNING);
+                    Assert.isTrue(updated, () -> "Shutdown resume instance state to WAITING failed: " + param.getInstanceId());
+                }
                 if (!updateInstanceNextScanTime(instance, new Date(System.currentTimeMillis() + conf.getShutdownTaskDelayResumeMs()))) {
                     LOG.warn("Resume task renew instance update time failed: {}", param.getTaskId());
                 }
                 return true;
             }
 
-            Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(param.getInstanceId()));
+            Tuple2<RunState, Date> tuple = obtainRunState(tasks);
             if (tuple == null) {
                 // If the instance has (WAITING or EXECUTING) task
                 return true;
@@ -366,9 +371,8 @@ public class JobManager {
                 return true;
             }
 
-            if (!instanceMapper.terminate(param.getInstanceId(), tuple.a, RS_TERMINABLE, tuple.b)) {
-                throw new IllegalStateException("Stop task instance failed: " + param.getInstanceId() + ", " + tuple.a);
-            }
+            boolean updated = instanceMapper.terminate(param.getInstanceId(), tuple.a, RS_TERMINABLE, tuple.b);
+            Assert.state(updated, () -> "Stop task instance failed: " + param.getInstanceId() + ", " + tuple.a);
             // the last executing task of this sched instance
             instance.markTerminated(tuple.a, tuple.b);
             if (ops.isTrigger()) {
@@ -402,9 +406,8 @@ public class JobManager {
             Assert.isTrue(fromRunState != RunState.RUNNING, "Force change state current cannot be RUNNING.");
             Assert.isTrue(fromRunState != toRunState, () -> "Force change state current cannot equals target " + toRunState);
 
-            if (!instanceMapper.updateState(instanceId, toRunState, fromRunState)) {
-                throw new IllegalStateException("Force change state failed: " + instanceId);
-            }
+            boolean updated = instanceMapper.updateState(instanceId, toRunState, fromRunState);
+            Assert.state(updated, () -> "Force change state failed: " + instanceId);
             int changedTaskRows = taskMapper.forceChangeState(instanceId, toExecuteState.value());
             if (toExecuteState == ExecuteState.WAITING) {
                 Tuple3<SchedJob, SchedInstance, List<SchedTask>> tuple = buildDispatchParam(instanceId, changedTaskRows);
@@ -427,8 +430,8 @@ public class JobManager {
                     assertHasAffectedRow(row, () -> "Delete workflow task failed: " + nodeInstance);
                 }
             } else {
-                Assert.isTrue(!instance.getRetrying(), () -> "Cannot delete retrying original instance.");
-                Assert.isTrue(!instance.isRunRetry(), () -> "Cannot delete run retry sub instance.");
+                Assert.isTrue(!instance.getRetrying(), "Cannot delete retrying original instance.");
+                Assert.isTrue(!instance.isRunRetry(), "Cannot delete run retry sub instance.");
                 Set<Long> instanceIds = instanceMapper.findRunRetry(instanceId)
                     .stream().map(SchedInstance::getInstanceId).collect(Collectors.toSet());
                 instanceIds.add(instanceId);
@@ -526,7 +529,7 @@ public class JobManager {
 
     // ------------------------------------------------------------------private methods
 
-    private SchedJob getRequireJob(long jobId) {
+    private SchedJob getRequiredJob(long jobId) {
         return Objects.requireNonNull(jobMapper.get(jobId), () -> "Job not found: " + jobId);
     }
 
@@ -731,9 +734,8 @@ public class JobManager {
             Tuple2<RunState, Date> tuple = obtainRunState(taskMapper.findBaseByInstanceId(instanceId));
             // must be paused or terminated
             Assert.notNull(tuple, () -> "Pause instance failed: " + instanceId);
-            if (!instanceMapper.terminate(instanceId, tuple.a, RS_PAUSABLE, tuple.b)) {
-                throw new IllegalStateException("Pause instance failed: " + instance + ", " + tuple.a);
-            }
+            boolean updated = instanceMapper.terminate(instanceId, tuple.a, RS_PAUSABLE, tuple.b);
+            Assert.state(updated, () -> "Pause instance failed: " + instance + ", " + tuple.a);
             if (instance.isWorkflowNode()) {
                 updateWorkflowNodeState(instance, tuple.a, RS_PAUSABLE);
             } else if (tuple.a.isTerminal()) {
@@ -792,9 +794,8 @@ public class JobManager {
             long instanceId = instance.getInstanceId();
             Assert.isTrue(instance.isWorkflowLead(), () -> "Resume instance must be workflow lead: " + instanceId);
             // update sched_instance paused lead to running state
-            if (!instanceMapper.updateState(instanceId, RunState.RUNNING, RunState.PAUSED)) {
-                throw new IllegalStateException("Resume workflow lead instance failed: " + instanceId);
-            }
+            boolean updated = instanceMapper.updateState(instanceId, RunState.RUNNING, RunState.PAUSED);
+            Assert.state(updated, () -> "Resume workflow lead instance failed: " + instanceId);
             workflowMapper.resumeWaiting(instanceId);
             for (SchedInstance nodeInstance : instanceMapper.findWorkflowNode(instanceId)) {
                 if (nodeInstance.isPaused()) {
@@ -816,9 +817,8 @@ public class JobManager {
 
     private void resumeInstance0(SchedInstance instance) {
         long instanceId = instance.getInstanceId();
-        if (!instanceMapper.updateState(instanceId, RunState.WAITING, RunState.PAUSED)) {
-            throw new IllegalStateException("Resume sched instance failed: " + instanceId);
-        }
+        boolean updated = instanceMapper.updateState(instanceId, RunState.WAITING, RunState.PAUSED);
+        Assert.state(updated, () -> "Resume sched instance failed: " + instanceId);
 
         int row = taskMapper.updateStateByInstanceId(instanceId, ExecuteState.WAITING.value(), ES_PAUSED, null);
         assertHasAffectedRow(row, "Resume sched task failed.");
@@ -861,7 +861,7 @@ public class JobManager {
     }
 
     private Long retryJob0(SchedInstance failed) throws JobException {
-        SchedJob job = getRequireJob(failed.getJobId());
+        SchedJob job = getRequiredJob(failed.getJobId());
         int retriedCount = failed.obtainRetriedCount();
         if (!job.retryable(RunState.of(failed.getRunState()), retriedCount)) {
             return null;
@@ -916,7 +916,7 @@ public class JobManager {
                 .map(e -> SchedTask.of(e.getTaskParam(), generateId(), retry.getInstanceId(), e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
         }
-        throw new IllegalArgumentException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);
+        throw new UnsupportedOperationException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);
     }
 
     private void dependJob(SchedInstance parent) {
@@ -929,7 +929,7 @@ public class JobManager {
     }
 
     private void dependJob(SchedInstance parent, SchedDepend depend) throws JobException {
-        SchedJob childJob = getRequireJob(depend.getChildJobId());
+        SchedJob childJob = getRequiredJob(depend.getChildJobId());
         if (childJob.isDisabled()) {
             LOG.warn("Depend child job disabled: {}", childJob);
             return;
@@ -951,7 +951,7 @@ public class JobManager {
             Worker worker = task.worker();
             if (workerClient.isAliveWorker(worker)) {
                 if (builder == null) {
-                    builder = new ExecuteTaskParamBuilder(getRequireJob(instance.getJobId()), instance);
+                    builder = new ExecuteTaskParamBuilder(getRequiredJob(instance.getJobId()), instance);
                 }
                 executingTasks.add(builder.build(ops, task.getTaskId(), triggerTime, worker));
             } else {
@@ -971,7 +971,7 @@ public class JobManager {
 
     private Tuple3<SchedJob, SchedInstance, List<SchedTask>> buildDispatchParam(long instanceId, int expectTaskSize) {
         SchedInstance instance = instanceMapper.get(instanceId);
-        SchedJob job = getRequireJob(instance.getJobId());
+        SchedJob job = getRequiredJob(instance.getJobId());
         List<SchedTask> waitingTasks = taskMapper.findLargeByInstanceIdAndStates(instanceId, ES_WAITING);
         int size = waitingTasks.size();
         Assert.state(size == expectTaskSize, () -> "Invalid dispatch tasks size: " + size + ", " + expectTaskSize);
@@ -981,18 +981,16 @@ public class JobManager {
     private void startRetrying(SchedInstance instance) {
         if (!instance.isRunRetry()) {
             RunState state = RunState.CANCELED;
-            if (!instanceMapper.updateRetrying(instance.getInstanceId(), true, state, state)) {
-                throw new IllegalStateException("Start retrying failed: " + instance);
-            }
+            boolean updated = instanceMapper.updateRetrying(instance.getInstanceId(), true, state, state);
+            Assert.state(updated, () -> "Start retrying failed: " + instance);
         }
     }
 
     private void stopRetrying(SchedInstance instance, RunState toState) {
         if (instance.isRunRetry()) {
             long id = instance.obtainRetryOriginalInstanceId();
-            if (!instanceMapper.updateRetrying(id, false, toState, RunState.CANCELED)) {
-                throw new IllegalStateException("Stop retrying failed: " + toState + ", " + instance);
-            }
+            boolean updated = instanceMapper.updateRetrying(id, false, toState, RunState.CANCELED);
+            Assert.state(updated, () -> "Stop retrying failed: " + toState + ", " + instance);
         }
     }
 
@@ -1077,7 +1075,7 @@ public class JobManager {
         Assert.isTrue(lead.isWorkflowLead(), () -> "Process workflow node must be lead: " + lead);
         List<Runnable> dispatchActions = new ArrayList<>();
         if (!map.isEmpty()) {
-            SchedJob job = getRequireJob(lead.getJobId());
+            SchedJob job = getRequiredJob(lead.getJobId());
             Set<DAGNode> duplicates = new HashSet<>();
             for (Map.Entry<DAGEdge, SchedWorkflow> edge : map.entrySet()) {
                 processWorkflowGraph(dispatchActions, job, lead, graph, duplicates, edge);
@@ -1140,9 +1138,8 @@ public class JobManager {
         if (graph.allMatch(e -> e.getValue().isTerminal())) {
             // terminate lead instance
             RunState state = graph.anyMatch(e -> e.getValue().isFailure()) ? RunState.CANCELED : RunState.COMPLETED;
-            if (!instanceMapper.terminate(wnstanceId, state, RS_TERMINABLE, new Date())) {
-                throw new IllegalStateException("Stop workflow instance failed: " + wnstanceId + ", " + state);
-            }
+            boolean updated = instanceMapper.terminate(wnstanceId, state, RS_TERMINABLE, new Date());
+            Assert.state(updated, () -> "Stop workflow instance failed: " + wnstanceId + ", " + state);
             SchedInstance lead = instanceMapper.get(wnstanceId);
             dependJob(lead);
             renewFixedNextTriggerTime(lead);
@@ -1150,9 +1147,8 @@ public class JobManager {
         }
         if (graph.allMatch(e -> e.getValue().isTerminal() || e.getValue().isPaused())) {
             // At Least one paused and others is terminal
-            if (!instanceMapper.updateState(wnstanceId, RunState.PAUSED, RunState.RUNNING)) {
-                throw new IllegalStateException("Update workflow pause state failed: " + wnstanceId);
-            }
+            boolean updated = instanceMapper.updateState(wnstanceId, RunState.PAUSED, RunState.RUNNING);
+            Assert.state(updated, () -> "Update workflow pause state failed: " + wnstanceId);
             return true;
         }
         return false;

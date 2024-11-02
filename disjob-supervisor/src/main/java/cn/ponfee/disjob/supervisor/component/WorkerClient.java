@@ -81,7 +81,7 @@ public class WorkerClient {
         this.taskDispatcher = taskDispatcher;
 
         retry.check();
-        Predicate<String> serverGroupMatcher = localWorker != null ? localWorker::equalsGroup : g -> false;
+        Predicate<String> serverGroupMatcher = localWorker != null ? localWorker::equalsGroup : group -> false;
         this.groupedClient = DiscoveryServerRestProxy.create(
             WorkerRpcService.class, workerRpcProvider, serverGroupMatcher, discoverWorker, restTemplate, retry
         );
@@ -136,7 +136,7 @@ public class WorkerClient {
     }
 
     public void verifyJob(SchedJob job) throws JobException {
-        Assert.hasText(job.getJobExecutor(), () -> "Job executor cannot be blank.");
+        Assert.hasText(job.getJobExecutor(), "Job executor cannot be blank.");
         CoreUtils.checkClobMaximumLength(job.getJobExecutor(), "Job executor");
         CoreUtils.checkClobMaximumLength(job.getJobParam(), "Job param");
         JobType.of(job.getJobType());

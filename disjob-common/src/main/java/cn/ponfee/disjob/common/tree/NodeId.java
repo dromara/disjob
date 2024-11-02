@@ -25,8 +25,8 @@ import java.util.Objects;
 /**
  * Base node id
  *
- * @author Ponfee
  * @param <T> the NodeId implementation sub class
+ * @author Ponfee
  */
 public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implements Comparable<T>, Serializable, Cloneable {
 

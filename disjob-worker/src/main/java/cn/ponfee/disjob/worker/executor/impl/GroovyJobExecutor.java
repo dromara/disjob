@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 
 /**
- *
  * The job executor for execute groovy script.
  * <p>
  *

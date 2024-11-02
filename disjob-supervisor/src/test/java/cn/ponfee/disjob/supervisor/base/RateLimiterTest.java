@@ -56,7 +56,7 @@ public class RateLimiterTest {
         thread.join();
 
         System.out.println("\n\n------------------");
-        Thread t = new Thread(){
+        Thread t = new Thread() {
             @Override
             public void run() {
                 ThrowingRunnable.doCaught(() -> Thread.sleep(20));

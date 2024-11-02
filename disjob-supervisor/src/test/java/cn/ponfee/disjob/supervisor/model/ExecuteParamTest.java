@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author Ponfee
  */
 public class ExecuteParamTest {

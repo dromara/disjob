@@ -48,9 +48,9 @@ public class GroovyUtilsTest {
 
     @Test
     public void test() throws Exception {
-        assertThat((String) GroovyUtils.Evaluator. SHELL.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
+        assertThat((String) GroovyUtils.Evaluator.SHELL.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
         assertThat((String) GroovyUtils.Evaluator.SCRIPT.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
-        assertThat((String) GroovyUtils.Evaluator. CLASS.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
+        assertThat((String) GroovyUtils.Evaluator.CLASS.eval(SCRIPT_TEXT, PARAMS)).isEqualTo(RESULT);
 
         String closureScript =
             "import cn.ponfee.disjob.common.util.Jsons; " +

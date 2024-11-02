@@ -200,9 +200,11 @@ public class DAGExpression {
     }
 
     /**
+     * <pre>
      * Parse graph from plain text
      *
      * A->((B->C->D),(A->F))->(G,H,X)->J; A->Y
+     * </pre>
      *
      * @param graphBuilder the graph builder
      */
@@ -320,7 +322,7 @@ public class DAGExpression {
             List<DAGEdge> edges = new ArrayList<>(list.size());
             for (String item : list) {
                 String[] array = item.split(SEP_STAGE);
-                Assert.isTrue(array.length == 2, "Invalid json graph item: " + item);
+                Assert.isTrue(array.length == 2, () -> "Invalid json graph item: " + item);
                 String source = processJsonItem(array[0].trim());
                 String target = processJsonItem(array[1].trim());
                 edges.add(DAGEdge.of(source, target));
@@ -340,7 +342,7 @@ public class DAGExpression {
             return null;
         }
 
-        Assert.isTrue(!SEP_SYMBOLS.contains(Collects.getFirst(list)), () -> "Invalid expression: " +  String.join("", list));
+        Assert.isTrue(!SEP_SYMBOLS.contains(Collects.getFirst(list)), () -> "Invalid expression: " + String.join("", list));
         Assert.isTrue(!SEP_SYMBOLS.contains(Collects.getLast(list)), () -> "Invalid expression: " + String.join("", list));
 
         if (list.size() == 1) {

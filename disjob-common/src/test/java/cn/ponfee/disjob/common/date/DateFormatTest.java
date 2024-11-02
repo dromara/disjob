@@ -76,8 +76,8 @@ public class DateFormatTest {
     @Test
     public void test3() {
         System.out.println(Runtime.getRuntime().availableProcessors());
-        System.out.println(Lists.newArrayList(1,2,3).stream().reduce(10, Integer::sum));
-        System.out.println(Lists.newArrayList(1,2,3).stream().reduce(Integer::sum));
+        System.out.println(Lists.newArrayList(1, 2, 3).stream().reduce(10, Integer::sum));
+        System.out.println(Lists.newArrayList(1, 2, 3).stream().reduce(Integer::sum));
     }
 
 }

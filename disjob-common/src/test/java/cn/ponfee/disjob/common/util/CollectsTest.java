@@ -233,7 +233,7 @@ public class CollectsTest {
         System.out.println(Lists.<Integer>newArrayList(null, null).stream().filter(Objects::nonNull).max(Comparators.asc()).orElse(null));
         System.out.println(Lists.newArrayList(3, 1, null, 9, 10, 8).stream().reduce(-1, (a, b) -> a == null ? b : (b == null ? a : Integer.max(a, b))));
 
-        List<Date> dates = Lists.newArrayList(Dates.toDate("2000-01-01",Dates.DATE_PATTERN),null,Dates.toDate("2001-01-01",Dates.DATE_PATTERN),null);
+        List<Date> dates = Lists.newArrayList(Dates.toDate("2000-01-01", Dates.DATE_PATTERN), null, Dates.toDate("2001-01-01", Dates.DATE_PATTERN), null);
         Date maxDate = dates.stream().filter(Objects::nonNull).max(Comparator.naturalOrder()).orElseGet(Date::new);
         assertThat(Dates.format(maxDate)).isEqualTo("2001-01-01 00:00:00");
     }
