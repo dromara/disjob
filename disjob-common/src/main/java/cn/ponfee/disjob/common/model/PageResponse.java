@@ -56,12 +56,10 @@ public class PageResponse<T> extends ToJsonString implements Serializable {
         return computeTotalPages(request.getPageSize(), total);
     }
 
-    @Transient
     public boolean hasPrevious() {
         return request.isPaged() && request.getPageNumber() > 1 && getTotalPages() > 1;
     }
 
-    @Transient
     public boolean hasNext() {
         return request.isPaged() && request.getPageNumber() < getTotalPages();
     }

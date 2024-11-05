@@ -451,14 +451,11 @@ public class DAGExpression {
         int mark = 0, position = 0;
         for (int len = text.length() - 1; position <= len; ) {
             char ch = text.charAt(position++);
-            Assert.isTrue(ch != '>', () -> "Invalid '" + ch + "': " + text);
             if (ArrayUtils.contains(SINGLE_SYMBOLS, ch)) {
                 list.add(text.substring(mark, position - 1).trim());
                 list.add(Character.toString(ch));
                 mark = position;
-            } else if (ch == '-') {
-                // position not equals len, because expression cannot end with '>'
-                Assert.isTrue(position <= len && text.charAt(position) == '>', () -> "Invalid '->' :" + text);
+            } else if (ch == '-' && position <= len && text.charAt(position) == '>') {
                 list.add(text.substring(mark, position - 1).trim());
                 list.add(SEP_STAGE);
                 mark = ++position;

@@ -39,12 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @Getter
 class WorkerTask {
 
-    /**
-     * 任务的操作类型
-     */
-    @Getter(AccessLevel.NONE)
-    private final AtomicReference<Operation> operationRef;
-
     private final long taskId;
     private final long instanceId;
     private final Long wnstanceId;
@@ -58,6 +52,12 @@ class WorkerTask {
     private final int executeTimeout;
     private final String jobExecutor;
     private final Worker worker;
+
+    /**
+     * 操作类型
+     */
+    @Getter(AccessLevel.NONE)
+    private final AtomicReference<Operation> operationRef;
 
     /**
      * 任务执行器

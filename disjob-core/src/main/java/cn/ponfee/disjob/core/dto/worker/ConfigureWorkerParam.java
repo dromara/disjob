@@ -52,9 +52,9 @@ public class ConfigureWorkerParam extends AuthenticationParam {
          * Modify worker thread pool maximum pool size
          */
         MODIFY_MAXIMUM_POOL_SIZE {
+            @SuppressWarnings("unchecked")
             @Override
             public <T> T parse(String data) {
-                // noinspection unchecked
                 return (T) new Integer(data);
             }
         },
@@ -62,26 +62,18 @@ public class ConfigureWorkerParam extends AuthenticationParam {
         /**
          * Remove(deregister) worker
          */
-        REMOVE_WORKER {
-            @Override
-            public <T> T parse(String data) {
-                throw new UnsupportedOperationException();
-            }
-        },
+        REMOVE_WORKER,
 
         /**
          * Add(register) worker
          */
-        ADD_WORKER {
-            @Override
-            public <T> T parse(String data) {
-                throw new UnsupportedOperationException();
-            }
-        },
+        ADD_WORKER,
 
         ;
 
-        public abstract <T> T parse(String data);
+        public <T> T parse(String data) {
+            throw new UnsupportedOperationException();
+        }
     }
 
 }

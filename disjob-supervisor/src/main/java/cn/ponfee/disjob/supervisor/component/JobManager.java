@@ -621,7 +621,7 @@ public class JobManager {
                     list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
                 }
             }
-        } else if (!isRedispatch || routeStrategy.isNotRoundRobin() || (workload = calculateWorkload(job, instance)) == null) {
+        } else if (!isRedispatch || routeStrategy.isNotRoundRobin() || (workload = calculateWorkload(job, instance)).isEmpty()) {
             for (SchedTask task : tasks) {
                 list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), null));
             }
@@ -642,12 +642,9 @@ public class JobManager {
         List<Worker> workers = workerClient.getDiscoveredWorkers(job.getGroup());
         if (CollectionUtils.isEmpty(workers)) {
             LOG.error("Not found available worker for calculate workload: {}", job.getGroup());
-            return null;
+            return Collections.emptyList();
         }
         List<SchedTask> pausableTasks = taskMapper.findBaseByInstanceIdAndStates(instance.getInstanceId(), ES_PAUSABLE);
-        if (CollectionUtils.isEmpty(pausableTasks)) {
-            return null;
-        }
         Map<String, Long> workerScoreMapping = pausableTasks.stream()
             .filter(e -> StringUtils.isNotBlank(e.getWorker()))
             .collect(Collectors.groupingBy(SchedTask::getWorker, Collectors.counting()));

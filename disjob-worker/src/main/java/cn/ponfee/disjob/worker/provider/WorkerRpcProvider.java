@@ -64,7 +64,7 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Class<?>[] parameterTypes = method.getParameterTypes();
             for (int i = 0; i < parameterTypes.length; i++) {
-                // 要通过参数类型判断，防止参数值传null绕过认证的漏洞
+                // 要通过参数类型判断，防止参数值传null绕过认证
                 if (AuthenticationParam.class.isAssignableFrom(parameterTypes[i])) {
                     localWorker.verifySupervisorAuthenticationToken((AuthenticationParam) args[i]);
                 }
@@ -105,7 +105,7 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         @Override
         public void configureWorker(ConfigureWorkerParam param) {
             Action action = param.getAction();
-            switch (param.getAction()) {
+            switch (action) {
                 case MODIFY_MAXIMUM_POOL_SIZE:
                     Integer maximumPoolSize = action.parse(param.getData());
                     WorkerConfigurator.modifyMaximumPoolSize(maximumPoolSize);
