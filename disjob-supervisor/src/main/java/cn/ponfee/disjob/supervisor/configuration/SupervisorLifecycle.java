@@ -16,7 +16,6 @@
 
 package cn.ponfee.disjob.supervisor.configuration;
 
-import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
@@ -25,8 +24,6 @@ import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.SmartLifecycle;
 
@@ -41,9 +38,6 @@ import static cn.ponfee.disjob.supervisor.base.SupervisorConstants.*;
  */
 public class SupervisorLifecycle implements SmartLifecycle {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SupervisorLifecycle.class);
-
-    private final TripState state = TripState.create();
     private final SupervisorStartup supervisorStartup;
 
     public SupervisorLifecycle(Supervisor.Local localSupervisor,
@@ -71,26 +65,12 @@ public class SupervisorLifecycle implements SmartLifecycle {
     }
 
     @Override
-    public boolean isRunning() {
-        return state.isRunning();
-    }
-
-    @Override
     public void start() {
-        if (!state.start()) {
-            LOG.error("Disjob supervisor lifecycle already stated!");
-        }
-
         supervisorStartup.start();
     }
 
-    @SuppressWarnings("NullableProblems")
     @Override
     public void stop(Runnable callback) {
-        if (!state.stop()) {
-            LOG.error("Disjob supervisor lifecycle already stopped!");
-        }
-
         supervisorStartup.stop();
         callback.run();
     }
@@ -98,6 +78,11 @@ public class SupervisorLifecycle implements SmartLifecycle {
     @Override
     public void stop() {
         stop(() -> {});
+    }
+
+    @Override
+    public boolean isRunning() {
+        return supervisorStartup.isRunning();
     }
 
     @Override

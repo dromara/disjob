@@ -57,7 +57,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 return true;
             }
 
-            SupervisorAuthentication annotation = SpringUtils.getAnnotation(SupervisorAuthentication.class, (HandlerMethod) handler);
+            SupervisorAuthentication annotation = SpringUtils.getAnnotation((HandlerMethod) handler, SupervisorAuthentication.class);
             if (annotation == null || annotation.value() == Subject.ANON) {
                 return true;
             }

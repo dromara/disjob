@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.supervisor;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -40,7 +41,7 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
-public class SupervisorStartup implements Startable {
+public class SupervisorStartup extends SingletonClassConstraint implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
@@ -113,6 +114,10 @@ public class SupervisorStartup implements Startable {
         ThrowingRunnable.doCaught(runningInstanceScanner::close);
         ThrowingRunnable.doCaught(waitingInstanceScanner::close);
         LOG.info("Supervisor stop end: {}", localSupervisor);
+    }
+
+    public boolean isRunning() {
+        return state.isRunning();
     }
 
 }

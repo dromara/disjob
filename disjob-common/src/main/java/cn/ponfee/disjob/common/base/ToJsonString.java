@@ -30,7 +30,7 @@ public abstract class ToJsonString {
         return toJson();
     }
 
-    public final String toJson() {
+    public String toJson() {
         return Jsons.toJson(this);
     }
 

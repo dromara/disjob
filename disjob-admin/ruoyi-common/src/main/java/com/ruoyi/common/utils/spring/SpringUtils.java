@@ -1,6 +1,5 @@
 package com.ruoyi.common.utils.spring;
 
-import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.utils.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeansException;
@@ -161,21 +160,21 @@ public final class SpringUtils implements ApplicationContextAware, BeanFactoryPo
         return applicationContext.getEnvironment().getRequiredProperty(key);
     }
 
-    public static Set<String> findAllAnonymousRequestMappings() {
-        Set<String> anonymousUrls = new HashSet<>();
-        RequestMappingHandlerMapping mapping = applicationContext.getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
+    public static <T extends Annotation> Set<String> findAnnotatedUrlPath(RequestMappingHandlerMapping mapping,
+                                                                          Class<T> annotationType) {
+        Set<String> urlPaths = new HashSet<>();
         mapping.getHandlerMethods().forEach((requestMappingInfo, handlerMethod) -> {
-            if (getAnnotation(handlerMethod, Anonymous.class) != null) {
-                // #getPatternValues()会包含占位符路径：`/system/menu/add/{parentId}`
-                anonymousUrls.addAll(requestMappingInfo.getDirectPaths());
+            if (getAnnotation(handlerMethod, annotationType) != null) {
+                // requestMappingInfo#getPatternValues()会包含占位符路径：`/system/menu/add/{parentId}`
+                urlPaths.addAll(requestMappingInfo.getDirectPaths());
             }
         });
-        return anonymousUrls;
+        return urlPaths;
     }
 
-    public static <T extends Annotation> T getAnnotation(HandlerMethod hm, Class<T> type) {
-        T annotation = hm.getMethodAnnotation(type);
-        return annotation != null ? annotation : hm.getBeanType().getAnnotation(type);
+    public static <T extends Annotation> T getAnnotation(HandlerMethod handlerMethod, Class<T> annotationType) {
+        T annotation = handlerMethod.getMethodAnnotation(annotationType);
+        return annotation != null ? annotation : handlerMethod.getBeanType().getAnnotation(annotationType);
     }
 
 }

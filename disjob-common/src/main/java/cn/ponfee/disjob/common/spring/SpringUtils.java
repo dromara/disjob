@@ -29,15 +29,14 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import sun.reflect.annotation.AnnotationParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Spring utils
@@ -77,12 +76,25 @@ public final class SpringUtils {
         return webServer.getPort();
     }
 
-    public static <T extends Annotation> T getAnnotation(Class<T> type, HandlerMethod handlerMethod) {
-        T annotation = handlerMethod.getMethodAnnotation(type);
-        return annotation != null ? annotation : handlerMethod.getBeanType().getAnnotation(type);
+    public static <T extends Annotation> T getAnnotation(HandlerMethod handlerMethod, Class<T> annotationType) {
+        T annotation = handlerMethod.getMethodAnnotation(annotationType);
+        return annotation != null ? annotation : handlerMethod.getBeanType().getAnnotation(annotationType);
     }
 
-    public static AnnotationAttributes getAnnotationAttributes(Class<? extends Annotation> type, AnnotatedTypeMetadata metadata) {
+    public static <T extends Annotation> Set<String> findAnnotatedUrlPath(RequestMappingHandlerMapping mapping,
+                                                                          Class<T> annotationType) {
+        Set<String> urlPaths = new HashSet<>();
+        mapping.getHandlerMethods().forEach((requestMappingInfo, handlerMethod) -> {
+            if (getAnnotation(handlerMethod, annotationType) != null) {
+                // requestMappingInfo#getPatternValues()会包含占位符路径：`/system/menu/add/{parentId}`
+                urlPaths.addAll(requestMappingInfo.getDirectPaths());
+            }
+        });
+        return urlPaths;
+    }
+
+    public static AnnotationAttributes getAnnotationAttributes(Class<? extends Annotation> type,
+                                                               AnnotatedTypeMetadata metadata) {
         return AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(type.getName()));
     }
 

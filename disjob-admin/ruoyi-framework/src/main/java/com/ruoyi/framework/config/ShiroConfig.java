@@ -289,8 +289,6 @@ public class ShiroConfig
         filterChainDefinitionMap.put("/js/**", "anon");
         filterChainDefinitionMap.put("/ruoyi/**", "anon");
         filterChainDefinitionMap.put("/captcha/captchaImage**", "anon");
-        // 匿名访问不鉴权注解列表
-        //SpringUtils.findAllAnonymousRequestMappings().forEach(url -> filterChainDefinitionMap.put(url, "anon"));
 
         // disjob框架的 rpc / openapi 接口
         filterChainDefinitionMap.put("/supervisor/rpc/**", "anon");

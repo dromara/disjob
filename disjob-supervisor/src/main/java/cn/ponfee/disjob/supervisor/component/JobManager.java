@@ -615,7 +615,7 @@ public class JobManager {
             for (SchedTask task : tasks) {
                 Worker worker = task.worker();
                 if (!workerClient.isAliveWorker(worker)) {
-                    // 上游调用方有些处于事务中，有些不在事务中。因为此处的update操作非必须要求原子性，所以不用加Spring事务。
+                    // 上游调用方有些处于事务中，有些不在事务中。因为此处的update操作非必须要求原子性，所以未加Spring事务。
                     taskMapper.terminate(task.getTaskId(), null, ExecuteState.BROADCAST_ABORTED, ExecuteState.WAITING, null, null);
                 } else {
                     list.add(builder.build(Operation.TRIGGER, task.getTaskId(), instance.getTriggerTime(), worker));
@@ -903,8 +903,7 @@ public class JobManager {
                 splitJobParam = ModelConverter.toSplitJobParam(job, retry);
             }
             return splitJob(job.getGroup(), retry.getInstanceId(), splitJobParam);
-        }
-        if (retryType == RetryType.FAILED) {
+        } else if (retryType == RetryType.FAILED) {
             return taskMapper.findLargeByInstanceId(failed.getInstanceId())
                 .stream()
                 .filter(SchedTask::isFailure)
@@ -912,8 +911,9 @@ public class JobManager {
                 .filter(e -> !job.isBroadcast() || workerClient.isAliveWorker(e.worker()))
                 .map(e -> SchedTask.of(e.getTaskParam(), generateId(), retry.getInstanceId(), e.getTaskNo(), e.getTaskCount(), e.getWorker()))
                 .collect(Collectors.toList());
+        } else {
+            throw new UnsupportedOperationException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);
         }
-        throw new UnsupportedOperationException("Retry instance, unknown retry type: " + job.getJobId() + ", " + retryType);
     }
 
     private void dependJob(SchedInstance parent) {

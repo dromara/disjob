@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.worker;
 
+import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.base.Startable;
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
@@ -41,7 +42,7 @@ import java.util.Objects;
  *
  * @author Ponfee
  */
-public class WorkerStartup implements Startable {
+public class WorkerStartup extends SingletonClassConstraint implements Startable {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkerStartup.class);
 
@@ -116,6 +117,10 @@ public class WorkerStartup implements Startable {
         ThrowingRunnable.doCaught(timingWheelRotator::close);
         ThrowingRunnable.doCaught(workerThreadPool::close);
         LOG.info("Worker stop end: {}", localWorker);
+    }
+
+    public boolean isRunning() {
+        return state.isRunning();
     }
 
 }

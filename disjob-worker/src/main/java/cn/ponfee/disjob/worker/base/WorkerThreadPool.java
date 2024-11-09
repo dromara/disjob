@@ -338,7 +338,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         completedTaskCounter.incrementAndGet();
 
         StopTaskParam param = task.toStopTaskParam(ops, toState, errorMsg);
-        LOG.info("Stop task trace: {}, {}, {}", task.getTaskId(), ops, toState);
+        LOG.info("Stop task operation: {}, {}, {}", task.getTaskId(), ops, toState);
         Supplier<String> msgSupplier = () -> "Stop task error: " + task.getTaskId() + ", " + ops + ", " + toState;
         CoreUtils.doInSynchronized(task.getLockInstanceId(), () -> supervisorRpcClient.stopTask(param), msgSupplier);
     }
@@ -374,7 +374,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     /**
      * Active thread pool
      */
-    private class ActiveThreadPool extends SynchronizedSegmentMap<Long, WorkerThread> {
+    private static class ActiveThreadPool extends SynchronizedSegmentMap<Long, WorkerThread> {
 
         private void doExecute(WorkerThread wt, WorkerTask task) throws Throwable {
             if (task.getOperation().isNotTrigger()) {
