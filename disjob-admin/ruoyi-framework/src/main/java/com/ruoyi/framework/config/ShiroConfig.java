@@ -1,6 +1,7 @@
 package com.ruoyi.framework.config;
 
 import at.pollux.thymeleaf.shiro.dialect.ShiroDialect;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.security.CipherUtils;
@@ -31,13 +32,20 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DeferredImportSelector;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.servlet.Filter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 权限配置加载
@@ -45,6 +53,7 @@ import java.util.Map;
  * @author ruoyi
  */
 @Configuration
+@Import(ShiroConfig.AnonymousPermitDeferredImportSelector.class)
 public class ShiroConfig
 {
     /**
@@ -291,8 +300,8 @@ public class ShiroConfig
         filterChainDefinitionMap.put("/captcha/captchaImage**", "anon");
 
         // disjob框架的 rpc / openapi 接口
-        filterChainDefinitionMap.put("/supervisor/rpc/**", "anon");
         filterChainDefinitionMap.put("/worker/rpc/**", "anon");
+        filterChainDefinitionMap.put("/supervisor/rpc/**", "anon");
         filterChainDefinitionMap.put("/supervisor/openapi/**", "anon");
 
         // 退出 logout地址，shiro去清除session
@@ -419,6 +428,36 @@ public class ShiroConfig
         AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
         authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
         return authorizationAttributeSourceAdvisor;
+    }
+
+    // ------------------------------------------------------------------------static class
+
+    @Order
+    static class AnonymousPermitDeferredImportSelector implements DeferredImportSelector {
+
+        @Override
+        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+            return new String[]{AnonymousPermitConfigurer.class.getName()};
+        }
+    }
+
+    static class AnonymousPermitConfigurer {
+
+        AnonymousPermitConfigurer(CustomShiroFilterFactoryBean customShiroFilterFactoryBean,
+                                  RequestMappingHandlerMapping requestMappingHandlerMapping) {
+            Set<String> urlPaths = SpringUtils.findAnnotatedUrlPath(requestMappingHandlerMapping, Anonymous.class);
+            if (urlPaths.isEmpty()) {
+                return;
+            }
+            Map<String, String> filterChainDefinitionMap = customShiroFilterFactoryBean.getFilterChainDefinitionMap();
+            if (filterChainDefinitionMap == null) {
+                filterChainDefinitionMap = new HashMap<>();
+                customShiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
+            }
+            for (String urlPath : urlPaths) {
+                filterChainDefinitionMap.put(urlPath, "anon");
+            }
+        }
     }
 
 }

@@ -319,12 +319,12 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
         return desc;
     }
 
-    public final boolean isFixedTriggerType() {
-        return this == FIXED_RATE || this == FIXED_DELAY;
-    }
-
     public final String example() {
         return example;
+    }
+
+    public final boolean isFixedTriggerType() {
+        return this == FIXED_RATE || this == FIXED_DELAY;
     }
 
     protected abstract boolean validate0(String triggerValue);
@@ -334,6 +334,8 @@ public enum TriggerType implements IntValueEnum<TriggerType> {
     protected abstract Date computeNextTriggerTime0(String triggerValue, Date startTime);
 
     protected abstract List<Date> computeNextTriggerTimes0(String triggerValue, Date startTime, int count);
+
+    // --------------------------------------------------------public methods
 
     public final boolean validate(String triggerValue) {
         return StringUtils.isNotBlank(triggerValue) && validate0(triggerValue);
