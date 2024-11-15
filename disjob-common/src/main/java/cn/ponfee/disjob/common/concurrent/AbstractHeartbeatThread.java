@@ -46,7 +46,7 @@ public abstract class AbstractHeartbeatThread extends Thread implements Closeabl
     protected final long heartbeatPeriodMs;
 
     protected AbstractHeartbeatThread(long heartbeatPeriodMs) {
-        log.info("Heartbeat thread init {}", getClass());
+        log.info("Heartbeat thread init.");
         this.heartbeatPeriodMs = Math.floorDiv(2 * heartbeatPeriodMs, 3);
 
         // init thread parameters

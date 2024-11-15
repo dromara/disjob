@@ -61,7 +61,7 @@ import java.util.List;
 
 /**
  * <pre>
- * Enable mybatis dataSource
+ * Configure mybatis dataSource
  *
  * Bean顺序：
  *   1）BeanDefinitionRegistryPostProcessor#postProcessBeanDefinitionRegistry：所有的常规bean定义都将被加载，但还没有任何bean被实例化，这允许在下一个后处理阶段开始之前添加更多的bean定义。

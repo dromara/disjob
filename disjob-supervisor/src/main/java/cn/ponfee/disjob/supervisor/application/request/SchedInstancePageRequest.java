@@ -42,14 +42,12 @@ public class SchedInstancePageRequest extends PageRequest {
     private boolean root;
 
     public void authorize(String user, AuthorizeGroupService authorizeGroupService) {
-        if (jobId == null && instanceId == null) {
-            throw new IllegalArgumentException("Job和InstanceId请至少输入一项");
-        }
         if (jobId != null) {
             authorizeGroupService.authorizeJob(user, jobId);
-        }
-        if (instanceId != null) {
+        } else if (instanceId != null) {
             authorizeGroupService.authorizeInstance(user, instanceId);
+        } else {
+            throw new IllegalArgumentException("JobId和InstanceId请至少输入一项");
         }
     }
 

@@ -124,10 +124,10 @@ public class OpenapiService extends SingletonClassConstraint {
 
     public void changeInstanceState(long instanceId, int targetExecuteState) {
         // verify the execution state
-        ExecuteState.of(targetExecuteState);
+        ExecuteState executeState = ExecuteState.of(targetExecuteState);
 
         LOG.info("Do force change sched instance state {}, {}", instanceId, targetExecuteState);
-        jobManager.changeInstanceState(instanceId, ExecuteState.of(targetExecuteState));
+        jobManager.changeInstanceState(instanceId, executeState);
     }
 
     public void deleteInstance(long instanceId) {

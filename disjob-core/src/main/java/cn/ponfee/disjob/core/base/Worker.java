@@ -174,11 +174,7 @@ public class Worker extends Server implements Comparable<Worker> {
 
     @Override
     public int compareTo(Worker that) {
-        int n = this.group.compareTo(that.group);
-        if (n != 0) {
-            return n;
-        }
-        n = this.workerId.compareTo(that.workerId);
+        int n = this.workerId.compareTo(that.workerId);
         if (n != 0) {
             return n;
         }
@@ -186,7 +182,11 @@ public class Worker extends Server implements Comparable<Worker> {
         if (n != 0) {
             return n;
         }
-        return Integer.compare(this.port, that.port);
+        n = Integer.compare(this.port, that.port);
+        if (n != 0) {
+            return n;
+        }
+        return this.group.compareTo(that.group);
     }
 
     // --------------------------------------------------------custom jackson serialize & deserialize

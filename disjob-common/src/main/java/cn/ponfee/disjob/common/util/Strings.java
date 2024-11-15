@@ -178,7 +178,7 @@ public final class Strings {
     }
 
     public static String withSuffix(String str, String suffix) {
-        if (str == null || str.isEmpty() || str.endsWith(suffix)) {
+        if (StringUtils.isEmpty(str) || str.endsWith(suffix)) {
             return str;
         }
         return str + suffix;
@@ -249,7 +249,7 @@ public final class Strings {
      * @return the substring after the last occurrence of the separator
      */
     public static String substringAfterLast(String str, String separator) {
-        if (str == null || str.isEmpty()) {
+        if (StringUtils.isEmpty(str)) {
             return str;
         }
         int lastIndexOf = str.lastIndexOf(separator);

@@ -111,11 +111,10 @@ public class WorkerThreadPool extends Thread implements Closeable {
     public WorkerThreadPool(int maximumPoolSize, long keepAliveTimeSeconds, SupervisorRpcService supervisorRpcClient) {
         Assert.isTrue(maximumPoolSize > 0 && maximumPoolSize <= ThreadPoolExecutors.MAX_CAP, "Maximum pool size must be range [1, 32767].");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
-        SingletonClassConstraint.constrain(this);
-
         this.maximumPoolSize = maximumPoolSize;
         this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
         this.supervisorRpcClient = Objects.requireNonNull(supervisorRpcClient);
+        SingletonClassConstraint.constrain(this);
 
         super.setDaemon(true);
         super.setName(getClass().getSimpleName());

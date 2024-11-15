@@ -176,7 +176,8 @@ public class JobManager {
 
     // ------------------------------------------------------------------must in transaction active(propagation Mandatory)
 
-    public void saveInstanceAndWorkflows(SchedInstance instance, List<SchedWorkflow> workflows) {
+    public void saveLeadInstanceAndWorkflows(SchedInstance instance, List<SchedWorkflow> workflows) {
+        Assert.isTrue(instance.isWorkflowLead(), () -> "Must be workflow lead instance: " + instance);
         assertDoInTransaction();
         instanceMapper.insert(instance.fillUniqueFlag());
         Collects.batchProcess(workflows, workflowMapper::batchInsert, PROCESS_BATCH_SIZE);

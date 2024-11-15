@@ -18,8 +18,8 @@ package cn.ponfee.disjob.samples.worker;
 
 import cn.ponfee.disjob.common.base.LazyLoader;
 import cn.ponfee.disjob.common.base.TimingWheel;
-import cn.ponfee.disjob.common.exception.Throwables;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.RestTemplateUtils;
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.common.spring.YamlProperties;
@@ -147,7 +147,7 @@ public class WorkerFramelessMain {
 
     private static void printBanner() {
         ClassLoader classLoader = WorkerStartup.class.getClassLoader();
-        String banner = Throwables.ThrowingSupplier.doChecked(() -> IOUtils.resourceToString("banner.txt", UTF_8, classLoader));
+        String banner = ThrowingSupplier.doChecked(() -> IOUtils.resourceToString("banner.txt", UTF_8, classLoader));
         System.out.println(banner);
     }
 

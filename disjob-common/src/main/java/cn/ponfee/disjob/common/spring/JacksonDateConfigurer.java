@@ -28,7 +28,7 @@ import org.springframework.lang.Nullable;
 import java.lang.annotation.*;
 
 /**
- * Enable object mapper configurer
+ * Configure jackson date
  *
  * @author Ponfee
  */

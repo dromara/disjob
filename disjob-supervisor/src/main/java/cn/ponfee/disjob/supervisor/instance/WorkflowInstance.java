@@ -91,7 +91,7 @@ public class WorkflowInstance extends TriggerInstance {
     @Override
     public void save() {
         // save lead instance & workflow graph
-        jobManager.saveInstanceAndWorkflows(instance, workflows);
+        jobManager.saveLeadInstanceAndWorkflows(instance, workflows);
         for (Tuple2<SchedInstance, List<SchedTask>> node : nodes) {
             // save node instance and node tasks
             jobManager.saveInstanceAndTasks(node.a, node.b);

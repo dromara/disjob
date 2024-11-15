@@ -16,7 +16,7 @@
 
 package cn.ponfee.disjob.common.concurrent;
 
-import cn.ponfee.disjob.common.exception.Throwables;
+import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,9 +113,9 @@ public final class Threads {
             long sleepTime = sleepMillis[Math.min(i, lastIndex)];
             if (sleepTime > 0) {
                 if (caught) {
-                    Throwables.ThrowingRunnable.doCaught(() -> Thread.sleep(sleepTime));
+                    ThrowingRunnable.doCaught(() -> Thread.sleep(sleepTime));
                 } else {
-                    Throwables.ThrowingRunnable.doChecked(() -> Thread.sleep(sleepTime));
+                    ThrowingRunnable.doChecked(() -> Thread.sleep(sleepTime));
                 }
             }
             if (supplier.getAsBoolean()) {
