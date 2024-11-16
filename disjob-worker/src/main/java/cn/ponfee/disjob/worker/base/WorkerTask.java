@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Ponfee
  */
 @Getter
-class WorkerTask {
+final class WorkerTask {
 
     private final long taskId;
     private final long instanceId;
@@ -144,7 +144,7 @@ class WorkerTask {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof WorkerTask)) {
             return false;
         }
         WorkerTask that = (WorkerTask) o;
