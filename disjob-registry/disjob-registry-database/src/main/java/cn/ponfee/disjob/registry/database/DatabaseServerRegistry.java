@@ -19,21 +19,19 @@ package cn.ponfee.disjob.registry.database;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
-import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
-import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.PreDestroy;
 import java.sql.PreparedStatement;
-import java.util.Collections;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import static cn.ponfee.disjob.common.spring.TransactionUtils.*;
+import static cn.ponfee.disjob.common.spring.TransactionUtils.assertOneAffectedRow;
+import static cn.ponfee.disjob.common.spring.TransactionUtils.hasAffectedRow;
 
 /**
  * Registry server based database.
@@ -66,6 +64,8 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
     private static final String SELECT_SQL      = "SELECT server FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND heartbeat_time>?";
 
+    private static final String EXISTS_SQL      = "SELECT 1 FROM " + TABLE_NAME + " WHERE namespace=? AND role=? AND server=?";
+
     /**
      * Registry namespace
      */
@@ -91,10 +91,10 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private final String discoveryRoleName;
     private final LoopThread discoverHeartbeatThread;
 
-    protected DatabaseServerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper wrapper) {
+    protected DatabaseServerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper jdbcTemplateWrapper) {
         super(config, ':');
         this.namespace = config.getNamespace().trim();
-        this.jdbcTemplateWrapper = wrapper;
+        this.jdbcTemplateWrapper = jdbcTemplateWrapper;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
 
         long periodMs = config.getSessionTimeoutMs() / 3;
@@ -116,11 +116,11 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         this.discoveryRoleName = discoveryRole.name().toLowerCase();
 
         // heartbeat discover servers
-        this.discoverHeartbeatThread = LoopThread.createStarted("database_discover_heartbeat", periodMs, periodMs, this::doDiscoverServers);
+        this.discoverHeartbeatThread = LoopThread.createStarted("database_discover_heartbeat", periodMs, periodMs, this::discoverServers);
 
         // initialize discover server
         try {
-            doDiscoverServers();
+            discoverServers();
         } catch (Throwable e) {
             close();
             Threads.interruptIfNecessary(e);
@@ -151,30 +151,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         if (state.isStopped()) {
             return;
         }
-
-        jdbcTemplateWrapper.executeInTransaction(psCreator -> {
-            String serialize = server.serialize();
-            PreparedStatement update = psCreator.apply(HEARTBEAT_SQL);
-            update.setLong(1, System.currentTimeMillis());
-            update.setString(2, namespace);
-            update.setString(3, registerRoleName);
-            update.setString(4, serialize);
-            int updateAffectedRows = update.executeUpdate();
-            if (isOneAffectedRow(updateAffectedRows)) {
-                log.info("Database register update: {}, {}, {}", namespace, registerRoleName, serialize);
-            } else {
-                assertNotAffectedRow(updateAffectedRows, () -> "Invalid update affected rows: " + updateAffectedRows);
-                PreparedStatement insert = psCreator.apply(REGISTER_SQL);
-                insert.setString(1, namespace);
-                insert.setString(2, registerRoleName);
-                insert.setString(3, serialize);
-                insert.setLong(4, System.currentTimeMillis());
-                int insertAffectedRows = insert.executeUpdate();
-                assertOneAffectedRow(insertAffectedRows, () -> "Invalid insert affected rows: " + insertAffectedRows);
-                log.info("Database register insert: {}, {}, {}", namespace, insertAffectedRows, serialize);
-            }
-        });
-
+        register(server.serialize());
         registered.add(server);
     }
 
@@ -182,15 +159,13 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     public final void deregister(R server) {
         registered.remove(server);
         Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
-        ThrowingSupplier.doCaught(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args));
+        RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args), 3, 1000L);
         log.info("Server deregister: {}, {}", registryRole, server);
     }
 
     @Override
     public List<R> getRegisteredServers() {
-        Object[] args = {namespace, registerRoleName, System.currentTimeMillis() - sessionTimeoutMs};
-        List<String> servers = jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
-        return deserializeRegistryServers(servers);
+        return deserializeServers(getServers(registerRoleName), registryRole);
     }
 
     // ------------------------------------------------------------------Close
@@ -214,38 +189,57 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
      * 心跳注册
      */
     private void registerServers() {
-        for (R server : registered) {
-            final String serialize = server.serialize();
-            RetryTemplate.executeQuietly(() -> {
-                // 此处不需要使用Spring事务
-                Object[] updateArgs = {System.currentTimeMillis(), namespace, registerRoleName, serialize};
-                if (isOneAffectedRow(jdbcTemplateWrapper.update(HEARTBEAT_SQL, updateArgs))) {
-                    log.debug("Database heartbeat register update: {}, {}, {}, {}", updateArgs);
-                    return;
-                }
-
-                Object[] insertArgs = {namespace, registerRoleName, serialize, System.currentTimeMillis()};
-                jdbcTemplateWrapper.insert(REGISTER_SQL, insertArgs);
-                log.debug("Database heartbeat register insert: {}, {}, {}, {}", insertArgs);
-            }, 3, 1000L);
+        for (R s : registered) {
+            String server = s.serialize();
+            RetryTemplate.executeQuietly(() -> register(server), 3, 1000L);
         }
     }
 
-    private void doDiscoverServers() throws Throwable {
-        RetryTemplate.execute(() -> {
-            Object[] args = {namespace, discoveryRoleName, System.currentTimeMillis() - sessionTimeoutMs};
-            List<String> discovered = jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
-
-            if (CollectionUtils.isEmpty(discovered)) {
-                log.warn("Not discovered available {} from database.", discoveryRole);
-                discovered = Collections.emptyList();
+    private void register(String server) {
+        jdbcTemplateWrapper.executeInTransaction(psCreator -> {
+            // 1、update server heartbeat_time if registered
+            PreparedStatement update = psCreator.apply(HEARTBEAT_SQL);
+            update.setLong(1, System.currentTimeMillis());
+            update.setString(2, namespace);
+            update.setString(3, registerRoleName);
+            update.setString(4, server);
+            int updateAffectedRows = update.executeUpdate();
+            if (hasAffectedRow(updateAffectedRows)) {
+                assertOneAffectedRow(updateAffectedRows, () -> "Invalid update affected rows: " + updateAffectedRows);
+                log.info("Database register update: {}, {}, {}", namespace, registerRoleName, server);
+                return;
             }
 
-            List<D> servers = discovered.stream().<D>map(discoveryRole::deserialize).collect(Collectors.toList());
-            refreshDiscoveredServers(servers);
+            // 2、if registered and same heartbeat_time
+            PreparedStatement exists = psCreator.apply(EXISTS_SQL);
+            exists.setString(1, namespace);
+            exists.setString(2, registerRoleName);
+            exists.setString(3, server);
+            ResultSet rs = exists.executeQuery();
+            if (rs.next() && rs.getInt(1) == 1) {
+                log.info("Database register exists: {}, {}, {}", namespace, registerRoleName, server);
+                return;
+            }
 
-            log.debug("Database discovered {} servers.", discoveryRole);
-        }, 3, 1000L);
+            // 3、insert server if unregistered
+            PreparedStatement insert = psCreator.apply(REGISTER_SQL);
+            insert.setString(1, namespace);
+            insert.setString(2, registerRoleName);
+            insert.setString(3, server);
+            insert.setLong(4, System.currentTimeMillis());
+            int insertAffectedRows = insert.executeUpdate();
+            assertOneAffectedRow(insertAffectedRows, () -> "Invalid insert affected rows: " + insertAffectedRows);
+            log.info("Database register insert: {}, {}, {}", namespace, registerRoleName, server);
+        });
+    }
+
+    private void discoverServers() throws Throwable {
+        RetryTemplate.execute(() -> refreshDiscoveryServers(getServers(discoveryRoleName)), 3, 1000L);
+    }
+
+    private List<String> getServers(String roleName) {
+        Object[] args = {namespace, roleName, System.currentTimeMillis() - sessionTimeoutMs};
+        return jdbcTemplateWrapper.list(SELECT_SQL, JdbcTemplateWrapper.STRING_ROW_MAPPER, args);
     }
 
 }

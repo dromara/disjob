@@ -30,7 +30,7 @@ public abstract class BaseServerRegistryAutoConfiguration {
 
     private static final AtomicBoolean MUTEX = new AtomicBoolean(false);
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected BaseServerRegistryAutoConfiguration() {
         if (MUTEX.compareAndSet(false, true)) {

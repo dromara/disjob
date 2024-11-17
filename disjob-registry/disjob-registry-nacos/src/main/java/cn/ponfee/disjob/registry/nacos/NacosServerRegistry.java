@@ -23,12 +23,10 @@ import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.PreDestroy;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -51,7 +49,7 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         NacosClient client0 = null;
         try {
             this.client = client0 = new NacosClient(config.toProperties(), groupName);
-            client.watch(discoveryRootPath, this::doRefreshDiscoveryServers);
+            client.watch(discoveryRootPath, instances -> refreshDiscoveryServers(extract(instances)));
         } catch (Throwable t) {
             if (client0 != null) {
                 client0.close();
@@ -98,8 +96,8 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
     @Override
     public List<R> getRegisteredServers() {
         try {
-            List<Instance> list = client.getAllInstances(registryRootPath);
-            return deserializeRegistryServers(list, Instance::getInstanceId);
+            List<Instance> instances = client.getAllInstances(registryRootPath);
+            return deserializeServers(extract(instances), registryRole);
         } catch (NacosException e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -129,19 +127,11 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
         return instance;
     }
 
-    private synchronized void doRefreshDiscoveryServers(List<Instance> instances) {
-        List<D> servers;
-        if (CollectionUtils.isEmpty(instances)) {
-            log.warn("Not discovered available {} from nacos.", discoveryRole);
-            servers = Collections.emptyList();
-        } else {
-            servers = instances.stream()
-                .map(Instance::getInstanceId)
-                .filter(Objects::nonNull)
-                .<D>map(discoveryRole::deserialize)
-                .collect(Collectors.toList());
+    private List<String> extract(List<Instance> list) {
+        if (list == null) {
+            return null;
         }
-        refreshDiscoveredServers(servers);
+        return list.stream().filter(Objects::nonNull).map(Instance::getInstanceId).collect(Collectors.toList());
     }
 
 }

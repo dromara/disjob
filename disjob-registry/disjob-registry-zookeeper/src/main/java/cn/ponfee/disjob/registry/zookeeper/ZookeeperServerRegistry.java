@@ -21,14 +21,10 @@ import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.PreDestroy;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Registry server based zookeeper.
@@ -65,7 +61,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             client.createPersistent(zkRegistryRootPath);
             client.createPersistent(zkDiscoveryRootPath);
             //client.listenChildChanged(zkDiscoveryRootPath);
-            client.watch(zkDiscoveryRootPath, this::doRefreshDiscoveryServers);
+            client.watch(zkDiscoveryRootPath, this::refreshDiscoveryServers);
         } catch (Throwable t) {
             if (client0 != null) {
                 client0.close();
@@ -112,7 +108,7 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     public List<R> getRegisteredServers() {
         try {
             List<String> servers = client.getChildren(zkRegistryRootPath);
-            return deserializeRegistryServers(servers);
+            return deserializeServers(servers, registryRole);
         } catch (Exception e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -136,21 +132,6 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
 
     private String buildRegistryPath(R server) {
         return zkRegistryRootPath + separator + server.serialize();
-    }
-
-    private synchronized void doRefreshDiscoveryServers(List<String> list) {
-        List<D> servers;
-        log.info("Watched servers {}", list);
-        if (CollectionUtils.isEmpty(list)) {
-            log.warn("Not discovered available {} from zookeeper.", discoveryRole);
-            servers = Collections.emptyList();
-        } else {
-            servers = list.stream()
-                .filter(Objects::nonNull)
-                .<D>map(discoveryRole::deserialize)
-                .collect(Collectors.toList());
-        }
-        refreshDiscoveredServers(servers);
     }
 
 }

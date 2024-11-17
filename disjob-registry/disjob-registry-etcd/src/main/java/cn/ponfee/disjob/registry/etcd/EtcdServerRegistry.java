@@ -26,14 +26,11 @@ import cn.ponfee.disjob.registry.etcd.configuration.EtcdRegistryProperties;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.support.CloseableClient;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.PreDestroy;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
 /**
  * Registry server based etcd.
@@ -82,14 +79,14 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
             client.createPersistentKey(registryRootPath, PLACEHOLDER_VALUE);
             createLeaseIdAndKeepAlive();
-            client.watch(discoveryRootPath, this::doRefreshDiscoveryServers);
+            client.watch(discoveryRootPath, this::refreshDiscoveryServers);
 
             long periodMs = Math.max(ttl / 4, 1) * 1000;
             this.keepAliveCheckThread = LoopThread.createStarted("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
 
             client.addConnectionStateListener(ConnectionStateListener.<EtcdClient>builder().onConnected(c -> keepAliveRecover()).build());
 
-            doRefreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
+            refreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
         } catch (Throwable t) {
             if (client0 != null) {
                 client0.close();
@@ -134,8 +131,7 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
     @Override
     public List<R> getRegisteredServers() {
         try {
-            List<String> servers = client.getKeyChildren(registryRootPath);
-            return deserializeRegistryServers(servers);
+            return deserializeServers(client.getKeyChildren(registryRootPath), registryRole);
         } catch (Exception e) {
             return ExceptionUtils.rethrow(e);
         }
@@ -165,20 +161,6 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     private String buildRegistryServerId(R server) {
         return registryRootPath + separator + server.serialize();
-    }
-
-    private synchronized void doRefreshDiscoveryServers(List<String> list) {
-        List<D> servers;
-        if (CollectionUtils.isEmpty(list)) {
-            log.warn("Not discovered available {} from etcd.", discoveryRole);
-            servers = Collections.emptyList();
-        } else {
-            servers = list.stream()
-                .filter(Objects::nonNull)
-                .<D>map(discoveryRole::deserialize)
-                .collect(Collectors.toList());
-        }
-        refreshDiscoveredServers(servers);
     }
 
     private void keepAliveCheck() {
@@ -212,26 +194,24 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
 
     private void createLeaseIdAndKeepAlive() throws Exception {
         this.leaseId = client.createLease(ttl);
-        this.keepAlive = client.keepAliveLease(
-            leaseId,
-            t -> {
-                if (t instanceof EtcdException) {
-                    EtcdException e = (EtcdException) t;
-                    log.error("Keep alive on error: " + e.getErrorCode(), t);
-                    if (e.getErrorCode() != ErrorCode.NOT_FOUND) {
-                        // ttl has expired
-                        keepAliveRecover();
-                    }
-                } else {
-                    log.error("Keep alive on fail.", t);
+        Consumer<Throwable> onError = t -> {
+            if (t instanceof EtcdException) {
+                EtcdException e = (EtcdException) t;
+                log.error("Keep alive on error: " + e.getErrorCode(), t);
+                if (e.getErrorCode() != ErrorCode.NOT_FOUND) {
+                    // ttl has expired
+                    keepAliveRecover();
                 }
-            },
-            () -> {
-                // deadline reached
-                log.error("Keep alive on completed.");
-                keepAliveRecover();
+            } else {
+                log.error("Keep alive on fail.", t);
             }
-        );
+        };
+        Runnable onCompleted = () -> {
+            // deadline reached
+            log.error("Keep alive on completed.");
+            keepAliveRecover();
+        };
+        this.keepAlive = client.keepAliveLease(leaseId, onError, onCompleted);
         registered.forEach(this::register);
     }
 

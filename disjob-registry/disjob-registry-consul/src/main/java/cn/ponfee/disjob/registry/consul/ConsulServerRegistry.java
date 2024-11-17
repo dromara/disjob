@@ -30,11 +30,9 @@ import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PreDestroy;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -128,12 +126,8 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     @Override
     public List<R> getRegisteredServers() {
-        HealthServicesRequest request = HealthServicesRequest.newBuilder()
-            .setPassing(true)
-            .setToken(token)
-            .build();
-        List<HealthService> list = client.getHealthServices(registryRootPath, request).getValue();
-        return deserializeRegistryServers(list, e -> e.getService().getId().substring(registryRootPath.length() + 1));
+        Response<List<HealthService>> response = getServers(registryRootPath, null);
+        return deserializeServers(extract(response, registryRootPath), registryRole);
     }
 
     // ------------------------------------------------------------------Close
@@ -222,12 +216,14 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
         public void run() {
             while (state.isRunning()) {
                 try {
-                    Response<List<HealthService>> response = getDiscoveryServers(lastConsulIndex);
+                    long waitTimeSeconds = (lastConsulIndex == -1) ? 60 : Integer.MAX_VALUE;
+                    QueryParams queryParams = new QueryParams(waitTimeSeconds, lastConsulIndex);
+                    Response<List<HealthService>> response = getServers(discoveryRootPath, queryParams);
                     // 当有服务register时此处会执行两次，当有服务deregister时此处只会执行一次
                     Long currentIndex = response.getConsulIndex();
                     if (currentIndex != null && currentIndex > lastConsulIndex) {
                         lastConsulIndex = currentIndex;
-                        doRefreshDiscoveryServers(response.getValue());
+                        refreshDiscoveryServers(extract(response, discoveryRootPath));
                     }
                 } catch (Throwable t) {
                     log.error("Get consul health services occur error.", t);
@@ -235,35 +231,34 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
                 }
             }
         }
+    }
 
-        private synchronized void doRefreshDiscoveryServers(List<HealthService> healthServices) {
-            List<D> servers;
-            if (CollectionUtils.isEmpty(healthServices)) {
-                log.warn("Not discovered available {} from consul.", discoveryRole);
-                servers = Collections.emptyList();
-            } else {
-                servers = healthServices.stream()
-                    .map(HealthService::getService)
-                    .filter(Objects::nonNull)
-                    .map(s -> s.getId().substring(discoveryRootPath.length() + 1))
-                    .<D>map(discoveryRole::deserialize)
-                    .collect(Collectors.toList());
-            }
-            refreshDiscoveredServers(servers);
-        }
+    private Response<List<HealthService>> getServers(String rootPath, QueryParams queryParams) {
+        HealthServicesRequest request = HealthServicesRequest.newBuilder()
+            .setQueryParams(queryParams)
+            .setPassing(true)
+            .setToken(token)
+            .build();
+        // Health api: /v1/health/service/{serviceName}
+        // doc page: https://www.consul.io/api-docs/health
+        // Blocking Queries doc page: https://www.consul.io/api-docs/features/blocking
+        return client.getHealthServices(rootPath, request);
+    }
 
-        private Response<List<HealthService>> getDiscoveryServers(long index) {
-            long watchTimeoutSeconds = (index == -1) ? 60 : Integer.MAX_VALUE;
-            HealthServicesRequest request = HealthServicesRequest.newBuilder()
-                .setQueryParams(new QueryParams(watchTimeoutSeconds, index))
-                .setPassing(true)
-                .setToken(token)
-                .build();
-            // Health api: /v1/health/service/{serviceName}
-            // doc page: https://www.consul.io/api-docs/health
-            // Blocking Queries doc page: https://www.consul.io/api-docs/features/blocking
-            return client.getHealthServices(discoveryRootPath, request);
+    private static List<String> extract(Response<List<HealthService>> response, String rootPath) {
+        List<HealthService> healthServices = response.getValue();
+        if (healthServices == null) {
+            return null;
         }
+        int beginIndex = rootPath.length() + 1;
+        return healthServices.stream()
+            .filter(Objects::nonNull)
+            .map(HealthService::getService)
+            .filter(Objects::nonNull)
+            .map(HealthService.Service::getId)
+            .filter(e -> e != null && e.length() > beginIndex)
+            .map(e -> e.substring(beginIndex))
+            .collect(Collectors.toList());
     }
 
 }

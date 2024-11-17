@@ -54,19 +54,19 @@ public enum ServerRole {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Server> Class<T> type() {
+    <T extends Server> Class<T> type() {
         return (Class<T>) type;
     }
 
-    public String key() {
+    String key() {
         return key;
     }
 
-    public <T extends Server> T deserialize(String text) {
+    <S extends Server> S deserialize(String text) {
         return ClassUtils.invoke(type(), "deserialize", new Object[]{text});
     }
 
-    public static ServerRole of(Class<? extends Server> type) {
+    static ServerRole of(Class<? extends Server> type) {
         for (ServerRole value : values()) {
             if (type == value.type) {
                 return value;

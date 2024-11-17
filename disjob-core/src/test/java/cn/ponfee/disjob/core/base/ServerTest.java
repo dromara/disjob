@@ -18,10 +18,7 @@ package cn.ponfee.disjob.core.base;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,7 +53,7 @@ public class ServerTest {
         System.out.println(list);
         list.sort(Comparator.naturalOrder());
         System.out.println(list);
-        assertThat(list.toString()).isEqualTo("[group-a:workerId1:localhost1:80, group-a:workerId2:localhost1:80, group-b:workerId1:localhost1:80, group-b:workerId1:localhost2:80, group-b:workerId1:localhost2:82]");
+        assertThat(list.toString()).isEqualTo("[group-a:workerId1:localhost1:80, group-b:workerId1:localhost1:80, group-b:workerId1:localhost2:80, group-b:workerId1:localhost2:82, group-a:workerId2:localhost1:80]");
     }
 
     @Test
@@ -74,6 +71,17 @@ public class ServerTest {
         System.out.println(list);
         assertThat(list.toString()).isEqualTo("[supervisor1:80, supervisor1:85, supervisor2:85, supervisor3:10]");
         assertThat(Collections.binarySearch(list, new Supervisor("supervisor1", 80))).isEqualTo(0);
+
+        assertThat(Collections.binarySearch(Collections.emptyList(), 1)).isEqualTo(-1);
+        assertThat(Collections.binarySearch(Collections.singletonList(1), 1)).isEqualTo(0);
+        assertThat(Collections.binarySearch(Arrays.asList(1, 1), 1)).isEqualTo(0);
+        assertThat(Collections.binarySearch(Arrays.asList(1, 1, 1), 1)).isEqualTo(1);
+        assertThat(Collections.binarySearch(Arrays.asList(1, 1, 1, 1), 1)).isEqualTo(1);
+        assertThat(Collections.binarySearch(Arrays.asList(1, 1, 1, 1, 1), 1)).isEqualTo(2);
+        assertThat(Collections.binarySearch(Arrays.asList(2, 3, 4), 1)).isEqualTo(-1);
+        assertThat(Collections.binarySearch(Arrays.asList(2, 3, 4), 5)).isEqualTo(-4);
+        assertThat(Collections.binarySearch(Arrays.asList(2, 4, 6), 3)).isEqualTo(-2);
+        assertThat(Collections.binarySearch(Arrays.asList(2, 4, 6), 5)).isEqualTo(-3);
     }
 
 }

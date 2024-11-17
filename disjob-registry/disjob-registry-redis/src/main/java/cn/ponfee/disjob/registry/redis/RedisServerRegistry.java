@@ -43,7 +43,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 
@@ -115,8 +114,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private final RedisMessageListenerContainer redisMessageListenerContainer;
 
-    protected RedisServerRegistry(StringRedisTemplate stringRedisTemplate,
-                                  RedisRegistryProperties config) {
+    protected RedisServerRegistry(StringRedisTemplate stringRedisTemplate, RedisRegistryProperties config) {
         super(config, ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
@@ -159,7 +157,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     @Override
     public boolean isConnected() {
         Boolean result = stringRedisTemplate.execute((RedisCallback<Boolean>) conn -> !conn.isClosed());
-        return result != null && result;
+        return Boolean.TRUE.equals(result);
     }
 
     // ------------------------------------------------------------------Registry
@@ -172,7 +170,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
         doRegisterServers(Collections.singleton(server));
         registered.add(server);
-        ThrowingRunnable.doCaught(() -> publishRegistryEvent(RegistryEventType.REGISTER, server));
+        publishRegistryEvent(RegistryEventType.REGISTER, server);
         log.info("Server registered: {}, {}", registryRole, server);
     }
 
@@ -180,17 +178,13 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public final void deregister(R server) {
         registered.remove(server);
         ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        ThrowingRunnable.doCaught(() -> publishRegistryEvent(RegistryEventType.DEREGISTER, server));
+        publishRegistryEvent(RegistryEventType.DEREGISTER, server);
         log.info("Server deregister: {}, {}", registryRole, server);
     }
 
     @Override
     public List<R> getRegisteredServers() {
-        @SuppressWarnings("unchecked")
-        List<String> registryServers = stringRedisTemplate.execute(
-            QUERY_SCRIPT, registryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
-        );
-        return deserializeRegistryServers(registryServers);
+        return deserializeServers(getServers(registryRedisKey), registryRole);
     }
 
     // ------------------------------------------------------------------Close
@@ -220,15 +214,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      * @param channel the channel
      */
     public void handleMessage(String message, String channel) {
+        log.info("Handle message: {}, {}", message, channel);
         try {
             TextTokenizer tokenizer = new TextTokenizer(message, COLON);
-            String type = tokenizer.next();
-            String server = tokenizer.tail();
-
-            log.info("Subscribed message: {}, {}", message, channel);
-            subscribeDiscoveryEvent(RegistryEventType.valueOf(type), discoveryRole.deserialize(server));
+            RegistryEventType eventType = RegistryEventType.valueOf(tokenizer.next());
+            D server = deserializeServer(tokenizer.tail(), discoveryRole);
+            subscribeRegistryEvent(eventType, server);
         } catch (Throwable t) {
-            log.error("Parse subscribed message error: " + message + ", " + channel, t);
+            log.error("Handle message error: " + message + ", " + channel, t);
         }
     }
 
@@ -236,11 +229,14 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private void publishRegistryEvent(RegistryEventType eventType, R server) {
         String message = eventType.name() + COLON + server.serialize();
-        stringRedisTemplate.convertAndSend(registryChannel, message);
+        ThrowingRunnable.doCaught(() -> stringRedisTemplate.convertAndSend(registryChannel, message));
     }
 
-    private void subscribeDiscoveryEvent(RegistryEventType eventType, D server) {
-        tryDiscoverServers();
+    private void subscribeRegistryEvent(RegistryEventType eventType, D server) {
+        log.info("Subscribed server registry event: {}, {}", eventType, server);
+        if (server != null) {
+            tryDiscoverServers();
+        }
     }
 
     /**
@@ -297,22 +293,16 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
 
     private void doDiscoverServers() throws Throwable {
         RetryTemplate.execute(() -> {
-            @SuppressWarnings("unchecked")
-            List<String> discovered = stringRedisTemplate.execute(
-                QUERY_SCRIPT, discoveryRedisKey, Long.toString(System.currentTimeMillis()), REDIS_KEY_TTL_MILLIS
-            );
-
-            if (CollectionUtils.isEmpty(discovered)) {
-                log.warn("Not discovered available {} from redis.", discoveryRole);
-                discovered = Collections.emptyList();
-            }
-
-            List<D> servers = discovered.stream().<D>map(discoveryRole::deserialize).collect(Collectors.toList());
-            refreshDiscoveredServers(servers);
-
+            refreshDiscoveryServers(getServers(discoveryRedisKey));
             renewNextDiscoverTimeMillis();
             log.debug("Redis discovered {} servers.", discoveryRole);
         }, 3, 1000L);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getServers(List<String> serverRoleKey) {
+        String baseScore = Long.toString(System.currentTimeMillis());
+        return stringRedisTemplate.execute(QUERY_SCRIPT, serverRoleKey, baseScore, REDIS_KEY_TTL_MILLIS);
     }
 
     private boolean requireDiscoverServers() {

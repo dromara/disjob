@@ -51,7 +51,7 @@ public final class DestinationServerRestProxy {
                                                                              RetryProperties retry) {
         DestinationServerRestTemplate template = new DestinationServerRestTemplate(restTemplate, retry);
         String prefixPath = DiscoveryServerRestProxy.getMappingPath(AnnotationUtils.findAnnotation(interfaceCls, RequestMapping.class));
-        InvocationHandler invocationHandler = new ServerInvocationHandler<>(template, serverContextPath, prefixPath);
+        InvocationHandler invocationHandler = new ServerInvocationHandler<>(interfaceCls, template, serverContextPath, prefixPath);
         T remoteServiceClient = ProxyUtils.create(invocationHandler, interfaceCls);
         return new DestinationServerClient<>(remoteServiceClient, localServiceProvider, localServer);
     }
@@ -87,13 +87,16 @@ public final class DestinationServerRestProxy {
     }
 
     private static class ServerInvocationHandler<S extends Server> implements InvocationHandler {
+        private final Class<?> interfaceCls;
         private final DestinationServerRestTemplate template;
         private final Function<S, String> serverContextPath;
         private final String prefixPath;
 
-        private ServerInvocationHandler(DestinationServerRestTemplate template,
+        private ServerInvocationHandler(Class<?> interfaceCls,
+                                        DestinationServerRestTemplate template,
                                         Function<S, String> serverContextPath,
                                         String prefixPath) {
+            this.interfaceCls = interfaceCls;
             this.template = template;
             this.serverContextPath = serverContextPath;
             this.prefixPath = prefixPath;
@@ -101,7 +104,7 @@ public final class DestinationServerRestProxy {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            DiscoveryServerRestProxy.Request req = DiscoveryServerRestProxy.buildRequest(prefixPath, method);
+            DiscoveryServerRestProxy.Request req = DiscoveryServerRestProxy.buildRequest(interfaceCls, method, prefixPath);
             Server destinationServer = SERVER_THREAD_LOCAL.get();
             @SuppressWarnings("unchecked")
             String contextPath = serverContextPath.apply((S) destinationServer);

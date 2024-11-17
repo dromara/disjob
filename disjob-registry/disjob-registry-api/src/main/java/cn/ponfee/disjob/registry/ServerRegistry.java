@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +51,9 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
     protected final String discoveryRootPath;
     private final DiscoveryServer<D> discoveryServer;
 
+    /**
+     * Registered servers.
+     */
     protected final Set<R> registered = ConcurrentHashMap.newKeySet();
 
     /**
@@ -71,16 +73,6 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         this.discoveryRootPath = prefix + discoveryRole.key();
 
         this.discoveryServer = DiscoveryServer.of(discoveryRole);
-    }
-
-    /**
-     * Refresh discovery servers.
-     *
-     * @param servers discovered servers
-     */
-    protected final synchronized void refreshDiscoveredServers(List<D> servers) {
-        discoveryServer.refreshServers(servers);
-        log.debug("Refreshed discovery servers: {}, {}", discoveryRole, servers);
     }
 
     /**
@@ -123,20 +115,39 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         return discoveryRole;
     }
 
-    protected final List<R> deserializeRegistryServers(List<String> list) {
-        return deserializeRegistryServers(list, Function.identity());
+    /**
+     * Refresh discovery servers.
+     *
+     * @param list the list
+     */
+    protected final synchronized void refreshDiscoveryServers(List<String> list) {
+        List<D> servers = deserializeServers(list, discoveryRole);
+        discoveryServer.refreshServers(servers);
+        if (servers.isEmpty()) {
+            log.warn("Not discovered available {}", discoveryRole);
+        }
     }
 
-    protected final <T> List<R> deserializeRegistryServers(List<T> list, Function<T, String> function) {
+    protected final <S extends Server> List<S> deserializeServers(List<String> list, ServerRole serverRole) {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
         return list.stream()
+            .<S>map(e -> deserializeServer(e, serverRole))
             .filter(Objects::nonNull)
-            .map(function)
-            .filter(StringUtils::isNotBlank)
-            .<R>map(registryRole::deserialize)
             .collect(Collectors.toList());
+    }
+
+    protected final <S extends Server> S deserializeServer(String server, ServerRole serverRole) {
+        if (StringUtils.isBlank(server)) {
+            return null;
+        }
+        try {
+            return serverRole.deserialize(server);
+        } catch (Throwable t) {
+            log.error("Deserialize server failed: {}, {}, {}", serverRole, server, t.getMessage());
+            return null;
+        }
     }
 
     // -------------------------------------------------------------------------------------private method
