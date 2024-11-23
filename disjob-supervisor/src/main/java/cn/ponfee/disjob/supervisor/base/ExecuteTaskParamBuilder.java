@@ -16,13 +16,13 @@
 
 package cn.ponfee.disjob.supervisor.base;
 
+import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.enums.JobType;
 import cn.ponfee.disjob.core.enums.Operation;
 import cn.ponfee.disjob.core.enums.RouteStrategy;
 import cn.ponfee.disjob.core.enums.ShutdownStrategy;
 import cn.ponfee.disjob.dispatch.ExecuteTaskParam;
-import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.model.SchedInstance;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import org.springframework.util.Assert;
@@ -38,7 +38,6 @@ public final class ExecuteTaskParamBuilder {
 
     private final SchedJob job;
     private final SchedInstance instance;
-    private final String supervisorToken;
 
     public ExecuteTaskParamBuilder(SchedJob job, SchedInstance instance) {
         if (!instance.getJobId().equals(job.getJobId())) {
@@ -46,7 +45,6 @@ public final class ExecuteTaskParamBuilder {
         }
         this.job = job;
         this.instance = instance;
-        this.supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(job.getGroup());
     }
 
     public ExecuteTaskParam build(Operation operation, long taskId, long triggerTime, Worker worker) {
@@ -63,7 +61,7 @@ public final class ExecuteTaskParamBuilder {
         param.setRouteStrategy(RouteStrategy.of(job.getRouteStrategy()));
         param.setShutdownStrategy(ShutdownStrategy.of(job.getShutdownStrategy()));
         param.setExecuteTimeout(job.getExecuteTimeout());
-        param.setSupervisorToken(supervisorToken);
+        param.setSupervisorAuthenticationToken(Supervisor.local().createSupervisorAuthenticationToken(job.getGroup()));
         param.setWorker(worker);
         param.setJobExecutor(obtainJobExecutor());
         return param;

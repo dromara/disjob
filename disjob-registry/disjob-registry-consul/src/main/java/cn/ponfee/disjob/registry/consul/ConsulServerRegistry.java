@@ -31,6 +31,7 @@ import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PreDestroy;
 import java.util.List;
@@ -71,8 +72,8 @@ public abstract class ConsulServerRegistry<R extends Server, D extends Server> e
 
     private final DiscoveryWatcher discoveryWatcher;
 
-    protected ConsulServerRegistry(ConsulRegistryProperties config) {
-        super(config, ':');
+    protected ConsulServerRegistry(ConsulRegistryProperties config, RestTemplate restTemplate) {
+        super(config, restTemplate, ':');
 
         this.client = new ConsulClient(config.getHost(), config.getPort());
         this.token = StringUtils.isBlank(config.getToken()) ? null : config.getToken().trim();

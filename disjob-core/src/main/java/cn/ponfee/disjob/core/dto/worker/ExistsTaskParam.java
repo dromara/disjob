@@ -16,6 +16,8 @@
 
 package cn.ponfee.disjob.core.dto.worker;
 
+import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.base.Worker;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,9 +33,9 @@ public class ExistsTaskParam extends AuthenticationParam {
 
     private long taskId;
 
-    public static ExistsTaskParam of(String supervisorToken, long taskId) {
+    public static ExistsTaskParam of(Worker worker, long taskId) {
         ExistsTaskParam param = new ExistsTaskParam();
-        param.setSupervisorToken(supervisorToken);
+        param.setSupervisorAuthenticationToken(Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup()));
         param.setTaskId(taskId);
         return param;
     }

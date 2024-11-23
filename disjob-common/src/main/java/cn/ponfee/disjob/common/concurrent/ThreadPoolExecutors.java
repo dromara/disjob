@@ -41,7 +41,7 @@ public final class ThreadPoolExecutors {
 
     public static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.pool.size";
 
-    private static volatile ThreadPoolExecutor          commonThreadPool;
+    private static volatile ThreadPoolExecutor commonThreadPool;
     private static volatile ScheduledThreadPoolExecutor commonScheduledPool;
 
     /**
@@ -331,6 +331,7 @@ public final class ThreadPoolExecutors {
             NamedThreadFactory.builder().prefix("disjob-common-scheduled-pool").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(LOG).build(),
             CALLER_RUNS
         );
+        scheduledPool.setRemoveOnCancelPolicy(true);
         Runtime.getRuntime().addShutdownHook(new Thread(scheduledPool::shutdown));
         return scheduledPool;
     }

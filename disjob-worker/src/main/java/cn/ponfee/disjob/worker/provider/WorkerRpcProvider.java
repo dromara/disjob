@@ -24,7 +24,7 @@ import cn.ponfee.disjob.core.base.WorkerRpcService;
 import cn.ponfee.disjob.core.dto.worker.*;
 import cn.ponfee.disjob.core.dto.worker.ConfigureWorkerParam.Action;
 import cn.ponfee.disjob.core.exception.JobException;
-import cn.ponfee.disjob.registry.Registry;
+import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.worker.base.WorkerConfigurator;
 import cn.ponfee.disjob.worker.executor.JobExecutorUtils;
 
@@ -46,7 +46,7 @@ public interface WorkerRpcProvider extends WorkerRpcService {
      * @param workerRegistry the workerRegistry
      * @return WorkerRpcService proxy
      */
-    static WorkerRpcProvider create(Worker.Local localWorker, Registry<Worker> workerRegistry) {
+    static WorkerRpcProvider create(Worker.Local localWorker, WorkerRegistry workerRegistry) {
         InvocationHandler invocationHandler = new AuthenticateHandler(localWorker, workerRegistry);
         return ProxyUtils.create(invocationHandler, WorkerRpcProvider.class);
     }
@@ -55,7 +55,7 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         private final Worker.Local localWorker;
         private final WorkerRpcService target;
 
-        private AuthenticateHandler(Worker.Local localWorker, Registry<Worker> workerRegistry) {
+        private AuthenticateHandler(Worker.Local localWorker, WorkerRegistry workerRegistry) {
             this.localWorker = localWorker;
             this.target = new WorkerRpcImpl(localWorker, workerRegistry);
         }
@@ -75,11 +75,17 @@ public interface WorkerRpcProvider extends WorkerRpcService {
 
     class WorkerRpcImpl implements WorkerRpcService {
         private final Worker.Local localWorker;
-        private final Registry<Worker> workerRegistry;
+        private final WorkerRegistry workerRegistry;
 
-        private WorkerRpcImpl(Worker.Local localWorker, Registry<Worker> workerRegistry) {
+        private WorkerRpcImpl(Worker.Local localWorker, WorkerRegistry workerRegistry) {
             this.localWorker = localWorker;
             this.workerRegistry = workerRegistry;
+        }
+
+        @Override
+        public void subscribeSupervisorChanged(SubscribeSupervisorChangedParam param) {
+            param.check();
+            workerRegistry.subscribeServerChanged(param.getEventType(), param.getSupervisor());
         }
 
         @Override

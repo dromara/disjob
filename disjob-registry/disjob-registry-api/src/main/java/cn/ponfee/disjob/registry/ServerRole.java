@@ -66,6 +66,14 @@ public enum ServerRole {
         return ClassUtils.invoke(type(), "deserialize", new Object[]{text});
     }
 
+    public boolean isWorker() {
+        return this == WORKER;
+    }
+
+    public boolean isSupervisor() {
+        return this == SUPERVISOR;
+    }
+
     static ServerRole of(Class<? extends Server> type) {
         for (ServerRole value : values()) {
             if (type == value.type) {

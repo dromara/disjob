@@ -18,6 +18,7 @@ package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
 import cn.ponfee.disjob.common.util.Numbers;
+import cn.ponfee.disjob.core.enums.TokenType;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -31,7 +32,6 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 import static cn.ponfee.disjob.common.collect.Collects.get;
@@ -133,6 +133,17 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
 
     // -------------------------------------------------------------------------------local Supervisor
 
+    public interface GroupInfo {
+
+        String getWorkerContextPath(String group);
+
+        String getSupervisorToken(String group);
+
+        String getWorkerToken(String group);
+
+        String getUserToken(String group);
+    }
+
     /**
      * Supervisor.class.getDeclaredClasses()[0]
      */
@@ -160,8 +171,42 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
          */
         public abstract String getWorkerContextPath(String group);
 
-        private static synchronized Local create(final String host, final int port,
-                                                 final UnaryOperator<String> workerContextPath) {
+        /**
+         * Creates supervisor authentication token
+         *
+         * @param group the group
+         * @return supervisor authentication token
+         */
+        public abstract String createSupervisorAuthenticationToken(String group);
+
+        /**
+         * Verifies worker authentication token
+         *
+         * @param group                     the group
+         * @param workerAuthenticationToken the worker authentication token
+         * @return {@code true} if verify successful
+         */
+        public abstract boolean verifyWorkerAuthenticationToken(String group, String workerAuthenticationToken);
+
+        /**
+         * Verifies user authentication token
+         *
+         * @param group                   the group
+         * @param userAuthenticationToken the user authentication token
+         * @return {@code true} if verify successful
+         */
+        public abstract boolean verifyUserAuthenticationToken(String group, String userAuthenticationToken);
+
+        /**
+         * Verifies worker signature token
+         *
+         * @param group                the group
+         * @param workerSignatureToken the worker signature token
+         * @return {@code true} if verify successful
+         */
+        public abstract boolean verifyWorkerSignatureToken(String group, String workerSignatureToken);
+
+        private static synchronized Local create(final String host, final int port, final GroupInfo groupInfo) {
             if (instance != null) {
                 throw new Error("Local supervisor already created.");
             }
@@ -169,7 +214,31 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
             instance = new Local(host, port) {
                 @Override
                 public String getWorkerContextPath(String group) {
-                    return workerContextPath.apply(group);
+                    return groupInfo.getWorkerContextPath(group);
+                }
+
+                @Override
+                public String createSupervisorAuthenticationToken(String group) {
+                    String supervisorToken = groupInfo.getSupervisorToken(group);
+                    return Tokens.createAuthentication(supervisorToken, TokenType.supervisor, group);
+                }
+
+                @Override
+                public boolean verifyWorkerAuthenticationToken(String group, String workerAuthenticationToken) {
+                    String workerToken = groupInfo.getWorkerToken(group);
+                    return Tokens.verifyAuthentication(workerAuthenticationToken, workerToken, TokenType.worker, group);
+                }
+
+                @Override
+                public boolean verifyUserAuthenticationToken(String group, String userAuthenticationToken) {
+                    String userToken = groupInfo.getUserToken(group);
+                    return Tokens.verifyAuthentication(userAuthenticationToken, userToken, TokenType.user, group);
+                }
+
+                @Override
+                public boolean verifyWorkerSignatureToken(String group, String workerSignatureToken) {
+                    String workerToken = groupInfo.getWorkerToken(group);
+                    return Tokens.verifySignature(workerSignatureToken, workerToken, TokenType.worker, group);
                 }
             };
 

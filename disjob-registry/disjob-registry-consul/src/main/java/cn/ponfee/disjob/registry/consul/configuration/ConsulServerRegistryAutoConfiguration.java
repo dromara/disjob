@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry.consul.configuration;
 
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -23,9 +24,11 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfiguration;
 import cn.ponfee.disjob.registry.consul.ConsulSupervisorRegistry;
 import cn.ponfee.disjob.registry.consul.ConsulWorkerRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Spring autoconfiguration for consul server registry
@@ -40,8 +43,9 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(ConsulRegistryProperties config) {
-        return new ConsulSupervisorRegistry(config);
+    public SupervisorRegistry supervisorRegistry(ConsulRegistryProperties config,
+                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+        return new ConsulSupervisorRegistry(config, restTemplate);
     }
 
     /**
@@ -49,8 +53,9 @@ public class ConsulServerRegistryAutoConfiguration extends BaseServerRegistryAut
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(ConsulRegistryProperties config) {
-        return new ConsulWorkerRegistry(config);
+    public WorkerRegistry workerRegistry(ConsulRegistryProperties config,
+                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+        return new ConsulWorkerRegistry(config, restTemplate);
     }
 
 }

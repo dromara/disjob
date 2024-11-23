@@ -18,12 +18,14 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.util.GenericUtils;
+import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.registry.discovery.DiscoveryServer;
+import cn.ponfee.disjob.registry.discovery.ServerDiscovery;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +51,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
     protected final ServerRole discoveryRole;
     protected final String discoveryRootPath;
-    private final DiscoveryServer<D> discoveryServer;
+    private final ServerDiscovery<D, R> serverDiscovery;
 
     /**
      * Registered servers.
@@ -61,7 +63,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
      */
     protected final TripState state = TripState.createStarted();
 
-    protected ServerRegistry(AbstractRegistryProperties config, char separator) {
+    protected ServerRegistry(AbstractRegistryProperties config, RestTemplate restTemplate, char separator) {
         this.separator = separator;
 
         String prefix = prune(config.getNamespace(), separator);
@@ -72,7 +74,7 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         this.discoveryRole = ServerRole.of(GenericUtils.getActualTypeArgument(getClass(), 1));
         this.discoveryRootPath = prefix + discoveryRole.key();
 
-        this.discoveryServer = DiscoveryServer.of(discoveryRole);
+        this.serverDiscovery = ServerDiscovery.of(discoveryRole, restTemplate);
     }
 
     /**
@@ -84,17 +86,17 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
 
     @Override
     public final List<D> getDiscoveredServers(String group) {
-        return discoveryServer.getServers(group);
+        return serverDiscovery.getServers(group);
     }
 
     @Override
     public final boolean hasDiscoveredServers() {
-        return discoveryServer.hasServers();
+        return serverDiscovery.hasServers();
     }
 
     @Override
     public final boolean isDiscoveredServer(D server) {
-        return discoveryServer.isAlive(server);
+        return serverDiscovery.isAlive(server);
     }
 
     /**
@@ -115,14 +117,25 @@ public abstract class ServerRegistry<R extends Server, D extends Server> impleme
         return discoveryRole;
     }
 
+    protected void publishServerChanged(RegistryEventType eventType, R rServer) {
+        log.info("Publish server changed: {}, {}", eventType, rServer);
+        serverDiscovery.notifyServers(eventType, rServer);
+    }
+
+    @Override
+    public final void subscribeServerChanged(RegistryEventType eventType, D dServer) {
+        log.info("Subscribe server changed: {}, {}", eventType, dServer);
+        serverDiscovery.updateServers(eventType, dServer);
+    }
+
     /**
      * Refresh discovery servers.
      *
      * @param list the list
      */
-    protected final synchronized void refreshDiscoveryServers(List<String> list) {
+    protected final void refreshDiscoveryServers(List<String> list) {
         List<D> servers = deserializeServers(list, discoveryRole);
-        discoveryServer.refreshServers(servers);
+        serverDiscovery.refreshServers(servers);
         if (servers.isEmpty()) {
             log.warn("Not discovered available {}", discoveryRole);
         }

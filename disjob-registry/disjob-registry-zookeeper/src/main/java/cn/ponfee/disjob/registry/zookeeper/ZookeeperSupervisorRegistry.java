@@ -20,6 +20,7 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Registry supervisor based zookeeper.
@@ -28,8 +29,8 @@ import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProper
  */
 public class ZookeeperSupervisorRegistry extends ZookeeperServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public ZookeeperSupervisorRegistry(ZookeeperRegistryProperties config) {
-        super(config);
+    public ZookeeperSupervisorRegistry(ZookeeperRegistryProperties config, RestTemplate restTemplate) {
+        super(config, restTemplate);
     }
 
 }

@@ -235,15 +235,17 @@ public final class Jsons {
     }
 
     public static Object[] parseMethodArgs(String body, Method method) {
+        // 不推荐使用fastjson，项目中尽量统一使用一种JSON序列化方式
+        //return com.alibaba.fastjson.JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
+        return parseArgs(body, method.getGenericParameterTypes());
+    }
+
+    public static Object[] parseArgs(String body, Type[] parameterTypes) {
         if (body == null) {
             return null;
         }
 
-        // 不推荐使用fastjson，项目中尽量统一使用一种JSON序列化方式
-        //return com.alibaba.fastjson.JSON.parseArray(body, method.getGenericParameterTypes()).toArray();
-
-        Type[] genericArgumentTypes = method.getGenericParameterTypes();
-        int argumentCount = genericArgumentTypes.length;
+        int argumentCount = parameterTypes.length;
         if (/*method.getParameterCount()*/argumentCount == 0) {
             return null;
         }
@@ -257,7 +259,7 @@ public final class Jsons {
             // ["a", "b"]     -> method(Object[] arg) -> arg=["a", "b"]
             // [["a"], ["b"]] -> method(Object[] arg) -> arg=[["a"], ["b"]]
             if (argumentCount == 1 && arrayNode.size() > 1) {
-                return new Object[]{parse(objectMapper, arrayNode, genericArgumentTypes[0])};
+                return new Object[]{parse(objectMapper, arrayNode, parameterTypes[0])};
             }
 
             // 其它情况，在调用方将参数(requestParameters)用数组包一层：new Object[]{ arg-1, arg-2, ..., arg-n }
@@ -270,12 +272,12 @@ public final class Jsons {
 
             Object[] methodArguments = new Object[argumentCount];
             for (int i = 0; i < argumentCount; i++) {
-                methodArguments[i] = parse(objectMapper, arrayNode.get(i), genericArgumentTypes[i]);
+                methodArguments[i] = parse(objectMapper, arrayNode.get(i), parameterTypes[i]);
             }
             return methodArguments;
         } else {
             Assert.isTrue(argumentCount == 1, "Single object request parameter not support multiple arguments method.");
-            return new Object[]{parse(objectMapper, rootNode, genericArgumentTypes[0])};
+            return new Object[]{parse(objectMapper, rootNode, parameterTypes[0])};
         }
     }
 

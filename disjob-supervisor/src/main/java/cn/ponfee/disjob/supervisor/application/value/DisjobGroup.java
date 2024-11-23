@@ -33,6 +33,7 @@ import java.util.Arrays;
 @Getter
 public class DisjobGroup {
 
+    private final String group;
     private final String supervisorToken;
     private final String workerToken;
     private final String userToken;
@@ -42,36 +43,16 @@ public class DisjobGroup {
     private final String workerContextPath;
     private final String webHook;
 
-    private DisjobGroup(String supervisorToken,
-                        String workerToken,
-                        String userToken,
-                        String ownUser,
-                        ImmutableSet<String> devUsers,
-                        ImmutableSet<String> alarmUsers,
-                        String workerContextPath,
-                        String webHook) {
-        this.supervisorToken = supervisorToken;
-        this.workerToken = workerToken;
-        this.userToken = userToken;
-        this.ownUser = ownUser;
-        this.devUsers = devUsers;
-        this.alarmUsers = alarmUsers;
-        this.workerContextPath = workerContextPath;
-        this.webHook = webHook;
-    }
-
-    public static DisjobGroup of(SchedGroup schedGroup) {
-        String ownUser = schedGroup.getOwnUser();
-        return new DisjobGroup(
-            schedGroup.getSupervisorToken(),
-            schedGroup.getWorkerToken(),
-            schedGroup.getUserToken(),
-            ownUser,
-            parse(schedGroup.getDevUsers(), ownUser),
-            parse(schedGroup.getAlarmUsers(), ownUser),
-            Strings.trimPath(schedGroup.getWorkerContextPath()),
-            schedGroup.getWebHook()
-        );
+    public DisjobGroup(SchedGroup o) {
+        this.group             = o.getGroup();
+        this.supervisorToken   = o.getSupervisorToken();
+        this.workerToken       = o.getWorkerToken();
+        this.userToken         = o.getUserToken();
+        this.ownUser           = o.getOwnUser().trim();
+        this.devUsers          = parse(o.getDevUsers(), ownUser);
+        this.alarmUsers        = parse(o.getAlarmUsers(), ownUser);
+        this.workerContextPath = Strings.trimPath(o.getWorkerContextPath());
+        this.webHook           = o.getWebHook();
     }
 
     public boolean isDeveloper(String user) {

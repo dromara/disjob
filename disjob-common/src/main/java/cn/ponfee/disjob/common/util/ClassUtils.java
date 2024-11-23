@@ -377,7 +377,7 @@ public final class ClassUtils {
     }
 
     public static <T> T invoke(Object caller, String methodName) {
-        return invoke(caller, methodName, null, null);
+        return invoke(caller, methodName, (Class<?>[]) null, null);
     }
 
     public static <T> T invoke(Object caller, String methodName, Class<?>[] parameterTypes, Object[] args) {
@@ -393,7 +393,7 @@ public final class ClassUtils {
     public static <T> T invoke(Object caller, String methodName, Object[] args) {
         checkObjectArray(args);
         if (ArrayUtils.isEmpty(args)) {
-            return invoke(caller, methodName, null, null);
+            return invoke(caller, methodName, (Class<?>[]) null, null);
         }
 
         Class<?>[] parameterTypes = parseParameterTypes(args);
@@ -402,6 +402,12 @@ public final class ClassUtils {
             Class<?> clazz = (caller instanceof Class<?>) ? (Class<?>) caller : caller.getClass();
             throw new IllegalArgumentException("Not found method: " + clazz + "#" + methodName + toString(parameterTypes));
         }
+        return invoke(caller, method, args);
+    }
+
+    public static <T> T invoke(Object caller, String methodName, String jsonArgs, Class<?>... parameterTypes) {
+        Method method = ClassUtils.getMethod(caller, methodName, parameterTypes);
+        Object[] args = Jsons.parseMethodArgs(jsonArgs, method);
         return invoke(caller, method, args);
     }
 

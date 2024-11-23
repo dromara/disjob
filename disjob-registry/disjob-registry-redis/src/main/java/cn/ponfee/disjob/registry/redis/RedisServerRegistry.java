@@ -19,30 +19,25 @@ package cn.ponfee.disjob.registry.redis;
 import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.base.TextTokenizer;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
-import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
-import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
-import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
+import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Server;
-import cn.ponfee.disjob.registry.RegistryEventType;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 
@@ -53,6 +48,8 @@ import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
  * @author Ponfee
  */
 public abstract class RedisServerRegistry<R extends Server, D extends Server> extends ServerRegistry<R, D> {
+
+    private static final String CHANNEL = "channel";
 
     private static final RedisScript<Void> REGISTRY_SCRIPT = RedisScript.of(
         "local score  = ARGV[1];                        \n" +
@@ -75,7 +72,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     );
 
     private static final String REDIS_KEY_TTL_MILLIS = Long.toString(30L * 86400 * 1000);
-    private static final String CHANNEL = "channel";
 
     /**
      * Registry publish redis message channel
@@ -92,11 +88,6 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      */
     private final long sessionTimeoutMs;
 
-    /**
-     * Period milliseconds
-     */
-    private final long periodMs;
-
     // -------------------------------------------------Registry
 
     private final LoopThread registerHeartbeatThread;
@@ -105,53 +96,37 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     // -------------------------------------------------Discovery
 
     private final LoopThread discoverHeartbeatThread;
-    private final ThreadPoolExecutor redisSubscribeExecutor;
-    private final Lock asyncRefreshLock = new ReentrantLock();
     private final List<String> discoveryRedisKey;
-    private volatile long nextDiscoverTimeMillis = 0;
 
     // -------------------------------------------------Subscribe
 
     private final RedisMessageListenerContainer redisMessageListenerContainer;
 
-    protected RedisServerRegistry(StringRedisTemplate stringRedisTemplate, RedisRegistryProperties config) {
-        super(config, ':');
+    protected RedisServerRegistry(RedisRegistryProperties config, RestTemplate restTemplate, StringRedisTemplate stringRedisTemplate) {
+        super(config, restTemplate, ':');
         this.registryChannel = registryRootPath + separator + CHANNEL;
         this.stringRedisTemplate = stringRedisTemplate;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
-        this.periodMs = config.getSessionTimeoutMs() / 3;
         this.registryRedisKey = Collections.singletonList(registryRootPath);
         this.discoveryRedisKey = Collections.singletonList(discoveryRootPath);
 
+        long periodMs = sessionTimeoutMs / 3;
+
         // -------------------------------------------------registry
-        ThrowingRunnable<?> registerAction = () -> RetryTemplate.execute(() -> doRegisterServers(registered), 3, 1000);
+        ThrowingRunnable<?> registerAction = () -> RetryTemplate.execute(() -> registerServers(registered), 3, 1000);
         this.registerHeartbeatThread = LoopThread.createStarted("redis_register_heartbeat", periodMs, periodMs, registerAction);
 
         // -------------------------------------------------discovery
-        ThrowingRunnable<?> discoverAction = () -> { if (requireDiscoverServers()) { tryDiscoverServers(); } };
-        this.discoverHeartbeatThread = LoopThread.createStarted("redis_discover_heartbeat", periodMs, periodMs, discoverAction);
-
-        this.redisSubscribeExecutor = ThreadPoolExecutors.builder()
-            .corePoolSize(1)
-            .maximumPoolSize(1)
-            .workQueue(new ArrayBlockingQueue<>(1))
-            .keepAliveTimeSeconds(600)
-            .rejectedHandler(ThreadPoolExecutors.DISCARD)
-            .threadFactory(NamedThreadFactory.builder().prefix("redis_async_subscribe").priority(Thread.MAX_PRIORITY).uncaughtExceptionHandler(log).build())
-            .build();
+        this.discoverHeartbeatThread = LoopThread.createStarted("redis_discover_heartbeat", periodMs, periodMs, this::discoverServers);
 
         // redis pub/sub
-        String discoveryChannel = discoveryRootPath + separator + CHANNEL;
         this.redisMessageListenerContainer = RedisTemplateUtils.createRedisMessageListenerContainer(
-            stringRedisTemplate, discoveryChannel, redisSubscribeExecutor, this, "handleMessage");
-
-        try {
-            doDiscoverServers();
-        } catch (Throwable e) {
-            close();
-            Threads.interruptIfNecessary(e);
-            throw new Error("Redis init discover error.", e);
-        }
+            stringRedisTemplate,
+            discoveryRootPath + separator + CHANNEL,
+            new SyncTaskExecutor(),
+            this,
+            "handleMessage"
+        );
     }
 
     @Override
@@ -168,9 +143,9 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
             return;
         }
 
-        doRegisterServers(Collections.singleton(server));
+        registerServers(Collections.singleton(server));
         registered.add(server);
-        publishRegistryEvent(RegistryEventType.REGISTER, server);
+        publishServerChanged(RegistryEventType.REGISTER, server);
         log.info("Server registered: {}, {}", registryRole, server);
     }
 
@@ -178,13 +153,20 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
     public final void deregister(R server) {
         registered.remove(server);
         ThrowingSupplier.doCaught(() -> stringRedisTemplate.opsForZSet().remove(registryRootPath, server.serialize()));
-        publishRegistryEvent(RegistryEventType.DEREGISTER, server);
+        publishServerChanged(RegistryEventType.DEREGISTER, server);
         log.info("Server deregister: {}, {}", registryRole, server);
     }
 
     @Override
     public List<R> getRegisteredServers() {
         return deserializeServers(getServers(registryRedisKey), registryRole);
+    }
+
+    // ------------------------------------------------------------------Discovery
+
+    @Override
+    public void discoverServers() throws Throwable {
+        RetryTemplate.execute(() -> refreshDiscoveryServers(getServers(discoveryRedisKey)), 3, 1000L);
     }
 
     // ------------------------------------------------------------------Close
@@ -195,13 +177,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         if (!state.stop()) {
             return;
         }
-
         registerHeartbeatThread.terminate();
         registered.forEach(this::deregister);
-
         ThrowingRunnable.doCaught(redisMessageListenerContainer::stop);
         discoverHeartbeatThread.terminate();
-        ThreadPoolExecutors.shutdown(redisSubscribeExecutor, 2);
         super.close();
     }
 
@@ -214,30 +193,25 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      * @param channel the channel
      */
     public void handleMessage(String message, String channel) {
-        log.info("Handle message: {}, {}", message, channel);
         try {
+            log.info("Handle message begin: {}, {}", message, channel);
             TextTokenizer tokenizer = new TextTokenizer(message, COLON);
             RegistryEventType eventType = RegistryEventType.valueOf(tokenizer.next());
             D server = deserializeServer(tokenizer.tail(), discoveryRole);
-            subscribeRegistryEvent(eventType, server);
+            subscribeServerChanged(eventType, server);
         } catch (Throwable t) {
             log.error("Handle message error: " + message + ", " + channel, t);
         }
     }
 
-    // ------------------------------------------------------------------private methods
-
-    private void publishRegistryEvent(RegistryEventType eventType, R server) {
+    @Override
+    protected void publishServerChanged(RegistryEventType eventType, R server) {
+        log.info("Publish server changed: {}, {}", eventType, server);
         String message = eventType.name() + COLON + server.serialize();
         ThrowingRunnable.doCaught(() -> stringRedisTemplate.convertAndSend(registryChannel, message));
     }
 
-    private void subscribeRegistryEvent(RegistryEventType eventType, D server) {
-        log.info("Subscribed server registry event: {}, {}", eventType, server);
-        if (server != null) {
-            tryDiscoverServers();
-        }
-    }
+    // ------------------------------------------------------------------private methods
 
     /**
      * <pre>
@@ -263,7 +237,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
      *
      * @param servers the registry servers
      */
-    private void doRegisterServers(Set<R> servers) {
+    private void registerServers(Set<R> servers) {
         if (CollectionUtils.isEmpty(servers)) {
             return;
         }
@@ -278,39 +252,10 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         stringRedisTemplate.execute(REGISTRY_SCRIPT, registryRedisKey, args);
     }
 
-    private void tryDiscoverServers() {
-        if (asyncRefreshLock.tryLock()) {
-            try {
-                doDiscoverServers();
-            } catch (Throwable t) {
-                Threads.interruptIfNecessary(t);
-                log.error("Redis discover servers occur error.", t);
-            } finally {
-                asyncRefreshLock.unlock();
-            }
-        }
-    }
-
-    private void doDiscoverServers() throws Throwable {
-        RetryTemplate.execute(() -> {
-            refreshDiscoveryServers(getServers(discoveryRedisKey));
-            renewNextDiscoverTimeMillis();
-            log.debug("Redis discovered {} servers.", discoveryRole);
-        }, 3, 1000L);
-    }
-
     @SuppressWarnings("unchecked")
     private List<String> getServers(List<String> serverRoleKey) {
         String baseScore = Long.toString(System.currentTimeMillis());
         return stringRedisTemplate.execute(QUERY_SCRIPT, serverRoleKey, baseScore, REDIS_KEY_TTL_MILLIS);
-    }
-
-    private boolean requireDiscoverServers() {
-        return state.isRunning() && nextDiscoverTimeMillis < System.currentTimeMillis();
-    }
-
-    private void renewNextDiscoverTimeMillis() {
-        this.nextDiscoverTimeMillis = System.currentTimeMillis() + periodMs;
     }
 
 }

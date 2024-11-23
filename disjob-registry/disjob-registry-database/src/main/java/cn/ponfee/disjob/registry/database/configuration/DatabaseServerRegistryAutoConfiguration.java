@@ -18,6 +18,7 @@ package cn.ponfee.disjob.registry.database.configuration;
 
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -38,6 +39,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_PREFIX;
 
@@ -53,7 +55,7 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Database registry JdbcTemplateWrapper spring bean name
      */
-    public static final String JDBC_TEMPLATE_WRAPPER_BEAN_NAME = SPRING_BEAN_NAME_PREFIX + ".registry.database.jdbc-template-wrapper";
+    public static final String SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER = SPRING_BEAN_NAME_PREFIX + ".registry.database.jdbc-template-wrapper";
 
     /**
      * Data source holder
@@ -63,8 +65,8 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     /**
      * Configuration database registry datasource.
      */
-    @ConditionalOnMissingBean(name = JDBC_TEMPLATE_WRAPPER_BEAN_NAME)
-    @Bean(JDBC_TEMPLATE_WRAPPER_BEAN_NAME)
+    @ConditionalOnMissingBean(name = SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
+    @Bean(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER)
     public JdbcTemplateWrapper databaseRegistryJdbcTemplateWrapper(DatabaseRegistryProperties props) {
         DatabaseRegistryProperties.DataSourceProperties p = props.getDatasource();
         HikariConfig cfg = new HikariConfig();
@@ -91,8 +93,9 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
     public SupervisorRegistry supervisorRegistry(DatabaseRegistryProperties config,
-                                                 @Qualifier(JDBC_TEMPLATE_WRAPPER_BEAN_NAME) JdbcTemplateWrapper wrapper) {
-        return new DatabaseSupervisorRegistry(config, wrapper);
+                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                                 @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
+        return new DatabaseSupervisorRegistry(config, restTemplate, wrapper);
     }
 
     /**
@@ -101,8 +104,9 @@ public class DatabaseServerRegistryAutoConfiguration extends BaseServerRegistryA
     @ConditionalOnBean(Worker.Local.class)
     @Bean
     public WorkerRegistry workerRegistry(DatabaseRegistryProperties config,
-                                         @Qualifier(JDBC_TEMPLATE_WRAPPER_BEAN_NAME) JdbcTemplateWrapper wrapper) {
-        return new DatabaseWorkerRegistry(config, wrapper);
+                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate,
+                                         @Qualifier(SPRING_BEAN_NAME_JDBC_TEMPLATE_WRAPPER) JdbcTemplateWrapper wrapper) {
+        return new DatabaseWorkerRegistry(config, restTemplate, wrapper);
     }
 
     @Override

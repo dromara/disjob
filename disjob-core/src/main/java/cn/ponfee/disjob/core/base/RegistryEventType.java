@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.ponfee.disjob.registry;
+package cn.ponfee.disjob.core.base;
 
 /**
  * Registry event type definition.
@@ -31,6 +31,14 @@ public enum RegistryEventType {
     /**
      * Deregister
      */
-    DEREGISTER
+    DEREGISTER;
+
+    public boolean isRegister() {
+        return this == REGISTER;
+    }
+
+    public boolean isDeregister() {
+        return this == DEREGISTER;
+    }
 
 }

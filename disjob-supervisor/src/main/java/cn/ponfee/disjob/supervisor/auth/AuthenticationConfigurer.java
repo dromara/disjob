@@ -18,6 +18,7 @@ package cn.ponfee.disjob.supervisor.auth;
 
 import cn.ponfee.disjob.common.spring.SpringUtils;
 import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
 import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication.Subject;
@@ -80,7 +81,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
         }
 
         private static void authenticateWorker(String group) {
-            if (!SchedGroupService.verifyWorkerAuthenticationToken(requestToken(), group)) {
+            if (!Supervisor.local().verifyWorkerAuthenticationToken(group, requestToken())) {
                 throw new AuthenticationException(ERR_MSG);
             }
         }
@@ -90,7 +91,7 @@ public class AuthenticationConfigurer implements WebMvcConfigurer {
                 throw new AuthenticationException(ERR_MSG);
             }
 
-            if (!SchedGroupService.verifyUserAuthenticationToken(requestToken(), group)) {
+            if (!Supervisor.local().verifyUserAuthenticationToken(group, requestToken())) {
                 throw new AuthenticationException(ERR_MSG);
             }
         }

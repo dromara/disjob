@@ -20,6 +20,7 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.etcd.configuration.EtcdRegistryProperties;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Registry worker based Etcd.
@@ -28,8 +29,8 @@ import cn.ponfee.disjob.registry.etcd.configuration.EtcdRegistryProperties;
  */
 public class EtcdWorkerRegistry extends EtcdServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public EtcdWorkerRegistry(EtcdRegistryProperties config) {
-        super(config);
+    public EtcdWorkerRegistry(EtcdRegistryProperties config, RestTemplate restTemplate) {
+        super(config, restTemplate);
     }
 
 }

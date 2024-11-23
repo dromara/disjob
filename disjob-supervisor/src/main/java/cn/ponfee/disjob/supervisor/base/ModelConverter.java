@@ -17,6 +17,7 @@
 package cn.ponfee.disjob.supervisor.base;
 
 import cn.ponfee.disjob.common.collect.Collects;
+import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.dag.PredecessorInstance;
 import cn.ponfee.disjob.core.dag.PredecessorTask;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
@@ -49,6 +50,7 @@ public final class ModelConverter {
 
     public static VerifyJobParam toVerifyJobParam(SchedJob job) {
         VerifyJobParam param = new VerifyJobParam();
+        param.setSupervisorAuthenticationToken(Supervisor.local().createSupervisorAuthenticationToken(job.getGroup()));
         param.setJobExecutor(job.getJobExecutor());
         param.setJobParam(job.getJobParam());
         param.setJobType(JobType.of(job.getJobType()));
@@ -96,6 +98,7 @@ public final class ModelConverter {
     private static SplitJobParam toSplitJobParam(SchedJob job, int retriedCount, String jobExecutor,
                                                  List<PredecessorInstance> predecessorInstances) {
         SplitJobParam param = new SplitJobParam();
+        param.setSupervisorAuthenticationToken(Supervisor.local().createSupervisorAuthenticationToken(job.getGroup()));
         param.setJobExecutor(jobExecutor);
         param.setJobParam(job.getJobParam());
         param.setRetryCount(job.getRetryCount());

@@ -205,8 +205,10 @@ CREATE TABLE IF NOT EXISTS `sched_registry` (
 -- ----------------------------
 -- INITIALIZE SAMPLE TEST DATA
 -- ----------------------------
-INSERT INTO `sched_group` (`group`, `own_user`, `supervisor_token`, `worker_token`, `user_token`, `dev_users`)
-VALUES ('app-test', 'disjob', '20bb8b7f1cb94dc894b45546a7c2982f', '358678bfe34648f68b607036a27c6854', '1878f0158782423f9306e7d4c70c999c', 'admin,alice');
+INSERT INTO `sched_group` (`group`, `own_user`, `supervisor_token`, `worker_token`, `user_token`, `dev_users`) VALUES
+  ('app-test', 'disjob', '20bb8b7f1cb94dc894b45546a7c2982f', '358678bfe34648f68b607036a27c6854', '1878f0158782423f9306e7d4c70c999c', 'admin,alice'),
+  ('app-demo', 'admin', '', '', '', 'disjob')
+;
 
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_executor`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351000, 'app-test', 'noop-job',      'cn.ponfee.disjob.test.executor.NoopJobExecutor',                     1, 1, 1, '',                                                               1, '0/40 * * * * ?',                          unix_timestamp()*1000);
 INSERT INTO `sched_job` (`job_id`, `group`, `job_name`, `job_executor`, `job_state`, `job_type`, `route_strategy`, `job_param`, `trigger_type`, `trigger_value`, `next_trigger_time`) VALUES (1003164910267351001, 'app-test', 'http-job',      'cn.ponfee.disjob.worker.executor.impl.HttpJobExecutor',              1, 1, 1, '{"method":"GET", "url":"https://www.baidu.com"}',                1, '0/50 * * * * ?',                          unix_timestamp()*1000);

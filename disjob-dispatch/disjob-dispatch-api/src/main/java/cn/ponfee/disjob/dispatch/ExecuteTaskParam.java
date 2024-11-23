@@ -72,33 +72,31 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
      */
     @SuppressWarnings("all")
     public byte[] serialize() {
-        String supervisorToken = super.getSupervisorToken();
-        byte[] supervisorTokenBytes = (supervisorToken != null) ? supervisorToken.getBytes(UTF_8) : null;
+        byte[] authTokenBytes = Strings.getBytes(super.getSupervisorAuthenticationToken(), UTF_8);
         byte[] workerBytes = worker.serialize().getBytes(UTF_8);
         byte[] jobExecutorBytes = jobExecutor.getBytes(UTF_8);
 
-        int supervisorTokenBytesLength = supervisorTokenBytes == null ? -1 : supervisorTokenBytes.length;
-        int length = 64 + Math.max(0, supervisorTokenBytesLength) + workerBytes.length + jobExecutorBytes.length;
+        int authTokenBytesLength = (authTokenBytes == null) ? -1 : authTokenBytes.length;
+        int length = 64 + Math.max(0, authTokenBytesLength) + workerBytes.length + jobExecutorBytes.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(length)
-            .put((byte) operation.ordinal())        // 1: operation
-            .putLong(taskId)                        // 8: taskId
-            .putLong(instanceId)                    // 8: instanceId
-            .putLong(nullZero(wnstanceId))          // 8: wnstanceId
-            .putLong(triggerTime)                   // 8: triggerTime
-            .putLong(jobId)                         // 8: jobId
-            .putInt(retryCount)                     // 4: retryCount
-            .putInt(retriedCount)                   // 4: retriedCount
-            .put((byte) jobType.value())            // 1: jobType
-            .put((byte) routeStrategy.value())      // 1: routeStrategy
-            .put((byte) shutdownStrategy.value())   // 1: shutdownStrategy
-            .putInt(executeTimeout);                // 4: executeTimeout
-
-        buffer.putInt(supervisorTokenBytesLength);  // 4: supervisorToken byte array length
-        Bytes.put(buffer, supervisorTokenBytes);    // x: byte array of supervisorToken data
-        buffer.putInt(workerBytes.length);          // 4: worker byte array length int value
-        buffer.put(workerBytes);                    // x: byte array of worker data
-        buffer.put(jobExecutorBytes);               // x: byte array of jobExecutor data
+            .put((byte) operation.ordinal())      // 1: operation
+            .putLong(taskId)                      // 8: taskId
+            .putLong(instanceId)                  // 8: instanceId
+            .putLong(nullZero(wnstanceId))        // 8: wnstanceId
+            .putLong(triggerTime)                 // 8: triggerTime
+            .putLong(jobId)                       // 8: jobId
+            .putInt(retryCount)                   // 4: retryCount
+            .putInt(retriedCount)                 // 4: retriedCount
+            .put((byte) jobType.value())          // 1: jobType
+            .put((byte) routeStrategy.value())    // 1: routeStrategy
+            .put((byte) shutdownStrategy.value()) // 1: shutdownStrategy
+            .putInt(executeTimeout);              // 4: executeTimeout
+        buffer.putInt(authTokenBytesLength);      // 4: supervisorAuthenticationToken byte array length
+        Bytes.put(buffer, authTokenBytes);        // x: byte array of supervisorAuthenticationToken data
+        buffer.putInt(workerBytes.length);        // 4: worker byte array length int value
+        buffer.put(workerBytes);                  // x: byte array of worker data
+        buffer.put(jobExecutorBytes);             // x: byte array of jobExecutor data
 
         // buffer.flip(): unnecessary do flip
         return buffer.array();
@@ -115,22 +113,21 @@ public class ExecuteTaskParam extends AuthenticationParam implements TimingWheel
         ByteBuffer buf = ByteBuffer.wrap(bytes);
 
         ExecuteTaskParam param = new ExecuteTaskParam();
-        param.setOperation(OPERATION_VALUES[buf.get()]);                           //   1: operation
-        param.setTaskId(buf.getLong());                                            //   8: taskId
-        param.setInstanceId(buf.getLong());                                        //   8: instanceId
-        param.setWnstanceId(zeroNull(buf.getLong()));                              //   8: wnstanceId
-        param.setTriggerTime(buf.getLong());                                       //   8: triggerTime
-        param.setJobId(buf.getLong());                                             //   8: jobId
-        param.setRetryCount(buf.getInt());                                         //   4: retryCount
-        param.setRetriedCount(buf.getInt());                                       //   4: retriedCount
-        param.setJobType(JobType.of(buf.get()));                                   //   1: jobType
-        param.setRouteStrategy(RouteStrategy.of(buf.get()));                       //   1: routeStrategy
-        param.setShutdownStrategy(ShutdownStrategy.of(buf.get()));                 //   1: shutdownStrategy
-        param.setExecuteTimeout(buf.getInt());                                     //   4: executeTimeout
-
-        param.setSupervisorToken(Strings.of(Bytes.get(buf, buf.getInt()), UTF_8)); // 4+x: supervisorToken
-        param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));  // 4+x: worker
-        param.setJobExecutor(Strings.of(Bytes.remained(buf), UTF_8));              //   x: jobExecutorBytes
+        param.setOperation(OPERATION_VALUES[buf.get()]);                                         //   1: operation
+        param.setTaskId(buf.getLong());                                                          //   8: taskId
+        param.setInstanceId(buf.getLong());                                                      //   8: instanceId
+        param.setWnstanceId(zeroNull(buf.getLong()));                                            //   8: wnstanceId
+        param.setTriggerTime(buf.getLong());                                                     //   8: triggerTime
+        param.setJobId(buf.getLong());                                                           //   8: jobId
+        param.setRetryCount(buf.getInt());                                                       //   4: retryCount
+        param.setRetriedCount(buf.getInt());                                                     //   4: retriedCount
+        param.setJobType(JobType.of(buf.get()));                                                 //   1: jobType
+        param.setRouteStrategy(RouteStrategy.of(buf.get()));                                     //   1: routeStrategy
+        param.setShutdownStrategy(ShutdownStrategy.of(buf.get()));                               //   1: shutdownStrategy
+        param.setExecuteTimeout(buf.getInt());                                                   //   4: executeTimeout
+        param.setSupervisorAuthenticationToken(Strings.of(Bytes.get(buf, buf.getInt()), UTF_8)); // 4+x: supervisorAuthenticationToken
+        param.setWorker(Worker.deserialize(Bytes.get(buf, buf.getInt()), UTF_8));                // 4+x: worker
+        param.setJobExecutor(Strings.of(Bytes.remained(buf), UTF_8));                            //   x: jobExecutorBytes
         return param;
     }
 

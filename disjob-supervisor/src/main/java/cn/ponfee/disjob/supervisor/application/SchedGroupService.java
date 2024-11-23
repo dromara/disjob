@@ -17,14 +17,11 @@
 package cn.ponfee.disjob.supervisor.application;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.base.Symbol.Str;
 import cn.ponfee.disjob.common.collect.Collects;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.model.PageResponse;
 import cn.ponfee.disjob.common.util.Functions;
-import cn.ponfee.disjob.core.base.Tokens;
 import cn.ponfee.disjob.core.base.Worker;
-import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.TokenType;
 import cn.ponfee.disjob.registry.Discovery;
 import cn.ponfee.disjob.supervisor.application.converter.SchedGroupConverter;
@@ -41,20 +38,21 @@ import cn.ponfee.disjob.supervisor.exception.KeyExistsException;
 import cn.ponfee.disjob.supervisor.model.SchedGroup;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors.commonScheduledPool;
 import static cn.ponfee.disjob.common.spring.TransactionUtils.isOneAffectedRow;
@@ -170,30 +168,6 @@ public class SchedGroupService extends SingletonClassConstraint {
         return getGroup(group).isDeveloper(user);
     }
 
-    public static String createSupervisorAuthenticationToken(String group) {
-        String supervisorToken = getGroup(group).getSupervisorToken();
-        return Tokens.createAuthentication(supervisorToken, TokenType.supervisor, group);
-    }
-
-    public static void fillSupervisorAuthenticationToken(String group, AuthenticationParam param) {
-        param.setSupervisorToken(createSupervisorAuthenticationToken(group));
-    }
-
-    public static boolean verifyWorkerAuthenticationToken(String tokenSecret, String group) {
-        String workerToken = getGroup(group).getWorkerToken();
-        return Tokens.verifyAuthentication(tokenSecret, workerToken, TokenType.worker, group);
-    }
-
-    public static boolean verifyUserAuthenticationToken(String tokenSecret, String group) {
-        String userToken = getGroup(group).getUserToken();
-        return Tokens.verifyAuthentication(tokenSecret, userToken, TokenType.user, group);
-    }
-
-    public static boolean verifyWorkerSignatureToken(String tokenSecret, String group) {
-        String workerToken = getGroup(group).getWorkerToken();
-        return Tokens.verifySignature(tokenSecret, workerToken, TokenType.worker, group);
-    }
-
     void refresh() {
         if (LOCK.tryLock()) {
             try {
@@ -215,21 +189,14 @@ public class SchedGroupService extends SingletonClassConstraint {
         serverInvokeService.publishOtherSupervisors(event);
     }
 
-    private static Map<String, ImmutableSet<String>> toUserMap(List<SchedGroup> list) {
-        Stream<Pair<String, String>> stream = list.stream().flatMap(e -> {
-            String group = e.getGroup();
-            String devUsers = e.getDevUsers();
-            if (StringUtils.isBlank(devUsers)) {
-                return Stream.of(Pair.of(e.getOwnUser(), group));
-            }
-            String[] array = devUsers.split(Str.COMMA);
-            List<Pair<String, String>> users = new ArrayList<>(array.length + 1);
-            users.add(Pair.of(e.getOwnUser(), group));
-            Arrays.stream(array).filter(StringUtils::isNotBlank).map(String::trim).forEach(u -> users.add(Pair.of(u, group)));
-            return users.stream();
-        });
+    private static Map<String, DisjobGroup> toGroupMap(List<DisjobGroup> list) {
+        return Collects.toMap(list, DisjobGroup::getGroup, Function.identity());
+    }
 
-        return stream.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
+    private static Map<String, ImmutableSet<String>> toUserMap(List<DisjobGroup> list) {
+        return list.stream()
+            .flatMap(e -> e.getDevUsers().stream().map(u -> Pair.of(u, e.getGroup())))
+            .collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, ImmutableSet.toImmutableSet())));
     }
 
     private static class Cache {
@@ -251,8 +218,9 @@ public class SchedGroupService extends SingletonClassConstraint {
             return new Cache(Collections.emptyMap(), Collections.emptyMap());
         }
 
-        static Cache of(List<SchedGroup> list) {
-            return new Cache(Collects.toMap(list, SchedGroup::getGroup, DisjobGroup::of), toUserMap(list));
+        static Cache of(List<SchedGroup> groups) {
+            List<DisjobGroup> list = groups.stream().map(DisjobGroup::new).collect(Collectors.toList());
+            return new Cache(toGroupMap(list), toUserMap(list));
         }
 
         DisjobGroup getGroup(String group) {

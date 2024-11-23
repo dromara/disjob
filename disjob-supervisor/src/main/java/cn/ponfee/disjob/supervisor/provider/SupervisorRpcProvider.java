@@ -19,12 +19,14 @@ package cn.ponfee.disjob.supervisor.provider;
 import cn.ponfee.disjob.common.date.Dates;
 import cn.ponfee.disjob.common.spring.RpcController;
 import cn.ponfee.disjob.core.base.JobConstants;
+import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskParam;
 import cn.ponfee.disjob.core.dto.supervisor.StartTaskResult;
 import cn.ponfee.disjob.core.dto.supervisor.StopTaskParam;
 import cn.ponfee.disjob.core.enums.Operation;
+import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.application.SupervisorEventSubscribeService;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication;
 import cn.ponfee.disjob.supervisor.auth.SupervisorAuthentication.Subject;
@@ -46,10 +48,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SupervisorRpcProvider implements ExtendedSupervisorRpcService {
 
+    private final SupervisorRegistry supervisorRegistry;
     private final JobManager jobManager;
     private final Supervisor.Local localSupervisor;
 
     // -------------------------------------------------------for worker invoke method
+
+    @Override
+    public void subscribeWorkerChanged(RegistryEventType eventType, Worker worker) {
+        supervisorRegistry.subscribeServerChanged(eventType, worker);
+    }
 
     @Override
     public void updateTaskWorker(String worker, List<Long> taskIds) {

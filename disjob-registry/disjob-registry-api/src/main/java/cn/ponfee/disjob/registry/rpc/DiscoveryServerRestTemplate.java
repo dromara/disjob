@@ -84,14 +84,14 @@ final class DiscoveryServerRestTemplate<D extends Server> {
 
         String serverContextPath;
         Map<String, String> authenticationHeaders = null;
-        if (discoveryServerRole == ServerRole.SUPERVISOR) {
+        if (discoveryServerRole.isWorker()) {
+            // Supervisor 远程调用 Worker
+            serverContextPath = Supervisor.local().getWorkerContextPath(group);
+        } else {
             // Worker 远程调用 Supervisor
             Worker.Local localWorker = Worker.local();
             serverContextPath = localWorker.getSupervisorContextPath();
             authenticationHeaders = localWorker.createWorkerAuthenticationHeaders();
-        } else {
-            // Supervisor 远程调用 Worker
-            serverContextPath = Supervisor.local().getWorkerContextPath(group);
         }
 
         Throwable ex = null;

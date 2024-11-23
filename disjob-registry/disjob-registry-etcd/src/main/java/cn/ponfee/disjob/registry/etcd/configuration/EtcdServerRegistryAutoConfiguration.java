@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry.etcd.configuration;
 
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -23,9 +24,11 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfiguration;
 import cn.ponfee.disjob.registry.etcd.EtcdSupervisorRegistry;
 import cn.ponfee.disjob.registry.etcd.EtcdWorkerRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Spring autoconfiguration for etcd server registry
@@ -40,8 +43,9 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(EtcdRegistryProperties config) {
-        return new EtcdSupervisorRegistry(config);
+    public SupervisorRegistry supervisorRegistry(EtcdRegistryProperties config,
+                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+        return new EtcdSupervisorRegistry(config, restTemplate);
     }
 
     /**
@@ -49,8 +53,9 @@ public class EtcdServerRegistryAutoConfiguration extends BaseServerRegistryAutoC
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(EtcdRegistryProperties config) {
-        return new EtcdWorkerRegistry(config);
+    public WorkerRegistry workerRegistry(EtcdRegistryProperties config,
+                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+        return new EtcdWorkerRegistry(config, restTemplate);
     }
 
 }

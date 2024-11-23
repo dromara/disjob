@@ -19,7 +19,7 @@ package cn.ponfee.disjob.supervisor.configuration;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.registry.Registry;
+import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
@@ -42,7 +42,7 @@ public class SupervisorLifecycle implements SmartLifecycle {
 
     public SupervisorLifecycle(Supervisor.Local localSupervisor,
                                SupervisorProperties supervisorConf,
-                               Registry<Supervisor> supervisorRegistry,
+                               SupervisorRegistry supervisorRegistry,
                                WorkerClient workerClient,
                                JobManager jobManager,
                                JobQuerier jobQuerier,

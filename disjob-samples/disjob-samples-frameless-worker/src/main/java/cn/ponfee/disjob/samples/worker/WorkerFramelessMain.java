@@ -81,14 +81,14 @@ public class WorkerFramelessMain {
         LazyLoader<StringRedisTemplate> srtLoader = LazyLoader.of(() -> AbstractRedisTemplateCreator.create(DISJOB_KEY_PREFIX + ".redis", config).getStringRedisTemplate());
         Worker.Local localWorker = createLocalWorker(config, workerProps);
         TimingWheel<ExecuteTaskParam> timingWheel = new TaskTimingWheel(workerProps.getTimingWheelTickMs(), workerProps.getTimingWheelRingSize());
-
+        RestTemplate restTemplate = RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null);
 
 
         // --------------------- create registry(select redis or consul) --------------------- //
         WorkerRegistry workerRegistry;
         {
             // 1）redis registry
-            workerRegistry = new RedisWorkerRegistry(srtLoader.get(), config.extract(RedisRegistryProperties.class, RedisRegistryProperties.KEY_PREFIX));
+            workerRegistry = new RedisWorkerRegistry(config.extract(RedisRegistryProperties.class, RedisRegistryProperties.KEY_PREFIX), restTemplate, srtLoader.get());
 
             // 2）consul registry
             //workerRegistry = new ConsulWorkerRegistry(config.extract(ConsulRegistryProperties.class, ConsulRegistryProperties.KEY_PREFIX));
@@ -124,7 +124,6 @@ public class WorkerFramelessMain {
         WorkerRpcService workerRpcService = WorkerRpcProvider.create(localWorker, workerRegistry);
         VertxWebServer vertxWebServer = new VertxWebServer(localWorker.getPort(), workerContextPath, paramTaskReceiver, workerRpcService);
         RetryProperties retryProperties = config.extract(RetryProperties.class, RetryProperties.KEY_PREFIX);
-        RestTemplate restTemplate = RestTemplateUtils.create(httpProps.getConnectTimeout(), httpProps.getReadTimeout(), null);
         WorkerStartup workerStartup = new WorkerStartup(localWorker, workerProps, retryProperties, workerRegistry, actualTaskReceiver, restTemplate, null);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> close(workerStartup, vertxWebServer)));

@@ -16,21 +16,37 @@
 
 package cn.ponfee.disjob.registry.discovery;
 
-import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.base.*;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
+import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import com.google.common.collect.ImmutableList;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Discovery supervisor
+ * Supervisor discovery.
  *
  * @author Ponfee
  */
-public final class DiscoverySupervisor implements DiscoveryServer<Supervisor> {
+public final class SupervisorDiscovery extends ServerDiscovery<Supervisor, Worker> {
+
+    private final DestinationServerClient<SupervisorRpcService, Supervisor> supervisorRpcClient;
 
     private volatile ImmutableList<Supervisor> supervisors = ImmutableList.of();
+
+    SupervisorDiscovery(RestTemplate restTemplate) {
+        this.supervisorRpcClient = DestinationServerRestProxy.create(
+            SupervisorRpcService.class,
+            null,
+            null,
+            supervisor -> Worker.local().getSupervisorContextPath(),
+            restTemplate,
+            RetryProperties.none()
+        );
+    }
 
     /**
      * <pre>
@@ -51,6 +67,17 @@ public final class DiscoverySupervisor implements DiscoveryServer<Supervisor> {
     }
 
     @Override
+    public synchronized void updateServers(RegistryEventType eventType, Supervisor supervisor) {
+        if (eventType.isRegister() && isAlive(supervisor)) {
+            return;
+        }
+        if (eventType.isDeregister() && !isAlive(supervisor)) {
+            return;
+        }
+        this.supervisors = mergeServers(supervisors, eventType, supervisor);
+    }
+
+    @Override
     public List<Supervisor> getServers(String group) {
         Assert.isNull(group, "Get discovery supervisor group must be null.");
         return supervisors;
@@ -64,6 +91,27 @@ public final class DiscoverySupervisor implements DiscoveryServer<Supervisor> {
     @Override
     public boolean isAlive(Supervisor supervisor) {
         return Collections.binarySearch(supervisors, supervisor) > -1;
+    }
+
+    // ----------------------------------------------------------------default package methods
+
+    @Override
+    List<Supervisor> getServers() {
+        return supervisors;
+    }
+
+    @Override
+    void notifyServer(Supervisor supervisor, RegistryEventType eventType, Worker worker) {
+        /*
+        if (supervisor.equals(Supervisor.local())) {
+            return;
+        }
+        */
+        try {
+            supervisorRpcClient.invoke(supervisor, client -> client.subscribeWorkerChanged(eventType, worker));
+        } catch (Throwable t) {
+            log.error("Notify server error: {}, {}", supervisor, t.getMessage());
+        }
     }
 
 }

@@ -25,6 +25,7 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PreDestroy;
 import java.util.List;
@@ -43,8 +44,8 @@ public abstract class NacosServerRegistry<R extends Server, D extends Server> ex
      */
     private final NacosClient client;
 
-    protected NacosServerRegistry(NacosRegistryProperties config) {
-        super(config, ':');
+    protected NacosServerRegistry(NacosRegistryProperties config, RestTemplate restTemplate) {
+        super(config, restTemplate, ':');
         String groupName = StringUtils.isBlank(config.getNamespace()) ? Constants.DEFAULT_GROUP : config.getNamespace().trim();
         NacosClient client0 = null;
         try {

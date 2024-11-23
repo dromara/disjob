@@ -23,7 +23,7 @@ import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.lock.LockTemplate;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.dispatch.TaskDispatcher;
-import cn.ponfee.disjob.registry.Registry;
+import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.supervisor.component.JobManager;
 import cn.ponfee.disjob.supervisor.component.JobQuerier;
 import cn.ponfee.disjob.supervisor.component.WorkerClient;
@@ -46,7 +46,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
     private static final Logger LOG = LoggerFactory.getLogger(SupervisorStartup.class);
 
     private final Supervisor.Local localSupervisor;
-    private final Registry<Supervisor> supervisorRegistry;
+    private final SupervisorRegistry supervisorRegistry;
     private final TaskDispatcher taskDispatcher;
     private final TriggeringJobScanner triggeringJobScanner;
     private final WaitingInstanceScanner waitingInstanceScanner;
@@ -55,7 +55,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
 
     public SupervisorStartup(Supervisor.Local localSupervisor,
                              SupervisorProperties supervisorConf,
-                             Registry<Supervisor> supervisorRegistry,
+                             SupervisorRegistry supervisorRegistry,
                              WorkerClient workerClient,
                              JobManager jobManager,
                              JobQuerier jobQuerier,
@@ -93,6 +93,7 @@ public class SupervisorStartup extends SingletonClassConstraint implements Start
         waitingInstanceScanner.start();
         runningInstanceScanner.start();
         triggeringJobScanner.start();
+        ThrowingRunnable.doCaught(supervisorRegistry::discoverServers);
         supervisorRegistry.register(localSupervisor);
         LOG.info("Supervisor start end: {}", localSupervisor);
     }

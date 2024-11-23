@@ -41,7 +41,7 @@
 //        }
 //        for (Object arg : args) {
 //            if (arg instanceof AuthenticationParam) {
-//                ((AuthenticationParam) arg).setSupervisorToken("xxxxx");
+//                ((AuthenticationParam) arg).setSupervisorAuthenticationToken("xxxxx");
 //            }
 //        }
 //    }

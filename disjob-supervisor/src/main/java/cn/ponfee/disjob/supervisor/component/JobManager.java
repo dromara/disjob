@@ -872,7 +872,11 @@ public class JobManager {
         retryInstance.setWorkflowCurNode(failed.getWorkflowCurNode());
         // build retry tasks
         List<SchedTask> tasks = splitRetryTask(job, failed, retryInstance);
-        Assert.notEmpty(tasks, "Retry instance, split retry task cannot be empty.");
+        if (tasks.isEmpty()) {
+            // the broadcast failed task worker all dead then terminate retry
+            LOG.warn("Retry instance split tasks is empty: {}, {}", job, failed);
+            return null;
+        }
 
         ThrowingSupplier<Runnable, Throwable> persistenceAction = () -> {
             if (failed.isWorkflowNode()) {
@@ -1164,14 +1168,14 @@ public class JobManager {
         return Collects.convert(predecessors.values(), e -> {
             // predecessor instance下的task是全部执行成功的
             List<SchedTask> tasks = taskMapper.findLargeByInstanceId(e.getInstanceId());
-            SchedInstance pre;
-            if (retryType == RetryType.FAILED && (pre = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
-                Set<Long> instanceIds = instanceMapper.findChildren(pre.getPnstanceId(), RunType.RETRY.value())
+            SchedInstance prev;
+            if (retryType == RetryType.FAILED && (prev = instanceMapper.get(e.getInstanceId())).isRunRetry()) {
+                Set<Long> instanceIds = instanceMapper.findChildren(prev.getPnstanceId(), RunType.RETRY.value())
                     .stream()
                     .map(SchedInstance::getInstanceId)
                     .filter(t -> !Objects.equals(t, e.getInstanceId()))
                     .collect(Collectors.toSet());
-                instanceIds.add(pre.getPnstanceId());
+                instanceIds.add(prev.getPnstanceId());
                 instanceIds.forEach(t -> tasks.addAll(taskMapper.findLargeByInstanceIdAndStates(t, ES_COMPLETED)));
             }
             tasks.sort(SchedTask.TASK_NO_COMPARATOR);

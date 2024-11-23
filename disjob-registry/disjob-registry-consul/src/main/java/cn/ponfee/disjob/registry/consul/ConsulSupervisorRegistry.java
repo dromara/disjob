@@ -20,6 +20,7 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.consul.configuration.ConsulRegistryProperties;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Registry supervisor based consul.
@@ -28,8 +29,8 @@ import cn.ponfee.disjob.registry.consul.configuration.ConsulRegistryProperties;
  */
 public class ConsulSupervisorRegistry extends ConsulServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public ConsulSupervisorRegistry(ConsulRegistryProperties config) {
-        super(config);
+    public ConsulSupervisorRegistry(ConsulRegistryProperties config, RestTemplate restTemplate) {
+        super(config, restTemplate);
     }
 
 }

@@ -21,6 +21,7 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Registry worker based database.
@@ -29,8 +30,8 @@ import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperti
  */
 public class DatabaseWorkerRegistry extends DatabaseServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public DatabaseWorkerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper jdbcTemplateWrapper) {
-        super(config, jdbcTemplateWrapper);
+    public DatabaseWorkerRegistry(DatabaseRegistryProperties config, RestTemplate restTemplate, JdbcTemplateWrapper jdbcTemplateWrapper) {
+        super(config, restTemplate, jdbcTemplateWrapper);
     }
 
 }

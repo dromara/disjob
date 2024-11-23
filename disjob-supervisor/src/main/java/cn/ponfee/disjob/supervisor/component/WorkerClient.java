@@ -34,7 +34,6 @@ import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DiscoveryServerRestProxy.GroupedServerClient;
-import cn.ponfee.disjob.supervisor.application.SchedGroupService;
 import cn.ponfee.disjob.supervisor.base.ModelConverter;
 import cn.ponfee.disjob.supervisor.model.SchedJob;
 import cn.ponfee.disjob.supervisor.model.SchedTask;
@@ -123,8 +122,7 @@ public class WorkerClient {
             return true;
         }
 
-        String supervisorToken = SchedGroupService.createSupervisorAuthenticationToken(worker.getGroup());
-        ExistsTaskParam param = ExistsTaskParam.of(supervisorToken, task.getTaskId());
+        ExistsTaskParam param = ExistsTaskParam.of(worker, task.getTaskId());
         try {
             // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发
             return !destinationClient.call(worker, service -> service.existsTask(param));
@@ -143,7 +141,6 @@ public class WorkerClient {
         RouteStrategy.of(job.getRouteStrategy());
 
         VerifyJobParam param = ModelConverter.toVerifyJobParam(job);
-        SchedGroupService.fillSupervisorAuthenticationToken(job.getGroup(), param);
         groupedClient.invoke(job.getGroup(), client -> client.verifyJob(param));
     }
 
@@ -154,7 +151,6 @@ public class WorkerClient {
         int wCount = workers.size();
 
         param.setWorkerCount(wCount);
-        SchedGroupService.fillSupervisorAuthenticationToken(group, param);
         SplitJobResult result = groupedClient.call(group, client -> client.splitJob(param));
         List<String> taskParams = result.getTaskParams();
         taskParams.forEach(e -> CoreUtils.checkClobMaximumLength(e, "Split task param"));

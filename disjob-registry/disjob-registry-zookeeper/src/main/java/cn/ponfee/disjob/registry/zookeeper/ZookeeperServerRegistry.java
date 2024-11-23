@@ -22,6 +22,7 @@ import cn.ponfee.disjob.registry.RegistryException;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.zookeeper.configuration.ZookeeperRegistryProperties;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PreDestroy;
 import java.util.List;
@@ -38,8 +39,8 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
     private final CuratorFrameworkClient client;
     private final String zkRegistryRootPath;
 
-    protected ZookeeperServerRegistry(ZookeeperRegistryProperties config) {
-        super(config, '/');
+    protected ZookeeperServerRegistry(ZookeeperRegistryProperties config, RestTemplate restTemplate) {
+        super(config, restTemplate, '/');
         // zookeeper parent path must start with "/"
         this.zkRegistryRootPath = separator + registryRootPath;
         String zkDiscoveryRootPath = separator + discoveryRootPath;
@@ -60,7 +61,6 @@ public abstract class ZookeeperServerRegistry<R extends Server, D extends Server
             });
             client.createPersistent(zkRegistryRootPath);
             client.createPersistent(zkDiscoveryRootPath);
-            //client.listenChildChanged(zkDiscoveryRootPath);
             client.watch(zkDiscoveryRootPath, this::refreshDiscoveryServers);
         } catch (Throwable t) {
             if (client0 != null) {

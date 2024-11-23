@@ -34,6 +34,10 @@ public final class Strings {
 
     private static final List<String> SQL_LIKE_LIST = ImmutableList.of("^", "$", "^$");
 
+    public static byte[] getBytes(String string, Charset charset) {
+        return string == null ? null : string.getBytes(charset);
+    }
+
     /**
      * <pre>
      * '?' Matches any single character.

@@ -105,6 +105,12 @@ public class VertxWebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         //String[] args = ctx.body().asPojo(String[].class);
+
+        router.post(prefixPath + "/supervisor/changed/subscribe").handler(ctx -> handle(() -> {
+            SubscribeSupervisorChangedParam param = parseBodyArg(ctx, SubscribeSupervisorChangedParam.class);
+            workerRpcService.subscribeSupervisorChanged(param);
+        }, ctx, BAD_REQUEST));
+
         router.post(prefixPath + "/job/verify").handler(ctx -> handle(() -> {
             VerifyJobParam param = parseBodyArg(ctx, VerifyJobParam.class);
             workerRpcService.verifyJob(param);
@@ -169,6 +175,7 @@ public class VertxWebServer extends AbstractVerticle {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static <T> T parseBodyArg(RoutingContext ctx, Class<T> type) {
         Object[] args = Jsons.parseArray(ctx.body().asString(), type);
         return (T) Collects.get(args, 0);

@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry.zookeeper.configuration;
 
+import cn.ponfee.disjob.core.base.JobConstants;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
@@ -23,9 +24,11 @@ import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.configuration.BaseServerRegistryAutoConfiguration;
 import cn.ponfee.disjob.registry.zookeeper.ZookeeperSupervisorRegistry;
 import cn.ponfee.disjob.registry.zookeeper.ZookeeperWorkerRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Spring autoconfiguration for zookeeper server registry
@@ -40,8 +43,9 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
      */
     @ConditionalOnBean(Supervisor.Local.class)
     @Bean
-    public SupervisorRegistry supervisorRegistry(ZookeeperRegistryProperties config) {
-        return new ZookeeperSupervisorRegistry(config);
+    public SupervisorRegistry supervisorRegistry(ZookeeperRegistryProperties config,
+                                                 @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+        return new ZookeeperSupervisorRegistry(config, restTemplate);
     }
 
     /**
@@ -49,8 +53,9 @@ public class ZookeeperServerRegistryAutoConfiguration extends BaseServerRegistry
      */
     @ConditionalOnBean(Worker.Local.class)
     @Bean
-    public WorkerRegistry workerRegistry(ZookeeperRegistryProperties config) {
-        return new ZookeeperWorkerRegistry(config);
+    public WorkerRegistry workerRegistry(ZookeeperRegistryProperties config,
+                                         @Qualifier(JobConstants.SPRING_BEAN_NAME_REST_TEMPLATE) RestTemplate restTemplate) {
+        return new ZookeeperWorkerRegistry(config, restTemplate);
     }
 
 }

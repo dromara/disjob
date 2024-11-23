@@ -16,6 +16,7 @@
 
 package cn.ponfee.disjob.registry;
 
+import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Server;
 
 import java.io.Closeable;
@@ -28,6 +29,15 @@ import java.util.List;
  * @author Ponfee
  */
 public interface Discovery<D extends Server> extends Closeable {
+
+    /**
+     * Discover servers
+     *
+     * @throws Throwable if occur error
+     */
+    default void discoverServers() throws Throwable {
+        // default do nothing
+    }
 
     /**
      * Gets grouped alive discovered servers.
@@ -51,6 +61,14 @@ public interface Discovery<D extends Server> extends Closeable {
      * @return {@code true} if is alive
      */
     boolean isDiscoveredServer(D server);
+
+    /**
+     * Subscribe server changed event
+     *
+     * @param eventType the registry event type
+     * @param server    the discovery server
+     */
+    void subscribeServerChanged(RegistryEventType eventType, D server);
 
     /**
      * Returns discovery server role.

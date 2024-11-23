@@ -21,6 +21,7 @@ import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.WorkerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Registry worker based redis.
@@ -29,8 +30,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  */
 public class RedisWorkerRegistry extends RedisServerRegistry<Worker, Supervisor> implements WorkerRegistry {
 
-    public RedisWorkerRegistry(StringRedisTemplate stringRedisTemplate, RedisRegistryProperties config) {
-        super(stringRedisTemplate, config);
+    public RedisWorkerRegistry(RedisRegistryProperties config, RestTemplate restTemplate, StringRedisTemplate stringRedisTemplate) {
+        super(config, restTemplate, stringRedisTemplate);
     }
 
 }

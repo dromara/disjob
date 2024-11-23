@@ -248,7 +248,7 @@ public class Worker extends Server implements Comparable<Worker> {
         public abstract Map<String, String> createWorkerAuthenticationHeaders();
 
         /**
-         * Worker signature
+         * Creates worker signature token
          *
          * @return signature string
          */
@@ -285,9 +285,9 @@ public class Worker extends Server implements Comparable<Worker> {
                     if (StringUtils.isEmpty(workerToken)) {
                         return Collections.singletonMap(AUTHENTICATE_HEADER_GROUP, group);
                     }
-
-                    String tokenSecret = Objects.requireNonNull(Tokens.createAuthentication(workerToken, TokenType.worker, group));
-                    return ImmutableMap.of(AUTHENTICATE_HEADER_GROUP, group, AUTHENTICATE_HEADER_TOKEN, tokenSecret);
+                    String workerAuthenticationToken = Tokens.createAuthentication(workerToken, TokenType.worker, group);
+                    Assert.hasText(workerAuthenticationToken, "Worker authentication token cannot be blank.");
+                    return ImmutableMap.of(AUTHENTICATE_HEADER_GROUP, group, AUTHENTICATE_HEADER_TOKEN, workerAuthenticationToken);
                 }
 
                 @Override
@@ -297,7 +297,7 @@ public class Worker extends Server implements Comparable<Worker> {
 
                 @Override
                 public void verifySupervisorAuthenticationToken(AuthenticationParam param) {
-                    if (!Tokens.verifyAuthentication(param.getSupervisorToken(), supervisorToken, TokenType.supervisor, group)) {
+                    if (!Tokens.verifyAuthentication(param.getSupervisorAuthenticationToken(), supervisorToken, TokenType.supervisor, group)) {
                         throw new AuthenticationException("Authenticate failed.");
                     }
                 }

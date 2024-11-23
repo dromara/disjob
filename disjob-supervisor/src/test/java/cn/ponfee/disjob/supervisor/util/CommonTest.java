@@ -127,7 +127,7 @@ public class CommonTest {
         ExecuteTaskParam param2 = ExecuteTaskParam.deserialize(param1.serialize());
         Assertions.assertNotSame(param1, param2);
         Assertions.assertEquals(param1.toString(), param2.toString());
-        Assertions.assertEquals(param1.getSupervisorToken(), param2.getSupervisorToken());
+        Assertions.assertEquals(param1.getSupervisorAuthenticationToken(), param2.getSupervisorAuthenticationToken());
         Assertions.assertEquals(param1.getWorker(), param2.getWorker());
         Assertions.assertEquals(param1.getJobExecutor(), param2.getJobExecutor());
     }
@@ -234,7 +234,7 @@ public class CommonTest {
         param.setRouteStrategy(routeStrategy);
         param.setShutdownStrategy(shutdownStrategy);
         param.setExecuteTimeout(executeTimeout);
-        param.setSupervisorToken("supervisor token");
+        param.setSupervisorAuthenticationToken("supervisor token");
         param.setWorker(worker);
         param.setJobExecutor(jobExecutor);
         return param;

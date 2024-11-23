@@ -20,9 +20,11 @@ import cn.ponfee.disjob.common.base.RetryTemplate;
 import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import cn.ponfee.disjob.common.spring.JdbcTemplateWrapper;
+import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Server;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.database.configuration.DatabaseRegistryProperties;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PreDestroy;
 import java.sql.PreparedStatement;
@@ -91,13 +93,11 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
     private final String discoveryRoleName;
     private final LoopThread discoverHeartbeatThread;
 
-    protected DatabaseServerRegistry(DatabaseRegistryProperties config, JdbcTemplateWrapper jdbcTemplateWrapper) {
-        super(config, ':');
+    protected DatabaseServerRegistry(DatabaseRegistryProperties config, RestTemplate restTemplate, JdbcTemplateWrapper jdbcTemplateWrapper) {
+        super(config, restTemplate, ':');
         this.namespace = config.getNamespace().trim();
         this.jdbcTemplateWrapper = jdbcTemplateWrapper;
         this.sessionTimeoutMs = config.getSessionTimeoutMs();
-
-        long periodMs = config.getSessionTimeoutMs() / 3;
 
         // -------------------------------------------------registry
         this.registerRoleName = registryRole.name().toLowerCase();
@@ -109,6 +109,8 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         Object[] args = {namespace, registerRoleName, System.currentTimeMillis() - DEAD_TIME_MILLIS};
         RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(REMOVE_DEAD_SQL, args), 3, 1000L);
 
+        long periodMs = sessionTimeoutMs / 3;
+
         // heartbeat register servers
         this.registerHeartbeatThread = LoopThread.createStarted("database_register_heartbeat", periodMs, periodMs, this::registerServers);
 
@@ -117,15 +119,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
 
         // heartbeat discover servers
         this.discoverHeartbeatThread = LoopThread.createStarted("database_discover_heartbeat", periodMs, periodMs, this::discoverServers);
-
-        // initialize discover server
-        try {
-            discoverServers();
-        } catch (Throwable e) {
-            close();
-            Threads.interruptIfNecessary(e);
-            throw new Error("Database init discover error.", e);
-        }
     }
 
     @Override
@@ -153,6 +146,7 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         }
         register(server.serialize());
         registered.add(server);
+        publishServerChanged(RegistryEventType.REGISTER, server);
     }
 
     @Override
@@ -160,12 +154,20 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
         registered.remove(server);
         Object[] args = new Object[]{namespace, registerRoleName, server.serialize()};
         RetryTemplate.executeQuietly(() -> jdbcTemplateWrapper.delete(DEREGISTER_SQL, args), 3, 1000L);
+        publishServerChanged(RegistryEventType.DEREGISTER, server);
         log.info("Server deregister: {}, {}", registryRole, server);
     }
 
     @Override
     public List<R> getRegisteredServers() {
         return deserializeServers(getServers(registerRoleName), registryRole);
+    }
+
+    // ------------------------------------------------------------------Discovery
+
+    @Override
+    public void discoverServers() throws Throwable {
+        RetryTemplate.execute(() -> refreshDiscoveryServers(getServers(discoveryRoleName)), 3, 1000L);
     }
 
     // ------------------------------------------------------------------Close
@@ -231,10 +233,6 @@ public abstract class DatabaseServerRegistry<R extends Server, D extends Server>
             assertOneAffectedRow(insertAffectedRows, () -> "Invalid insert affected rows: " + insertAffectedRows);
             log.info("Database register insert: {}, {}, {}", namespace, registerRoleName, server);
         });
-    }
-
-    private void discoverServers() throws Throwable {
-        RetryTemplate.execute(() -> refreshDiscoveryServers(getServers(discoveryRoleName)), 3, 1000L);
     }
 
     private List<String> getServers(String roleName) {

@@ -27,6 +27,7 @@ import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.support.CloseableClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PreDestroy;
 import java.util.List;
@@ -68,9 +69,9 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
      */
     private volatile CloseableClient keepAlive;
 
-    protected EtcdServerRegistry(EtcdRegistryProperties config) {
+    protected EtcdServerRegistry(EtcdRegistryProperties config, RestTemplate restTemplate) {
         // etcd separator must be '/'
-        super(config, '/');
+        super(config, restTemplate, '/');
         this.ttl = config.getSessionTimeoutMs() / 2000;
 
         EtcdClient client0 = null;
@@ -85,8 +86,6 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
             this.keepAliveCheckThread = LoopThread.createStarted("etcd_keep_alive_check", periodMs, periodMs, this::keepAliveCheck);
 
             client.addConnectionStateListener(ConnectionStateListener.<EtcdClient>builder().onConnected(c -> keepAliveRecover()).build());
-
-            refreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
         } catch (Throwable t) {
             if (client0 != null) {
                 client0.close();
@@ -135,6 +134,13 @@ public abstract class EtcdServerRegistry<R extends Server, D extends Server> ext
         } catch (Exception e) {
             return ExceptionUtils.rethrow(e);
         }
+    }
+
+    // ------------------------------------------------------------------Discovery
+
+    @Override
+    public void discoverServers() throws Exception {
+        refreshDiscoveryServers(client.getKeyChildren(discoveryRootPath));
     }
 
     // ------------------------------------------------------------------Close

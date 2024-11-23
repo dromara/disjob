@@ -22,7 +22,7 @@ import cn.ponfee.disjob.core.base.BasicDeferredImportSelector;
 import cn.ponfee.disjob.core.base.CoreUtils;
 import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.supervisor.SupervisorStartup;
-import cn.ponfee.disjob.supervisor.application.SchedGroupService;
+import cn.ponfee.disjob.supervisor.base.GroupInfoImpl;
 import cn.ponfee.disjob.supervisor.configuration.EnableSupervisor.EnableSupervisorConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.WebServerApplicationContext;
@@ -31,7 +31,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
-import java.util.function.UnaryOperator;
 
 import static cn.ponfee.disjob.core.base.JobConstants.SPRING_BEAN_NAME_LOCAL_SUPERVISOR;
 
@@ -73,10 +72,8 @@ public @interface EnableSupervisor {
 
         @Bean(SPRING_BEAN_NAME_LOCAL_SUPERVISOR)
         public Supervisor.Local localSupervisor(WebServerApplicationContext webServerApplicationContext) {
-            UnaryOperator<String> workerCtxPath = group -> SchedGroupService.getGroup(group).getWorkerContextPath();
-            String host = CoreUtils.getLocalHost();
             int port = SpringUtils.getActualWebServerPort(webServerApplicationContext);
-            Object[] args = {host, port, workerCtxPath};
+            Object[] args = {CoreUtils.getLocalHost(), port, GroupInfoImpl.INSTANCE};
             try {
                 // inject local supervisor: Supervisor.class.getDeclaredClasses()[0]
                 return ClassUtils.invoke(Class.forName(Supervisor.Local.class.getName()), "create", args);

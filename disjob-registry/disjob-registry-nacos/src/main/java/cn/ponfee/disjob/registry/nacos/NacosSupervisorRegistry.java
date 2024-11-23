@@ -20,6 +20,7 @@ import cn.ponfee.disjob.core.base.Supervisor;
 import cn.ponfee.disjob.core.base.Worker;
 import cn.ponfee.disjob.registry.SupervisorRegistry;
 import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Registry supervisor based nacos.
@@ -28,8 +29,8 @@ import cn.ponfee.disjob.registry.nacos.configuration.NacosRegistryProperties;
  */
 public class NacosSupervisorRegistry extends NacosServerRegistry<Supervisor, Worker> implements SupervisorRegistry {
 
-    public NacosSupervisorRegistry(NacosRegistryProperties config) {
-        super(config);
+    public NacosSupervisorRegistry(NacosRegistryProperties config, RestTemplate restTemplate) {
+        super(config, restTemplate);
     }
 
 }
