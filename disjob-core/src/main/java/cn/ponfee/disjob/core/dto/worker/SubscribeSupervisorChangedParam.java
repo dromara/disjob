@@ -18,7 +18,6 @@ package cn.ponfee.disjob.core.dto.worker;
 
 import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
@@ -41,11 +40,11 @@ public class SubscribeSupervisorChangedParam extends AuthenticationParam {
         Assert.notNull(supervisor, "Supervisor cannot be null.");
     }
 
-    public static SubscribeSupervisorChangedParam of(Worker worker,
+    public static SubscribeSupervisorChangedParam of(String supervisorAuthenticationToken,
                                                      RegistryEventType eventType,
                                                      Supervisor supervisor) {
         SubscribeSupervisorChangedParam param = new SubscribeSupervisorChangedParam();
-        param.setSupervisorAuthenticationToken(Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup()));
+        param.setSupervisorAuthenticationToken(supervisorAuthenticationToken);
         param.setEventType(eventType);
         param.setSupervisor(supervisor);
         return param;

@@ -16,8 +16,6 @@
 
 package cn.ponfee.disjob.core.dto.worker;
 
-import cn.ponfee.disjob.core.base.Supervisor;
-import cn.ponfee.disjob.core.base.Worker;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,9 +39,9 @@ public class ConfigureWorkerParam extends AuthenticationParam {
      */
     private String data;
 
-    public static ConfigureWorkerParam of(Worker worker, Action action, String data) {
+    public static ConfigureWorkerParam of(String supervisorAuthenticationToken, Action action, String data) {
         ConfigureWorkerParam param = new ConfigureWorkerParam();
-        param.setSupervisorAuthenticationToken(Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup()));
+        param.setSupervisorAuthenticationToken(supervisorAuthenticationToken);
         param.setAction(action);
         param.setData(data);
         return param;

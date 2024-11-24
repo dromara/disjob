@@ -122,7 +122,8 @@ public class WorkerClient {
             return true;
         }
 
-        ExistsTaskParam param = ExistsTaskParam.of(worker, task.getTaskId());
+        String authToken = Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup());
+        ExistsTaskParam param = ExistsTaskParam.of(authToken, task.getTaskId());
         try {
             // `WorkerRpcService#existsTask`：判断任务是否在线程池中，如果不在则可能是没有分发成功，需要重新分发
             return !destinationClient.call(worker, service -> service.existsTask(param));

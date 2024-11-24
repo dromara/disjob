@@ -120,7 +120,8 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
         }
         */
         try {
-            SubscribeSupervisorChangedParam param = SubscribeSupervisorChangedParam.of(worker, eventType, supervisor);
+            String authToken = Supervisor.local().createSupervisorAuthenticationToken(worker.getGroup());
+            SubscribeSupervisorChangedParam param = SubscribeSupervisorChangedParam.of(authToken, eventType, supervisor);
             workerRpcClient.invoke(worker, client -> client.subscribeSupervisorChanged(param));
         } catch (Throwable t) {
             log.error("Notify server error: {}, {}", worker, t.getMessage());

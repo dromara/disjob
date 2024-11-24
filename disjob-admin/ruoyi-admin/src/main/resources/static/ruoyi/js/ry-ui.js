@@ -266,7 +266,7 @@ var table = {
                         top.layer.open({
                             title: false,
                             type: 1,
-                            closeBtn: true,
+                            closeBtn: 1,
                             shadeClose: true,
                             area: ['auto', 'auto'],
                             content: "<img src='" + src + "' height='" + height + "' width='" + width + "'/>"
@@ -947,7 +947,7 @@ var table = {
                     fix: false,
                     area: [_width + 'px', _height + 'px'],
                     content: _url,
-                    closeBtn: $.common.isEmpty(options.closeBtn) ? true : options.closeBtn,
+                    closeBtn: $.common.isEmpty(options.closeBtn) ? 1 : options.closeBtn,
                     shadeClose: $.common.isEmpty(options.shadeClose) ? true : options.shadeClose,
                     skin: options.skin,
                     // options.btn设置为0表示不显示按钮
