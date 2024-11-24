@@ -182,7 +182,7 @@ public final class ThreadPoolExecutors {
         private int corePoolSize;
         private int maximumPoolSize;
         private BlockingQueue<Runnable> workQueue;
-        private long keepAliveTimeSeconds;
+        private long keepAliveTimeSeconds = 0;
         private RejectedExecutionHandler rejectedHandler;
         private ThreadFactory threadFactory;
         private boolean allowCoreThreadTimeOut = true;
