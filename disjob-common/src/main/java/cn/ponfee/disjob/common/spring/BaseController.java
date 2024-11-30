@@ -101,15 +101,15 @@ public abstract class BaseController implements TypedDictionary<String, String> 
         return getRequest().getParameter(key == null ? null : key.toString());
     }
 
+    @SuppressWarnings("SuspiciousMethodCalls")
     @Override
     public boolean containsKey(Object key) {
-        // noinspection SuspiciousMethodCalls
         return getRequest().getParameterMap().containsKey(key);
     }
 
+    @SuppressWarnings("SuspiciousMethodCalls")
     @Override
     public boolean containsValue(Object value) {
-        // noinspection SuspiciousMethodCalls
         return getRequest().getParameterMap().containsValue(value);
     }
 

@@ -17,11 +17,16 @@
 package cn.ponfee.disjob.common.util;
 
 import cn.ponfee.disjob.common.concurrent.LoggedUncaughtExceptionHandler;
+import cn.ponfee.disjob.common.concurrent.NamedThreadFactory;
+import cn.ponfee.disjob.common.concurrent.ThreadPoolExecutors;
 import cn.ponfee.disjob.common.concurrent.Threads;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
 
 /**
  * Thread Test
@@ -76,4 +81,111 @@ class ThreadTest {
         System.out.println(Threads.getStackFrame(2));
         System.out.println(Threads.getStackFrame(3));
     }
+
+    @Test
+    void testMaximumPoolSize__CALLER_RUNS() {
+        ExecutorService threadPool = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(4)
+            .workQueue(new SynchronousQueue<>())
+            .keepAliveTimeSeconds(1)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
+            .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
+            .build();
+
+        for (int i = 0; i < 15; i++) {
+            final int x = i;
+            threadPool.submit(() -> {
+                try {
+                    Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
+                    System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        ThreadPoolExecutors.shutdown(threadPool);
+    }
+
+    @Test
+    void testMaximumPoolSize__CALLER_BLOCKS() {
+        ExecutorService threadPool = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(4)
+            .workQueue(new SynchronousQueue<>())
+            .keepAliveTimeSeconds(1)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_BLOCKS)
+            .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
+            .build();
+
+        for (int i = 0; i < 15; i++) {
+            final int x = i;
+            threadPool.submit(() -> {
+                try {
+                    Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
+                    System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        ThreadPoolExecutors.shutdown(threadPool);
+    }
+
+    @Test
+    void testKeepAliveTimeSeconds__CALLER_RUNS() {
+        ExecutorService threadPool = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(4)
+            .workQueue(new SynchronousQueue<>())
+            .keepAliveTimeSeconds(0)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_RUNS)
+            .allowCoreThreadTimeOut(false)
+            .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
+            .build();
+
+        for (int i = 0; i < 15; i++) {
+            final int x = i;
+            threadPool.submit(() -> {
+                try {
+                    Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
+                    System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        ThreadPoolExecutors.shutdown(threadPool);
+    }
+
+    @Test
+    void testKeepAliveTimeSeconds__CALLER_BLOCKS() {
+        ExecutorService threadPool = ThreadPoolExecutors.builder()
+            .corePoolSize(1)
+            .maximumPoolSize(4)
+            .workQueue(new SynchronousQueue<>())
+            .keepAliveTimeSeconds(0)
+            .rejectedHandler(ThreadPoolExecutors.CALLER_BLOCKS)
+            .allowCoreThreadTimeOut(false)
+            .threadFactory(NamedThreadFactory.builder().prefix("notify_server").uncaughtExceptionHandler(log).build())
+            .build();
+
+        for (int i = 0; i < 15; i++) {
+            final int x = i;
+            threadPool.submit(() -> {
+                try {
+                    Thread.sleep("main".equals(Thread.currentThread().getName()) ? 2000 : 200);
+                    System.out.println("----------" + Thread.currentThread().getName() + ", " + x);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        ThreadPoolExecutors.shutdown(threadPool);
+    }
+
 }

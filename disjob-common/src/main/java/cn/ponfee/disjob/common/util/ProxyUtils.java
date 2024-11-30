@@ -39,8 +39,8 @@ public final class ProxyUtils {
      * @param <T>               the interface type
      * @return jdk proxy instance
      */
+    @SuppressWarnings("unchecked")
     public static <T> T create(InvocationHandler invocationHandler, Class<?>... interfaces) {
-        // noinspection unchecked
         return (T) Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, invocationHandler);
     }
 
@@ -53,8 +53,8 @@ public final class ProxyUtils {
      * @param <T>               the super class type
      * @return cglib proxy instance
      */
+    @SuppressWarnings("unchecked")
     public static <T> T create(org.springframework.cglib.proxy.InvocationHandler invocationHandler, Class<?> superClass) {
-        // noinspection unchecked
         return (T) Enhancer.create(superClass, invocationHandler);
     }
 

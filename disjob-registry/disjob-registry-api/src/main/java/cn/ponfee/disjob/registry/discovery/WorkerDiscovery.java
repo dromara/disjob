@@ -20,7 +20,6 @@ import cn.ponfee.disjob.core.base.*;
 import cn.ponfee.disjob.core.dto.worker.SubscribeSupervisorChangedParam;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy;
 import cn.ponfee.disjob.registry.rpc.DestinationServerRestProxy.DestinationServerClient;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.CollectionUtils;
@@ -76,10 +75,13 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
         if (eventType.isDeregister() && !isAlive(worker)) {
             return;
         }
+
+        final ImmutableMap<String, ImmutableList<Worker>> map = groupedWorkers;
+        String group = worker.getGroup();
         ImmutableMap.Builder<String, ImmutableList<Worker>> builder = ImmutableMap.builder();
-        groupedWorkers.forEach((k, v) -> builder.put(k, worker.equalsGroup(k) ? mergeServers(v, eventType, worker) : v));
-        if (!groupedWorkers.containsKey(worker.getGroup())) {
-            builder.put(worker.getGroup(), ImmutableList.of(worker));
+        map.forEach((k, v) -> builder.put(k, group.equals(k) ? mergeServers(v, eventType, worker) : v));
+        if (!map.containsKey(group)) {
+            builder.put(group, ImmutableList.of(worker));
         }
         this.groupedWorkers = builder.build();
     }
@@ -106,8 +108,8 @@ public final class WorkerDiscovery extends ServerDiscovery<Worker, Supervisor> {
 
     @Override
     List<Worker> getServers() {
-        ImmutableCollection<ImmutableList<Worker>> values = groupedWorkers.values();
-        List<Worker> list = new ArrayList<>(values.stream().mapToInt(AbstractCollection::size).sum());
+        Collection<ImmutableList<Worker>> values = groupedWorkers.values();
+        List<Worker> list = new ArrayList<>(values.stream().mapToInt(Collection::size).sum());
         values.forEach(list::addAll);
         return list;
     }

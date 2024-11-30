@@ -33,8 +33,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.Date;
 import java.util.List;
 
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
-
 /**
  * Scan running a long time, but still is running state sched_instance record.
  *
@@ -42,6 +40,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  */
 public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
+    private final int scanBatchSize;
     private final LockTemplate lockTemplate;
     private final WorkerClient workerClient;
     private final JobManager jobManager;
@@ -57,6 +56,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
         super(conf.getScanRunningInstancePeriodMs());
         SingletonClassConstraint.constrain(this);
 
+        this.scanBatchSize = conf.getScanBatchSize();
         this.lockTemplate = lockTemplate;
         this.jobManager = jobManager;
         this.workerClient = workerClient;
@@ -78,7 +78,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
 
     private boolean process() {
         Date expireTime = new Date(System.currentTimeMillis() - beforeMilliseconds);
-        List<SchedInstance> instances = jobQuerier.findExpireRunningInstance(expireTime, PROCESS_BATCH_SIZE);
+        List<SchedInstance> instances = jobQuerier.findExpireRunningInstance(expireTime, scanBatchSize);
         if (CollectionUtils.isEmpty(instances)) {
             return true;
         }
@@ -87,7 +87,7 @@ public class RunningInstanceScanner extends AbstractHeartbeatThread {
             processEach(instance);
         }
 
-        return instances.size() < PROCESS_BATCH_SIZE;
+        return instances.size() < scanBatchSize;
     }
 
     private void processEach(SchedInstance instance) {

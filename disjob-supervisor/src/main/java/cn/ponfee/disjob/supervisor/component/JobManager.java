@@ -256,6 +256,8 @@ public class JobManager {
     public void scheduleTriggerJob(SchedJob job, long triggerTime) throws JobException {
         if (isOneAffectedRow(jobMapper.updateNextTriggerTime(job))) {
             triggerJob(job, RunType.SCHEDULE, triggerTime);
+        } else {
+            LOG.warn("Schedule trigger job unsuccessful: {}", job.getJobId());
         }
     }
 

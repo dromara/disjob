@@ -32,8 +32,8 @@
 - 代码结构
 
 ```text
-disjob                                        # 主项目①
-├── disjob-admin                              # 管理后台项目②(基于Ruoyi框架二次开发)
+disjob                                        # 主项目①pom.xml
+├── disjob-admin                              # 管理后台项目②pom.xml(基于Ruoyi框架二次开发)
 ├── disjob-bom                                # Maven项目bom模块
 ├── disjob-common                             # 公共的工具类模块
 ├── disjob-core                               # 任务调度相关的核心类（如数据模型、枚举类、抽象层接口等）
@@ -51,7 +51,7 @@ disjob                                        # 主项目①
 │   ├── disjob-registry-redis                 # Server注册中心：Redis实现
 │   └── disjob-registry-zookeeper             # Server注册中心：Zookeeper实现
 ├── disjob-reports                            # 聚合各个模块的测试覆盖率报告
-├── disjob-samples                            # Samples项目③
+├── disjob-samples                            # Samples项目③pom.xml
 │   ├── disjob-samples-conf-common            # Samples公共配置（log4j2.xml）
 │   ├── disjob-samples-conf-supervisor        # Samples Supervisor配置
 │   ├── disjob-samples-conf-worker            # Samples Worker配置

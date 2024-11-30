@@ -38,6 +38,11 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     public static final String KEY_PREFIX = JobConstants.DISJOB_KEY_PREFIX + ".supervisor";
 
     /**
+     * Scan batch size
+     */
+    private int scanBatchSize = 200;
+
+    /**
      * Maximum split task size
      */
     private int maximumSplitTaskSize = 1000;
@@ -93,6 +98,7 @@ public class SupervisorProperties extends ToJsonString implements Serializable {
     private int taskDispatchFailedCountThreshold = 3;
 
     public void check() {
+        Assert.isTrue(20 <= scanBatchSize && scanBatchSize <= 2000, "Scan batch size must be range [20, 2000].");
         Assert.isTrue(maximumSplitTaskSize > 0, "Maximum split task size must be greater than 0.");
         Assert.isTrue(0 < maximumJobDependsDepth && maximumJobDependsDepth < 100, "Maximum job depends depth must be range [1, 99].");
         Assert.isTrue(0 < maximumJobRetryCount && maximumJobRetryCount < 10, "Maximum job retry count must be range [1, 9].");

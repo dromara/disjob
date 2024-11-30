@@ -94,10 +94,10 @@ public @interface DbSnowflakeIdGenerator {
          * @return serialization string
          * @see cn.ponfee.disjob.core.base.Supervisor.Local#serialize()
          */
+        @SuppressWarnings("ConstantConditions")
         private static String serializeSupervisor(Object supervisor) {
             Class<?> clazz = supervisor.getClass();
             Assert.isTrue(LOCAL_SUPERVISOR_CLASS_NAME.equals(clazz.getName()), () -> "Not Supervisor$Local$1 instance: " + clazz);
-            // noinspection ConstantConditions
             return (String) ReflectionUtils.invokeMethod(ReflectionUtils.findMethod(clazz, "serialize"), supervisor);
         }
     }

@@ -80,8 +80,8 @@ public class LazyLoader<T> implements Supplier<T> {
 
     // ------------------------------------------------------------------------private methods
 
+    @SuppressWarnings("OptionalAssignedToNull")
     private Optional<T> holder() {
-        // noinspection OptionalAssignedToNull
         if (holder == null) {
             holder = Optional.ofNullable(loader.get());
         }
@@ -101,13 +101,13 @@ public class LazyLoader<T> implements Supplier<T> {
      * @param <R>        代理对象(目标类的子类)
      * @return 代理对象
      */
+    @SuppressWarnings("unchecked")
     private static <T, R extends T> R of(Class<T> type, final LazyLoader<R> lazyLoader) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(type);
         //enhancer.setCallback(org.springframework.cglib.proxy.Proxy.getInvocationHandler(proxy)); // occur error
         //enhancer.setCallback((org.springframework.cglib.proxy.MethodInterceptor) (beanProxy, method, args, methodProxy) -> method.invoke(lazyLoader.get(), args));
         enhancer.setCallback((InvocationHandler) (beanProxy, method, args) -> method.invoke(lazyLoader.get(), args));
-        // noinspection unchecked
         return (R) enhancer.create();
     }
 

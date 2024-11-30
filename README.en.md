@@ -32,8 +32,8 @@ Lightweight and easy to use, it is particularly suitable for the execution of lo
 - Code Structure
 
 ```text
-disjob                                        # Main project①
-├── disjob-admin                              # Management backend project② (Based on RuoYi framework secondary development)
+disjob                                        # Main project①pom.xml
+├── disjob-admin                              # Management backend project②pom.xml (Based on RuoYi framework secondary development)
 ├── disjob-bom                                # Maven project bom module
 ├── disjob-common                             # Common utility class module
 ├── disjob-core                               # Task scheduling related core classes (such as data models, enumeration classes, abstract layer interfaces, etc.)
@@ -51,7 +51,7 @@ disjob                                        # Main project①
 │   ├── disjob-registry-redis                 # Server registry center: Redis implementation
 │   └── disjob-registry-zookeeper             # Server registry center: Zookeeper implementation
 ├── disjob-reports                            # Aggregate test coverage reports of various modules
-├── disjob-samples                            # Samples project③
+├── disjob-samples                            # Samples project③pom.xml
 │   ├── disjob-samples-conf-common            # Samples common config (log4j2.xml)
 │   ├── disjob-samples-conf-supervisor        # Samples Supervisor config
 │   ├── disjob-samples-conf-worker            # Samples Worker config

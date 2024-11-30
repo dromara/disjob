@@ -294,6 +294,7 @@ public class Collects {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     @SafeVarargs
     public static <T> T[] concat(T[] a1, T... a2) {
         if (a1 == null || a1.length == 0) {
@@ -303,7 +304,6 @@ public class Collects {
             return a1;
         }
 
-        // noinspection unchecked
         T[] result = newArray((Class<? extends T[]>) a1.getClass(), a1.length + a2.length);
         System.arraycopy(a1, 0, result, 0, a1.length);
         try {
@@ -338,8 +338,8 @@ public class Collects {
         return list;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T[] newArray(Class<? extends T[]> arrayType, int length) {
-        // noinspection unchecked
         return arrayType.equals(Object[].class)
             ? (T[]) new Object[length]
             : (T[]) Array.newInstance(arrayType.getComponentType(), length);

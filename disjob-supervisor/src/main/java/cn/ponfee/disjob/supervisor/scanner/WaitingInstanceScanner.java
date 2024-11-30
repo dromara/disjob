@@ -33,8 +33,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.Date;
 import java.util.List;
 
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
-
 /**
  * Scan expired trigger time, but still is waiting state sched_instance record.
  *
@@ -42,6 +40,7 @@ import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
  */
 public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
+    private final int scanBatchSize;
     private final LockTemplate lockTemplate;
     private final WorkerClient workerClient;
     private final JobManager jobManager;
@@ -57,6 +56,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         super(conf.getScanWaitingInstancePeriodMs());
         SingletonClassConstraint.constrain(this);
 
+        this.scanBatchSize = conf.getScanBatchSize();
         this.lockTemplate = lockTemplate;
         this.workerClient = workerClient;
         this.jobManager = jobManager;
@@ -80,7 +80,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
 
     private boolean process() {
         Date expireTime = new Date(System.currentTimeMillis() - beforeMilliseconds);
-        List<SchedInstance> instances = jobQuerier.findExpireWaitingInstance(expireTime, PROCESS_BATCH_SIZE);
+        List<SchedInstance> instances = jobQuerier.findExpireWaitingInstance(expireTime, scanBatchSize);
         if (CollectionUtils.isEmpty(instances)) {
             return true;
         }
@@ -88,7 +88,7 @@ public class WaitingInstanceScanner extends AbstractHeartbeatThread {
         for (SchedInstance instance : instances) {
             processEach(instance);
         }
-        return instances.size() < PROCESS_BATCH_SIZE;
+        return instances.size() < scanBatchSize;
     }
 
     private void processEach(SchedInstance instance) {

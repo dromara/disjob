@@ -679,8 +679,8 @@ public class Dates {
      * @param dateTime the local date time
      * @return cron expression of the spec date
      */
+    @SuppressWarnings("StringBufferReplaceableByString")
     public static String toCronExpression(LocalDateTime dateTime) {
-        // noinspection StringBufferReplaceableByString,AlibabaAvoidCommentBehindStatement
         return new StringBuilder(22)
             .append(dateTime.getSecond()    ).append(Char.SPACE) // second
             .append(dateTime.getMinute()    ).append(Char.SPACE) // minute

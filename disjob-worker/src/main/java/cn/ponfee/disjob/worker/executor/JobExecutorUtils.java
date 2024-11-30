@@ -51,7 +51,6 @@ public class JobExecutorUtils {
 
     public static void verify(VerifyJobParam param) throws JobException {
         try {
-            param.check();
             Set<String> jobExecutors;
             if (param.getJobType() == JobType.WORKFLOW) {
                 jobExecutors = DAGExpression.parse(param.getJobExecutor())
@@ -86,7 +85,6 @@ public class JobExecutorUtils {
      */
     public static List<String> split(SplitJobParam param) throws JobException {
         try {
-            param.check();
             int workerCount = param.getWorkerCount();
             Assert.isTrue(workerCount > 0, () -> "Worker count must greater than zero: " + workerCount);
             JobExecutor jobExecutor = loadJobExecutor(param.getJobExecutor());

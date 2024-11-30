@@ -90,11 +90,13 @@ public interface WorkerRpcProvider extends WorkerRpcService {
 
         @Override
         public void verifyJob(VerifyJobParam param) throws JobException {
+            param.check();
             JobExecutorUtils.verify(param);
         }
 
         @Override
         public SplitJobResult splitJob(SplitJobParam param) throws JobException {
+            param.check();
             return SplitJobResult.of(JobExecutorUtils.split(param));
         }
 

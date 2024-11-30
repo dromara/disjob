@@ -38,13 +38,13 @@ public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implement
         this.parent = parent;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public final boolean equals(Object obj) {
         if (obj == null || this.getClass() != obj.getClass()) {
             return false;
         }
 
-        // noinspection unchecked
         T o = (T) obj;
         return Objects.equals(this.parent, o.parent) && this.equals(o);
     }

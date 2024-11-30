@@ -256,7 +256,7 @@ public class RedisLock implements Lock, java.io.Serializable {
      */
     @Override
     public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException {
-        long end = System.nanoTime() + unit.toNanos(timeout);
+        long expire = System.nanoTime() + unit.toNanos(timeout);
         for (; ; ) {
             if (Thread.interrupted()) {
                 throw new InterruptedException();
@@ -264,7 +264,7 @@ public class RedisLock implements Lock, java.io.Serializable {
             if (acquire()) {
                 return true;
             }
-            if (end < System.nanoTime()) {
+            if (expire < System.nanoTime()) {
                 // 等待超时则返回
                 return false;
             }

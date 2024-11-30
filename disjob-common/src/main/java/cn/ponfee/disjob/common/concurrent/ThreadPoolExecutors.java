@@ -33,13 +33,17 @@ import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 /**
  * Thread pool executor utility
  *
+ * 1）maximumPoolSize + CALLER_RUNS：线程池中的线程执行完后，需要等待当前线程执行完后再提交任务
+ * 2）keepAliveTimeSeconds：为0则表示线程立即终止
+ * 3）allowCoreThreadTimeOut：设置为true时，keepAliveTimeSeconds必须大于0
+ *
  * @author Ponfee
  */
 public final class ThreadPoolExecutors {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThreadPoolExecutors.class);
 
-    public static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.pool.size";
+    public static final String DISJOB_COMMON_POOL_SIZE = "disjob.common.thread.pool.size";
 
     private static volatile ThreadPoolExecutor commonThreadPool;
     private static volatile ScheduledThreadPoolExecutor commonScheduledPool;
@@ -232,10 +236,9 @@ public final class ThreadPoolExecutors {
         }
 
         public ThreadPoolExecutor build() {
-            Assert.isTrue(maximumPoolSize > 0, () -> String.format("Maximum pool size %d must greater than 0.", maximumPoolSize));
-            Assert.isTrue(maximumPoolSize <= MAX_CAP, () -> String.format("Maximum pool size %d cannot greater than %d.", maximumPoolSize, MAX_CAP));
             Assert.isTrue(corePoolSize > 0, () -> String.format("Core pool size %d must greater than 0.", corePoolSize));
             Assert.isTrue(corePoolSize <= maximumPoolSize, () -> String.format("Core pool size %d cannot greater than maximum pool size %d.", corePoolSize, maximumPoolSize));
+            Assert.isTrue(maximumPoolSize <= MAX_CAP, () -> String.format("Maximum pool size %d cannot greater than %d.", maximumPoolSize, MAX_CAP));
             Assert.notNull(workQueue, "Worker queue cannot be null.");
 
             // create ThreadPoolExecutor instance

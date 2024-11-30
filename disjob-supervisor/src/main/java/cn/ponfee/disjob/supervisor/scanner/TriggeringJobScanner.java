@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 
-import static cn.ponfee.disjob.core.base.JobConstants.PROCESS_BATCH_SIZE;
-
 /**
  * The schedule job heartbeat thread, <br/>
  * find the sched_job which will be trigger, <br/>
@@ -52,6 +50,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
 
     private static final int REMARK_MAX_LENGTH = 255;
 
+    private final int scanBatchSize;
     private final int jobScanFailedCountThreshold;
     private final LockTemplate lockTemplate;
     private final WorkerClient workerClient;
@@ -69,6 +68,7 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         super(conf.getScanTriggeringJobPeriodMs());
         SingletonClassConstraint.constrain(this);
 
+        this.scanBatchSize = conf.getScanBatchSize();
         this.jobScanFailedCountThreshold = conf.getJobScanFailedCountThreshold();
         this.lockTemplate = lockTemplate;
         this.workerClient = workerClient;
@@ -96,12 +96,12 @@ public class TriggeringJobScanner extends AbstractHeartbeatThread {
         Boolean result = lockTemplate.execute(() -> {
             Date now = new Date();
             long maxNextTriggerTime = now.getTime() + afterMilliseconds;
-            List<SchedJob> jobs = jobQuerier.findBeTriggeringJob(maxNextTriggerTime, PROCESS_BATCH_SIZE);
+            List<SchedJob> jobs = jobQuerier.findBeTriggeringJob(maxNextTriggerTime, scanBatchSize);
             if (CollectionUtils.isEmpty(jobs)) {
                 return true;
             }
             MultithreadExecutors.run(jobs, job -> processJob(job, now, maxNextTriggerTime), processJobExecutor);
-            return jobs.size() < PROCESS_BATCH_SIZE;
+            return jobs.size() < scanBatchSize;
         });
 
         return result != null && result;
