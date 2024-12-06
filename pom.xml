@@ -10,7 +10,7 @@
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
-  <description>A distributed task scheduling and distributed computing framework</description>
+  <description>A distributed job scheduling and distributed computing framework</description>
   <url>https://github.com/dromara/disjob</url>
   <licenses>
     <license>
@@ -74,10 +74,10 @@
     <moduleExportsArgLine />
 
     <spring-boot.version>2.7.18</spring-boot.version>
-    <mapstruct.version>1.6.2</mapstruct.version>
+    <mapstruct.version>1.6.3</mapstruct.version>
     <guava.version>33.3.1-jre</guava.version>
     <commons-collections4.version>4.4</commons-collections4.version>
-    <commons-io.version>2.17.0</commons-io.version>
+    <commons-io.version>2.18.0</commons-io.version>
     <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
     <jna-platform.version>5.15.0</jna-platform.version>
     <curator-recipes.version>5.7.1</curator-recipes.version>

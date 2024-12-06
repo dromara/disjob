@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.registry;
 
-import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.enums.RegistryEventType;
 
 import java.io.Closeable;
 import java.util.List;

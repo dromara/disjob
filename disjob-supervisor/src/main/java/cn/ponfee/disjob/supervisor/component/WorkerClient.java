@@ -181,12 +181,12 @@ public class WorkerClient {
     }
 
     public boolean dispatch(List<ExecuteTaskParam> tasks) {
-        Assert.isTrue(TransactionUtils.isNotDoInTransaction(), "Dispatch task cannot in transaction.");
+        TransactionUtils.assertWithoutTransaction();
         return taskDispatcher.dispatch(tasks);
     }
 
     public boolean dispatch(String group, List<ExecuteTaskParam> tasks) {
-        Assert.isTrue(TransactionUtils.isNotDoInTransaction(), "Dispatch task cannot in transaction.");
+        TransactionUtils.assertWithoutTransaction();
         return taskDispatcher.dispatch(group, tasks);
     }
 

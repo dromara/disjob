@@ -22,8 +22,8 @@ import cn.ponfee.disjob.common.concurrent.LoopThread;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingRunnable;
 import cn.ponfee.disjob.common.exception.Throwables.ThrowingSupplier;
 import cn.ponfee.disjob.common.spring.RedisTemplateUtils;
-import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.ServerRegistry;
 import cn.ponfee.disjob.registry.redis.configuration.RedisRegistryProperties;
 import org.apache.commons.collections4.CollectionUtils;
@@ -38,6 +38,7 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
 
@@ -71,7 +72,7 @@ public abstract class RedisServerRegistry<R extends Server, D extends Server> ex
         List.class
     );
 
-    private static final String REDIS_KEY_TTL_MILLIS = Long.toString(30L * 86400 * 1000);
+    private static final String REDIS_KEY_TTL_MILLIS = Long.toString(TimeUnit.DAYS.toMillis(30));
 
     /**
      * Registry publish redis message channel

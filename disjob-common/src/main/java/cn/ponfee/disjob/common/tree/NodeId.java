@@ -50,16 +50,16 @@ public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implement
     }
 
     @Override
-    public final int compareTo(T another) {
+    public final int compareTo(T that) {
         if (this.parent == null) {
-            return another.parent == null ? this.compare(another) : -1;
+            return that.parent == null ? this.compare(that) : -1;
         }
-        if (another.parent == null) {
+        if (that.parent == null) {
             return 1;
         }
 
-        int a = this.parent.compareTo(another.parent);
-        return a != 0 ? a : this.compare(another);
+        int a = this.parent.compareTo(that.parent);
+        return a != 0 ? a : this.compare(that);
     }
 
     @Override
@@ -67,9 +67,9 @@ public abstract class NodeId<T extends NodeId<T>> extends ToJsonString implement
         return new HashCodeBuilder().append(parent).append(hash()).build();
     }
 
-    protected abstract boolean equals(T another);
+    protected abstract boolean equals(T that);
 
-    protected abstract int compare(T another);
+    protected abstract int compare(T that);
 
     protected abstract int hash();
 

@@ -16,8 +16,8 @@
 
 package cn.ponfee.disjob.core.dto.worker;
 
-import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Supervisor;
+import cn.ponfee.disjob.core.enums.RegistryEventType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
@@ -47,6 +47,8 @@ public class SubscribeSupervisorChangedParam extends AuthenticationParam {
         param.setSupervisorAuthenticationToken(supervisorAuthenticationToken);
         param.setEventType(eventType);
         param.setSupervisor(supervisor);
+
+        param.check();
         return param;
     }
 

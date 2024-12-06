@@ -52,7 +52,7 @@ public class ProxyTest {
     @Test
     public void testAnnotation() {
         Assertions.assertNull(AnnotationUtils.findAnnotation(WorkerRpcService.class, RpcController.class));
-        Assertions.assertNull(AnnotationUtils.findAnnotation(WorkerRpcProvider.WorkerRpcImpl.class, RpcController.class));
+        Assertions.assertNull(AnnotationUtils.findAnnotation(WorkerRpcProvider.WorkerRpcLocal.class, RpcController.class));
 
         Assertions.assertNotNull(AnnotationUtils.findAnnotation(WorkerRpcProvider.class, RpcController.class));
         Assertions.assertNotNull(AnnotationUtils.findAnnotation(A.class, RpcController.class));

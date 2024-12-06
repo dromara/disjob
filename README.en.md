@@ -2,7 +2,7 @@
   <img src="docs/images/logo.png" width="160" alt="Logo" />
 </p>
 <p align="center">
-  <strong>A distributed task scheduling and distributed computing framework</strong>
+  <strong>A distributed job scheduling and distributed computing framework</strong>
 </p>
 <p align="center">
   <a href="https://www.apache.org/licenses/LICENSE-2.0.html"><img src="https://img.shields.io/badge/license-Apache--2.0-green.svg?logo=apache" alt="License"></a>
@@ -19,7 +19,7 @@
 
 **`English`** | [简体中文](README.md)
 
-A distributed task scheduling and distributed computing framework, in addition to having regular task scheduling functions, also provides: pausing/cancelling running tasks, resuming paused tasks, task splitting, failure retries, broadcast tasks, task dependencies, workflow tasks (DAG), separate deployment of managers and executors, Web management backend, and other capabilities.
+A distributed job scheduling and distributed computing framework, in addition to having regular task scheduling functions, also provides: pausing/cancelling running tasks, resuming paused tasks, task splitting, failure retries, broadcast tasks, task dependencies, workflow tasks (DAG), separate deployment of managers and executors, Web management backend, and other capabilities.
 
 Lightweight and easy to use, it is particularly suitable for the execution of long tasks. Powerful and reliable, it has been tested in production environments.
 

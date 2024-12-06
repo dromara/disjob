@@ -66,11 +66,14 @@ public class Tokens {
         if (StringUtils.isEmpty(tokenPlain)) {
             return true;
         }
-        if (StringUtils.isEmpty(tokenSecret) || !tokenSecret.contains(DOT)) {
+        if (StringUtils.isEmpty(tokenSecret)) {
+            return false;
+        }
+        String[] array = tokenSecret.split("\\.");
+        if (array.length != 2) {
             return false;
         }
 
-        String[] array = tokenSecret.split("\\.", 2);
         String actual = array[0];
         String expiration = array[1];
         if (Long.parseLong(expiration) < System.currentTimeMillis()) {

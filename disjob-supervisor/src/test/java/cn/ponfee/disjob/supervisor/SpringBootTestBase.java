@@ -20,6 +20,8 @@ import cn.ponfee.disjob.common.util.GenericUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -56,6 +58,8 @@ import java.util.Arrays;
 //@ContextConfiguration(classes = { XXX.class })
 //@ActiveProfiles({"DEV"})
 public abstract class SpringBootTestBase<T> extends MockitoTestBase implements ApplicationContextAware {
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final String beanName;
     protected ApplicationContext applicationContext;

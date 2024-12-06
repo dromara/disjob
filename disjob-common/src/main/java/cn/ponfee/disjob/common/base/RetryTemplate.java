@@ -41,14 +41,14 @@ public class RetryTemplate {
     private static final Logger LOG = LoggerFactory.getLogger(RetryTemplate.class);
 
     public static void execute(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
-        execute(action.toSupplier(Boolean.TRUE), retryMaxCount, retryBackoffPeriod);
+        execute(action.toSupplier(null), retryMaxCount, retryBackoffPeriod);
     }
 
     public static <T> T execute(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) throws Throwable {
         Assert.isTrue(retryMaxCount >= 0, "Retry max count cannot less than 0.");
         Assert.isTrue(retryBackoffPeriod > 0, "Retry backoff period must be greater than 0.");
         int i = 0;
-        Throwable ex;
+        Throwable firstEx = null;
         String retryId = null;
         do {
             try {
@@ -57,25 +57,28 @@ public class RetryTemplate {
                 LOG.error("Thread interrupted, abort retry.");
                 throw e;
             } catch (Throwable e) {
-                ex = e;
+                if (firstEx == null) {
+                    firstEx = e;
+                }
                 if (i < retryMaxCount) {
                     // log and sleep if not the last loop
                     if (retryId == null) {
                         retryId = UuidUtils.uuid32();
                     }
-                    LOG.error("Execute failed, will retrying: " + (i + 1) + ", " + retryId, e);
+                    LOG.error("Execute failed, will retry: " + (i + 1) + ", " + retryId, e);
                     Thread.sleep((i + 1) * retryBackoffPeriod);
                 } else {
-                    LOG.error("Execute failed, retried max count: " + retryId, e);
+                    // retryId is null if not retried
+                    LOG.error("Execute failed, exit retry: " + retryId, e);
                 }
             }
         } while (++i <= retryMaxCount);
 
-        throw ex;
+        throw firstEx;
     }
 
     public static void executeQuietly(ThrowingRunnable<Throwable> action, int retryMaxCount, long retryBackoffPeriod) {
-        executeQuietly(action.toSupplier(Boolean.TRUE), retryMaxCount, retryBackoffPeriod);
+        executeQuietly(action.toSupplier(null), retryMaxCount, retryBackoffPeriod);
     }
 
     public static <T> T executeQuietly(ThrowingSupplier<T, Throwable> action, int retryMaxCount, long retryBackoffPeriod) {

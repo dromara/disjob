@@ -42,10 +42,8 @@ public abstract class Server implements Serializable {
     protected final int port;
 
     protected Server(String host, int port) {
-        Assert.hasText(host, "Host cannot be empty.");
-        Assert.isTrue(!host.contains(Str.COLON), "Host cannot contains symbol ':'");
         Assert.isTrue(0 < port && port <= 65535, "Port must be range (0, 65535].");
-        this.host = host.trim();
+        this.host = check(host);
         this.port = port;
     }
 
@@ -91,6 +89,17 @@ public abstract class Server implements Serializable {
     @Override
     public final String toString() {
         return serialize();
+    }
+
+    static String check(String str) {
+        if (str == null ||
+            str.isEmpty() ||
+            str.contains(Str.COLON) ||
+            Character.isWhitespace(str.charAt(0)) ||
+            Character.isWhitespace(str.charAt(str.length() - 1))) {
+            throw new IllegalArgumentException("Invalid server part value: " + (str == null ? "null" : "'" + str + "'"));
+        }
+        return str;
     }
 
 }

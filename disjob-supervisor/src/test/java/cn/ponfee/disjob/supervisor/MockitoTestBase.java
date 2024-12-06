@@ -24,9 +24,8 @@ import org.junit.jupiter.api.Assertions;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -53,9 +52,9 @@ import static org.mockito.Mockito.reset;
  * 4、Mockito官方建议优先考虑使用when(...).thenReturn(...)，而不是doReturn(...).when(...)
  *
  * 5、Mockito语法：
- *   When/Then: when(yourMethod()).thenReturn(5);
+ *   When/Then: when(yourMethod()).thenReturn(5); when(yourMethod()).thenThrow();
+ *   Do/When: doReturn(7).when(yourMock.fizzBuzz()); doThrow(Throwable).when(yourMethod());
  *   Given/Will: given(yourMethod()).willThrow(OutOfMemoryException.class);
- *   Do/When: doReturn(7).when(yourMock.fizzBuzz());
  *   Will/Given/Do: willReturn(any()).given(yourMethod()).doNothing();
  *   Verify/Do: verify(yourMethod()).doThrow(SomeException.class);
  * </pre>
@@ -66,21 +65,20 @@ import static org.mockito.Mockito.reset;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 public abstract class MockitoTestBase {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-
     static {
         // Mock CoreUtils.getLocalHost返回`127.0.0.1`，支持在断网时能跑测试用例
-        MockedStatic<CoreUtils> mocked = mockStatic(CoreUtils.class);
+        MockedStatic<CoreUtils> mockedStaticCoreUtils = mockStatic(CoreUtils.class);
+        String localhostIp = "127.0.0.1";
 
         // Mock CoreUtils#getLocalHost(String)
-        mocked.when(() -> CoreUtils.getLocalHost(any())).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
-        Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, CoreUtils.getLocalHost(null));
-        mocked.verify(() -> CoreUtils.getLocalHost(any()));
+        mockedStaticCoreUtils.when(() -> CoreUtils.getLocalHost(any())).thenReturn(localhostIp);
+        Assertions.assertEquals(localhostIp, CoreUtils.getLocalHost(null));
+        mockedStaticCoreUtils.verify(() -> CoreUtils.getLocalHost(any()));
 
         // Mock CoreUtils#getLocalHost()
-        mocked.when(CoreUtils::getLocalHost).thenReturn(NetUtils.LOCAL_IP_ADDRESS);
-        Assertions.assertEquals(NetUtils.LOCAL_IP_ADDRESS, CoreUtils.getLocalHost());
-        mocked.verify(CoreUtils::getLocalHost);
+        mockedStaticCoreUtils.when(CoreUtils::getLocalHost).thenReturn(localhostIp);
+        Assertions.assertEquals(localhostIp, CoreUtils.getLocalHost());
+        mockedStaticCoreUtils.verify(CoreUtils::getLocalHost);
     }
 
     // Only reset mock field which is defined in MockitoTestBase
@@ -88,11 +86,7 @@ public abstract class MockitoTestBase {
         .stream()
         .filter(e -> !Modifier.isStatic(e.getModifiers()))
         .filter(e -> e.isAnnotationPresent(MockBean.class) || MockedStatic.class.isAssignableFrom(e.getType()))
-        .peek(e -> {
-            if (!Modifier.isProtected(e.getModifiers())) {
-                throw new AssertionError("Mock field must protected: " + e.toGenericString());
-            }
-        })
+        .peek(e -> Assert.isTrue(Modifier.isProtected(e.getModifiers()), () -> "Mock field must protected: " + e.toGenericString()))
         .collect(Collectors.toList());
 
     // --------------------------------------mock bean definition
@@ -115,14 +109,14 @@ public abstract class MockitoTestBase {
             try {
                 Object mockedObj = field.get(this);
                 if (mockedObj == null) {
-                    log.error("Mock field object is null: " + field.toGenericString());
+                    throw new RuntimeException("Mock field value is null: " + field.toGenericString());
                 } else if (mockedObj instanceof MockedStatic) {
                     ((MockedStatic<?>) mockedObj).close();
                 } else {
                     reset(mockedObj);
                 }
             } catch (Exception ex) {
-                log.error("Mock field object reset error: " + field.toGenericString(), ex);
+                throw new RuntimeException("Mock field object reset error: " + field.toGenericString(), ex);
             }
         }
     }

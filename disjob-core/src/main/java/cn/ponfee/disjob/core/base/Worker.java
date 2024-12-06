@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.dto.worker.AuthenticationParam;
 import cn.ponfee.disjob.core.enums.TokenType;
 import cn.ponfee.disjob.core.exception.AuthenticationException;
@@ -41,7 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
-import static cn.ponfee.disjob.common.collect.Collects.get;
 import static cn.ponfee.disjob.core.base.JobConstants.AUTHENTICATE_HEADER_GROUP;
 import static cn.ponfee.disjob.core.base.JobConstants.AUTHENTICATE_HEADER_TOKEN;
 
@@ -74,13 +72,8 @@ public class Worker extends Server implements Comparable<Worker> {
 
     public Worker(String group, String workerId, String host, int port) {
         super(host, port);
-
-        Assert.hasText(group, "Group cannot be empty.");
-        Assert.hasText(workerId, "Worker id cannot be empty.");
-        Assert.isTrue(!group.contains(COLON), "Group cannot contains symbol ':'");
-        Assert.isTrue(!workerId.contains(COLON), "Worker id cannot contains symbol ':'");
-        this.group = group.trim();
-        this.workerId = workerId.trim();
+        this.group = check(group);
+        this.workerId = check(workerId);
 
         this.serializedValue = this.group + COLON + this.workerId + COLON + super.host + COLON + super.port;
     }
@@ -151,21 +144,9 @@ public class Worker extends Server implements Comparable<Worker> {
      * @return worker object of the text deserialized result
      */
     public static Worker deserialize(String text) {
-        Assert.hasText(text, "Serialized text cannot empty.");
-        String[] array = text.split(COLON);
-
-        String group = get(array, 0);
-        Assert.hasText(group, "Worker group cannot bank.");
-
-        String workerId = get(array, 1);
-        Assert.hasText(workerId, "Worker id cannot bank.");
-
-        String host = get(array, 2);
-        Assert.hasText(host, "Worker host cannot bank.");
-
-        int port = Numbers.toInt(get(array, 3));
-
-        return new Worker(group, workerId, host, port);
+        String[] array = text.split(COLON, 4);
+        Assert.isTrue(array.length == 4, "Invalid worker value: " + text);
+        return new Worker(array[0], array[1], array[2], Integer.parseInt(array[3]));
     }
 
     public static Local local() {
@@ -205,17 +186,7 @@ public class Worker extends Server implements Comparable<Worker> {
         }
     }
 
-    /**
-     * Custom deserialize Worker based jackson.
-     */
-    public static class JacksonDeserializer extends JsonDeserializer<Worker> {
-        @Override
-        public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return Worker.deserialize(p.getText());
-        }
-    }
-
-    // -------------------------------------------------------------------------------local Worker
+    // --------------------------------------------------------local Worker
 
     @SuppressWarnings({"serial", "unused"})
     public abstract static class Local extends Worker {
@@ -304,6 +275,18 @@ public class Worker extends Server implements Comparable<Worker> {
             };
 
             return instance;
+        }
+    }
+
+    // --------------------------------------------------------custom jackson deserialize
+
+    /**
+     * Custom deserialize Worker based jackson.
+     */
+    public static class JacksonDeserializer extends JsonDeserializer<Worker> {
+        @Override
+        public Worker deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            return Worker.deserialize(p.getText());
         }
     }
 

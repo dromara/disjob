@@ -146,12 +146,11 @@
   <!-- 使用其它的批量方式需要添加jdbc参数：allowMultiQueries=true&rewriteBatchedStatements=true -->
   <!--
    | 当worker不相同时，可使用`CASE WHEN`语法批量UPDATE：
-   | UPDATE sched_task SET worker =
-   |   CASE
-   |     WHEN task_id = 1 THEN 'a'
-   |     WHEN task_id = 2 THEN 'b'
-   |   END
-   | WHERE id IN (1, 2)
+   | UPDATE table_name SET
+   |   column_a = CASE id <foreach collection="list" item="e"> WHEN #{e.id} THEN #{e.columnA} </foreach> END,
+   |   column_b = CASE id <foreach collection="list" item="e"> WHEN #{e.id} THEN #{e.columnB} </foreach> END,
+   |   column_c = CASE id <foreach collection="list" item="e"> WHEN #{e.id} THEN #{e.columnC} </foreach> END
+   | WHERE id IN ( <foreach collection="list" separator="," item="e">#{e.id}</foreach> )
   -->
   <update id="batchUpdateWorker">
     UPDATE <include refid="Table_Name" />

@@ -18,8 +18,8 @@ package cn.ponfee.disjob.registry;
 
 import cn.ponfee.disjob.common.concurrent.TripState;
 import cn.ponfee.disjob.common.util.GenericUtils;
-import cn.ponfee.disjob.core.base.RegistryEventType;
 import cn.ponfee.disjob.core.base.Server;
+import cn.ponfee.disjob.core.enums.RegistryEventType;
 import cn.ponfee.disjob.registry.discovery.ServerDiscovery;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

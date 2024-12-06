@@ -26,14 +26,14 @@ import org.springframework.http.MediaType;
 public final class JobConstants {
 
     /**
-     * 数据库大文本字段最大长度限制
-     */
-    public static final int CLOB_MAXIMUM_LENGTH = 65535;
-
-    /**
      * Version
      */
     public static final String VERSION = "2.1.7-SNAPSHOT";
+
+    /**
+     * 数据库大文本字段最大长度限制
+     */
+    public static final int CLOB_MAXIMUM_LENGTH = 65535;
 
     /**
      * Process batch size

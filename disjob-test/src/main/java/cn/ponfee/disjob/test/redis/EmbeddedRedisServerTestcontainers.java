@@ -84,7 +84,7 @@ public final class EmbeddedRedisServerTestcontainers {
 
             new CountDownLatch(1).await();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new Error("Start docker container redis server occur error.", e);
         } finally {
             dockerRedisContainer.close();
         }

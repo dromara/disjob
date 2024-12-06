@@ -57,7 +57,7 @@ public interface WorkerRpcProvider extends WorkerRpcService {
 
         private AuthenticateHandler(Worker.Local localWorker, WorkerRegistry workerRegistry) {
             this.localWorker = localWorker;
-            this.target = new WorkerRpcImpl(localWorker, workerRegistry);
+            this.target = new WorkerRpcLocal(localWorker, workerRegistry);
         }
 
         @Override
@@ -73,11 +73,11 @@ public interface WorkerRpcProvider extends WorkerRpcService {
         }
     }
 
-    class WorkerRpcImpl implements WorkerRpcService {
+    class WorkerRpcLocal implements WorkerRpcService {
         private final Worker.Local localWorker;
         private final WorkerRegistry workerRegistry;
 
-        private WorkerRpcImpl(Worker.Local localWorker, WorkerRegistry workerRegistry) {
+        private WorkerRpcLocal(Worker.Local localWorker, WorkerRegistry workerRegistry) {
             this.localWorker = localWorker;
             this.workerRegistry = workerRegistry;
         }

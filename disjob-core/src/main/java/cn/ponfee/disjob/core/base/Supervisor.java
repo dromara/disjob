@@ -17,7 +17,6 @@
 package cn.ponfee.disjob.core.base;
 
 import cn.ponfee.disjob.common.base.SingletonClassConstraint;
-import cn.ponfee.disjob.common.util.Numbers;
 import cn.ponfee.disjob.core.enums.TokenType;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -34,7 +33,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static cn.ponfee.disjob.common.base.Symbol.Str.COLON;
-import static cn.ponfee.disjob.common.collect.Collects.get;
 
 /**
  * Supervisor definition
@@ -73,15 +71,9 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
      * @return supervisor object of the text deserialized result
      */
     public static Supervisor deserialize(String text) {
-        Assert.hasText(text, "Serialized text cannot empty.");
-        String[] array = text.split(COLON);
-
-        String host = get(array, 0);
-        Assert.hasText(host, "Supervisor host cannot bank.");
-
-        int port = Numbers.toInt(get(array, 1));
-
-        return new Supervisor(host, port);
+        String[] array = text.split(COLON, 2);
+        Assert.isTrue(array.length == 2, "Invalid supervisor value: " + text);
+        return new Supervisor(array[0], Integer.parseInt(array[1]));
     }
 
     public static Local local() {
@@ -121,17 +113,7 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
         }
     }
 
-    /**
-     * Custom deserialize Supervisor based jackson.
-     */
-    public static class JacksonDeserializer extends JsonDeserializer<Supervisor> {
-        @Override
-        public Supervisor deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return Supervisor.deserialize(p.getText());
-        }
-    }
-
-    // -------------------------------------------------------------------------------local Supervisor
+    // --------------------------------------------------------local Supervisor
 
     public interface GroupInfo {
 
@@ -243,6 +225,18 @@ public class Supervisor extends Server implements Comparable<Supervisor> {
             };
 
             return instance;
+        }
+    }
+
+    // --------------------------------------------------------custom jackson deserialize
+
+    /**
+     * Custom deserialize Supervisor based jackson.
+     */
+    public static class JacksonDeserializer extends JsonDeserializer<Supervisor> {
+        @Override
+        public Supervisor deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            return Supervisor.deserialize(p.getText());
         }
     }
 

@@ -105,9 +105,9 @@ public class TransactionUtils {
     /**
      * <pre>
      * 在事务提交成功后再执行`action`，注意：
-     *   1）在单层事务中`doAfterTransactionCommit`添加了一些`action`，后面的代码因异常回滚了这个事务，因事务没有提交(已回滚)，这些`action`不会执行
-     *   2）在嵌套事务中`doAfterTransactionCommit`添加了一些`action`，后面在嵌套事务中因异常回滚了嵌套事务，外层的事务提交成功后，这些`action`仍会执行
-     *   3）在嵌套事务中`doAfterTransactionCommit`添加了一些`action`，后面在外层事务中因异常回滚了整个事务(嵌套和外层都会回滚)，这些`action`不会执行
+     *   1）在单层事务中，`doAfterTransactionCommit`添加了一些`action`，后面的代码因异常回滚了这个事务，因事务没有提交(已回滚)，这些`action`不会执行
+     *   2）在嵌套事务中，`doAfterTransactionCommit`添加了一些`action`，后面在嵌套事务内因异常回滚了嵌套事务，外层的事务提交成功后，这些`action`仍会执行
+     *   3）在嵌套事务中，`doAfterTransactionCommit`添加了一些`action`，后面在外层事务内因异常回滚了整个事务(嵌套和外层都会回滚)，这些`action`不会执行
      * </pre>
      *
      * @param action the action code
@@ -134,16 +134,24 @@ public class TransactionUtils {
         }
     }
 
-    public static void assertDoInTransaction() {
-        Assert.isTrue(TransactionSynchronizationManager.isActualTransactionActive(), "Must do in transaction.");
-    }
-
     public static boolean isCurrentDoAfterCommit() {
         return Boolean.TRUE.equals(DO_AFTER_COMMIT.get());
     }
 
-    public static boolean isNotDoInTransaction() {
-        return !TransactionSynchronizationManager.isActualTransactionActive() || isCurrentDoAfterCommit();
+    public static boolean isWithinTransaction() {
+        return TransactionSynchronizationManager.isActualTransactionActive() && !isCurrentDoAfterCommit();
+    }
+
+    public static boolean isWithoutTransaction() {
+        return !isWithinTransaction();
+    }
+
+    public static void assertWithinTransaction() {
+        Assert.isTrue(isWithinTransaction(), "Must be within transaction.");
+    }
+
+    public static void assertWithoutTransaction() {
+        Assert.isTrue(isWithoutTransaction(), "Must be without transaction.");
     }
 
     /**

@@ -109,9 +109,8 @@ public class WorkerThreadPool extends Thread implements Closeable {
     private final TripState threadPoolState = TripState.createStarted();
 
     public WorkerThreadPool(int maximumPoolSize, long keepAliveTimeSeconds, SupervisorRpcService supervisorRpcClient) {
-        Assert.isTrue(maximumPoolSize > 0 && maximumPoolSize <= ThreadPoolExecutors.MAX_CAP, "Maximum pool size must be range [1, 32767].");
         Assert.isTrue(keepAliveTimeSeconds > 0, "Keep alive time seconds must be positive number.");
-        this.maximumPoolSize = maximumPoolSize;
+        modifyMaximumPoolSize(maximumPoolSize);
         this.keepAliveTime = TimeUnit.SECONDS.toNanos(keepAliveTimeSeconds);
         this.supervisorRpcClient = Objects.requireNonNull(supervisorRpcClient);
         SingletonClassConstraint.constrain(this);
@@ -125,7 +124,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     /**
-     * Submit task execution task to thread pool
+     * Submit the execution task to thread pool
      *
      * @param task the execution task
      * @return {@code true} if thread pool accepted
@@ -205,7 +204,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
     }
 
     synchronized void modifyMaximumPoolSize(int value) {
-        Assert.isTrue(value > 0 && value <= ThreadPoolExecutors.MAX_CAP, "Maximum pool size must be range [1, 32767].");
+        Assert.isTrue(0 < value && value <= ThreadPoolExecutors.MAX_CAP, "Maximum pool size must be range [1, 32767].");
         this.maximumPoolSize = value;
     }
 
@@ -528,7 +527,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
          *
          * @return {@code true} if return to idle pool successfully
          */
-        private boolean returnPool() {
+        private boolean returnToPool() {
             if (activePool.removeThread(this) == null || isStopped()) {
                 // maybe already removed by other operation
                 return false;
@@ -547,7 +546,7 @@ public class WorkerThreadPool extends Thread implements Closeable {
         /**
          * Remove the worker thread from active pool and destroy it.
          */
-        private void removePool() {
+        private void removeFromPool() {
             toStop();
             if (activePool.removeThread(this) == null && !idlePool.remove(this)) {
                 LOG.info("Worker thread not in thread pool: {}", super.getName());
@@ -611,12 +610,12 @@ public class WorkerThreadPool extends Thread implements Closeable {
                 }
 
                 // return this to idle thread pool
-                if (!returnPool()) {
+                if (!returnToPool()) {
                     break;
                 }
             }
 
-            removePool();
+            removeFromPool();
         }
 
         private void run(WorkerTask workerTask) {

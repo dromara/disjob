@@ -178,13 +178,13 @@ public class JobManager {
 
     public void saveLeadInstanceAndWorkflows(SchedInstance instance, List<SchedWorkflow> workflows) {
         Assert.isTrue(instance.isWorkflowLead(), () -> "Must be workflow lead instance: " + instance);
-        assertDoInTransaction();
+        assertWithinTransaction();
         instanceMapper.insert(instance.fillUniqueFlag());
         Collects.batchProcess(workflows, workflowMapper::batchInsert, PROCESS_BATCH_SIZE);
     }
 
     public void saveInstanceAndTasks(SchedInstance instance, List<SchedTask> tasks) {
-        assertDoInTransaction();
+        assertWithinTransaction();
         instanceMapper.insert(instance.fillUniqueFlag());
         Collects.batchProcess(tasks, taskMapper::batchInsert, PROCESS_BATCH_SIZE);
     }
